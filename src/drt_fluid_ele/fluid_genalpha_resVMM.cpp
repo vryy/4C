@@ -2,7 +2,7 @@
 /*!
 \file fluid3_genalpha_resVMM.cpp
 
-\brief Internal implementation of Fluid3 element with a generalised alpha
+\brief Internal implementation of Fluid element with a generalised alpha
        time integration.
 
        This element is designed for the solution of the Navier-Stokes
@@ -27,129 +27,129 @@ Maintainer: Peter Gamnitzer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3GenalphaResVMMInterface* DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(DRT::ELEMENTS::Fluid3* f3)
+DRT::ELEMENTS::FluidGenalphaResVMMInterface* DRT::ELEMENTS::FluidGenalphaResVMMInterface::Impl(DRT::ELEMENTS::Fluid* f3)
 {
   const int numdofpernode = f3->NumDofPerNode(*(f3->Nodes()[0]));
   switch (f3->Shape())
   {
   case DRT::Element::hex8:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::hex8>* fh8;
+    static FluidGenalphaResVMM<DRT::Element::hex8>* fh8;
     if (fh8==NULL)
-      fh8 = new Fluid3GenalphaResVMM<DRT::Element::hex8>(numdofpernode);
+      fh8 = new FluidGenalphaResVMM<DRT::Element::hex8>(numdofpernode);
     return fh8;
   }
   case DRT::Element::hex20:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::hex20>* fh20;
+    static FluidGenalphaResVMM<DRT::Element::hex20>* fh20;
     if (fh20==NULL)
-      fh20 = new Fluid3GenalphaResVMM<DRT::Element::hex20>(numdofpernode);
+      fh20 = new FluidGenalphaResVMM<DRT::Element::hex20>(numdofpernode);
     return fh20;
   }
   case DRT::Element::hex27:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::hex27>* fh27;
+    static FluidGenalphaResVMM<DRT::Element::hex27>* fh27;
     if (fh27==NULL)
-      fh27 = new Fluid3GenalphaResVMM<DRT::Element::hex27>(numdofpernode);
+      fh27 = new FluidGenalphaResVMM<DRT::Element::hex27>(numdofpernode);
     return fh27;
   }
   case DRT::Element::nurbs8:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::nurbs8>* fn8;
+    static FluidGenalphaResVMM<DRT::Element::nurbs8>* fn8;
     if (fn8==NULL)
-      fn8 = new Fluid3GenalphaResVMM<DRT::Element::nurbs8>(numdofpernode);
+      fn8 = new FluidGenalphaResVMM<DRT::Element::nurbs8>(numdofpernode);
     return fn8;
   }
   case DRT::Element::nurbs27:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::nurbs27>* fn27;
+    static FluidGenalphaResVMM<DRT::Element::nurbs27>* fn27;
     if (fn27==NULL)
-      fn27 = new Fluid3GenalphaResVMM<DRT::Element::nurbs27>(numdofpernode);
+      fn27 = new FluidGenalphaResVMM<DRT::Element::nurbs27>(numdofpernode);
     return fn27;
   }
   case DRT::Element::tet4:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::tet4>* ft4;
+    static FluidGenalphaResVMM<DRT::Element::tet4>* ft4;
     if (ft4==NULL)
-      ft4 = new Fluid3GenalphaResVMM<DRT::Element::tet4>(numdofpernode);
+      ft4 = new FluidGenalphaResVMM<DRT::Element::tet4>(numdofpernode);
     return ft4;
   }
   case DRT::Element::tet10:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::tet10>* ft10;
+    static FluidGenalphaResVMM<DRT::Element::tet10>* ft10;
     if (ft10==NULL)
-      ft10 = new Fluid3GenalphaResVMM<DRT::Element::tet10>(numdofpernode);
+      ft10 = new FluidGenalphaResVMM<DRT::Element::tet10>(numdofpernode);
     return ft10;
   }
   case DRT::Element::wedge6:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::wedge6>* fw6;
+    static FluidGenalphaResVMM<DRT::Element::wedge6>* fw6;
     if (fw6==NULL)
-      fw6 = new Fluid3GenalphaResVMM<DRT::Element::wedge6>(numdofpernode);
+      fw6 = new FluidGenalphaResVMM<DRT::Element::wedge6>(numdofpernode);
     return fw6;
   }
   /*
   case DRT::Element::wedge15:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::wedge15>* fw15;
+    static FluidGenalphaResVMM<DRT::Element::wedge15>* fw15;
     if (fw15==NULL)
-      fw15 = new Fluid3GenalphaResVMM<DRT::Element::wedge15>(numdofpernode);
+      fw15 = new FluidGenalphaResVMM<DRT::Element::wedge15>(numdofpernode);
     return fw15;
   }*/
   case DRT::Element::pyramid5:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::pyramid5>* fp5;
+    static FluidGenalphaResVMM<DRT::Element::pyramid5>* fp5;
     if (fp5==NULL)
-      fp5 = new Fluid3GenalphaResVMM<DRT::Element::pyramid5>(numdofpernode);
+      fp5 = new FluidGenalphaResVMM<DRT::Element::pyramid5>(numdofpernode);
     return fp5;
   }
   case DRT::Element::quad4:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::quad4>* cp4;
+    static FluidGenalphaResVMM<DRT::Element::quad4>* cp4;
     if (cp4==NULL)
-      cp4 = new Fluid3GenalphaResVMM<DRT::Element::quad4>(numdofpernode);
+      cp4 = new FluidGenalphaResVMM<DRT::Element::quad4>(numdofpernode);
     return cp4;
   }
   case DRT::Element::quad8:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::quad8>* cp8;
+    static FluidGenalphaResVMM<DRT::Element::quad8>* cp8;
     if (cp8==NULL)
-      cp8 = new Fluid3GenalphaResVMM<DRT::Element::quad8>(numdofpernode);
+      cp8 = new FluidGenalphaResVMM<DRT::Element::quad8>(numdofpernode);
     return cp8;
   }
   case DRT::Element::quad9:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::quad9>* cp9;
+    static FluidGenalphaResVMM<DRT::Element::quad9>* cp9;
     if (cp9==NULL)
-      cp9 = new Fluid3GenalphaResVMM<DRT::Element::quad9>(numdofpernode);
+      cp9 = new FluidGenalphaResVMM<DRT::Element::quad9>(numdofpernode);
     return cp9;
   }
   case DRT::Element::tri3:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::tri3>* cp3;
+    static FluidGenalphaResVMM<DRT::Element::tri3>* cp3;
     if (cp3==NULL)
-      cp3 = new Fluid3GenalphaResVMM<DRT::Element::tri3>(numdofpernode);
+      cp3 = new FluidGenalphaResVMM<DRT::Element::tri3>(numdofpernode);
     return cp3;
   }
   case DRT::Element::tri6:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::tri6>* cp6;
+    static FluidGenalphaResVMM<DRT::Element::tri6>* cp6;
     if (cp6==NULL)
-      cp6 = new Fluid3GenalphaResVMM<DRT::Element::tri6>(numdofpernode);
+      cp6 = new FluidGenalphaResVMM<DRT::Element::tri6>(numdofpernode);
     return cp6;
   }
   case DRT::Element::nurbs4:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::nurbs4>* fn4;
+    static FluidGenalphaResVMM<DRT::Element::nurbs4>* fn4;
     if (fn4==NULL)
-      fn4 = new Fluid3GenalphaResVMM<DRT::Element::nurbs4>(numdofpernode);
+      fn4 = new FluidGenalphaResVMM<DRT::Element::nurbs4>(numdofpernode);
     return fn4;
   }
   case DRT::Element::nurbs9:
   {
-    static Fluid3GenalphaResVMM<DRT::Element::nurbs9>* fn9;
+    static FluidGenalphaResVMM<DRT::Element::nurbs9>* fn9;
     if (fn9==NULL)
-      fn9 = new Fluid3GenalphaResVMM<DRT::Element::nurbs9>(numdofpernode);
+      fn9 = new FluidGenalphaResVMM<DRT::Element::nurbs9>(numdofpernode);
     return fn9;
   }
   default:
@@ -165,7 +165,7 @@ DRT::ELEMENTS::Fluid3GenalphaResVMMInterface* DRT::ELEMENTS::Fluid3GenalphaResVM
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Fluid3GenalphaResVMM(int numdofpernode)
+DRT::ELEMENTS::FluidGenalphaResVMM<distype>::FluidGenalphaResVMM(int numdofpernode)
 // fine-scale subgrid viscosity
   : numdofpernode_(numdofpernode),
     vart_(0.0)
@@ -176,8 +176,8 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Fluid3GenalphaResVMM(int numdofper
 
 
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
-  Fluid3*                    ele,
+int DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Evaluate(
+  Fluid*                    ele,
   ParameterList&             params,
   DRT::Discretization&       discretization,
   vector<int>&               lm,
@@ -382,7 +382,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   std::vector<Epetra_SerialDenseVector> myknots(nsd_);
 
   // for isogeometric elements
-  //if(ele->Shape()==Fluid3::nurbs8 || ele->Shape()==Fluid3::nurbs27)
+  //if(ele->Shape()==Fluid::nurbs8 || ele->Shape()==Fluid::nurbs27)
   if(IsNurbs<distype>::isnurbs)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis
@@ -778,8 +778,8 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs(
-  Fluid3*                                    ele             ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_qs(
+  Fluid*                                    ele             ,
   std::vector<Epetra_SerialDenseVector> &    myknots         ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat          ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& meshmat         ,
@@ -3347,8 +3347,8 @@ N
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td(
-  Fluid3*                                    ele             ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_td(
+  Fluid*                                    ele             ,
   std::vector<Epetra_SerialDenseVector>&     myknots         ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat          ,
   LINALG::Matrix<(nsd_+1)*iel,1>&            elevec          ,
@@ -5857,8 +5857,8 @@ N                   \                                                           
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs(
-  Fluid3*                                             ele             ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_qs(
+  Fluid*                                             ele             ,
   std::vector<Epetra_SerialDenseVector>&              myknots         ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&          elemat          ,
   LINALG::Matrix<(nsd_+1)*iel,1>&                     elevec          ,
@@ -7818,8 +7818,8 @@ N
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td(
-  Fluid3*                                          ele             ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_td(
+  Fluid*                                          ele             ,
   std::vector<Epetra_SerialDenseVector>&           myknots         ,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&       elemat          ,
   LINALG::Matrix<(nsd_+1)*iel,1>&                  elevec          ,
@@ -10467,8 +10467,8 @@ N                   \                                                           
  |                                                (private) gammi 10/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
-  Fluid3*                    ele,
+int DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcResAvgs(
+  Fluid*                    ele,
   ParameterList&             params,
   DRT::Discretization&       discretization,
   vector<int>&               lm,
@@ -10621,7 +10621,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   std::vector<Epetra_SerialDenseVector> myknots(nsd_);
 
   // for isogeometric elements
-  if(ele->Shape()==Fluid3::nurbs8 || ele->Shape()==Fluid3::nurbs27)
+  if(ele->Shape()==Fluid::nurbs8 || ele->Shape()==Fluid::nurbs27)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
@@ -10637,7 +10637,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
       return(0);
     }
   }
-  else if (ele->Shape()==Fluid3::nurbs4 || ele->Shape()==Fluid3::nurbs9)
+  else if (ele->Shape()==Fluid::nurbs4 || ele->Shape()==Fluid::nurbs9)
   {
     dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
   }
@@ -11631,7 +11631,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
  |  distributed vectors                           (private) gammi 10/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVectors(
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ExtractValuesFromGlobalVectors(
         const INPAR::FLUID::FineSubgridVisc              fssgv         ,
         const bool                                 is_ale        ,
         const DRT::Discretization&                 discretization,
@@ -11792,8 +11792,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVector
  |                                                (private) gammi 10/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceModel(
-  const Fluid3*                       ele            ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::SetParametersForTurbulenceModel(
+  const Fluid*                       ele            ,
   ParameterList                     & turbmodelparams,
   ParameterList                     & sgviscparams,
   const INPAR::FLUID::FineSubgridVisc     & fssgv          ,
@@ -11930,8 +11930,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceMod
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce(
-  const Fluid3* ele,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::GetNodalBodyForce(
+  const Fluid* ele,
   const double  time)
 {
   constant_bodyforce_=false;
@@ -12014,7 +12014,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce(
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc(
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalVisc(
   Teuchos::RCP<const MAT::Material>       material   ,
   double&                           	  visc       ,
   const double &                          rateofshear
@@ -12050,7 +12050,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc(
   }
   else
     dserror("material type not yet implemented");
-} // DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc
+} // DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalVisc
 
 
 /*----------------------------------------------------------------------*
@@ -12060,7 +12060,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc(
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
   const enum INPAR::FLUID::TauType_genalpha             whichtau  ,
   const enum INPAR::FLUID::SubscalesTD           tds       ,
   const double &                         gamma     ,
@@ -12487,7 +12487,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
       dserror("Unknown definition of stabilisation parameter for time-dependent formulation\n");
     }
 
-  } // end Fluid3::subscales_time_dependent
+  } // end Fluid::subscales_time_dependent
   else
   {
     //-------------------------------------------------------
@@ -12995,7 +12995,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
   }
 
   return;
-} // DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau
+} // DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau
 
 
 /*----------------------------------------------------------------------*
@@ -13006,8 +13006,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecondDerivatives(
-  const Fluid3*                                ele             ,
+double DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ShapeFunctionsFirstAndSecondDerivatives(
+  const Fluid*                                ele             ,
   const int                                  & iquad           ,
   const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints       ,
   const std::vector<Epetra_SerialDenseVector>& myknots         ,
@@ -13568,8 +13568,8 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
-  Fluid3*                                      ele            ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::SetElementData(
+  Fluid*                                      ele            ,
   const LINALG::Matrix<nsd_,iel>             & edispnp        ,
   const LINALG::Matrix<nsd_,iel>             & evelaf         ,
   const LINALG::Matrix<nsd_,iel>             & fsevelaf       ,
@@ -13616,7 +13616,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
       weights_(inode) = cp->W();
     }
   }
-  else if (ele->Shape()==Fluid3::nurbs4 || ele->Shape()==Fluid3::nurbs9)
+  else if (ele->Shape()==Fluid::nurbs4 || ele->Shape()==Fluid::nurbs9)
     dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
 
 
@@ -14153,8 +14153,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData(
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint(
-  Fluid3*                                     ele             ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::InterpolateToGausspoint(
+  Fluid*                                     ele             ,
   const LINALG::Matrix<nsd_,iel>            & egridvelaf        ,
   const LINALG::Matrix<nsd_,iel>            & evelnp          ,
   const LINALG::Matrix<iel,1>               & eprenp          ,

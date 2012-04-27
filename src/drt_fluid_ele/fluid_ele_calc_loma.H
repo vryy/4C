@@ -44,7 +44,7 @@ class FluidEleCalcLoma : public FluidEleCalc<distype>
     /// called upon destruction
     virtual void Done();
 
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*        ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*        ele,
                          DRT::Discretization &         discretization,
                          const std::vector<int> &      lm,
                          Teuchos::ParameterList&       params,
@@ -57,7 +57,7 @@ class FluidEleCalcLoma : public FluidEleCalc<distype>
                          bool                          offdiag = false);
 
     /// Evaluate the element at specified gauss points for porous flow
-    virtual int EvaluateOD(DRT::ELEMENTS::Fluid3*               ele,
+    virtual int EvaluateOD(DRT::ELEMENTS::Fluid*               ele,
                              DRT::Discretization &                discretization,
                              const std::vector<int> &             lm,
                              Teuchos::ParameterList&              params,

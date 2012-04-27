@@ -417,7 +417,7 @@ void DRT::UTILS::ComputeBeam3DNullSpace( DRT::Discretization & dis, std::vector<
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeXFluid3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::UTILS::ComputeXFluidDNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   const Epetra_Map* rowmap = dis.DofRowMap();
   const int lrows = rowmap->NumMyElements();
@@ -510,7 +510,7 @@ void DRT::UTILS::ComputeXFluid3DNullSpace( DRT::Discretization & dis, std::vecto
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ComputeFluid3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::UTILS::ComputeFluidDNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   const Epetra_Map* rowmap = dis.DofRowMap();
   const int lrows = rowmap->NumMyElements();

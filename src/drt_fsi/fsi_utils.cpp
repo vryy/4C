@@ -216,7 +216,7 @@ void FSI::UTILS::CreateAleDiscretization()
 
 
 #ifdef D_FLUID3
-    DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
+    DRT::ELEMENTS::Fluid* f3 = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
     if (not found and f3!=NULL)
     {
       found = true;
@@ -620,7 +620,7 @@ bool FSI::UTILS::AleFluidCloneStrategy::DetermineEleType(
   bool found = false;
 
 #ifdef D_FLUID3
-    DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
+    DRT::ELEMENTS::Fluid* f3 = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
     if (not found and f3!=NULL)
     {
       const int  nsd = DRT::UTILS::getDimension(f3->Shape());

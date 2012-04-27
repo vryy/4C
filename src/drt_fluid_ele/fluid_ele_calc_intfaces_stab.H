@@ -203,8 +203,8 @@ namespace DRT
       //! fill element vectors with extracted data
       void GetElementData(
           FluidIntFace*              surfele,          ///< surface FluidIntFace element
-          Fluid3*                    master_ele,       ///< master parent element
-          Fluid3*                    slave_ele,        ///< slave  parent element
+          Fluid*                    master_ele,       ///< master parent element
+          Fluid*                    slave_ele,        ///< slave  parent element
           double &                   kinvisc,          ///< patch kinematic viscosity
           double &                   dens,             ///< patch density
           vector<double>&            mypvelaf,         ///< master velaf
@@ -307,8 +307,8 @@ namespace DRT
 
       //! compute h_k w.r.t master and slave element
       void compute_patch_hk ( double &   patch_hk,   ///< patch h_k
-                              Fluid3*    master,     ///< master fluid element
-                              Fluid3*    slave       ///< slave fluid element
+                              Fluid*    master,     ///< master fluid element
+                              Fluid*    slave       ///< slave fluid element
       );
 
       //! compute surface diameter w.r.t to parent master element or parent slave element (flag master=true/false)
@@ -414,7 +414,7 @@ namespace DRT
 
 
       //! pointer to parameter list
-      DRT::ELEMENTS::FluidEleParameter* f3Parameter_;
+      DRT::ELEMENTS::FluidEleParameter* fldpara_;
 
       // nodal arrays
       // ------------

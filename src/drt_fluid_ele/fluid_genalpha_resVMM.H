@@ -3,7 +3,7 @@
 /*!
 \file fluid_genalpha_resVMM.H
 FineSubgridVisc
-\brief Internal implementation of Fluid3 element with a generalised alpha
+\brief Internal implementation of Fluid element with a generalised alpha
        time integration. The major difference to the standard
        one-step-theta/BDF2 implementation is that the pressure and the
        continuity equation are treated fully implicitly.
@@ -45,29 +45,29 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class Fluid3;
+    class Fluid;
 
-    /// Interface base class for Fluid3GenalphaResVMM
+    /// Interface base class for FluidGenalphaResVMM
 
     /*!
       This class exists to provide a common interface for all template
-      versions of Fluid3GenalphaResVMM. The only function
+      versions of FluidGenalphaResVMM. The only function
       this class actually defines is Impl, which returns a pointer to
-      the appropriate version of Fluid3GenalphaResVMM.
+      the appropriate version of FluidGenalphaResVMM.
     */
-    class Fluid3GenalphaResVMMInterface
+    class FluidGenalphaResVMMInterface
     {
     public:
       /// Empty constructor
-      Fluid3GenalphaResVMMInterface() {}
+      FluidGenalphaResVMMInterface() {}
       /// Empty destructor
-      virtual ~Fluid3GenalphaResVMMInterface() {}
+      virtual ~FluidGenalphaResVMMInterface() {}
       /// Evaluate the element
       /*!
         This class does not provide a definition for this function, it
-        must be defined in Fluid3GenalphaResVMM.
+        must be defined in FluidGenalphaResVMM.
       */
-      virtual int Evaluate(Fluid3*                    ele,
+      virtual int Evaluate(Fluid*                    ele,
                            ParameterList&             params,
                            DRT::Discretization&       discretization,
                            vector<int>&               lm,
@@ -83,16 +83,16 @@ namespace DRT
       /// are added to a vector associated with an element layer
       /*!
         This class does not provide a definition for this function, it
-        must be defined in Fluid3GenalphaResVMM.
+        must be defined in FluidGenalphaResVMM.
       */
-      virtual int CalcResAvgs(Fluid3*                    ele,
+      virtual int CalcResAvgs(Fluid*                    ele,
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
                               vector<int>&               lm,
                               RefCountPtr<MAT::Material> mat) = 0;
 
       /// Internal implementation class for fluid element
-      static Fluid3GenalphaResVMMInterface* Impl(DRT::ELEMENTS::Fluid3* f3);
+      static FluidGenalphaResVMMInterface* Impl(DRT::ELEMENTS::Fluid* f3);
 
     };
 
@@ -103,23 +103,23 @@ namespace DRT
     /*----------------------------------------------------------------------*/
 
 
-    /// Internal Fluid3 implementation (genalpha version)
+    /// Internal Fluid implementation (genalpha version)
     /*!
       This internal class keeps all the working arrays needed to
-      calculate the Fluid3 element (genalpha implementation).
+      calculate the Fluid element (genalpha implementation).
       Additionally the methods Sysmat_...() provide this elements
       implementations.
 
       <h3>Purpose</h3>
 
-      The idea is to separate the element maintenance (class Fluid3)
+      The idea is to separate the element maintenance (class Fluid)
       from the mathematical contents (this class). The differences
       to the default fluid implementation is the time integration
       scheme and the residual based stabilisation. This affects the
       factors of some of the contributions and some additional
       element contributions arise.
 
-      The Fluid3 will allocate exactly one object of this class for all
+      The Fluid will allocate exactly one object of this class for all
       fluid elements with the same number of nodes in the mesh. This
       allows us to use exactly matching working arrays (and keep them
       around.)
@@ -239,14 +239,14 @@ namespace DRT
     */
 
     template<DRT::Element::DiscretizationType distype>
-    class Fluid3GenalphaResVMM: public Fluid3GenalphaResVMMInterface
+    class FluidGenalphaResVMM: public FluidGenalphaResVMMInterface
     {
     public:
       /// Constructor with number of nodes
-      Fluid3GenalphaResVMM(int numdofpernode);
+      FluidGenalphaResVMM(int numdofpernode);
 
       /// empty destructor
-      ~Fluid3GenalphaResVMM(){return;};
+      ~FluidGenalphaResVMM(){return;};
 
       //! number of nodes
       static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -289,7 +289,7 @@ namespace DRT
         \param mat            (i)   interface class for materials in elements
 
       */
-      virtual int Evaluate(Fluid3*                    ele,
+      virtual int Evaluate(Fluid*                    ele,
                            ParameterList&             params,
                            DRT::Discretization&       discretization,
                            vector<int>&               lm,
@@ -351,7 +351,7 @@ namespace DRT
 
       */
 
-      virtual int CalcResAvgs(Fluid3*                    ele,
+      virtual int CalcResAvgs(Fluid*                    ele,
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
                               vector<int>&               lm,
@@ -404,7 +404,7 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat_adv_qs(Fluid3*                                    ele,
+      void Sysmat_adv_qs(Fluid*                                    ele,
                          std::vector<Epetra_SerialDenseVector>&     myknots,
                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat,
                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& meshmat,
@@ -483,7 +483,7 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat_adv_td(Fluid3*                                    ele,
+      void Sysmat_adv_td(Fluid*                                    ele,
                          std::vector<Epetra_SerialDenseVector>&     myknots,
                          LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat,
                          LINALG::Matrix<(nsd_+1)*iel,    1>&        elevec,
@@ -560,7 +560,7 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat_cons_qs(Fluid3*                                    ele,
+      void Sysmat_cons_qs(Fluid*                                    ele,
                           std::vector<Epetra_SerialDenseVector>&     myknots,
                           LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat,
                           LINALG::Matrix<(nsd_+1)*iel,    1>&        elevec,
@@ -637,7 +637,7 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat_cons_td(Fluid3*                                    ele,
+      void Sysmat_cons_td(Fluid*                                    ele,
                           std::vector<Epetra_SerialDenseVector>&     myknots,
                           LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>& elemat,
                           LINALG::Matrix<(nsd_+1)*iel,    1>&        elevec,
@@ -675,7 +675,7 @@ namespace DRT
 
 
       void Sysmat_adv_qs_2D(
-        Fluid3*                                ele,
+        Fluid*                                ele,
         std::vector<Epetra_SerialDenseVector>& myknots,
         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
         LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
@@ -738,7 +738,7 @@ namespace DRT
 
       */
       void Sysmat_adv_td_2D(
-        Fluid3*                                ele,
+        Fluid*                                ele,
         std::vector<Epetra_SerialDenseVector>& myknots,
         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
         LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
@@ -801,7 +801,7 @@ namespace DRT
 
       */
       void Sysmat_cons_qs_2D(
-        Fluid3*                                ele,
+        Fluid*                                ele,
         std::vector<Epetra_SerialDenseVector>& myknots,
         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
         LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
@@ -864,7 +864,7 @@ namespace DRT
 
       */
       void Sysmat_cons_td_2D(
-        Fluid3*                                ele,
+        Fluid*                                ele,
         std::vector<Epetra_SerialDenseVector>& myknots,
         LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
         LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
@@ -925,7 +925,7 @@ namespace DRT
       static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
       void SetParametersForTurbulenceModel(
-        const Fluid3*                       ele            ,
+        const Fluid*                       ele            ,
         ParameterList                     & turbmodelparams,
         ParameterList                     & sgvsicparams,
         const INPAR::FLUID::FineSubgridVisc     & fssgv          ,
@@ -970,7 +970,7 @@ namespace DRT
       //
       //  \param ele         (i) element pointer for access to the neumann condition
       //  \param time        (i) time when the condition is evaluated
-      void GetNodalBodyForce(const Fluid3* ele ,
+      void GetNodalBodyForce(const Fluid* ele ,
                              const double  time);
 
       /*!  Compute the rate of strain of a (fine-scale) velocity
@@ -1057,7 +1057,7 @@ namespace DRT
 
        */
       double ShapeFunctionsFirstAndSecondDerivatives(
-        const Fluid3*                                 ele      ,
+        const Fluid*                                 ele      ,
         const int                                  &  iquad    ,
         const DRT::UTILS::IntPointsAndWeights<nsd_>&  intpoints,
         const std::vector<Epetra_SerialDenseVector>&  myknots  ,
@@ -1127,7 +1127,7 @@ namespace DRT
        */
       void SetElementData
       (
-        Fluid3*                                      ele            ,
+        Fluid*                                      ele            ,
         const LINALG::Matrix<nsd_,iel>             & edispnp        ,
         const LINALG::Matrix<nsd_,iel>             & evelaf         ,
         const LINALG::Matrix<nsd_,iel>             & fsevelaf       ,
@@ -1180,7 +1180,7 @@ namespace DRT
 
        */
       void InterpolateToGausspoint(
-        Fluid3*                                     ele             ,
+        Fluid*                                     ele             ,
         const LINALG::Matrix<nsd_,iel>            & egridvaf        ,
         const LINALG::Matrix<nsd_,iel>            & evelnp          ,
         const LINALG::Matrix<iel,1>               & eprenp          ,
@@ -1224,7 +1224,7 @@ namespace DRT
       //
       //  \param ele         (i) element pointer for access to the neumann condition
       //  \param time        (i) time when the condition is evaluated
-      void GetNodalBodyForce_2D(const Fluid3* ele ,
+      void GetNodalBodyForce_2D(const Fluid* ele ,
                              const double  time);
 
       /*!  Compute the rate of strain of a (fine-scale) velocity
@@ -1311,7 +1311,7 @@ namespace DRT
 
        */
       double ShapeFunctionsFirstAndSecondDerivatives_2D(
-        const Fluid3*                                 ele      ,
+        const Fluid*                                 ele      ,
         const int                                  &  iquad    ,
         const DRT::UTILS::IntPointsAndWeights<nsd_>&  intpoints,
         const std::vector<Epetra_SerialDenseVector>&  myknots  ,
@@ -1374,7 +1374,7 @@ namespace DRT
        */
       void SetElementData_2D
       (
-        Fluid3*                                      ele            ,
+        Fluid*                                      ele            ,
         const LINALG::Matrix<nsd_,iel>                & edispnp        ,
         const LINALG::Matrix<nsd_,iel>                & evelaf         ,
         const std::vector<Epetra_SerialDenseVector>& myknots        ,
@@ -1418,7 +1418,7 @@ namespace DRT
 
        */
       void InterpolateToGausspoint_2D(
-        Fluid3*                                     ele             ,
+        Fluid*                                     ele             ,
         const LINALG::Matrix<nsd_,iel>               & egridvaf        ,
         const LINALG::Matrix<nsd_,iel>               & evelnp          ,
         const LINALG::Matrix<iel,1>               & eprenp          ,

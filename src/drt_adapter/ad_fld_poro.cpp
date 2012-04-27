@@ -110,7 +110,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       DRT::Element::LocationArray la(2);
-      DRT::ELEMENTS::Fluid3Boundary* fluid = dynamic_cast<DRT::ELEMENTS::Fluid3Boundary*>(curr->second.get());
+      DRT::ELEMENTS::FluidBoundary* fluid = dynamic_cast<DRT::ELEMENTS::FluidBoundary*>(curr->second.get());
       fluid->LocationVector(*Discretization(),la,false);
 
       // get dimension of element matrices and vectors

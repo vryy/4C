@@ -2,7 +2,7 @@
 /*!
 \file fluid_impl.cpp
 
-\brief Internal implementation of Fluid3 element
+\brief Internal implementation of Fluid element
 
 <pre>
 Maintainer:
@@ -32,11 +32,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
                                int&                       nlayer,
                                double CsDeltaSq)
 {
-  if(f3Parameter_->turb_mod_action_ != INPAR::FLUID::no_model and nsd_ == 2)
+  if(fldpara_->TurbModAction() != INPAR::FLUID::no_model and nsd_ == 2)
     dserror("turbulence and 2D flow does not make any sense");
 
   // classical smagorinsky does only have constant parameter
-  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
+  if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
   {
     // this will be the y-coordinate of a point in the element interior
     // we will determine the element layer in which he is contained to
@@ -72,12 +72,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
   // --------------------------------------------------
   // Smagorinsky model with dynamic Computation of Cs
   //else if (physical_turbulence_model == "Dynamic_Smagorinsky")
-  else if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+  else if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
   {
-    //turb_mod_action_ = Fluid3::dynamic_smagorinsky;
+    //turb_mod_action_ = Fluid::dynamic_smagorinsky;
 
     // for homogeneous flow, use averaged quantities
-    if (f3Parameter_->Cs_averaged_==true){
+    if (fldpara_->CsAveraged()==true){
     if (turbmodelparams.get<string>("HOMDIR","not_specified")
             !=
             "not_specified")
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
   double rateofstrain = -1.0e30;
   rateofstrain = GetStrainRate(evelaf);
 
-  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+  if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
   {
     // subgrid viscosity
     sgvisc_ = densaf_ * Cs_delta_sq * rateofstrain;
@@ -263,7 +263,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
   }
   else
   {
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
     {
       // since the Smagorinsky constant is only valid if hk is in the inertial
       // subrange of turbulent flows, the mixing length is damped in the
@@ -336,7 +336,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcFineScaleSubgrVisc(
   // 2D: hk = A^1/2
   const double hk = pow(vol,(1.0/dim));
 
-  if (f3Parameter_->fssgv_ == INPAR::FLUID::smagorinsky_all)
+  if (fldpara_->Fssgv() == INPAR::FLUID::smagorinsky_all)
   {
     //
     // ALL-SCALE SMAGORINSKY MODEL
@@ -357,7 +357,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcFineScaleSubgrVisc(
 
     fssgvisc_ = densaf_ * Cs * Cs * hk * hk * rateofstrain;
   }
-  else if (f3Parameter_->fssgv_ == INPAR::FLUID::smagorinsky_small)
+  else if (fldpara_->Fssgv() == INPAR::FLUID::smagorinsky_small)
   {
     //
     // FINE-SCALE SMAGORINSKY MODEL
@@ -396,8 +396,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
 )
 {
     // set input parameters
-    double Csgs = f3Parameter_->Csgs_;
-    double alpha = f3Parameter_->alpha_;
+    double Csgs = fldpara_->Csgs();
+    double alpha = fldpara_->Alpha();
 
     // allocate vector for parameter N
     // N may depend on the direction
@@ -416,10 +416,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
     const double fsvel_norm = fsvelint_.Norm2();
 
     // do we have a fixed parameter N
-    if (not f3Parameter_->CalcN_)
+    if (not fldpara_->CalcN())
     {
       for (int rr=1;rr<3;rr++)
-        Nvel[rr] = f3Parameter_->N_;
+        Nvel[rr] = fldpara_->N();
 #ifdef DIR_N // direction dependent stuff, currently not used
     Nvel[0] = NUMX;
     Nvel[1] = NUMY;
@@ -430,7 +430,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
     {
       // calculate characteristic element length
       // cf. stabilization parameters
-      switch (f3Parameter_->reflength_){
+      switch (fldpara_->RefLength()){
       case INPAR::FLUID::streamlength:
       {
         // a) streamlength due to Tezduyar et al. (1992)
@@ -652,7 +652,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       if (hk == 1.0e+10)
         dserror("Something went wrong!");
 
-      switch (f3Parameter_->refvel_){
+      switch (fldpara_->RefVel()){
       case INPAR::FLUID::resolved:
       {
         Re_ele = vel_norm * hk * densaf_ / visc_;
@@ -686,7 +686,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       //  ---------  ~ Re^(3/4)
       //  lambda_nu
       //
-      scale_ratio = f3Parameter_->c_nu_ * pow(Re_ele,3.0/4.0);
+      scale_ratio = fldpara_->CNu() * pow(Re_ele,3.0/4.0);
       // scale_ratio < 1.0 leads to N < 0
       // therefore, we clip once more
       if (scale_ratio < 1.0)
@@ -714,10 +714,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
 #endif
 
     // calculate near-wall correction
-    if (f3Parameter_->near_wall_limit_)
+    if (fldpara_->NearWallLimit())
     {
       // not yet calculated, estimate norm of strain rate
-      if (f3Parameter_->CalcN_ or f3Parameter_->refvel_ != INPAR::FLUID::strainrate)
+      if (fldpara_->CalcN() or fldpara_->RefVel() != INPAR::FLUID::strainrate)
       {
         //strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
         strainnorm = GetStrainRate(evelaf);
@@ -745,10 +745,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
     // prepare calculation of subgrid-scalar coefficient for loma
     // required if further subgrid-scale terms of cross- and Reynolds-stress
     // type arising in the continuity equation should be included
-    if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+    if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
     {
       // set input parameters
-      double Csgs_phi = f3Parameter_->Csgs_phi_;
+      double Csgs_phi = fldpara_->CsgsPhi();
 
       // calculate prandtl number
       double Pr = visc_/diffus_;
@@ -758,14 +758,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       // ratio of dissipation scale to element length
       double scale_ratio_phi = 0.0;
 
-      if (f3Parameter_->CalcN_)
+      if (fldpara_->CalcN())
       {
         //
         //   Delta
         //  ---------  ~ Re^(3/4)*Pr^(1/2)
         //  lambda_diff
         //
-        scale_ratio_phi = f3Parameter_->c_diff_ * pow(Re_ele,3.0/4.0) * pow(Pr,1.0/2.0);
+        scale_ratio_phi = fldpara_->CDiff() * pow(Re_ele,3.0/4.0) * pow(Pr,1.0/2.0);
         // scale_ratio < 1.0 leads to N < 0
         // therefore, we clip again
         if (scale_ratio_phi < 1.0)
@@ -974,7 +974,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ScaleSimSubGridStressTermPrefiltering
                                +velinthat_(1,0) * velhatderxy_(nn,1)
                                +velinthat_(2,0) * velhatderxy_(nn,2)
                                + velinthat_(nn,0) * velhatdiv_));
-         if (f3Parameter_->is_conservative_)
+         if (fldpara_->IsConservative())
          {
            velforce(nn, vi) += Cl * rhsfac * densaf_ * funct_(vi) * velinthat_(nn,0) * velhatdiv_;
          }
@@ -1172,7 +1172,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
               |                                           |
                \                                         /
       */
-      if (f3Parameter_->is_conservative_)
+      if (fldpara_->IsConservative())
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * vdiv_
@@ -1197,7 +1197,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
   LINALG::Matrix<nen_,1> mfconv_c(true);
   mfconv_c.MultiplyTN(derxy_,mffsvelint_);
   // turn left-hand-side contribution on
-  double beta = f3Parameter_->beta_;
+  double beta = fldpara_->Beta();
 
   // convective part
   for (int ui=0; ui<nen_; ui++)
@@ -1233,7 +1233,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
           }
 
           // additional terms conservative part
-          if (f3Parameter_->is_conservative_)
+          if (fldpara_->IsConservative())
           {
             /*
                    /                                     \
@@ -1313,7 +1313,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesReynolds(
               |                         |
                \                       /
       */
-      if (f3Parameter_->is_conservative_)
+      if (fldpara_->IsConservative())
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * mffsvdiv_);

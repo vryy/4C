@@ -72,7 +72,7 @@ void DRT::ELEMENTS::TransportType::NodalBlockInformation( DRT::Element * dwele, 
 
 void DRT::ELEMENTS::TransportType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
-  DRT::UTILS::ComputeFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )

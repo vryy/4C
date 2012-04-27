@@ -34,7 +34,7 @@ DRT::ELEMENTS::FluidAdjoint3ImplParameter* DRT::ELEMENTS::FluidAdjoint3ImplParam
 
 
 //----------------------------------------------------------------------*/
-// private constructor of Fluid3ImplParameter
+// private constructor of FluidImplParameter
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidAdjoint3ImplParameter::FluidAdjoint3ImplParameter()
   :

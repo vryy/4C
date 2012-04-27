@@ -99,7 +99,7 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::FluidAdjoint3BoundaryImpl()
     visc_(0.0),
     dens_(1.0)
 {
-  // pointer to class Fluid3ImplParameter (access to the general parameter)
+  // pointer to class FluidImplParameter (access to the general parameter)
   fluidAdjoint3Parameter_ = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
 
   return;
@@ -111,7 +111,7 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::FluidAdjoint3BoundaryImpl()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
-                              DRT::ELEMENTS::Fluid3Boundary* ele,
+                              DRT::ELEMENTS::FluidBoundary* ele,
                               ParameterList&                 params,
                               DRT::Discretization&           discretization,
                               vector<int>&                   lm,
@@ -396,7 +396,7 @@ else
 if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity");
 
 return;
-} // Fluid3BoundaryImpl::GetMaterialParams
+} // FluidBoundaryImpl::GetMaterialParams
 
 
 

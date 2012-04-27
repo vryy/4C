@@ -57,6 +57,126 @@ public:
   //! print parameter to screen
   void PrintFluidParameter();
 
+  //! flag to (de)activate generalized-alpha time-integration scheme
+  bool IsGenalpha(){return is_genalpha_;};
+  /// Flags to switch on/off the different fluid formulations
+  //! flag to (de)activate generalized-alpha-np1 time-integration scheme
+  bool IsGenalphaNP(){return is_genalpha_np_;};
+  //! flag to (de)activate conservative formulation
+  bool IsConservative(){return is_conservative_;};
+  //! flag to (de)activate stationary formulation
+  bool IsStationary(){return is_stationary_;};
+  //! flag to (de)activate Newton linearization
+  bool IsNewton(){return is_newton_;};
+  //! flag to (de)activate second derivatives
+  bool IsInconsistent(){return is_inconsistent_;};
+  //! flag to (de)activate potential reactive terms
+  bool Reaction(){return reaction_;};
+  //! flag to (de)aktivate porous darcy flow
+  bool Darcy(){return darcy_;};
+  //! flag to (de)aktivate reaction due to topology optimization
+  bool ReactionTopopt(){return reaction_topopt_;};
+  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
+  INPAR::FLUID::PhysicalType PhysicalType(){return physicaltype_;};
+
+  /// parameter for stabilization
+  //! Flag to (de)activate time-dependent subgrid stabilization
+  INPAR::FLUID::SubscalesTD Tds(){return tds_;};
+  //! Flag to (de)activate time-dependent term in large-scale momentum equation
+  INPAR::FLUID::Transient Transient(){return transient_;};
+  //! Flag to (de)activate PSPG stabilization
+  INPAR::FLUID::PSPG PSPG(){return pspg_;};
+  //! Flag to (de)activate SUPG stabilization
+  INPAR::FLUID::SUPG SUPG(){return supg_;};
+  //! Flag to (de)activate viscous term in residual-based stabilization
+  INPAR::FLUID::VStab VStab(){return vstab_;};
+  //! Flag to (de)activate reactive term in residual-based stabilization
+  INPAR::FLUID::RStab RStab(){return rstab_;};
+  //! Flag to (de)activate least-squares stabilization of continuity equation
+  INPAR::FLUID::CStab CStab(){return cstab_;};
+  //! Flag to (de)activate cross-stress term -> residual-based VMM
+  INPAR::FLUID::CrossStress Cross(){return cross_;};
+  //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
+  INPAR::FLUID::ReynoldsStress Reynolds(){return reynolds_;};
+  //! Flag to define tau
+  INPAR::FLUID::TauType WhichTau(){return whichtau_;};
+  //! flag to (de)activate fine-scale subgrid viscosity
+  INPAR::FLUID::FineSubgridVisc Fssgv(){return fssgv_;};
+  //! flag for material evaluation at Gaussian integration points
+  bool MatGp(){return mat_gp_;};
+  //! flag for stabilization parameter evaluation at Gaussian integration points
+  bool TauGp(){return tau_gp_;};
+  //! (sign) factor for viscous and reactive stabilization terms
+  double ViscReaStabFac(){return viscreastabfac_;};
+
+  /// parameters for the time integration
+  //! time algorithm
+  INPAR::FLUID::TimeIntegrationScheme TimeAlgo(){return timealgo_;};
+  //! actual time to evaluate the body BC
+  double Time(){return time_;};
+  //! time-step length
+  double Dt(){return dt_;};
+  //! timefac = dt_ * ("pseudo"-)theta_
+  double TimeFac(){return timefac_;};
+  //! factor for left-hand side due to one-step-theta time-integration scheme
+  double Theta(){return theta_;};
+  //! factor for right-hand side due to one-step-theta time-integration scheme
+  double OmTheta(){return omtheta_;};
+  //! generalised-alpha parameter (connecting velocity and acceleration)
+  double Gamma(){return gamma_;};
+  //! generalised-alpha parameter (velocity)
+  double AlphaF(){return alphaF_;};
+  //! generalised-alpha parameter (acceleration)
+  double AlphaM(){return alphaM_;};
+  //! generalised-alpha parameter, alphaF_*gamma_*dt_
+  double Afgdt(){return afgdt_;};
+  //! generalised-alpha parameter, gamma_/alphaM_*dt_
+  //! time integration factor for the right hand side (boundary elements)
+  double TimeFacRhs(){return timefacrhs_;};
+  //! time integration factor for the left hand side (pressure)
+  double TimeFacPre(){return timefacpre_;};
+
+  /// constant parameters for the turbulence formulation
+  /// subgrid viscosity models
+  //! flag to define turbulence model
+  INPAR::FLUID::TurbModelAction TurbModAction(){return turb_mod_action_;};
+  //! smagorinsky constant (not private since it is also set in the element routine -> not very nice)
+  double Cs_;
+  //double Cs_;
+  bool CsAveraged(){return Cs_averaged_;};
+  //! channel length to normalize the normal wall distance
+  //! (not private since it is also set in the element routine -> not very nice)
+  double l_tau_;
+  //! scale similarity constant
+  double Cl(){return Cl_;};
+  /// multifractal subgrid-scales
+  double Csgs(){return Csgs_;};
+  double CsgsPhi(){return Csgs_phi_;};
+  double Alpha(){return alpha_;};
+  bool CalcN(){return CalcN_;};
+  double N(){return N_;};
+  enum INPAR::FLUID::RefVelocity RefVel(){return refvel_;};
+  enum INPAR::FLUID::RefLength RefLength(){return reflength_;};
+  double CNu(){return c_nu_;};
+  double CDiff(){return c_diff_;};
+  bool NearWallLimit(){return near_wall_limit_;};
+  bool BGp(){return B_gp_;};
+  double Beta(){return beta_;};
+
+  //! some loma specific parameters
+  //! flag for material update
+  bool UpdateMat(){return update_mat_;};
+  //! flag to (de)activate continuity SUPG term
+  INPAR::FLUID::SUPG ContiSUPG(){return conti_supg_;};
+  //! flag to (de)activate continuity cross-stress term -> residual-based VMM
+  INPAR::FLUID::CrossStress ContiCross(){return conti_cross_;};
+  //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
+  INPAR::FLUID::ReynoldsStress ContiReynolds(){return conti_reynolds_;};
+  //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
+  bool MultiFracLomaConti(){return multifrac_loma_conti_;};
+
+private:
+
   //! Flag SetGeneralParameter was called
   bool set_general_fluid_parameter_;
   /// Flags to switch on/off the different fluid formulations
@@ -81,6 +201,8 @@ public:
   bool reaction_topopt_;
   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
   INPAR::FLUID::PhysicalType physicaltype_;
+
+  /// parameter for stabilization
   //! Flag to (de)activate time-dependent subgrid stabilization
   INPAR::FLUID::SubscalesTD tds_;
   //! Flag to (de)activate time-dependent term in large-scale momentum equation
@@ -103,12 +225,12 @@ public:
   INPAR::FLUID::TauType whichtau_;
   //! flag to (de)activate fine-scale subgrid viscosity
   INPAR::FLUID::FineSubgridVisc fssgv_;
-  //! flag to define turbulence model
-  INPAR::FLUID::TurbModelAction turb_mod_action_;
   //! flag for material evaluation at Gaussian integration points
   bool mat_gp_;
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool tau_gp_;
+  //! (sign) factor for viscous and reactive stabilization terms
+  double viscreastabfac_;
 
   /// parameters for the time integration
   //! time algorithm
@@ -137,17 +259,11 @@ public:
   //! time integration factor for the left hand side (pressure)
   double timefacpre_;
 
-  /// parameter for stabilization
-  //! (sign) factor for viscous and reactive stabilization terms
-  double viscreastabfac_;
-
   /// constant parameters for the turbulence formulation
   /// subgrid viscosity models
-  //! smagorinsky constant
-  double Cs_;
+  //! flag to define turbulence model
+  INPAR::FLUID::TurbModelAction turb_mod_action_;
   bool Cs_averaged_;
-  //! channel length to normalize the normal wall distance
-  double l_tau_;
   //! scale similarity constant
   double Cl_;
   /// multifractal subgrid-scales
@@ -176,7 +292,6 @@ public:
   //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
   bool multifrac_loma_conti_;
 
-private:
 
   // private constructor
   FluidEleParameter();

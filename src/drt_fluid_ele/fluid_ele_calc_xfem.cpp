@@ -86,7 +86,7 @@ namespace ELEMENTS
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
-    DRT::ELEMENTS::Fluid3 *                                             ele,               ///< fluid element
+    DRT::ELEMENTS::Fluid *                                             ele,               ///< fluid element
     DRT::Discretization &                                               dis,               ///< background discretization
     const std::vector<int> &                                            lm,                ///< element local map
     const DRT::UTILS::GaussIntegration &                                intpoints,         ///< background element integration points
@@ -171,7 +171,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     //----------------------------------------------------------------------
 
     // TODO: check if this parameter should be fac*1.0*dt (full implicit stabilization)
-    const double timefacfac = my::f3Parameter_->timefac_ * my::fac_;
+    const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
 
     const double viscfac = 1.0/(2.0*my::visceff_);
 
@@ -447,7 +447,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
         const double surf_fac = drs*iquad.Weight();
 
-        const double fac = surf_fac * my::f3Parameter_->timefac_;
+        const double fac = surf_fac * my::fldpara_->TimeFac();
 
 
         //--------------------------------------------
@@ -741,7 +741,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
-    DRT::ELEMENTS::Fluid3 *                                             ele,               ///< fluid element
+    DRT::ELEMENTS::Fluid *                                             ele,               ///< fluid element
     DRT::Discretization &                                               dis,               ///< background discretization
     const std::vector<int> &                                            lm,                ///< element local map
     const DRT::UTILS::GaussIntegration &                                intpoints,         ///< background element integration points
@@ -1005,7 +1005,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         const double surf_fac = drs*iquad.Weight();
 
-        const double timefacfac = surf_fac * my::f3Parameter_->timefac_;
+        const double timefacfac = surf_fac * my::fldpara_->TimeFac();
 
 
         //--------------------------------------------
@@ -1150,7 +1150,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
-    DRT::ELEMENTS::Fluid3 * ele,
+    DRT::ELEMENTS::Fluid * ele,
     DRT::Discretization & dis,
     const std::vector<int> & lm,
     const DRT::UTILS::GaussIntegration & intpoints,
@@ -1471,7 +1471,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
         const double surf_fac = drs*iquad.Weight();
 
-        const double timefacfac = surf_fac * my::f3Parameter_->timefac_;
+        const double timefacfac = surf_fac * my::fldpara_->TimeFac();
 
 
 
@@ -2021,7 +2021,7 @@ void FluidEleCalcXFEM<distype>::AssembleInterfaceForce(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
-    DRT::ELEMENTS::Fluid3 *              ele,            ///< fluid element
+    DRT::ELEMENTS::Fluid *              ele,            ///< fluid element
     DRT::Discretization &                dis,            ///< discretization
     const std::vector<int> &             lm,             ///< local map
     Epetra_SerialDenseVector&            elevec1_epetra, ///< element vector
@@ -2065,7 +2065,7 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
-    DRT::ELEMENTS::Fluid3 *     ele,                ///< fluid element
+    DRT::ELEMENTS::Fluid *     ele,                ///< fluid element
     DRT::Discretization &       dis,                ///< discretization
     const std::vector<int> &    lm,                 ///< local map
     Epetra_SerialDenseVector&   elevec1_epetra      ///< element vector

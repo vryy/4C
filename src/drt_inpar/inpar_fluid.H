@@ -31,7 +31,8 @@ namespace INPAR
       boussinesq,
       varying_density,
       loma,
-      poro
+      poro,
+      topopt
     };
     //! flag to (de)activate PSPG stabilization
     enum PSPG

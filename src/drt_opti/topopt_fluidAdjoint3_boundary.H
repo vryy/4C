@@ -24,7 +24,7 @@ namespace DRT
   class Discretization;
 namespace ELEMENTS
 {
-  class Fluid3Boundary;
+  class FluidBoundary;
   class FluidAdjoint3ImplParameter;
 
 
@@ -41,16 +41,16 @@ public:
   /// Evaluate a Neumann boundary condition
   /*!
     This class does not provide a definition for this function, it
-    must be defined in Fluid3BoundaryImpl.
+    must be defined in FluidBoundaryImpl.
    */
-  virtual int EvaluateNeumann(DRT::ELEMENTS::Fluid3Boundary*  ele,
+  virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*  ele,
                               Teuchos::ParameterList&         params,
                               DRT::Discretization&            discretization,
                               std::vector<int>&               lm,
                               Epetra_SerialDenseVector&       elevec
                               ) = 0;
 
-  /// Internal implementation class for Fluid3Boundary elements
+  /// Internal implementation class for FluidBoundary elements
   static FluidAdjoint3BoundaryImplInterface* Impl(const DRT::Element* ele);
 };
 
@@ -83,7 +83,7 @@ public:
   //! number of element nodes
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  //! number of space dimensions of the Fluid3Boundary element
+  //! number of space dimensions of the FluidBoundary element
   static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
   //! number of space dimensions of the parent element
@@ -93,7 +93,7 @@ public:
   static const int numdofpernode_ = nsd_ + 1;
 
   //! Evaluate a Neumann boundary condition
-  virtual int EvaluateNeumann(DRT::ELEMENTS::Fluid3Boundary*    ele,
+  virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*    ele,
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
                               vector<int>&               lm,

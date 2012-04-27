@@ -93,13 +93,13 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     // LOMA-specific variables
     diffus_(0.0),
     rhscon_(true),
-    densaf_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
-    densam_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
-    densn_(1.0),          // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
-    scadtfac_(0.0),       // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
-    scaconvfacaf_(0.0),   // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
-    scaconvfacn_(0.0),    // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
-    thermpressadd_(0.0),  // initialized to 0.0 (filled in Fluid3::GetMaterialParams)
+    densaf_(1.0),         // initialized to 1.0 (filled in Fluid::GetMaterialParams)
+    densam_(1.0),         // initialized to 1.0 (filled in Fluid::GetMaterialParams)
+    densn_(1.0),          // initialized to 1.0 (filled in Fluid::GetMaterialParams)
+    scadtfac_(0.0),       // initialized to 0.0 (filled in Fluid::GetMaterialParams)
+    scaconvfacaf_(0.0),   // initialized to 0.0 (filled in Fluid::GetMaterialParams)
+    scaconvfacn_(0.0),    // initialized to 0.0 (filled in Fluid::GetMaterialParams)
+    thermpressadd_(0.0),  // initialized to 0.0 (filled in Fluid::GetMaterialParams)
     convvelintn_(true),
     vderxyn_(true),
     vdivn_(0.0),
@@ -132,7 +132,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
   rotsymmpbc_= new FLD::RotationallySymmetricPeriodicBC<distype>();
 
   // pointer to class FluidEleParameter (access to the general parameter)
-  f3Parameter_ = DRT::ELEMENTS::FluidEleParameter::Instance();
+  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
 
   // Nurbs
   isNurbs_ = IsNurbs<distype>::isnurbs;
@@ -143,7 +143,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
                                                  DRT::Discretization & discretization,
                                                  const std::vector<int> & lm,
                                                  Teuchos::ParameterList&    params,
@@ -162,7 +162,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele
 }
 
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
                                                  DRT::Discretization & discretization,
                                                  const std::vector<int> & lm,
                                                  Teuchos::ParameterList&    params,
@@ -194,14 +194,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele
   LINALG::Matrix<nsd_,nen_> ebofoaf(true);
   LINALG::Matrix<nsd_,nen_> eprescpgaf(true);
   LINALG::Matrix<nen_,1>    escabofoaf(true);
-  BodyForce(ele,f3Parameter_,ebofoaf,eprescpgaf,escabofoaf);
+  BodyForce(ele,fldpara_,ebofoaf,eprescpgaf,escabofoaf);
 
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
   double * saccn = NULL;
   double * sveln = NULL;
   double * svelnp = NULL;
-  if (f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent)
+  if (fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
     ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
 
   // ---------------------------------------------------------------------
@@ -222,7 +222,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele
 
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<nsd_,nen_> evelnp(true);
-  if (f3Parameter_->is_genalpha_np_)
+  if (fldpara_->IsGenalphaNP())
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, NULL,"velnp");
 
   LINALG::Matrix<nen_,1> escaaf(true);
@@ -239,7 +239,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele
   LINALG::Matrix<nen_,1>    escaam(true);
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, &escaam,"scaam");
 
-  if (f3Parameter_->is_genalpha_) eveln.Clear();
+  if (fldpara_->IsGenalpha()) eveln.Clear();
   else                            eaccam.Clear();
 
   LINALG::Matrix<nen_,1> eporo(true);
@@ -247,8 +247,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele
       (params.get<RCP<Epetra_Vector> >("topopt_porosity") !=Teuchos::null)) // ... according vector is filled
   {
     // activate reaction terms
-    f3Parameter_->reaction_topopt_ = true;
-    f3Parameter_->reaction_ = true;
+    //f3Parameter_->reaction_topopt_ = true;
+    //f3Parameter_->reaction_ = true;
 
     // read nodal values from global vector
     RCP<Epetra_Vector> topopt_porosity = params.get<RCP<Epetra_Vector> >("topopt_porosity");
@@ -278,11 +278,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> fsevelaf(true);
   LINALG::Matrix<nen_,1>    fsescaaf(true);
-  if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv
-   or f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+  if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv
+   or fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
   {
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &fsevelaf, NULL,"fsvelaf");
-    if(f3Parameter_->physicaltype_ == INPAR::FLUID::loma and f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    if(fldpara_->PhysicalType() == INPAR::FLUID::loma and fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &fsescaaf,"fsscaaf");
   }
 
@@ -295,8 +295,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele
   //----------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> evel_hat(true);
   LINALG::Matrix<nsd_*nsd_,nen_> ereynoldsstress_hat(true);
-  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
-      or f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
+  if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
+      or fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
   {
     RCP<Epetra_MultiVector> filtered_vel = params.get<RCP<Epetra_MultiVector> >("Filtered velocity");
     RCP<Epetra_MultiVector> fs_vel = params.get<RCP<Epetra_MultiVector> >("Fine scale velocity");
@@ -424,10 +424,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
   // less accurate) computations
-  if (f3Parameter_->is_inconsistent_ == true) is_higher_order_ele_ = false;
+  if (fldpara_->IsInconsistent() == true) is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  if (isale and f3Parameter_->is_stationary_)
+  if (isale and fldpara_->IsStationary())
     dserror("No ALE support within stationary fluid solver.");
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
@@ -499,9 +499,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   // do the fastest test first
   if (isowned)
   {
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky
+    if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky
         or
-        f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping
+        fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping
       )
     {
       if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
@@ -512,7 +512,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
         {
           // Cs was changed in Sysmat (Cs->sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0)))
           // to compare it with the standard Smagorinsky Cs
-          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=f3Parameter_->Cs_;
+          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs_;
           (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
           (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
         }
@@ -596,7 +596,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // get material parameters at element center
-  if (not f3Parameter_->mat_gp_ or not f3Parameter_->tau_gp_)
+  if (not fldpara_->MatGp() or not fldpara_->TauGp())
     GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
   // potential evaluation of multifractal subgrid-scales at element center
@@ -604,12 +604,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   LINALG::Matrix<nsd_,1> B_mfs(true);
   // coefficient D of fine-scale scalar (loma only)
   double D_mfs = 0.0;
-  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+  if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
   {
-    if (not f3Parameter_->B_gp_)
+    if (not fldpara_->BGp())
     {
       // make sure to get material parameters at element center
-      if (f3Parameter_->mat_gp_)
+      if (fldpara_->MatGp())
         //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
         GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
@@ -630,18 +630,18 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
 
   // calculate subgrid viscosity and/or stabilization parameter at element center
-  if (not f3Parameter_->tau_gp_)
+  if (not fldpara_->TauGp())
   {
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
     {
-      CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
+      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
-    else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
-      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,f3Parameter_->Cs_);
+    else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
+      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
 
     // get convective velocity at element center for evaluation of
     // stabilization parameter
@@ -684,7 +684,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // get fine-scale velocity and its derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+    if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
     {
       fsvderxy_.MultiplyNT(fsevelaf,derxy_);
     }
@@ -692,7 +692,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     {
       fsvderxy_.Clear();
     }
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       fsvelint_.Multiply(fsevelaf,funct_);
       fsvderxy_.MultiplyNT(fsevelaf,derxy_);
@@ -736,8 +736,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // preparation of scale similarity type models
     // get filtered velocities and reynolds-stresses at integration point
     // get fine scale velocity at integration point for advanced models
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
-     or f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
+     or fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
     {
         velinthat_.Clear();
         velhatderxy_.Clear();
@@ -812,40 +812,40 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // and/or stabilization parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    if (f3Parameter_->mat_gp_)
+    if (fldpara_->MatGp())
       GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
     // get reaction coefficient due to porosity for topology optimization
     // !do this only at gauss point!
     // TODO does it make problems to evaluate at element center? (i think it should, winklmaier)
-    if (f3Parameter_->reaction_topopt_)
+    if (fldpara_->ReactionTopopt())
       reacoeff_ = funct_.Dot(eporo);
 
     // calculate subgrid viscosity and/or stabilization parameter at integration point
-    if (f3Parameter_->tau_gp_)
+    if (fldpara_->TauGp())
     {
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
-      if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+      if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       {
-        CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
+        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
-      else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
-        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,f3Parameter_->Cs_);
+      else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
+        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
 
       // calculate stabilization parameters at integration point
       CalcStabParameter(vol);
     }
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integarion point
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
     {
-      if (f3Parameter_->B_gp_)
+      if (fldpara_->BGp())
       {
         // make sure to get material parameters at gauss point
-        if (not f3Parameter_->mat_gp_)
+        if (not fldpara_->MatGp())
           GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
         // calculate parameters of multifractal subgrid-scales
@@ -865,7 +865,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       mffsvdiv_ = mffsvderxy_(0,0) + mffsvderxy_(1,1) + mffsvderxy_(2,2);
 
       // only required for variable-density flow at low Mach number
-      if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+      if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
       {
         mfssgscaint_ = D_mfs * funct_.Dot(fsescaaf);
         mfssgconv_c_.MultiplyTN(derxy_,mffsvelint_);
@@ -893,7 +893,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // compute convective term from previous iteration and convective operator
     // (both zero for reactive problems, for the time being)
     // winklmaier: zero only for previous reactive (= darcy???) problems
-    if (f3Parameter_->darcy_)
+    if (fldpara_->Darcy())
     {
       conv_old_.Clear();
       conv_c_.Clear();
@@ -914,7 +914,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // compute divergence of velocity from previous iteration
     vdiv_ = 0.0;
-    if (not f3Parameter_->is_genalpha_np_)
+    if (not fldpara_->IsGenalphaNP())
     {
       for (int idim = 0; idim <nsd_; ++idim)
       {
@@ -935,9 +935,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
     //----------------------------------------------------------------------
-    const double timefacfac    = f3Parameter_->timefac_    * fac_;
-    const double timefacfacpre = f3Parameter_->timefacpre_ * fac_;
-    const double rhsfac        = f3Parameter_->timefacrhs_ * fac_;
+    const double timefacfac    = fldpara_->TimeFac()    * fac_;
+    const double timefacfacpre = fldpara_->TimeFacPre() * fac_;
+    const double rhsfac        = fldpara_->TimeFacRhs() * fac_;
 
     //----------------------------------------------------------------------
     // computation of various subgrid-scale values and residuals
@@ -956,7 +956,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     conres_old_ = vdiv_;
 
     // following computations only required for variable-density flow at low Mach number
-    if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+    if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
     {
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
@@ -970,9 +970,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       ComputeSubgridScaleScalar(escaaf,escaam);
 
       // update material parameters including subgrid-scale part of scalar
-      if (f3Parameter_->update_mat_)
+      if (fldpara_->UpdateMat())
       {
-        if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+        if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
           UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
         else
           UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
@@ -995,9 +995,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                   timefacfac);
 
     // potentially rescale first version of velocity-based momentum residual
-    if(f3Parameter_->tds_      ==INPAR::FLUID::subscales_time_dependent
+    if(fldpara_->Tds()      ==INPAR::FLUID::subscales_time_dependent
        &&
-       f3Parameter_->transient_==INPAR::FLUID::inertia_stab_keep)
+       fldpara_->Transient()==INPAR::FLUID::inertia_stab_keep)
     {
       LinGalMomResU_subscales(estif_p_v,
                               lin_resM_Du,
@@ -1032,11 +1032,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // 3) stabilization of continuity equation,
     //    standard Galerkin viscous part for low-Mach-number flow and
     //    right-hand-side part of standard Galerkin viscous term
-    if (f3Parameter_->cstab_ == INPAR::FLUID::continuity_stab_yes or
-        f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+    if (fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes or
+        fldpara_->PhysicalType() == INPAR::FLUID::loma)
       ContStab( estif_u,
                 velforce,
-                f3Parameter_->timefac_,
+                fldpara_->TimeFac(),
                 timefacfac,
                 timefacfacpre,
                 rhsfac);
@@ -1062,7 +1062,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                      rhsfac);
 
     // 7) additional standard Galerkin terms due to conservative formulation
-    if (f3Parameter_->is_conservative_)
+    if (fldpara_->IsConservative())
     {
       ConservativeFormulation(estif_u,
                               velforce,
@@ -1071,7 +1071,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     }
 
     // 8) additional standard Galerkin terms for low-Mach-number flow
-    if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+    if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
     {
       LomaGalPart(estif_q_u,
                   preforce,
@@ -1088,7 +1088,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                       timefacfac);
 
     // 9) PSPG term
-    if (f3Parameter_->pspg_ == INPAR::FLUID::pstab_use_pspg)
+    if (fldpara_->PSPG() == INPAR::FLUID::pstab_use_pspg)
     {
       PSPG(estif_q_u,
            ppmat,
@@ -1102,7 +1102,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 10) SUPG term as well as first part of Reynolds-stress term on
     //     left-hand side and Reynolds-stress term on right-hand side
-    if(f3Parameter_->supg_ == INPAR::FLUID::convective_stab_supg)
+    if(fldpara_->SUPG() == INPAR::FLUID::convective_stab_supg)
     {
       SUPG(estif_u,
            estif_p_v,
@@ -1116,7 +1116,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     }
 
     // 11) reactive stabilization term
-   if (f3Parameter_->rstab_ != INPAR::FLUID::reactive_stab_none)
+   if (fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
    {
       ReacStab(estif_u,
                estif_p_v,
@@ -1130,7 +1130,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 12) viscous stabilization term
     if (is_higher_order_ele_ and
-        (f3Parameter_->vstab_ != INPAR::FLUID::viscous_stab_none))
+        (fldpara_->VStab() != INPAR::FLUID::viscous_stab_none))
     {
       ViscStab(estif_u,
                estif_p_v,
@@ -1153,7 +1153,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 13) cross-stress term: second part on left-hand side (only for Newton
     //     iteration) as well as cross-stress term on right-hand side
-    if(f3Parameter_->cross_ != INPAR::FLUID::cross_stress_stab_none)
+    if(fldpara_->Cross() != INPAR::FLUID::cross_stress_stab_none)
     {
       CrossStressStab(estif_u,
                       estif_p_v,
@@ -1167,8 +1167,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 14) Reynolds-stress term: second part on left-hand side
     //     (only for Newton iteration)
-    if (f3Parameter_->reynolds_ == INPAR::FLUID::reynolds_stress_stab and
-        f3Parameter_->is_newton_)
+    if (fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab and
+        fldpara_->IsNewton())
     {
       ReynoldsStressStab(estif_u,
                          estif_p_v,
@@ -1180,7 +1180,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 15) fine-scale subgrid-viscosity term
     //     (contribution only to right-hand-side vector)
-    if(f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+    if(fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
     {
       const double fssgviscfac = fssgvisc_*rhsfac;
 
@@ -1190,29 +1190,29 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 16) subgrid-stress term (scale similarity)
     //     (contribution only to right-hand-side vector)
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity)
     {
       ScaleSimSubGridStressTermCross(
                         velforce,
                         rhsfac,
-                        f3Parameter_->Cl_);
+                        fldpara_->Cl());
 
       ScaleSimSubGridStressTermReynolds(
                         velforce,
                         rhsfac,
-                        f3Parameter_->Cl_);
+                        fldpara_->Cl());
     }
 
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
     {
       ScaleSimSubGridStressTermPrefiltering(
                             velforce,
                             rhsfac,
-                            f3Parameter_->Cl_);
+                            fldpara_->Cl());
     }
 
     // 17) subgrid-stress term (multifractal subgrid scales)
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       MultfracSubGridScalesCross(
                         estif_u,
@@ -1234,13 +1234,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
         LinMeshMotion_3D(emesh,
                         evelaf,
                         press,
-                        f3Parameter_->timefac_,
+                        fldpara_->TimeFac(),
                         timefacfac);
       else if(nsd_ == 2)
         LinMeshMotion_2D(emesh,
                          evelaf,
                          press,
-                         f3Parameter_->timefac_,
+                         fldpara_->TimeFac(),
                          timefacfac);
       else
         dserror("Linearization of the mesh motion is not available in 1D");
@@ -1347,7 +1347,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
-           DRT::ELEMENTS::Fluid3*               ele,
+           DRT::ELEMENTS::Fluid*               ele,
            DRT::ELEMENTS::FluidEleParameter*  f3Parameter,
            LINALG::Matrix<nsd_,nen_>&           ebofoaf,
            LINALG::Matrix<nsd_,nen_> &          eprescpgaf,
@@ -1382,9 +1382,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
     if (curvenum >= 0)
     {
       // time factor (negative time indicating error)
-      if (f3Parameter_->time_ >= 0.0)
-           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(f3Parameter_->time_);
-      else dserror("Negative time in bodyforce calculation: time = %f", f3Parameter_->time_);
+      if (fldpara_->Time() >= 0.0)
+           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(fldpara_->Time());
+      else dserror("Negative time in bodyforce calculation: time = %f", fldpara_->Time());
     }
     else curvefac = 1.0;
 
@@ -1413,7 +1413,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
           // evaluate function at the position of the current node
           functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
                                                                              (ele->Nodes()[jnode])->X(),
-                                                                             f3Parameter_->time_,
+                                                                             fldpara_->Time(),
                                                                              NULL);
         }
         else functionfac = 1.0;
@@ -1432,7 +1432,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
 
   // get nodal values of scatra bodyforce for variable-density flow
   // at low Mach number
-  if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+  if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
   {
     vector<DRT::Condition*> myscatraneumcond;
 
@@ -1461,9 +1461,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
       if (curvenum >= 0)
       {
         // time factor (negative time indicating error)
-        if (f3Parameter_->time_ >= 0.0)
-             curvefac = DRT::Problem::Instance()->Curve(curvenum).f(f3Parameter_->time_);
-        else dserror("Negative time in bodyforce calculation: time = %f", f3Parameter_->time_);
+        if (fldpara_->Time() >= 0.0)
+             curvefac = DRT::Problem::Instance()->Curve(curvenum).f(fldpara_->Time());
+        else dserror("Negative time in bodyforce calculation: time = %f", fldpara_->Time());
       }
       else curvefac = 1.0;
 
@@ -1701,7 +1701,7 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
   visc_ = actmat->Viscosity();
 
   // Varying Density
-  if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+  if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
   {
     const double density_0 = actmat->Density();
 
@@ -1710,7 +1710,7 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
     densn_  = funct_.Dot(escaam)*density_0;
   }
   // Boussinesq approximation: Calculation of delta rho
-  else if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+  else if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
   {
     const double density_0 = actmat->Density();
 
@@ -1823,7 +1823,7 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = actmat->EosFacA()*densaf_;
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // compute density at n+alpha_M based on mixture fraction
     const double mixfracam = funct_.Dot(escaam);
@@ -1837,7 +1837,7 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute density at n based on mixture fraction
       const double mixfracn = funct_.Dot(escaam);
@@ -1871,7 +1871,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = 1.0/tempaf;
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // compute temperature at n+alpha_M
     const double tempam = funct_.Dot(escaam);
@@ -1894,7 +1894,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute temperature at n
       const double tempn = funct_.Dot(escaam);
@@ -1910,11 +1910,11 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
       scadtfac_ = scaconvfacaf_;
 
       // addition due to thermodynamic pressure
-      thermpressadd_ = -(thermpressaf-thermpressam)/(f3Parameter_->dt_*thermpressaf);
+      thermpressadd_ = -(thermpressaf-thermpressam)/(fldpara_->Dt()*thermpressaf);
 
       // first part of right-hand side for scalar equation:
       // time derivative of thermodynamic pressure
-      scarhs_ = (thermpressaf-thermpressam)/f3Parameter_->dt_/actmat->Shc();
+      scarhs_ = (thermpressaf-thermpressam)/fldpara_->Dt()/actmat->Shc();
     }
   }
 
@@ -1945,7 +1945,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = actmat->ComputeFactor(provaraf);
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // compute density at n+alpha_M based on progress variable
     const double provaram = funct_.Dot(escaam);
@@ -1962,7 +1962,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute density at n based on progress variable
       const double provarn = funct_.Dot(escaam);
@@ -1976,9 +1976,9 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 
       // right-hand side for scalar equation (including reactive term)
       const double tempn = actmat->ComputeTemperature(provarn);
-      scarhs_ = f3Parameter_->theta_*
+      scarhs_ = fldpara_->Theta()*
                 (densaf_*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf))
-               +f3Parameter_->omtheta_*
+               +fldpara_->OmTheta()*
                 (densn_*actmat->ComputeReactionCoeff(tempn)*(1.0-provarn));
     }
   }
@@ -2005,7 +2005,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = actmat->ComputeFactor(provaraf);
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // compute density at n+alpha_M based on progress variable
     const double provaram = funct_.Dot(escaam);
@@ -2022,7 +2022,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute density at n based on progress variable
       const double provarn = funct_.Dot(escaam);
@@ -2036,9 +2036,9 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 
       // right-hand side for scalar equation (including reactive term)
       const double tempn = actmat->ComputeTemperature(provarn);
-      scarhs_ = f3Parameter_->theta_*
+      scarhs_ = fldpara_->Theta()*
                 (densaf_*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf))
-               +f3Parameter_->omtheta_*
+               +fldpara_->OmTheta()*
                 (densn_*actmat->ComputeReactionCoeff(tempn)*(1.0-provarn));
     }
   }
@@ -2058,13 +2058,13 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
   visc_ = actmat->SetViscosity();
 
   // set darcy flag to true
-  f3Parameter_->darcy_ = true;
+  //f3Parameter_->darcy_ = true;
   // set reaction flag to true
-  f3Parameter_->reaction_ = true;
+  //f3Parameter_->reaction_ = true;
 
   // check stabilization parameter definition for permeable fluid
-  if (not (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-           f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+  if (not (fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+           fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
     dserror("incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
 }
 else dserror("Material type is not supported");
@@ -2121,7 +2121,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   const double mk = DRT::ELEMENTS::MK<distype>();
 
   // computation depending on which parameter definition is used
-  switch (f3Parameter_->whichtau_)
+  switch (fldpara_->WhichTau())
   {
   case INPAR::FLUID::tau_taylor_hughes_zarins:
   case INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt:
@@ -2186,10 +2186,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_;
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
-        f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-        f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
-      sigma_tot += 1.0/f3Parameter_->dt_;
+    if (fldpara_->WhichTau() == INPAR::FLUID::tau_taylor_hughes_zarins or
+        fldpara_->WhichTau() == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+        fldpara_->WhichTau() == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
+      sigma_tot += 1.0/fldpara_->Dt();
 
     // definition of constants as described above
     const double c1 = 4.0;
@@ -2260,7 +2260,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
-    const double sigma_tot = 1.0/f3Parameter_->timefac_ + reacoeff_;
+    const double sigma_tot = 1.0/fldpara_->TimeFac() + reacoeff_;
 
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
@@ -2302,7 +2302,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
     double re01 = 0.0;
     double re11 = 0.0;
-    if (f3Parameter_->reaction_) // TODO Martin: check influence of reaction to stabilization
+    if (fldpara_->Reaction()) // TODO Martin: check influence of reaction to stabilization
     {
       re01 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(strle));
       re11 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(hk));
@@ -2361,8 +2361,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_;
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina)
-      sigma_tot += 1.0/f3Parameter_->dt_;
+    if (fldpara_->WhichTau() == INPAR::FLUID::tau_shakib_hughes_codina)
+      sigma_tot += 1.0/fldpara_->Dt();
 
     // definition of constants as described above
     const double c1 = 4.0;
@@ -2407,8 +2407,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_;
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_codina)
-      sigma_tot += 1.0/f3Parameter_->dt_;
+    if (fldpara_->WhichTau() == INPAR::FLUID::tau_codina)
+      sigma_tot += 1.0/fldpara_->Dt();
 
     // definition of constants as described above
     const double c1 = 1.0;
@@ -2445,8 +2445,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient
     double sigma_tot = reacoeff_;
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-      sigma_tot += 1.0/f3Parameter_->timefac_;
+    if (fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+      sigma_tot += 1.0/fldpara_->TimeFac();
 
     // calculate characteristic element length
     CalcCharEleLength(vol,0.0,strle,hk);
@@ -2468,8 +2468,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   }
   break;
 
-  default: dserror("unknown definition for tau_M\n %i  ", f3Parameter_->whichtau_);
-  }  // end switch (f3Parameter_->whichtau_)
+  default: dserror("unknown definition for tau_M\n %i  ", fldpara_->WhichTau());
+  }  // end switch (fldpara_->WhichTau())
 
 
   //---------------------------------------------------------------------
@@ -2483,7 +2483,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   //    (only for Darcy or Darcy-Stokes/Brinkman flow)
   //---------------------------------------------------------------------
   // computation depending on which parameter definition is used
-  switch (f3Parameter_->whichtau_)
+  switch (fldpara_->WhichTau())
   {
   case INPAR::FLUID::tau_taylor_hughes_zarins:
   case INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt:
@@ -2650,8 +2650,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   }
   break;
 
-  default: dserror("unknown definition for tau_C\n %i  ", f3Parameter_->whichtau_);
-  }  // end switch (f3Parameter_->whichtau_)
+  default: dserror("unknown definition for tau_C\n %i  ", fldpara_->WhichTau());
+  }  // end switch (fldpara_->WhichTau())
 
   return;
 }
@@ -2743,7 +2743,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivEps(
   visc_old_.Clear();
 
   double prefac;
-  if(f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+  if(fldpara_->PhysicalType() == INPAR::FLUID::loma)
   //if(loma_)
   {
     prefac = 1.0/3.0;
@@ -2819,9 +2819,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
   // compute residual of momentum equation
   // -> different for generalized-alpha and other time-integration schemes
   //----------------------------------------------------------------------
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
-    if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+    if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
       dserror("The combination of generalized-alpha time integration and a Boussinesq approximation has not been implemented yet!");
 
     // rhs of momentum equation: density*bodyforce at n+alpha_F
@@ -2842,22 +2842,22 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
   }
   else
   {
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // rhs of instationary momentum equation:
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho - rho_0)*g
       // else:                                      f = rho * g
-      if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+      if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
       {
-        rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,deltadens_,bodyforce_);
+        rhsmom_.Update((densn_/fldpara_->Dt()/fldpara_->Theta()),histmom_,deltadens_,bodyforce_);
         // and pressure gradient prescribed as body force
         // caution: not density weighted
         rhsmom_.Update(1.0,prescribedpgrad_,1.0);
       }
       else
       {
-        rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,densaf_,bodyforce_);
+        rhsmom_.Update((densn_/fldpara_->Dt()/fldpara_->Theta()),histmom_,densaf_,bodyforce_);
         // and pressure gradient prescribed as body force
         // caution: not density weighted
         rhsmom_.Update(1.0,prescribedpgrad_,1.0);
@@ -2867,9 +2867,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
       for (int rr=0;rr<nsd_;++rr)
       {
-        momres_old_(rr) = ((densaf_*velint_(rr)/f3Parameter_->dt_
-                         +f3Parameter_->theta_*(densaf_*conv_old_(rr)+gradp_(rr)
-                         -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)))/f3Parameter_->theta_)-rhsmom_(rr);
+        momres_old_(rr) = ((densaf_*velint_(rr)/fldpara_->Dt()
+                         +fldpara_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
+                         -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)))/fldpara_->Theta())-rhsmom_(rr);
      }
     }
     else
@@ -2878,7 +2878,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho - rho_0)*g
       // else:                                      f = rho * g
       // and pressure gradient prescribed as body force (not density weighted)
-      if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+      if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
            rhsmom_.Update(deltadens_,bodyforce_, 1.0,prescribedpgrad_);
       else rhsmom_.Update(densaf_,bodyforce_,1.0,prescribedpgrad_);
 
@@ -2897,7 +2897,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
   // 1) quasi-static subgrid scales
   // Definition of subgrid-scale velocity is not consistent for the SUPG term and Franca, Valentin, ...
   // Definition of subgrid velocity used by Hughes
-  if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+  if (fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
   {
     sgvelint_.Update(-tau_(1),momres_old_,0.0);
   }
@@ -2905,16 +2905,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
   else
   {
     // some checking
-    if (f3Parameter_->is_stationary_)
+    if (fldpara_->IsStationary())
       dserror("there is no time dependent subgrid scale closure for stationary problems\n");
     if ( saccn==NULL or sveln==NULL or svelnp==NULL )
       dserror( "no subscale array provided" );
 
     // parameter definitions
-    double alphaF = f3Parameter_->alphaF_;
-    double alphaM = f3Parameter_->alphaM_;
-    double gamma  = f3Parameter_->gamma_;
-    double dt     = f3Parameter_->dt_;
+    double alphaF = fldpara_->AlphaF();
+    double alphaM = fldpara_->AlphaM();
+    double gamma  = fldpara_->Gamma();
+    double dt     = fldpara_->Dt();
 
     /*
                                             1.0
@@ -2922,7 +2922,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
                      n+aM                      n+aF
                   rho     * alphaM * tauM + rho     * alphaF * gamma * dt
     */
-    facMtau = 1.0/(densam_*alphaM*tau_(1)+densaf_*f3Parameter_->afgdt_);
+    facMtau = 1.0/(densam_*alphaM*tau_(1)+densaf_*fldpara_->Afgdt());
 
     /*
        factor for old subgrid velocities:
@@ -2947,7 +2947,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
 
     // warning: time-dependent subgrid closure requires generalized-alpha time
     // integration
-    if (!f3Parameter_->is_genalpha_)
+    if (!fldpara_->IsGenalpha())
     {
       dserror("the time-dependent subgrid closure requires a genalpha time integration\n");
     }
@@ -2974,7 +2974,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
 //         fac2           ,
 //         fac3           ,
 //         momres_old_(rr),
-//         f3Parameter_->alphaF_        ,
+//         fldpara_->AlphaF()        ,
 //         rr             ,
 //         iquad          ,
 //         sgvelint_(rr)  );
@@ -3013,8 +3013,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
   // include computed subgrid-scale velocity in convective term
   // -> only required for cross- and Reynolds-stress terms
   //----------------------------------------------------------------------
-  if (f3Parameter_->cross_    != INPAR::FLUID::cross_stress_stab_none or
-      f3Parameter_->reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
+  if (fldpara_->Cross()    != INPAR::FLUID::cross_stress_stab_none or
+      fldpara_->Reynolds() != INPAR::FLUID::reynolds_stress_stab_none)
        sgconv_c_.MultiplyTN(derxy_,sgvelint_);
   else sgconv_c_.Clear();
 }
@@ -3049,7 +3049,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
     idim_nsd_p_idim[idim]=idim*nsd_+idim;
   }
 
-  if (f3Parameter_->is_stationary_ == false)
+  if (fldpara_->IsStationary() == false)
   {
     const double fac_densam=fac_*densam_;
 
@@ -3076,7 +3076,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
     }
   }
 
-  if(f3Parameter_->is_newton_)
+  if(fldpara_->IsNewton())
   {
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -3094,7 +3094,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
     }
   }
 
-  if (f3Parameter_->reaction_)
+  if (fldpara_->Reaction())
   {
     const double fac_reac=timefacfac*reacoeff_;
 
@@ -3109,7 +3109,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
     }
   }
 
-  if(f3Parameter_->cross_==INPAR::FLUID::cross_stress_stab)
+  if(fldpara_->Cross()==INPAR::FLUID::cross_stress_stab)
   {
 	 //const double rhsresfac_densaf=rhsresfac*densaf_;
     for (int ui=0; ui<nen_; ++ui)
@@ -3141,7 +3141,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU_subscales(
   // rescale Galerkin residual of all terms which have not been
   // integrated by parts
 
-  const double C_saccGAL=densaf_*f3Parameter_->afgdt_*facMtau;
+  const double C_saccGAL=densaf_*fldpara_->Afgdt()*facMtau;
 
   for (int ui=0; ui<nen_; ++ui)
   {
@@ -3296,8 +3296,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
            |                  |
             \                /
   */
-  if (f3Parameter_->is_newton_ ||
-      (is_higher_order_ele_ && f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent))
+  if (fldpara_->IsNewton() ||
+      (is_higher_order_ele_ && fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent))
   {
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -3340,11 +3340,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
   }
 
   // inertia terms on the right hand side for instationary fluids
-  if (not f3Parameter_->is_stationary_)
+  if (not fldpara_->IsStationary())
   {
     for (int idim = 0; idim <nsd_; ++idim)
     {
-      if (f3Parameter_->is_genalpha_) resM_Du(idim)+=rhsfac*densam_*accint_(idim);
+      if (fldpara_->IsGenalpha()) resM_Du(idim)+=rhsfac*densam_*accint_(idim);
       else                            resM_Du(idim)+=fac_*densaf_*velint_(idim);
     }
   }  // end if (not stationary)
@@ -3354,7 +3354,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
     resM_Du(idim)+=rhsfac*densaf_*conv_old_(idim);
   }  // end for(idim)
 
-  if (f3Parameter_->reaction_)
+  if (fldpara_->Reaction())
   {
     for (int idim = 0; idim <nsd_; ++idim)
     {
@@ -3483,12 +3483,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ContStab(
   double conti_stab_and_vol_visc_fac=0.0;
   double conti_stab_and_vol_visc_rhs=0.0;
 
-  if (f3Parameter_->cstab_ == INPAR::FLUID::continuity_stab_yes)
+  if (fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes)
   {
     conti_stab_and_vol_visc_fac+=timefacfacpre*tau_(2);
     conti_stab_and_vol_visc_rhs-=rhsfac*tau_(2)*conres_old_;
   }
-  if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+  if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
   {
     conti_stab_and_vol_visc_fac-=(2.0/3.0)*visceff_*timefacfac;
     conti_stab_and_vol_visc_rhs+=(2.0/3.0)*visceff_*rhsfac*vdiv_;
@@ -3679,8 +3679,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ConservativeFormulation(
       {
       // compute prefactor
       double v = timefacfac*densaf_*vdiv_;
-      if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma) v -= timefacfac*densaf_*scaconvfacaf_*conv_scaaf_;
-      else if(f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+      if (fldpara_->PhysicalType() == INPAR::FLUID::loma) v -= timefacfac*densaf_*scaconvfacaf_*conv_scaaf_;
+      else if(fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
       {
         v += timefacfac*conv_scaaf_;
         //         o
@@ -3713,7 +3713,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ConservativeFormulation(
         \                             /
       */
 
-      if (f3Parameter_->is_newton_)
+      if (fldpara_->IsNewton())
       {
         const double v_idim = timefacfac*densaf_*velint_(idim);
         for (int vi=0; vi<nen_; ++vi)
@@ -3738,13 +3738,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ConservativeFormulation(
           |  (i)  \            /       |
           \                           /
          */
-         if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma
-             or f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+         if (fldpara_->PhysicalType() == INPAR::FLUID::loma
+             or fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
          {
            double v_idim = 0.0;
-           if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+           if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
              v_idim = -timefacfac*densaf_*scaconvfacaf_*grad_scaaf_(idim)*velint_(idim);
-           else if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+           else if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
              v_idim = +timefacfac*grad_scaaf_(idim)*velint_(idim);
 
            for (int vi=0; vi<nen_; ++vi)
@@ -3769,9 +3769,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ConservativeFormulation(
         /* convection (conservative addition) on right-hand side */
         double v = -rhsfac*densaf_*velint_(idim)*vdiv_;
 
-        if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+        if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
           v += rhsfac*velint_(idim)*densaf_*scaconvfacaf_*conv_scaaf_;
-        else if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+        else if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
           v -= rhsfac*velint_(idim)*conv_scaaf_;
 
          for (int vi=0; vi<nen_; ++vi)
@@ -3807,13 +3807,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PSPG(
 
     double scal_grad_q=0.0;
 
-    if(f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+    if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
     {
       scal_grad_q=tau_(1);
     }
     else
     {
-      scal_grad_q=f3Parameter_->alphaF_*fac3;
+      scal_grad_q=fldpara_->AlphaF()*fac3;
     }
 
     /* pressure stabilisation: inertia if not stationary*/
@@ -3857,7 +3857,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PSPG(
               \                              /
     */
 
-    if (is_higher_order_ele_ || f3Parameter_->is_newton_)
+    if (is_higher_order_ele_ || fldpara_->IsNewton())
     {
       for(int jdim=0;jdim<nsd_;++jdim)
       {
@@ -3958,9 +3958,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
      LINALG::Matrix<nsd_,1> temp;
 
      double supgfac;
-     if(f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+     if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
           supgfac=densaf_*tau_(0);
-     else supgfac=densaf_*f3Parameter_->alphaF_*fac3;
+     else supgfac=densaf_*fldpara_->AlphaF()*fac3;
 
      LINALG::Matrix<nen_,1> supg_test;
      for (int vi=0; vi<nen_; ++vi)
@@ -3968,7 +3968,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
        supg_test(vi)=supgfac*conv_c_(vi);
      }
 
-     if(f3Parameter_->reynolds_ == INPAR::FLUID::reynolds_stress_stab)
+     if(fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab)
      {
        for (int vi=0; vi<nen_; ++vi)
        {
@@ -4016,7 +4016,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
            |               \  /    \       (i)        /     |
             \                                              /
      */
-     if (is_higher_order_ele_ || f3Parameter_->is_newton_)
+     if (is_higher_order_ele_ || fldpara_->IsNewton())
      {
        for (int vi=0; vi<nen_; ++vi)
        {
@@ -4130,13 +4130,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
                |                  \               /     |
                 \                                      /
      */
-     if (f3Parameter_->is_newton_)
+     if (fldpara_->IsNewton())
      {
-       if(f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+       if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
        {
          for(int jdim=0;jdim<nsd_;++jdim)
          {
-           //temp(jdim)=(f3Parameter_->timefac_)*rhsresfac*supgfac*momres_old_(jdim);
+           //temp(jdim)=(fldpara_->TimeFac())*rhsresfac*supgfac*momres_old_(jdim);
            //temp(jdim)=rhsresfac*supgfac*momres_old_(jdim);
            temp(jdim)=timefacfac*supgfac*momres_old_(jdim);
          }
@@ -4170,7 +4170,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
        } //idim
      }  // end if Newton
 
-     if(f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+     if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
      {
        for(int jdim=0;jdim<nsd_;++jdim)
        {
@@ -4196,11 +4196,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
 
   // SUPG and Reynolds-stress term on right-hand side of
   // continuity equation for low-Mach-number flow
-  if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+  if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
   {
     const double temp_supg = rhsfac*scaconvfacaf_*sgscaint_;
 
-    if(f3Parameter_->conti_supg_ == INPAR::FLUID::convective_stab_supg)
+    if(fldpara_->ContiSUPG() == INPAR::FLUID::convective_stab_supg)
     {
       for (int vi=0; vi<nen_; ++vi)
       {
@@ -4208,13 +4208,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
       }
     }
 
-    if (f3Parameter_->multifrac_loma_conti_)
+    if (fldpara_->MultiFracLomaConti())
     {
       const double temp_mfs = rhsfac*scaconvfacaf_*mfssgscaint_;
 
       for (int vi=0; vi<nen_; ++vi)
       {
-        if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+        if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
         {
           preforce(vi) -= temp_mfs*conv_c_(vi); // second cross-stress term
           preforce(vi) -= temp_mfs*mfssgconv_c_(vi); // Reynolds-stress term
@@ -4222,7 +4222,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
       }
     }
 
-    if (f3Parameter_->conti_reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
+    if (fldpara_->ContiReynolds() != INPAR::FLUID::reynolds_stress_stab_none)
     {
       for (int vi=0; vi<nen_; ++vi)
       {
@@ -4246,10 +4246,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ReacStab(
     const double &                            fac3)
 {
    double reac_tau;
-   if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
-     reac_tau = f3Parameter_->viscreastabfac_*reacoeff_*tau_(1);
+   if (fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+     reac_tau = fldpara_->ViscReaStabFac()*reacoeff_*tau_(1);
    else
-     reac_tau = f3Parameter_->viscreastabfac_*reacoeff_*f3Parameter_->alphaF_*fac3;
+     reac_tau = fldpara_->ViscReaStabFac()*reacoeff_*fldpara_->AlphaF()*fac3;
 
 
    /* reactive stabilisation, inertia part if not stationary */
@@ -4292,7 +4292,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ReacStab(
              |               \  /            |
               \                             /
    */
-   if (is_higher_order_ele_ or f3Parameter_->is_newton_)
+   if (is_higher_order_ele_ or fldpara_->IsNewton())
    {
      for (int vi=0; vi<nen_; ++vi)
      {
@@ -4365,7 +4365,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ReacStab(
      }
    }  // end for(idim)
 
-   const double reac_fac = f3Parameter_->viscreastabfac_*rhsfac*reacoeff_;
+   const double reac_fac = fldpara_->ViscReaStabFac()*rhsfac*reacoeff_;
    for (int idim =0;idim<nsd_;++idim)
    {
      const double v = reac_fac*sgvelint_(idim);
@@ -4393,10 +4393,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ViscStab(
 {
   // preliminary parameter computation
   double two_visc_tau;
-  if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
-    two_visc_tau = -f3Parameter_->viscreastabfac_*2.0*visc_*tau_(1);
+  if (fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+    two_visc_tau = -fldpara_->ViscReaStabFac()*2.0*visc_*tau_(1);
   else
-    two_visc_tau = -f3Parameter_->viscreastabfac_*2.0*visc_*f3Parameter_->alphaF_*fac3;
+    two_visc_tau = -fldpara_->ViscReaStabFac()*2.0*visc_*fldpara_->AlphaF()*fac3;
 
   /* viscous stabilisation, inertia part if not stationary */
   /*
@@ -4484,7 +4484,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ViscStab(
   } // end for(idim)
 
   // viscous stabilization term on right-hand side
-  const double two_visc_fac = -f3Parameter_->viscreastabfac_*rhsfac*2.0*visc_;
+  const double two_visc_fac = -fldpara_->ViscReaStabFac()*rhsfac*2.0*visc_;
   for (int idim =0;idim<nsd_;++idim)
   {
     for (int vi=0; vi<nen_; ++vi)
@@ -4584,13 +4584,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CrossStressStab(
    */
 
      double crossfac;
-     if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+     if (fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
           crossfac=densaf_*tau_(1);
-     else crossfac=densaf_*f3Parameter_->alphaF_*fac3;
+     else crossfac=densaf_*fldpara_->AlphaF()*fac3;
 
      // Stabilization of lhs and the rhs
-     if (f3Parameter_->cross_ == INPAR::FLUID::cross_stress_stab and
-         f3Parameter_->is_newton_)
+     if (fldpara_->Cross() == INPAR::FLUID::cross_stress_stab and
+         fldpara_->IsNewton())
      {
        /*
               /                         \
@@ -4726,14 +4726,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ReynoldsStressStab(
   */
 
   double reyfac;
-  if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+  if (fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
   {
-	  //if(f3Parameter_->is_genalpha_)
+	  //if(fldpara_->IsGenalpha())
 		  reyfac=densaf_*tau_(1);
 	  //else
-      // reyfac=densaf_*tau_(1)/f3Parameter_->theta_;
+      // reyfac=densaf_*tau_(1)/fldpara_->Theta();
   }
-  else reyfac=densaf_*f3Parameter_->alphaF_*fac3;
+  else reyfac=densaf_*fldpara_->AlphaF()*fac3;
 
   /*
           /                          \

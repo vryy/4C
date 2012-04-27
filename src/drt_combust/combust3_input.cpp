@@ -105,6 +105,6 @@ bool DRT::ELEMENTS::Combust3::ReadElement()
 
   return true;
 
-} // XFluid3::ReadElement()
+} // XFluid::ReadElement()
 #endif
 

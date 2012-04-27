@@ -40,17 +40,17 @@ namespace ELEMENTS
 
 class FluidEleParameter;
 template<DRT::Element::DiscretizationType distype> class FluidEleCalc;
-template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
-class Fluid3Boundary;
+template<DRT::Element::DiscretizationType distype> class FluidGenalphaResVMM;
+class FluidBoundary;
 class FluidIntFace;
 
-class Fluid3Type : public DRT::ElementType
+class FluidType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "Fluid3Type"; }
+  std::string Name() const { return "FluidType"; }
 
-  static Fluid3Type & Instance() { return instance_; };
+  static FluidType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const vector<char> & data );
 
@@ -78,21 +78,21 @@ public:
 
 private:
 
-  static Fluid3Type instance_;
+  static FluidType instance_;
 };
 
 /*!
 \brief A C++ wrapper for the fluid element
 */
-class Fluid3 : public DRT::Element
+class Fluid : public DRT::Element
 {
 public:
 
   //! @name friends
-  friend class Fluid3Boundary;
+  friend class FluidBoundary;
   friend class FluidIntFace;
 
-  friend class Fluid3SystemEvaluator;
+  friend class FluidSystemEvaluator;
 
   //@}
   //! @name constructors and destructors and related methods
@@ -100,7 +100,7 @@ public:
   /*!
   \brief standard constructor
   */
-  Fluid3(
+  Fluid(
     int id,    ///< A unique global id
     int owner  ///< ???
     );
@@ -111,7 +111,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Fluid3(const Fluid3& old);
+  Fluid(const Fluid& old);
 
   /*!
   \brief Deep copy this instance of fluid and return pointer to the copy
@@ -201,7 +201,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return Fluid3Type::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return FluidType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -222,7 +222,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Fluid3();
+  virtual ~Fluid();
 
   //@}
 
@@ -309,7 +309,7 @@ public:
   void Print(ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
-  { return Fluid3Type::Instance(); }
+  { return FluidType::Instance(); }
 
   //@}
 
@@ -503,7 +503,7 @@ private:
   // internal calculation methods
 
   // don't want = operator
-  Fluid3& operator = (const Fluid3& old);
+  Fluid& operator = (const Fluid& old);
 
   /*!
     \brief calculate spatial mean values for channel flow
@@ -741,7 +741,7 @@ void f3_get_mf_params(ParameterList&      params,
    */
   ActionType convertStringToActionType(const string& action) const;
 
-}; // class Fluid3
+}; // class Fluid
 
 
 //=======================================================================
@@ -767,13 +767,13 @@ void f3_get_mf_params(ParameterList&      params,
 
 */
 
-class Fluid3BoundaryType : public DRT::ElementType
+class FluidBoundaryType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "Fluid3BoundaryType"; }
+  std::string Name() const { return "FluidBoundaryType"; }
 
-  static Fluid3BoundaryType & Instance() { return instance_; };
+  static FluidBoundaryType & Instance() { return instance_; };
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -783,13 +783,13 @@ public:
 
 private:
 
-  static Fluid3BoundaryType instance_;
+  static FluidBoundaryType instance_;
 };
 
 
 // class FluidBoundary
 
-class Fluid3Boundary : public DRT::Element
+class FluidBoundary : public DRT::Element
 {
 public:
 
@@ -807,8 +807,8 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  Fluid3Boundary(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::ELEMENTS::Fluid3* parent, const int lsurface);
+  FluidBoundary(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -816,7 +816,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Fluid3Boundary(const Fluid3Boundary& old);
+  FluidBoundary(const FluidBoundary& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -869,7 +869,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return Fluid3BoundaryType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return FluidBoundaryType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -891,7 +891,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Fluid3Boundary();
+  virtual ~FluidBoundary();
 
   //@}
 
@@ -946,7 +946,7 @@ public:
   void Print(ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
-  { return Fluid3BoundaryType::Instance(); }
+  { return FluidBoundaryType::Instance(); }
 
   //@}
 
@@ -1006,7 +1006,7 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-  virtual DRT::ELEMENTS::Fluid3* ParentElement()
+  virtual DRT::ELEMENTS::Fluid* ParentElement()
   {
     return parent_;
   }
@@ -1046,10 +1046,10 @@ public:
 private:
 
   // don't want = operator
-  Fluid3Boundary& operator = (const Fluid3Boundary& old);
+  FluidBoundary& operator = (const FluidBoundary& old);
 
   //! The parent element of this surface
-  DRT::ELEMENTS::Fluid3* parent_;
+  DRT::ELEMENTS::Fluid* parent_;
 
   //! The local surface number of this surface w.r.t to the parent_ element
   int lsurface_;
@@ -1059,7 +1059,7 @@ private:
    */
   ActionType convertStringToActionType(const string& action) const;
 
-}; // class Fluid3Boundary
+}; // class FluidBoundary
 
 
 //=======================================================================
@@ -1122,7 +1122,7 @@ public:
   \param lsurface_master: the local surface number of this surface w.r.t. the master parent element
   */
   FluidIntFace(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::ELEMENTS::Fluid3* parent_master, DRT::ELEMENTS::Fluid3* parent_slave, const int lsurface_master);
+             DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent_master, DRT::ELEMENTS::Fluid* parent_slave, const int lsurface_master);
 
   /*!
   \brief Copy Constructor
@@ -1337,7 +1337,7 @@ public:
   /*!
   \brief return the master parent fluid element
   */
-  virtual DRT::ELEMENTS::Fluid3* ParentMasterElement()
+  virtual DRT::ELEMENTS::Fluid* ParentMasterElement()
   {
     return parent_master_;
   }
@@ -1345,7 +1345,7 @@ public:
   /*!
   \brief return the slave parent fluid element
   */
-  virtual DRT::ELEMENTS::Fluid3* ParentSlaveElement()
+  virtual DRT::ELEMENTS::Fluid* ParentSlaveElement()
   {
     return parent_slave_;
   }
@@ -1373,10 +1373,10 @@ private:
   FluidIntFace& operator = (const FluidIntFace& old);
 
   //! The master parent element of this surface
-  DRT::ELEMENTS::Fluid3* parent_master_;
+  DRT::ELEMENTS::Fluid* parent_master_;
 
   //! The parent slave element of this surface
-  DRT::ELEMENTS::Fluid3* parent_slave_;
+  DRT::ELEMENTS::Fluid* parent_slave_;
 
   //! The local surface number of this surface w.r.t to the parent_master_ element
   int lsurface_master_;

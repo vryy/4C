@@ -555,7 +555,7 @@ private:
 
       private:
 
-        //! action parameters recognized by Fluid3Surface
+        //! action parameters recognized by FluidSurface
         enum ActionType
         {
           none,
@@ -599,7 +599,7 @@ private:
             const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
             );
 
-    }; // class Fluid3Surface
+    }; // class FluidSurface
 
 class Combust3LineType : public DRT::ElementType
 {
@@ -710,7 +710,7 @@ private:
 
       private:
 
-        //! action parameters recognized by Fluid3Line
+        //! action parameters recognized by FluidLine
         enum ActionType
         {
           none

@@ -46,7 +46,7 @@ namespace DRT
 
 namespace ELEMENTS
 {
-  class Fluid3;
+  class Fluid;
 
   /// Interface base class for FluidEleCalc
   /*!
@@ -66,7 +66,7 @@ namespace ELEMENTS
       This class does not provide a definition for this function; it
       must be defined in FluidEleCalc.
      */
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*        ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*        ele,
                          DRT::Discretization &         discretization,
                          const std::vector<int> &      lm,
                          Teuchos::ParameterList&       params,
@@ -79,7 +79,7 @@ namespace ELEMENTS
                          bool                          offdiag = false) = 0;
 
     /// evaluate element at specified Gauss points
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*               ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*               ele,
                          DRT::Discretization &                discretization,
                          const std::vector<int> &             lm,
                          Teuchos::ParameterList&              params,
@@ -97,20 +97,20 @@ namespace ELEMENTS
       This class does not provide a definition for this function; it
       must be defined in FluidEleCalc.
      */
-    virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid3*    ele,
+    virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid*    ele,
                                        DRT::Discretization&      discretization,
                                        std::vector<int>&         lm,
                                        Epetra_SerialDenseVector& elevec1) = 0;
 
     /// error computation
-    virtual int ComputeError(DRT::ELEMENTS::Fluid3*        ele,
+    virtual int ComputeError(DRT::ELEMENTS::Fluid*        ele,
                              Teuchos::ParameterList&       params,
                              Teuchos::RCP<MAT::Material>&  mat,
                              DRT::Discretization&          discretization,
                              std::vector<int>&             lm,
                              Epetra_SerialDenseVector&     elevec1) = 0;
 
-    virtual int ComputeError(DRT::ELEMENTS::Fluid3*               ele,
+    virtual int ComputeError(DRT::ELEMENTS::Fluid*               ele,
                              Teuchos::ParameterList&              params,
                              Teuchos::RCP<MAT::Material>&         mat,
                              DRT::Discretization&                 discretization,
@@ -119,7 +119,7 @@ namespace ELEMENTS
                              const DRT::UTILS::GaussIntegration & intpoints2) = 0;
 
     /// calculation of dissipation
-    virtual int CalcDissipation(Fluid3*                     ele,
+    virtual int CalcDissipation(Fluid*                     ele,
                                 Teuchos::ParameterList&     params,
                                 DRT::Discretization&        discretization,
                                 std::vector<int>&           lm,
@@ -127,7 +127,7 @@ namespace ELEMENTS
 
     /// add interface condition at cut to element matrix and rhs (mixed/stress/hybrid coupling)
     virtual void ElementXfemInterfaceMSH(
-        DRT::ELEMENTS::Fluid3 *                                           ele,
+        DRT::ELEMENTS::Fluid *                                           ele,
         DRT::Discretization &                                             dis,
         const std::vector<int> &                                          lm,
         const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -142,7 +142,7 @@ namespace ELEMENTS
 
     /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
     virtual void ElementXfemInterfaceNIT(
-        DRT::ELEMENTS::Fluid3 * ele,
+        DRT::ELEMENTS::Fluid * ele,
         DRT::Discretization & dis,
         const std::vector<int> &                                          lm,
         const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -157,7 +157,7 @@ namespace ELEMENTS
 
     /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
     virtual void ElementXfemInterfaceNIT2(
-        DRT::ELEMENTS::Fluid3 *                                           ele,
+        DRT::ELEMENTS::Fluid *                                           ele,
         DRT::Discretization &                                             dis,
         const std::vector<int> &                                          lm,
         const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -172,13 +172,13 @@ namespace ELEMENTS
         Epetra_SerialDenseVector&                                         elevec1_epetra,
         Epetra_SerialDenseMatrix&                                         Cuiui) = 0;
 
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 *              ele,
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *              ele,
                                          DRT::Discretization &                dis,
                                          const std::vector<int> &             lm,
                                          Epetra_SerialDenseVector&            elevec1_epetra,
                                          const DRT::UTILS::GaussIntegration & intpoints) = 0;
 
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 *    ele,
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *    ele,
                                          DRT::Discretization &      dis,
                                          const std::vector<int> &   lm,
                                          Epetra_SerialDenseVector&  elevec1_epetra) = 0;

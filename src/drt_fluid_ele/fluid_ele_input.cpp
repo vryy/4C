@@ -21,7 +21,7 @@ using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Fluid3::ReadElement(const std::string& eletype,
+bool DRT::ELEMENTS::Fluid::ReadElement(const std::string& eletype,
                                         const std::string& distype,
                                         DRT::INPUT::LineDefinition* linedef)
 {

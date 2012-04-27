@@ -83,11 +83,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_2D(
       const int tui   = 3*ui;
       const int tuip  = tui + 1;
 
-      emesh(tvi,   tui ) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(tvi,   tuip) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
+      emesh(tvi,   tui ) += v*(densam_*velint_(0)-rhsmom_(0)*fldpara_->Dt()*fldpara_->Theta())*derxy_(0, ui);
+      emesh(tvi,   tuip) += v*(densam_*velint_(0)-rhsmom_(0)*fldpara_->Dt()*fldpara_->Theta())*derxy_(1, ui);
 
-      emesh(tvip,  tui ) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(tvip,  tuip) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
+      emesh(tvip,  tui ) += v*(densam_*velint_(1)-rhsmom_(1)*fldpara_->Dt()*fldpara_->Theta())*derxy_(0, ui);
+      emesh(tvip,  tuip) += v*(densam_*velint_(1)-rhsmom_(1)*fldpara_->Dt()*fldpara_->Theta())*derxy_(1, ui);
     }
   }
 
@@ -182,17 +182,17 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_3D(
     double v = fac_*funct_(vi,0);
     for (int ui=0; ui<nen_; ++ui)
     {
-      emesh(vi*4    , ui*4    ) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(vi*4    , ui*4 + 1) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
-      emesh(vi*4    , ui*4 + 2) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
+      emesh(vi*4    , ui*4    ) += v*(densam_*velint_(0)-rhsmom_(0)*fldpara_->Dt()*fldpara_->Theta())*derxy_(0, ui);
+      emesh(vi*4    , ui*4 + 1) += v*(densam_*velint_(0)-rhsmom_(0)*fldpara_->Dt()*fldpara_->Theta())*derxy_(1, ui);
+      emesh(vi*4    , ui*4 + 2) += v*(densam_*velint_(0)-rhsmom_(0)*fldpara_->Dt()*fldpara_->Theta())*derxy_(2, ui);
 
-      emesh(vi*4 + 1, ui*4    ) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(vi*4 + 1, ui*4 + 1) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
-      emesh(vi*4 + 1, ui*4 + 2) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
+      emesh(vi*4 + 1, ui*4    ) += v*(densam_*velint_(1)-rhsmom_(1)*fldpara_->Dt()*fldpara_->Theta())*derxy_(0, ui);
+      emesh(vi*4 + 1, ui*4 + 1) += v*(densam_*velint_(1)-rhsmom_(1)*fldpara_->Dt()*fldpara_->Theta())*derxy_(1, ui);
+      emesh(vi*4 + 1, ui*4 + 2) += v*(densam_*velint_(1)-rhsmom_(1)*fldpara_->Dt()*fldpara_->Theta())*derxy_(2, ui);
 
-      emesh(vi*4 + 2, ui*4    ) += v*(densam_*velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(vi*4 + 2, ui*4 + 1) += v*(densam_*velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
-      emesh(vi*4 + 2, ui*4 + 2) += v*(densam_*velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
+      emesh(vi*4 + 2, ui*4    ) += v*(densam_*velint_(2)-rhsmom_(2)*fldpara_->Dt()*fldpara_->Theta())*derxy_(0, ui);
+      emesh(vi*4 + 2, ui*4 + 1) += v*(densam_*velint_(2)-rhsmom_(2)*fldpara_->Dt()*fldpara_->Theta())*derxy_(1, ui);
+      emesh(vi*4 + 2, ui*4 + 2) += v*(densam_*velint_(2)-rhsmom_(2)*fldpara_->Dt()*fldpara_->Theta())*derxy_(2, ui);
     }
   }
 

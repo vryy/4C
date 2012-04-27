@@ -66,7 +66,7 @@ void DRT::ELEMENTS::So_sh8p8Type::NodalBlockInformation( DRT::Element * dwele, i
 
 void DRT::ELEMENTS::So_sh8p8Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
-  DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeXFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 void DRT::ELEMENTS::So_sh8p8Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )

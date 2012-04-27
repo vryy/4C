@@ -84,7 +84,7 @@ namespace ELEMENTS
 
 
     virtual int IntegrateShapeFunction(
-        DRT::ELEMENTS::Fluid3*    ele,
+        DRT::ELEMENTS::Fluid*    ele,
         DRT::Discretization&      discretization,
         vector<int>&              lm            ,
         Epetra_SerialDenseVector& elevec1       );
@@ -95,7 +95,7 @@ namespace ELEMENTS
      */
 
     virtual int ComputeError(
-        DRT::ELEMENTS::Fluid3*        ele,
+        DRT::ELEMENTS::Fluid*        ele,
         ParameterList&                params,
         Teuchos::RCP<MAT::Material>&  mat,
         DRT::Discretization&          discretization,
@@ -103,7 +103,7 @@ namespace ELEMENTS
         Epetra_SerialDenseVector&     elevec);
 
     virtual int ComputeError(
-        DRT::ELEMENTS::Fluid3*               ele,
+        DRT::ELEMENTS::Fluid*               ele,
         ParameterList&                       params,
         Teuchos::RCP<MAT::Material>&         mat,
         DRT::Discretization&                 discretization,
@@ -115,7 +115,7 @@ namespace ELEMENTS
     /*!
       Generic virtual interface function. Called via base pointer.
      */
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*        ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*        ele,
                          DRT::Discretization &         discretization,
                          const std::vector<int> &      lm,
                          Teuchos::ParameterList&       params,
@@ -128,7 +128,7 @@ namespace ELEMENTS
                          bool                          offdiag = false);
 
     /// Evaluate the element at specified gauss points
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*               ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*               ele,
                          DRT::Discretization &                discretization,
                          const std::vector<int> &             lm,
                          Teuchos::ParameterList&              params,
@@ -144,7 +144,7 @@ namespace ELEMENTS
     /*!
       \brief calculate dissipation of various terms (evaluation of turbulence models)
     */
-    virtual int CalcDissipation(Fluid3*                    ele,
+    virtual int CalcDissipation(Fluid*                    ele,
                                 ParameterList&             params,
                                 DRT::Discretization&       discretization,
                                 vector<int>&               lm,
@@ -178,7 +178,7 @@ namespace ELEMENTS
                          const double&                                       Cs_delta_sq,
                          const double&                                       l_tau);
 
-    virtual void ElementXfemInterfaceMSH( DRT::ELEMENTS::Fluid3 *                                           ele,
+    virtual void ElementXfemInterfaceMSH( DRT::ELEMENTS::Fluid *                                           ele,
                                        DRT::Discretization &                                             dis,
                                        const std::vector<int> &                                          lm,
                                        const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -192,7 +192,7 @@ namespace ELEMENTS
                                        Epetra_SerialDenseMatrix&                                         Cuiui
       ) {dserror("Implemented in derived xfem class!"); return;}
 
-    virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid3 *                                           ele,
+    virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid *                                           ele,
                                              DRT::Discretization &                                             dis,
                                              const std::vector<int> &                                          lm,
                                              const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -207,7 +207,7 @@ namespace ELEMENTS
       ) {dserror("Implemented in derived xfem class!"); return;}
 
     virtual void ElementXfemInterfaceNIT2(
-                                       DRT::ELEMENTS::Fluid3 * ele,
+                                       DRT::ELEMENTS::Fluid * ele,
                                        DRT::Discretization & dis,
                                        const std::vector<int> & lm,
                                        const DRT::UTILS::GaussIntegration & intpoints,
@@ -223,14 +223,14 @@ namespace ELEMENTS
                                        Epetra_SerialDenseMatrix&  Cuiui
       ) {dserror("Implemented in derived xfem class!"); return;}
 
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 *              ele,
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *              ele,
                                          DRT::Discretization &                dis,
                                          const std::vector<int> &             lm,
                                          Epetra_SerialDenseVector&            elevec1_epetra,
                                          const DRT::UTILS::GaussIntegration & intpoints
       ) {dserror("Implemented in derived xfem class!"); return;}
 
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 *    ele,
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *    ele,
                                          DRT::Discretization &      dis,
                                          const std::vector<int> &   lm,
                                          Epetra_SerialDenseVector&  elevec1_epetra
@@ -358,7 +358,7 @@ namespace ELEMENTS
     static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
     /// calculate body force from nodal conditions
-    void BodyForce(DRT::ELEMENTS::Fluid3*             ele,         //< pointer to element
+    void BodyForce(DRT::ELEMENTS::Fluid*             ele,         //< pointer to element
                    DRT::ELEMENTS::FluidEleParameter*  f3Parameter, //< pointer to fluid parameter
                    LINALG::Matrix<nsd_,nen_> &        ebofoaf,     //< body force at nodes
                    LINALG::Matrix<nsd_,nen_> &        eprescpgaf,  //< prescribed pressure gradient (required for turbulent channel flow!)
@@ -836,7 +836,7 @@ namespace ELEMENTS
     //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
     bool is_higher_order_ele_;
     //! pointer to parameter list
-    DRT::ELEMENTS::FluidEleParameter* f3Parameter_;
+    DRT::ELEMENTS::FluidEleParameter* fldpara_;
     //! element type: nurbs
     bool isNurbs_;
     //! weights for nurbs elements

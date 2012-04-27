@@ -37,8 +37,8 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(int id,                               
                                           int nnode,                             ///< number of nodes
                                           const int* nodeids,                    ///< node ids
                                           DRT::Node** nodes,                     ///< nodes of surface
-                                          DRT::ELEMENTS::Fluid3* parent_master,  ///< master parent element
-                                          DRT::ELEMENTS::Fluid3* parent_slave,   ///< slave parent element
+                                          DRT::ELEMENTS::Fluid* parent_master,  ///< master parent element
+                                          DRT::ELEMENTS::Fluid* parent_slave,   ///< slave parent element
                                           const int lsurface_master              ///< local surface index with respect to master parent element
                                           ) :
 DRT::Element(id,owner),

@@ -284,7 +284,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       DRT::Element* actele = discret.lRowElement(i);
       Teuchos::RCP<MAT::Material> mat = actele->Material();
 
-      DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
+      DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
       if ( ele==NULL )
       {
         dserror( "expect fluid element" );
@@ -1561,7 +1561,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 
       Teuchos::RCP<MAT::Material> mat = actele->Material();
 
-      DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
+      DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
 
       GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
       DRT::Element::LocationArray la( 1 );
@@ -3595,7 +3595,7 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
   // call standard loop over elements
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
-  DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
 
 }
 
@@ -3617,7 +3617,7 @@ void FLD::XFluid::SetElementTurbulenceParameter()
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
 
   return;
 }
@@ -3657,7 +3657,7 @@ void FLD::XFluid::SetElementTimeParameter()
   // call standard loop over elements
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
-  DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
 }
 
 void FLD::XFluid::GenAlphaIntermediateValues()

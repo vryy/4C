@@ -38,8 +38,8 @@ Maintainer: Peter Gamnitzer
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs_2D(
-  Fluid3*                                ele,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_qs_2D(
+  Fluid*                                ele,
   std::vector<Epetra_SerialDenseVector>& myknots,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
   LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
@@ -1642,8 +1642,8 @@ N
  |                            (public)                      gammi 06/07 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td_2D(
-  Fluid3*                                       ele,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_td_2D(
+  Fluid*                                       ele,
   std::vector<Epetra_SerialDenseVector>&        myknots,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&    elemat,
   LINALG::Matrix<(nsd_+1)*iel,    1>&     elevec,
@@ -3806,8 +3806,8 @@ N                   \                                                           
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs_2D(
-  Fluid3*                                ele,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_qs_2D(
+  Fluid*                                ele,
   std::vector<Epetra_SerialDenseVector>& myknots,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
   LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
@@ -5418,8 +5418,8 @@ N
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td_2D(
-  Fluid3*                                ele,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_td_2D(
+  Fluid*                                ele,
   std::vector<Epetra_SerialDenseVector>& myknots,
   LINALG::Matrix<(nsd_+1)*iel,(nsd_+1)*iel>&           elemat,
   LINALG::Matrix<(nsd_+1)*iel,    1>&           elevec,
@@ -7654,7 +7654,7 @@ N                   \                                                           
  |  distributed vectors                           (private) gammi 10/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVectors_2D(
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ExtractValuesFromGlobalVectors_2D(
   const bool                        is_ale        ,
   const DRT::Discretization&        discretization,
   const vector<int>&                lm            ,
@@ -7755,8 +7755,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ExtractValuesFromGlobalVector
  |  array edeadng only if all nodes have a SurfaceNeumann condition     |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce_2D(
-  const Fluid3* ele ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::GetNodalBodyForce_2D(
+  const Fluid* ele ,
   const double  time)
 {
   constant_bodyforce_=false;
@@ -7842,8 +7842,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::GetNodalBodyForce_2D(
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecondDerivatives_2D(
-  const Fluid3*                                 ele      ,
+double DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ShapeFunctionsFirstAndSecondDerivatives_2D(
+  const Fluid*                                 ele      ,
   const int                                  &  iquad    ,
   const DRT::UTILS::IntPointsAndWeights<nsd_>&        intpoints,
   const std::vector<Epetra_SerialDenseVector>&  myknots  ,
@@ -7871,7 +7871,7 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
       DRT::UTILS::shape_function_2D_deriv2(deriv2_,gp(0),gp(1),distype);
     }
   }
-  else if (ele->Shape()==Fluid3::nurbs8 || ele->Shape()==Fluid3::nurbs27)
+  else if (ele->Shape()==Fluid::nurbs8 || ele->Shape()==Fluid::nurbs27)
     dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
   else
   {
@@ -8243,7 +8243,7 @@ double DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::ShapeFunctionsFirstAndSecon
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc_2D(
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalVisc_2D(
   Teuchos::RCP<const MAT::Material> material,
   double&                           visc,
   const double &                    rateofshear)
@@ -8291,7 +8291,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc_2D(
  *----------------------------------------------------------------------*/
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau_2D(
   const enum INPAR::FLUID::TauType_genalpha             whichtau ,
   const enum INPAR::FLUID::SubscalesTD           tds      ,
   const double &                         gamma    ,
@@ -8727,7 +8727,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
       dserror("Unknown definition of stabilisation parameter for time-dependent formulation\n");
     }
 
-  } // end Fluid3::subscales_time_dependent
+  } // end Fluid::subscales_time_dependent
   else
   {
     //-------------------------------------------------------
@@ -9276,9 +9276,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData_2D
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::SetElementData_2D
 (
-  Fluid3*                                      ele            ,
+  Fluid*                                      ele            ,
   const LINALG::Matrix<nsd_,iel>                & edispnp        ,
   const LINALG::Matrix<nsd_,iel>                & evelaf         ,
   const std::vector<Epetra_SerialDenseVector>& myknots        ,
@@ -9319,7 +9319,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData_2D
       weights_(inode) = cp->W();
     }
   }
-  else if (ele->Shape()==Fluid3::nurbs8 || ele->Shape()==Fluid3::nurbs27)
+  else if (ele->Shape()==Fluid::nurbs8 || ele->Shape()==Fluid::nurbs27)
     dserror("%s is not a 3D Nurbs element",(DRT::DistypeToString(ele->Shape())).c_str());
 
 
@@ -9589,8 +9589,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData_2D
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::InterpolateToGausspoint_2D(
-  Fluid3*                                     ele             ,
+void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::InterpolateToGausspoint_2D(
+  Fluid*                                     ele             ,
   const LINALG::Matrix<nsd_,iel>               & egridvaf        ,
   const LINALG::Matrix<nsd_,iel>               & evelnp          ,
   const LINALG::Matrix<iel,1>               & eprenp          ,

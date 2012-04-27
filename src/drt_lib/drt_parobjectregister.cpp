@@ -131,7 +131,7 @@ std::string DRT::ParObjectList()
     
 #ifdef D_FLUID3
     << DRT::ELEMENTS::Combust3Type::Instance().Name() << " "
-    << DRT::ELEMENTS::Fluid3Type::Instance().Name() << " "
+    << DRT::ELEMENTS::FluidType::Instance().Name() << " "
 #endif
 #ifdef D_ALE
     << DRT::ELEMENTS::Ale3Type::Instance().Name() << " "

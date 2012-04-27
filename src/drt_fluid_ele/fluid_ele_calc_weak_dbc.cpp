@@ -30,8 +30,8 @@
 //   Allocate one static instance of the internal implementation
 //   class for weak dirichlet condition and return pointer to it
 //-----------------------------------------------------------------
-DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface* DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface::Impl(
-  DRT::ELEMENTS::Fluid3Boundary* f3bdry
+DRT::ELEMENTS::FluidBoundaryWeakDBCInterface* DRT::ELEMENTS::FluidBoundaryWeakDBCInterface::Impl(
+  DRT::ELEMENTS::FluidBoundary* f3bdry
   )
 {
   switch (f3bdry->Shape())
@@ -39,12 +39,12 @@ DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface* DRT::ELEMENTS::Fluid3BoundaryWeak
   // 3D:
   case DRT::Element::quad4:
   {
-    static Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>* fsurfq4;
+    static FluidSurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>* fsurfq4;
 
     if(f3bdry->ParentElement()->Shape()==DRT::Element::hex8)
     {
       if (fsurfq4==NULL)
-        fsurfq4 = new Fluid3SurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>();
+        fsurfq4 = new FluidSurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>();
     }
     else
     {
@@ -54,12 +54,12 @@ DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface* DRT::ELEMENTS::Fluid3BoundaryWeak
   }
   case DRT::Element::nurbs9:
   {
-    static Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>* fsurfn9;
+    static FluidSurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>* fsurfn9;
 
     if(f3bdry->ParentElement()->Shape()==DRT::Element::nurbs27)
     {
       if (fsurfn9==NULL)
-        fsurfn9 = new Fluid3SurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>();
+        fsurfn9 = new FluidSurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>();
     }
     else
     {
@@ -70,13 +70,13 @@ DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface* DRT::ELEMENTS::Fluid3BoundaryWeak
   // 2D:
   case DRT::Element::line2:
   {
-    static Fluid3LineWeakDBC<DRT::Element::line2,DRT::Element::quad4>* fline2;
+    static FluidLineWeakDBC<DRT::Element::line2,DRT::Element::quad4>* fline2;
 
     if(f3bdry->ParentElement()->Shape()==DRT::Element::quad4)
     {
       if (fline2==NULL)
       {
-        fline2 = new Fluid3LineWeakDBC<DRT::Element::line2,DRT::Element::quad4>();
+        fline2 = new FluidLineWeakDBC<DRT::Element::line2,DRT::Element::quad4>();
       }
     }
     else
@@ -88,13 +88,13 @@ DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface* DRT::ELEMENTS::Fluid3BoundaryWeak
   }
   case DRT::Element::nurbs3:
   {
-    static Fluid3LineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>* flinen3;
+    static FluidLineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>* flinen3;
 
     if(f3bdry->ParentElement()->Shape()==DRT::Element::nurbs9)
     {
       if (flinen3==NULL)
       {
-        flinen3 = new Fluid3LineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>();
+        flinen3 = new FluidLineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>();
       }
     }
     else
@@ -125,10 +125,10 @@ DRT::ELEMENTS::Fluid3BoundaryWeakDBCInterface* DRT::ELEMENTS::Fluid3BoundaryWeak
 //-----------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
-DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::Fluid3SurfaceWeakDBC()
+DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::FluidSurfaceWeakDBC()
 {
-  // pointer to class Fluid3ImplParameter (access to the general parameter)
-  f3Parameter_ = DRT::ELEMENTS::FluidEleParameter::Instance();
+  // pointer to class FluidImplParameter (access to the general parameter)
+  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
 
   return;
 }
@@ -138,8 +138,8 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::Fluid3SurfaceWeakDBC()
 //-----------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
-int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
-  Fluid3Boundary*             surfele       ,
+int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
+  FluidBoundary*             surfele       ,
   ParameterList&             params        ,
   DRT::Discretization&       discretization,
   vector<int>&               lm            ,
@@ -173,7 +173,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   }
 
   // initialise Spaldings law with parameters chi=0.4 and B=5.5
-  Fluid3SurfaceWeakDBCSpaldingsLaw SpaldingsLaw(0.4,5.5);
+  FluidSurfaceWeakDBCSpaldingsLaw SpaldingsLaw(0.4,5.5);
 
   // decide whether to use it or not
   const string* deftauB
@@ -220,7 +220,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // apply time curve at (n+1) for all time integration schemes (dirichlet condition)
   // time_ in fluid3_parameter is time(n+alphaF) in the case of genalpha
   // therefore, it need to be reset to time(n+1)
-  const double time = f3Parameter_->time_+(1-f3Parameter_->alphaF_)*f3Parameter_->dt_;
+  const double time = fldpara_->Time()+(1-fldpara_->AlphaF())*fldpara_->Dt();
   if (time<0.0) usetime = false;
 
 
@@ -243,7 +243,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // Bazilevs Michler etal use 4.0 for quadratic nurbs as well
   // (in combination with a dynamic computation of tau, so lets
   // try it as well)
-  if(surfele->ParentElement()->Shape()!=Fluid3::hex8 && surfele->ParentElement()->Shape()!=Fluid3::nurbs27)
+  if(surfele->ParentElement()->Shape()!=Fluid::hex8 && surfele->ParentElement()->Shape()!=Fluid::nurbs27)
   {
     dserror("Cb up to now only implemented for trilinear orb nurbs elements");
   }
@@ -298,9 +298,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   //const double afgdt = params.get<double>("afgdt");
   //const double gdt   = params.get<double>("gdt");
 
-  const double timefac = f3Parameter_->timefac_;
-  const double timefacpre   = f3Parameter_->timefacpre_;
-  const double timefacrhs   = f3Parameter_->timefacrhs_;
+  const double timefac = fldpara_->TimeFac();
+  const double timefacpre   = fldpara_->TimeFacPre();
+  const double timefacrhs   = fldpara_->TimeFacRhs();
 
   //--------------------------------------------------
   // get parent elements location vector and ownerships
@@ -345,8 +345,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // velocities n+1
   vector<double> mypvelnp((*plm).size());
 
-  if((f3Parameter_->timealgo_==INPAR::FLUID::timeint_gen_alpha) or
-      (f3Parameter_->timealgo_==INPAR::FLUID::timeint_npgenalpha))
+  if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
+      (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
   {
     // velocities (intermediate time step, n+1)
     RefCountPtr<const Epetra_Vector> velnp
@@ -546,7 +546,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
-  if(surfele->Shape()==Fluid3::nurbs4 || surfele->Shape()==Fluid3::nurbs9)
+  if(surfele->Shape()==Fluid::nurbs4 || surfele->Shape()==Fluid::nurbs9)
   {
     // --------------------------------------------------
     // get knotvector
@@ -1810,7 +1810,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 //                          constructor
 //                                            (public) gammi 11/09
 //-----------------------------------------------------------------
-DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLaw(
+DRT::ELEMENTS::FluidSurfaceWeakDBCSpaldingsLaw::FluidSurfaceWeakDBCSpaldingsLaw(
   const double chi_in,
   const double B_in  )
   :
@@ -1825,7 +1825,7 @@ DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLa
 // dynamic computation of the penalty paramter using Spaldings law
 //                                            (public) gammi 11/09
 //-----------------------------------------------------------------
-void DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsLaw(
+void DRT::ELEMENTS::FluidSurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsLaw(
   double&       tau_B,
   const double& normu,
   const double& h    ,
@@ -1946,7 +1946,7 @@ void DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::ComputeTauBUsingSpaldingsL
 //             evaluate the residual of Spaldings law of the wall
 //                                           (private) gammi 11/09
 //-----------------------------------------------------------------
-double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::SpaldingResidual(
+double DRT::ELEMENTS::FluidSurfaceWeakDBCSpaldingsLaw::SpaldingResidual(
   const double y     ,
   const double visc  ,
   const double tau_B ,
@@ -1978,7 +1978,7 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::SpaldingResidual(
 //     evaluate the residual of Spaldings law of the wall
 //                                           (private) gammi 11/09
 //-----------------------------------------------------------------
-double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::JacobianSpaldingResidual(
+double DRT::ELEMENTS::FluidSurfaceWeakDBCSpaldingsLaw::JacobianSpaldingResidual(
   const double y    ,
   const double visc ,
   const double tau_B,
@@ -2001,7 +2001,7 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::JacobianSpaldingResidual
 // compute dimensionless velocity u+
 //                                           (private) gammi 11/09
 //-----------------------------------------------------------------
-double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Uplus(
+double DRT::ELEMENTS::FluidSurfaceWeakDBCSpaldingsLaw::Uplus(
   const double normu,
   const double tau_B)
 {
@@ -2022,7 +2022,7 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Uplus(
 // compute dimensionless thickness of modeled layer y+
 //                                           (private) gammi 11/09
 //-----------------------------------------------------------------
-double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Yplus(
+double DRT::ELEMENTS::FluidSurfaceWeakDBCSpaldingsLaw::Yplus(
   const double normu,
   const double tau_B,
   const double visc ,
@@ -2063,7 +2063,7 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Yplus(
 
 
 //-----------------------------------------------------------------
-//                       Fluid3LineWeakDBC
+//                       FluidLineWeakDBC
 //-----------------------------------------------------------------
 
 
@@ -2073,10 +2073,10 @@ double DRT::ELEMENTS::Fluid3SurfaceWeakDBCSpaldingsLaw::Yplus(
 
 template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
-DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::Fluid3LineWeakDBC()
+DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::FluidLineWeakDBC()
 {
   // pointer to class FluidEleParameter (access to the general parameter)
-  f3Parameter_ = DRT::ELEMENTS::FluidEleParameter::Instance();
+  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
 
   return;
 }
@@ -2087,8 +2087,8 @@ DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::Fluid3LineWeakDBC()
 
 template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
-int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
-  Fluid3Boundary*                lineele       ,
+int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
+  FluidBoundary*                lineele       ,
   ParameterList&             params        ,
   DRT::Discretization&       discretization,
   vector<int>&               lm            ,
@@ -2155,7 +2155,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // apply time curve at (n+1) for all time integration schemes (dirichlet condition)
   // time_ in fluid3_parameter is time(n+alphaF) in the case of genalpha
   // therefore, it need to be reset to time(n+1)
-  const double time = f3Parameter_->time_+(1-f3Parameter_->alphaF_)*f3Parameter_->dt_;
+  const double time = fldpara_->Time()+(1-fldpara_->AlphaF())*fldpara_->Dt();
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
@@ -2216,9 +2216,9 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   //const double afgdt = params.get<double>("afgdt");
   //const double gdt   = params.get<double>("gdt");
 
-  const double timefac = f3Parameter_->timefac_;
-  const double timefacpre   = f3Parameter_->timefacpre_;
-  const double timefacrhs   = f3Parameter_->timefacrhs_;
+  const double timefac = fldpara_->TimeFac();
+  const double timefacpre   = fldpara_->TimeFacPre();
+  const double timefacrhs   = fldpara_->TimeFacRhs();
 
   //--------------------------------------------------
   // get parent elements location vector and ownerships
@@ -2263,8 +2263,8 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // velocities n+1
   vector<double> mypvelnp((*plm).size());
 
-  if((f3Parameter_->timealgo_==INPAR::FLUID::timeint_gen_alpha) or
-      (f3Parameter_->timealgo_==INPAR::FLUID::timeint_npgenalpha))
+  if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
+      (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
   {
     // velocities (intermediate time step, n+1)
     RefCountPtr<const Epetra_Vector> velnp

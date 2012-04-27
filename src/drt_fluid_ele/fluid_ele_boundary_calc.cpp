@@ -47,53 +47,53 @@ using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3BoundaryImplInterface* DRT::ELEMENTS::Fluid3BoundaryImplInterface::Impl(const DRT::Element* ele)
+DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(const DRT::Element* ele)
 {
   switch (ele->Shape())
   {
   case DRT::Element::quad4:
   {
-    return Fluid3BoundaryImpl<DRT::Element::quad4>::Instance();
+    return FluidBoundaryImpl<DRT::Element::quad4>::Instance();
   }
   case DRT::Element::quad8:
   {
-    return Fluid3BoundaryImpl<DRT::Element::quad8>::Instance();
+    return FluidBoundaryImpl<DRT::Element::quad8>::Instance();
   }
   case DRT::Element::quad9:
   {
-    return Fluid3BoundaryImpl<DRT::Element::quad9>::Instance();
+    return FluidBoundaryImpl<DRT::Element::quad9>::Instance();
   }
   case DRT::Element::tri3:
   {
-    return Fluid3BoundaryImpl<DRT::Element::tri3>::Instance();
+    return FluidBoundaryImpl<DRT::Element::tri3>::Instance();
   }
   case DRT::Element::tri6:
   {
-    return Fluid3BoundaryImpl<DRT::Element::tri6>::Instance();
+    return FluidBoundaryImpl<DRT::Element::tri6>::Instance();
   }
   case DRT::Element::line2:
   {
-    return Fluid3BoundaryImpl<DRT::Element::line2>::Instance();
+    return FluidBoundaryImpl<DRT::Element::line2>::Instance();
   }
   case DRT::Element::line3:
   {
-    return Fluid3BoundaryImpl<DRT::Element::line3>::Instance();
+    return FluidBoundaryImpl<DRT::Element::line3>::Instance();
   }
   case DRT::Element::nurbs2:    // 1D nurbs boundary element
   {
-    return Fluid3BoundaryImpl<DRT::Element::nurbs2>::Instance();
+    return FluidBoundaryImpl<DRT::Element::nurbs2>::Instance();
   }
   case DRT::Element::nurbs3:    // 1D nurbs boundary element
   {
-    return Fluid3BoundaryImpl<DRT::Element::nurbs3>::Instance();
+    return FluidBoundaryImpl<DRT::Element::nurbs3>::Instance();
   }
   case DRT::Element::nurbs4:    // 2D nurbs boundary element
   {
-    return Fluid3BoundaryImpl<DRT::Element::nurbs4>::Instance();
+    return FluidBoundaryImpl<DRT::Element::nurbs4>::Instance();
   }
   case DRT::Element::nurbs9:    // 2D nurbs boundary element
   {
-    return Fluid3BoundaryImpl<DRT::Element::nurbs9>::Instance();
+    return FluidBoundaryImpl<DRT::Element::nurbs9>::Instance();
   }
   default:
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
@@ -105,17 +105,17 @@ DRT::ELEMENTS::Fluid3BoundaryImplInterface* DRT::ELEMENTS::Fluid3BoundaryImplInt
  *----------------------------------------------------------------------*/
 
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Fluid3BoundaryImpl<distype> * DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Instance()
+DRT::ELEMENTS::FluidBoundaryImpl<distype> * DRT::ELEMENTS::FluidBoundaryImpl<distype>::Instance()
 {
-  static Fluid3BoundaryImpl<distype> * instance;
+  static FluidBoundaryImpl<distype> * instance;
   if ( instance==NULL )
-    instance = new Fluid3BoundaryImpl<distype>();
+    instance = new FluidBoundaryImpl<distype>();
   return instance;
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Fluid3BoundaryImpl()
+DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
   : xyze_(true),
     funct_(true),
     deriv_(true),
@@ -126,8 +126,8 @@ DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Fluid3BoundaryImpl()
     visc_(0.0),
     densaf_(1.0)
 {
-  // pointer to class Fluid3ImplParameter (access to the general parameter)
-  f3Parameter_ = DRT::ELEMENTS::FluidEleParameter::Instance();
+  // pointer to class FluidImplParameter (access to the general parameter)
+  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
 
   return;
 }
@@ -138,8 +138,8 @@ DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Fluid3BoundaryImpl()
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
-                              DRT::ELEMENTS::Fluid3Boundary* ele,
+int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
+                              DRT::ELEMENTS::FluidBoundary* ele,
                               ParameterList&                 params,
                               DRT::Discretization&           discretization,
                               DRT::Condition&                condition,
@@ -149,7 +149,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
 {
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = f3Parameter_->time_;
+  const double time = fldpara_->Time();
   if (time<0.0) usetime = false;
 
   // get time-curve factor/ n = - grad phi / |grad phi|
@@ -167,13 +167,13 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
   const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
 
   // get time factor for Neumann term
-  const double timefac = f3Parameter_->timefacrhs_;
+  const double timefac = fldpara_->TimeFacRhs();
 
   // get Gaussrule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get local node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   // get scalar vector
@@ -280,17 +280,17 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
  | partially integrated)                                                |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
-    DRT::ELEMENTS::Fluid3Boundary*  ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
+    DRT::ELEMENTS::FluidBoundary*  ele,
     ParameterList&                  params,
     DRT::Discretization&            discretization,
     vector<int>&                    lm,
     Epetra_SerialDenseMatrix&       elemat1_epetra,
     Epetra_SerialDenseVector&       elevec1_epetra)
 {
-  if(f3Parameter_->timealgo_== INPAR::FLUID::timeint_afgenalpha or
-       f3Parameter_->timealgo_== INPAR::FLUID::timeint_npgenalpha or
-       f3Parameter_->timealgo_== INPAR::FLUID::timeint_one_step_theta)
+  if(fldpara_->TimeAlgo()== INPAR::FLUID::timeint_afgenalpha or
+       fldpara_->TimeAlgo()== INPAR::FLUID::timeint_npgenalpha or
+       fldpara_->TimeAlgo()== INPAR::FLUID::timeint_one_step_theta)
        dserror("The boundary condition ConservativeOutflowConsistency is not supported by ost/afgenalpha/npgenalpha!!\n"
                "the convective term is not partially integrated!");
 
@@ -506,15 +506,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
   } // end gaussloop
 
   return;
-}// DRT::ELEMENTS::Fluid3Surface::SurfaceConservativeOutflowConsistency
+}// DRT::ELEMENTS::FluidSurface::SurfaceConservativeOutflowConsistency
 
 
 /*----------------------------------------------------------------------*
  | compute additional term at Neumann inflow boundary          vg 01/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
-    DRT::ELEMENTS::Fluid3Boundary*  ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
+    DRT::ELEMENTS::FluidBoundary*  ele,
     ParameterList&                  params,
     DRT::Discretization&            discretization,
     vector<int>&                    lm,
@@ -530,7 +530,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   // af-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
   // np-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
   // genalpha:    timefac =  alpha_F * gamma * dt
-  const double timefac = f3Parameter_->timefac_;
+  const double timefac = fldpara_->TimeFac();
 
   // get timefactor for right-hand side
   // One-step-Theta:            timefacrhs = theta*dt
@@ -538,15 +538,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   // af-genalpha:               timefacrhs = (1/alpha_M) * gamma * dt
   // np-genalpha:               timefacrhs = (1/alpha_M) * gamma * dt
   // genalpha:                  timefacrhs = 1.0
-  double timefacrhs = f3Parameter_->timefacrhs_;
+  double timefacrhs = fldpara_->TimeFacRhs();
 
   // set flag for type of linearization to default value (fixed-point-like)
-  bool is_newton = f3Parameter_->is_newton_;
+  bool is_newton = fldpara_->IsNewton();
 
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates for nsd_-dimensional domain
-  // (nsd_: number of spatial dimensions of Fluid3Boundary element!)
+  // (nsd_: number of spatial dimensions of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   // get velocity and scalar vector at time n+alpha_F/n+1
@@ -717,15 +717,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   }
 
   return;
-}// DRT::ELEMENTS::Fluid3Surface::NeumannInflow
+}// DRT::ELEMENTS::FluidSurface::NeumannInflow
 
 
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)            gjb 07/07|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegrateShapeFunction(
-                  DRT::ELEMENTS::Fluid3Boundary* ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
+                  DRT::ELEMENTS::FluidBoundary* ele,
                   ParameterList& params,
                   DRT::Discretization&       discretization,
                   vector<int>&               lm,
@@ -739,7 +739,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegrateShapeFunction(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   if (isale)
@@ -777,14 +777,14 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegrateShapeFunction(
 
 
 return;
-} // DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction
+} // DRT::ELEMENTS::FluidSurface::IntegrateShapeFunction
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
-                                                     DRT::ELEMENTS::Fluid3Boundary*   ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementNodeNormal(
+                                                     DRT::ELEMENTS::FluidBoundary*   ele,
                                                      ParameterList&                   params,
                                                      DRT::Discretization&             discretization,
                                                      vector<int>&                     lm,
@@ -797,7 +797,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   if (isale)
@@ -837,14 +837,14 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
 
   return;
 
-} // DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal
+} // DRT::ELEMENTS::FluidSurface::ElementNodeNormal
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementMeanCurvature(
-                                                        DRT::ELEMENTS::Fluid3Boundary*    ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
+                                                        DRT::ELEMENTS::FluidBoundary*    ele,
                                                         ParameterList&                    params,
                                                         DRT::Discretization&              discretization,
                                                         vector<int>&                      lm,
@@ -866,7 +866,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementMeanCurvature(
   LINALG::Matrix<bdrynsd_,1> xsi_node(true);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   if (isale)
@@ -958,7 +958,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementMeanCurvature(
     int NumElement = thisNode->NumElement();
     DRT::Element** ElementsPtr = thisNode->Elements();
 
-    // loop over adjacent Fluid3 elements
+    // loop over adjacent Fluid elements
     for (int ele=0;ele<NumElement;ele++)
     {
       DRT::Element* Element = ElementsPtr[ele];
@@ -1008,15 +1008,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementMeanCurvature(
     elevec1[inode*numdofpernode_+(numdofpernode_-1)] = 0.0;
   } // END: loop over nodes
 
-} // DRT::ELEMENTS::Fluid3Surface::ElementMeanCurvature
+} // DRT::ELEMENTS::FluidSurface::ElementMeanCurvature
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
-                                                         DRT::ELEMENTS::Fluid3Boundary*   ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
+                                                         DRT::ELEMENTS::FluidBoundary*   ele,
                                                          ParameterList&                   params,
                                                          DRT::Discretization&             discretization,
                                                          vector<int>&                     lm,
@@ -1035,7 +1035,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
   // af-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
   // np-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
   // genalpha:    timefac =  alpha_F * gamma * dt
-  const double timefac = f3Parameter_->timefac_;
+  const double timefac = fldpara_->TimeFac();
 
   // isotropic and isothermal surface tension coefficient
   double SFgamma = 0.0;
@@ -1055,7 +1055,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   if (isale)
@@ -1156,13 +1156,13 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
     else
       dserror("There are no 3D boundary elements implemented");
   } /* end of loop over integration points gpid */
-} // DRT::ELEMENTS::Fluid3Surface::ElementSurfaceTension
+} // DRT::ELEMENTS::FluidSurface::ElementSurfaceTension
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
-                                                  DRT::ELEMENTS::Fluid3Boundary*  ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCaculation(
+                                                  DRT::ELEMENTS::FluidBoundary*  ele,
                                                   ParameterList&                  params,
                                                   DRT::Discretization&            discretization,
                                                   vector<int>&                    lm)
@@ -1213,7 +1213,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
   double area        = params.get<double>("Area calculation");
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
 
@@ -1254,15 +1254,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
   }
 
   params.set<double>("Area calculation", area);
-}//DRT::ELEMENTS::Fluid3Surface::AreaCaculation
+}//DRT::ELEMENTS::FluidSurface::AreaCaculation
 
 
 /*----------------------------------------------------------------------*
  |                                                        ismail 04/2010|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalculation(
-  DRT::ELEMENTS::Fluid3Boundary*    ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalculation(
+  DRT::ELEMENTS::FluidBoundary*    ele,
   ParameterList&                    params,
   DRT::Discretization&              discretization,
   vector<int>&                      lm)
@@ -1335,7 +1335,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   double pressure    = params.get<double>("Inlet integrated pressure");
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
@@ -1382,15 +1382,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
 
   params.set<double>("Inlet integrated pressure", pressure);
 #endif
-}//DRT::ELEMENTS::Fluid3Surface::IntegratedPressureParameterCalculation
+}//DRT::ELEMENTS::FluidSurface::IntegratedPressureParameterCalculation
 
 
 /*----------------------------------------------------------------------*
  |                                                        ismail 10/2010|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
-  DRT::ELEMENTS::Fluid3Boundary*    ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
+  DRT::ELEMENTS::FluidBoundary*    ele,
   ParameterList&                    params,
   DRT::Discretization&              discretization,
   vector<int>&                      lm)
@@ -1405,7 +1405,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
@@ -1484,15 +1484,15 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
   params.set("total area", area+elem_area);
 
 #endif
-}//DRT::ELEMENTS::Fluid3Surface::CenterOfMassCalculation
+}//DRT::ELEMENTS::FluidSurface::CenterOfMassCalculation
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
-                                                                DRT::ELEMENTS::Fluid3Boundary*    ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
+                                                                DRT::ELEMENTS::FluidBoundary*    ele,
                                                                 ParameterList&                    params,
                                                                 DRT::Discretization&              discretization,
                                                                 vector<int>&                      lm,
@@ -1523,7 +1523,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
   }
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
@@ -1607,14 +1607,14 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
       //     (is identical to the total flow rate computed above)
     }
   }
-}//DRT::ELEMENTS::Fluid3Surface::ComputeFlowRate
+}//DRT::ELEMENTS::FluidSurface::ComputeFlowRate
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
-                                                 DRT::ELEMENTS::Fluid3Boundary*   ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
+                                                 DRT::ELEMENTS::FluidBoundary*   ele,
                                                  ParameterList&                   params,
                                                  DRT::Discretization&             discretization,
                                                  vector<int>&                     lm,
@@ -1653,7 +1653,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
   LINALG::Matrix<nsd_,1> normal(true);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   if (isale)
@@ -1879,22 +1879,22 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
       //-------------------------------------------------------------------
     }
   }
-}//DRT::ELEMENTS::Fluid3Surface::FlowRateDeriv
+}//DRT::ELEMENTS::FluidSurface::FlowRateDeriv
 
 
  /*----------------------------------------------------------------------*
   |  Impedance related parameters on boundary elements          AC 03/08  |
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
-                  DRT::ELEMENTS::Fluid3Boundary*    ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
+                  DRT::ELEMENTS::FluidBoundary*    ele,
                   ParameterList&                    params,
                   DRT::Discretization&              discretization,
                   vector<int>&                      lm,
                   Epetra_SerialDenseVector&         elevec1)
 {
   //  const double thsl = params.get("thsl",0.0);
-  const double thsl = f3Parameter_->timefacrhs_;
+  const double thsl = fldpara_->TimeFacRhs();
 
   double invdensity=0.0; // inverse density of my parent element
 
@@ -1936,7 +1936,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
 #ifdef D_ALE_BFLOW
@@ -1984,13 +1984,13 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   //  exit(1);
 
   return;
-} //DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
+} //DRT::ELEMENTS::FluidSurface::ImpedanceIntegration
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAtBouIntPoint(
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvalShapeFuncAtBouIntPoint(
     const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,
     const int                                         gpid,
     const std::vector<Epetra_SerialDenseVector>*      myknots,
@@ -2032,7 +2032,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAtBouIntPoint(
     else if(bdrynsd_==1)
     {
       //const double gp = xsi_(0);
-      dserror("1d Fluid3Boundary nurbs elements not yet implemented");
+      dserror("1d FluidBoundary nurbs elements not yet implemented");
       //DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct_,deriv_,gp,myknots,weights,distype);
     }
     else dserror("Discretisation type %s not yet implemented",DRT::DistypeToString(distype).c_str());
@@ -2052,8 +2052,8 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAtBouIntPoint(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs(
-    DRT::ELEMENTS::Fluid3Boundary*              ele,
+bool DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs(
+    DRT::ELEMENTS::FluidBoundary*              ele,
     DRT::Discretization&                        discretization,
     std::vector<Epetra_SerialDenseVector>&      mypknots,
     std::vector<Epetra_SerialDenseVector>&      myknots,
@@ -2066,7 +2066,7 @@ bool DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs
     dserror("1D line element -> It is not check if it is working.");
 
   // get pointer to parent element
-  DRT::ELEMENTS::Fluid3* parent_ele = ele->ParentElement();
+  DRT::ELEMENTS::Fluid* parent_ele = ele->ParentElement();
 
   // local surface id
   const int surfaceid = ele->SurfaceNumber();
@@ -2104,7 +2104,7 @@ bool DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs
  |  compute material parameters                                vg 01/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::GetMaterialParams(
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>    material,
   const LINALG::Matrix<bdrynen_,1>&    escaaf,
   const double                         thermpressaf
@@ -2123,10 +2123,10 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
   visc_ = actmat->Viscosity();
 
   // varying density
-  if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+  if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
     densaf_ = funct_.Dot(escaaf);
   // Boussinesq approximation: Calculation of delta rho
-  else if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+  else if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
     dserror("Boussinesq approximation not yet supported for boundary terms!");
   else
     densaf_ = actmat->Density();
@@ -2222,14 +2222,14 @@ else dserror("Material type is not supported for boundary element!");
 if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity");
 
 return;
-} // Fluid3BoundaryImpl::GetMaterialParams
+} // FluidBoundaryImpl::GetMaterialParams
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-   void  DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::MixHybDirichlet(
-     DRT::ELEMENTS::Fluid3Boundary*  surfele,
+   void  DRT::ELEMENTS::FluidBoundaryImpl<distype>::MixHybDirichlet(
+     DRT::ELEMENTS::FluidBoundary*  surfele,
      ParameterList&                  params,
      DRT::Discretization&            discretization,
      vector<int>&                    lm,
@@ -2289,8 +2289,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bndydistype,
           DRT::Element::DiscretizationType pdistype>
-   void  DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::MixHybDirichlet(
-     DRT::ELEMENTS::Fluid3Boundary*  surfele,
+   void  DRT::ELEMENTS::FluidBoundaryImpl<distype>::MixHybDirichlet(
+     DRT::ELEMENTS::FluidBoundary*  surfele,
      ParameterList&                  params,
      DRT::Discretization&            discretization,
      vector<int>&                    lm,
@@ -2335,9 +2335,9 @@ template <DRT::Element::DiscretizationType bndydistype,
   // number of internal stress dofs is equivalent to number of second derivatives
   static const int numstressdof_= DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
-  if(f3Parameter_->timealgo_== INPAR::FLUID::timeint_afgenalpha or
-       f3Parameter_->timealgo_== INPAR::FLUID::timeint_npgenalpha or
-       f3Parameter_->timealgo_== INPAR::FLUID::timeint_one_step_theta)
+  if(fldpara_->TimeAlgo()== INPAR::FLUID::timeint_afgenalpha or
+       fldpara_->TimeAlgo()== INPAR::FLUID::timeint_npgenalpha or
+       fldpara_->TimeAlgo()== INPAR::FLUID::timeint_one_step_theta)
        dserror("The use of mixed hybrid boundary conditions and ost/aggenalpha/npgenalpha is buggy??\n One need to check!!");
 
   // --------------------------------------------------
@@ -2364,7 +2364,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   //TODO: which time (n+1) or (n+alphaF)
   // find out whether we will use a time curve
-  const double time = f3Parameter_->time_;
+  const double time = fldpara_->Time();
 
   // initialise scaling for distance to wall (Spalding)
   double hB_divided_by=1.0;
@@ -2485,8 +2485,8 @@ template <DRT::Element::DiscretizationType bndydistype,
   if (vel==null) dserror("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
-  if((f3Parameter_->timealgo_==INPAR::FLUID::timeint_gen_alpha) or
-      (f3Parameter_->timealgo_==INPAR::FLUID::timeint_npgenalpha))
+  if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
+      (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
   {
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp==null) dserror("Cannot get state vector 'velnp'");
@@ -3696,18 +3696,18 @@ template <DRT::Element::DiscretizationType bndydistype,
   // BDF2:                      timefacrhs = 2/3 * dt
   // af-generalized-alpha:      timefacrhs = (1.0/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacrhs = 1.0
-  double timefacrhs  = f3Parameter_->timefacrhs_;
+  double timefacrhs  = fldpara_->TimeFacRhs();
   // One-step-Theta:            timefacmat_u = theta*dt
   // BDF2:                      timefacmat_u = 2/3 * dt
   // af-generalized-alpha:      timefacmat_u = (alphaF/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacmat_u = alphaF* gamma * dt
-  double timefacmat_u= f3Parameter_->timefac_;
+  double timefacmat_u= fldpara_->TimeFac();
   // One-step-Theta:            timefacmat_p = theta*dt
   // BDF2:                      timefacmat_p = 2/3 * dt
   // af-generalized-alpha:      timefacmat_p = (alphaF/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacmat_p = gamma * dt
-  //double timefacmat_p= f3Parameter_->timefacmat_p_;
-  double timefacmat_p= f3Parameter_->timefacpre_;
+  //double timefacmat_p= fldpara_->timefacmat_p_;
+  double timefacmat_p= fldpara_->TimeFacPre();
 
   // --------------------------------
   // rearrange to pattern uvwp uvwp ...
@@ -3769,8 +3769,8 @@ template <DRT::Element::DiscretizationType bndydistype,
  |  Evaluating the velocity component of the traction      ismail 05/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CalcTractionVelocityComponent(
-  DRT::ELEMENTS::Fluid3Boundary*    ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
+  DRT::ELEMENTS::FluidBoundary*    ele,
   ParameterList&                    params,
   DRT::Discretization&              discretization,
   vector<int>&                      lm,
@@ -3845,7 +3845,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CalcTractionVelocityComponent(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
 #ifdef D_ALE_BFLOW
@@ -3872,7 +3872,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CalcTractionVelocityComponent(
     }
   }
 #endif // D_ALE_BFLOW
-  const double timefac = f3Parameter_->timefacrhs_;
+  const double timefac = fldpara_->TimeFacRhs();
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
@@ -3922,8 +3922,8 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CalcTractionVelocityComponent(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeNeumannUvIntegral(
-  DRT::ELEMENTS::Fluid3Boundary*    ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
+  DRT::ELEMENTS::FluidBoundary*    ele,
   ParameterList&                    params,
   DRT::Discretization&              discretization,
   vector<int>&                      lm,
@@ -3958,7 +3958,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeNeumannUvIntegral(
   }
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
@@ -4015,13 +4015,13 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeNeumannUvIntegral(
       elevec1[inode*numdofpernode_] +=  term;//
     }
   }
-}//DRT::ELEMENTS::Fluid3Surface::ComputeNeumannUvIntegral
+}//DRT::ELEMENTS::FluidSurface::ComputeNeumannUvIntegral
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NoPenetration(
-                                                 DRT::ELEMENTS::Fluid3Boundary*   ele,
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
+                                                 DRT::ELEMENTS::FluidBoundary*   ele,
                                                  ParameterList&                   params,
                                                  DRT::Discretization&             discretization,
                                                  vector<int>&                     lm,
@@ -4036,7 +4036,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NoPenetration(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 

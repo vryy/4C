@@ -94,7 +94,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(Teuchos::RCP<
     //const int matnr = (mat->Parameter()->Id())+1;
 
 #ifdef D_FLUID3 
-        DRT::ELEMENTS::Fluid3* fluid = dynamic_cast<DRT::ELEMENTS::Fluid3*>(newele.get());
+        DRT::ELEMENTS::Fluid* fluid = dynamic_cast<DRT::ELEMENTS::Fluid*>(newele.get());
         if (fluid!=NULL)
         {
           fluid->SetMaterial(matnr);

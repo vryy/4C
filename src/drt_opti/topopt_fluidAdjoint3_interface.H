@@ -38,7 +38,7 @@ class GaussIntegration;
 
 namespace ELEMENTS
 {
-  class Fluid3;
+  class Fluid;
 
   /// Interface base class for FluidAdjoint3Impl
   /*!
@@ -57,9 +57,9 @@ namespace ELEMENTS
     /// Evaluate the element
     /*!
       This class does not provide a definition for this function, it
-      must be defined in Fluid3Impl.
+      must be defined in FluidImpl.
      */
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*    ele,
                          DRT::Discretization & discretization,
                          const std::vector<int> & lm,
                          Teuchos::ParameterList&    params,

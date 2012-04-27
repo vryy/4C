@@ -58,73 +58,73 @@ using namespace DRT::UTILS;
 /*---------------------------------------------------------------------*
 |  converts a string into an action for this element                   |
 *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionType(
+DRT::ELEMENTS::Fluid::ActionType DRT::ELEMENTS::Fluid::convertStringToActionType(
               const string& action) const
 {
   dsassert(action != "none", "No action supplied");
 
-  DRT::ELEMENTS::Fluid3::ActionType act = Fluid3::none;
+  DRT::ELEMENTS::Fluid::ActionType act = Fluid::none;
   if (action == "calc_fluid_systemmat_and_residual")
-    act = Fluid3::calc_fluid_systemmat_and_residual;
+    act = Fluid::calc_fluid_systemmat_and_residual;
   else if (action == "calc_porousflow_fluid_coupling")
-    act = Fluid3::calc_porousflow_fluid_coupling;
+    act = Fluid::calc_porousflow_fluid_coupling;
   else if (action == "calc_loma_mono_odblock")
-    act = Fluid3::calc_loma_mono_odblock;
+    act = Fluid::calc_loma_mono_odblock;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
-    act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
+    act = Fluid::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
-    act = Fluid3::calc_fluid_genalpha_update_for_subscales;
+    act = Fluid::calc_fluid_genalpha_update_for_subscales;
   else if (action == "time average for subscales and residual")
-    act = Fluid3::calc_fluid_genalpha_average_for_subscales_and_residual;
+    act = Fluid::calc_fluid_genalpha_average_for_subscales_and_residual;
   else if (action == "calc_dissipation")
-    act = Fluid3::calc_dissipation;
+    act = Fluid::calc_dissipation;
   else if (action == "calc model parameter multifractal subgid scales")
-    act = Fluid3::calc_model_params_mfsubgr_scales;
+    act = Fluid::calc_model_params_mfsubgr_scales;
   else if (action == "calc_fluid_error")
-    act = Fluid3::calc_fluid_error;
+    act = Fluid::calc_fluid_error;
   else if (action == "calc_turbulence_statistics")
-    act = Fluid3::calc_turbulence_statistics;
+    act = Fluid::calc_turbulence_statistics;
   else if (action == "calc_loma_statistics")
-    act = Fluid3::calc_loma_statistics;
+    act = Fluid::calc_loma_statistics;
   else if (action == "calc_turbscatra_statistics")
-    act = Fluid3::calc_turbscatra_statistics;
+    act = Fluid::calc_turbscatra_statistics;
   else if (action == "calc_fluid_box_filter")
-    act = Fluid3::calc_fluid_box_filter;
+    act = Fluid::calc_fluid_box_filter;
   else if (action == "calc_smagorinsky_const")
-    act = Fluid3::calc_smagorinsky_const;
+    act = Fluid::calc_smagorinsky_const;
   else if (action == "get_gas_constant")
-    act = Fluid3::get_gas_constant;
+    act = Fluid::get_gas_constant;
   else if (action == "calc_node_normal")
-    act = Fluid3::calc_node_normal;
+    act = Fluid::calc_node_normal;
   else if (action == "integrate_shape")
-    act = Fluid3::integrate_shape;
+    act = Fluid::integrate_shape;
   else if (action == "calc_fluid_elementvolume")
-    act = Fluid3::calc_fluid_elementvolume;
+    act = Fluid::calc_fluid_elementvolume;
   else if (action == "set_general_fluid_parameter")
-    act = Fluid3::set_general_fluid_parameter;
+    act = Fluid::set_general_fluid_parameter;
   else if (action == "set_time_parameter")
-    act = Fluid3::set_time_parameter;
+    act = Fluid::set_time_parameter;
   else if (action == "set_turbulence_parameter")
-    act = Fluid3::set_turbulence_parameter;
+    act = Fluid::set_turbulence_parameter;
   else if (action == "set_loma_parameter")
-    act = Fluid3::set_loma_parameter;
+    act = Fluid::set_loma_parameter;
   else if (action == "set_general_adjoint_parameter")
-    act = Fluid3::set_general_adjoint_parameter;
+    act = Fluid::set_general_adjoint_parameter;
   else if (action == "set_adjoint_time_parameter")
-    act = Fluid3::set_adjoint_time_parameter;
+    act = Fluid::set_adjoint_time_parameter;
   else if (action == "calc_adjoint_systemmat_and_residual")
-    act = Fluid3::calc_adjoint_systemmat_and_residual;
+    act = Fluid::calc_adjoint_systemmat_and_residual;
   else if (action == "AdjointNeumannBoundaryCondition")
-    act = Fluid3::calc_adjoint_neumann;
+    act = Fluid::calc_adjoint_neumann;
   else
-  dserror("(%s) Unknown type of action for Fluid3",action.c_str());
+  dserror("(%s) Unknown type of action for Fluid",action.c_str());
   return act;
 }
 
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter                         |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization&                  dis,
+void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                  dis,
                                             Teuchos::ParameterList&               p,
                                             Teuchos::RCP<LINALG::SparseOperator>  systemmatrix1,
                                             Teuchos::RCP<LINALG::SparseOperator>  systemmatrix2,
@@ -136,33 +136,33 @@ void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization&                
 
   if (action == "set_general_fluid_parameter")
   {
-    DRT::ELEMENTS::FluidEleParameter* f3Parameter = DRT::ELEMENTS::FluidEleParameter::Instance();
-    f3Parameter->SetElementGeneralFluidParameter(p);
+    DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    fldpara->SetElementGeneralFluidParameter(p);
   }
   else if (action == "set_time_parameter")
   {
-    DRT::ELEMENTS::FluidEleParameter* f3Parameter = DRT::ELEMENTS::FluidEleParameter::Instance();
-    f3Parameter->SetElementTimeParameter(p);
+    DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    fldpara->SetElementTimeParameter(p);
   }
   else if (action == "set_turbulence_parameter")
   {
-    DRT::ELEMENTS::FluidEleParameter* f3Parameter = DRT::ELEMENTS::FluidEleParameter::Instance();
-    f3Parameter->SetElementTurbulenceParameter(p);
+    DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    fldpara->SetElementTurbulenceParameter(p);
   }
   else if (action == "set_loma_parameter")
   {
-    DRT::ELEMENTS::FluidEleParameter* f3Parameter = DRT::ELEMENTS::FluidEleParameter::Instance();
-    f3Parameter->SetElementLomaParameter(p);
+    DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    fldpara->SetElementLomaParameter(p);
   }
   else if (action == "set_general_adjoint_parameter")
   {
-    DRT::ELEMENTS::FluidAdjoint3ImplParameter* f3Parameter = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
-    f3Parameter->SetElementGeneralAdjointParameter(p);
+    DRT::ELEMENTS::FluidAdjoint3ImplParameter* fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
+    fldpara->SetElementGeneralAdjointParameter(p);
   }
   else if (action == "set_adjoint_time_parameter")
   {
-    DRT::ELEMENTS::FluidAdjoint3ImplParameter* f3Parameter = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
-    f3Parameter->SetElementAdjointTimeParameter(p);
+    DRT::ELEMENTS::FluidAdjoint3ImplParameter* fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
+    fldpara->SetElementAdjointTimeParameter(p);
   }
 
   return;
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization&                
  /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList&            params,
+int DRT::ELEMENTS::Fluid::Evaluate(ParameterList&            params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList&            params,
 {
   // get the action required
   const string action = params.get<string>("action","none");
-  const DRT::ELEMENTS::Fluid3::ActionType act = convertStringToActionType(action);
+  const DRT::ELEMENTS::Fluid::ActionType act = convertStringToActionType(action);
 
   // get material
   RCP<MAT::Material> mat = Material();
@@ -301,7 +301,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList&            params,
     //--------------------------------------------------
     case calc_fluid_genalpha_sysmat_and_residual:
     {
-      return DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->Evaluate(
+      return DRT::ELEMENTS::FluidGenalphaResVMMInterface::Impl(this)->Evaluate(
           this,
           params,
           discretization,
@@ -318,7 +318,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList&            params,
     {
       // integrate shape function for this element
       // (results assembled into element vector)
-      // return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape(),"test")->ComputeError(this, params, mat, discretization, lm, elevec1);
+      // return DRT::ELEMENTS::FluidImplInterface::Impl(Shape(),"test")->ComputeError(this, params, mat, discretization, lm, elevec1);
     }
     break;
     case calc_turbulence_statistics:
@@ -697,7 +697,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList&            params,
         if(this->Owner() == discretization.Comm().MyPID())
         {
 
-          return DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->CalcResAvgs(
+          return DRT::ELEMENTS::FluidGenalphaResVMMInterface::Impl(this)->CalcResAvgs(
               this,
               params,
               discretization,
@@ -850,11 +850,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList&            params,
       break;
     }
     default:
-      dserror("Unknown type of action for Fluid3");
+      dserror("Unknown type of action for Fluid");
   } // end of switch(act)
 
   return 0;
-} // end of DRT::ELEMENTS::Fluid3::Evaluate
+} // end of DRT::ELEMENTS::Fluid::Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -864,7 +864,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList&            params,
  |  integration of volume Neumann conditions (body forces) takes place  |
  |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Fluid3::EvaluateNeumann(ParameterList&            params,
+int DRT::ELEMENTS::Fluid::EvaluateNeumann(ParameterList&            params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -878,7 +878,7 @@ int DRT::ELEMENTS::Fluid3::EvaluateNeumann(ParameterList&            params,
  | Calculate spatial mean values for channel flow          gammi 07/07 |
  *---------------------------------------------------------------------*/
 template<int iel>
-void DRT::ELEMENTS::Fluid3::f3_calc_means(DRT::Discretization&  discretization,
+void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
                                           vector<double>&       solution,
                                           vector<double>&       displacement,
                                           ParameterList& 	    params)
@@ -1521,14 +1521,14 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(DRT::Discretization&  discretization,
     dserror("Unknown element type for mean value evaluation\n");
   }
   return;
-} // DRT::ELEMENTS::Fluid3::f3_calc_means
+} // DRT::ELEMENTS::Fluid::f3_calc_means
 
 /*---------------------------------------------------------------------*
  | Calculate spatial mean values for variable-density                  |
  | channel flow at low Mach number                           vg 02/09  |
  *---------------------------------------------------------------------*/
 template<int iel>
-void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(DRT::Discretization&  discretization,
+void DRT::ELEMENTS::Fluid::f3_calc_loma_means(DRT::Discretization&  discretization,
                                                vector<double>&       velocitypressure,
                                                vector<double>&       temperature,
                                                ParameterList&        params,
@@ -1921,7 +1921,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(DRT::Discretization&  discretizat
     dserror("Unknown element type for low-Mach-number mean value evaluation\n");
 
   return;
-} // DRT::ELEMENTS::Fluid3::f3_calc_loma_means
+} // DRT::ELEMENTS::Fluid::f3_calc_loma_means
 
 
 /*---------------------------------------------------------------------*
@@ -1929,7 +1929,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(DRT::Discretization&  discretizat
  | transport in turbulent channel flow                 rasthofer 01/12 |
  *---------------------------------------------------------------------*/
 template<int iel>
-void DRT::ELEMENTS::Fluid3::f3_calc_scatra_means(DRT::Discretization&  discretization,
+void DRT::ELEMENTS::Fluid::f3_calc_scatra_means(DRT::Discretization&  discretization,
                                                  vector<double>&       velocitypressure,
                                                  vector<double>&       scalar,
                                                  ParameterList&        params)
@@ -2295,14 +2295,14 @@ void DRT::ELEMENTS::Fluid3::f3_calc_scatra_means(DRT::Discretization&  discretiz
     dserror("Unknown element type for turbulent passive scalar mean value evaluation\n");
 
   return;
-} // DRT::ELEMENTS::Fluid3::f3_calc_scatra_means
+} // DRT::ELEMENTS::Fluid::f3_calc_scatra_means
 
 
 //----------------------------------------------------------------------
 //
 //----------------------------------------------------------------------
 template<int iel>
-void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
+void DRT::ELEMENTS::Fluid::f3_apply_box_filter(
     bool             dyn_smagorinsky,
     vector<double>&  myvel,
     double*          bvel_hat,
@@ -2584,7 +2584,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   }
 
   return;
-} // DRT::ELEMENTS::Fluid3::f3_apply_box_filter
+} // DRT::ELEMENTS::Fluid::f3_apply_box_filter
 
 
 //----------------------------------------------------------------------
@@ -2593,7 +2593,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
 // will be computed
 //----------------------------------------------------------------------
 template<int iel>
-void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
+void DRT::ELEMENTS::Fluid::f3_calc_smag_const_LijMij_and_MijMij(
   RCP<Epetra_MultiVector>& filtered_vel                       ,
   RCP<Epetra_MultiVector>& col_filtered_reynoldsstress        ,
   RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
@@ -2932,14 +2932,14 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   }
 
   return;
-} // DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
+} // DRT::ELEMENTS::Fluid::f3_calc_smag_const_LijMij_and_MijMij
 
 
 //----------------------------------------------------------------------
 //                                                       rasthofer 05/11
 //----------------------------------------------------------------------
 template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
-void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
+void DRT::ELEMENTS::Fluid::f3_get_mf_params(
   ParameterList&      params,
   RCP<MAT::Material>  mat,
   vector<double>&     vel,
@@ -3722,13 +3722,13 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
   (*sum_sgvisc)[nlayer] += sgvisc;
 
   return;
-} // DRT::ELEMENTS::Fluid3::f3_get_mf_params
+} // DRT::ELEMENTS::Fluid::f3_get_mf_params
 
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 template<DRT::Element::DiscretizationType DISTYPE>
-void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		     params,
+void DRT::ELEMENTS::Fluid::ElementNodeNormal(ParameterList& 		     params,
                                               DRT::Discretization&       discretization,
                                               vector<int>&               lm,
                                               Epetra_SerialDenseVector&  elevec1)
@@ -3790,7 +3790,7 @@ void DRT::ELEMENTS::Fluid3::ElementNodeNormal(ParameterList& 		     params,
   LINALG::Matrix<nsd,iel>  xyze;
 
   // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<DISTYPE,nsd, LINALG::Matrix<nsd,iel> >(this,xyze);
 
   /*

@@ -18,45 +18,45 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_lib/drt_globalproblem.H"
 
 
-DRT::ELEMENTS::Fluid3Type DRT::ELEMENTS::Fluid3Type::instance_;
+DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
 
 
-DRT::ParObject* DRT::ELEMENTS::Fluid3Type::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::FluidType::Create( const std::vector<char> & data )
 {
-  DRT::ELEMENTS::Fluid3* object = new DRT::ELEMENTS::Fluid3(-1,-1);
+  DRT::ELEMENTS::Fluid* object = new DRT::ELEMENTS::Fluid(-1,-1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3Type::Create(const string  eletype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(const string  eletype,
                                                              const string  eledistype,
                                                              const int     id,
                                                              const int     owner)
 {
   if ( eletype=="FLUID3" )
   {
-      return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+      return rcp(new DRT::ELEMENTS::Fluid(id,owner));
   }
   else if ( eletype=="FLUID2" )
   {
-      return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+      return rcp(new DRT::ELEMENTS::Fluid(id,owner));
   }
   else if (eletype=="FLUID")
   {
-      return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+      return rcp(new DRT::ELEMENTS::Fluid(id,owner));
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3Type::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create( const int id, const int owner )
 {
-  return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+  return rcp(new DRT::ELEMENTS::Fluid(id,owner));
 }
 
 
-void DRT::ELEMENTS::Fluid3Type::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::FluidType::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -65,12 +65,12 @@ void DRT::ELEMENTS::Fluid3Type::NodalBlockInformation( Element * dwele, int & nu
 }
 
 
-void DRT::ELEMENTS::Fluid3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::FluidType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
-  DRT::UTILS::ComputeFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-void DRT::ELEMENTS::Fluid3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::FluidType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["FLUID3"];
 
@@ -234,7 +234,7 @@ void DRT::ELEMENTS::Fluid3Type::SetupElementDefinition( std::map<std::string,std
  |  ctor (public)                                            gammi 02/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3::Fluid3(int id, int owner) :
+DRT::ELEMENTS::Fluid::Fluid(int id, int owner) :
 DRT::Element(id,owner),
 is_ale_(false)
 {
@@ -252,7 +252,7 @@ is_ale_(false)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       gammi 02/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3::Fluid3(const DRT::ELEMENTS::Fluid3& old) :
+DRT::ELEMENTS::Fluid::Fluid(const DRT::ELEMENTS::Fluid& old) :
 DRT::Element(old             ),
 distype_    (old.distype_    ),
 is_ale_     (old.is_ale_     ),
@@ -265,12 +265,12 @@ sveln_      (old.sveln_      )
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Fluid3 and return pointer to it (public) |
+ |  Deep copy this instance of Fluid and return pointer to it (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Fluid3::Clone() const
+DRT::Element* DRT::ELEMENTS::Fluid::Clone() const
 {
-  DRT::ELEMENTS::Fluid3* newelement = new DRT::ELEMENTS::Fluid3(*this);
+  DRT::ELEMENTS::Fluid* newelement = new DRT::ELEMENTS::Fluid(*this);
   return newelement;
 }
 
@@ -278,7 +278,7 @@ DRT::Element* DRT::ELEMENTS::Fluid3::Clone() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Fluid::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::Fluid3::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Fluid::Unpack(const vector<char>& data)
 {
   vector<char>::size_type position = 0;
   // extract type
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 02/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3::~Fluid3()
+DRT::ELEMENTS::Fluid::~Fluid()
 {
   return;
 }
@@ -369,9 +369,9 @@ DRT::ELEMENTS::Fluid3::~Fluid3()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3::Print(ostream& os) const
+void DRT::ELEMENTS::Fluid::Print(ostream& os) const
 {
-  os << "Fluid3 ";
+  os << "Fluid ";
   Element::Print(os);
   //cout << endl;
   return;
@@ -381,7 +381,7 @@ void DRT::ELEMENTS::Fluid3::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -393,7 +393,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Lines()
 
   if (NumLine()>1) // 1D boundary element and 2D/3D parent element
   {
-    return DRT::UTILS::ElementBoundaryFactory<Fluid3Boundary,Fluid3>(DRT::UTILS::buildLines,this);
+    return DRT::UTILS::ElementBoundaryFactory<FluidBoundary,Fluid>(DRT::UTILS::buildLines,this);
   }
   else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
@@ -413,7 +413,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -424,7 +424,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Surfaces()
   // so we have to allocate new line elements:
 
   if (NumSurface() > 1)   // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<Fluid3Boundary,Fluid3>(DRT::UTILS::buildSurfaces,this);
+    return DRT::UTILS::ElementBoundaryFactory<FluidBoundary,Fluid>(DRT::UTILS::buildSurfaces,this);
   else if (NumSurface() == 1) // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
   {
     // 2D (we return the element itself)
@@ -443,7 +443,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                 ehrl 02/10|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Volumes()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
 {
   if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
   {
@@ -462,7 +462,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Volumes()
 /*----------------------------------------------------------------------*
  |  get internal faces element (public)                     schott 03/12|
  *----------------------------------------------------------------------*/
-RCP<DRT::Element> DRT::ELEMENTS::Fluid3::CreateInternalFaces( DRT::Element* parent_slave,   //!< parent slave fluid3 element
+RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateInternalFaces( DRT::Element* parent_slave,   //!< parent slave fluid3 element
                                                               int nnode,                    //!< number of surface nodes
                                                               const int* nodeids,           //!< node ids of surface element
                                                               DRT::Node** nodes,            //!< nodes of surface element
@@ -470,11 +470,11 @@ RCP<DRT::Element> DRT::ELEMENTS::Fluid3::CreateInternalFaces( DRT::Element* pare
                                                              )
 {
   // dynamic cast for slave parent element
-  DRT::ELEMENTS::Fluid3 * slave_pele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( parent_slave );
+  DRT::ELEMENTS::Fluid * slave_pele = dynamic_cast<DRT::ELEMENTS::Fluid *>( parent_slave );
 
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<FluidIntFace,Fluid3>(-1,             // internal face element id
+  return DRT::UTILS::ElementIntFaceFactory<FluidIntFace,Fluid>(-1,             // internal face element id
                                                                 -1,             // owner of internal face element
                                                                 nnode,
                                                                 nodeids,
@@ -490,7 +490,7 @@ RCP<DRT::Element> DRT::ELEMENTS::Fluid3::CreateInternalFaces( DRT::Element* pare
 /*----------------------------------------------------------------------*
  |  activate time dependend subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3::ActivateTDS(int nquad,int nsd, double** saccn, double** sveln, double** svelnp)
+void DRT::ELEMENTS::Fluid::ActivateTDS(int nquad,int nsd, double** saccn, double** sveln, double** svelnp)
    {
      if(saccn_.M() != nsd
         ||
@@ -514,7 +514,7 @@ void DRT::ELEMENTS::Fluid3::ActivateTDS(int nquad,int nsd, double** saccn, doubl
 /*----------------------------------------------------------------------*
  |  activate time dependend subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
+void DRT::ELEMENTS::Fluid::UpdateSvelnpInOneDirection(
     const double  fac1,
     const double  fac2,
     const double  fac3,
@@ -558,7 +558,7 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
 /*----------------------------------------------------------------------*
  |  activate time dependend subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
+void DRT::ELEMENTS::Fluid::UpdateSvelnpInOneDirection(
     const double  fac1,
     const double  fac2,
     const double  fac3,
@@ -585,7 +585,7 @@ void DRT::ELEMENTS::Fluid3::UpdateSvelnpInOneDirection(
     }
 
 
-int DRT::ELEMENTS::Fluid3::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
 {
   if (nds==1)
   {

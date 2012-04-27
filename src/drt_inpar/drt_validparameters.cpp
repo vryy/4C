@@ -2068,14 +2068,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Varying_density",
                                  "Loma",
                                  "Boussinesq",
-                                 "Poro"
+                                 "Poro",
+                                 "Topology_optimization"
                                  ),
                                tuple<int>(
                                      INPAR::FLUID::incompressible,
                                      INPAR::FLUID::varying_density,
                                      INPAR::FLUID::loma,
                                      INPAR::FLUID::boussinesq,
-                                     INPAR::FLUID::poro),
+                                     INPAR::FLUID::poro,
+                                     INPAR::FLUID::topopt),
                                &fdyn);
 
   // number of linear solver used for fluid problem

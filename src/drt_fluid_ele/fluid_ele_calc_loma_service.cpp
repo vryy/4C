@@ -61,7 +61,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEq(
   rhscon_ = scaconvfacaf_*conv_scaaf_;
 
   // further terms different for general.-alpha and other time-int. schemes
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // time derivative of scalar at n+alpha_M
     tder_sca_ = funct_.Dot(escadtam);
@@ -72,7 +72,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEq(
   else
   {
     // instationary case
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // get velocity at n (including grid velocity in ALE case)
       convvelintn_.Multiply(eveln,funct_);
@@ -103,9 +103,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEq(
       // add to rhs of continuity equation
       // (prepared for later multiplication by theta*dt in
       //  evaluation of element matrix and vector contributions)
-      rhscon_ += (scadtfac_*(scaaf_-scan_)/f3Parameter_->dt_
-                + f3Parameter_->omtheta_*(scaconvfacn_*conv_scan_-vdivn_)
-                + thermpressadd_)/f3Parameter_->theta_;
+      rhscon_ += (scadtfac_*(scaaf_-scan_)/fldpara_->Dt()
+                + fldpara_->OmTheta()*(scaconvfacn_*conv_scan_-vdivn_)
+                + thermpressadd_)/fldpara_->Theta();
     }
   }
 
@@ -144,19 +144,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleScalar(
     diff_scaaf = diff.Dot(escaaf);
   }
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
     scares_old = densam_*tder_sca_+densaf_*conv_scaaf_-diff_scaaf-scarhs_;
   else
   {
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute diffusive term at n for higher-order elements
       double diff_scan = 0.0;
       if (is_higher_order_ele_) diff_scan = diff.Dot(escaam);
 
-      scares_old = densaf_*(scaaf_-scan_)/f3Parameter_->dt_
-                  +f3Parameter_->theta_*(densaf_*conv_scaaf_-diff_scaaf)
-                  +f3Parameter_->omtheta_*(densn_*conv_scan_-diff_scan)
+      scares_old = densaf_*(scaaf_-scan_)/fldpara_->Dt()
+                  +fldpara_->Theta()*(densaf_*conv_scaaf_-diff_scaaf)
+                  +fldpara_->OmTheta()*(densn_*conv_scan_-diff_scan)
                   -scarhs_;
     }
     else scares_old = densaf_*conv_scaaf_-diff_scaaf-scarhs_;
@@ -209,7 +209,7 @@ if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = actmat->EosFacA()*densaf_;
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // compute density at n+alpha_M based on mixture fraction
     double mixfracam = funct_.Dot(escaam);
@@ -224,7 +224,7 @@ if (material->MaterialType() == INPAR::MAT::m_mixfrac)
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute density at n based on mixture fraction
       double mixfracn = funct_.Dot(escaam);
@@ -259,7 +259,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = 1.0/tempaf;
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // compute temperature at n+alpha_M
     double tempam = funct_.Dot(escaam);
@@ -278,7 +278,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute temperature at n
       double tempn = funct_.Dot(escaam);
@@ -320,7 +320,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = actmat->ComputeFactor(provaraf);
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // compute density at n+alpha_M based on progress variable
     double provaram = funct_.Dot(escaam);
@@ -335,7 +335,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute density at n based on progress variable
       double provarn = funct_.Dot(escaam);
@@ -372,7 +372,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   // factor for convective scalar term at n+alpha_F or n+1
   scaconvfacaf_ = actmat->ComputeFactor(provaraf);
 
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // compute density at n+alpha_M based on progress variable
     double provaram = funct_.Dot(escaam);
@@ -387,7 +387,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
     // set density at n+1 at location n+alpha_M as well
     densam_ = densaf_;
 
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // compute density at n based on progress variable
       double provarn = funct_.Dot(escaam);
@@ -457,16 +457,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::RecomputeGalAndComputeCrossRHSContEq(
 
   // add (first) subgrid-scale-velocity part to rhs of continuity equation
   // (identical for all time-integration schemes)
-  if (f3Parameter_->conti_cross_ != INPAR::FLUID::cross_stress_stab_none)
+  if (fldpara_->ContiCross() != INPAR::FLUID::cross_stress_stab_none)
   {
     rhscon_ += scaconvfacaf_*sgvelint_.Dot(grad_scaaf_);
   }
 
-  if (f3Parameter_->multifrac_loma_conti_)
+  if (fldpara_->MultiFracLomaConti())
     rhscon_ += scaconvfacaf_*mffsvelint_.Dot(grad_scaaf_); // first cross-stress term
 
   // further terms different for general.-alpha and other time-int. schemes
-  if (f3Parameter_->is_genalpha_)
+  if (fldpara_->IsGenalpha())
   {
     // add to rhs of continuity equation
     rhscon_ += scadtfac_*tder_sca_ + thermpressadd_;
@@ -474,19 +474,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::RecomputeGalAndComputeCrossRHSContEq(
   else
   {
     // instationary case
-    if (not f3Parameter_->is_stationary_)
+    if (not fldpara_->IsStationary())
     {
       // add to rhs of continuity equation
       // (prepared for later multiplication by theta*dt in
       //  evaluation of element matrix and vector contributions)
-      rhscon_ += (scadtfac_*(scaaf_-scan_)/f3Parameter_->dt_
-                + f3Parameter_->omtheta_*(scaconvfacn_*conv_scan_-vdivn_)
-                + thermpressadd_)/f3Parameter_->theta_;
+      rhscon_ += (scadtfac_*(scaaf_-scan_)/fldpara_->Dt()
+                + fldpara_->OmTheta()*(scaconvfacn_*conv_scan_-vdivn_)
+                + thermpressadd_)/fldpara_->Theta();
 
       // add second subgrid-scale-velocity part to rhs of continuity equation
       // (subgrid-scale velocity at n+1 also approximately used at n)
-      if (f3Parameter_->cross_ != INPAR::FLUID::cross_stress_stab_none)
-          rhscon_ += (f3Parameter_->omtheta_/f3Parameter_->theta_)
+      if (fldpara_->Cross() != INPAR::FLUID::cross_stress_stab_none)
+          rhscon_ += (fldpara_->OmTheta()/fldpara_->Theta())
                      *scaconvfacn_*sgvelint_.Dot(grad_scan_);
     }
   }
@@ -507,7 +507,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LomaGalPart(
   // 2) additional rhs term of continuity equation
   //----------------------------------------------------------------------
 
-  if (f3Parameter_->is_newton_)
+  if (fldpara_->IsNewton())
   {
     const double timefacfac_scaconvfacaf=timefacfac*scaconvfacaf_;
 
@@ -568,9 +568,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StabLinGalMomResU(
      + sigma*Du + nabla o eps | Du |
                                \  /
   */
-  if(f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent
+  if(fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent
      ||
-     f3Parameter_->cross_==INPAR::FLUID::cross_stress_stab)
+     fldpara_->Cross()==INPAR::FLUID::cross_stress_stab)
   {
     //----------------------------------------------------------------------
     /* GALERKIN residual was rescaled and cannot be reused; so rebuild it */
@@ -584,7 +584,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StabLinGalMomResU(
       idim_nsd_p_idim[idim]=idim*nsd_+idim;
     }
 
-    if (f3Parameter_->is_stationary_ == false)
+    if (fldpara_->IsStationary() == false)
     {
       const double fac_densam=fac_*densam_;
 
@@ -612,7 +612,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StabLinGalMomResU(
       }
     }
 
-    if (f3Parameter_->is_newton_)
+    if (fldpara_->IsNewton())
     {
 //
 //
@@ -636,7 +636,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StabLinGalMomResU(
       }
     }
 
-    if (f3Parameter_->reaction_)
+    if (fldpara_->Reaction())
     {
       const double fac_reac=timefacfac*reacoeff_;
 

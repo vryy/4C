@@ -77,7 +77,7 @@ public:
 
     /// add mixed/stress/hybrid (MSH) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceMSH(
-        DRT::ELEMENTS::Fluid3 *                                             ele,               ///< fluid element
+        DRT::ELEMENTS::Fluid *                                             ele,               ///< fluid element
         DRT::Discretization &                                               dis,               ///< background discretization
         const std::vector<int> &                                            lm,                ///< element local map
         const DRT::UTILS::GaussIntegration &                                intpoints,         ///< background element integration points
@@ -93,7 +93,7 @@ public:
 
     /// add Nitsche (NIT) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceNIT(
-        DRT::ELEMENTS::Fluid3 *                                             ele,               ///< fluid element
+        DRT::ELEMENTS::Fluid *                                             ele,               ///< fluid element
         DRT::Discretization &                                               dis,               ///< background discretization
         const std::vector<int> &                                            lm,                ///< element local map
         const DRT::UTILS::GaussIntegration &                                intpoints,         ///< background element integration points
@@ -109,7 +109,7 @@ public:
 
     /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceNIT2(
-        DRT::ELEMENTS::Fluid3 * ele,
+        DRT::ELEMENTS::Fluid * ele,
         DRT::Discretization & dis,
         const std::vector<int> & lm,
         const DRT::UTILS::GaussIntegration & intpoints,
@@ -127,7 +127,7 @@ public:
       );
 
     ///
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 *              ele,            ///< fluid element
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *              ele,            ///< fluid element
                                          DRT::Discretization &                dis,            ///< discretization
                                          const std::vector<int> &             lm,             ///< local map
                                          Epetra_SerialDenseVector&            elevec1_epetra, ///< element vector
@@ -135,7 +135,7 @@ public:
       );
 
     ///
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid3 *     ele,                ///< fluid element
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *     ele,                ///< fluid element
                                          DRT::Discretization &       dis,                ///< discretization
                                          const std::vector<int> &    lm,                 ///< local map
                                          Epetra_SerialDenseVector&   elevec1_epetra      ///< element vector

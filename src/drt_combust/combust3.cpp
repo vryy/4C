@@ -62,7 +62,7 @@ void DRT::ELEMENTS::Combust3Type::NodalBlockInformation( Element * dwele, int & 
 
 void DRT::ELEMENTS::Combust3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
-  DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeXFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 void DRT::ELEMENTS::Combust3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )

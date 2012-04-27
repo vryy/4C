@@ -74,7 +74,7 @@ DRT::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
                                                  DRT::Discretization & discretization,
                                                  const std::vector<int> & lm,
                                                  Teuchos::ParameterList&    params,
@@ -104,7 +104,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::Evaluate(DRT::ELEMENTS::Fluid3*   
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
-                                                     DRT::ELEMENTS::Fluid3*       ele,
+                                                     DRT::ELEMENTS::Fluid*       ele,
                                                      DRT::Discretization & discretization,
                                                      const std::vector<int> &     lm,
                                                      Teuchos::ParameterList&       params,
@@ -132,7 +132,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
   LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
   LINALG::Matrix<my::nen_,1>    escabofoaf(true);
-  my::BodyForce(ele,my::f3Parameter_,ebofoaf,eprescpgaf,escabofoaf);
+  my::BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, scalar,
@@ -164,7 +164,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   LINALG::Matrix<my::nen_,1>    escaam(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eveln, &escaam,"scaam");
 
-  if (not my::f3Parameter_->is_genalpha_) eaccam.Clear();
+  if (not my::fldpara_->IsGenalpha()) eaccam.Clear();
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -252,10 +252,10 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
   // less accurate) computations
-  if (my::f3Parameter_->is_inconsistent_ == true) my::is_higher_order_ele_ = false;
+  if (my::fldpara_->IsInconsistent() == true) my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  if (isale and my::f3Parameter_->is_stationary_)
+  if (isale and my::fldpara_->IsStationary())
     dserror("No ALE support within stationary fluid solver.");
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
@@ -362,18 +362,18 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // get material parameters at element center
-  if (not my::f3Parameter_->mat_gp_ or not my::f3Parameter_->tau_gp_)
+  if (not my::fldpara_->MatGp() or not my::fldpara_->TauGp())
     my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
   // calculate subgrid viscosity and/or stabilization parameter at element center
-  if (not my::f3Parameter_->tau_gp_)
+  if (not my::fldpara_->TauGp())
   {
     // calculate all-scale subgrid viscosity at element center
     my::visceff_ = my::visc_;
-    if (my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or
-        my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+    if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
+        my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
     {
-      my::CalcSubgrVisc(evelaf,vol,my::f3Parameter_->Cs_,Cs_delta_sq,my::f3Parameter_->l_tau_);
+      my::CalcSubgrVisc(evelaf,vol,my::fldpara_->Cs_,Cs_delta_sq,my::fldpara_->l_tau_);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       my::visceff_ += my::sgvisc_;
     }
@@ -411,18 +411,18 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     // and/or stabilization parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    if (my::f3Parameter_->mat_gp_)
+    if (my::fldpara_->MatGp())
       my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
     // calculate subgrid viscosity and/or stabilization parameter at integration point
-    if (my::f3Parameter_->tau_gp_)
+    if (my::fldpara_->TauGp())
     {
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
-      if (my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or
-          my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
+          my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       {
-        my::CalcSubgrVisc(evelaf,vol,my::f3Parameter_->Cs_,Cs_delta_sq,my::f3Parameter_->l_tau_);
+        my::CalcSubgrVisc(evelaf,vol,my::fldpara_->Cs_,Cs_delta_sq,my::fldpara_->l_tau_);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         my::visceff_ += my::sgvisc_;
       }
@@ -443,7 +443,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     my::ComputeSubgridScaleScalar(escaaf,escaam);
 
     // update material parameters including subgrid-scale part of scalar
-    if (my::f3Parameter_->update_mat_)
+    if (my::fldpara_->UpdateMat())
       my::UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,my::sgscaint_);
 
     //----------------------------------------------------------------------
@@ -453,7 +453,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     lin_resC_DT.Clear();
 
     // transient term
-    if (not my::f3Parameter_->is_stationary_)
+    if (not my::fldpara_->IsStationary())
     {
       const double scadtfacfac = my::scadtfac_*my::fac_;
       for (int ui=0; ui<my::nen_; ++ui)
@@ -463,7 +463,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     }
 
     // convective term
-    const double timefac_scaconvfacaf = my::f3Parameter_->timefac_*my::fac_*my::scaconvfacaf_;
+    const double timefac_scaconvfacaf = my::fldpara_->TimeFac()*my::fac_*my::scaconvfacaf_;
     for (int ui=0; ui<my::nen_; ++ui)
     {
       lin_resC_DT(ui) += timefac_scaconvfacaf*my::conv_c_(ui);
@@ -472,8 +472,8 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     //----------------------------------------------------------------------
     // subgrid-scale-velocity term (governed by cross-stress flag here)
     //----------------------------------------------------------------------
-    if (my::f3Parameter_->cross_    == INPAR::FLUID::cross_stress_stab or
-        my::f3Parameter_->reynolds_ == INPAR::FLUID::reynolds_stress_stab)
+    if (my::fldpara_->Cross()    == INPAR::FLUID::cross_stress_stab or
+        my::fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab)
     {
       //----------------------------------------------------------------------
       //  evaluation of various values at integration point:
@@ -521,7 +521,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       double * svelnp = NULL;
       my::ComputeSubgridScaleVelocity(eaccam,fac1,fac2,fac3,facMtau,*iquad,saccn,sveln,svelnp);
 
-      if (my::f3Parameter_->cross_==INPAR::FLUID::cross_stress_stab)
+      if (my::fldpara_->Cross()==INPAR::FLUID::cross_stress_stab)
       {
         // evaluate subgrid-scale-velocity term
         for (int ui=0; ui<my::nen_; ++ui)
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     // computation of SUPG and contributions to element matrix
     // (potentially including Reynolds-stress term)
     //----------------------------------------------------------------------
-    if (my::f3Parameter_->supg_ == INPAR::FLUID::convective_stab_supg)
+    if (my::fldpara_->SUPG() == INPAR::FLUID::convective_stab_supg)
     {
       // weighting functions for SUPG term
       LINALG::Matrix<my::nen_,1> supg_rey_weight;
@@ -566,7 +566,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       }
 
       // weighting functions for Reynolds-stress term
-      if (my::f3Parameter_->reynolds_ == INPAR::FLUID::reynolds_stress_stab)
+      if (my::fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab)
       {
         for (int vi=0; vi<my::nen_; ++vi)
         {
@@ -581,7 +581,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       lin_resE_DT.Clear();
 
       // transient term
-      if (not my::f3Parameter_->is_stationary_)
+      if (not my::fldpara_->IsStationary())
       {
         const double densamfac = my::fac_*my::densam_;
         for (int ui=0; ui<my::nen_; ++ui)
@@ -591,7 +591,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       }
 
       // convective term
-      const double denstimefac = my::f3Parameter_->timefac_*my::fac_*my::densaf_;
+      const double denstimefac = my::fldpara_->TimeFac()*my::fac_*my::densaf_;
       for (int ui=0; ui<my::nen_; ++ui)
       {
         lin_resE_DT(ui) += denstimefac*my::conv_c_(ui);
@@ -612,7 +612,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
           }
         }
 
-        const double difftimefac = my::f3Parameter_->timefac_*my::fac_*my::diffus_;
+        const double difftimefac = my::fldpara_->TimeFac()*my::fac_*my::diffus_;
         for (int ui=0; ui<my::nen_; ++ui)
         {
           lin_resE_DT(ui) -= difftimefac*diff(ui);

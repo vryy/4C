@@ -41,7 +41,7 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class Fluid3Boundary;
+    class FluidBoundary;
 
 
     //-----------------------------------------------------------------
@@ -61,13 +61,13 @@ namespace DRT
     \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
 
     -----------------------------------------------------------------*/
-    class Fluid3BoundaryWeakDBCInterface
+    class FluidBoundaryWeakDBCInterface
     {
     public:
       //! Empty constructor
-      Fluid3BoundaryWeakDBCInterface() {}
+      FluidBoundaryWeakDBCInterface() {}
       //! Empty destructor
-      virtual ~Fluid3BoundaryWeakDBCInterface() {}
+      virtual ~FluidBoundaryWeakDBCInterface() {}
 
       /*!
         \brief Evaluate the surface elements weak Dirichlet boundary
@@ -89,7 +89,7 @@ namespace DRT
 
       */
       virtual int EvaluateWeakDBC(
-        Fluid3Boundary*             surfele       ,
+        FluidBoundary*             surfele       ,
         ParameterList&             params        ,
         DRT::Discretization&       discretization,
         vector<int>&               lm            ,
@@ -106,7 +106,7 @@ namespace DRT
         \param f3surf (in): fluid surface element
 
       */
-      static Fluid3BoundaryWeakDBCInterface* Impl(DRT::ELEMENTS::Fluid3Boundary* f3surf);
+      static FluidBoundaryWeakDBCInterface* Impl(DRT::ELEMENTS::FluidBoundary* f3surf);
 
     };
 
@@ -120,7 +120,7 @@ namespace DRT
     //-----------------------------------------------------------------
 
     /*!
-    \brief Internal Fluid3Surface weak Dirichlet implementation
+    \brief Internal FluidSurface weak Dirichlet implementation
            (surface and parent element specific)
     */
 
@@ -129,14 +129,14 @@ namespace DRT
     //-----------------------------------------------------------------
     template<DRT::Element::DiscretizationType distype ,
              DRT::Element::DiscretizationType pdistype>
-    class Fluid3SurfaceWeakDBC: public Fluid3BoundaryWeakDBCInterface
+    class FluidSurfaceWeakDBC: public FluidBoundaryWeakDBCInterface
     {
     public:
       /// Constructor with number of nodes
-      Fluid3SurfaceWeakDBC();
+      FluidSurfaceWeakDBC();
 
       /// empty destructor
-      ~Fluid3SurfaceWeakDBC(){return;};
+      ~FluidSurfaceWeakDBC(){return;};
 
       /// number of nodes
       static const int iel  = DRT::UTILS::DisTypeToNumNodePerEle<distype >::numNodePerElement;
@@ -159,7 +159,7 @@ namespace DRT
 
       */
       virtual int EvaluateWeakDBC(
-        Fluid3Boundary*             surfele       ,
+        FluidBoundary*             surfele       ,
         ParameterList&             params        ,
         DRT::Discretization&       discretization,
         vector<int>&               lm            ,
@@ -169,7 +169,7 @@ namespace DRT
     private:
 
       //! pointer to parameter list
-      DRT::ELEMENTS::FluidEleParameter* f3Parameter_;
+      DRT::ELEMENTS::FluidEleParameter* fldpara_;
 
       // nodal arrays
       // ------------
@@ -243,14 +243,14 @@ namespace DRT
      //-----------------------------------------------------------------
      template<DRT::Element::DiscretizationType distype ,
               DRT::Element::DiscretizationType pdistype>
-     class Fluid3LineWeakDBC: public Fluid3BoundaryWeakDBCInterface
+     class FluidLineWeakDBC: public FluidBoundaryWeakDBCInterface
      {
      public:
        /// empty constructor
-       Fluid3LineWeakDBC();
+       FluidLineWeakDBC();
 
        /// empty destructor
-       ~Fluid3LineWeakDBC(){return;};
+       ~FluidLineWeakDBC(){return;};
 
        /// number of nodes
        static const int iel  = DRT::UTILS::DisTypeToNumNodePerEle<distype >::numNodePerElement;
@@ -273,7 +273,7 @@ namespace DRT
 
        */
        virtual int EvaluateWeakDBC(
-         Fluid3Boundary*                lineele       ,
+         FluidBoundary*                lineele       ,
          ParameterList&             params        ,
          DRT::Discretization&       discretization,
          vector<int>&               lm            ,
@@ -283,7 +283,7 @@ namespace DRT
      private:
 
         //! pointer to parameter list
-        DRT::ELEMENTS::FluidEleParameter* f3Parameter_;
+        DRT::ELEMENTS::FluidEleParameter* fldpara_;
 
        // nodal arrays
        // ------------
@@ -370,7 +370,7 @@ namespace DRT
       and references therein
 
     */
-    class Fluid3SurfaceWeakDBCSpaldingsLaw
+    class FluidSurfaceWeakDBCSpaldingsLaw
     {
     public:
       /*! \brief constructor
@@ -379,11 +379,11 @@ namespace DRT
       \param B_in   (in) empirical paramter of Spaldings law, usually 5.5
 
       */
-      Fluid3SurfaceWeakDBCSpaldingsLaw(const double chi_in,
+      FluidSurfaceWeakDBCSpaldingsLaw(const double chi_in,
                                        const double B_in  );
 
       /// Empty destructor
-      virtual ~Fluid3SurfaceWeakDBCSpaldingsLaw() {}
+      virtual ~FluidSurfaceWeakDBCSpaldingsLaw() {}
 
       /*! \brief dynamic computation of the penalty paramter using Spaldings
                  law

@@ -25,7 +25,7 @@ public:
     /// called upon destruction
     virtual void Done();
 
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*        ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*        ele,
                          DRT::Discretization &         discretization,
                          const std::vector<int> &      lm,
                          Teuchos::ParameterList&       params,
@@ -38,7 +38,7 @@ public:
                          bool                          offdiag = false);
 
     /// Evaluate the element at specified gauss points for porous flow
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*               ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid*               ele,
                              DRT::Discretization &                discretization,
                              const std::vector<int> &             lm,
                              Teuchos::ParameterList&              params,
@@ -51,7 +51,7 @@ public:
                              const DRT::UTILS::GaussIntegration & intpoints);
 
     /// Evaluate the element at specified gauss points for porous flow
-    virtual int EvaluateOD(DRT::ELEMENTS::Fluid3*               ele,
+    virtual int EvaluateOD(DRT::ELEMENTS::Fluid*               ele,
                              DRT::Discretization &                discretization,
                              const std::vector<int> &             lm,
                              Teuchos::ParameterList&              params,
@@ -67,7 +67,7 @@ public:
 private:
 
     /*!
-      \brief evaluate function for Fluid3 element for porous flow
+      \brief evaluate function for Fluid element for porous flow
 
       Specific evaluate function without any knowledge about DRT objects. This
       way the element evaluation is independent of the specific mesh storage.
@@ -94,7 +94,7 @@ private:
                      const DRT::UTILS::GaussIntegration &          intpoints);
 
     /*!
-      \brief evaluate function for Fluid3 element for porous flow
+      \brief evaluate function for Fluid element for porous flow
 
       Specific evaluate function without any knowledge about DRT objects. This
       way the element evaluation is independent of the specific mesh storage.

@@ -304,7 +304,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     DRT::Element* actele = discret.lRowElement(i);
     Teuchos::RCP<MAT::Material> mat = actele->Material();
 
-    DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
+    DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
     if ( ele==NULL )
     {
       dserror( "expect fluid element" );
@@ -875,7 +875,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     DRT::Element* actaleele = alediscret.lColElement(i);
     Teuchos::RCP<MAT::Material> mat = actaleele->Material();
 
-    DRT::ELEMENTS::Fluid3 * aleele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actaleele );
+    DRT::ELEMENTS::Fluid * aleele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actaleele );
     if ( aleele==NULL )
     {
       dserror( "expect fluid element" );
@@ -3564,7 +3564,7 @@ void FLD::XFluidFluid::SetElementGeneralFluidParameter()
   // call standard loop over elements
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
-  DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
 #else
   dserror("D_FLUID3 required");
 #endif
@@ -3588,7 +3588,7 @@ void FLD::XFluidFluid::SetElementTurbulenceParameter()
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
 #else
   dserror("D_FLUID3 required");
 #endif
@@ -3630,7 +3630,7 @@ void FLD::XFluidFluid::SetElementTimeParameter()
   // call standard loop over elements
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
-  DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
 #else
   dserror("D_FLUID3 required");
 #endif
@@ -3863,7 +3863,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
       Teuchos::RCP<MAT::Material> mat = actele->Material();
 
-      DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
+      DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
 
       GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
       DRT::Element::LocationArray la( 1 );
@@ -3962,7 +3962,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
       Teuchos::RCP<MAT::Material> mat = actele->Material();
 
-      DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
+      DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
 
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*embdis_,alela,false);

@@ -34,7 +34,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
-    DRT::ELEMENTS::Fluid3*    ele,
+    DRT::ELEMENTS::Fluid*    ele,
     DRT::Discretization&      discretization,
     vector<int>&              lm            ,
     Epetra_SerialDenseVector& elevec1       )
@@ -101,7 +101,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
-    DRT::ELEMENTS::Fluid3*          ele,
+    DRT::ELEMENTS::Fluid*          ele,
     ParameterList&                  params,
     Teuchos::RCP<MAT::Material>&    mat,
     DRT::Discretization&            discretization,
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
-    DRT::ELEMENTS::Fluid3*          ele,
+    DRT::ELEMENTS::Fluid*          ele,
     ParameterList&                  params,
     Teuchos::RCP<MAT::Material>&    mat,
     DRT::Discretization&            discretization,
@@ -220,7 +220,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
          const double a      = M_PI/4.0;
          const double d      = M_PI/2.0;
 
-         const double t = f3Parameter_->time_;
+         const double t = fldpara_->Time();
 
          // compute analytical pressure
          p = -a*a/2.0 *
@@ -406,7 +406,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ExtractValuesFromGlobalVector( const 
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
-  Fluid3*                    ele,
+  Fluid*                    ele,
   ParameterList&             params,
   DRT::Discretization&       discretization,
   vector<int>&               lm,
@@ -429,13 +429,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //  LINALG::Matrix<my::nsd_,my::nen_> eacc;
 //  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eacc, NULL,"acc");
 //  LINALG::Matrix<my::nsd_,my::nen_> fsevel(true);
-//  if (my::f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+//  if (my::fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
 //  {
 //    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &fsevel, NULL,"fsvel");
 //  }
 //  LINALG::Matrix<my::nsd_,my::nen_> evel_hat;
 //  LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> ereynoldsstress_hat;
-//  if (my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
+//  if (my::fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
 //  {
 //    RCP<Epetra_MultiVector> filtered_vel = params.get<RCP<Epetra_MultiVector> >("filtered vel");
 //    RCP<Epetra_MultiVector> filtered_reystre = params.get<RCP<Epetra_MultiVector> >("filtered reystr");
@@ -489,7 +489,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //  // convective term
 //  convvelint_.Update(velint_);
 //
-//  if (f3Parameter_->mat_gp_ or f3Parameter_->tau_gp_)
+//  if (fldpara_->MatGp() or fldpara_->TauGp())
 //   dserror ("Evaluation of material or stabilization parameters at gauss point not supported,yet!");
 //  // ---------------------------------------------------------------------
 //  // get material
@@ -507,7 +507,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //  }
 //  else dserror("Only material m_fluid supported");
 //  densaf_ = 1.0;
-//  if (f3Parameter_->physicaltype_ != INPAR::FLUID::incompressible)
+//  if (fldpara_->PhysicalType() != INPAR::FLUID::incompressible)
 //    dserror("CalcDissipation() only for incompressible flows!");
 //
 //
@@ -516,14 +516,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //  // ---------------------------------------------------------------------
 //  double Cs_delta_sq = ele->CsDeltaSq();
 //  double visceff = visc_;
-//  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+//  if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
 //  {
-//    CalcSubgrVisc(evel,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
+//    CalcSubgrVisc(evel,vol,fldpara_->Cs(),Cs_delta_sq,fldpara_->LTau());
 //    // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
 //    visceff += sgvisc_;
 //  }
-//  else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
-//    CalcFineScaleSubgrVisc(evel,fsevel,vol,f3Parameter_->Cs_);
+//  else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
+//    CalcFineScaleSubgrVisc(evel,fsevel,vol,fldpara_->Cs());
 //
 //  // ---------------------------------------------------------------------
 //  // calculate stabilization parameters at element center
@@ -540,7 +540,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //  LINALG::Matrix<nsd_,nen_> ebofo(true);
 //  LINALG::Matrix<nsd_,nen_> epgrad(true);
 //  LINALG::Matrix<nen_,1>    escabofo(true);
-//  BodyForce(ele, f3Parameter_, ebofo, epgrad, escabofo);
+//  BodyForce(ele, fldpara_, ebofo, epgrad, escabofo);
 //
 //  // working arrays for the quantities we want to compute
 //  double eps_visc        = 0.0;
@@ -572,7 +572,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //    // get velocity derivatives at integration point
 //    vderxy_.MultiplyNT(evel,derxy_);
 //
-//    if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+//    if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
 //      fsvderxy_.MultiplyNT(fsevel,derxy_);
 //    // get pressure gradient at integration point
 //    gradp_.Multiply(derxy_,epre);
@@ -586,7 +586,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //    // get acceleration at integration point
 //    accint_.Multiply(eacc,funct_);
 //
-//    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
+//    if(fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
 //    {
 //      reystressinthat_.Clear();
 //      velinthat_.Clear();
@@ -674,7 +674,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
                  turb   |       \     /         \     /   |
                          \                                /
     */
-//    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky)
+//    if(fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky)
 //    {
 //      for(int rr=0;rr<nsd_;++rr)
 //      {
@@ -694,7 +694,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
                  turb   |       \      /         \     /   |
                          \                                /
     */
-//    if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+//    if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
 //    {
 //      LINALG::Matrix<nsd_,nsd_> fstwo_epsilon;
 //      for(int rr=0;rr<nsd_;++rr)
@@ -723,7 +723,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
             |        \     /         \     /   |
              \                                /
     */
-//    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
+//    if(fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
 //    {
 //      LINALG::Matrix<nsd_,nsd_> tau_scale_sim;
 //      for(int rr=0;rr<nsd_;++rr)
@@ -750,7 +750,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //      {
 //        for(int mm=0;mm<nsd_;++mm)
 //        {
-//          eps_scsim += -0.5*fac_*densaf_*f3Parameter_->Cl_*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
+//          eps_scsim += -0.5*fac_*densaf_*fldpara_->Cl()*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
 //        }
 //      }
 //      if (Production >= 0.0)
@@ -760,7 +760,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //        {
 //          for(int mm=0;mm<nsd_;++mm)
 //          {
-//            eps_scsimfs += -0.5*fac_*densaf_*f3Parameter_->Cl_*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
+//            eps_scsimfs += -0.5*fac_*densaf_*fldpara_->Cl()*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
 //          }
 //        }
 //      }
@@ -771,7 +771,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //        {
 //          for(int mm=0;mm<nsd_;++mm)
 //          {
-//            eps_scsimbs += -0.5*fac_*densaf_*f3Parameter_->Cl_*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
+//            eps_scsimbs += -0.5*fac_*densaf_*fldpara_->Cl()*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
 //          }
 //        }
 //      }
@@ -779,7 +779,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //
 //    // contribution of this gausspoint to energy
 //    // dissipation by supg-stabilization
-//    if (f3Parameter_->supg_ == INPAR::FLUID::convective_stab_supg)
+//    if (fldpara_->SUPG() == INPAR::FLUID::convective_stab_supg)
 //    {
 //      for (int rr=0;rr<nsd_;rr++)
 //      {
@@ -789,14 +789,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //
 //    // contribution of this gausspoint to energy
 //    // dissipation by continuity-stabilization
-//    if (f3Parameter_->cstab_ == INPAR::FLUID::continuity_stab_yes)
+//    if (fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes)
 //    {
 //      eps_cstab += fac_ * vdiv_ * tau_C * vdiv_;
 //    }
 //
 //    // contribution of this gausspoint to energy
 //    // dissipation by pspg-stabilization
-//    if (f3Parameter_->pspg_ == INPAR::FLUID::pstab_use_pspg)
+//    if (fldpara_->PSPG() == INPAR::FLUID::pstab_use_pspg)
 //    {
 //      for (int rr=0;rr<nsd_;rr++)
 //      {
@@ -1021,9 +1021,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
       {
         printf("pressure dof (%d) %f\n",nn,epsilon);
 
-        if (f3Parameter_->is_genalpha_)
+        if (fldpara_->IsGenalpha())
         {
-          checkepreaf(nn)+=f3Parameter_->alphaF_*epsilon;
+          checkepreaf(nn)+=fldpara_->AlphaF()*epsilon;
         }
         else
         {
@@ -1034,10 +1034,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
       {
         printf("velocity dof %d (%d)\n",rr,nn);
 
-        if (f3Parameter_->is_genalpha_)
+        if (fldpara_->IsGenalpha())
         {
-          checkevelaf(rr,nn)+=f3Parameter_->alphaF_*epsilon;
-          checkeaccam(rr,nn)+=f3Parameter_->alphaM_/(f3Parameter_->gamma_*f3Parameter_->dt_)*epsilon;
+          checkevelaf(rr,nn)+=fldpara_->AlphaF()*epsilon;
+          checkeaccam(rr,nn)+=fldpara_->AlphaM()/(fldpara_->Gamma()*fldpara_->Dt())*epsilon;
         }
         else
         {
@@ -1087,11 +1087,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
 
         // For af-generalized-alpha scheme, the residual vector for the
         // solution rhs is scaled on the time-integration level...
-        if (f3Parameter_->is_genalpha_)
+        if (fldpara_->IsGenalpha())
         {
-          val   =-(eforce(mm)   /(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_);
-          lin   =-(eforce(mm)   /(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_)+estif(mm,dof);
-          nonlin=-(checkvec1(mm)/(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_);
+          val   =-(eforce(mm)   /(epsilon))*(fldpara_->Gamma()*fldpara_->Dt())/(fldpara_->AlphaM());
+          lin   =-(eforce(mm)   /(epsilon))*(fldpara_->Gamma()*fldpara_->Dt())/(fldpara_->AlphaM())+estif(mm,dof);
+          nonlin=-(checkvec1(mm)/(epsilon))*(fldpara_->Gamma()*fldpara_->Dt())/(fldpara_->AlphaM());
         }
         else
         {

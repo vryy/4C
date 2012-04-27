@@ -237,14 +237,14 @@ public:
 //
 //
 //
-//  void findNeighborElement(DRT::ELEMENTS::Fluid3 * actele,
+//  void findNeighborElement(DRT::ELEMENTS::Fluid * actele,
 //                           RCP<DRT::Element> surface,
 //                           bool & neighbor_found,
 //                           int & neighbor_id);
 //
 //
 //  void stabilizeStandardElement     ( DRT::AssembleStrategy& strategy,
-//                                      DRT::ELEMENTS::Fluid3 *actele,
+//                                      DRT::ELEMENTS::Fluid *actele,
 //                                      DRT::Discretization & discret);
 //
 //

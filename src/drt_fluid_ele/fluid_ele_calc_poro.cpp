@@ -2,7 +2,7 @@
 /*!
 \file fluid_ele_calc_poro.cpp
 
-\brief Internal implementation of Fluid3 element
+\brief Internal implementation of Fluid element
 
 <pre>
 Maintainer: Anh-Tu Vuong
@@ -82,7 +82,7 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
                                                  DRT::Discretization & discretization,
                                                  const std::vector<int> & lm,
                                                  Teuchos::ParameterList&    params,
@@ -112,7 +112,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid3*   
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
-    DRT::ELEMENTS::Fluid3* ele,
+    DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization & discretization,
     const std::vector<int> & lm,
     Teuchos::ParameterList& params,
@@ -144,7 +144,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
   LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
   LINALG::Matrix<my::nen_,1>    escabofoaf(true);
-  BodyForce(ele,my::f3Parameter_,ebofoaf,eprescpgaf,escabofoaf);
+  BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
@@ -165,7 +165,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
 
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
-  if (my::f3Parameter_->is_genalpha_np_)
+  if (my::fldpara_->IsGenalphaNP())
     my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         NULL, "velnp");
 
@@ -189,7 +189,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
 
-  if (not my::f3Parameter_->is_genalpha_)
+  if (not my::fldpara_->IsGenalpha())
     eaccam.Clear();
 
   // ---------------------------------------------------------------------
@@ -226,7 +226,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
-    DRT::ELEMENTS::Fluid3* ele,
+    DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization & discretization,
     const std::vector<int> & lm,
     Teuchos::ParameterList& params,
@@ -258,7 +258,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
   LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
   LINALG::Matrix<my::nen_,1>    escabofoaf(true);
-  my::BodyForce(ele,my::f3Parameter_,ebofoaf,eprescpgaf,escabofoaf);
+  my::BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
@@ -279,7 +279,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
 
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
-  if (my::f3Parameter_->is_genalpha_np_)
+  if (my::fldpara_->IsGenalphaNP())
     ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         NULL, "velnp");
 
@@ -300,7 +300,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
 
-  if (not my::f3Parameter_->is_genalpha_)
+  if (not my::fldpara_->IsGenalpha())
     eaccam.Clear();
 
   // ---------------------------------------------------------------------
@@ -378,10 +378,10 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
   // less accurate) computations
-  if (my::f3Parameter_->is_inconsistent_ == true) my::is_higher_order_ele_ = false;
+  if (my::fldpara_->IsInconsistent() == true) my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  if (isale and my::f3Parameter_->is_stationary_)
+  if (isale and my::fldpara_->IsStationary())
     dserror("No ALE support within stationary fluid solver.");
 
   //initporosity_   = params.get<double>("initporosity");
@@ -445,11 +445,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
   // less accurate) computations
-  if (my::f3Parameter_->is_inconsistent_ == true)
+  if (my::fldpara_->IsInconsistent() == true)
     my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  if (isale and my::f3Parameter_->is_stationary_)
+  if (isale and my::fldpara_->IsStationary())
     dserror("No ALE support within stationary fluid solver.");
 
     // ---------------------------------------------------------------------
@@ -539,7 +539,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   const double vol = my::fac_;
 
   // get material parameters at element center
-  if (not my::f3Parameter_->mat_gp_ or not my::f3Parameter_->tau_gp_)
+  if (not my::fldpara_->MatGp() or not my::fldpara_->TauGp())
   {
     const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
     if(actmat->MaterialType() != INPAR::MAT::m_fluidporo)
@@ -571,18 +571,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   }
 
   // calculate stabilization parameters at element center
-  if (not my::f3Parameter_->tau_gp_)
+  if (not my::fldpara_->TauGp())
   {
     // check stabilization parameter definition for porous flow
-    if (not (my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-             my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+    if (not (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+             my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
       dserror("incorrect definition of stabilization parameter for porous flow");
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient
     double sigma_tot = my::reacoeff_;
-    if (my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-      sigma_tot += 1.0/my::f3Parameter_->timefac_;
+    if (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+      sigma_tot += 1.0/my::fldpara_->TimeFac();
 
     // calculate characteristic element length
     double strle  = 0.0;
@@ -674,7 +674,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     // parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    if (my::f3Parameter_->mat_gp_)
+    if (my::fldpara_->MatGp())
     {
       const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
 
@@ -702,18 +702,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     }
 
     // calculate stabilization parameters at integration point
-    if (my::f3Parameter_->tau_gp_)
+    if (my::fldpara_->TauGp())
     {
       // check stabilization parameter definition for porous flow
-      if (not (my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-               my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+      if (not (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+               my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
         dserror("incorrect definition of stabilization parameter for porous flow");
 
       // total reaction coefficient sigma_tot: sum of "artificial" reaction
       // due to time factor and reaction coefficient
       double sigma_tot = my::reacoeff_;
-      if (my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-        sigma_tot += 1.0/my::f3Parameter_->timefac_;
+      if (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+        sigma_tot += 1.0/my::fldpara_->TimeFac();
 
       // calculate characteristic element length
       double strle  = 0.0;
@@ -753,7 +753,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
     double gridvdiv=0.0;
 
-    if (not my::f3Parameter_->is_genalpha_np_)
+    if (not my::fldpara_->IsGenalphaNP())
     {
       for (int idim = 0; idim <my::nsd_; ++idim)
       {
@@ -989,9 +989,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
     //----------------------------------------------------------------------
-    const double timefacfac    = my::f3Parameter_->timefac_    * my::fac_;
-    const double timefacfacpre = my::f3Parameter_->timefacpre_ * my::fac_;
-    const double rhsfac        = my::f3Parameter_->timefacrhs_ * my::fac_;
+    const double timefacfac    = my::fldpara_->TimeFac()    * my::fac_;
+    const double timefacfacpre = my::fldpara_->TimeFacPre() * my::fac_;
+    const double rhsfac        = my::fldpara_->TimeFacRhs() * my::fac_;
 
     //----------------------------------------------------------------------
     // computation of various residuals and residual-based values such as
@@ -999,10 +999,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     //----------------------------------------------------------------------
     // compute rhs for momentum equation and momentum residual
     // -> different for generalized-alpha and other time-integration schemes
-    //GetResidualMomentumEq(eaccam,my::f3Parameter_->timefac_);
-    if (my::f3Parameter_->is_genalpha_)
+    //GetResidualMomentumEq(eaccam,my::fldpara_->TimeFac());
+    if (my::fldpara_->IsGenalpha())
     {
-      if (my::f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+      if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
         dserror("The combination of generalized-alpha time integration and a Boussinesq approximation has not been implemented yet!");
 
       // rhs of momentum equation: density*bodyforce at n+alpha_F
@@ -1020,59 +1020,59 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
   //    // modify integration factors for right-hand side such that they
   //    // are identical in case of generalized-alpha time integration:
-  //    rhsfac   /= my::f3Parameter_->alphaF_;
+  //    rhsfac   /= my::fldpara_->AlphaF();
   //    rhsresfac = rhsfac;
     }
     else
     {
-      if (not my::f3Parameter_->is_stationary_)
+      if (not my::fldpara_->IsStationary())
       {
         // rhs of instationary momentum equation:
         // density*theta*bodyforce at n+1 + density*(histmom/dt)
         // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
         // else:                                      f = rho * g
-        if (my::f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
-          //my::rhsmom_.Update((densn_/my::f3Parameter_->dt_),histmom_,deltadens_*my::f3Parameter_->theta_,my::bodyforce_);
-          my::rhsmom_.Update((my::densn_/my::f3Parameter_->dt_/my::f3Parameter_->theta_),my::histmom_,my::deltadens_,my::bodyforce_);
+        if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
+          //my::rhsmom_.Update((densn_/my::fldpara_->Dt()),histmom_,deltadens_*my::fldpara_->Theta(),my::bodyforce_);
+          my::rhsmom_.Update((my::densn_/my::fldpara_->Dt()/my::fldpara_->Theta()),my::histmom_,my::deltadens_,my::bodyforce_);
         else
-          //my::rhsmom_.Update((my::densn_/my::f3Parameter_->dt_),my::histmom_,my::densaf_*my::f3Parameter_->theta_,my::bodyforce_);
-          my::rhsmom_.Update((my::densn_/my::f3Parameter_->dt_/my::f3Parameter_->theta_),my::histmom_,my::densaf_,my::bodyforce_);
+          //my::rhsmom_.Update((my::densn_/my::fldpara_->Dt()),my::histmom_,my::densaf_*my::fldpara_->Theta(),my::bodyforce_);
+          my::rhsmom_.Update((my::densn_/my::fldpara_->Dt()/my::fldpara_->Theta()),my::histmom_,my::densaf_,my::bodyforce_);
 
         // compute instationary momentum residual:
         // momres_old = u_(n+1)/dt + theta ( ... ) - my::histmom_/dt - theta*my::bodyforce_
         for (int rr=0;rr<my::nsd_;++rr)
         {
-          /*my::momres_old_(rr) = my::densaf_*my::velint_(rr)/my::f3Parameter_->dt_
-                             +my::f3Parameter_->theta_*(my::densaf_*conv_old_(rr)+my::gradp_(rr)
+          /*my::momres_old_(rr) = my::densaf_*my::velint_(rr)/my::fldpara_->Dt()
+                             +my::fldpara_->Theta()*(my::densaf_*conv_old_(rr)+my::gradp_(rr)
                              -2*visceff_*visc_old_(rr)+my::reacoeff_*my::velint_(rr))-my::rhsmom_(rr);*/
-          my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::f3Parameter_->dt_
-                           +my::f3Parameter_->theta_*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-                           -2*visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))))/my::f3Parameter_->theta_)-my::rhsmom_(rr);
+          my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::fldpara_->Dt()
+                           +my::fldpara_->Theta()*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
+                           -2*visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))))/my::fldpara_->Theta())-my::rhsmom_(rr);
   #ifdef TAU_SUBGRID_IN_RES_MOM
-          if (my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
-             or my::f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+          if (my::fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
+             or my::fldpara_->TurbModAction() == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
           {
   #if 0
-            my::momres_old_(rr) += my::f3Parameter_->Cl_*(reystresshatdiv_(rr,0)
+            my::momres_old_(rr) += my::fldpara_->Cl()*(reystresshatdiv_(rr,0)
                                - (velinthat_(0,0) * velhatderxy_(rr,0)
                                  +velinthat_(1,0) * velhatderxy_(rr,1)
                                  +velinthat_(2,0) * velhatderxy_(rr,2)
                                  +velinthat_(nn,0) * velhatdiv_));
   #endif
-            my::momres_old_(rr) += my::f3Parameter_->Cl_* (reystresshatdiv_(rr,0) - velhativelhatjdiv_(rr,0));
+            my::momres_old_(rr) += my::fldpara_->Cl()* (reystresshatdiv_(rr,0) - velhativelhatjdiv_(rr,0));
           }
   #endif
        }
 
   //      // modify residual integration factor for right-hand side in instat. case:
-  //      rhsresfac *= my::f3Parameter_->dt_;
+  //      rhsresfac *= my::fldpara_->Dt();
       }
       else
       {
         // rhs of stationary momentum equation: density*bodyforce
         // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
         // else:                                      f = rho * g
-        if (my::f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+        if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
              my::rhsmom_.Update(my::deltadens_,my::bodyforce_, 0.0);
         else my::rhsmom_.Update(my::densaf_,my::bodyforce_,0.0);
 
@@ -1101,7 +1101,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
     // compute residual of continuity equation
     my::conres_old_ = (dphi_dp  * press_dot+ dphi_dJ  * J  * gridvdiv
-          + porosity*my::vdiv_+grad_porosity_relvelint)/my::f3Parameter_->theta_-my::rhscon_;
+          + porosity*my::vdiv_+grad_porosity_relvelint)/my::fldpara_->Theta()-my::rhscon_;
 
 
     // compute first version of velocity-based momentum residual containing
@@ -1112,7 +1112,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
       idim_nsd_p_idim[idim]=idim*my::nsd_+idim;
     }
 
-    if (my::f3Parameter_->is_stationary_ == false)
+    if (my::fldpara_->IsStationary() == false)
     {
       const double fac_densam=my::fac_*my::densam_;
 
@@ -1197,11 +1197,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     } // ui
 
     // inertia terms on the right hand side for instationary fluids
-    if (not my::f3Parameter_->is_stationary_)
+    if (not my::fldpara_->IsStationary())
     {
       for (int idim = 0; idim <my::nsd_; ++idim)
       {
-        if (my::f3Parameter_->is_genalpha_) resM_Du(idim)+=rhsfac*my::densam_*my::accint_(idim);
+        if (my::fldpara_->IsGenalpha()) resM_Du(idim)+=rhsfac*my::densam_*my::accint_(idim);
         else                            resM_Du(idim)+=my::fac_*my::densaf_*my::velint_(idim);
       }
 
@@ -1322,7 +1322,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
 /************************************************************************/
     // 2) stabilization of continuity equation
-    if (my::f3Parameter_->cstab_ == INPAR::FLUID::continuity_stab_yes)
+    if (my::fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes)
     {
       LINALG::Matrix<my::nsd_,my::nsd_> contstab(true);
       const double conti_stab_fac = timefacfacpre*my::tau_(2);
@@ -1522,7 +1522,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
      */
 
-     if (my::f3Parameter_->is_stationary_ == false)
+     if (my::fldpara_->IsStationary() == false)
      {
        for (int vi=0; vi<my::nen_; ++vi)
        {
@@ -1567,7 +1567,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
                      rhsfac);
 
     // 6) PSPG term
-    if (my::f3Parameter_->pspg_ == INPAR::FLUID::pstab_use_pspg)
+    if (my::fldpara_->PSPG() == INPAR::FLUID::pstab_use_pspg)
     {
       PSPG(estif_q_u,
            ppmat,
@@ -1580,7 +1580,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     }
 
     // 7) reactive stabilization term
-    if (my::f3Parameter_->rstab_ != INPAR::FLUID::reactive_stab_none)
+    if (my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
     {
       ReacStab(estif_u,
                estif_p_v,
@@ -1741,7 +1741,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
   //const double vol = fac_;
 
   // get material parameters at element center
-  if (not my::f3Parameter_->mat_gp_ or not my::f3Parameter_->tau_gp_)
+  if (not my::fldpara_->MatGp() or not my::fldpara_->TauGp())
   {
     const MAT::FluidPoro* actmat =
         static_cast<const MAT::FluidPoro*> (material.get());
@@ -1770,18 +1770,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
 
     // calculate stabilization parameters at element center
     /*
-     if (not my::f3Parameter_->tau_gp_)
+     if (not my::fldpara_->TauGp())
      {
      // check stabilization parameter definition for porous flow
-     if (not (my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-     my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+     if (not (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+     my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
      dserror("incorrect definition of stabilization parameter for porous flow");
 
      // total reaction coefficient sigma_tot: sum of "artificial" reaction
      // due to time factor and reaction coefficient
      double sigma_tot = my::reacoeff_;
-     if (my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-     sigma_tot += 1.0/my::f3Parameter_->timefac_;
+     if (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+     sigma_tot += 1.0/my::fldpara_->TimeFac();
 
      // calculate characteristic element length
      double strle  = 0.0;
@@ -1878,7 +1878,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
       //----------------------------------------------------------------------
       // get material parameters at integration point
 
-      if (my::f3Parameter_->mat_gp_)
+      if (my::fldpara_->MatGp())
       {
         const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
 
@@ -1905,18 +1905,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
       }
       /*
        // calculate stabilization parameters at integration point
-       if (my::f3Parameter_->tau_gp_)
+       if (my::fldpara_->TauGp())
        {
        // check stabilization parameter definition for porous flow
-       if (not (my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-       my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+       if (not (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+       my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
        dserror("incorrect definition of stabilization parameter for porous flow");
 
        // total reaction coefficient sigma_tot: sum of "artificial" reaction
        // due to time factor and reaction coefficient
        double sigma_tot = my::reacoeff_;
-       if (my::f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-       sigma_tot += 1.0/my::f3Parameter_->timefac_;
+       if (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+       sigma_tot += 1.0/my::fldpara_->TimeFac();
 
        // calculate characteristic element length
        double strle  = 0.0;
@@ -1955,7 +1955,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
       my::vdiv_ = 0.0;
       // double dispdiv=0.0;
       double gridvdiv = 0.0;
-      if (not my::f3Parameter_->is_genalpha_np_)
+      if (not my::fldpara_->IsGenalphaNP())
       {
         for (int idim = 0; idim <my::nsd_; ++idim)
         {
@@ -2200,9 +2200,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
       //----------------------------------------------------------------------
       // set time-integration factors for left- and right-hand side
       //----------------------------------------------------------------------
-      const double timefacfac = my::f3Parameter_->timefac_ * my::fac_;
-      const double timefacfacpre = my::f3Parameter_->timefacpre_ * my::fac_;
-      //    const double rhsfac        = my::f3Parameter_->timefacrhs_ * my::fac_;
+      const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
+      const double timefacfacpre = my::fldpara_->TimeFacPre() * my::fac_;
+      //    const double rhsfac        = my::fldpara_->TimeFacRhs() * my::fac_;
 
       //----------------------------------------------------------------------
       // computation of various residuals and residual-based values such as
@@ -2210,10 +2210,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
       //----------------------------------------------------------------------
       // compute rhs for momentum equation and momentum residual
       // -> different for generalized-alpha and other time-integration schemes
-      //GetResidualMomentumEq(eaccam,my::f3Parameter_->timefac_);
-      if (my::f3Parameter_->is_genalpha_)
+      //GetResidualMomentumEq(eaccam,my::fldpara_->TimeFac());
+      if (my::fldpara_->IsGenalpha())
       {
-        if (my::f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+        if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
         dserror("The combination of generalized-alpha time integration and a Boussinesq approximation has not been implemented yet!");
 
         // rhs of momentum equation: density*bodyforce at n+alpha_F
@@ -2231,45 +2231,45 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
 
         //    // modify integration factors for right-hand side such that they
         //    // are identical in case of generalized-alpha time integration:
-        //    rhsfac   /= my::f3Parameter_->alphaF_;
+        //    rhsfac   /= my::fldpara_->AlphaF();
         //    rhsresfac = rhsfac;
       }
       else
       {
-        if (not my::f3Parameter_->is_stationary_)
+        if (not my::fldpara_->IsStationary())
         {
           // rhs of instationary momentum equation:
           // density*theta*bodyforce at n+1 + density*(histmom/dt)
           // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
           // else:                                      f = rho * g
-          if (my::f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
-          //my::rhsmom_.Update((densn_/my::f3Parameter_->dt_),my::histmom_,deltadens_*my::f3Parameter_->theta_,my::bodyforce_);
-          my::rhsmom_.Update((my::densn_/my::f3Parameter_->dt_/my::f3Parameter_->theta_),my::histmom_,my::deltadens_,my::bodyforce_);
+          if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
+          //my::rhsmom_.Update((densn_/my::fldpara_->Dt()),my::histmom_,deltadens_*my::fldpara_->Theta(),my::bodyforce_);
+          my::rhsmom_.Update((my::densn_/my::fldpara_->Dt()/my::fldpara_->Theta()),my::histmom_,my::deltadens_,my::bodyforce_);
           else
-          //my::rhsmom_.Update((densn_/my::f3Parameter_->dt_),my::histmom_,my::densaf_*my::f3Parameter_->theta_,my::bodyforce_);
-          my::rhsmom_.Update((my::densn_/my::f3Parameter_->dt_/my::f3Parameter_->theta_),my::histmom_,my::densaf_,my::bodyforce_);
+          //my::rhsmom_.Update((densn_/my::fldpara_->Dt()),my::histmom_,my::densaf_*my::fldpara_->Theta(),my::bodyforce_);
+          my::rhsmom_.Update((my::densn_/my::fldpara_->Dt()/my::fldpara_->Theta()),my::histmom_,my::densaf_,my::bodyforce_);
 
           // compute instationary momentum residual:
           // momres_old = u_(n+1)/dt + theta ( ... ) - my::histmom_/dt - theta*my::bodyforce_
           for (int rr=0;rr<my::nsd_;++rr)
           {
-            /*my::momres_old_(rr) = my::densaf_*my::velint_(rr)/my::f3Parameter_->dt_
-             +my::f3Parameter_->theta_*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
+            /*my::momres_old_(rr) = my::densaf_*my::velint_(rr)/my::fldpara_->Dt()
+             +my::fldpara_->Theta()*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
              -2*visceff_*my::visc_old_(rr)+my::reacoeff_*my::velint_(rr))-my::rhsmom_(rr);*/
-            my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::f3Parameter_->dt_
-                    +my::f3Parameter_->theta_*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-                        -2*visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))))/my::f3Parameter_->theta_)-my::rhsmom_(rr);
+            my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::fldpara_->Dt()
+                    +my::fldpara_->Theta()*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
+                        -2*visceff_*my::visc_old_(rr)+my::reacoeff_*porosity*(my::velint_(rr)+my::convvelint_(rr))))/my::fldpara_->Theta())-my::rhsmom_(rr);
         }
 
         //      // modify residual integration factor for right-hand side in instat. case:
-        //      rhsresfac *= my::f3Parameter_->dt_;
+        //      rhsresfac *= my::fldpara_->Dt();
       }
       else
       {
         // rhs of stationary momentum equation: density*bodyforce
         // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
         // else:                                      f = rho * g
-        if (my::f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+        if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
         my::rhsmom_.Update(my::deltadens_,my::bodyforce_, 0.0);
         else my::rhsmom_.Update(my::densaf_,my::bodyforce_,0.0);
 
@@ -2540,7 +2540,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
      \                           /         \                                           /
      */
 
-    if (not my::f3Parameter_->is_stationary_)
+    if (not my::fldpara_->IsStationary())
     {
       for (int ui=0; ui<my::nen_; ++ui)
       {
@@ -2596,7 +2596,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
     } // vi
 
     //transient coupling terms
-    if (my::f3Parameter_->is_stationary_ == false)
+    if (my::fldpara_->IsStationary() == false)
     {
       LINALG::Matrix<1,my::nen_*my::nsd_> grad_porosity_us_gridvelint;
       grad_porosity_us_gridvelint.MultiplyTN(gridvelint,dgradphi_dus);
@@ -2660,7 +2660,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
         dphi_dJ,
         J,
         gradJ,
-        my::f3Parameter_->timefac_,
+        my::fldpara_->TimeFac(),
         timefacfac);
 
     else
@@ -2749,26 +2749,26 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
     double v = my::fac_ * my::funct_(vi, 0);
     for (int ui = 0; ui < my::nen_; ++ui)
     {
-      emesh(vi * 4, ui * 3) += v * (my::velint_(0) - my::rhsmom_(0) * my::f3Parameter_->dt_
-          * my::f3Parameter_->theta_) * my::derxy_(0, ui);
+      emesh(vi * 4, ui * 3) += v * (my::velint_(0) - my::rhsmom_(0) * my::fldpara_->Dt()
+          * my::fldpara_->Theta()) * my::derxy_(0, ui);
       emesh(vi * 4, ui * 3 + 1) += v * (my::velint_(0) - my::rhsmom_(0)
-          * my::f3Parameter_->dt_ * my::f3Parameter_->theta_) * my::derxy_(1, ui);
+          * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(1, ui);
       emesh(vi * 4, ui * 3 + 2) += v * (my::velint_(0) - my::rhsmom_(0)
-          * my::f3Parameter_->dt_ * my::f3Parameter_->theta_) * my::derxy_(2, ui);
+          * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(2, ui);
 
       emesh(vi * 4 + 1, ui * 3) += v * (my::velint_(1) - my::rhsmom_(1)
-          * my::f3Parameter_->dt_ * my::f3Parameter_->theta_) * my::derxy_(0, ui);
+          * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(0, ui);
       emesh(vi * 4 + 1, ui * 3 + 1) += v * (my::velint_(1) - my::rhsmom_(1)
-          * my::f3Parameter_->dt_ * my::f3Parameter_->theta_) * my::derxy_(1, ui);
+          * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(1, ui);
       emesh(vi * 4 + 1, ui * 3 + 2) += v * (my::velint_(1) - my::rhsmom_(1)
-          * my::f3Parameter_->dt_ * my::f3Parameter_->theta_) * my::derxy_(2, ui);
+          * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(2, ui);
 
       emesh(vi * 4 + 2, ui * 3) += v * (my::velint_(2) - my::rhsmom_(2)
-          * my::f3Parameter_->dt_ * my::f3Parameter_->theta_) * my::derxy_(0, ui);
+          * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(0, ui);
       emesh(vi * 4 + 2, ui * 3 + 1) += v * (my::velint_(2) - my::rhsmom_(2)
-          * my::f3Parameter_->dt_ * my::f3Parameter_->theta_) * my::derxy_(1, ui);
+          * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(1, ui);
       emesh(vi * 4 + 2, ui * 3 + 2) += v * (my::velint_(2) - my::rhsmom_(2)
-          * my::f3Parameter_->dt_ * my::f3Parameter_->theta_) * my::derxy_(2, ui);
+          * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(2, ui);
     }
   }
 

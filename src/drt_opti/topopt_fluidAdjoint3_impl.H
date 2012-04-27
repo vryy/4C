@@ -35,14 +35,14 @@ class FluidAdjoint3ImplParameter;
 /// Internal FluidAdjoint3 implementation
 /*!
     This internal class keeps all the working arrays needed to calculate
-    the Adjoint of the Fluid3 element. Additionally the method Sysmat()
+    the Adjoint of the Fluid element. Additionally the method Sysmat()
     provides a clean and fast element implementation.
 
     <h3>Purpose</h3>
 
-    The idea is to separate the element maintenance (class Fluid3) from the
+    The idea is to separate the element maintenance (class Fluid) from the
     mathematical contents (this class). There are different implementations of
-    the Fluid3 element, this is just one such implementation.
+    the Fluid element, this is just one such implementation.
 
     The FluidAdjoint3 will allocate exactly one object of this class for all
     fluid elements with the same number of nodes in the mesh. This
@@ -98,7 +98,7 @@ public:
       Generic virtual interface function. Called via base pointer.
    */
   virtual int Evaluate(
-      DRT::ELEMENTS::Fluid3*        ele,
+      DRT::ELEMENTS::Fluid*        ele,
       DRT::Discretization &         discretization,
       const std::vector<int> &      lm,
       Teuchos::ParameterList&       params,
@@ -111,7 +111,7 @@ public:
 
   /// Evaluate the element at specified gauss points
   virtual int Evaluate(
-      DRT::ELEMENTS::Fluid3*               ele,
+      DRT::ELEMENTS::Fluid*               ele,
       DRT::Discretization &                discretization,
       const std::vector<int> &             lm,
       Teuchos::ParameterList&              params,

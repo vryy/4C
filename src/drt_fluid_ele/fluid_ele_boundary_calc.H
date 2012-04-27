@@ -32,30 +32,30 @@ class Discretization;
 
 namespace ELEMENTS
 {
-  class Fluid3Boundary;
+  class FluidBoundary;
 
-/// Interface base class for Fluid3BoundaryImpl
+/// Interface base class for FluidBoundaryImpl
 /*!
   This class exists to provide a common interface for all template
-  versions of Fluid3BoundaryImpl. The only function
+  versions of FluidBoundaryImpl. The only function
   this class actually defines is Impl, which returns a pointer to
-  the appropriate version of Fluid3BoundaryImpl.
+  the appropriate version of FluidBoundaryImpl.
  */
-class Fluid3BoundaryImplInterface
+class FluidBoundaryImplInterface
 {
 
 public:
   /// Empty constructor
-  Fluid3BoundaryImplInterface() {}
+  FluidBoundaryImplInterface() {}
   /// Empty destructor
-  virtual ~Fluid3BoundaryImplInterface() {}
+  virtual ~FluidBoundaryImplInterface() {}
   
   /// Evaluate a Neumann boundary condition
   /*!
     This class does not provide a definition for this function, it
-    must be defined in Fluid3BoundaryImpl.
+    must be defined in FluidBoundaryImpl.
    */
-  virtual int EvaluateNeumann(DRT::ELEMENTS::Fluid3Boundary*      ele,
+  virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*      ele,
       ParameterList&             params,
       DRT::Discretization&       discretization,
       DRT::Condition&            condition,
@@ -65,7 +65,7 @@ public:
   ) = 0;
 
   virtual void IntegrateShapeFunction(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -74,21 +74,21 @@ public:
   ) = 0;
 
   virtual void AreaCaculation(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm
   ) = 0;
 
   virtual void IntegratedPressureParameterCalculation(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm
   ) = 0;
 
   virtual void ComputeFlowRate(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -96,7 +96,7 @@ public:
   ) = 0;
 
   virtual void FlowRateDeriv(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -108,7 +108,7 @@ public:
   ) = 0;
 
   virtual void ImpedanceIntegration(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -116,7 +116,7 @@ public:
   ) = 0;
 
   virtual void ElementNodeNormal(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -125,7 +125,7 @@ public:
   ) = 0;
 
   virtual void ElementMeanCurvature(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -135,7 +135,7 @@ public:
   ) = 0;
 
   virtual void MixHybDirichlet(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -144,7 +144,7 @@ public:
   ) = 0;
 
   virtual void ConservativeOutflowConsistency(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -153,7 +153,7 @@ public:
   ) = 0;
 
   virtual void NeumannInflow(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -162,7 +162,7 @@ public:
   ) = 0;
 
   virtual void ElementSurfaceTension(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -173,14 +173,14 @@ public:
   ) = 0;
 
   virtual void CenterOfMassCalculation(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm
   ) = 0;
 
   virtual void CalcTractionVelocityComponent(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -188,7 +188,7 @@ public:
   ) = 0;
 
   virtual void ComputeNeumannUvIntegral(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -196,7 +196,7 @@ public:
   ) = 0;
 
   virtual void NoPenetration(
-      DRT::ELEMENTS::Fluid3Boundary*  ele1,
+      DRT::ELEMENTS::FluidBoundary*  ele1,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -205,26 +205,26 @@ public:
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
-    /// Internal implementation class for Fluid3Boundary elements
-  static Fluid3BoundaryImplInterface* Impl(const DRT::Element* ele);
+    /// Internal implementation class for FluidBoundary elements
+  static FluidBoundaryImplInterface* Impl(const DRT::Element* ele);
 
 };
 
-  /// Internal Fluid3Boundary element implementation
+  /// Internal FluidBoundary element implementation
   /*!
     This internal class keeps all the working arrays needed to
-    calculate the Fluid3Boundary element. Additionally the method Sysmat()
+    calculate the FluidBoundary element. Additionally the method Sysmat()
     provides a clean and fast element implementation.
 
     <h3>Purpose</h3>
 
-    The idea is to separate the element maintenance (class Fluid3Boundary)
+    The idea is to separate the element maintenance (class FluidBoundary)
     from the mathematical contents (this class). Of course there are
-    different implementations of the Fluid3Boundary element, this is just one
+    different implementations of the FluidBoundary element, this is just one
     such implementation.
 
-    The Fluid3Boundary element will allocate exactly one object of this class
-    for all Fluid3Boundary elements with the same number of nodes in the mesh.
+    The FluidBoundary element will allocate exactly one object of this class
+    for all FluidBoundary elements with the same number of nodes in the mesh.
     This allows us to use exactly matching working arrays (and keep them
     around.)
 
@@ -247,22 +247,22 @@ public:
     \date 03/10
   */
 template<DRT::Element::DiscretizationType distype>
-class Fluid3BoundaryImpl: public Fluid3BoundaryImplInterface
+class FluidBoundaryImpl: public FluidBoundaryImplInterface
 {
   friend class FluidEleParameter;
 
 public:
 
   /// Singleton access method
-  static Fluid3BoundaryImpl<distype> * Instance();
+  static FluidBoundaryImpl<distype> * Instance();
 
   /// Constructor
-  Fluid3BoundaryImpl();
+  FluidBoundaryImpl();
 
   //! number of element nodes
   static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  //! number of space dimensions of the Fluid3Boundary element
+  //! number of space dimensions of the FluidBoundary element
   static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
   //! number of space dimensions of the parent element
@@ -272,7 +272,7 @@ public:
   static const int numdofpernode_ = nsd_ + 1;
 
   //! Evaluate a Neumann boundary condition
-  virtual int EvaluateNeumann(DRT::ELEMENTS::Fluid3Boundary*    ele,
+  virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*    ele,
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
                               DRT::Condition&            condition,
@@ -291,7 +291,7 @@ public:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
   virtual void IntegrateShapeFunction(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm,
@@ -307,7 +307,7 @@ public:
       \param edispnp (in)       : Displacement-vector
     */
   void ElementNodeNormal(
-      DRT::ELEMENTS::Fluid3Boundary*   ele,
+      DRT::ELEMENTS::FluidBoundary*   ele,
       ParameterList&                 params,
       DRT::Discretization&           discretization,
       vector<int>&                   lm,
@@ -323,7 +323,7 @@ public:
       \param enormals (in)      : Node normals
     */
   void ElementMeanCurvature(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm,
@@ -340,7 +340,7 @@ public:
       \param curvature (in)     : Interpolated curvature
     */
   void ElementSurfaceTension(
-      DRT::ELEMENTS::Fluid3Boundary*   ele,
+      DRT::ELEMENTS::FluidBoundary*   ele,
       ParameterList&                   params,
       DRT::Discretization&             discretization,
       vector<int>&                     lm,
@@ -356,7 +356,7 @@ public:
                                 and elements
     */
   void AreaCaculation(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm);
@@ -370,7 +370,7 @@ public:
     \param lm (in)            : location vector of this element
     */
   void IntegratedPressureParameterCalculation(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm);
@@ -384,7 +384,7 @@ public:
     \param lm (in)            : location vector of this element
     */
   void CenterOfMassCalculation(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm);
@@ -399,7 +399,7 @@ public:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
   void CalcTractionVelocityComponent(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm,
@@ -415,7 +415,7 @@ public:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
   void ComputeNeumannUvIntegral(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm,
@@ -430,7 +430,7 @@ public:
      \param lm (in)            : location vector of this element
      */
   void ComputeFlowRate(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm,
@@ -451,7 +451,7 @@ public:
     \param elevec3 (out)      : flowrate
     */
   void FlowRateDeriv(
-      DRT::ELEMENTS::Fluid3Boundary*   ele,
+      DRT::ELEMENTS::FluidBoundary*   ele,
       ParameterList&                   params,
       DRT::Discretization&             discretization,
       vector<int>&                     lm,
@@ -471,7 +471,7 @@ public:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
   void ImpedanceIntegration(
-      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       ParameterList&                    params,
       DRT::Discretization&              discretization,
       vector<int>&                      lm,
@@ -489,7 +489,7 @@ public:
 
     */
   void ConservativeOutflowConsistency(
-      DRT::ELEMENTS::Fluid3Boundary* ele,
+      DRT::ELEMENTS::FluidBoundary* ele,
       ParameterList&             params,
       DRT::Discretization&       discretization,
       vector<int>&               lm,
@@ -509,7 +509,7 @@ public:
 
     */
   void NeumannInflow(
-      DRT::ELEMENTS::Fluid3Boundary*  ele,
+      DRT::ELEMENTS::FluidBoundary*  ele,
       ParameterList&             params,
       DRT::Discretization&       discretization,
       vector<int>&               lm,
@@ -527,7 +527,7 @@ public:
 
     */
   void  MixHybDirichlet(
-      DRT::ELEMENTS::Fluid3Boundary*  surfele,
+      DRT::ELEMENTS::FluidBoundary*  surfele,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -547,7 +547,7 @@ public:
 
     */
   void NoPenetration(
-      DRT::ELEMENTS::Fluid3Boundary*  ele,
+      DRT::ELEMENTS::FluidBoundary*  ele,
       ParameterList&             params,
       DRT::Discretization&       discretization,
       vector<int>&               lm,
@@ -576,7 +576,7 @@ private:
   template <DRT::Element::DiscretizationType bndydistype,
             DRT::Element::DiscretizationType pdistype>
   void MixHybDirichlet(
-      DRT::ELEMENTS::Fluid3Boundary*  ele,
+      DRT::ELEMENTS::FluidBoundary*  ele,
       ParameterList&                  params,
       DRT::Discretization&            discretization,
       vector<int>&                    lm,
@@ -606,7 +606,7 @@ private:
 
   //! evaluate Nurbs specific knots and weights
   bool GetKnotVectorAndWeightsForNurbs(
-      DRT::ELEMENTS::Fluid3Boundary*              ele,              ///< pointer to the boundary element
+      DRT::ELEMENTS::FluidBoundary*              ele,              ///< pointer to the boundary element
       DRT::Discretization&                        discretization,   ///< A reference to the underlying discretization
       std::vector<Epetra_SerialDenseVector>&      mypknots,         ///< nurbs specific knots
       std::vector<Epetra_SerialDenseVector>&      myknots,          ///< nurbs specific ...
@@ -759,7 +759,7 @@ private:
                          );
 
   //! pointer to parameter list
-  DRT::ELEMENTS::FluidEleParameter* f3Parameter_;
+  DRT::ELEMENTS::FluidEleParameter* fldpara_;
 
   //! node coordinates for boundary element
   LINALG::Matrix<nsd_,bdrynen_> xyze_;

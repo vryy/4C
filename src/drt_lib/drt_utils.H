@@ -276,8 +276,8 @@ namespace UTILS
    *
    * template version
    *
-   * \tparam BoundaryEle class name of desired volume/surface/line element, e.g. Fluid3Surface
-   * \tparam ParentEle   class name of parent element, e.g. Fluid3
+   * \tparam BoundaryEle class name of desired volume/surface/line element, e.g. FluidSurface
+   * \tparam ParentEle   class name of parent element, e.g. Fluid
    *
    * this templated function creates all volume / surface / line elements for a given element
    * and fills handed over vectors with RCPs and raw pointers of these boundary elements
@@ -357,8 +357,8 @@ namespace UTILS
    *
    * template version
    *
-   * \tparam IntFaceEle  class name of desired volume/surface/line element, e.g. Fluid3Surface
-   * \tparam ParentEle   class name of parent element, e.g. Fluid3
+   * \tparam IntFaceEle  class name of desired volume/surface/line element, e.g. FluidSurface
+   * \tparam ParentEle   class name of parent element, e.g. Fluid
    *
    * this templated function creates an internal face element for two given parent elements
    * and fills an RCP and raw pointers of this internal faces elements
@@ -435,8 +435,8 @@ namespace UTILS
   void ComputeStructure2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
   void ComputeBeam2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
   void ComputeBeam3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-  void ComputeXFluid3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-  void ComputeFluid3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+  void ComputeXFluidDNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+  void ComputeFluidDNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
 
 } // namespace UTILS

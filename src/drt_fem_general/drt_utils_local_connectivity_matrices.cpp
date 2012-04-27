@@ -1605,9 +1605,9 @@ DRT::Element::DiscretizationType DRT::UTILS::getShapeOfBoundaryElement(
 {
   switch (nen) // number of nodes for the boundary element
   {
-  // 2D parent element -> Fluid3Boundary element: line2 and line3
+  // 2D parent element -> FluidBoundary element: line2 and line3
 
-  // Fluid3Boundary element: line2
+  // FluidBoundary element: line2
   case 2:
     if(parentshape == DRT::Element::quad4 || parentshape == DRT::Element::tri3)
       return DRT::Element::line2;
@@ -1622,10 +1622,10 @@ DRT::Element::DiscretizationType DRT::UTILS::getShapeOfBoundaryElement(
     // 1D line element in a 3D volume
     else if (parentshape == DRT::Element::nurbs8)
       return DRT::Element::nurbs2;
-    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+    else dserror("%d nodes of the FluidBoundary element does not fit to the distype %s of the parent element",
         nen, DistypeToString(parentshape).c_str());
 
-  // Fluid3Boundary element: line3
+  // FluidBoundary element: line3
   case 3:
     if ((parentshape == DRT::Element::quad8) || (parentshape == DRT::Element::quad9))
       return DRT::Element::line3;
@@ -1638,42 +1638,42 @@ DRT::Element::DiscretizationType DRT::UTILS::getShapeOfBoundaryElement(
         parentshape == DRT::Element::wedge15)
       return DRT::Element::line3;
 
-  // Fluid3Boundary element: tri3 (surface)
+  // FluidBoundary element: tri3 (surface)
     else if(parentshape == DRT::Element::tet4 || parentshape == DRT::Element::wedge6 || parentshape == DRT::Element::pyramid5)
       return DRT::Element::tri3;
-    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+    else dserror("%d nodes of the FluidBoundary element does not fit to the distype %s of the parent element",
         nen, DistypeToString(parentshape).c_str());
 
-  // Fluid3Boundary element: quad4
+  // FluidBoundary element: quad4
   case 4:
     if(parentshape == DRT::Element::hex8 || parentshape == DRT::Element::wedge6 || parentshape == DRT::Element::pyramid5 )
       return DRT::Element::quad4;
     else if (parentshape == DRT::Element::nurbs8)
       return DRT::Element::nurbs4;
-    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+    else dserror("%d nodes of the FluidBoundary element does not fit to the distype %s of the parent element",
         nen, DistypeToString(parentshape).c_str());
 
-  // Fluid3Boundary element: tri6
+  // FluidBoundary element: tri6
   case 6:
     if (parentshape == DRT::Element::tet10 || parentshape == DRT::Element::wedge15)
       return DRT::Element::tri6;
-    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+    else dserror("%d nodes of the FluidBoundary element does not fit to the distype %s of the parent element",
         nen, DistypeToString(parentshape).c_str());
 
-  // Fluid3Boundary element: quad8
+  // FluidBoundary element: quad8
   case 8:
     if(parentshape == DRT::Element::hex20 || parentshape == DRT::Element::wedge15)
       return DRT::Element::quad8;
-    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+    else dserror("%d nodes of the FluidBoundary element does not fit to the distype %s of the parent element",
         nen, DistypeToString(parentshape).c_str());
 
-  // Fluid3Boundary element: quad9
+  // FluidBoundary element: quad9
   case 9:
     if(parentshape == DRT::Element::hex27)
         return DRT::Element::quad9;
     else if (parentshape == DRT::Element::nurbs27)
       return DRT::Element::nurbs9;
-    else dserror("%d nodes of the Fluid3Boundary element does not fit to the distype %s of the parent element",
+    else dserror("%d nodes of the FluidBoundary element does not fit to the distype %s of the parent element",
         nen, DistypeToString(parentshape).c_str());
   default:
     dserror("unexpected number of nodes %d for boundary element", nen);

@@ -103,7 +103,7 @@ public:
 
 
   /*!
-  \brief Deep copy this instance of Fluid3 and return pointer to the copy
+  \brief Deep copy this instance of Fluid and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed

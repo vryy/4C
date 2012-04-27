@@ -2915,7 +2915,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //      DRT::Element* actele = discret.lColElement(i);
 //      Teuchos::RCP<MAT::Material> mat = actele->Material();
 //
-//      DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actele );
+//      DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
 //      if ( ele==NULL )
 //      {
 //        dserror( "expect fluid element" );
@@ -2937,15 +2937,15 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //
 //
 //void FLD::FluidImplicitTimeInt::stabilizeStandardElement( DRT::AssembleStrategy&   strategy,
-//                                                             DRT::ELEMENTS::Fluid3 *  actele,
+//                                                             DRT::ELEMENTS::Fluid *  actele,
 //                                                             DRT::Discretization &    discret)
 //{
 //#ifdef D_FLUID3
 //
 //  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EdgeBasedStabilization" );
 //
-//  // all surfaces of Fluid3 elements are Fluid3BoundaryElements
-//  // better: create Fluid3InternalSurfaces elements
+//  // all surfaces of Fluid elements are FluidBoundaryElements
+//  // better: create FluidInternalSurfaces elements
 //  vector<RCP<DRT::Element> > surfaces = actele->Surfaces();
 //
 //  // loop over surfaces
@@ -3022,7 +3022,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //
 //
 //
-//void FLD::FluidImplicitTimeInt::findNeighborElement(DRT::ELEMENTS::Fluid3 * actele,
+//void FLD::FluidImplicitTimeInt::findNeighborElement(DRT::ELEMENTS::Fluid * actele,
 //                                                   RCP<DRT::Element> surface,
 //                                                   bool & neighbor_found,
 //                                                   int & neighbor_id)
@@ -3045,7 +3045,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //    {
 //      DRT::Element* actadjele = adjeles[adjele];
 //
-//      DRT::ELEMENTS::Fluid3 * adjele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( actadjele );
+//      DRT::ELEMENTS::Fluid * adjele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actadjele );
 //
 //
 //      // decide if adjele is the right neighbor
@@ -3125,13 +3125,13 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //  edgebasedparams.set("ghost_penalty",   ghost_penalty);
 //
 //
-//  DRT::ELEMENTS::Fluid3Boundary * side_ele = dynamic_cast<DRT::ELEMENTS::Fluid3Boundary *>( &*surface );
+//  DRT::ELEMENTS::FluidBoundary * side_ele = dynamic_cast<DRT::ELEMENTS::FluidBoundary *>( &*surface );
 //
-//  DRT::ELEMENTS::Fluid3 * fele_1 = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( ele_1 );
-//  DRT::ELEMENTS::Fluid3 * fele_2 = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( ele_2 );
+//  DRT::ELEMENTS::Fluid * fele_1 = dynamic_cast<DRT::ELEMENTS::Fluid *>( ele_1 );
+//  DRT::ELEMENTS::Fluid * fele_2 = dynamic_cast<DRT::ELEMENTS::Fluid *>( ele_2 );
 //
 //  // call the egde-based routine
-//  DRT::ELEMENTS::Fluid3BoundaryImplInterface::Impl(&*surface)->EvaluateInternalFacesUsingNeighborData( &*side_ele,
+//  DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(&*surface)->EvaluateInternalFacesUsingNeighborData( &*side_ele,
 //                                                                                                       fele_1,
 //                                                                                                       fele_2,
 //                                                                                                       nds_1,

@@ -14,10 +14,10 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 
 #include "fluid_ele.H"
 
-DRT::ELEMENTS::Fluid3BoundaryType DRT::ELEMENTS::Fluid3BoundaryType::instance_;
+DRT::ELEMENTS::FluidBoundaryType DRT::ELEMENTS::FluidBoundaryType::instance_;
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3BoundaryType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create( const int id, const int owner )
 {
   return Teuchos::null;
 }
@@ -27,10 +27,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3BoundaryType::Create( const int 
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3Boundary::Fluid3Boundary(int id, int owner,
+DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::ELEMENTS::Fluid3* parent,
+                              DRT::ELEMENTS::Fluid* parent,
                               const int lsurface) :
 DRT::Element(id,owner),
 parent_(parent),
@@ -44,7 +44,7 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3Boundary::Fluid3Boundary(const DRT::ELEMENTS::Fluid3Boundary& old) :
+DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
@@ -56,9 +56,9 @@ lsurface_(old.lsurface_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Fluid3Boundary::Clone() const
+DRT::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
 {
-  DRT::ELEMENTS::Fluid3Boundary* newelement = new DRT::ELEMENTS::Fluid3Boundary(*this);
+  DRT::ELEMENTS::FluidBoundary* newelement = new DRT::ELEMENTS::FluidBoundary(*this);
   return newelement;
 }
 
@@ -66,7 +66,7 @@ DRT::Element* DRT::ELEMENTS::Fluid3Boundary::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3Boundary::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::FluidBoundary::Shape() const
 {
   return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), parent_->Shape());
 }
@@ -75,9 +75,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3Boundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Boundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidBoundary::Pack(DRT::PackBuffer& data) const
 {
-  dserror("this Fluid3Boundary element does not support communication");
+  dserror("this FluidBoundary element does not support communication");
 
   return;
 }
@@ -86,16 +86,16 @@ void DRT::ELEMENTS::Fluid3Boundary::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Boundary::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::FluidBoundary::Unpack(const vector<char>& data)
 {
-  dserror("this Fluid3Boundary element does not support communication");
+  dserror("this FluidBoundary element does not support communication");
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3Boundary::~Fluid3Boundary()
+DRT::ELEMENTS::FluidBoundary::~FluidBoundary()
 {
   return;
 }
@@ -104,9 +104,9 @@ DRT::ELEMENTS::Fluid3Boundary::~Fluid3Boundary()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Boundary::Print(ostream& os) const
+void DRT::ELEMENTS::FluidBoundary::Print(ostream& os) const
 {
-  os << "Fluid3Boundary ";
+  os << "FluidBoundary ";
   Element::Print(os);
   return;
 }
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::Fluid3Boundary::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3Boundary::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -123,7 +123,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3Boundary::Lines()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  dserror("Lines of Fluid3Boundary not implemented");
+  dserror("Lines of FluidBoundary not implemented");
   vector<RCP<DRT::Element> > lines(0);
   return lines;
 }
@@ -131,7 +131,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3Boundary::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3Boundary::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -140,7 +140,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3Boundary::Surfaces()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new surface elements:
-  dserror("Surfaces of Fluid3Boundary not implemented");
+  dserror("Surfaces of FluidBoundary not implemented");
   vector<RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }

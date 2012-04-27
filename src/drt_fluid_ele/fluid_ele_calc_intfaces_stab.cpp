@@ -77,13 +77,13 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   {
     dserror("Edgebased stabilization not implemented for 2D elements!");
     break;
-//    static Fluid3InternalLineStabilization<DRT::Element::line2,DRT::Element::quad4>* fline2;
+//    static FluidInternalLineStabilization<DRT::Element::line2,DRT::Element::quad4>* fline2;
 //
 //    if(f3bdry->ParentElement()->Shape()==DRT::Element::quad4)
 //    {
 //      if (fline2==NULL)
 //      {
-//        fline2 = new Fluid3InternalLineStabilization<DRT::Element::line2,DRT::Element::quad4>();
+//        fline2 = new FluidInternalLineStabilization<DRT::Element::line2,DRT::Element::quad4>();
 //      }
 //    }
 //    else
@@ -117,8 +117,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype,ndistype>::FluidInternalSurfaceStab()
 {
-  // pointer to class Fluid3ImplParameter (access to the general parameter)
-  f3Parameter_ = DRT::ELEMENTS::FluidEleParameter::Instance();
+  // pointer to class FluidImplParameter (access to the general parameter)
+  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
 
   return;
 }
@@ -146,8 +146,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: evaluate" );
 
-  Fluid3*                    pele = intface->ParentMasterElement();
-  Fluid3*                    nele = intface->ParentSlaveElement();
+  Fluid*                    pele = intface->ParentMasterElement();
+  Fluid*                    nele = intface->ParentSlaveElement();
 
   if (pele == NULL) dserror("pele is NULL");
   if (nele == NULL) dserror("nele is NULL");
@@ -157,9 +157,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
   if( (!ghost_penalty) and (!edge_based_stab)) dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");
 
-  //    const double timefac      = f3Parameter_->timefac_;     // timefac_ = theta_*dt_;
-  //    const double timefacpre   = f3Parameter_->timefacpre_;  // special factor for pressure terms in genalpha time integration
-  //    const double timefacrhs   = f3Parameter_->timefacrhs_;  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
+  //    const double timefac      = fldpara_->TimeFac();     // timefac_ = theta_*dt_;
+  //    const double timefacpre   = fldpara_->TimeFacPre();  // special factor for pressure terms in genalpha time integration
+  //    const double timefacrhs   = fldpara_->TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
 
   // modified time factors
 
@@ -172,10 +172,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double timefacpre = 0.0;
 
   // full matrix pattern (implicit) for streamline and div-stab
-  if(not f3Parameter_->is_stationary_)
+  if(not fldpara_->IsStationary())
   {
-    timefac    = f3Parameter_->dt_; // set theta = 1.0
-    timefacpre = f3Parameter_->dt_; // set theta = 1.0
+    timefac    = fldpara_->Dt(); // set theta = 1.0
+    timefacpre = fldpara_->Dt(); // set theta = 1.0
   }
   else
   {
@@ -249,8 +249,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 
 
-  if((f3Parameter_->timealgo_==INPAR::FLUID::timeint_gen_alpha) or
-      (f3Parameter_->timealgo_==INPAR::FLUID::timeint_npgenalpha))
+  if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
+      (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
   {
     // velocities (intermediate time step, n+1)
     RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -395,7 +395,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     break;
   }
   default:
-    dserror("invalid discretization type for Fluid3InternalSurfaceStabilization");
+    dserror("invalid discretization type for FluidInternalSurfaceStabilization");
   }
 
   // gaussian points on surface
@@ -879,8 +879,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetElementData(
     FluidIntFace*              surfele,          ///< surface FluidIntFace element
-    Fluid3*                    master_ele,       ///< master parent element
-    Fluid3*                    slave_ele,        ///< slave  parent element
+    Fluid*                    master_ele,       ///< master parent element
+    Fluid*                    slave_ele,        ///< slave  parent element
     double &                   kinvisc,          ///< patch kinematic viscosity
     double &                   dens,             ///< patch density
     vector<double>&            mypvelaf,         ///< master velaf
@@ -2181,8 +2181,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::compute_patch_hk(
             double &   patch_hk,
-            Fluid3*    master,
-            Fluid3*    slave   )
+            Fluid*    master,
+            Fluid*    slave   )
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: element length" );

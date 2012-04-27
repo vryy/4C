@@ -45,6 +45,8 @@ DRT::ELEMENTS::FluidEleParameter* DRT::ELEMENTS::FluidEleParameter::Instance()
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   :
+  Cs_(0.0),
+  l_tau_(0.0),
   set_general_fluid_parameter_(false),
   is_genalpha_(false),
   is_genalpha_np_(false),
@@ -66,9 +68,9 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
   whichtau_(INPAR::FLUID::tau_not_defined),
   fssgv_(INPAR::FLUID::no_fssgv),
-  turb_mod_action_(INPAR::FLUID::no_model),
   mat_gp_(false),     // standard evaluation of the material at the element center
   tau_gp_(false),     // standard evaluation of tau at the element center
+  viscreastabfac_(0.0),
   time_(-1.0),
   dt_(0.0),
   timefac_(0.0),
@@ -80,10 +82,8 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   afgdt_(1.0),
   timefacrhs_(1.0),
   timefacpre_(1.0),
-  viscreastabfac_(0.0),
-  Cs_(0.0),
+  turb_mod_action_(INPAR::FLUID::no_model),
   Cs_averaged_(false),
-  l_tau_(0.0),
   Cl_(0.0),
   Csgs_(0.0),
   Csgs_phi_(0.0),
@@ -114,6 +114,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
 {
   if(set_general_fluid_parameter_ == false)
     set_general_fluid_parameter_ = true;
+  else
+    cout << endl << (" Warning: general fluid parameter should be set only once!! "
+        "Check, why do you enter this function a second time!!!") << endl << endl;
 
 //----------------------------------------------------------------------
 // get flags to switch on/off different fluid formulations
@@ -167,7 +170,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
 
   // set flag for physical type of fluid flow
   physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
-  if (((physicaltype_ != INPAR::FLUID::boussinesq) and (physicaltype_ != INPAR::FLUID::incompressible))
+  if (((physicaltype_ == INPAR::FLUID::loma) and (physicaltype_ == INPAR::FLUID::poro))
+      and (physicaltype_ == INPAR::FLUID::varying_density)
       and (is_stationary_ == true))
     dserror("physical type is not supported in stationary FLUID implementation.");
 
@@ -181,7 +185,19 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   {
     cout << endl << "Warning: missing time derivative terms in conservative formulation (for variable density flows)!!" << endl;
   }
-
+  // set further parameters which are specific for a physical type
+  if (physicaltype_ == INPAR::FLUID::topopt)
+  {
+    reaction_= true;
+    reaction_topopt_= true;
+    darcy_= false;
+  }
+  else if (physicaltype_ == INPAR::FLUID::poro)
+  {
+    reaction_= true;
+    reaction_topopt_= false;
+    darcy_= true;
+  }
 
 // ---------------------------------------------------------------------
 // get control parameters for stabilization and higher-order elements
