@@ -138,7 +138,9 @@ namespace ELEMENTS
         Teuchos::ParameterList&                                           params,
         Epetra_SerialDenseMatrix&                                         elemat1_epetra,
         Epetra_SerialDenseVector&                                         elevec1_epetra,
-        Epetra_SerialDenseMatrix&                                         Cuiui) = 0;
+        Epetra_SerialDenseMatrix&                                         Cuiui,
+        std::string&                                                      VCellGaussPts,
+        const std::vector<double>&                          refEqn) = 0;
 
     /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
     virtual void ElementXfemInterfaceNIT(
@@ -153,7 +155,9 @@ namespace ELEMENTS
         Teuchos::ParameterList&                                           params,
         Epetra_SerialDenseMatrix&                                         elemat1_epetra,
         Epetra_SerialDenseVector&                                         elevec1_epetra,
-        Epetra_SerialDenseMatrix&                                         Cuiui) = 0;
+        Epetra_SerialDenseMatrix&                                         Cuiui,
+        std::string&                                                      VCellGaussPts,
+        const std::vector<double>&                                        refEqn) = 0;
 
     /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
     virtual void ElementXfemInterfaceNIT2(
@@ -170,7 +174,9 @@ namespace ELEMENTS
         map<int,int> &                                                    boundary_emb_gid_map,
         Epetra_SerialDenseMatrix&                                         elemat1_epetra,
         Epetra_SerialDenseVector&                                         elevec1_epetra,
-        Epetra_SerialDenseMatrix&                                         Cuiui) = 0;
+        Epetra_SerialDenseMatrix&                                         Cuiui,
+        std::string&                                                      VCellGaussPts,
+        const std::vector<double>&                                        refEqn) = 0;
 
     virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *              ele,
                                          DRT::Discretization &                dis,

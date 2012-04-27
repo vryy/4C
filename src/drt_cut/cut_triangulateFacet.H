@@ -45,7 +45,12 @@ private:
   /*!
   \brief Check whether more than two points fall on a line, and delete all points other than the end points
    */
-  void DeleteInlinePts();
+  void DeleteInlinePts( std::vector<Point*>& poly );
+
+  /*!
+  \brief Split a concave 4 noded facet into a 2 tri
+  */
+  void Split4nodeFacet( std::vector<Point*> &poly );
 
   /*!
   \brief Split a 5 noded facet into a tri and a quad
@@ -82,6 +87,21 @@ private:
   splits facets those has more than 10 corners
   */
   void SplitAnyFacet( std::vector<int> ptConcavity );
+
+  /*!
+  \brief A general facet is triangulated with ear clipping method
+   */
+  void EarClipping( std::vector<int> ptConcavity );
+
+  /*!
+  \brief check whether any two adjacent polygonal points are concave
+   */
+  bool HasTwoContinuousConcavePts( std::vector<int> ptConcavity );
+
+  /*!
+  \brief Returns true if the point "check" is inside the triangle formed by other three points
+   */
+  bool PtInsideTriangle( std::vector<Point*> tri, Point* check );
 
   Facet* facet1_;
   Mesh& mesh_;

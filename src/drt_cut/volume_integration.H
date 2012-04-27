@@ -43,15 +43,16 @@ namespace GEO
         Epetra_SerialDenseVector compute_weights();
 
         /*!
+        \brief Computes the RHS of the moment fitting matrix (performs integration of base functions over the volumecell)
+        */
+        Epetra_SerialDenseVector compute_rhs_moment();
+
+        /*!
         \brief Returns the location of Gauss points distributed over the volumecell
         */
         std::vector<std::vector<double> > getGaussPointLocation(){return gaus_pts_;}
 
       private:
-        /*!
-        \brief Computes the RHS of the moment fitting matrix (performs integration of base functions over the volumecell)
-        */
-        Epetra_SerialDenseVector compute_rhs_moment();
 
         /*!
         \brief Distribute Gaussian points over the volumecell with "numeach" points in each direction

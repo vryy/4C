@@ -97,7 +97,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     Teuchos::ParameterList&                                             params,            ///< parameter list
     Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
     Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
-    Epetra_SerialDenseMatrix&                                           Cuiui              ///< ui-ui coupling matrix
+    Epetra_SerialDenseMatrix&                                           Cuiui,              ///< ui-ui coupling matrix
+    std::string&                                                        VCellGaussPts,      ///< Method of volumecell gauss point generation
+    const std::vector<double>&                                          refEqn
   )
 {
 
@@ -124,13 +126,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
   LINALG::Matrix<my::nen_,my::nen_> bK_ss;                // (N * N^T)
   LINALG::Matrix<my::nen_,my::nen_> invbK_ss( true );     // (N * N^T)^(-1)
   LINALG::Matrix<my::nen_,my::nen_> half_invbK_ss;        // 1/2 * (N * N^T)^(-1)
-  LINALG::Matrix<my::nen_,my::nen_> conv_x;
-  LINALG::Matrix<my::nen_,my::nen_> conv_y;
-  LINALG::Matrix<my::nen_,my::nen_> conv_z;
-
-  LINALG::Matrix<my::nen_,1> dx;
-  LINALG::Matrix<my::nen_,1> dy;
-  LINALG::Matrix<my::nen_,1> dz;
 
   // block matrices for couplings between stress-components and (ux,uy,uz,p)-components
   LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)> K_su;
@@ -162,101 +157,53 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
-    // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
-
-    //----------------------------------------------------------------------
-    // set time-integration factors for left- and right-hand side
-    // (two right-hand-side factors: general and for residuals)
-    //----------------------------------------------------------------------
-
-    // TODO: check if this parameter should be fac*1.0*dt (full implicit stabilization)
-    const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
-
-    const double viscfac = 1.0/(2.0*my::visceff_);
-
-    // get velocity at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    my::velint_.Multiply(evelaf,my::funct_);
-
-    // get velocity derivatives at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    my::vderxy_.MultiplyNT(evelaf,my::derxy_);
-
-    // get pressure at integration point
-    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    double press = my::funct_.Dot(epreaf);
-
-
-    //--------------------------------------------
-
-    for ( int i=0; i<my::nen_; ++i )
+    if( VCellGaussPts!="DirectDivergence" )
     {
-      dx( i ) = my::derxy_( 0, i );
-      dy( i ) = my::derxy_( 1, i );
-      dz( i ) = my::derxy_( 2, i );
+      // evaluate shape functions and derivatives at integration point
+      my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+      EvaluateMatricesMSH(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
     }
 
-    // block - K_ss
-    bK_ss.MultiplyNT( my::funct_, my::funct_ );
+    else
+    {
+      LINALG::Matrix<my::nen_,my::nen_> invbK_ssTemp( true );
+      LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)> K_suTemp;
+      LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>                rhsTemp;
 
+      DRT::UTILS::GaussIntegration gint = InternalGaussPoints( iquad, refEqn );
 
-    conv_x.MultiplyNT( my::funct_, dx );
-    conv_y.MultiplyNT( my::funct_, dy );
-    conv_z.MultiplyNT( my::funct_, dz );
+      for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
+      {
+        my::EvalShapeFuncAndDerivsAtIntPoint( quadint, eid );
+        EvaluateMatricesMSH( evelaf, epreaf, bK_ss, invbK_ssTemp, K_suTemp, rhsTemp );
+      }
 
-       /*                     \
-    - |  virt tau , eps(Dtau)  |
-       \                     */
+      my::EvalShapeFuncAndDerivsAtIntPoint( iquad, eid );
+      bK_ss.MultiplyNT( my::funct_, my::funct_ );
 
-    invbK_ss.Update( -viscfac*timefacfac, bK_ss, 1.0 );
+      invbK_ss.Update( my::fac_, invbK_ssTemp, 1.0 );
 
-     /*                 \
-    | virt tau , eps(Du) |
-     \                 */
+      K_su( Sigmaxx, Velx )->Update( my::fac_, *K_suTemp( Sigmaxx, Velx ), 1.0 );
+      K_su( Sigmaxy, Velx )->Update( my::fac_, *K_suTemp( Sigmaxy, Velx ), 1.0 );
+      K_su( Sigmayx, Vely )->Update( my::fac_, *K_suTemp( Sigmayx, Vely ), 1.0 );
+      K_su( Sigmaxz, Velx )->Update( my::fac_, *K_suTemp( Sigmaxz, Velx ), 1.0 );
+      K_su( Sigmazx, Velz )->Update( my::fac_, *K_suTemp( Sigmazx, Velz ), 1.0 );
+      K_su( Sigmayy, Vely )->Update( my::fac_, *K_suTemp( Sigmayy, Vely ), 1.0 );
+      K_su( Sigmayz, Vely )->Update( my::fac_, *K_suTemp( Sigmayz, Vely ), 1.0 );
+      K_su( Sigmazy, Velz )->Update( my::fac_, *K_suTemp( Sigmazy, Velz ), 1.0 );
+      K_su( Sigmazz, Velz )->Update( my::fac_, *K_suTemp( Sigmazz, Velz ), 1.0 );
 
+      rhs( Sigmaxx, 0 )->Update( my::fac_, *rhsTemp( Sigmaxx, 0 ), 1.0 );
+      rhs( Sigmaxy, 0 )->Update( my::fac_, *rhsTemp( Sigmaxy, 0 ), 1.0 );
+      rhs( Sigmaxz, 0 )->Update( my::fac_, *rhsTemp( Sigmaxz, 0 ), 1.0 );
+      rhs( Sigmayy, 0 )->Update( my::fac_, *rhsTemp( Sigmayy, 0 ), 1.0 );
+      rhs( Sigmayz, 0 )->Update( my::fac_, *rhsTemp( Sigmayz, 0 ), 1.0 );
+      rhs( Sigmazz, 0 )->Update( my::fac_, *rhsTemp( Sigmazz, 0 ), 1.0 );
 
-    // K_su
-
-    K_su( Sigmaxx, Velx )->Update( timefacfac, conv_x, 1.0 );
-    K_su( Sigmaxy, Velx )->Update( timefacfac, conv_y, 1.0 );
-    K_su( Sigmayx, Vely )->Update( timefacfac, conv_x, 1.0 );
-    K_su( Sigmaxz, Velx )->Update( timefacfac, conv_z, 1.0 );
-    K_su( Sigmazx, Velz )->Update( timefacfac, conv_x, 1.0 );
-    K_su( Sigmayy, Vely )->Update( timefacfac, conv_y, 1.0 );
-    K_su( Sigmayz, Vely )->Update( timefacfac, conv_z, 1.0 );
-    K_su( Sigmazy, Velz )->Update( timefacfac, conv_y, 1.0 );
-    K_su( Sigmazz, Velz )->Update( timefacfac, conv_z, 1.0 );
-
-    // r_su
-
-    rhs( Sigmaxx, 0 )->Update( - timefacfac* my::vderxy_(0, 0)                     , my::funct_, 1.0 );
-    rhs( Sigmaxy, 0 )->Update( - timefacfac*(my::vderxy_(0, 1) + my::vderxy_(1, 0)), my::funct_, 1.0 );
-    rhs( Sigmaxz, 0 )->Update( - timefacfac*(my::vderxy_(0, 2) + my::vderxy_(2, 0)), my::funct_, 1.0 );
-    rhs( Sigmayy, 0 )->Update( - timefacfac* my::vderxy_(1, 1)                     , my::funct_, 1.0 );
-    rhs( Sigmayz, 0 )->Update( - timefacfac*(my::vderxy_(1, 2) + my::vderxy_(2, 1)), my::funct_, 1.0 );
-    rhs( Sigmazz, 0 )->Update( - timefacfac* my::vderxy_(2, 2)                     , my::funct_, 1.0 );
-
-    // stressbar-pressure coupling
-    /*
-                     /                    \
-                    |                      |
-                  - | tr(virt tau^e) , p I |
-                    |                      |
-                     \                    /
-     */
-
-    // K_sp
-
-    K_su( Sigmaxx, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
-    K_su( Sigmayy, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
-    K_su( Sigmazz, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
-
-    // r_sp
-
-    rhs( Sigmaxx, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
-    rhs( Sigmayy, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
-    rhs( Sigmazz, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
+      K_su( Sigmaxx, Pres )->Update( my::fac_, *K_suTemp( Sigmaxx, Pres ), 1.0 );
+      K_su( Sigmayy, Pres )->Update( my::fac_, *K_suTemp( Sigmayy, Pres ), 1.0 );
+      K_su( Sigmazz, Pres )->Update( my::fac_, *K_suTemp( Sigmazz, Pres ), 1.0 );
+    }
   }
 
 
@@ -406,6 +353,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
         const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
         LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
+
 
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
 
@@ -565,7 +513,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
           buildTractionVector( traction, press, normal );
 
           si->InterfaceForce(iforce, traction, surf_fac );
-
         } // buildInterfaceForce
 
 
@@ -575,7 +522,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     if(assemble_iforce) AssembleInterfaceForce(iforcecol, cutdis, cutla[0].lm_, iforce);
 
   } // end loop cut sides
-
 
 
   // construct views
@@ -735,6 +681,174 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
 } // ElementXfemInterface
 
+template <DRT::Element::DiscretizationType distype>
+void FluidEleCalcXFEM<distype>::EvaluateMatricesMSH(LINALG::Matrix<my::nsd_,my::nen_>& evelaf,
+                                                    LINALG::Matrix<my::nen_,1>& epreaf,
+                                                    LINALG::Matrix<my::nen_,my::nen_>& bK_ss,
+                                                    LINALG::Matrix<my::nen_,my::nen_>& invbK_ss,
+                                                    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su,
+                                                    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs)
+{
+  const unsigned Velx = 0;
+  const unsigned Vely = 1;
+  const unsigned Velz = 2;
+  const unsigned Pres = 3;
+
+  const unsigned Sigmaxx = 0;
+  const unsigned Sigmaxy = 1;
+  const unsigned Sigmaxz = 2;
+  const unsigned Sigmayx = 1;
+  const unsigned Sigmayy = 3;
+  const unsigned Sigmayz = 4;
+  const unsigned Sigmazx = 2;
+  const unsigned Sigmazy = 4;
+  const unsigned Sigmazz = 5;
+
+  LINALG::Matrix<my::nen_,1> dx;
+  LINALG::Matrix<my::nen_,1> dy;
+  LINALG::Matrix<my::nen_,1> dz;
+
+  LINALG::Matrix<my::nen_,my::nen_> conv_x;
+  LINALG::Matrix<my::nen_,my::nen_> conv_y;
+  LINALG::Matrix<my::nen_,my::nen_> conv_z;
+
+  //----------------------------------------------------------------------
+  // set time-integration factors for left- and right-hand side
+  // (two right-hand-side factors: general and for residuals)
+  //----------------------------------------------------------------------
+
+  // TODO: check if this parameter should be fac*1.0*dt (full implicit stabilization)
+  const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
+
+  const double viscfac = 1.0/(2.0*my::visceff_);
+
+  // get velocity at integration point
+  // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+  my::velint_.Multiply(evelaf,my::funct_);
+
+  // get velocity derivatives at integration point
+  // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+  my::vderxy_.MultiplyNT(evelaf,my::derxy_);
+
+  // get pressure at integration point
+  // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+  double press = my::funct_.Dot(epreaf);
+
+
+  //--------------------------------------------
+
+  for ( int i=0; i<my::nen_; ++i )
+  {
+    dx( i ) = my::derxy_( 0, i );
+    dy( i ) = my::derxy_( 1, i );
+    dz( i ) = my::derxy_( 2, i );
+  }
+
+  // block - K_ss
+  bK_ss.MultiplyNT( my::funct_, my::funct_ );
+
+
+  conv_x.MultiplyNT( my::funct_, dx );
+  conv_y.MultiplyNT( my::funct_, dy );
+  conv_z.MultiplyNT( my::funct_, dz );
+
+    /*                     \
+  - |  virt tau , eps(Dtau)  |
+    \                     */
+
+  invbK_ss.Update( -viscfac*timefacfac, bK_ss, 1.0 );
+
+    /*                 \
+   | virt tau , eps(Du) |
+    \                 */
+
+
+ // K_su
+
+   K_su( Sigmaxx, Velx )->Update( timefacfac, conv_x, 1.0 );
+   K_su( Sigmaxy, Velx )->Update( timefacfac, conv_y, 1.0 );
+   K_su( Sigmayx, Vely )->Update( timefacfac, conv_x, 1.0 );
+   K_su( Sigmaxz, Velx )->Update( timefacfac, conv_z, 1.0 );
+   K_su( Sigmazx, Velz )->Update( timefacfac, conv_x, 1.0 );
+   K_su( Sigmayy, Vely )->Update( timefacfac, conv_y, 1.0 );
+   K_su( Sigmayz, Vely )->Update( timefacfac, conv_z, 1.0 );
+   K_su( Sigmazy, Velz )->Update( timefacfac, conv_y, 1.0 );
+   K_su( Sigmazz, Velz )->Update( timefacfac, conv_z, 1.0 );
+
+   // r_su
+
+   rhs( Sigmaxx, 0 )->Update( - timefacfac* my::vderxy_(0, 0)                     , my::funct_, 1.0 );
+   rhs( Sigmaxy, 0 )->Update( - timefacfac*(my::vderxy_(0, 1) + my::vderxy_(1, 0)), my::funct_, 1.0 );
+   rhs( Sigmaxz, 0 )->Update( - timefacfac*(my::vderxy_(0, 2) + my::vderxy_(2, 0)), my::funct_, 1.0 );
+   rhs( Sigmayy, 0 )->Update( - timefacfac* my::vderxy_(1, 1)                     , my::funct_, 1.0 );
+   rhs( Sigmayz, 0 )->Update( - timefacfac*(my::vderxy_(1, 2) + my::vderxy_(2, 1)), my::funct_, 1.0 );
+   rhs( Sigmazz, 0 )->Update( - timefacfac* my::vderxy_(2, 2)                     , my::funct_, 1.0 );
+
+   // stressbar-pressure coupling
+   /*
+                    /                    \
+                   |                      |
+                 - | tr(virt tau^e) , p I |
+                   |                      |
+                    \                    /
+    */
+
+   // K_sp
+
+   K_su( Sigmaxx, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
+   K_su( Sigmayy, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
+   K_su( Sigmazz, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
+
+   // r_sp
+   rhs( Sigmaxx, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
+   rhs( Sigmayy, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
+   rhs( Sigmazz, 0 )->Update( viscfac*timefacfac*press, my::funct_, 1.0 );
+
+  return;
+
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*
+            All gauss points of "DirectDivergence" are in the facets of volumecell. For each gauss point,
+            an internal gaussrule is generated to find the modified integrand
+*---------------------------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+DRT::UTILS::GaussIntegration FluidEleCalcXFEM<distype>::InternalGaussPoints( DRT::UTILS::GaussIntegration::iterator quadint,
+                                                                             const std::vector<double>& refEqn )
+{
+  const LINALG::Matrix<3,1> etaFacet( quadint.Point() );  //coordinates and weight of main gauss point
+  LINALG::Matrix<3,1> intpt( etaFacet );
+
+  DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 7 ); //internal gauss rule for interval (-1,1)
+
+  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
+                       DRT::UTILS::CollectedGaussPoints( 0 ) );
+
+  // -----------------------------------------------------------------------------
+  // project internal gauss point from interval (-1,1) to the actual interval
+  // -----------------------------------------------------------------------------
+  for ( DRT::UTILS::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
+  {
+    const LINALG::Matrix<1,1> eta( iqu.Point() );
+    double weight = iqu.Weight();
+
+    //x-coordinate of main Gauss point is projected in the reference plane
+    double xbegin = (refEqn[3]-refEqn[1]*etaFacet(1,0)-refEqn[2]*etaFacet(2,0))/refEqn[0];
+    double jac = fabs(xbegin-etaFacet(0,0))*0.5; // jacobian for 1D transformation rule
+
+    double xmid = 0.5*(xbegin+etaFacet(0,0));
+    intpt(0,0) = (xmid-xbegin)*eta(0,0)+xmid;    // location of internal gauss points
+
+    weight = weight*jac;                         // weight of internal gauss points
+    if( xbegin>etaFacet(0,0) )
+      weight = -1*weight;
+
+    cgp->Append( intpt, weight );
+  }
+
+  DRT::UTILS::GaussIntegration gint(cgp);
+  return gint;
+}
 
 /*--------------------------------------------------------------------------------
  * add Nitsche (NIT) interface condition to element matrix and rhs
@@ -752,7 +866,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     Teuchos::ParameterList&                                             params,            ///< parameter list
     Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
     Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
-    Epetra_SerialDenseMatrix&                                           Cuiui              ///< ui-ui coupling matrix
+    Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
+    std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
+    const std::vector<double>&                                          refEqn
   )
 {
 
@@ -779,7 +895,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   if(compute_meas_vol)
   {
     int eid = ele->Id();
-    meas_partial_volume = ComputeMeasVol(intpoints, eid);
+    meas_partial_volume = ComputeMeasVol(intpoints, eid, VCellGaussPts, refEqn);
   }
 
   if(compute_meas_surf)
@@ -1157,13 +1273,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     DRT::Discretization & cutdis,
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
-    std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization &      alediscret,
-    map<int,int> &             boundary_emb_gid_map,
-    Epetra_SerialDenseMatrix&  elemat1_epetra,
-    Epetra_SerialDenseVector&  elevec1_epetra,
-    Epetra_SerialDenseMatrix&  Cuiui
+    std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
+    Teuchos::ParameterList&                                           params,
+    DRT::Discretization &                                             alediscret,
+    map<int,int> &                                                    boundary_emb_gid_map,
+    Epetra_SerialDenseMatrix&                                         elemat1_epetra,
+    Epetra_SerialDenseVector&                                         elevec1_epetra,
+    Epetra_SerialDenseMatrix&                                         Cuiui,
+    std::string&                                                      VCellGaussPts,
+    const std::vector<double>&                                        refEqn
   )
 {
   //TODO: how to set these flags
@@ -1188,7 +1306,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     if(compute_meas_vol)
     {
       int eid = ele->Id();
-      meas_partial_volume = ComputeMeasVol(intpoints, eid);
+      meas_partial_volume = ComputeMeasVol(intpoints, eid, VCellGaussPts, refEqn);
     }
   }
 
@@ -1650,16 +1768,36 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double FluidEleCalcXFEM<distype>::ComputeMeasVol( const DRT::UTILS::GaussIntegration & intpoints,
-                                                  int                                  eid)
+                                                  int                                  eid,
+                                                  std::string&                         VCellGaussPts,
+                                                  const std::vector<double>&           refEqn)
 {
   double vol = 0.0;
 
-  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  if( VCellGaussPts!="DirectDivergence" )
   {
-    // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+    {
+      // evaluate shape functions and derivatives at integration point
+      my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
-    vol += my::fac_;
+      vol += my::fac_;
+    }
+  }
+  else
+  {
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+    {
+      DRT::UTILS::GaussIntegration gint = InternalGaussPoints( iquad, refEqn );
+
+      double volLine=0.0;
+      for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
+      {
+        my::EvalShapeFuncAndDerivsAtIntPoint( quadint, eid );
+        volLine += my::fac_;
+      }
+      vol += volLine*iquad.Weight();
+    }
   }
 
   return vol;

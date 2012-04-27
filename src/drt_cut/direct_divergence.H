@@ -45,7 +45,8 @@ namespace GEO
                          plain_facet_set::const_iterator& IteratorRefFacet );
 
         void DivengenceCellsGMSH( plain_facet_set::const_iterator& IteratorRefFacet,
-                                  std::vector<plain_facet_set::const_iterator>& facetIterator );
+                                  std::vector<plain_facet_set::const_iterator>& facetIterator,
+                                  const DRT::UTILS::GaussIntegration & gpv );
 
         /*!
         \brief Integration of specific predefined functions using the Gaussian rule generated from DirectDivergence

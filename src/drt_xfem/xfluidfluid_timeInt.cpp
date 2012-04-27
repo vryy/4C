@@ -1579,7 +1579,8 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
       std::vector< std::vector<int> > nds_sets;
       std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
       std::string VolumeCellGaussPointBy =  params_.sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
-      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy );
+      std::vector<std::vector<double> > refEqns;
+      e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets, refEqns, VolumeCellGaussPointBy );
 
       if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
       if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");

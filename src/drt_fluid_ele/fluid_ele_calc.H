@@ -178,7 +178,7 @@ namespace ELEMENTS
                          const double&                                       Cs_delta_sq,
                          const double&                                       l_tau);
 
-    virtual void ElementXfemInterfaceMSH( DRT::ELEMENTS::Fluid *                                           ele,
+    virtual void ElementXfemInterfaceMSH( DRT::ELEMENTS::Fluid *                                         ele,
                                        DRT::Discretization &                                             dis,
                                        const std::vector<int> &                                          lm,
                                        const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -189,10 +189,12 @@ namespace ELEMENTS
                                        Teuchos::ParameterList&                                           params,
                                        Epetra_SerialDenseMatrix&                                         elemat1_epetra,
                                        Epetra_SerialDenseVector&                                         elevec1_epetra,
-                                       Epetra_SerialDenseMatrix&                                         Cuiui
+                                       Epetra_SerialDenseMatrix&                                         Cuiui,
+                                       std::string&                                                      VCellGaussPts,
+                                       const std::vector<double>&                          refEqn
       ) {dserror("Implemented in derived xfem class!"); return;}
 
-    virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid *                                           ele,
+    virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid *                                            ele,
                                              DRT::Discretization &                                             dis,
                                              const std::vector<int> &                                          lm,
                                              const DRT::UTILS::GaussIntegration &                              intpoints,
@@ -203,24 +205,28 @@ namespace ELEMENTS
                                              Teuchos::ParameterList&                                           params,
                                              Epetra_SerialDenseMatrix&                                         elemat1_epetra,
                                              Epetra_SerialDenseVector&                                         elevec1_epetra,
-                                             Epetra_SerialDenseMatrix&                                         Cuiui
+                                             Epetra_SerialDenseMatrix&                                         Cuiui,
+                                             std::string&                                                      VCellGaussPts,
+                                             const std::vector<double>&                                        refEqn
       ) {dserror("Implemented in derived xfem class!"); return;}
 
     virtual void ElementXfemInterfaceNIT2(
-                                       DRT::ELEMENTS::Fluid * ele,
-                                       DRT::Discretization & dis,
-                                       const std::vector<int> & lm,
-                                       const DRT::UTILS::GaussIntegration & intpoints,
-                                       DRT::Discretization & cutdis,
-                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                       DRT::ELEMENTS::Fluid * 																					 ele,
+                                       DRT::Discretization & 																						 dis,
+                                       const std::vector<int> & 																				 lm,
+                                       const DRT::UTILS::GaussIntegration & 														 intpoints,
+                                       DRT::Discretization & 																						 cutdis,
+                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & 		 bcells,
                                        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
-                                       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
-                                       Teuchos::ParameterList&    params,
-                                       DRT::Discretization & alediscret,
-                                       map<int,int> & boundary_emb_gid_map,
-                                       Epetra_SerialDenseMatrix&  elemat1_epetra,
-                                       Epetra_SerialDenseVector&  elevec1_epetra,
-                                       Epetra_SerialDenseMatrix&  Cuiui
+                                       std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
+                                       Teuchos::ParameterList&                                           params,
+                                       DRT::Discretization &                                             alediscret,
+                                       map<int,int> &                                                    boundary_emb_gid_map,
+                                       Epetra_SerialDenseMatrix&                                         elemat1_epetra,
+                                       Epetra_SerialDenseVector&                                         elevec1_epetra,
+                                       Epetra_SerialDenseMatrix&                                         Cuiui,
+                                       std::string&                                                      VCellGaussPts,
+                                       const std::vector<double>&                                        refEqn
       ) {dserror("Implemented in derived xfem class!"); return;}
 
     virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *              ele,

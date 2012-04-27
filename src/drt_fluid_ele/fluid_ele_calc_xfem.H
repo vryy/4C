@@ -88,7 +88,9 @@ public:
         Teuchos::ParameterList&                                             params,            ///< parameter list
         Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
         Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
-        Epetra_SerialDenseMatrix&                                           Cuiui              ///< ui-ui coupling matrix
+        Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
+        std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
+        const std::vector<double>&                            refEqn
     );
 
     /// add Nitsche (NIT) interface condition to element matrix and rhs
@@ -104,26 +106,30 @@ public:
         Teuchos::ParameterList&                                             params,            ///< parameter list
         Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
         Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
-        Epetra_SerialDenseMatrix&                                           Cuiui              ///< ui-ui coupling matrix
+        Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
+        std::string&                                                        VCellGaussPts,      ///< Method of volumecell gauss point generation
+        const std::vector<double>&                                          refEqn
     );
 
     /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceNIT2(
-        DRT::ELEMENTS::Fluid * ele,
-        DRT::Discretization & dis,
-        const std::vector<int> & lm,
-        const DRT::UTILS::GaussIntegration & intpoints,
-        DRT::Discretization & cutdis,
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
-        //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
-        Teuchos::ParameterList&    params,
-        DRT::Discretization &  alediscret,
-        map<int,int> & boundary_emb_gid_map,
-        Epetra_SerialDenseMatrix&  elemat1_epetra,
-        Epetra_SerialDenseVector&  elevec1_epetra,
-        Epetra_SerialDenseMatrix&  Cuiui
+        DRT::ELEMENTS::Fluid * 																							ele,
+        DRT::Discretization & 																							dis,
+        const std::vector<int> & 																						lm,
+        const DRT::UTILS::GaussIntegration & 																intpoints,
+        DRT::Discretization & 																							cutdis,
+        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & 				bcells,
+        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & 	cutintpoints,
+        std::map<int, std::vector<Epetra_SerialDenseMatrix> > & 						side_coupling,
+        //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > 			side_coupling,
+        Teuchos::ParameterList&    																					params,
+        DRT::Discretization &  																							alediscret,
+        map<int,int> & 																											boundary_emb_gid_map,
+        Epetra_SerialDenseMatrix&  																					elemat1_epetra,
+        Epetra_SerialDenseVector&  																					elevec1_epetra,
+        Epetra_SerialDenseMatrix&  																					Cuiui,             																										
+        std::string&                                                        VCellGaussPts,
+        const std::vector<double>&                                          refEqn
       );
 
     ///
@@ -161,7 +167,9 @@ private:
     //! pre-compute the measure of the element's fluid volume
     double ComputeMeasVol(
         const DRT::UTILS::GaussIntegration & intpoints,
-        int                                  eid
+        int                                  eid,
+        std::string&                         VCellGaussPts,
+        const std::vector<double>&           refEqn
     );
 
     //! pre-compute the measure of the element's intersecting surface
@@ -217,6 +225,16 @@ private:
 
     //! evaluate shape function and derivative at point with local coordinates rst
     void EvalFuncAndDeriv( LINALG::Matrix<3,1> &  rst );
+
+    void EvaluateMatricesMSH(LINALG::Matrix<my::nsd_,my::nen_>& evelaf,
+        LINALG::Matrix<my::nen_,1>& epreaf,
+        LINALG::Matrix<my::nen_,my::nen_>& bK_ss,
+        LINALG::Matrix<my::nen_,my::nen_>& invbK_ss,
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su,
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs);
+
+    DRT::UTILS::GaussIntegration InternalGaussPoints( DRT::UTILS::GaussIntegration::iterator quadint,
+                                                      const std::vector<double>& refEqn );
 
 //    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > CreateSideImpl(
 //        bool fluidfluidcoupling,

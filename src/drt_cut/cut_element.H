@@ -208,7 +208,7 @@ public:
   {
     const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     LINALG::Matrix<3,nen> xyze;
-    LINALG::Matrix<3,1> xei (0.0); //the determinant of the Jacobian is independent of the considered point (true only for linear elements???)
+    LINALG::Matrix<3,1> xei (0.1); //the determinant of the Jacobian is independent of the considered point (true only for linear elements???)
     Coordinates(xyze.A());
 
     LINALG::Matrix<3,nen> deriv;

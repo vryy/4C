@@ -321,8 +321,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
       std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+      std::vector<std::vector<double> > refEqns;
 
-      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
+      e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets, refEqns, xfluid_.VolumeCellGaussPointBy_ );
 
       if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
       if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -466,7 +467,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               eleparams,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
-                                              Cuiui);
+                                              Cuiui,
+                                              xfluid_.VolumeCellGaussPointBy_,
+                                              refEqns[set_counter]);
           else if (xfluid_.action_ == "coupling nitsche xfluid sided")
             impl->ElementXfemInterfaceNIT(    ele,
                                               discret,
@@ -479,7 +482,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               eleparams,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
-                                              Cuiui);
+                                              Cuiui,
+                                              xfluid_.VolumeCellGaussPointBy_,
+                                              refEqns[set_counter]);
           else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
             impl->ElementXfemInterfaceNIT2(   ele,
                                               discret,
@@ -494,7 +499,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               xfluid_.boundary_emb_gid_map_,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
-                                              Cuiui);
+                                              Cuiui,
+                                              xfluid_.VolumeCellGaussPointBy_,
+                                              refEqns[set_counter]);
 
 
           for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
@@ -573,7 +580,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 #else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
+      std::vector<std::vector<double> > refEqns;
+      e->VolumeCellGaussPoints( cells, intpoints, refEqns, xfluid_.VolumeCellGaussPointBy_);//modify gauss type
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -689,7 +697,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               eleparams,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
-                                              Cuiui);
+                                              Cuiui,
+                                              xfluid_.VolumeCellGaussPointBy_,
+                                              refEqns[set_counter]);
 
             for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
                   sc!=side_coupling.end(); ++sc )
@@ -1103,7 +1113,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
 #else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
+      std::vector<std::vector<double> > refEqns;
+      e->VolumeCellGaussPoints( cells, intpoints,refEqns,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
@@ -1180,7 +1191,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     {
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
+      std::vector<std::vector<double> > refEqns;
+      e->VolumeCellGaussPoints( cells, intpoints,refEqns,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -3398,13 +3410,13 @@ void FLD::XFluidFluid::Output()
   {
     //Velnp()->Print(cout);
     /*vector<int> lm;
-      lm.push_back(217957);
-      lm.push_back(217958);
-      lm.push_back(217959);
-      lm.push_back(217960);
-      Epetra_SerialDenseVector result(lm.size());
-      DRT::UTILS::ExtractMyValues(*Velnp(),result,lm);
-      result.Print(cout);*/
+    lm.push_back(17041);
+    lm.push_back(17042);
+    lm.push_back(17043);
+    lm.push_back(17044);
+    Epetra_SerialDenseVector result(lm.size());
+    DRT::UTILS::ExtractMyValues(*Velnp(),result,lm);
+    result.Print(cout<<std::scientific<<setprecision(10));*/
 
     // step number and time
     output_->NewStep(step_,time_);
@@ -3876,8 +3888,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
         std::vector< std::vector<int> > nds_sets;
         std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+        std::vector<std::vector<double> > refEqns;
 
-        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy_ );
+        e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets, refEqns, VolumeCellGaussPointBy_ );
 
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");

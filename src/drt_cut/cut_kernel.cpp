@@ -163,8 +163,8 @@ bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3 )
 *----------------------------------------------------------------------------------------------------------*/
 std::vector<int> GEO::CUT::KERNEL::CheckConvexity( std::vector<Point*>& ptlist, std::string& geomType )
 {
-  if( ptlist.size()<5 )
-    dserror( "The number of points < 5. Is it called for appropriate facet?" );
+  if( ptlist.size()<4 )
+    dserror( "The number of points < 4. Is it called for appropriate facet?" );
 
   std::string projPlane;
 

@@ -114,7 +114,7 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
     //std::cout<<"clockwise = "<<clockwise_<<"\t"<<"is cut side = "<<iscut<<"\n";
 #endif
 
-#if 1 //old method of checking the ordering - works only for hexagonal elements
+#if 1 //old method of checking the ordering - separate check for different background elements (is this necessary?)
   std::string ordering;
 
   if(cornersLocal.size()==3 || cornersLocal.size()==4)
@@ -232,16 +232,49 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
 //                std::cout<<"parent side no = "<<parentSideno<<"\n";
 //			std::cout<<"parentSideno = "<<parentSideno<<"corner = "<<corners[0][0]<<"\n";
 //ParentSideno=1 is x=1 face and 3 is x=-1 face
-#if 0
+#if 0 //this is only for hex
 			if(parentSideno==1 && eqn_plane_[0]<0.0)
 				clockwise_ = 1;
 			if(parentSideno==3 && eqn_plane_[0]>0.0)
 				clockwise_ = 1;
 #endif
-    if(parentSideno==1 && ordering=="cw")
-      clockwise_ = 1;
-    if(parentSideno==3 && ordering=="acw")
-      clockwise_ = 1;
+    switch ( elem1_->Shape() )
+    {
+      case DRT::Element::hex8:
+      {
+        if(parentSideno==1 && ordering=="cw")
+          clockwise_ = 1;
+        if(parentSideno==3 && ordering=="acw")
+          clockwise_ = 1;
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        if(parentSideno==1 && ordering=="cw")
+         clockwise_ = 1;
+       if(parentSideno==2 && ordering=="acw")
+         clockwise_ = 1;
+        break;
+      }
+      case DRT::Element::wedge6:
+      {
+        if(parentSideno==0 && ordering=="cw")
+         clockwise_ = 1;
+       if(parentSideno==1 && ordering=="acw")
+         clockwise_ = 1;
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        if(parentSideno==1 && ordering=="cw")
+          clockwise_ = 1;
+        if(parentSideno==3 && ordering=="acw")
+          clockwise_ = 1;
+        break;
+      }
+      default:
+        throw std::runtime_error( "unsupported integration cell type" );
+    }
 
 			/*if(corners[0][0]==1 && eqn_plane_[0]<0.0)
 				clockwise_ = 1;
@@ -276,7 +309,7 @@ std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<doubl
   }
   else if(intType=="y")
   {
-        alfa[0] = d/b;
+    alfa[0] = d/b;
     alfa[1] = -1.0*c/b;
     alfa[2] = -1.0*a/b;
   }
@@ -549,40 +582,73 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
   plain_boundarycell_set divCells;
 
   //the last two parameters has no influence when called from the first parameter is set to true
-  GenerateIntegrationRuleDivergence(true, mesh, divCells);
+  GenerateIntegrationRuleDivergence( true, mesh, divCells );
 
   double normalX = getNormal("x");//make sure eqn of plane is available before calling this
 
   if(clockwise_) //because if ordering is clockwise the contribution of this facet must be subtracted
     normalX = -1.0*normalX;
 
-  std::cout<<"isclockwise = "<<clockwise_<<"\n";
+  //std::cout<<"isclockwise = "<<clockwise_<<"\n";
 
-  std::cout<<"size of the divergenceCells = "<<divCells.size()<<"\n";
+  //std::cout<<"size of the divergenceCells = "<<divCells.size()<<"\n";
   //Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
 
   //DRT::UTILS::GaussIntegration gi_temp;
   for(plain_boundarycell_set::iterator i=divCells.begin();i!=divCells.end();i++)
   {
     BoundaryCell* bcell = *i;
-    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 2 ); /*blockkk change 2*/
+
+    /********************************************************************************/
+    std::string filename="side";
+    std::ofstream file;
+
+    static int sideno = 0;
+    sideno++;
+    std::stringstream out;
+    out <<"facetid"<<sideno<<".pos";
+    filename = out.str();
+    file.open(filename.c_str());
+
+    const std::vector<Point*> ptl = bcell->Points();
+    int mm=0;
+    for( unsigned ii=0;ii<ptl.size();ii++ )
+    {
+      Point* pt1 = ptl[ii];
+      LINALG::Matrix<3,1> global1,local1;
+      pt1->Coordinates(global1.A());
+      elem1_->LocalCoordinates( global1, local1 );
+      file<<"Point("<<mm<<")="<<"{"<<local1(0,0)<<","<<local1(1,0)<<","<<local1(2,0)<<"};\n";
+      //file<<"Point("<<mm<<")="<<"{"<<global1(0,0)<<","<<global1(1,0)<<","<<global1(2,0)<<"};\n";
+      mm++;
+    }
+    for( unsigned ii=0;ii<ptl.size();ii++ )
+    {
+      file<<"Line("<<ii<<")="<<"{"<<ii<<","<<(ii+1)%ptl.size()<<"};\n";
+    }
+
+    /********************************************************************************/
+
+    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 7 );
 
     for ( DRT::UTILS::GaussIntegration::iterator iquad=gi_temp.begin(); iquad!=gi_temp.end(); ++iquad )
     {
       double drs = 0.0;
-      LINALG::Matrix<3,1> x_gp_glo(true), x_gp_loc(true), normal(true);
+      LINALG::Matrix<3,1> x_gp_loc(true), normal(true);
       const LINALG::Matrix<2,1> eta( iquad.Point() );
 
       switch ( bcell->Shape() )
       {
         case DRT::Element::tri3:
         {
-          bcell->TransformLocalCoords<DRT::Element::tri3>(elem1_,eta, x_gp_glo, normal, drs);
+          bcell->TransformLocalCoords<DRT::Element::tri3>(elem1_,eta, x_gp_loc, normal, drs);
+          //bcell->Transform<DRT::Element::tri3>( eta, x_gp_loc, normal, drs );
           break;
         }
         case DRT::Element::quad4:
         {
-          bcell->TransformLocalCoords<DRT::Element::quad4>(elem1_,eta, x_gp_glo, normal, drs);
+          bcell->TransformLocalCoords<DRT::Element::quad4>(elem1_,eta, x_gp_loc, normal, drs);
+          //bcell->Transform<DRT::Element::quad4>( eta, x_gp_loc, normal, drs );
           break;
         }
         default:
@@ -590,8 +656,12 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
       }
       double wei = iquad.Weight()*drs*normalX;
 
-      cgp->Append(x_gp_glo,wei);
+      cgp->Append( x_gp_loc, wei );
 
+      /********************************************************************************/
+      file<<"Point("<<mm<<")="<<"{"<<x_gp_loc(0,0)<<","<<x_gp_loc(1,0)<<","<<x_gp_loc(2,0)<<"};\n";
+      mm++;
+      /********************************************************************************/
       //std::cout<<x_gp_glo(0,0)<<"\t"<<x_gp_glo(1,0)<<"\t"<<x_gp_glo(2,0)<<"\t"<<wei<<"\n";
     }
   }
@@ -617,7 +687,7 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
       return;
   }
 
-  if(!divergenceRule && !face1_->OnCutSide())
+  if( !divergenceRule && !face1_->OnCutSide() )
     return;
 
   IsClockwise(eqn_plane_,cornersLocal);
@@ -630,9 +700,6 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
   {
     if(corners.size()==3)
       TemporaryTri3(corners, divCells);
-
-    else if(corners.size()==4)
-      TemporaryQuad4(corners, divCells);
 
 #if 0 //triangulating the arbitrary noded shape
     else
@@ -665,7 +732,7 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
     else
     {
       std::vector<std::vector<GEO::CUT::Point*> > split;
-  /*    std::cout<<"number of corners = "<<corners.size()<<"\n";
+      /*std::cout<<"number of corners = "<<corners.size()<<"\n";
       for( std::vector<Point*>::iterator nn=corners.begin();nn!=corners.end();nn++ )
       {
         Point* pt1 = *nn;
@@ -700,8 +767,10 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
   }
 }
 
-//temporarily create a tri3 cell
-//this is temporary because this is not stored for the volumecell
+/*-------------------------------------------------------------------------------------------*
+                            temporarily create a tri3 cell
+                    this is temporary because this is not stored for the volumecell
+*--------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::TemporaryTri3( std::vector<Point*>& corners,
                                                 plain_boundarycell_set& divCells )
 {
@@ -712,8 +781,10 @@ void GEO::CUT::FacetIntegration::TemporaryTri3( std::vector<Point*>& corners,
   divCells.insert( bc );
 }
 
-//temporarily create a quad4 cell
-//this is temporary because this is not stored for the volumecell
+/*-------------------------------------------------------------------------------------------*
+                            temporarily create a quad4 cell
+                    this is temporary because this is not stored for the volumecell
+*--------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::TemporaryQuad4( std::vector<Point*>& corners,
                                                  plain_boundarycell_set& divCells )
 {

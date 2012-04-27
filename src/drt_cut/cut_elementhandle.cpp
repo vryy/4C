@@ -11,10 +11,10 @@
 #include<fstream>
 
 
-/*-------------------------------------------------------------------------------------------------*
- *- Project the integration rule available in the local coordinates of the integationcells to the  *
- *- local coordinates of volumecells                                                               *
- *-------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------------------------*
+          Project the integration rule available in the local coordinates of the integationcells to the
+          local coordinates of volumecells
+ *-------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( GEO::CUT::IntegrationCell * ic )
 {
@@ -38,12 +38,13 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( 
   return gp;
 }
 
-/*--------------------------------------------------------------------------*
- *   Collect the Gauss points of all the volumecells belong to this element *
- *   in such a way that gaussian rule for every vol.cell can be separated   *
- *--------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------------------------------*
+                  Collect the Gauss points of all the volumecells belong to this element
+                  in such a way that gaussian rule for every vol.cell can be separated
+*-----------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cells,
                                                      std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                                                     std::vector<std::vector<double> >& refEqn,
                                                      std::string gausstype )
 {
   GetVolumeCells( cells );
@@ -99,16 +100,22 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
         }
   }
 
-  else if(gausstype == "MomentFitting")
+  else if( gausstype == "MomentFitting" || gausstype=="DirectDivergence" )
   {
        for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
        {
                GEO::CUT::VolumeCell *vc = *i;
-               Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GaussPointsFitting();
+               Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
                Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
                         Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
                gpc->Append(gp);
                intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+
+               if( gausstype=="DirectDivergence" )
+               {
+                 std::vector<double> eqn = vc->GetRefEqnPlane();
+                 refEqn.push_back(eqn);
+               }
        }
   }
 
@@ -223,11 +230,11 @@ void GEO::CUT::ElementHandle::GetVolumeCellsDofSets ( std::vector<plain_volumece
 
 }
 
-/*--------------------------------------------------------------------------*
- *   Collect the Gauss points of all the volumecells belong to this element *
- *   The integration rule over all the volumecells are connected.           *
- *   Cannot identify the integration rules separately for each cell         *
- *--------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------------------------------*
+                        Collect the Gauss points of all the volumecells belong to this element
+                        The integration rule over all the volumecells are connected.
+                        Cannot identify the integration rules separately for each cell
+ *---------------------------------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPointsConnected( plain_volumecell_set & cells,
                                                                                               std::string gausstype )
 {
@@ -278,12 +285,11 @@ Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPoi
           }
         }
     }
-    else if(gausstype == "MomentFitting")
+    else if( gausstype == "MomentFitting" || gausstype=="DirectDivergence" )
     {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GaussPointsFitting();
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
         gpc->Append(gp);
     }
-
   }
 
   return gpc;
@@ -610,7 +616,7 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin( MeshIntersection & mes
     }
   }
 
-/*static int eeno=0;//blockkk
+/*  static int eeno=0;
   eeno++;
   if(eeno<5)
   {
@@ -695,6 +701,27 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLevelset( LevelSetIntersect
 #endif
 }
 
+void GEO::CUT::ElementHandle::RefPlaneEquation( plain_volumecell_set & cells,
+                                                std::vector<std::vector<double> >& RefEqn,
+                                                std::string& gausstype )
+{
+  if( gausstype!="DirectDivergence" )
+    return;
+
+  RefEqn.clear();
+  RefEqn.reserve( cells.size() );
+
+  std::vector<double> eqn1(4);
+
+  for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+  {
+    GEO::CUT::VolumeCell * vc = *i;
+    eqn1 = vc->GetRefEqnPlane();
+    RefEqn.push_back(eqn1);
+
+  }
+}
+
 void GEO::CUT::LinearElementHandle::GetVolumeCells( plain_volumecell_set & cells )
 {
   const plain_volumecell_set & cs = element_->VolumeCells();
@@ -702,9 +729,10 @@ void GEO::CUT::LinearElementHandle::GetVolumeCells( plain_volumecell_set & cells
 }
 
 
-void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints ( std::vector<plain_volumecell_set > & cell_sets ,
+void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints_RefEqn ( std::vector<plain_volumecell_set > & cell_sets ,
                                                                       std::vector< std::vector< int > >  & nds_sets,
                                                                       std::vector< DRT::UTILS::GaussIntegration> & intpoints_sets,
+                                                                      std::vector<std::vector<double> >& RefEqn,
                                                                       std::string gausstype)
 {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Get_CellSets_nds_GaussPoints" );
@@ -721,6 +749,8 @@ void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints ( std::vecto
         if(cells.size() != 1) dserror("number of volumecells in set not equal 1, this should not be for linear elements!");
 
         DRT::UTILS::GaussIntegration intpoints (GaussPointsConnected( cells, gausstype ));
+
+        RefPlaneEquation( cells, RefEqn, gausstype );
 
         intpoints_sets.push_back( intpoints );
     }
@@ -802,7 +832,26 @@ void GEO::CUT::LinearElementHandle::VolumeCellSets ( bool include_inner, std::ve
 //	nodaldofset_vc_sets_outside = nodaldofset_vc_sets_outside_;
 //}
 
+void GEO::CUT::LinearElementHandle::RefPlaneEquation( plain_volumecell_set & cells,
+                                                      std::vector<std::vector<double> >& RefEqn,
+                                                      std::string& gausstype )
+{
+  if( gausstype!="DirectDivergence" )
+    return;
 
+  RefEqn.clear();
+  RefEqn.reserve( cells.size() );
+
+  std::vector<double> eqn1(4);
+
+  for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+  {
+    GEO::CUT::VolumeCell * vc = *i;
+    eqn1 = vc->GetRefEqnPlane();
+    RefEqn.push_back(eqn1);
+
+  }
+}
 
 void GEO::CUT::QuadraticElementHandle::BuildCellSets ( plain_volumecell_set & cells_to_connect, std::vector<plain_volumecell_set> & connected_sets)
 {
@@ -886,9 +935,10 @@ void GEO::CUT::QuadraticElementHandle::VolumeCells( plain_volumecell_set & cells
 }
 
 
-void GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints ( std::vector<plain_volumecell_set > & cell_sets ,
+void GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints_RefEqn ( std::vector<plain_volumecell_set > & cell_sets ,
                                                                std::vector< std::vector< int > >  & nds_sets,
                                                                std::vector< DRT::UTILS::GaussIntegration> & intpoints_sets,
+                                                               std::vector<std::vector<double> >& RefEqn,
                                                                std::string gausstype)
 {
     GetVolumeCellsDofSets( cell_sets, nds_sets );
@@ -901,6 +951,8 @@ void GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints ( std::ve
         plain_volumecell_set & cells = *i;
 
         DRT::UTILS::GaussIntegration intpoints (GaussPointsConnected( cells, gausstype ));
+
+        RefPlaneEquation( cells, RefEqn, gausstype );
 
         intpoints_sets.push_back( intpoints );
     }
@@ -988,6 +1040,27 @@ void GEO::CUT::QuadraticElementHandle::ConnectVolumeCells ( bool include_inner )
 
 	}
 
+}
+
+void GEO::CUT::QuadraticElementHandle::RefPlaneEquation( plain_volumecell_set & cells,
+                                                         std::vector<std::vector<double> >& RefEqn,
+                                                         std::string& gausstype )
+{
+  if( gausstype!="DirectDivergence" )
+    return;
+
+  RefEqn.clear();
+  RefEqn.reserve( cells.size() );
+
+  std::vector<double> eqn1(4);
+
+  for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+  {
+    GEO::CUT::VolumeCell * vc = *i;
+    eqn1 = vc->GetRefEqnPlane();
+    RefEqn.push_back(eqn1);
+
+  }
 }
 
 

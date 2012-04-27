@@ -301,8 +301,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
           std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
           std::vector< std::vector<int> > nds_sets;
           std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+          std::vector<std::vector<double> > refEqns;
 
-          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
+          e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets,refEqns, xfluid_.VolumeCellGaussPointBy_ );
 
           if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
           if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -396,7 +397,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                        eleparams,
                                                        strategy.Elematrix1(),
                                                        strategy.Elevector1(),
-                                                       Cuiui);
+                                                       Cuiui,
+                                                       xfluid_.VolumeCellGaussPointBy_,
+                                                       refEqns[set_counter]);
 
                   if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
                       impl->ElementXfemInterfaceNIT(   ele,
@@ -410,7 +413,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                        eleparams,
                                                        strategy.Elematrix1(),
                                                        strategy.Elevector1(),
-                                                       Cuiui);
+                                                       Cuiui,
+                                                       xfluid_.VolumeCellGaussPointBy_,
+                                                       refEqns[set_counter]);
 
               }
               //------------------------------------------------------------
@@ -448,8 +453,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
+        std::vector<std::vector<double> > refEqns;
 
-        e->VolumeCellGaussPoints( cells, intpoints, xfluid_.VolumeCellGaussPointBy_);
+        e->VolumeCellGaussPoints( cells, intpoints, refEqns, xfluid_.VolumeCellGaussPointBy_);
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -524,7 +530,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                 eleparams,
                                                 strategy.Elematrix1(),
                                                 strategy.Elevector1(),
-                                                Cuiui);
+                                                Cuiui,
+                                                xfluid_.VolumeCellGaussPointBy_,
+                                                refEqns[set_counter]);
 
               if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
                   impl->ElementXfemInterfaceNIT( ele,
@@ -538,7 +546,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                  eleparams,
                                                  strategy.Elematrix1(),
                                                  strategy.Elevector1(),
-                                                 Cuiui);
+                                                 Cuiui,
+                                                 xfluid_.VolumeCellGaussPointBy_,
+                                                 refEqns[set_counter]);
 
 
             }
@@ -821,7 +831,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                 GEO::CUT::VolumeCell * vc = *i;
                 if ( vc->Position()==GEO::CUT::Point::outside )
                 {
-                    if ( e->IsCut() )
+                    if ( e->IsCut() /*&& xfluid_.VolumeCellGaussPointBy_=="Tessellation"*/ )
                     {
                         GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
                         GmshOutputBoundaryCell( discret, cutdiscret, gmshfilecontent_bound, actele, e, vc );
@@ -1574,8 +1584,9 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
         std::vector< std::vector<int> > nds_sets;
         std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+        std::vector<std::vector<double> > refEqns;
 
-        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy_ );
+        e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets, refEqns, VolumeCellGaussPointBy_ );
 
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -1937,6 +1948,8 @@ void FLD::XFluid::SolveStationaryProblem()
   // as a side effect, you can do parameter studies for different Reynolds
   // numbers within only ONE simulation when you apply a proper
   // (pseudo-)timecurve
+
+  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Solve Stationary problem" );
 
   while (step_< stepmax_)
   {

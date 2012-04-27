@@ -1,5 +1,6 @@
 #include "direct_divergence.H"
 #include "facet_integration.H"
+#include "volume_integration.H"
 
 /*-------------------------------------------------------------------------------------------------------------------*
   Create integration points on the facets of the volumecell by triangulating the facets
@@ -13,14 +14,11 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
 
   ListFacets( facetIterator, RefPlaneEqn, IteratorRefFacet );
 
-  std::cout<<"number of facets for integration = "<<facetIterator.size()<<"\n";
+//  std::cout<<"number of facets for integration = "<<facetIterator.size()<<"\n";
   if( facetIterator.size()==0 )
     dserror( "x-component normal is zero on all the facets? It should not be." );
-//  dserror("break tempo");
 
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
-  /*Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-        Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );*/
 
   for( unsigned i=0;i<facetIterator.size();i++ )
   {
@@ -32,7 +30,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
   }
 
   /******************************************************************************/
- /* std::cout<<"the corner coordinates of the reference facet\n";
+  /*std::cout<<"the corner coordinates of the reference facet\n";
   Facet * fe = *IteratorRefFacet;
   std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
   for( std::vector<std::vector<double> >::iterator m=cornersLocal.begin();m!=cornersLocal.end();m++ )
@@ -55,18 +53,18 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
   }*/
   /******************************************************************************/
 
-#ifdef DEBUGCUTLIBRARY
-  DivengenceCellsGMSH( IteratorRefFacet, facetIterator );
-#endif
-
   DRT::UTILS::GaussIntegration gi(cgp);
-  std::cout<<"number of Gauss points = "<<gi.NumPoints()<<"\n";
+
   ComputeVolume( gi, RefPlaneEqn );               //compute volume of the cell by integrating 1.0
+
 #if 0 //integrate specified functions using the Gaussian rule generated -- used in postprocessing
   IntegrateSpecificFuntions( gi, RefPlaneEqn );  //integrate specific functions
 #endif
-  Teuchos::RCP<DRT::UTILS::GaussPoints> cp1;
-  return cp1;
+
+#ifdef DEBUGCUTLIBRARY
+  DivengenceCellsGMSH( IteratorRefFacet, facetIterator, gi );
+#endif
+  return cgp;
 }
 
 /*-------------------------------------------------------------------------------------------------------*
@@ -137,6 +135,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     double facety = eqnAllFacets[iter-facete.begin()][1];
     double facetz = eqnAllFacets[iter-facete.begin()][2];
     double facetRhs = eqnAllFacets[iter-facete.begin()][3];
+
     if( fabs(RefPlaneEqn[3])>1e-10 ) //check whether it is x=0 plane
     {
       if( fabs(RefPlaneEqn[0]/RefPlaneEqn[3]-facetx/facetRhs)<1e-8 &&
@@ -164,7 +163,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
 }
 
 void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( plain_facet_set::const_iterator& IteratorRefFacet,
-                                                      std::vector<plain_facet_set::const_iterator>& facetIterator )
+                                                      std::vector<plain_facet_set::const_iterator>& facetIterator,
+                                                      const DRT::UTILS::GaussIntegration & gpv )
 {
   std::string filename="side";
   std::ofstream file;
@@ -178,57 +178,13 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( plain_facet_set::const_ite
 
   volcell_->DumpGmsh( file );
 
-  /*const plain_facet_set & facete = volcell_->Facets();
-
-  static int pointno=1,point_begin,point_end,lineno=1,line_begin,line_end,surf=1,surf_begin, surf_end;
-  surf_begin = surf;
-  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+  int nu = 10001;
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
   {
-     Facet *fe = *i;
-     point_begin = pointno;
-     const std::vector<Point*> corners = fe->CornerPoints();
-     for( std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++ )
-     {
-       Point *pt = *k;
-       double coords[3];
-       pt->Coordinates(coords);
-       file<<"Point("<<pointno<<")={"<<coords[0]<<","<<coords[1]<<","<<coords[2]<<","<<"1"<<"};"<<std::endl;
-       pointno++;
-
-     }
-     point_end = pointno;
-     line_begin = lineno;
-     for(int i=point_begin;i!=point_end;i++)
-     {
-       if(i!=point_end-1)
-         file<<"Line("<<lineno<<")={"<<i<<","<<i+1<<"};"<<std::endl;
-       else
-         file<<"Line("<<lineno<<")={"<<i<<","<<point_begin<<"};"<<std::endl;
-       lineno++;
-     }
-     line_end = lineno;
-     file<<"Line Loop("<<surf<<")={";
-     for(int i=line_begin;i!=line_end;i++)
-     {
-       file<<i;
-       if(i!=line_end-1)
-         file<<",";
-     }
-     file<<"};\n";
-     file<<"Plane Surface("<<surf<<")={"<<surf<<"};"<<std::endl;
-
-     surf++;
+    const LINALG::Matrix<3,1> etaFacet( iquad.Point() );
+    file<<"Point("<<nu<<")={"<<etaFacet(0,0)<<","<<etaFacet(1,0)<<","<<etaFacet(2,0)<<","<<"1"<<"};"<<std::endl;
+    nu++;
   }
-  surf_end = surf;
-  file<<"Surface Loop("<<surf<<")={";
-  for(int i=surf_begin;i<surf;i++)
-  {
-    file<<i;
-    if(i!=(surf-1))
-      file<<",";
-  }
-  file<<"};\n";
-  file<<"Volume("<<surf<<")={"<<surf<<"};"<<std::endl;*/
 }
 
 /*--------------------------------------------------------------------------------------------------------------*
@@ -239,10 +195,13 @@ void GEO::CUT::DirectDivergence::ComputeVolume( const DRT::UTILS::GaussIntegrati
                                                 const std::vector<double> &RefPlaneEqn    )
 {
   double TotalInteg=0.0;
+//  std::cout<<"gauss rule for one volume\n";
   for ( DRT::UTILS::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
   {
     const LINALG::Matrix<3,1> etaFacet( iquad.Point() );
     const double weiFacet = iquad.Weight();
+
+//    std::cout<<"main pt = "<<etaFacet(0,0)<<"\t"<<etaFacet(1,0)<<"\t"<<etaFacet(2,0)<<"\t"<<weiFacet<<"\n";
 
     double integVal = 0.0;
     DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 5 );
@@ -250,17 +209,27 @@ void GEO::CUT::DirectDivergence::ComputeVolume( const DRT::UTILS::GaussIntegrati
     {
       const LINALG::Matrix<1,1> eta( iqu.Point() );
       double weight = iqu.Weight();
+
+      //x-value of the particular Gauss point projected in the reference plane
       double xbegin = (RefPlaneEqn[3]-RefPlaneEqn[1]*etaFacet(1,0)-RefPlaneEqn[2]*etaFacet(2,0))/RefPlaneEqn[0];
-      double jac = fabs(xbegin-etaFacet(0,0))*0.5;
+      double jac = fabs(xbegin-etaFacet(0,0))*0.5; //jacobian for 1D transformation rule
 
-      int fac = 1;
-      if(xbegin>etaFacet(0,0))
-        fac = -1;
+      /*double xmid = 0.5*(xbegin+etaFacet(0,0));
 
-      integVal += 1.0*weight*jac*fac; //Integration of 1.0 since volume is computed
+      double intGausspt = (xmid-xbegin)*eta(0,0)+xmid; */
+
+      weight = weight*jac;
+      if( xbegin>etaFacet(0,0) )
+        weight = -1*weight;
+
+      integVal += 1.0*weight; //Integration of 1.0 since volume is computed
+
+//      std::cout<<"beg\t"<<intGausspt<<"\t"<<etaFacet(1,0)<<"\t"<<etaFacet(2,0)<<"\t"<<weight<<"\n";
     }
     TotalInteg += integVal*weiFacet;
   }
+
+
 
   //set the volume of this volumecell
   //the volume from local coordinates is converted in terms of global coordinates
@@ -290,6 +259,17 @@ void GEO::CUT::DirectDivergence::ComputeVolume( const DRT::UTILS::GaussIntegrati
     default:
       throw std::runtime_error( "unsupported integration cell type" );
   }
+
+#ifdef DEBUGCUTLIBRARY //check the volume with the moment fitting and check the values
+  VolumeIntegration vi( volcell_, elem1_, volcell_->Position(), 1);
+  Epetra_SerialDenseVector volMom = vi.compute_rhs_moment();
+  volMom(0) = volcell_->Volume();
+  std::cout<<"comparison of volume prediction\n";
+  std::cout<<volGlobal<<"\t"<<volMom(0)<<"\n";
+/*  if( fabs(TotalInteg-volMom(0))>1e-12 )
+    dserror("volume prediction is wrong");*/
+#endif
+
   volcell_->SetVolume(volGlobal);
 
   std::cout<<"volume = "<<volGlobal<<"\n";
@@ -321,12 +301,12 @@ void GEO::CUT::DirectDivergence::IntegrateSpecificFuntions( const DRT::UTILS::Ga
 
       double intGausspt = (xmid-xbegin)*eta(0,0)+xmid;
 
-      int fac = 1;
+      weight = weight*jac;
       if( xbegin>etaFacet(0,0) )
-        fac = -1;
+        weight = -1*weight;
 
       //integVal += intGausspt*intGausspt*weight*jac; //integration of x2
-      integVal += etaFacet(2,0)*weight*jac*fac; //integration of z
+      integVal += intGausspt*etaFacet(2,0)*weight; //integration of z
     }
     TotalInteg += integVal*weiFacet;
   }

@@ -2,6 +2,7 @@
 #define CUT_VOLUMECELL_H
 
 #include "cut_facet.H"
+#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 
 namespace GEO
@@ -187,12 +188,21 @@ public:
   \brief return the Gauss points computed using moment fitting equations
   */
   Teuchos::RCP<DRT::UTILS::GaussPoints> GaussPointsFitting();
- // void GaussPointsFitting();
+
+  /*!
+  \brief return the integration rule for this volumecell when MomentFitting or DirectDivergence is used
+   */
+  Teuchos::RCP<DRT::UTILS::GaussPoints> GetGaussRule(){return gp_;}
 
   /*!
   \brief Set the volume of this cell
    */
   void SetVolume(double vol){volume_=vol;}
+
+  /*!
+  \brief Return the equation of the reference plane when DirectDivergence is used for volumecell treatment
+   */
+  std::vector<double> GetRefEqnPlane(){return RefEqnPlane_;}
 
 private:
 
@@ -241,6 +251,8 @@ private:
 
   /// Equation of plane which contains the reference facet when using DirectDivergence
   std::vector<double> RefEqnPlane_;
+
+  Teuchos::RCP<DRT::UTILS::GaussPoints>  gp_;
 
 };
 
