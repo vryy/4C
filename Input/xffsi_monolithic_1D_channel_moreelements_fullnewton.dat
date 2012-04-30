@@ -119,8 +119,8 @@ FLUIDPCITER                     1 1 1
 SHAPEDERIVATIVES                no
 PRECONDREUSE                    0
 SECONDORDER                     No
-NORM_RESF                       Abs
-NORM_INC                        Abs
+//NORM_RESF                       Abs
+//NORM_INC                        Abs
 -------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK//Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
@@ -157,7 +157,7 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 PARTITION                       Cut_Elements
 -------------------------------------------------------XFEM GENERAL
 XFLUIDFLUID_TIMEINT Xff_TimeInt_FullProj
-MONOLITHIC_XFFSI_APPROACH   xffsi_full_newton//  xffsi_fixedALE_interpolation xffsi_fixedALE_partitioned 
+MONOLITHIC_XFFSI_APPROACH     xffsi_full_newton //xffsi_fixedALE_interpolation xffsi_fixedALE_partitioned 
 EMBEDDED_BOUNDARY     BoundaryTypeSigma //BoundaryTypeNitsche 
 COUPLING_STRATEGY     xfluid_sided_mortaring //embedded_sided_mortaring 
 Nitsche_stab          1.0

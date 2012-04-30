@@ -403,10 +403,11 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
   switch ( normtypefres_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss <<std::setw(18)<< "abs-res-norm  |";
+    oss <<std::setw(12)<< "abs-res-norm  |";
     break;
   case INPAR::FSI::convnorm_rel :
-    oss <<std::setw(18)<< "rel-res-norm  |";
+    oss <<std::setw(12)<< "str-res  |"  <<std::setw(7)<< "intrf-res  |" <<std::setw(12)<< "flv-res  |"
+        <<std::setw(12)<< "flp-res  |"  <<std::setw(12)<< "ale-res  |";
     break;
   case INPAR::FSI::convnorm_mix :
     oss <<std::setw(18)<< "mix-res-norm";
@@ -421,7 +422,8 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
     oss <<std::setw(18)<< "abs-inc-norm |";
     break;
   case INPAR::FSI::convnorm_rel :
-    oss <<std::setw(18)<< "rel-inc-norm  |";
+    oss  <<std::setw(12)<< "str-inc  |"  <<std::setw(10)<< "intrf-inc  |" <<std::setw(12)<< "flv-inc  |"
+         <<std::setw(12)<< "flp-inc  |"  <<std::setw(12)<< "ale-inc  |";
     break;
   case INPAR::FSI::convnorm_mix :
     oss <<std::setw(18)<< "mix-inc-norm";
@@ -432,7 +434,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
 
   // add solution time
   oss << std::setw(12)<< "wct    |";
-  cout << "=========================================================="<< endl;
+  cout << "==========================================================================================================================================="<< endl;
 
   // finish oss
   oss << std::ends;
@@ -444,7 +446,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
 
   // print it, now
   fflush(ofile);
-  cout << "==========================================================";
+  cout << "===========================================================================================================================================";
 }
 
 /*---------------------------------------------------------------------*/
@@ -456,7 +458,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
   std::ostringstream oss;
 
   // enter converged state etc
-  oss << std::setw(7)<< iter_ << "/" << itermax_;
+  oss << std::setw(3)<< iter_ << "/" << itermax_;
 
   // different style due relative or absolute error checking
   // displacement
@@ -464,16 +466,21 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
   {
   case INPAR::FSI::convnorm_abs :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_);
+    printf("\n");
     break;
   case INPAR::FSI::convnorm_rel :
-    //oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "fl " << (normflrhs_/nf_) << "ale "<< (normalerhs_/na_) ;
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "interf " << (norminterfacerhs_/ni_) <<
-      "flv " << (normflvelrhs_/nfv_) << "flp " << (normflpresrhs_/nfp_) << "ale " << (normalerhs_/na_);
+    oss << std::setw(14) << std::setprecision(3) << std::scientific << (normstrrhs_/ns_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (norminterfacerhs_/ni_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normflvelrhs_/nfv_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresrhs_/nfp_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normalerhs_/na_);
     break;
   case INPAR::FSI::convnorm_mix :
-    //oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "fl " << (normflrhs_/nf_) << "ale "<< (normalerhs_/na_) ;
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str " << (normstrrhs_/ns_) << "interf " << (norminterfacerhs_/ni_) <<
-      "flv " << (normflvelrhs_/nfv_) << "flp " << (normflpresrhs_/nfp_) << "ale " << (normalerhs_/na_);
+    oss << std::setw(12) << std::setprecision(3) << std::scientific << (normstrrhs_/ns_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (norminterfacerhs_/ni_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normflvelrhs_/nfv_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresrhs_/nfp_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normalerhs_/na_);
     break;
   default:
     dserror("You should not turn up here.");
@@ -482,16 +489,24 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
   switch ( normtypeinc_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << norminc_;
+    oss << std::setw(18) << std::setprecision(3) << std::scientific << norminc_;
     printf("\n");
     break;
   case INPAR::FSI::convnorm_rel :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str inc " << (normstrinc_/ns_) << "interf inc" << (norminterfaceinc_/ni_) <<
-      "flv inc" << (normflvelinc_/nfv_) << "flp inc" << (normflpresinc_/nfp_) << "ale inc " << (normaleinc_/na_);
+    oss << std::setw(12) << std::setprecision(3) << std::scientific <<  (normstrinc_/ns_)
+        << std::setw(12) << std::setprecision(3) << std::scientific <<  (norminterfaceinc_/ni_)
+        << std::setw(12) << std::setprecision(3) << std::scientific <<  (normflvelinc_/nfv_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresinc_/nfp_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normaleinc_/na_);
+    printf("\n");
     break;
   case INPAR::FSI::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << "str inc " << (normstrinc_/ns_) << "interf inc" << (norminterfaceinc_/ni_) <<
-      "flv inc" << (normflvelinc_/nfv_) << "flp inc" << (normflpresinc_/nfp_) << "ale inc " << (normaleinc_/na_);
+    oss << std::setw(12) << std::setprecision(3) << std::scientific << (normstrinc_/ns_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (norminterfaceinc_/ni_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normflvelinc_/nfv_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresinc_/nfp_)
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normaleinc_/na_);
+    printf("\n");
     break;
   default:
     dserror("You should not turn up here.");

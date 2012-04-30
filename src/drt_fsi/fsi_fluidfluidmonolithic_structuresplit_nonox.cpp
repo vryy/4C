@@ -848,7 +848,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
   rhs_->Norm2(&normrhs_);
 
   // structural Dofs
-  StructureField().RHS()->Norm2(&normstrrhs_);
+  StructureField().Interface()->ExtractOtherVector(StructureField().RHS())->Norm2(&normstrrhs_);
 
   // interface
 
