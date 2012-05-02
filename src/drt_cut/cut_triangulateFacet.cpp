@@ -10,6 +10,21 @@ void GEO::CUT::TriangulateFacet::SplitFacet()
 {
   DeleteInlinePts( ptlist_ );
 
+
+  //Deal with zero point facet -- this should never occur, but happens in axel10
+  if( ptlist_.size()==0 )
+    return;
+
+/*  std::cout<<"number of points = "<<ptlist_.size()<<"\n";
+  std::cout<<"the point list are\n";
+  for( unsigned i=0;i<ptlist_.size();i++ )
+  {
+    Point* ptt = ptlist_[i];
+    double coo[3];
+    ptt->Coordinates(coo);
+    std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
+  }*/
+
   /*********************************************************************/
 /*  ptlist_.clear();
   double x[3];
@@ -52,7 +67,9 @@ void GEO::CUT::TriangulateFacet::SplitFacet()
 //  std::cout<<"numpts = "<<numpts<<"\n";
 
   if( numpts<3 )
+  {
     dserror("not a valid facet");
+  }
   else if( numpts==3 )
   {
     split_.clear();
@@ -149,12 +166,13 @@ void GEO::CUT::TriangulateFacet::DeleteInlinePts( std::vector<Point*>& poly )
 }
 
 /*-------------------------------------------------------------------------------------*
-   If a 4 noded facet is convex, a quad is made. If it is concave,      sudhakar 04/12
-   it is split into appropriate triangles
+   If a 4 noded facet is convex, a quad is made. If it is concave,
+   it is split into appropriate triangles.
+   The Gauss integration rule is available for quad only if it is convex
 
                                    /\
                                   / .\
-                                 /A .B\
+                                 /A .B\                                   sudhakar 04/12
                                 /  ++  \
                                / +    + \
                                +        +
@@ -187,9 +205,17 @@ void GEO::CUT::TriangulateFacet::Split4nodeFacet( std::vector<Point*> &poly )
     temp2[1] = poly[(indStart+2)%4];
     temp2[2] = poly[(indStart+3)%4];
 
-    split_.resize(2);
-    split_[0] = temp1;
-    split_[1] = temp2;
+    if( split_.size()==0 )
+    {
+      split_.resize(2);
+      split_[0] = temp1;
+      split_[1] = temp2;
+    }
+    else
+    {
+      split_.push_back( temp1 );
+      split_.push_back( temp2 );
+    }
     return;
   }
   else
@@ -212,7 +238,7 @@ void GEO::CUT::TriangulateFacet::Split4nodeFacet( std::vector<Point*> &poly )
    For concave volumes the point which produces the concavity is found, and used accordingly
 
            4  _______  3                   3
-              |     .\                     |\       1        Sudhakar 04/12
+              |     .\                     |\       1                            Sudhakar 04/12
               | B  .  \                    | \    /|
               |   .    \ 2                 |  \ 2/ |
               |  .  A  /                   | B \/  |
@@ -339,6 +365,7 @@ void GEO::CUT::TriangulateFacet::Split6nodeFacet()
 *---------------------------------------------------------------------------------------------*/
 void GEO::CUT::TriangulateFacet::Split7nodeFacet()
 {
+  std::cout<<"I am in 7 noded split\n";
   if(ptlist_.size()!=7)
     dserror("This is not a 7 noded facet");
 
@@ -589,27 +616,28 @@ void GEO::CUT::TriangulateFacet::SplitAnyFacet( std::vector<int> ptConcavity )
   std::cout<<"\n";*/
 
   // if the polygon two adjacent concave points call earclipping
-  bool conti = HasTwoContinuousConcavePts( ptConcavity );
-  if( conti )
+  if( ptConcavity.size()>1 )
   {
-    EarClipping( ptConcavity );
-    return;
+    bool conti = HasTwoContinuousConcavePts( ptConcavity );
+    if( conti )
+    {
+      EarClipping( ptConcavity );
+      return;
+    }
   }
 
   int num = ptlist_.size();
+  int concsize = ptConcavity.size();
 
-  if( ptConcavity.size()<2 && num<11 ) //specific funtions are available to handle such issues
-    dserror("Call specific split program, the facet has %d concavity and %d corners",ptConcavity.size(),num);
-
-  split_.clear();
+  //split_.clear();
   int concNum = 0;
   bool triDone=false,fresh=true;
   std::vector<Point*> newCell;
   int secondPt,lastPt=0,endPt=0;
 
-  if( ptConcavity[0]==0 && ptConcavity.size()==1 )
+  if( ptConcavity[0]==0 && concsize==1 )
     endPt = ptlist_.size()-1;
-  else if( ptConcavity.size()==1 )
+  else if( concsize==1 )
     endPt = ptConcavity[0]-1;
   else
     endPt = ptConcavity[0];
@@ -628,13 +656,17 @@ void GEO::CUT::TriangulateFacet::SplitAnyFacet( std::vector<int> ptConcavity )
 
     newCell.push_back(ptlist_[indStart]);
     newCell.push_back(ptlist_[secondPt]);
-    newCell.push_back(ptlist_[(secondPt+1)%num]);
+
     lastPt = (secondPt+1)%num;
+    newCell.push_back(ptlist_[lastPt]);
+
     fresh = false;
 #if 1
     if( lastPt==endPt )
+    {
       triDone = true;
-    if( lastPt==ptConcavity[concNum+1] )
+    }
+    if( concNum!=concsize-1 && lastPt==ptConcavity[concNum+1] )
     {
       fresh = true;
       concNum++;
@@ -648,9 +680,13 @@ void GEO::CUT::TriangulateFacet::SplitAnyFacet( std::vector<int> ptConcavity )
         fresh = true;
         concNum++;
       }
+      if( lastPt==endPt )
+        triDone = true;
     }
     if( newCell.size()==3 )
+    {
       split_.push_back( newCell );
+    }
     else if( newCell.size()==4 ) //check the resulting quad is convex, else split into 2 tri
     {
       DeleteInlinePts( newCell );
@@ -659,7 +695,9 @@ void GEO::CUT::TriangulateFacet::SplitAnyFacet( std::vector<int> ptConcavity )
       else if( newCell.size()==3 )
         split_.push_back( newCell );
       else
+      {
         Split4nodeFacet( newCell );
+      }
     }
     else
       dserror( "neither tri nor quad" );
@@ -738,6 +776,19 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
   std::cout<<"i am ear clipped\n";
   std::vector<int> convex;
 
+/*  std::cout<<"the points are\n";
+  for( unsigned i=0;i<ptlist_.size();i++ )
+  {
+    Point* ptt = ptlist_[i];
+    double z[3];
+    ptt->Coordinates(z);
+    std::cout<<z[0]<<"\t"<<z[1]<<"\t"<<z[2]<<"\n";
+  }
+  std::cout<<"the concave pints are = ";
+  for( unsigned i=0;i<ptConcavity.size();i++)
+    std::cout<<ptConcavity[i]<<"\t";
+  std::cout<<"\n";*/
+
   while(1)
   {
     std::vector<int> reflex( ptConcavity );
@@ -748,13 +799,22 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
     // Find the convex points
     // They are non-reflex points of the polygon
     int conNum=0;
-    if( ptConcavity.size()==0 )//if there are no concave points, or after removing all concave points
+    if( ptConcavity.size()<2 )
+    {
+      if( ptConcavity.size()==0 )
+        ptConcavity.push_back(0);
+      SplitAnyFacet( ptConcavity );
+      return;
+    }
+#if 0
+    if( ptConcavity.size()==0 ) //if there are no concave points, or after removing all concave points
     {
       convex.resize( polPts );
       for( int i=0;i<polPts;i++ )
         convex[i] = i;
     }
-    else
+#endif
+    else  // all the non-concave points are copied to the convex
     {
       for( int i=0;i<polPts;i++ )
       {
@@ -771,7 +831,7 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
       }
     }
 
-    // if i is the ear, the triangle formed by (i-1),i and (i+1) should be completely within the polygon
+    // if (i) is an ear, the triangle formed by (i-1),i and (i+1) should be completely within the polygon
     // Find first ear point, and make the triangle and remove this ear from the polygon
     std::vector<Point*> tri(3);
     for( int i=0;i<polPts;i++ )
@@ -819,6 +879,8 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
       break;
     }
 
+    DeleteInlinePts( ptlist_ ); //delete inline points in the modified polygon
+
     std::string str1;
     ptConcavity = KERNEL::CheckConvexity(  ptlist_, str1 );
 
@@ -830,8 +892,6 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
     for( unsigned i=0;i<convex.size();i++ )
       std::cout<<convex[i]<<"\t";
     std::cout<<"\n";*/
-
-    DeleteInlinePts( ptlist_ ); //delete inline points in the modified polygon
   }
 
 /*  for( unsigned i=0;i<split_.size();i++ )
@@ -846,7 +906,7 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }
-  dserror("ear clipped machi");*/
+  dserror("ear clipped\n");*/
 }
 
 /*------------------------------------------------------------------------------------------------------------*

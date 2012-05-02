@@ -731,8 +731,8 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
 #if 1 //split the aribtrary noded facet into cells
     else
     {
-      std::vector<std::vector<GEO::CUT::Point*> > split;
-      /*std::cout<<"number of corners = "<<corners.size()<<"\n";
+
+     /* std::cout<<"number of corners = "<<corners.size()<<"\n";
       for( std::vector<Point*>::iterator nn=corners.begin();nn!=corners.end();nn++ )
       {
         Point* pt1 = *nn;
@@ -740,11 +740,19 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
         pt1->Coordinates(xx);
         std::cout<<xx[0]<<"\t"<<xx[1]<<"\t"<<xx[2]<<"\n";
       }*/
-//      face1_->SplitFacet( mesh, corners, split );
 
+#if 1 // split facet
+      std::vector<std::vector<GEO::CUT::Point*> > split;
       TriangulateFacet tf( face1_, mesh, corners );
       tf.SplitFacet();
       split = tf.GetSplitCells();
+#endif
+
+#if 0 // triangulate facet
+      if(!face1_->IsTriangulated())
+        face1_->DoTriangulation( mesh, corners );
+      const std::vector<std::vector<Point*> > & split = face1_->Triangulation();
+#endif
 
       for ( std::vector<std::vector<Point*> >::const_iterator j=split.begin();
                                                               j!=split.end(); ++j )
