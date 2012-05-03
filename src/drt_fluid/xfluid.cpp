@@ -193,7 +193,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   //--------------------------------------------------------------------------------------
   // create object for edgebased stabilization
   if(xfluid_.fluid_stab_type_ == "edge_based")
-    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab::XFEM_EdgeStab(wizard_, xfluid.discret_));
+    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.discret_));
   //--------------------------------------------------------------------------------------
 
 }

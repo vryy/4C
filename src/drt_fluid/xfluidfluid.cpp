@@ -186,7 +186,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   //--------------------------------------------------------------------------------------
   // create object for edgebased stabilization
   if(xfluid_.fluid_stab_type_ == "edge_based")
-    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
+    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
   //--------------------------------------------------------------------------------------
 
 }
