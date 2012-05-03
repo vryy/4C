@@ -1,6 +1,5 @@
 #include "cut_triangulateFacet.H"
 #include "cut_kernel.H"
-//#include "cut_mesh.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
               Split the facet into appropriate number of tri and quad                           Sudhakar 04/12
@@ -365,7 +364,7 @@ void GEO::CUT::TriangulateFacet::Split6nodeFacet()
 *---------------------------------------------------------------------------------------------*/
 void GEO::CUT::TriangulateFacet::Split7nodeFacet()
 {
-  std::cout<<"I am in 7 noded split\n";
+  //std::cout<<"I am in 7 noded split\n";
   if(ptlist_.size()!=7)
     dserror("This is not a 7 noded facet");
 
@@ -771,9 +770,9 @@ bool GEO::CUT::TriangulateFacet::HasTwoContinuousConcavePts( std::vector<int> pt
 /*-------------------------------------------------------------------------------------------------*
             Triangulation by ear clipping. Works for all cases, but costly.         sudhakar 04/12
 *--------------------------------------------------------------------------------------------------*/
-void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
+void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,
+                                              bool triOnly )           //create triangles only?
 {
-  std::cout<<"i am ear clipped\n";
   std::vector<int> convex;
 
 /*  std::cout<<"the points are\n";
@@ -799,35 +798,19 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
     // Find the convex points
     // They are non-reflex points of the polygon
     int conNum=0;
-    if( ptConcavity.size()<2 )
+
+
+    for( int i=0;i<polPts;i++ )
     {
-      if( ptConcavity.size()==0 )
-        ptConcavity.push_back(0);
-      SplitAnyFacet( ptConcavity );
-      return;
-    }
-#if 0
-    if( ptConcavity.size()==0 ) //if there are no concave points, or after removing all concave points
-    {
-      convex.resize( polPts );
-      for( int i=0;i<polPts;i++ )
-        convex[i] = i;
-    }
-#endif
-    else  // all the non-concave points are copied to the convex
-    {
-      for( int i=0;i<polPts;i++ )
+      if( i==ptConcavity[0] )
       {
-        if( i==ptConcavity[0] )
-        {
-          ptConcavity.erase( ptConcavity.begin() );
-          continue;
-        }
-        else
-        {
-          convex[conNum] = i;
-          conNum++;
-        }
+        ptConcavity.erase( ptConcavity.begin() );
+        continue;
+      }
+      else
+      {
+        convex[conNum] = i;
+        conNum++;
       }
     }
 
@@ -883,6 +866,29 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity )
 
     std::string str1;
     ptConcavity = KERNEL::CheckConvexity(  ptlist_, str1 );
+
+
+
+    if( triOnly==false ) // if possible it shifts to splitAnyFacet so that no of cells are reduced
+    {
+      if( ptConcavity.size()<2 )
+      {
+        if( ptConcavity.size()==0 )
+          ptConcavity.push_back(0);
+        SplitAnyFacet( ptConcavity );
+        return;
+      }
+
+      if( ptConcavity.size()>1 )
+      {
+        bool conti = HasTwoContinuousConcavePts( ptConcavity );
+        if( !conti )
+        {
+          SplitAnyFacet( ptConcavity );
+          return;
+        }
+      }
+    }
 
     /*std::cout<<"the reflex points are = ";
     for( unsigned i=0;i<reflex.size();i++ )

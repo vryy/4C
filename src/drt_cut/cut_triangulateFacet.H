@@ -36,6 +36,14 @@ public:
    */
   void SplitFacet();
 
+  /*!
+  \brief A general facet is triangulated with ear clipping method.
+  When triOnly=true calls conventional Earclipping method. Otherwise it creates both Tri and Quad cells
+  to reduce the number of Gaussian points
+   */
+  void EarClipping( std::vector<int> ptConcavity,
+                    bool triOnly=false  );          //create triangles only?
+
   std::vector<std::vector<Point*> > GetSplitCells(){return split_;}
 
   std::vector<std::vector<Point*> > split_;
@@ -87,11 +95,6 @@ private:
   splits facets those has more than 10 corners
   */
   void SplitAnyFacet( std::vector<int> ptConcavity );
-
-  /*!
-  \brief A general facet is triangulated with ear clipping method
-   */
-  void EarClipping( std::vector<int> ptConcavity );
 
   /*!
   \brief check whether any two adjacent polygonal points are concave
