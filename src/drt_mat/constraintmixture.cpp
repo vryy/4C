@@ -460,28 +460,35 @@ void MAT::ConstraintMixture::Evaluate
     history_->back().GetTime(&temptime, &tempdt);
     if (temptime == 0.0 && tempdt == 0.0)
     {
-      history_->back().SetTime(time, dt);
-      // if you change your time step size the basal mass production rate changes
-      // basal mass production rate determined by DENS, PHIE and degradation function
-      int numpast = history_->size();
-      double intdegr = 0.0;
-      double degrtime = 0.0;
-      double degrdt = 0.0;
-      for (int idpast = 0; idpast < numpast - firstiter; idpast++)
+      int size = history_->size();
+      history_->at(size-2).GetTime(&temptime, &tempdt);
+      // for restart ApplyForceInternal calls the material with the old time
+      // thus make sure not to store it
+      if (time > temptime + 1.0e-12)
       {
-        double degr = 0.0;
-        history_->at(idpast).GetTime(&degrtime, &degrdt);
-        if (firstiter == 1)
+        history_->back().SetTime(time, dt);
+        // if you change your time step size the basal mass production rate changes
+        // basal mass production rate determined by DENS, PHIE and degradation function
+        int numpast = history_->size();
+        double intdegr = 0.0;
+        double degrtime = 0.0;
+        double degrdt = 0.0;
+        for (int idpast = 0; idpast < numpast - firstiter; idpast++)
         {
-          double timeloc = 0.0;
-          double dtloc = 0.0;
-          history_->at(idpast+1).GetTime(&timeloc, &dtloc);
-          degrdt = dtloc;
+          double degr = 0.0;
+          history_->at(idpast).GetTime(&degrtime, &degrdt);
+          if (firstiter == 1)
+          {
+            double timeloc = 0.0;
+            double dtloc = 0.0;
+            history_->at(idpast+1).GetTime(&timeloc, &dtloc);
+            degrdt = dtloc;
+          }
+          Degradation(time-degrtime, &degr);
+          intdegr += degr * degrdt;
         }
-        Degradation(time-degrtime, &degr);
-        intdegr += degr * degrdt;
+        massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 4.0 / intdegr;
       }
-      massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 4.0 / intdegr;
     }
     else if (time > temptime)
       time = temptime;
