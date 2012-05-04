@@ -73,6 +73,7 @@ LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Penalty
 PENALTYPARAM                    1.0e4
+SHAPEFCN                        Standard
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
@@ -4741,7 +4742,7 @@ FUNCT1 COMPONENT 2 EXPR -5.0 0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 409 POSITION dispx NAME ux VALUE -2.90588824290883674e-01 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 409 POSITION dispy NAME uy VALUE -2.74433280075989328e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 409 POSITION dispx NAME ux VALUE -2.88843963728622921e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 409 POSITION dispy NAME uy VALUE -2.74878586547326609e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
