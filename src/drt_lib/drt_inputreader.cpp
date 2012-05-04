@@ -976,12 +976,21 @@ void DatFileReader::ReadDat()
   knownsections_["--CURVE4"] = true;
   knownsections_["--CURVE5"] = true;
   knownsections_["--CURVE6"] = true;
+  knownsections_["--CURVE7"] = true;
+  knownsections_["--CURVE8"] = true;
+  knownsections_["--CURVE9"] = true;
+  knownsections_["--CURVE10"] = true;
   knownsections_["--FUNCT1"] = true;
   knownsections_["--FUNCT2"] = true;
   knownsections_["--FUNCT3"] = true;
   knownsections_["--FUNCT4"] = true;
   knownsections_["--FUNCT5"] = true;
   knownsections_["--FUNCT6"] = true;
+  knownsections_["--FUNCT7"] = true;
+  knownsections_["--FUNCT8"] = true;
+  knownsections_["--FUNCT9"] = true;
+  knownsections_["--FUNCT10"] = true;
+
 }
 
 
