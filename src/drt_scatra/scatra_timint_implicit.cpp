@@ -696,7 +696,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       for(int index=0;index<numdim;++index)
       {
-        double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
+        double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
         if (cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
         {
           value *= DRT::Problem::Instance()->Curve(velcurveno-1).f(time_);
@@ -1469,7 +1469,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
-        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),0.0,NULL);
+        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
         phin_->ReplaceMyValues(1,&initialval,&doflid);
       }
     }

@@ -4088,7 +4088,7 @@ void FLD::XFluidFluid::SetInitialFlowField(
         {
           int gid = nodedofset[index];
 
-          double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
+          double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
           state_->velnp_->ReplaceGlobalValues(1,&initialval,&gid);
         }
       }
@@ -4109,7 +4109,7 @@ void FLD::XFluidFluid::SetInitialFlowField(
       {
         int gid = nodedofset[index];
 
-        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
+        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
 
         alevelnp_->ReplaceGlobalValues(1,&initialval,&gid);
       }

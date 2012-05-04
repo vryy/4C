@@ -21,7 +21,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_adapter/adapter_coupling_mortar.H"
 
 #include "fsi_utils.H"
-
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_structure/stru_aux.H"

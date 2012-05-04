@@ -142,7 +142,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
                const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
                //evaluate function at current gauss point
-               functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,0.0,NULL);
+               functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
              }
              else
                functfac = 1.0;

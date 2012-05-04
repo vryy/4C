@@ -200,6 +200,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     LINALG::Matrix<nsd_,1> xyzint(true);
     xyzint.Multiply(xyze_,funct_);
 
+    const double t = fldpara_->Time();
+
     // Compute analytical solution
     switch(calcerr)
     {
@@ -219,8 +221,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
 
          const double a      = M_PI/4.0;
          const double d      = M_PI/2.0;
-
-         const double t = fldpara_->Time();
 
          // compute analytical pressure
          p = -a*a/2.0 *
@@ -318,8 +318,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
 
       if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
       {
-        const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,0.0,NULL);
-        const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,0.0,NULL);
+        const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,t,NULL);
+        const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,t,NULL);
         u(0) = u_exact_x;
         u(1) = u_exact_y;
       }

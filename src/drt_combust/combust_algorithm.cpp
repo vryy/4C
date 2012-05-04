@@ -662,7 +662,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
       if (flid < 0) dserror("lid not found in map for given gid");
 
       // get value of corresponding velocity component
-      double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(icomp,lnode->X(),0.0,NULL);
+      double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(icomp,lnode->X(),FluidField().Time(),NULL);
 
 //      // scaling for stretching fluid example // schott
 //      cout <<"Scaling with time-curve!!!!" << endl;

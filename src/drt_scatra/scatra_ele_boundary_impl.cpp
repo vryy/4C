@@ -972,7 +972,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
           if (functnum>0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,0.0,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
           }
           else
             functfac = 1.0;
@@ -2754,7 +2754,7 @@ template <DRT::Element::DiscretizationType bdistype,
     if (funcnum > 0)
     {
       // evaluate function at current integration point
-      functfac = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(0,coordgp.A(),0.0,NULL);
+      functfac = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(0,coordgp.A(),time,NULL);
     }
     else functfac = 1.0;
     dirichval *= functfac;

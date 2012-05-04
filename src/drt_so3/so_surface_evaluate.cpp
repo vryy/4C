@@ -274,7 +274,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
             const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
             //evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,0.0,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
           }
           else
             functfac = 1.0;
@@ -319,7 +319,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
           const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
           // evaluate function at current gauss point
-          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,0.0,NULL);
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time,NULL);
         }
         else
           functfac = 1.0;

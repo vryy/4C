@@ -1201,7 +1201,7 @@ double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x, double t, 
   {
     dserror("Tried to evaluate a function in a not available dimension.\nSpecify either one function or functions for all dimensions! \n(including one for the pressure)");
   }
-  return expr_[index]->EvaluateFunct(x[0]-x_[index], x[1]-y_[index], x[2]-z_[index]);
+  return expr_[index]->EvaluateFunct(x[0]-x_[index], x[1]-y_[index], x[2]-z_[index],t);
 }
 
 

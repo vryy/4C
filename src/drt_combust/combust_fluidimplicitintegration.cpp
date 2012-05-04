@@ -4331,7 +4331,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       {
         int gid = nodedofset[index];
 
-        double initialval=DRT::Problem::Instance()->Funct(initfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
+        double initialval=DRT::Problem::Instance()->Funct(initfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
 
         state_.velnp_->ReplaceGlobalValues(1,&initialval,&gid);
         state_.veln_ ->ReplaceGlobalValues(1,&initialval,&gid);

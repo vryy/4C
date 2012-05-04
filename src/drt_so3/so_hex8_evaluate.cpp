@@ -1266,7 +1266,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList&            params,
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac
         = (functnum>0)
-        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),0.0,NULL)
+        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
         : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid) {

@@ -27,7 +27,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_io/io_control.H"
 #include "../drt_structure/stru_aux.H"
-
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "fsi_debugwriter.H"
 
 #include "fsi_nox_aitken.H"

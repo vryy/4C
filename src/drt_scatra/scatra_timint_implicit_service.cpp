@@ -1944,7 +1944,7 @@ void SCATRA::ScaTraTimIntImpl::SetMagneticField(const int funcno)
       DRT::Node*  lnode = discret_->lRowNode(lnodeid);
       for(int index=0;index<numdim;++index)
       {
-        double value = DRT::Problem::Instance()->Funct(funcno-1).Evaluate(index,lnode->X(),0.0,NULL);
+        double value = DRT::Problem::Instance()->Funct(funcno-1).Evaluate(index,lnode->X(),time_,NULL);
         // no time-dependency included, yet!
         err = magneticfield_->ReplaceMyValue(lnodeid, index, value);
         if (err!=0) dserror("error while inserting a value into magneticfield_");

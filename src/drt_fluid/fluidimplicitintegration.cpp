@@ -3917,7 +3917,13 @@ void FLD::FluidImplicitTimeInt::Output()
 #endif //PRINTALEDEFORMEDNODECOORDS
 
   if (topopt_porosity_!=Teuchos::null)
+  {
     optimizer_->ImportFluidData(velnp_,step_);
+
+    // initial solution (=u_0) is old solution in step 1
+    if (step_==1 and timealgo_!=INPAR::FLUID::timeint_stationary)
+      optimizer_->ImportFluidData(veln_,0);
+  }
 
   return;
 } // FluidImplicitTimeInt::Output
@@ -4334,7 +4340,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       {
         int gid = nodedofset[index];
 
-        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
+        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
 
         velnp_->ReplaceGlobalValues(1,&initialval,&gid);
       }
@@ -6135,7 +6141,7 @@ void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
       std::vector<int> nodedofset = discret_->Dof(lnode);
 
       int numdofs = nodedofset.size();
-      double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL);
+      double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),time_,NULL);
 
       // check whether there are invalid values of porosity
       if (initialval < EPS15) dserror("zero or negative initial porosity");

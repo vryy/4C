@@ -3246,7 +3246,7 @@ void FLD::XFluid::SetInitialFlowField(
           {
             int gid = nodedofset[dof];
 
-            double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+            double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(dof%4,lnode->X(),time_,NULL);
             state_->velnp_->ReplaceGlobalValues(1,&initialval,&gid);
           }
       }
@@ -3363,7 +3363,7 @@ void FLD::XFluid::SetInitialInterfaceField()
         {
           int gid = nodedofset[dof];
 
-          double initialval=DRT::Problem::Instance()->Funct(interface_vel_init_func_no_-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+          double initialval=DRT::Problem::Instance()->Funct(interface_vel_init_func_no_-1).Evaluate(dof%4,lnode->X(),time_,NULL);
           ivelnp_->ReplaceGlobalValues(1,&initialval,&gid);
         }
       }
@@ -3414,7 +3414,7 @@ void FLD::XFluid::SetInterfaceDisplacement( double time )
             {
               int gid = nodedofset[dof];
 
-              double initialval=DRT::Problem::Instance()->Funct( interface_disp_func_no_-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+              double initialval=DRT::Problem::Instance()->Funct( interface_disp_func_no_-1).Evaluate(dof%4,lnode->X(),time_,NULL);
 
               initialval *= curvefac;
               idispnp_->ReplaceGlobalValues(1,&initialval,&gid);
@@ -3511,7 +3511,7 @@ void FLD::XFluid::ComputeInterfaceVelocities()
             {
               int gid = nodedofset[dof];
 
-              double initialval=DRT::Problem::Instance()->Funct(interface_vel_func_no_-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+              double initialval=DRT::Problem::Instance()->Funct(interface_vel_func_no_-1).Evaluate(dof%4,lnode->X(),time_,NULL);
               ivelnp_->ReplaceGlobalValues(1,&initialval,&gid);
             }
           } // end if
