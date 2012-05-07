@@ -149,12 +149,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       Teuchos::RCP<COMBUST::FlameFront> flamefront = params.get< Teuchos::RCP< COMBUST::FlameFront > >("flamefront",Teuchos::null);
 
-//      // store pointer to interface handle
-//      ih_ = &*params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
-//      epetra_phinp_ = &*params.get< Teuchos::RCP<Epetra_Vector> >("phinp",Teuchos::null);
-//      gradphi_ = &*params.get< Teuchos::RCP<Epetra_Vector> >("gradphi",Teuchos::null);
-//      curvature_ = &*params.get< Teuchos::RCP<Epetra_Vector> >("curvature",Teuchos::null);
-
       //--------------------------------------------------
       // find out whether an element is intersected or not
       //--------------------------------------------------
@@ -167,10 +161,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (flamefront != Teuchos::null) // not the initial call
       {
         // set element variables
-        ih_ = &*flamefront->InterfaceHandle();
-        epetra_phinp_ = &*flamefront->Phinp();
-        gradphi_ = &*flamefront->GradPhi();
-        curvature_ = &*flamefront->Curvature();
+        ih_ = flamefront->InterfaceHandle().get();
+        epetra_phinp_ = flamefront->Phinp().get();
+        if (flamefront->GradPhi()!=Teuchos::null) gradphi_ = flamefront->GradPhi().get();
+        if (flamefront->Curvature()!=Teuchos::null) curvature_ = flamefront->Curvature().get();
 
         const COMBUST::InterfaceHandleCombust::CutStatus cutstat = ih_->ElementCutStatus(this->Id());
 
