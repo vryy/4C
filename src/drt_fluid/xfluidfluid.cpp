@@ -185,7 +185,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   //--------------------------------------------------------------------------------------
   // create object for edgebased stabilization
-  if(xfluid_.fluid_stab_type_ == "edge_based")
+  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_)
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
   //--------------------------------------------------------------------------------------
 
@@ -265,8 +265,17 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   eleparams.set("coupling_strategy",xfluid_.coupling_strategy_);
 
-  eleparams.set("nitsche_stab", xfluid_.nitsche_stab_);
-  eleparams.set("nitsche_stab_conv", xfluid_.nitsche_stab_conv_);
+  eleparams.set("visc_stab_fac", xfluid_.visc_stab_fac_);
+  eleparams.set("visc_stab_scaling", xfluid_.visc_stab_scaling_);
+  eleparams.set("visc_stab_hk", xfluid_.visc_stab_hk_);
+
+  eleparams.set("conv_stab_fac", xfluid_.conv_stab_fac_);
+  eleparams.set("conv_stab_scaling", xfluid_.conv_stab_scaling_);
+
+  eleparams.set("msh_l2_proj", xfluid_.msh_l2_proj_);
+
+  //----------------------------------------------------------------------
+
 
   DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
   DRT::AssembleStrategy alestrategy(0, 0, xfluid_.alesysmat_,xfluid_.shapederivatives_, xfluid_.aleresidual_,Teuchos::null,Teuchos::null);
@@ -810,9 +819,15 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   // call edge stabilization
   // REMARK: the current implementation of internal edges integration belongs to the elements
   // at the moment each side is integrated twice
-  if(xfluid_.fluid_stab_type_ == "edge_based")
+  if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
+
+    eleparams.set("edge_based",xfluid_.edge_based_);
+    eleparams.set("ghost_penalty",xfluid_.ghost_penalty_);
+
+    eleparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
+    eleparams.set("EOS_GP_PATTERN", xfluid_.eos_gp_pattern_);
 
     //------------------------------------------------------------
     // loop over row faces
@@ -831,7 +846,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
 
-      edgestab_->EvaluateEdgeStabGhostPenalty(xfluid_.bgdis_, ele, sysmat_, strategy.Systemvector1());
+      edgestab_->EvaluateEdgeStabGhostPenalty(eleparams, xfluid_.bgdis_, ele, sysmat_, strategy.Systemvector1());
     }
   }
 
@@ -931,9 +946,15 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   // call edge stabilization
   // REMARK: the current implementation of internal edges integration belongs to the elements
   // at the moment each side is integrated twice
-  if(xfluid_.fluid_stab_type_ == "edge_based")
+  if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
+
+    eleparams.set("edge_based",xfluid_.edge_based_);
+    eleparams.set("ghost_penalty",xfluid_.ghost_penalty_);
+
+    eleparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
+    eleparams.set("EOS_GP_PATTERN", xfluid_.eos_gp_pattern_);
 
     //------------------------------------------------------------
     RCP<Epetra_Vector> ale_residual_col = LINALG::CreateVector(*alediscret.DofColMap(),true);
@@ -970,7 +991,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
 
-      edgestab_->EvaluateEdgeStabGhostPenalty(xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
+      edgestab_->EvaluateEdgeStabGhostPenalty(eleparams, xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
     }
 
     //------------------------------------------------------------
@@ -1622,17 +1643,34 @@ FLD::XFluidFluid::XFluidFluid(
 
   numdim_            = DRT::Problem::Instance()->NDim(); //params_->get<int>("DIM");
 
-  maxnumdofsets_     = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
-  VolumeCellGaussPointBy_    = params_->sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
-  BoundCellGaussPointBy_ = params_->sublist("XFEM").get<string>("BOUNDARY_GAUSS_POINTS_BY");
 
-  // get XFEM Coupling specific input parameters
-  boundIntType_       = DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params_->sublist("XFEM"),"EMBEDDED_BOUNDARY");
-  coupling_strategy_  = DRT::INPUT::get<INPAR::XFEM::CouplingStrategy>(params_->sublist("XFEM"),"COUPLING_STRATEGY");
-  nitsche_stab_       = params_->sublist("XFEM").get<double>("Nitsche_stab", 0.0);
-  nitsche_stab_conv_  = params_->sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
+  Teuchos::ParameterList&   params_xfem    = params_->sublist("XFEM");
+  Teuchos::ParameterList&   params_xf_gen  = params_->sublist("XFLUID DYNAMIC/GENERAL");
+  Teuchos::ParameterList&   params_xf_stab = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
 
-  fluid_stab_type_ = params_->sublist("STABILIZATION").get<string>("STABTYPE");
+  // get general XFEM specific parameters
+  maxnumdofsets_           = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
+  VolumeCellGaussPointBy_  = params_->sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
+  BoundCellGaussPointBy_   = params_->sublist("XFEM").get<string>("BOUNDARY_GAUSS_POINTS_BY");
+
+  // get interface stabilization specific parameters
+  boundIntType_       = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(params_xf_stab,"EMBEDDED_BOUNDARY");
+  coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
+
+  msh_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MSH_L2_Proj>(params_xf_stab, "MSH_L2_PROJ");
+
+  visc_stab_fac_     = params_xf_stab.get<double>("VISC_STAB_FAC", 0.0);
+  conv_stab_fac_     = params_xf_stab.get<double>("CONV_STAB_FAC", 0.0);
+  visc_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStabScaling>(params_xf_stab,"VISC_STAB_SCALING");
+  conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
+  visc_stab_hk_      = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
+
+  edge_based_        = (params_->sublist("STABILIZATION").get<string>("STABTYPE")=="edge_based");
+  ghost_penalty_     = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
+  ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
+  eos_gp_pattern_    = DRT::INPUT::IntegralValue<INPAR::XFEM::EOS_GP_Pattern>(params_xf_stab,"EOS_GP_PATTERN");
+
+  // get general XFEM specific parameters
 
   monolithic_approach_= DRT::INPUT::get<INPAR::XFEM::Monolithic_xffsi_Approach>(params_->sublist("XFEM"),"MONOLITHIC_XFFSI_APPROACH");
   xfem_timeintapproach_ = DRT::INPUT::get<INPAR::XFEM::XFluidFluidTimeInt>(params_->sublist("XFEM"),"XFLUIDFLUID_TIMEINT");
@@ -1697,7 +1735,8 @@ FLD::XFluidFluid::XFluidFluid(
   else
     monotype_ = "no monolithicfsi";
 
-//  boundIntType_ = params_->sublist("XFEM").get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY");
+  // check xfluid input params
+  CheckXFluidFluidParams(params_xfem,params_xf_gen,params_xf_stab);
 
   // compute or set 1.0 - theta for time-integration schemes
   if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
@@ -1897,7 +1936,7 @@ FLD::XFluidFluid::XFluidFluid(
 
   //-------------------------------------------------------------------
   // create internal faces extension for edge based stabilization
-  if(fluid_stab_type_ == "edge_based")
+  if(edge_based_ or ghost_penalty_)
   {
     RCP<DRT::DiscretizationXFEM> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(embdis_, true);
     actembdis->CreateInternalFacesExtension();
@@ -2330,6 +2369,52 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
     Output();
   }
 }// FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
+
+
+/*----------------------------------------------------------------------*
+ |  check xfluid input parameters/ safety checks           schott 05/12 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidFluid::CheckXFluidFluidParams( ParameterList& params_xfem,
+                                               ParameterList& params_xf_gen,
+                                               ParameterList& params_xf_stab)
+{
+  if (myrank_==0)
+  {
+    // ----------------------------------------------------------------------
+    // check XFEM GENERAL parameter list
+    // ----------------------------------------------------------------------
+
+    // ----------------------------------------------------------------------
+    // check XFLUID DYNAMIC/GENERAL parameter list
+    // ----------------------------------------------------------------------
+
+
+    // ----------------------------------------------------------------------
+    // check XFLUID DYNAMIC/STABILIZATION parameter list
+    // ----------------------------------------------------------------------
+
+    // condensation of distributed Lagrange multiplier for MSH
+    bool msh_dlm_condensation = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"DLM_CONDENSATION");
+    if(msh_dlm_condensation == false) dserror("INPUT CHECK: 'DLM_CONDENSATION', switch always to 'yes', just condensation implemented");
+
+
+    // convective stabilization parameter (scaling factor and stabilization factor)
+    if(conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
+      std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << endl;
+    if(conv_stab_fac_ != 1.0 and (    conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_inflow
+                                   or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_abs_normal_vel) )
+    {
+      std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC is set to 1.0" << END_COLOR << endl;
+      conv_stab_fac_ = 1.0;
+    }
+    if(conv_stab_fac_ <= 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_const)
+      dserror("INPUT CHECK: 'CONV_STAB_SCALING = const' with CONV_STAB_FAC <= 0.0  has no effect");
+
+  } // proc 0
+
+  return;
+}
+
 
 // -------------------------------------------------------------------
 //

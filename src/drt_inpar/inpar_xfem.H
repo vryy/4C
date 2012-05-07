@@ -32,6 +32,7 @@ namespace INPAR
       BoundaryTypeNeumann
     };
 
+    /// which type of boundary movement
     enum MovingBoundary
     {
       XFluidMovingBoundary,
@@ -70,7 +71,47 @@ namespace INPAR
       Two_Sided_Mortaring
     };
 
-    // xfluidfluid-fsi-monolithic approach
+    /// L2 stress projection on whole fluid element or on partial fluid element
+    enum MSH_L2_Proj
+    {
+      MSH_L2_Proj_full,
+      MSH_L2_Proj_part
+    };
+
+    /// scaling of viscous interface stabilization
+    enum ViscStabScaling
+    {
+      ViscStabScaling_visc_div_by_hk,
+      ViscStabScaling_inv_hk,
+      ViscStabScaling_const
+    };
+
+    /// definition of characteristic element length in cut elements
+    enum ViscStab_hk
+    {
+      ViscStab_hk_vol_equivalent,
+      ViscStab_hk_vol_div_by_surf,
+      ViscStab_hk_longest_ele_length
+    };
+
+    /// scaling for convective/inflow stabilization term
+    enum ConvStabScaling
+    {
+      ConvStabScaling_inflow,
+      ConvStabScaling_abs_normal_vel,
+      ConvStabScaling_const,
+      ConvStabScaling_none
+    };
+
+    /// EdgeBased (EOS) and Ghost Penalty matrix pattern
+    enum EOS_GP_Pattern
+    {
+      EOS_GP_Pattern_uvwp,
+      EOS_GP_Pattern_up,
+      EOS_GP_Pattern_full
+    };
+
+    /// xfluidfluid-fsi-monolithic approach
     enum Monolithic_xffsi_Approach
     {
       XFFSI_Full_Newton,
@@ -78,7 +119,7 @@ namespace INPAR
       XFFSI_FixedALE_Partitioned
     };
 
-    // xfluidfluid time integration approach
+    /// xfluidfluid time integration approach
     enum XFluidFluidTimeInt
     {
       Xff_TimeInt_FullProj,

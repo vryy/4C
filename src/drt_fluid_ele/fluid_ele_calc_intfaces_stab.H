@@ -560,7 +560,8 @@ namespace DRT
           double&       kinvisc,
           double&       density,
           double&       max_pevelnp,
-          const double&       timefac);
+          const double&       timefac,
+          const double&       gamma_ghost_penalty);
 
 
     private:

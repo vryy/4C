@@ -258,6 +258,11 @@ namespace FLD
     /// Solve stationary problem
     void SolveStationaryProblemFluidFluid();
 
+    /// check xfluid input parameter list
+    void CheckXFluidFluidParams(ParameterList& params_xfem,
+                                ParameterList& params_xf_gen,
+                                ParameterList& params_xf_stab);
+
     /// setup the variables to do a new time step
     void PrepareTimeStep();
 
@@ -572,15 +577,33 @@ namespace FLD
 //     Teuchos::RCP<Epetra_Vector>   c_;
 
 
+    /// mixed stress hybrid l2 projection
+    enum INPAR::XFEM::MSH_L2_Proj msh_l2_proj_;
+
+    //! @name nitsche stabilization factors
+    double visc_stab_fac_;     ///< viscous stabilization parameter for Nitsche's method/MSH
+    double conv_stab_fac_;     ///< convective stabilization parameter for inflow terms
+
+    enum INPAR::XFEM::ViscStabScaling visc_stab_scaling_;     ///< viscous stabilization scaling for Nitsche's method/MSH
+    enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;     ///< convective stabilization scaling for inflow terms
+
+    enum INPAR::XFEM::ViscStab_hk visc_stab_hk_; ///< definition of characteristic element length
+    //@}
+
+    /// edgebased stabilization
+    bool edge_based_;
+
+    /// ghost penalty stabilization
+    bool ghost_penalty_;
+    double ghost_penalty_fac_;
+    enum INPAR::XFEM::EOS_GP_Pattern eos_gp_pattern_;
+
     //! @name XFEM coupling specific parameters
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     // embedded boundary/coupling method
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;    // coupling strategy (onesided, twosided mortaring)
-    std::string fluid_stab_type_;                             // which type of fluid stabilization
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; // xfluidfluid monolithic approach
     enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach_;            // xfluidfluid time integration approach
-    double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
-    double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
-    //@}
+   //@}
 
     //! @name flags for gmsh output
     bool gmsh_cut_out_;

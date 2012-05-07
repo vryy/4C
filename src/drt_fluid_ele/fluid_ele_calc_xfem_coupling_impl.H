@@ -158,6 +158,25 @@ namespace DRT
           LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &   rhs           ///< block rhs vector
       );
 
+      virtual void MSH_Stab_InflowCoercivity(
+          Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
+          const bool &                        coupling,         ///< assemble coupling terms (yes/no)
+          const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+          const LINALG::Matrix<nsd_,1> &      normal,           ///< normal vector
+          const double &                      timefacfac,       ///< theta*dt
+          const double &                      visceff_1,        ///< viscosity in background fluid
+          const double &                      visceff_2,        ///< viscosity in embedded fluid
+          const double &                      kappa1,           ///< mortaring weighting
+          const double &                      kappa2,           ///< mortaring weighting
+          const double &                      stabfac_conv,     ///< Nitsche convective non-dimensionless stabilization factor
+          const LINALG::Matrix<nen_,1> &      funct_,            ///< bg shape functions
+          const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
+          const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
+          const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
+          const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP ///< Dirichlet velocity vector or prescribed jump vector
+      );
+
       //! build coupling matrices and assemble terms for Nitsche's (NIT) method
       virtual void NIT_buildCouplingMatrices(
           Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
@@ -172,7 +191,7 @@ namespace DRT
           const double &                      kappa2,           ///< mortaring weighting
           const double &                      stabfac,          ///< Nitsche non-dimensionless stabilization factor
           const double &                      stabfac_conv,     ///< Nitsche convective non-dimensionless stabilization factor
-          const LINALG::Matrix<nen_,1> &      funct_,            ///< bg shape functions
+          const LINALG::Matrix<nen_,1> &      funct_,           ///< bg shape functions
           const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
           const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
           const double &                      press,            ///< bg p^n
@@ -182,86 +201,91 @@ namespace DRT
 
       //! evaluate pressure-consistency term for Nitsche's method
       virtual void NIT_p_Consistency(
-          Epetra_SerialDenseMatrix &               C_uu_,          // standard bg-bg-matrix
-          Epetra_SerialDenseVector &               rhs_Cu_,        // standard bg-rhs
-          const double &                           press,
-          const LINALG::Matrix<nen_,1> &           funct_timefacfac_k1,
-          const LINALG::Matrix<side_nen_,1> &      side_funct_timefacfac_k1,
-          const LINALG::Matrix<side_nen_,nen_> &   side_funct_dyad_k1_timefacfac,
-          const LINALG::Matrix<nen_,nen_> &        funct_dyad_k1_timefacfac,
-          const bool &                             coupling,       // assemble coupling terms (yes/no)
-          const LINALG::Matrix<nsd_,1> &           normal         // normal vector
+          Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
+          const double &                           press,                            ///< pressure
+          const LINALG::Matrix<nen_,1> &           funct_timefacfac_k1,              ///< funct * timefacfac *kappa1
+          const LINALG::Matrix<side_nen_,1> &      side_funct_timefacfac_k1,         ///< sidefunct * timefacfac *kappa1
+          const LINALG::Matrix<side_nen_,nen_> &   side_funct_dyad_k1_timefacfac,    ///< (sidefunct^T * funct) * timefacfac *kappa1
+          const LINALG::Matrix<nen_,nen_> &        funct_dyad_k1_timefacfac,         ///< (funct^T * funct) * timefacfac *kappa1
+          const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
+          const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
 
       //! evaluate pressure-adjoint-consistency term for Nitsche's method
       virtual void NIT_p_AdjointConsistency(
-          Epetra_SerialDenseMatrix &               C_uu_,          // standard bg-bg-matrix
-          Epetra_SerialDenseVector &               rhs_Cu_,        // standard bg-rhs
-          double &                                 velint_normal,
-          double &                                 ivelint_normal,
-          double &                                 ivelint_WDBC_JUMP_normal,
-          const LINALG::Matrix<nen_,1> &           funct_timefacfac_k1,
-          const LINALG::Matrix<side_nen_,nen_> &   side_funct_dyad_k1_timefacfac,
-          const LINALG::Matrix<nen_,nen_> &        funct_dyad_k1_timefacfac,
-          const bool &                             coupling,       // assemble coupling terms (yes/no)
-          const LINALG::Matrix<nsd_,1> &           normal         // normal vector
+          Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
+          double &                                 velint_normal,                    ///< velocity in normal direction
+          double &                                 ivelint_normal,                   ///< interface velocity in normal direction
+          double &                                 ivelint_WDBC_JUMP_normal,         ///< prescribed interface velocity or jump vector in normal direction
+          const LINALG::Matrix<nen_,1> &           funct_timefacfac_k1,              ///< funct * timefacfac *kappa1
+          const LINALG::Matrix<side_nen_,nen_> &   side_funct_dyad_k1_timefacfac,    ///< (sidefunct^T * funct) * timefacfac *kappa1
+          const LINALG::Matrix<nen_,nen_> &        funct_dyad_k1_timefacfac,         ///< (funct^T * funct) * timefacfac *kappa1
+          const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
+          const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
 
       //! evaluate viscous-consistency term for Nitsche's method
       virtual void NIT_visc_Consistency(
-          Epetra_SerialDenseMatrix &               C_uu_,          // standard bg-bg-matrix
-          Epetra_SerialDenseVector &               rhs_Cu_,        // standard bg-rhs
-          const LINALG::Matrix<nsd_,nen_> &        derxy,         // bg deriv
-          const LINALG::Matrix<nsd_,nsd_> &        vderxy,        // bg deriv^n
-          const LINALG::Matrix<nen_,1> &           e_funct_visc1_timefacfac,
-          const LINALG::Matrix<side_nen_,1> &      s_funct_visc1_timefacfac,
-          const bool &                             coupling,       // assemble coupling terms (yes/no)
-          const LINALG::Matrix<nsd_,1> &           normal         // normal vector
+          Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
+          const LINALG::Matrix<nsd_,nen_> &        derxy,                            ///< bg deriv
+          const LINALG::Matrix<nsd_,nsd_> &        vderxy,                           ///< bg deriv^n
+          const LINALG::Matrix<nen_,1> &           e_funct_visc1_timefacfac,         ///< embedded element funct *mu*timefacfac
+          const LINALG::Matrix<side_nen_,1> &      s_funct_visc1_timefacfac,         ///< side element funct *mu*timefacfac
+          const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
+          const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
 
       //! evaluate viscous-adjoint-consistency term for Nitsche's method
       virtual void NIT_visc_AdjointConsistency(
-          Epetra_SerialDenseMatrix &               C_uu_,          // standard bg-bg-matrix
-          Epetra_SerialDenseVector &               rhs_Cu_,        // standard bg-rhs
-          const LINALG::Matrix<nsd_,1>&            velint,
-          const LINALG::Matrix<nsd_,1>&            ivelint,
-          const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,
-          const LINALG::Matrix<nsd_,nen_> &        derxy,         // bg deriv
-          const double &                           visceff_1,      // viscosity in background fluid
-          const double &                           timefacfac,
-          const LINALG::Matrix<nen_,1> &           e_funct_visc1_timefacfac,
-          const LINALG::Matrix<side_nen_,1> &      s_funct_visc1_timefacfac,
-          const bool &                             coupling,       // assemble coupling terms (yes/no)
-          const LINALG::Matrix<nsd_,1> &           normal         // normal vector
+          Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
+          const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity
+          const LINALG::Matrix<nsd_,1>&            ivelint,                          ///< interface velocity
+          const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
+          const LINALG::Matrix<nsd_,nen_> &        derxy,                            ///< bg deriv
+          const double &                           visceff_1,                        ///< viscosity in background fluid element
+          const double &                           timefacfac,                       ///< timefacfac
+          const LINALG::Matrix<nen_,1> &           e_funct_visc1_timefacfac,         ///< embedded element funct *mu*timefacfac
+          const LINALG::Matrix<side_nen_,1> &      s_funct_visc1_timefacfac,         ///< side element funct *mu*timefacfac
+          const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
+          const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
 
       //!  evaluate stabilizing viscous term for Nitsche's method
       virtual void NIT_Stab_ViscCoercivity(
-          Epetra_SerialDenseMatrix &               C_uu_,          // standard bg-bg-matrix
-          Epetra_SerialDenseVector &               rhs_Cu_,        // standard bg-rhs
-          const LINALG::Matrix<nsd_,1>&            velint,
-          const LINALG::Matrix<nsd_,1>&            ivelint,
-          const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,
-          const LINALG::Matrix<nen_,1>&            funct_timefacfac,
-          const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,
-          const LINALG::Matrix<side_nen_,1>&       side_funct_timefacfac,
-          const LINALG::Matrix<side_nen_,nen_>&    side_funct_dyad_timefacfac,
-          const double &                           stabfac,
-          const bool &                             coupling,       // assemble coupling terms (yes/no)
-          const LINALG::Matrix<nsd_,1> &           normal         // normal vector
+          Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
+          const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
+          const LINALG::Matrix<nsd_,1>&            ivelint,                          ///< interface velocity at integration point
+          const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
+          const LINALG::Matrix<nen_,1>&            funct_timefacfac,                 ///< funct * timefacfac
+          const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
+          const LINALG::Matrix<side_nen_,1>&       side_funct_timefacfac,            ///< sidefunct^T * timefacfac
+          const LINALG::Matrix<side_nen_,nen_>&    side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+          const double &                           stabfac,                          ///< stabilization factor
+          const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
+          const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
 
       //! evaluate stabilizing inflow term
       virtual void NIT_Stab_InflowCoercivity(
-          Epetra_SerialDenseMatrix &               C_uu_,          // standard bg-bg-matrix
-          Epetra_SerialDenseVector &               rhs_Cu_,        // standard bg-rhs
-          const LINALG::Matrix<nsd_,1>&            velint,
-          const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,
-          const LINALG::Matrix<nen_,1>&            funct_timefacfac,
-          const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,
-          const double &                           stabfac_conv,
-          const bool &                             coupling,       // assemble coupling terms (yes/no)
-          const LINALG::Matrix<nsd_,1> &           normal         // normal vector
+          Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
+          Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
+          const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
+          const LINALG::Matrix<nsd_,1>&            ivelint,                          ///< interface velocity at integration point
+          const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
+          const LINALG::Matrix<nen_,1>&            funct_timefacfac,                 ///< funct * timefacfac
+          const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
+          const LINALG::Matrix<side_nen_,1>&       side_funct_timefacfac,            ///< sidefunct^T * timefacfac
+          const LINALG::Matrix<side_nen_,nen_>&    side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+          const double &                           kappa1,                           ///< mortaring weighting
+          const double &                           kappa2,                           ///< mortaring weighting
+          const double &                           stabfac_conv,                     ///< stabilization factor
+          const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
+          const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
       );
 
     private:

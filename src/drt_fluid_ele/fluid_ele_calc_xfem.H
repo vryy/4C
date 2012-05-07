@@ -17,9 +17,10 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 #ifndef FLUID_ELE_CALC_XFEM_H
 #define FLUID_ELE_CALC_XFEM_H
 
+#include "../drt_inpar/inpar_xfem.H"
+
 #include "fluid_ele_calc.H"
 #include "fluid_ele_calc_xfem_coupling.H"
-
 
 namespace DRT
 {
@@ -113,21 +114,20 @@ public:
 
     /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceNIT2(
-        DRT::ELEMENTS::Fluid * 																							ele,
-        DRT::Discretization & 																							dis,
-        const std::vector<int> & 																						lm,
-        const DRT::UTILS::GaussIntegration & 																intpoints,
-        DRT::Discretization & 																							cutdis,
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & 				bcells,
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & 	cutintpoints,
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > & 						side_coupling,
-        //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > 			side_coupling,
-        Teuchos::ParameterList&    																					params,
-        DRT::Discretization &  																							alediscret,
-        map<int,int> & 																											boundary_emb_gid_map,
-        Epetra_SerialDenseMatrix&  																					elemat1_epetra,
-        Epetra_SerialDenseVector&  																					elevec1_epetra,
-        Epetra_SerialDenseMatrix&  																					Cuiui,             																										
+        DRT::ELEMENTS::Fluid *                                              ele,
+        DRT::Discretization &                                               dis,
+        const std::vector<int> &                                            lm,
+        const DRT::UTILS::GaussIntegration &                                intpoints,
+        DRT::Discretization &                                               cutdis,
+        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
+        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
+        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,
+        Teuchos::ParameterList&                                             params,
+        DRT::Discretization &                                               alediscret,
+        map<int,int> &                                                      boundary_emb_gid_map,
+        Epetra_SerialDenseMatrix&                                           elemat1_epetra,
+        Epetra_SerialDenseVector&                                           elevec1_epetra,
+        Epetra_SerialDenseMatrix&                                           Cuiui,
         std::string&                                                        VCellGaussPts,
         const std::vector<double>&                                          refEqn
       );
@@ -157,10 +157,12 @@ private:
 
     //! compute stabilization factors for Nitsche's method
     void NIT_ComputeStabfac(
+        bool                              fluidfluidcoupling,
         double &                 stabfac,              ///< stabilization factor 1
         double &                 stabfac_conv,         ///< stabilization factor 2
-        const double             stabfac_scaling,
-        const double             stabfac_conv_scaling,
+        const double             NIT_stab_fac,
+        INPAR::XFEM::ConvStabScaling       conv_stab_scaling,
+        const double                       conv_stab_fac,
         const double             veln_normal
     );
 
@@ -226,12 +228,30 @@ private:
     //! evaluate shape function and derivative at point with local coordinates rst
     void EvalFuncAndDeriv( LINALG::Matrix<3,1> &  rst );
 
-    void EvaluateMatricesMSH(LINALG::Matrix<my::nsd_,my::nen_>& evelaf,
-        LINALG::Matrix<my::nen_,1>& epreaf,
-        LINALG::Matrix<my::nen_,my::nen_>& bK_ss,
-        LINALG::Matrix<my::nen_,my::nen_>& invbK_ss,
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su,
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs);
+    //! build volume-based K matrices for coupling stress fields
+    void MSH_Build_K_Matrices(
+        INPAR::XFEM::MSH_L2_Proj              msh_l2_proj,       ///< full or partial l2 projection for MSH method
+        const DRT::UTILS::GaussIntegration &  intpoints,         ///< background element integration points
+        std::string &                         VCellGaussPts,     ///< volumecell gaussian points method
+        const std::vector<double>&            refEqn,            ///< ?
+        int                                   eid,               ///< element ID
+        LINALG::Matrix<my::nsd_,my::nen_>&    evelaf,            ///< element velocity
+        LINALG::Matrix<my::nen_,1>&           epreaf,            ///< element pressure
+        LINALG::Matrix<my::nen_,my::nen_>&    bK_ss,             ///< block K_ss matrix
+        LINALG::Matrix<my::nen_,my::nen_>&    invbK_ss,          ///< inverse of block K_ss matrix
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su, ///< K_su matrix
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
+        );
+
+    //! evaluate volume-based K matrix terms at Gaussian point
+    void MSH_EvaluateMatrices(
+        LINALG::Matrix<my::nsd_,my::nen_>&    evelaf,                                ///< element velocity
+        LINALG::Matrix<my::nen_,1>&           epreaf,                                ///< element pressure
+        LINALG::Matrix<my::nen_,my::nen_>&    bK_ss,                                 ///< block K_ss matrix
+        LINALG::Matrix<my::nen_,my::nen_>&    invbK_ss,                              ///< inverse of block K_ss matrix
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su, ///< K_su matrix
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
+        );
 
     DRT::UTILS::GaussIntegration InternalGaussPoints( DRT::UTILS::GaussIntegration::iterator quadint,
                                                       const std::vector<double>& refEqn );

@@ -27,6 +27,8 @@ Maintainer: Benedikt Schott
 
 #include "../drt_fluid/xfluid_defines.H"
 
+#include "../drt_inpar/inpar_xfem.H"
+
 #include "xfem_fluidwizard.H"
 
 #include "xfem_edgestab.H"
@@ -49,12 +51,14 @@ XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
  |  prepares edge based stabilization and ghost penaly in case of XFEM  |
  |  and calls evaluate routine                             schott 03/12 |
  *----------------------------------------------------------------------*/
-void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty( Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
-                                                        DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
-                                                        Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
-                                                        Teuchos::RCP<Epetra_Vector>            systemvector,     ///< systemvector
-                                                        bool                                   gmsh_discret_out  ///< stabilization gmsh output
-                                                        )
+void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
+    Teuchos::ParameterList &               eleparams,        ///< element parameter list
+    Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
+    DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
+    Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector>            systemvector,     ///< systemvector
+    bool                                   gmsh_discret_out  ///< stabilization gmsh output
+)
 {
 
 
@@ -318,7 +322,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty( Teuchos::RCP<DRT::Discre
   //--------------------------------------------------------------------------------------------
 
   // call evaluate and assemble routine
-  if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( edge_based_stab,
+  if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
+                                                                     edge_based_stab,
                                                                      ghost_penalty,
                                                                      faceele,
                                                                      nds_master,
@@ -345,7 +350,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty( Teuchos::RCP<DRT::Discre
  | calls the evaluate and assemble routine for edge based stabilization |
  | and ghost penaly in the XFEM                            schott 03/12 |
  *----------------------------------------------------------------------*/
-void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( const bool                             edge_based_stab,  ///< boolian for edge based fluid stabilization
+void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
+                                                        const bool                             edge_based_stab,  ///< boolian for edge based fluid stabilization
                                                         const bool                             ghost_penalty,    ///< boolian for XFEM ghost penalty stabilization
                                                         DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
                                                         std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
@@ -367,11 +373,31 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( const bool              
 
   // set action for elements
   edgebasedparams.set("action","EOS_and_GhostPenalty_stabilization");
-  edgebasedparams.set("edge_based_stab", edge_based_stab);
-  edgebasedparams.set("ghost_penalty",   ghost_penalty);
+
+  // decide if the element has to be stabilized
+  bool stabilize_edge_based_fluid = eleparams.get<bool>("edge_based");
+  bool stabilize_ghost_penalty    = eleparams.get<bool>("ghost_penalty");
+
+  bool final_edge_stab = false;
+  bool final_ghost_pen = false;
+
+  if (stabilize_edge_based_fluid == false) final_edge_stab = false;
+  else                                     final_edge_stab = edge_based_stab;
+
+  if (stabilize_ghost_penalty == false)    final_ghost_pen = false;
+  else                                     final_ghost_pen = ghost_penalty;
+
+  edgebasedparams.set("edge_based_stab", final_edge_stab);
+  edgebasedparams.set("ghost_penalty", final_ghost_pen);
+
+  edgebasedparams.set("ghost_penalty_fac", eleparams.get<double>("GHOST_PENALTY_FAC"));
+
+  INPAR::XFEM::EOS_GP_Pattern eos_gp_pattern = eleparams.get<INPAR::XFEM::EOS_GP_Pattern>("EOS_GP_PATTERN");
+  edgebasedparams.set("eos_gp_pattern",eos_gp_pattern);
 
 
   // call the egde-based assemble and evaluate routine
+  if(final_edge_stab or final_ghost_pen)
   DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(intface)->AssembleInternalFacesUsingNeighborData(     intface,
                                                                                                        nds_master,
                                                                                                        nds_slave,

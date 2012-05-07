@@ -17,6 +17,7 @@ Maintainer: Benedikt Schott
 
 #include "fluid_ele_intfaces_calc.H"
 #include "fluid_ele_calc_intfaces_stab.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -184,25 +185,24 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
   //------------------------------------------------------------------------------------
   // decide which pattern
+  // pattern = "u-v-w-p-diagonal-block matrix pattern";    // assembles each component block separated
+  // pattern = "u-p-block matrix pattern";                 // assembles u-block and p-block separated
+  // pattern = "full matrix pattern";                      // assembles the whole u-p matrix
 
-  //TODO: decide pattern dependent on stabilization terms
-
-  string pattern = "u-v-w-p-diagonal-block matrix pattern";    // assembles each component block separated
-//  string pattern = "u-p-block matrix pattern";                 // assembles u-block and p-block separated
-//  string pattern = "full matrix pattern";                      // assembles the whole u-p matrix
+  INPAR::XFEM::EOS_GP_Pattern eos_gp_pattern = params.get<INPAR::XFEM::EOS_GP_Pattern>("eos_gp_pattern");
 
 
   int numblocks = 0;
 
-  if(pattern == "u-v-w-p-diagonal-block matrix pattern")
+  if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_uvwp)
   {
     numblocks=4; // 4 blocks =  u-u block, v-v block, w-w block and p-p block
   }
-  else if(pattern == "u-p-block matrix pattern")
+  else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_up)
   {
     numblocks=10; // 10 blocks = 3x3 u-u blocks + 1x1 p-p block
   }
-  else if(pattern == "full matrix pattern")
+  else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_full)
   {
     numblocks=16; // 16 blocks = 4x4 u-p blocks
   }
@@ -244,14 +244,14 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
     if (assemblemat)
     {
-      if(pattern == "u-v-w-p-diagonal-block matrix pattern")
+      if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_uvwp)
       {
         for(int ij=0; ij<4; ij++)
         {
           systemmatrix->FEAssemble(-1, elemat_blocks[ij], patch_components_lm[ij], patch_components_lmowner[ij], patch_components_lm[ij]);
         }
       }
-      else if(pattern == "u-p-block matrix pattern")
+      else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_up)
       {
         for(int i=0; i<3; i++)
         {
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
         }
         systemmatrix->FEAssemble(-1, elemat_blocks[9], patch_components_lm[3], patch_components_lmowner[3], patch_components_lm[3]);
       }
-      else if(pattern == "full matrix pattern")
+      else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_full)
       {
         for(int i=0; i<4; i++)
         {

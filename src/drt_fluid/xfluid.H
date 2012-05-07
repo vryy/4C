@@ -276,6 +276,11 @@ namespace FLD
         bool                                          alefluid = false ///< flag for alefluid
       );
 
+    /// check xfluid input parameter list
+    void CheckXFluidParams(ParameterList& params_xfem,
+                           ParameterList& params_xf_gen,
+                           ParameterList& params_xf_stab);
+
     /// print stabilization params to screen
     void PrintStabilizationParams();
 
@@ -526,37 +531,53 @@ namespace FLD
     /// type of enforcing interface conditions in XFEM
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
 
+    /// coupling strategy (xfluid-sided, embedded-sided)
+    enum INPAR::XFEM::CouplingStrategy coupling_strategy_;
+
     //! @name setting an (initial) interface velocity
-    INPAR::XFEM::InterfaceInitVel interface_vel_init_;
+    enum INPAR::XFEM::InterfaceInitVel interface_vel_init_;
     int interface_vel_init_func_no_;
 
-    INPAR::XFEM::InterfaceVel     interface_vel_;
+    enum INPAR::XFEM::InterfaceVel     interface_vel_;
     int interface_vel_func_no_;
     //@}
 
     //! @name setting an initial interface displacement
-    INPAR::XFEM::InterfaceDisplacement interface_disp_;
+    enum INPAR::XFEM::InterfaceDisplacement interface_disp_;
     int interface_disp_func_no_;
     int interface_disp_curve_no_;
     //@}
 
     /// initial flow field
-    INPAR::FLUID::InitialField initfield_;
+    enum INPAR::FLUID::InitialField initfield_;
 
     /// start function number for an initial field
     int startfuncno_;
 
+    /// mixed stress hybrid l2 projection
+    enum INPAR::XFEM::MSH_L2_Proj msh_l2_proj_;
+
     //! @name nitsche stabilization factors
-    double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
-    double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
+    double visc_stab_fac_;     ///< viscous stabilization parameter for Nitsche's method/MSH
+    double conv_stab_fac_;     ///< convective stabilization parameter for inflow terms
+
+    enum INPAR::XFEM::ViscStabScaling visc_stab_scaling_;     ///< viscous stabilization scaling for Nitsche's method/MSH
+    enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;     ///< convective stabilization scaling for inflow terms
+
+    enum INPAR::XFEM::ViscStab_hk visc_stab_hk_; ///< definition of characteristic element length
     //@}
 
     //! @name
     std::string VolumeCellGaussPointBy_;
     std::string BoundCellGaussPointBy_;
 
-    /// fluid stabilization type
-    std::string fluid_stab_type_;
+    /// edgebased stabilization
+    bool edge_based_;
+
+    /// ghost penalty stabilization
+    bool ghost_penalty_;
+    double ghost_penalty_fac_;
+    enum INPAR::XFEM::EOS_GP_Pattern eos_gp_pattern_;
 
     //! @name flags for gmsh output
     bool gmsh_debug_out_;

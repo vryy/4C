@@ -156,8 +156,10 @@ void fluid_xfem2_drt()
   actdis->GetDofSetProxy()->PrintAllDofsets(actdis->Comm());
 
 
-  INPAR::XFEM::MovingBoundary moving_boundary = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(xdyn,"XFLUID_BOUNDARY");
 
+  const Teuchos::ParameterList& xfdyn     = DRT::Problem::Instance()->XFluidDynamicParams();
+
+  INPAR::XFEM::MovingBoundary moving_boundary = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(xfdyn.sublist("GENERAL"),"XFLUID_BOUNDARY");
 
   if(moving_boundary == INPAR::XFEM::XFluidStationaryBoundary)
   {
@@ -167,8 +169,7 @@ void fluid_xfem2_drt()
     const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
     Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
-    // run the simulation (timeloop() calls the xfluid-"integrate()" routine)
-    //fluidalgo->FluidField().TimeLoop();
+    // run the simulation, calls the xfluid-"integrate()" routine
     fluidalgo->FluidField().Integrate();
 
     // perform result tests if required

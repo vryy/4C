@@ -74,7 +74,8 @@ public:
 
 
   //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate routine
-  void EvaluateEdgeStabGhostPenalty( Teuchos::RCP<DRT::Discretization>      discret,                ///< discretization
+  void EvaluateEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
+                                     Teuchos::RCP<DRT::Discretization>      discret,                ///< discretization
                                      DRT::ELEMENTS::FluidIntFace *          faceele,                ///< face element
                                      Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,           ///< systemmatrix
                                      Teuchos::RCP<Epetra_Vector>            systemvector,           ///< systemvector
@@ -82,7 +83,8 @@ public:
                                      );
 
   //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the XFEM
-  void AssembleEdgeStabGhostPenalty( const bool                             edge_based_stab,  ///< boolian for edge based fluid stabilization
+  void AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
+                                     const bool                             edge_based_stab,  ///< boolian for edge based fluid stabilization
                                      const bool                             ghost_penalty,    ///< boolian for XFEM ghost penalty stabilization
                                      DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
                                      std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element

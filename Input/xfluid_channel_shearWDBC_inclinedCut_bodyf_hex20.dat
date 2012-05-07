@@ -73,17 +73,19 @@ CSTAB cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
-EMBEDDED_BOUNDARY BoundaryTypeSigma //BoundaryTypeSigma //BoundaryTypeSigma //BoundaryTypeNeumann // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-//Nitsche_stab                  100.0
-XFLUID_BOUNDARY                 xfluid_stationary_boundary      // moving_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
-VEL_INIT_FUNCT_NO               2
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    Yes
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUID_BOUNDARY                 xfluid_stationary_boundary      // moving_boundary
+INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
+VEL_INIT_FUNCT_NO               2
+------------------------------------------------XFLUID DYNAMIC/STABILIZATION
+EMBEDDED_BOUNDARY               BoundaryTypeSigma //BoundaryTypeSigma //BoundaryTypeSigma //BoundaryTypeNeumann // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+//VISC_STAB_FAC                  100.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK                         // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

@@ -138,6 +138,25 @@ namespace DRT
             LINALG::BlockMatrix<LINALG::Matrix<nen_,  1>,6,1> &   rhs           ///< block rhs vector
         ) = 0;
 
+        virtual void MSH_Stab_InflowCoercivity(
+            Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
+            Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
+            const bool &                        coupling,         ///< assemble coupling terms (yes/no)
+            const bool &                        bg_mortaring,     ///< yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+            const LINALG::Matrix<nsd_,1> &      normal,           ///< normal vector
+            const double &                      timefacfac,       ///< theta*dt
+            const double &                      visceff_1,        ///< viscosity in background fluid
+            const double &                      visceff_2,        ///< viscosity in embedded fluid
+            const double &                      kappa1,           ///< mortaring weighting
+            const double &                      kappa2,           ///< mortaring weighting
+            const double &                      stabfac_conv,     ///< Nitsche convective non-dimensionless stabilization factor
+            const LINALG::Matrix<nen_,1> &      funct_,            ///< bg shape functions
+            const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
+            const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
+            const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
+            const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP ///< Dirichlet velocity vector or prescribed jump vector
+        ) = 0;
+
         //! build coupling matrices and assemble terms for Nitsche's (NIT) method
         virtual void NIT_buildCouplingMatrices(
             Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix

@@ -537,8 +537,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     double timefacfac     = fac*timefac;
     double timefacfac_pre = fac*timefacpre;
 
+    double gamma_ghost_penalty = params.get<double>("ghost_penalty_fac");
 
-    EdgeBasedStabilization.ComputeStabilizationParams(tau_grad, tau_u, tau_div, tau_p, tau_u_lin, tau_div_lin, tau_p_lin, kinvisc, dens, max_vel_L2_norm, timefac);
+    EdgeBasedStabilization.ComputeStabilizationParams(tau_grad, tau_u, tau_div, tau_p, tau_u_lin, tau_div_lin, tau_p_lin, kinvisc, dens, max_vel_L2_norm, timefac, gamma_ghost_penalty);
 
 
     // assemble ghost penalty terms for xfluid application
@@ -2284,12 +2285,12 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   double&       kinvisc, // kinematic viscosity (nu = mu/rho ~ m^2/2)
   double&       density,
   double&       max_vel_L2_norm,
-  const double&       timefac)
+  const double&       timefac,
+  const double&       gamma_ghost_penalty)
 {
 
 
   // dimensionless factors
-  double gamma_grad = 0.0; // scaling factor for ghost penalty stabilization
 
   double gamma_u   = 0.0; //scaling factor for streamline stabilization
   double gamma_div = 0.0; //scaling factor for divergence stabilization
@@ -2507,10 +2508,9 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   //                                               ghost penalty
   //--------------------------------------------------------------------------------------------------------------
 
-  gamma_grad = 1.0;
 //  tau_grad = gamma_grad*kinvisc * density * p_hk_;
 //  tau_grad = gamma_grad*0.0001;
-  tau_grad = gamma_grad*0.001*p_hk_;
+  tau_grad = gamma_ghost_penalty*p_hk_;
 //  tau_grad = 0.0;
 
 

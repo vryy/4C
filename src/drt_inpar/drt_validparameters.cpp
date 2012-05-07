@@ -4335,43 +4335,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&xfem_general);
 
 
-  // Boundary-Coupling options
-  setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","BoundaryTypeSigma","method how to enforce embedded boundary/coupling conditions at the interface",
-                               tuple<std::string>("BoundaryTypeSigma", "BoundaryTypeNitsche", "BoundaryTypeNeumann"),
-                               tuple<int>(
-                                   INPAR::XFEM::BoundaryTypeSigma,       // stress/hybrid formulation
-                                   INPAR::XFEM::BoundaryTypeNitsche,     // Nitsche's formulation
-                                   INPAR::XFEM::BoundaryTypeNeumann      // interior Neumann condition
-                                   ),
-                               &xfem_general);
-
-  setStringToIntegralParameter<int>("XFLUID_BOUNDARY","xfluid_moving_boundary","moving boundary or stationary boundary or xfsi boundary",
-                               tuple<std::string>("xfluid_moving_boundary","xfluid_stationary_boundary", "xfsi_moving_boundary"),
-                               tuple<int>(
-                                   INPAR::XFEM::XFluidMovingBoundary,       // moving boundary
-                                   INPAR::XFEM::XFluidStationaryBoundary,    // stationary boundary
-                                   INPAR::XFEM::XFSIMovingBoundary
-                                   ),
-                               &xfem_general);
-
-  setStringToIntegralParameter<int>("COUPLING_STRATEGY","xfluid_sided_mortaring","on which side is the main part of enforcing",
-                               tuple<std::string>("xfluid_sided_mortaring", "embedded_sided_mortaring", "two_sided_mortaring"),
-                               tuple<int>(
-                                   INPAR::XFEM::Xfluid_Sided_Mortaring,    // coupling on cut mesh at interface
-                                   INPAR::XFEM::Embedded_Sided_Mortaring,  // coupling on embedded mesh at interface
-                                   INPAR::XFEM::Two_Sided_Mortaring        // coupling on cut mesh and embedded mesh at interface
-                                   ),
-                               &xfem_general);
-
-
-  setStringToIntegralParameter<int>("INTERFACE_VEL_INITIAL","interface_vel_init_zero","how to compute or define the initial interface velocity",
-                               tuple<std::string>("interface_vel_init_by_funct", "interface_vel_init_zero"),
-                               tuple<int>(
-                                   INPAR::XFEM::interface_vel_init_by_funct,   // define interface velocity by function
-                                   INPAR::XFEM::interface_vel_init_zero        // zero interface velocity function
-                                   ),
-                               &xfem_general);
-
   // xfluidfluid-fsi-monolithic approach
   setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH","xffsi_fixedALE_partitioned","The monolithic apporach for xfluidfluid-fsi",
                                     tuple<std::string>("xffsi_full_newton", "xffsi_fixedALE_interpolation", "xffsi_fixedALE_partitioned"),
@@ -4397,40 +4360,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       ),
                                     &xfem_general);
 
-
-  setStringToIntegralParameter<int>("INTERFACE_VEL","interface_vel_by_disp","how to compute or define the interface velocity",
-                               tuple<std::string>("interface_vel_by_disp", "interface_vel_by_funct", "interface_vel_zero"),
-                               tuple<int>(
-                                   INPAR::XFEM::interface_vel_by_disp,    // define interface velocity by displacement of solid
-                                   INPAR::XFEM::interface_vel_by_funct,   // define interface velocity by function
-                                   INPAR::XFEM::interface_vel_zero        // zero interface velocity function
-                                   ),
-                               &xfem_general);
-
-  setStringToIntegralParameter<int>("INTERFACE_DISP","interface_disp_zero","how to define the interface displacement",
-                               tuple<std::string>("interface_disp_by_fsi", "interface_disp_by_funct", "interface_disp_zero"),
-                               tuple<int>(
-                                   INPAR::XFEM::interface_disp_by_fsi,     // define interface displacement by structure solution of fsi algo
-                                   INPAR::XFEM::interface_disp_by_funct,   // define interface displacement by function
-                                   INPAR::XFEM::interface_disp_zero        // zero interface displacement function
-                                   ),
-                               &xfem_general);
-
-  IntParameter("DISP_FUNCT_NO",-1,"funct number for interface displacement",&xfem_general);
-  IntParameter("DISP_CURVE_NO",-1,"curve number for interface displacement",&xfem_general);
-
-  IntParameter("VEL_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfem_general);
-  IntParameter("VEL_INIT_FUNCT_NO",-1,"funct number for initial interface velocity",&xfem_general);
-
-  // Nitsche stabilization parameter
-  DoubleParameter("Nitsche_stab",       1.0, "define Nitsche's stabilization parameter for BoundaryTypeNitsche",&xfem_general);
-  DoubleParameter("Nitsche_stab_conv",  0.0, "define Nitsche's stabilization parameter for convection dominated problems for BoundaryTypeNitsche",&xfem_general);
-
-  setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the discontinuous stress field?",
-                               yesnotuple,yesnovalue,&xfem_general);
-
   IntParameter("MAX_NUM_DOFSETS",3,"Maximum number of volumecells in the XFEM element",&xfem_general);
-
 
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the cut volumes",
@@ -4443,6 +4373,137 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<int>(0,1,2),
                                  &xfem_general);
 
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& xfluid_dyn = list->sublist("XFLUID DYNAMIC",false,"");
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& xfluid_general = xfluid_dyn.sublist("GENERAL",false,"");
+
+  setStringToIntegralParameter<int>("XFLUID_BOUNDARY","xfluid_moving_boundary","moving boundary or stationary boundary or xfsi boundary",
+                               tuple<std::string>("xfluid_moving_boundary","xfluid_stationary_boundary", "xfsi_moving_boundary"),
+                               tuple<int>(
+                                   INPAR::XFEM::XFluidMovingBoundary,       // moving boundary
+                                   INPAR::XFEM::XFluidStationaryBoundary,    // stationary boundary
+                                   INPAR::XFEM::XFSIMovingBoundary
+                                   ),
+                               &xfluid_general);
+
+
+  setStringToIntegralParameter<int>("INTERFACE_VEL_INITIAL","interface_vel_init_zero","how to compute or define the initial interface velocity",
+                               tuple<std::string>("interface_vel_init_by_funct", "interface_vel_init_zero"),
+                               tuple<int>(
+                                   INPAR::XFEM::interface_vel_init_by_funct,   // define interface velocity by function
+                                   INPAR::XFEM::interface_vel_init_zero        // zero interface velocity function
+                                   ),
+                               &xfluid_general);
+
+
+  setStringToIntegralParameter<int>("INTERFACE_VEL","interface_vel_by_disp","how to compute or define the interface velocity",
+                               tuple<std::string>("interface_vel_by_disp", "interface_vel_by_funct", "interface_vel_zero"),
+                               tuple<int>(
+                                   INPAR::XFEM::interface_vel_by_disp,    // define interface velocity by displacement of solid
+                                   INPAR::XFEM::interface_vel_by_funct,   // define interface velocity by function
+                                   INPAR::XFEM::interface_vel_zero        // zero interface velocity function
+                                   ),
+                               &xfluid_general);
+
+  setStringToIntegralParameter<int>("INTERFACE_DISP","interface_disp_zero","how to define the interface displacement",
+                               tuple<std::string>("interface_disp_by_fsi", "interface_disp_by_funct", "interface_disp_zero"),
+                               tuple<int>(
+                                   INPAR::XFEM::interface_disp_by_fsi,     // define interface displacement by structure solution of fsi algo
+                                   INPAR::XFEM::interface_disp_by_funct,   // define interface displacement by function
+                                   INPAR::XFEM::interface_disp_zero        // zero interface displacement function
+                                   ),
+                               &xfluid_general);
+
+  IntParameter("DISP_FUNCT_NO",-1,"funct number for interface displacement",&xfluid_general);
+  IntParameter("DISP_CURVE_NO",-1,"curve number for interface displacement",&xfluid_general);
+
+  IntParameter("VEL_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfluid_general);
+  IntParameter("VEL_INIT_FUNCT_NO",-1,"funct number for initial interface velocity",&xfluid_general);
+
+
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION",false,"");
+
+  // Boundary-Coupling options
+  setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","BoundaryTypeSigma","method how to enforce embedded boundary/coupling conditions at the interface",
+                               tuple<std::string>("BoundaryTypeSigma", "BoundaryTypeNitsche", "BoundaryTypeNeumann"),
+                               tuple<int>(
+                                   INPAR::XFEM::BoundaryTypeSigma,       // stress/hybrid formulation
+                                   INPAR::XFEM::BoundaryTypeNitsche,     // Nitsche's formulation
+                                   INPAR::XFEM::BoundaryTypeNeumann      // interior Neumann condition
+                                   ),
+                               &xfluid_stab);
+
+
+  setStringToIntegralParameter<int>("COUPLING_STRATEGY","xfluid_sided_mortaring","on which side is the main part of enforcing",
+                               tuple<std::string>("xfluid_sided_mortaring", "embedded_sided_mortaring", "two_sided_mortaring"),
+                               tuple<int>(
+                                   INPAR::XFEM::Xfluid_Sided_Mortaring,    // coupling on cut mesh at interface
+                                   INPAR::XFEM::Embedded_Sided_Mortaring,  // coupling on embedded mesh at interface
+                                   INPAR::XFEM::Two_Sided_Mortaring        // coupling on cut mesh and embedded mesh at interface
+                                   ),
+                               &xfluid_stab);
+
+  setStringToIntegralParameter<int>("MSH_L2_PROJ","part_ele_proj","perform the L2 projection between stress fields on whole element or on fluid part?",
+                               tuple<std::string>("full_ele_proj", "part_ele_proj"),
+                               tuple<int>(
+                                   INPAR::XFEM::MSH_L2_Proj_full,   // L2 stress projection on whole fluid element
+                                   INPAR::XFEM::MSH_L2_Proj_part    // L2 stress projection on partial fluid element volume
+                                   ),
+                               &xfluid_stab);
+
+  // viscous and convective Nitsche/MSH stabilization parameter
+  DoubleParameter("VISC_STAB_FAC",      1.0, "define stabilization parameter for viscous part of interface stabilization (Nitsche, MSH)",&xfluid_stab);
+
+  setStringToIntegralParameter<int>("VISC_STAB_SCALING","visc_div_by_hk","scaling factor for viscous interface stabilization (Nitsche, MSH)",
+                               tuple<std::string>("visc_div_by_hk", "inv_hk", "const"),
+                               tuple<int>(
+                                   INPAR::XFEM::ViscStabScaling_visc_div_by_hk,   // scaling with mu/hk
+                                   INPAR::XFEM::ViscStabScaling_inv_hk,           // scaling with 1/hk
+                                   INPAR::XFEM::ViscStabScaling_const             // scaling with 1.0=const
+                                   ),
+                               &xfluid_stab);
+
+  setStringToIntegralParameter<int>("VISC_STAB_HK","vol_equivalent","how to define the characteristic element length in cut elements",
+                                 tuple<std::string>("vol_equivalent", "vol_div_by_surf", "longest_ele_length"),
+                                 tuple<int>(
+                                     INPAR::XFEM::ViscStab_hk_vol_equivalent,     // volume equivalent element diameter
+                                     INPAR::XFEM::ViscStab_hk_vol_div_by_surf,    // scaling with hk ~ vol/surf
+                                     INPAR::XFEM::ViscStab_hk_longest_ele_length  // longest element length
+                                     ),
+                                 &xfluid_stab);
+
+  DoubleParameter("CONV_STAB_FAC",       1.0, "define stabilization parameter for convective part of interface stabilization (inflow, inflow and outflow)",&xfluid_stab);
+
+  setStringToIntegralParameter<int>("CONV_STAB_SCALING","abs_normal_vel","scaling factor for viscous interface stabilization (Nitsche, MSH)",
+                               tuple<std::string>("inflow", "abs_normal_vel", "const", "none"),
+                               tuple<int>(
+                                   INPAR::XFEM::ConvStabScaling_inflow,           // scaling with max(0,-u*n)
+                                   INPAR::XFEM::ConvStabScaling_abs_normal_vel,   // scaling with |u*n|
+                                   INPAR::XFEM::ConvStabScaling_const,            // scaling with 1.0=const
+                                   INPAR::XFEM::ConvStabScaling_none              // no convective stabilization
+                                   ),
+                               &xfluid_stab);
+
+  BoolParameter("GHOST_PENALTY_STAB","no","switch on/off ghost penalty interface stabilization",&xfluid_stab);
+
+  DoubleParameter("GHOST_PENALTY_FAC",       0.001, "define stabilization parameter ghost penalty interface stabilization",&xfluid_stab);
+
+  setStringToIntegralParameter<int>("EOS_GP_PATTERN","u-v-w-p-diagonal-block","which matrix pattern shall be assembled for 'Edgebased' fluid stabilization and 'GhostPenalty' stabilization?",
+                               tuple<std::string>("u-v-w-p-diagonal-block", "u-p-block", "full"),
+                               tuple<int>(
+                                   INPAR::XFEM::EOS_GP_Pattern_uvwp,    // u-v-w-p-diagonal-block matrix pattern
+                                   INPAR::XFEM::EOS_GP_Pattern_up,      // u-p-block matrix pattern
+                                   INPAR::XFEM::EOS_GP_Pattern_full     // full matrix pattern
+                                   ),
+                               &xfluid_stab);
+
+
+  setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the discontinuous stress field?",
+                               yesnotuple,yesnovalue,&xfluid_stab);
 
   /*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks

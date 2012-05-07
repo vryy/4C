@@ -3,12 +3,14 @@
 //
 // necessary defines: D_FLUID3 D_SOLID3 CCADISCRET BINIO QHULL
 //
-// Both volumecell and boundarycell Gauss points by Tessellation
+// sliver cut (small critical cut), stationary interface, but instationary computation
+// stabilization on whole domain can lead to unstable results and divergence over time
+// only stable for Taylor_Hughes_Zarins_Whiting_Jansen when stabilization is done on whole element for cut elements
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-xfluid_channel_shearWDBC_inclinedCut_bodyf
+xfluid_stat_sliver_cut_instat
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        91
 NODES                           184
@@ -41,19 +43,20 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD                    zero_field
-TIMEINTEGR                      Stationary
-NONLINITER                      Newton
+INITIALFIELD field_by_function //zero_field
+STARTFUNCNO                     1
+TIMEINTEGR                      One_Step_Theta
+NONLINITER Newton //fixed_point_like //Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
 UPRES                           1
 RESTARTEVRY                     5
-NUMSTEP                         1//2
+NUMSTEP                         80
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
-TIMESTEP                        1.0//0.1
-THETA 1.0 //0.5 //0.67
+TIMESTEP                        0.01//0.1
+THETA 0.55 //0.5 //0.67
 START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
@@ -62,41 +65,78 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE                        residual_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Barrenechea_Franca_Valentin_Wall
+STABTYPE                        edge_based
+DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Taylor_Hughes_Zarins //Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg//yes_supg
+PSPG                            no_pspg
+SUPG                            no_supg//yes_supg
 VSTAB                           no_vstab
-CSTAB cstab_qs //cstab_qs
+CSTAB                           no_cstab //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
+GMSH_DEBUG_OUT_SCREEN           Yes
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    No
-GMSH_DISCRET_OUT                No
+GMSH_SOL_OUT                    Yes
+GMSH_DISCRET_OUT                Yes
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY                 xfluid_stationary_boundary      // moving_boundary
+XFLUID_BOUNDARY                 xfluid_moving_boundary //stationary_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
 VEL_INIT_FUNCT_NO               2
+INTERFACE_VEL                   interface_vel_by_funct
+VEL_FUNCT_NO                    2
+INTERFACE_DISP                  interface_disp_by_funct
+DISP_FUNCT_NO                   3
+DISP_CURVE_NO                   1
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-VISC_STAB_FAC                   10.0
+VISC_STAB_FAC                   1.0
 CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel
+GHOST_PENALTY_STAB              Yes
+GHOST_PENALTY_FAC               0.001
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50           // output every so often, 0 no output
+AZSOLVE                         GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1            // how often to recompute some preconditioners
+AZDROP                          0.0          // drop tolerance for ILUT
+IFPACKFILL                      1.0          // fill-in for ILUT
+IFPACKGFILL                     3            // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-08      // tolerance in unscaled residual
+AZCONV                          AZ_r0        // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000         // max iterations
+//AZSUB                           150           // size of krylov space for gmres
+IFPACKOVERLAP                   0            // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE                1  //2500    // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3            // ML max number of levels
+ML_COARSEN                      UC           // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27           // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0          // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0          // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 ILU          // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU          // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack      // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 1        // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2         // damping fine grid
+ML_DAMPMED                      0.2         // damping med grids
+ML_DAMPCOARSE                   1.0          // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 //                              MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
+//CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1)-(pi/2)))+0.5 t1 0.0 t2 1.0
+//CURVE1 on EXPR FUNC 0.05-10^(-t/0.01) t1 0.0 t2 1.0
+CURVE1 on EXPR FUNC 0.05-10^(-0.07/0.01) t1 0.0 t2 1.0
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
@@ -105,13 +145,17 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0+30.0*y+60.0*z
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x // 0.0100051*x
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
+FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION -1+10.0*x// pressure
 --------------------------------------------FUNCT2 // initial solid velocity
 FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0+30.0*y+60.0*z
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
-----------------------------------------------------------------------FUNCT3
+---------------------------------------------FUNCT3 // displacement function
+FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
@@ -268,74 +312,6 @@ E 9 - 1
 E 10 - 1
 E 11 - 1
 E 12 - 1
---------------------------------------------------SURFACE TENSION CONDITIONS
-DSURF                           0
--------------------------------------------------------SURFACTANT CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN VOL LJ_POTENTIAL CONDITIONS
-DVOL                            0
------------------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
-DSURF                           0
------------------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE                           0
--------------------------------DESIGN VOL VAN DER WAALS POTENTIAL CONDITIONS
-DVOL                            0
-------------------------------DESIGN SURF VAN DER WAALS POTENTIAL CONDITIONS
-DSURF                           0
-------------------------------DESIGN LINE VAN DER WAALS POTENTIAL CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF ELECTRO REPULSION CONDITIONS
-DSURF                           0
-------------------------------------DESIGN LINE ELECTRO REPULSION CONDITIONS
-DLINE                           0
---------------------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
-DSURF                           0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
----------------------------------------------------------------FORCE SENSORS
-DPOINT                          0
--------------------------------------------------------MICROSCALE CONDITIONS
-DSURF                           0
-------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
---------------------------------------------DESIGN SURF IMPEDANCE CONDITIONS
-DSURF                           0
----------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF                           0
------------------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
-DSURF                           0
-------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE                           0
-------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
-DLINE                           0
-------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF                           0
---------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN IMPULS RATE SURF CONDITIONS
-DSURF                           0
---------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
-DSURF                           0
----------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 26 DNODE 1
 NODE 31 DNODE 1
@@ -1017,14 +993,14 @@ NODE 173 COORD 5.000000000000000e-01 5.000000000000000e-02 1.666666666666667e-02
 NODE 174 COORD 5.000000000000000e-01 5.000000000000000e-02 5.000000000000000e-02
 NODE 175 COORD 5.000000000000000e-01 5.000000000000000e-02 -1.666666666666667e-02
 NODE 176 COORD 5.000000000000000e-01 5.000000000000000e-02 -5.000000000000000e-02
-NODE 201 COORD 0.05000000000000e+00 3.000000000000000e-01 3.000000000000000e-01
-NODE 202 COORD 0.45000000000000e+00 -3.000000000000000e-01 3.000000000000000e-01
-NODE 203 COORD -0.09000000000000e+00 3.000000000000000e-01 -3.000000000000000e-01
-NODE 204 COORD 0.31000000000000e+00 -3.000000000000000e-01 -3.000000000000000e-01
-NODE 217 COORD -1.00000000000000e+00 3.000000000000000e-01 3.000000000000000e-01
-NODE 218 COORD -1.00000000000000e+00 -3.000000000000000e-01 3.000000000000000e-01
-NODE 219 COORD -1.00000000000000e+00 3.000000000000000e-01 -3.000000000000000e-01
-NODE 220 COORD -1.00000000000000e+00 -3.000000000000000e-01 -3.000000000000000e-01
+NODE 201 COORD 0.150000000000000e+00 3.000000000000000e-01 3.000000000000000e-01
+NODE 202 COORD 0.150000000000000e+00 -3.000000000000000e-01 3.000000000000000e-01
+NODE 203 COORD 0.150000000000000e+00 3.000000000000000e-01 -3.000000000000000e-01
+NODE 204 COORD 0.150000000000000e+00 -3.000000000000000e-01 -3.000000000000000e-01
+NODE 217 COORD -1.000000000000000e+00 3.000000000000000e-01 3.000000000000000e-01
+NODE 218 COORD -1.000000000000000e+00 -3.000000000000000e-01 3.000000000000000e-01
+NODE 219 COORD -1.000000000000000e+00 3.000000000000000e-01 -3.000000000000000e-01
+NODE 220 COORD -1.000000000000000e+00 -3.000000000000000e-01 -3.000000000000000e-01
 ----------------------------------------------------------STRUCTURE ELEMENTS
 91 SOLIDH8 HEX8 201 217 219 203 202 218 220 204 MAT 2 KINEM nonlinear EAS mild
 --------------------------------------------------------------FLUID ELEMENTS

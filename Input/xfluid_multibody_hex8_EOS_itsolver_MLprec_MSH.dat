@@ -67,7 +67,7 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no_pspg
@@ -77,17 +77,27 @@ CSTAB                           no_cstab //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
-EMBEDDED_BOUNDARY               BoundaryTypeNitsche               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-Nitsche_stab                    100.0
-XFLUID_BOUNDARY                 xfluid_stationary_boundary      // moving_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_zero
-//VEL_INIT_FUNCT_NO             2
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    No
+GMSH_SOL_OUT                    Yes
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUID_BOUNDARY                 xfluid_stationary_boundary      // moving_boundary
+INTERFACE_VEL_INITIAL           interface_vel_init_zero
+//VEL_INIT_FUNCT_NO             2
+------------------------------------------------XFLUID DYNAMIC/STABILIZATION
+EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+MSH_L2_PROJ                     full_ele_proj //full_ele_proj // part_ele_proj
+//VISC_STAB_FAC                   100.0
+//VISC_STAB_SCALING               visc_div_by_hk // inv_hk // const
+//VISC_STAB_HK                    vol_equivalent // vol_div_by_surf // longest_ele_length
+CONV_STAB_FAC                   1.0
+CONV_STAB_SCALING               abs_normal_vel //abs_normal_vel // inflow // const // none
+GHOST_PENALTY_STAB              Yes
+GHOST_PENALTY_FAC               0.001
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -137,14 +147,14 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 1103 POSITION velx NAME velx VALUE 6.93908779529587849e-01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 1103 POSITION vely NAME vely VALUE 1.65588593587412507e-02 TOLERANCE 1e-8
+FLUID DIS 1 NODE 1103 POSITION velx NAME velx VALUE 6.90085166132540229e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 1103 POSITION vely NAME vely VALUE 1.63404853882628300e-02 TOLERANCE 1e-8
 FLUID DIS 1 NODE 1103 POSITION velz NAME velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 1103 POSITION pressure NAME pressure VALUE 1.62897818204556586e+01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 803 POSITION velx NAME velx VALUE 1.32016662223962555e+00 TOLERANCE 1e-8
-FLUID DIS 1 NODE 803 POSITION vely NAME vely VALUE 3.15565966657596397e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 1103 POSITION pressure NAME pressure VALUE 1.40527301838465632e+01 TOLERANCE 1e-7
+FLUID DIS 1 NODE 803 POSITION velx NAME velx VALUE 1.32020887983925506e+00 TOLERANCE 1e-8
+FLUID DIS 1 NODE 803 POSITION vely NAME vely VALUE 3.37732428900114956e-01 TOLERANCE 1e-8
 FLUID DIS 1 NODE 803 POSITION velz NAME velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 803 POSITION pressure NAME pressure VALUE 1.95318993167895734e+01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 803 POSITION pressure NAME pressure VALUE 1.72563083645089925e+01 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         34
 NDLINE                          57

@@ -466,30 +466,18 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     DRT::Problem::Instance()->LOMAControlParams();
   fluidtimeparams->sublist("LOMA").set<bool>("update material",DRT::INPUT::IntegralValue<int>(lomadyn,"SGS_MATERIAL_UPDATE"));
 
-  // ----------------------------------------------- XFEM related stuff
+  // ----------------------------- sublist for general xfem-specific parameters
+  if (   probtype == prb_fluid_xfem2
+      or probtype == prb_fsi_xfem
+      or probtype == prb_fluid_fluid
+      or probtype == prb_fluid_fluid_ale
+      or probtype == prb_fluid_fluid_fsi )
   {
-    const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
-    // Axel's unused input parameters
-    fluidtimeparams->sublist("XFEM").set<bool>("DLM_condensation", DRT::INPUT::IntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
-
-    // interface coupling method
-    fluidtimeparams->sublist("XFEM").set<int>("EMBEDDED_BOUNDARY", DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xdyn, "EMBEDDED_BOUNDARY"));
-
-    fluidtimeparams->sublist("XFEM").set<int>("XFLUID_BOUNDARY", DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(xdyn, "XFLUID_BOUNDARY"));
-
-    fluidtimeparams->sublist("XFEM").set<int>("INTERFACE_VEL_INITIAL", DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceInitVel>(xdyn, "INTERFACE_VEL_INITIAL"));
-    fluidtimeparams->sublist("XFEM").set<int>("VEL_INIT_FUNCT_NO", xdyn.get<int>("VEL_INIT_FUNCT_NO"));
-    fluidtimeparams->sublist("XFEM").set<int>("INTERFACE_VEL", DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceVel>(xdyn, "INTERFACE_VEL"));
-    fluidtimeparams->sublist("XFEM").set<int>("VEL_FUNCT_NO", xdyn.get<int>("VEL_FUNCT_NO"));
-
-    fluidtimeparams->sublist("XFEM").set<int>("INTERFACE_DISP", DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceDisplacement>(xdyn, "INTERFACE_DISP"));
-    fluidtimeparams->sublist("XFEM").set<int>("DISP_FUNCT_NO", xdyn.get<int>("DISP_FUNCT_NO"));
-    fluidtimeparams->sublist("XFEM").set<int>("DISP_CURVE_NO", xdyn.get<int>("DISP_CURVE_NO"));
+    // get also scatra stabilization sublist
+    const Teuchos::ParameterList& xdyn =
+      DRT::Problem::Instance()->XFEMGeneralParams();
 
 
-    fluidtimeparams->sublist("XFEM").set<int>("COUPLING_STRATEGY", DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(xdyn, "COUPLING_STRATEGY"));
-    fluidtimeparams->sublist("XFEM").set<double>("Nitsche_stab", xdyn.get<double>("Nitsche_stab"));
-    fluidtimeparams->sublist("XFEM").set<double>("Nitsche_stab_conv", xdyn.get<double>("Nitsche_stab_conv"));
     fluidtimeparams->sublist("XFEM").set<int>("MAX_NUM_DOFSETS", xdyn.get<int>("MAX_NUM_DOFSETS"));
     fluidtimeparams->sublist("XFEM").set<string>("VOLUME_GAUSS_POINTS_BY", xdyn.get<string>("VOLUME_GAUSS_POINTS_BY"));
     fluidtimeparams->sublist("XFEM").set<string>("BOUNDARY_GAUSS_POINTS_BY", xdyn.get<string>("BOUNDARY_GAUSS_POINTS_BY"));
@@ -504,21 +492,23 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<int>("MONOLITHIC_XFFSI_APPROACH", DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(xdyn,"MONOLITHIC_XFFSI_APPROACH"));
     fluidtimeparams->sublist("XFEM").set<int>("XFLUIDFLUID_TIMEINT", DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidFluidTimeInt>(xdyn, "XFLUIDFLUID_TIMEINT"));
     fluidtimeparams->sublist("XFEM").set<int>("RELAXING_ALE", xdyn.get<int>("RELAXING_ALE"));
+
+
   }
 
-  if( probtype == prb_fluid_xfem2 or
-      probtype == prb_fsi_xfem      )
+  // ----------------------------- sublist for xfem-specific fluid parameters
+  if (   probtype == prb_fluid_xfem2
+      or probtype == prb_fsi_xfem
+      or probtype == prb_fluid_fluid
+      or probtype == prb_fluid_fluid_ale
+      or probtype == prb_fluid_fluid_fsi )
   {
-    // check some input configurations
-    INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::get<INPAR::XFEM::MovingBoundary>(fluidtimeparams->sublist("XFEM"), "XFLUID_BOUNDARY");
-    INPAR::XFEM::InterfaceVel   interf_vel       = DRT::INPUT::get<INPAR::XFEM::InterfaceVel>(fluidtimeparams->sublist("XFEM"),"INTERFACE_VEL");
-    INPAR::XFEM::InterfaceDisplacement interf_disp    = DRT::INPUT::get<INPAR::XFEM::InterfaceDisplacement>(fluidtimeparams->sublist("XFEM"),"INTERFACE_DISP");
 
-    if(probtype == prb_fsi_xfem and xfluid_mov_bound!= INPAR::XFEM::XFSIMovingBoundary) dserror("choose xfsi_moving_boundary!!! for prb_fsi_xfem");
-    if(probtype == prb_fluid_xfem2 and xfluid_mov_bound== INPAR::XFEM::XFSIMovingBoundary) dserror("do not choose xfsi_moving_boundary!!! for prb_fluid_xfem2");
-    if(probtype == prb_fsi_xfem and interf_disp != INPAR::XFEM::interface_disp_by_fsi) dserror("choose interface_disp_by_fsi for prb_fsi_xfem");
-    if(probtype == prb_fluid_xfem2 and interf_disp == INPAR::XFEM::interface_disp_by_fsi ) dserror("do not choose interface_disp_by_fsi for prb_fluid_xfem2");
-    if(probtype == prb_fsi_xfem and interf_vel != INPAR::XFEM::interface_vel_by_disp ) dserror("do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
+    const Teuchos::ParameterList& xfdyn     = DRT::Problem::Instance()->XFluidDynamicParams();
+
+    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL")       = xfdyn.sublist("GENERAL");
+    fluidtimeparams->sublist("XFLUID DYNAMIC/STABILIZATION") = xfdyn.sublist("STABILIZATION");
+
   }
 
 
@@ -530,6 +520,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
     // parameter COMBUSTTYPE from sublist COMBUSTION FLUID is also added to sublist XFEM
     fluidtimeparams->sublist("XFEM").set<int>("combusttype", DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
+
+    const Teuchos::ParameterList& xfdyn     = DRT::Problem::Instance()->XFluidDynamicParams();
+    fluidtimeparams->sublist("XFEM").set<bool>("DLM_condensation", DRT::INPUT::IntegralValue<int>(xfdyn.sublist("STABILIZATION"),"DLM_CONDENSATION")==1 );
   }
 
   // -------------------------------------------------------------------
