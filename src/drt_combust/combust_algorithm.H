@@ -203,6 +203,9 @@ namespace COMBUST
     /// func no for interface transport
     int transport_vel_no_;
 
+    /// indicate restarted problem
+    bool restart_;
+
   };
 
 } // namespace COMBUST

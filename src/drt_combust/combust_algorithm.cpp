@@ -72,7 +72,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   flamefront_(Teuchos::null),
   reinit_pde_(Teuchos::null),
   transport_vel_(DRT::INPUT::IntegralValue<INPAR::COMBUST::TransportVel>(combustdyn.sublist("COMBUSTION GFUNCTION"),"TRANSPORT_VEL")),
-  transport_vel_no_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("TRANSPORT_VEL_FUNC"))
+  transport_vel_no_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("TRANSPORT_VEL_FUNC")),
+  restart_(false)
 {
   if (Comm().MyPID()==0)
   {
@@ -277,7 +278,8 @@ void COMBUST::Algorithm::TimeLoop()
   volume_start_ = ComputeVolume();
 
   // get initial field by solving stationary problem first
-  if(DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == true)
+  // however, calculate it if and only if the problem has not been restarted
+  if(DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == true and restart_==false)
     SolveInitialStationaryProblem();
 
   // time loop
@@ -2211,8 +2213,18 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     ScaTraField().ReadRestart(step);
 
   // get pointers to the discretizations from the time integration scheme of each field
-  const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+
+  //-------------------------------------------------------------
+  // create (old) flamefront conforming to restart state of fluid
+  //-------------------------------------------------------------
+  flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
+//  interfacehandle_->UpdateInterfaceHandle();
+
+  // show flame front to fluid time integration scheme
+  FluidField().ImportFlameFront(flamefront_,true);
+  // delete fluid's memory of flame front; it should never have seen it in the first place!
+  FluidField().ImportFlameFront(Teuchos::null,false);
 
   // restart of fluid field
   FluidField().ReadRestart(step);
@@ -2374,6 +2386,8 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   SetTimeStep(FluidField().Time(),step);
 
 //  UpdateTimeStep();
+
+  restart_ = true;
 
   return;
 }

@@ -48,7 +48,7 @@ CONVTOL                         1e-05
 ITEMAX                          1
 MAXTIME                         0.5
 NUMSTEP                         5
-RESTARTEVRY                     100000
+RESTARTEVRY                     1
 TIMEINT                         One_Step_Theta
 TIMESTEP                        0.1
 UPRES                           1
@@ -80,7 +80,7 @@ ITEMAX                          20
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-5
 UPRES                           1
-RESTARTEVRY                     10
+RESTARTEVRY                     1
 NUMSTASTEPS                     0
 THETA                           0.5
 START_THETA                     0.5
@@ -117,14 +117,14 @@ INITIALFIELD                    field_by_function               // zero_field //
 NUMSTEP                         10
 MAXTIME                         0.5
 NUMSTEP                         5
-RESTARTEVRY                     1000000000000000
+RESTARTEVRY                     1
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta                  // Taylor_Galerkin_2 // Stationary //
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 NEUMANNINFLOW                   no
-WRITEFLUX                       totalflux_domain
+WRITEFLUX                       No
 UPRES                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
