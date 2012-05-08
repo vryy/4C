@@ -709,7 +709,6 @@ PostField PostProblem::getfield(MAP* field_info)
     else
     {
       dis=rcp(new DRT::Discretization(field_name,comm_));
-      //DRT::Problem::Instance()->SetDis(field_pos, disnum, dis);
     }
   }
   else if(spatial_approx_=="Nurbs")
@@ -722,7 +721,6 @@ PostField PostProblem::getfield(MAP* field_info)
   }
 
   return PostField(dis, this, field_name, numnd, numele);
-  //return PostField(dis, this, field_name, (FIELDTYP)type, numnd, numele);
 }
 
 
