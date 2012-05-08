@@ -17,7 +17,6 @@ Maintainer: Thomas Klöppel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <iostream>
-#include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_TimeMonitor.hpp"
 
