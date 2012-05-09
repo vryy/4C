@@ -476,8 +476,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_wrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
   src/drt_adapter/adapter_thermo.cpp
-  src/drt_adapter/adapter_thermo_timint.cpp
-  src/drt_adapter/adapter_thermo_timint_expl.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_element.cpp

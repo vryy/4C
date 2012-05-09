@@ -11,21 +11,12 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #ifndef THR_DYN_H
 #define THR_DYN_H
 
 
 /* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 #ifdef __cplusplus /* stuff which is c++ specific */
-
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
-
 
 /*using namespace std;*/
 /*using namespace Teuchos;*/
@@ -57,4 +48,3 @@ void thr_dyn_drt();
 
 /*----------------------------------------------------------------------*/
 #endif  /* #ifndef THR_DYN_H */
-#endif  /* #ifdef CCADISCRET */

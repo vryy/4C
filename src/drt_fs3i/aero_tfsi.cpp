@@ -23,6 +23,9 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #include "aero_tfsi.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_adapter/adapter_thermo.H"
 #include "../drt_tsi/tsi_monolithic.H"
 #include "../drt_tsi/tsi_partitioned.H"
 #include "../drt_tsi/tsi_utils.H"
@@ -96,9 +99,9 @@ FS3I::AeroTFSI::AeroTFSI(
 
   // setup of the helper class
   aerocoupling_ = rcp(new FS3I::UTILS::AeroCouplingUtils(tsi_->StructureField().Discretization(),
-                            tsi_->ThermoField().Discretization()));
+                            tsi_->ThermoField()->Discretization()));
 
-  tsi_->ThermoField().SetSurfaceTFSI(aerocoupling_->GetInterfaceMapExtractor());
+  tsi_->ThermoField()->SetSurfaceTFSI(aerocoupling_->GetInterfaceMapExtractor());
 
 }
 
@@ -125,7 +128,7 @@ void FS3I::AeroTFSI::Timeloop()
 //    Teuchos::RCP<Epetra_Vector> ivelnRestart = tsi_->StructureField().ExtractVeln();
     Teuchos::RCP<Epetra_Vector> ivelnRestart = aerocoupling_->ExtractInterfaceVal(tsi_->StructureField().ExtractVeln());
 
-    aerocoupling_->GetInterfaceMapExtractor()->ExtractCondVector(tsi_->ThermoField().ExtractTempn(), ithermoloadRestart);
+    aerocoupling_->GetInterfaceMapExtractor()->ExtractCondVector(tsi_->ThermoField()->ExtractTempn(), ithermoloadRestart);
 
     vector<double> aerosenddataRestart;
     aerocoupling_->PackData(idispnRestart, ithermoloadRestart, aerosenddataRestart);
@@ -181,7 +184,7 @@ void FS3I::AeroTFSI::Timeloop()
 //      idispn = tsi_->StructureField().ExtractInterfaceDispnp();
       idispn = aerocoupling_->ExtractInterfaceVal(tsi_->StructureField().ExtractDispnp());
       // calculate velocity of the structure
-      aerocoupling_->GetInterfaceMapExtractor()->ExtractCondVector(tsi_->ThermoField().ExtractTempnp(), ithermoload);
+      aerocoupling_->GetInterfaceMapExtractor()->ExtractCondVector(tsi_->ThermoField()->ExtractTempnp(), ithermoload);
 
       vector<double> aerosenddata;
       aerocoupling_->PackData(idispn, ithermoload, aerosenddata);
@@ -241,7 +244,7 @@ void FS3I::AeroTFSI::ApplyInterfaceData(
   tsi_->StructureField().PreparePartitionStep();
 
 //  tsi_->StructureField().ApplyInterfaceForces(iforce);
-  tsi_->ThermoField().ApplyInterfaceForces(ithermoload);
+  tsi_->ThermoField()->ApplyInterfaceForces(ithermoload);
 
   return;
 }
@@ -307,7 +310,7 @@ void FS3I::AeroTFSI::SetTimeStep(
 {
   tsi_->StructureField().SetTimeStepSize(timestepsize[0]);
 
-  tsi_->ThermoField().SetTimeStepSize(timestepsize[0]);
+  tsi_->ThermoField()->SetTimeStepSize(timestepsize[0]);
 
   tsi_->SetDt(timestepsize[0]);
 
@@ -324,7 +327,7 @@ void FS3I::AeroTFSI::SetInitialTimeStepAndTime(
 {
   tsi_->StructureField().SetInitialTimeStepAndTime(timestepsize[0]);
 
-  tsi_->ThermoField().SetInitialTimeStepAndTime(timestepsize[0]);
+  tsi_->ThermoField()->SetInitialTimeStepAndTime(timestepsize[0]);
 
   tsi_->SetDt(timestepsize[0]);
 
@@ -460,7 +463,7 @@ void FS3I::AeroTFSI::ReadRestart()
 void FS3I::AeroTFSI::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(tsi_->StructureField().CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(tsi_->ThermoField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(tsi_->ThermoField()->CreateFieldTest());
 
   DRT::Problem::Instance()->TestAll(comm);
 

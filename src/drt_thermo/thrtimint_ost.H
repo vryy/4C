@@ -14,7 +14,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 08/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THRTIMINT_OST_H
 #define THRTIMINT_OST_H
 
@@ -316,4 +315,3 @@ namespace THR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_OST_H
-#endif  // #ifdef CCADISCRET

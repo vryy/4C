@@ -15,14 +15,8 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | definitions                                               dano 12/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
-#ifdef PARALLEL
 #include <mpi.h>
 #include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 12/09 |
@@ -33,6 +27,8 @@ Maintainer: Caroline Danowski
 #include "tsi_monolithic.H"
 #include "tsi_utils.H"
 #include "../drt_inpar/inpar_tsi.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_adapter/adapter_thermo.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -49,11 +45,7 @@ extern struct _GENPROB     genprob;
 void tsi_dyn_drt()
 {
   // create a communicator
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   // print TSI-Logo to screen
   if (comm.MyPID()==0) TSI::printlogo();
@@ -115,7 +107,7 @@ void tsi_dyn_drt()
 
   // perform the result test
   DRT::Problem::Instance()->AddFieldTest(tsi->StructureField().CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(tsi->ThermoField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(tsi->ThermoField()->CreateFieldTest());
   DRT::Problem::Instance()->TestAll(comm);
 
   return;
@@ -123,4 +115,3 @@ void tsi_dyn_drt()
 
 
 /*----------------------------------------------------------------------*/
-#endif  // CCADISCRET

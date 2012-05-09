@@ -70,6 +70,7 @@ THR::TimIntImpl::TimIntImpl(
   normfres_(0.0),
   normtempi_(0.0),
   tempi_(Teuchos::null),
+  tempinc_(Teuchos::null),
   timer_(actdis->Comm()),
   fres_(Teuchos::null),
   freact_(Teuchos::null)
@@ -85,6 +86,9 @@ THR::TimIntImpl::TimIntImpl(
   // also known as residual temperatures
   tempi_ = LINALG::CreateVector(*dofrowmap_, true);
 
+  // incremental temperature increments IncT_{n+1}
+  tempinc_ = LINALG::CreateVector(*dofrowmap_, true);
+
   // done so far
   return;
 }
@@ -97,6 +101,56 @@ void THR::TimIntImpl::IntegrateStep()
   Predict();
   Solve();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | build linear system tangent matrix, rhs/force residual   bborn 08/09 |
+ | Monolithic TSI accesses the linearised thermo problem                |
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
+{
+  // Yes, this is complicated. But we have to be very careful
+  // here. The field solver always expects an increment only. And
+  // there are Dirichlet conditions that need to be preserved. So take
+  // the sum of increments we get from NOX and apply the latest
+  // increment only.
+//  if (temp != Teuchos::null)
+//  {
+//    // residual temperatures (or iteration increments or iteratively
+//    // incremental temperatures)
+//    Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
+//    tempi->Update(-1.0, *tempinc_, 1.0);
+//
+//    // update incremental temperature member to provided step increments
+//    // shortly: tempinc_^<i> := temp^<i+1>
+//    tempinc_->Update(1.0, *temp, 0.0);
+//
+//    // do thermal update with provided residual temperatures
+//    // recent increment: tempi == tempi_ = \f$\Delta{T}^{<k>}_{n+1}\f$
+//    thermo_->UpdateIterIncrementally(tempi);
+//  }
+//  else
+//  {
+//    thermo_->UpdateIterIncrementally(Teuchos::null);
+//  }
+
+  // TSI does not use NOX --> the Newton increment is passed to the field solver
+  UpdateIterIncrementally(temp);
+
+  // builds tangent, residual and applies DBC
+  EvaluateRhsTangResidual();
+  PrepareSystemForNewtonSolve();
+}
+
+/*----------------------------------------------------------------------*
+ | build linear system tangent matrix, rhs/force residual    dano 02/11 |
+ | Monolithic TSI accesses the linearised thermo problem                |
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::Evaluate()
+{
+  // builds tangent, residual and applies DBC
+  EvaluateRhsTangResidual();
+  PrepareSystemForNewtonSolve();
 }
 
 /*----------------------------------------------------------------------*
@@ -310,6 +364,21 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
 
   // shalom
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | prepare time step                                        bborn 08/09 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::PrepareTimeStep()
+{
+  // Note: MFSI requires a constant predictor. Otherwise the fields will get
+  // out of sync.
+
+  // predict
+  Predict();
+
+  // initialise incremental temperatures
+  tempinc_->PutScalar(0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -566,6 +635,34 @@ void THR::TimIntImpl::UpdateIterIncrementally(
   UpdateIterIncrementally();
 
   // leave this place
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | update time step                                         bborn 08/09 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::Update()
+{
+  // update temperature and temperature rate
+  // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
+  UpdateStepState();
+  // update time and step
+  UpdateStepTime();
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | update Newton step                                        dano 02/11 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp)
+{
+  // Yes, this is complicated. But we have to be very careful
+  // here. The field solver always expects an increment only. And
+  // there are Dirichlet conditions that need to be preserved. So take
+  // the sum of increments we get from NOX and apply the latest
+  // increment only.
+  UpdateIterIncrementally(temp);
+
   return;
 }
 

@@ -47,6 +47,21 @@ THR::TimIntExpl:: TimIntExpl
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | update time step                                          dano 01/12 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntExpl::Update()
+{
+  // update temperature and temperature rate
+  // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
+  UpdateStepState();
+  // update time and step
+  UpdateStepTime();
+  // currently nothing, can include history dependency of materials
+  UpdateStepElement();
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 /* print step summary */
 void THR::TimIntExpl::PrintStep()

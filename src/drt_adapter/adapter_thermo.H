@@ -26,14 +26,46 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
-
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_thermo/thr_resulttest.H"
+#include "../drt_inpar/inpar_thermo.H"
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+  class ResultTest;
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace LINALG
+{
+  class Solver;
+  class SparseMatrix;
+  class BlockSparseMatrixBase;
+  class MapExtractor;
+  class MultiMapExtractor;
+}
+
+namespace MORTAR
+{
+  class ManagerBase;
+}
+
+namespace THR
+{
+  class ThermoContactMan;
+}
 
 /*----------------------------------------------------------------------*
  |  adapting adapter                                        bborn 08/09 |
@@ -197,10 +229,11 @@ namespace ADAPTER
     //! @name Solver calls
     //@{
 
-    /// nonlinear solve
-    ///
-    ///  Do the nonlinear solve for the time step. All boundary conditions have
-    ///  been set.
+    //! Do time integration of single step
+    virtual void IntegrateStep() = 0;
+
+    //! Solve dynamic equilibrium
+    //! This is a general wrapper around the specific techniques.
     virtual void Solve() = 0;
 
     /// get the linear solver object used for this field
@@ -254,6 +287,8 @@ namespace ADAPTER
     Thermo& ThermoField() { return *thermo_; }
     /// const version of thermal field solver
     const Thermo& ThermoField() const { return *thermo_; }
+    /// Teuchos::rcp version of thermal field solver
+    Teuchos::RCP<Thermo> ThermoFieldrcp() { return thermo_; }
 
   private:
 

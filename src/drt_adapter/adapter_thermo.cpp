@@ -21,9 +21,11 @@ Maintainer: Caroline Danowski
  |  headers                                                 bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include "adapter_thermo.H"
-#include "adapter_thermo_timint.H"
-#include "adapter_thermo_timint_expl.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_thermo/thrtimint_statics.H"
+#include "../drt_thermo/thrtimint_genalpha.H"
+#include "../drt_thermo/thrtimint_ost.H"
+#include "../drt_thermo/thrtimint_expleuler.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -157,16 +159,30 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
   switch (timinttype)
   {
   case INPAR::THR::dyna_statics :
+  {
+    tmpthr = Teuchos::rcp(new THR::TimIntStatics(*ioflags, *tdyn, *xparams,
+                                                 actdis, solver, output));
+    break;
+  }
   case INPAR::THR::dyna_onesteptheta :
-  case INPAR::THR::dyna_gemm :
+  {
+    tmpthr = Teuchos::rcp(new THR::TimIntOneStepTheta(*ioflags, *tdyn, *xparams,
+                                                      actdis, solver, output));
+    break;
+  }
   case INPAR::THR::dyna_genalpha :
-    tmpthr = Teuchos::rcp(new ThermoTimInt(ioflags, tdyn, xparams,
-                                           actdis, solver, output));
+  {
+    dserror("Sorry, GenAlpha not yet available");
+    tmpthr = Teuchos::rcp(new THR::TimIntGenAlpha(*ioflags, *tdyn, *xparams,
+                                                  actdis, solver, output));
     break;
+  }
   case INPAR::THR::dyna_expleuler :
-    tmpthr = Teuchos::rcp(new ThermoTimIntExpl(ioflags, tdyn, xparams,
-                                               actdis, solver, output));
+  {
+    tmpthr = Teuchos::rcp(new THR::TimIntExplEuler(*ioflags, *tdyn, *xparams,
+                                                   actdis, solver, output));
     break;
+  }
   default :
     dserror("unknown time integration scheme '%s'", timinttype);
     break;
@@ -194,8 +210,7 @@ void ADAPTER::Thermo::Integrate()
   // loop ahead --- if timestepsize>0
   while ( ((time + (1.e-10)*GetTimeStepSize())< timeend) and (step < stepend) )
   {
-    PrepareTimeStep();
-    Solve();
+    IntegrateStep();
 
     // update
     Update();

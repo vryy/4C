@@ -23,7 +23,12 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
 #include "tsi_defines.H"
+#include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/adapter_thermo.H"
 #include "../drt_inpar/inpar_tsi.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io.H"
+#include "../drt_lib/drt_discret.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -33,13 +38,17 @@ Maintainer: Caroline Danowski
  | constructor (public)                                      dano 12/09 |
  *----------------------------------------------------------------------*/
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
-  : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
-    StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
-    ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams())
+  : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams())
 {
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()));
+  structure_ = structure->StructureFieldrcp();
+
+  Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()));
+  thermo_ = thermo->ThermoFieldrcp();
+
   // initialise displacement field needed for Output()
   // (get noderowmap of discretisation for creating this multivector)
-  dispnp_ = rcp(new Epetra_MultiVector(*(ThermoField().Discretization()->NodeRowMap()),3,true));
+  dispnp_ = rcp(new Epetra_MultiVector(*(ThermoField()->Discretization()->NodeRowMap()),3,true));
 
   return;
 }
@@ -59,7 +68,7 @@ TSI::Algorithm::~Algorithm()
 void TSI::Algorithm::Update()
 {
   StructureField().Update();
-  ThermoField().Update();
+  ThermoField()->Update();
   return;
 }
 
@@ -76,7 +85,7 @@ void TSI::Algorithm::Output()
   // defines the dof number ordering of the Discretizations.
   StructureField().Output();
 
-  ThermoField().Output();
+  ThermoField()->Output();
 
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
@@ -93,7 +102,7 @@ void TSI::Algorithm::Output()
           StructureField().Discretization()
           );
 
-      ThermoField().DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+      ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
     }
 
 }
@@ -117,7 +126,7 @@ void  TSI::Algorithm::OutputDeformationInThr(
   const Epetra_Map* structdofrowmap = structdis->DofRowMap(0);
 
   // loop over all local nodes of thermal discretisation
-  for (int lnodeid=0; lnodeid<(ThermoField().Discretization()->NumMyRowNodes()); lnodeid++)
+  for (int lnodeid=0; lnodeid<(ThermoField()->Discretization()->NumMyRowNodes()); lnodeid++)
   {
     // Here we rely on the fact that the thermal discretisation is a clone of
     // the structural mesh.

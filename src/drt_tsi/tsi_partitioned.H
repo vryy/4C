@@ -16,8 +16,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | definitions                                               dano 12/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #ifndef TSI_PARTITIONED_H
 #define TSI_PARTITIONED_H
 
@@ -171,4 +169,3 @@ namespace TSI
 
 /*----------------------------------------------------------------------*/
 #endif  // TSI_ALGORITHM_H
-#endif  // CCADISCRET

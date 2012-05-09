@@ -27,6 +27,7 @@ Maintainer: Burkhard Bornemann
 
 #include "thrtimint_mstep.H"
 #include "thrtimint.H"
+#include "thr_resulttest.H"
 
 #include "../drt_io/io_control.H"
 
@@ -720,6 +721,14 @@ void THR::TimInt::OutputEnergy()
 }
 
 /*----------------------------------------------------------------------*
+ | thermal result test                                       dano 01/12 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> THR::TimInt::CreateFieldTest()
+{
+  return Teuchos::rcp(new THR::ResultTest(*this));
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate external forces at t_{n+1}                     bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceExternal(
@@ -1074,53 +1083,13 @@ void THR::TimInt::SetSurfaceTFSI
 /*----------------------------------------------------------------------*
 | apply interface loads to the thermo field                 ghamm 12/10 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::SetForceInterface
+void THR::TimInt::ApplyInterfaceForces
 (
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
 {
   fifc_->PutScalar(0.0);
   tfsisurface_->InsertCondVector(ithermoload, fifc_);
-}
-
-
-/*----------------------------------------------------------------------*
- |  integrate                                               bborn 06/08 |
- *----------------------------------------------------------------------*/
-void THR::TimInt::Integrate()
-{
-  dserror("Integrate() will not be used but ADAPTER::Thermo::Integrate()!");
-
-  /*
-  // target time #timen_ and step #stepn_ already set
-
-  // time loop
-  while ( ((timen_+((1e-10)*((*dt_)[0]))) < timemax_) and (stepn_ <= stepmax_) )
-  {
-    // integrate time step
-    // after this step we hold tempn_, etc
-    IntegrateStep();
-
-    // update temperature and temperature rate
-    // after this call we will have tempn_==temp_, etc
-    UpdateStepState();
-
-    // update time and step
-    UpdateStepTime();
-
-    // print info about finished time step
-    PrintStep();
-
-    // write output
-    OutputStep();
-  }
-
-  // print monitoring of time consumption
-  TimeMonitor::summarize();
-
-  // that's it
-  return;
-  */
 }
 
 /*----------------------------------------------------------------------*/

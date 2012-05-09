@@ -16,8 +16,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | definitions                                               dano 11/10 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #ifndef TSI_MONOLITHIC_H
 #define TSI_MONOLITHIC_H
 
@@ -26,11 +24,17 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
 #include "../drt_inpar/inpar_tsi.H"
+#include "../drt_inpar/inpar_structure.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/10 |
  *----------------------------------------------------------------------*/
   // forward declarations
+namespace THR
+{
+  class ThermoContactMan;
+}
+
 namespace LINALG
 {
   class SparseMatrix;
@@ -39,6 +43,20 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class Solver;
 }
+
+namespace DRT
+{
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
+}
+
+namespace MORTAR
+{
+  class ManagerBase;
+}
+
 namespace FS3I
 {
   class AeroTFSI;
@@ -220,10 +238,7 @@ namespace TSI
     //! @name Access methods for subclasses
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const
-    {
-      return blockrowdofmap_.FullMap();
-    }
+    Teuchos::RCP<const Epetra_Map> DofRowMap() const;
 
     //! set full monolithic dof row map
     /*!
@@ -238,7 +253,7 @@ namespace TSI
     Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
     //! extractor to communicate between full monolithic map and block maps
-    const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
 
     //! apply contact to off diagonal block k_st
     /*!
@@ -303,7 +318,7 @@ namespace TSI
   private:
 
     //! dof row map splitted in (field) blocks
-    LINALG::MultiMapExtractor blockrowdofmap_;
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(
@@ -373,4 +388,3 @@ namespace TSI
 
 /*----------------------------------------------------------------------*/
 #endif  // TSI_MONOLITHIC_H
-#endif  // CCADISCRET

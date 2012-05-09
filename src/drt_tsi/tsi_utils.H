@@ -14,8 +14,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | definitions                                               dano 11/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #ifndef TSI_UTILS_H
 #define TSI_UTILS_H
 
@@ -89,4 +87,3 @@ namespace UTILS
 
 /*----------------------------------------------------------------------*/
 #endif // TSI_UTILS_H
-#endif // CCADISCRET

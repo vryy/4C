@@ -13,7 +13,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |  definitions                                             bborn 06/08 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THRTIMINT_H
 #define THRTIMINT_H
 
@@ -25,6 +24,7 @@ Maintainer: Burkhard Bornemann
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
 
+#include "../drt_adapter/adapter_thermo.H"
 #include "thr_contact.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
@@ -70,7 +70,7 @@ namespace THR
    * \author bborn
    * \date 06/08
    */
-  class TimInt
+  class TimInt : public ::ADAPTER::Thermo
   {
 
   public:
@@ -134,11 +134,27 @@ namespace THR
     void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                               Teuchos::RCP<DRT::Discretization> discretstruct);
 
+    //! prepare time step
+    virtual void PrepareTimeStep() = 0;
+
     //! Do time integration of multiple steps
     void Integrate();
 
     //! Do time integration of single step
     virtual void IntegrateStep() = 0;
+
+    //! Solve dynamic equilibrium
+    //! This is a general wrapper around the specific techniques.
+    virtual void Solve() = 0;
+
+    //! build linear system tangent matrix, rhs/force residual
+    //! Monolithic TSI accesses the linearised thermo problem
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp) = 0;
+
+    //! build linear system tangent matrix, rhs/force residual
+    //! Monolithic TSI accesses the linearised thermo problem
+    virtual void Evaluate() = 0;
+
 
     //! Update configuration after time step
     //!
@@ -149,6 +165,12 @@ namespace THR
 
     //! Update time and step counter
     void UpdateStepTime();
+
+    //! update at time step end
+    virtual void Update() = 0;
+
+    //! update Newton step
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp) = 0;
 
     //! Reset configuration after time step
     //!
@@ -177,6 +199,9 @@ namespace THR
     //! upon object prior to writing stuff here.
     //! \author mwgee (originally) \date 03/07
     void OutputStep();
+
+    //! output
+    virtual void Output() { OutputStep(); }
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -229,6 +254,17 @@ namespace THR
     {
       if (energyfile_) delete energyfile_;
     }
+
+    //! Identify residual
+    //! This method does not predict the target solution but
+    //! evaluates the residual and the stiffness matrix.
+    //! In partitioned solution schemes, it is better to keep the current
+    //! solution instead of evaluating the initial guess (as the predictor)
+    //! does.
+    virtual void PreparePartitionStep() = 0;
+
+    //! thermal result test
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
     //@}
 
@@ -307,18 +343,16 @@ namespace THR
       );
 
     //! introduce tfsi surface extractor object
-    //!
     //! Introduce the TFSI surface to the thermo algorithm.
-    void SetSurfaceTFSI
-    (
+    void SetSurfaceTFSI(
       Teuchos::RCP<const LINALG::MapExtractor> tfsisurface  //!< the TFSI surface
-    );
+      );
 
     //! Set external loads (heat flux) due to tfsi interface
-    void SetForceInterface
-    (
-      Teuchos::RCP<Epetra_Vector> ithermoload  ///< load on the interface
-    );
+    virtual void ApplyInterfaceForces(
+      Teuchos::RCP<Epetra_Vector> ithermoload
+      );
+
 
     //@}
 
@@ -361,8 +395,28 @@ namespace THR
       return discret_;
     }
 
+    //! non-overlapping DOF map for multiple dofsets
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+    {
+      const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+      return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+    }
+
+    //! non-overlapping DOF map
+    Teuchos::RCP<const Epetra_Map> DofRowMap()
+    {
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+    }
+
     //! Access solver
     Teuchos::RCP<LINALG::Solver> Solver()
+    {
+      return solver_;
+    }
+
+    //! get the linear solver object used for this field
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
     {
       return solver_;
     }
@@ -387,8 +441,23 @@ namespace THR
     //! Return temperatures \f$T_{n}\f$
     Teuchos::RCP<Epetra_Vector> Temp() { return (*temp_)(0); }
 
+    //! Return temperatures \f$T_{n}\f$
+    Teuchos::RCP<Epetra_Vector> ExtractTempn() { return (*temp_)(0); }
+
+    //! Return temperatures \f$T_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Tempn() { return (*temp_)(0); }
+
+    /// initial guess of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+
     //! Return temperatures \f$T_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> TempNew() { return tempn_; }
+
+    //! Return temperatures \f$T_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> ExtractTempnp() { return tempn_; }
+
+    //! Return temperatures \f$T_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> Tempnp() { return tempn_; }
 
     //! Return temperature rates \f$V_{n}\f$
     Teuchos::RCP<Epetra_Vector> Rate() { return (*rate_)(0); }
@@ -402,13 +471,24 @@ namespace THR
     //! Return reaction forces
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
+    //! right-hand side alias the dynamic force residual
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+
     //! Return tangent,
     //! i.e. force residual differentiated by temperatures
     //! (SystemMatrix()/stiff_ in STR)
     Teuchos::RCP<LINALG::SparseMatrix> Tang() { return tang_; }
 
+    //! Return tangent,
+    //! i.e. force residual differentiated by temperatures
+    //! (SystemMatrix()/stiff_ in STR)
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return tang_; }
+
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return tang_->DomainMap(); }
+
+    //! Return domain map
+    const Epetra_Map& DomainMap() { return tang_->DomainMap(); }
 
     //! Return current step number map
     double GetTime() const { return (*time_)[0]; }
@@ -428,6 +508,9 @@ namespace THR
     //! Return current step number map
     int GetStep() const { return step_; }
 
+    //! Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
+    virtual int GetTimeStep() const { return step_; }
+
     //! Get number of time steps
     int GetTimeNumStep() const { return stepmax_; }
 
@@ -436,6 +519,12 @@ namespace THR
 
     //! Return MapExtractor for Dirichlet boundary conditions
     const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
+    {
+      return dbcmaps_;
+    }
+
+    //! Return MapExtractor for Dirichlet boundary conditions
+    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return dbcmaps_;
     }
@@ -557,4 +646,3 @@ namespace THR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_H
-#endif  // #ifdef CCADISCRET

@@ -17,10 +17,7 @@ Maintainer: Burkhard Bornemann
 #ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
-
-#ifdef PARALLEL
 #include <mpi.h>
-#endif
 
 /*----------------------------------------------------------------------*
  |  headers                                                   gjb 01/08 |
@@ -29,7 +26,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_thermo.H"
-#include "../drt_adapter/adapter_thermo_timint.H"
 #include "thr_resulttest.H"
 
 /*----------------------------------------------------------------------*

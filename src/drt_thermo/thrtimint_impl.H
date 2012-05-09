@@ -13,7 +13,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  | definitions                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THRTIMINT_IMPL_H
 #define THRTIMINT_IMPL_H
 
@@ -70,7 +69,15 @@ namespace THR
     //@}
 
     //! Do time integration of single step
-    void IntegrateStep();
+    virtual void IntegrateStep();
+
+    //! build linear system tangent matrix, rhs/force residual
+    //! Monolithic TSI accesses the linearised thermo problem
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp);
+
+    //! build linear system tangent matrix, rhs/force residual
+    //! Monolithic TSI accesses the linearised thermo problem
+    virtual void Evaluate();
 
     //! @name Prediction
     //@{
@@ -84,7 +91,7 @@ namespace THR
     //! In partitioned solution schemes, it is better to keep the current
     //! solution instead of evaluating the initial guess (as the predictor)
     //! does.
-    void PreparePartitionStep();
+    virtual void PreparePartitionStep();
 
     //! Predict constant temperature, temperature rate,
     //! i.e. the initial guess is equal to the last converged step
@@ -104,6 +111,9 @@ namespace THR
     //!
     //! This is an implicit predictor, i.e. it calls the solver once.
     void PredictTangTempConsistRate();
+
+    //! prepare time step
+    virtual void PrepareTimeStep();
 
     //@}
 
@@ -203,9 +213,6 @@ namespace THR
     //! residual temperatures #tempi_ are blanked at these DOFs.
     virtual void UpdateIterIteratively() = 0;
 
-    //@}
-
-
     //! Update configuration after time step
     //!
     //! This means, the state set
@@ -214,6 +221,15 @@ namespace THR
     //! of the time step becomes impossible.
     //! We are ready and keen awaiting the next time step.
     virtual void UpdateStepState() = 0;
+
+    //! update time step
+    virtual void Update();
+
+    //! update Newton step
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp);
+
+    //@}
+
 
     //! @name Output
     //@{
@@ -298,6 +314,9 @@ namespace THR
     //! Return residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
     Teuchos::RCP<const Epetra_Vector> TempRes() const { return tempi_; }
 
+    //! initial guess of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() { return tempi_; }
+
     //! Set residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
     void SetTempResidual(
       const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
@@ -308,6 +327,9 @@ namespace THR
 
     //! Return effective residual force \f$R_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> ForceRes() const { return fres_; }
+
+    //! right-hand side alias the dynamic force residual
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() { return fres_; }
 
     //@}
 
@@ -344,6 +366,9 @@ namespace THR
     double normtempi_;  //!< norm of residual temperatures
     Teuchos::RCP<Epetra_Vector> tempi_;  //!< residual temperatures
                                         //!< \f$\Delta{T}^{<k>}_{n+1}\f$
+    /// sum of temperature vectors already applied,
+    /// i.e. the incremental temperature
+    Teuchos::RCP<Epetra_Vector> tempinc_;
     Epetra_Time timer_;  //!< timer for solution technique
     //@}
 
@@ -359,4 +384,3 @@ namespace THR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_IMPL_H
-#endif  // #ifdef CCADISCRET

@@ -16,8 +16,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | definitions                                               dano 12/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #ifndef TSI_ALGORITHM_H
 #define TSI_ALGORITHM_H
 
@@ -26,16 +24,27 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "../drt_adapter/ad_str_structure.H"
-#include "../drt_adapter/adapter_thermo.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
+#include <Epetra_Vector.h>
 
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/12 |
  *----------------------------------------------------------------------*/
+namespace DRT
+{
+  class Discretization;
+}
+
 namespace FS3I
 {
   class AeroTFSI;
+}
+
+namespace ADAPTER
+{
+  class Thermo;
+  class Structure;
 }
 
 
@@ -62,9 +71,7 @@ namespace TSI
   //!
   //!  \author u.kue
   //!  \date 02/08
-  class Algorithm : public ADAPTER::AlgorithmBase,
-                    public ADAPTER::StructureBaseAlgorithm,
-                    public ADAPTER::ThermoBaseAlgorithm
+  class Algorithm : public ADAPTER::AlgorithmBase
   {
     friend class FS3I::AeroTFSI;
 
@@ -86,6 +93,12 @@ namespace TSI
     virtual void ReadRestart(
       int step  //!< step number where the calculation is continued
       ) = 0;
+
+    //! access to structural field
+    ::ADAPTER::Structure& StructureField(){return *structure_;}
+
+    //! access to thermal field
+    const Teuchos::RCP< ::ADAPTER::Thermo>& ThermoField(){return thermo_;}
 
   protected:
 
@@ -128,6 +141,17 @@ namespace TSI
 
     //@}
 
+
+    //! @name Underlying fields
+
+    //! underlying structure of the FSI problem
+    Teuchos::RCP< ::ADAPTER::Structure>    structure_;
+
+    //! underlying fluid of the FSI problem
+    Teuchos::RCP< ::ADAPTER::Thermo>       thermo_;
+
+    //@}
+
   private:
 
   };  // Algorithm
@@ -136,4 +160,3 @@ namespace TSI
 
 /*----------------------------------------------------------------------*/
 #endif  // TSI_ALGORITHM_H
-#endif  // CCADISCRET

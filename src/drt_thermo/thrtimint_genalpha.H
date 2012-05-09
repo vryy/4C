@@ -11,7 +11,6 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THRTIMINT_GENALPHA_H
 #define THRTIMINT_GENALPHA_H
 
@@ -250,4 +249,3 @@ namespace THR
 
 
 #endif  // #ifndef THRTIMINT_GENALPHA_H
-#endif  // #ifdef CCADISCRET

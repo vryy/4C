@@ -12,7 +12,6 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THRTIMINT_EXPL_H
 #define THRTIMINT_EXPL_H
 
@@ -73,6 +72,40 @@ namespace THR
     //! Do time integration of single step
     virtual void IntegrateStep() = 0;
 
+    //! Solve dynamic equilibrium
+    //! This is a general wrapper around the specific techniques.
+    virtual void Solve() { IntegrateStep(); }
+
+    //! build linear system tangent matrix, rhs/force residual
+    //! Monolithic TSI accesses the linearised thermo problem
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
+    {
+      dserror("not implemented for explicit time integration");
+      return;
+    }
+
+    //! build linear system tangent matrix, rhs/force residual
+    //! Monolithic TSI accesses the linearised thermo problem
+    virtual void Evaluate()
+    {
+      dserror("not implemented for explicit time integration");
+      return;
+    }
+
+    //! prepare time step
+    virtual void PrepareTimeStep()
+    {
+      dserror("not needed for explicit time integration");
+      return;
+    }
+
+    //! for implicit partitioned schemes
+    virtual void PreparePartitionStep()
+    {
+      dserror("not needed for explicit time integration");
+      return;
+    }
+
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
@@ -81,6 +114,16 @@ namespace THR
 
     //! Update Element
     virtual void UpdateStepElement() = 0;
+
+    //! update at time step end
+    virtual void Update();
+
+    //! update Newton step
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp)
+    {
+      dserror("not needed for explicit time integration");
+      return;
+    }
 /*
     //! Update configuration and time after time step
     void UpdateStepAndTime()
@@ -147,6 +190,20 @@ namespace THR
       return Teuchos::null;
     };
 
+    //! initial guess of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()
+    {
+      dserror("not needed for explicit time integration");
+      return Teuchos::null;
+    }
+
+    //! right-hand side alias the dynamic force residual
+    virtual Teuchos::RCP<const Epetra_Vector> RHS()
+    {
+      dserror("not needed for explicit time integration");
+      return Teuchos::null;
+    }
+
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
 
@@ -163,4 +220,3 @@ namespace THR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_EXPL_H
-#endif  // #ifdef CCADISCRET

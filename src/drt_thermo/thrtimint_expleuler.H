@@ -12,7 +12,6 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THRTIMINT_EXPLEULER_H
 #define THRTIMINT_EXPLEULER_H
 
@@ -145,4 +144,3 @@ namespace THR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_ExplEuler_H
-#endif  // #ifdef CCADISCRET
