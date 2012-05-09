@@ -6,6 +6,9 @@
 //
 // necessary defines: CCADISCRET D_SOLID3 BINIO BINIO
 //
+// start with
+// mpirun -np 10 ./baci-release -ngroup=5 -glayout=2,2,2,2,2 -nptype=copyDatFile Input/invaaa.dat xxx | tee xxx.log
+// to use 5 groups with 2 procs each in nested parallel version
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -46,7 +49,7 @@ INV_ANALYSIS                    gen                             // lung gen none
 INV_INITREG                     1.0                             // initial regularization value (>0.0)
 INV_ALPHA                       1.0e-5                          // perturbation factors for forward finite difference
 INV_BETA                        1.0e-3                          // eps = alpha + beta * matparameter
-INV_ANA_TOL                     0.0001                          // tolerance of inv. analysis
+INV_ANA_TOL                     0.00001                          // tolerance of inv. analysis
 MONITORFILE                     Input/invaaa1.monitor           // file with monitored displacements
 INV_ANA_MAX_RUN                 10                              // max iterations
 ----------------------------------------------------------STRUCTURAL DYNAMIC
