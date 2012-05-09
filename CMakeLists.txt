@@ -96,16 +96,19 @@ endif (TRILINOS_DEV)
 
 option (HAVE_TEKO "Turn on Teko support (needs Teko and Stratimikos to be compiled within Trilinos" OFF)
 if (HAVE_TEKO)
+  MESSAGE("II Turn on support for Teko")
   add_definitions("-DHAVE_TEKO")
 endif (HAVE_TEKO)
 
 option (HAVE_MueLu "Turn on MueLu support (needs MueLu to be compiled within Trilinos" OFF)
 if (HAVE_MueLu)
+  MESSAGE("II Turn on support for MueLu")
   add_definitions("-DHAVE_MueLu")
 endif (HAVE_MueLu)
 
 option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" ON)
 if (HAVE_Stratimikos)
+  MESSAGE("II Turn on support for Stratimikos")
   add_definitions("-DHAVE_Stratimikos")
 endif (HAVE_Stratimikos)
 
@@ -200,15 +203,6 @@ endif (NOT Trilinos_DIR)
 
 ###------------------------------------------------------------------ External Libraries
 
-#find_package(ACML)
-#if (ACML_FOUND)
-#  include_directories(${ACML_INCLUDES})
-#  #link_directories(${ACML_INCLUDES})
-#  set(LIBRARIES ${LIBRARIES} ${ACML_LIBRARIES} )
-#  MESSAGE("II Found ACML (AMD Core Math Library): ${ACML_LIBRARIES}")
-#  MESSAGE("II Found ACML (AMD Core Math Library): ${ACML_INCLUDES}")
-#endif()
-
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
@@ -231,15 +225,6 @@ MESSAGE("   Trilinos_DIR = ${Trilinos_DIR}")
 MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
 MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
 MESSAGE("End of Trilinos details\n")
-#set(Boost_USE_STATIC_LIBS ON)
-#set(Boost_DETAILED_FAILURE_MSG ON)
-#set(Boost_USE_MULTITHREAD OFF)
-#set(Boost_DEBUG ON)
-#FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams
-#program_options )
-
-# allow to use system specific Boost
-#SET( Boost_NO_SYSTEM_PATHS true )
 
 FIND_PACKAGE( Boost COMPONENTS graph program_options REQUIRED)
 
@@ -285,49 +270,6 @@ if (Trilinos_FOUND)
 #else ()
 #endif ()
 endif (Trilinos_FOUND)
-
-#find_package(Umfpack)
-#if (UMFPACK_FOUND)
-#  include_directories(${UMFPACK_INCLUDE_DIRS})
-#  link_directories(${UMFPACK_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${UMFPACK_LIBRARIES}
-#    )
-#else (UMFPACK_FOUND)
-#  add_definitions("-DHAVENOT_UMFPACK")
-#endif (UMFPACK_FOUND)
-
-#find_package(SuperLU)
-#if (SUPERLU_FOUND)
-#  include_directories(${SUPERLU_INCLUDE_DIRS})
-#  link_directories(${SUPERLU_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${SUPERLU_LIBRARIES}
-#    )
-#else (SUPERLU_FOUND)
-#  add_definitions("-DHAVENOT_SUPERLU")
-#endif (SUPERLU_FOUND)
-
-#find_package(PARMETIS REQUIRED)
-#if (PARMETIS_FOUND)
-#  include_directories(${PARMETIS_INCLUDE_DIRS})
-#  link_directories(${PARMETIS_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${PARMETIS_LIBRARIES}
-#    )
-#endif (PARMETIS_FOUND)
-
-#if (Boost_FOUND)
-#  include_directories(${Boost_INCLUDE_DIRS})
-#  link_directories(${Boost_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${Boost_LIBRARIES}
-#    )
-#endif(Boost_FOUND)
 
 find_package(Netcdf REQUIRED)
 if (NETCDF_FOUND)
