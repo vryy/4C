@@ -39,7 +39,7 @@ Maintainer: Caroline Danowski
 TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 : Algorithm(comm),
   tempincnp_(rcp(new Epetra_Vector(*(ThermoField()->Tempnp())))),
-  dispincnp_(rcp(new Epetra_Vector(*(StructureField().Dispnp())))),
+  dispincnp_(rcp(new Epetra_Vector(*(StructureField()->Dispnp())))),
   disp_(Teuchos::null),
   veln_(Teuchos::null),
   velnp_(Teuchos::null),
@@ -83,7 +83,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     {
       // build a proxy of the structure discretization for the temperature field
       Teuchos::RCP<DRT::DofSet> structdofset
-        = StructureField().Discretization()->GetDofSetProxy();
+        = StructureField()->Discretization()->GetDofSetProxy();
       // check if ThermoField has 2 discretizations, so that coupling is possible
       if (ThermoField()->Discretization()->AddDofSet(structdofset)!=1)
         dserror("unexpected dof sets in thermo field");
@@ -95,7 +95,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
       Teuchos::RCP<DRT::DofSet> thermodofset
         = ThermoField()->Discretization()->GetDofSetProxy();
       // check if StructField has 2 discretizations, so that coupling is possible
-      if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
+      if (StructureField()->Discretization()->AddDofSet(thermodofset)!=1)
         dserror("unexpected dof sets in structure field");
     }
     break;
@@ -107,7 +107,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   {
     // build a proxy of the structure discretization for the temperature field
     Teuchos::RCP<DRT::DofSet> structdofset
-      = StructureField().Discretization()->GetDofSetProxy();
+      = StructureField()->Discretization()->GetDofSetProxy();
     // build a proxy of the temperature discretization for the structure field
     Teuchos::RCP<DRT::DofSet> thermodofset
       = ThermoField()->Discretization()->GetDofSetProxy();
@@ -115,7 +115,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     // check if ThermoField has 2 discretizations, so that coupling is possible
     if (ThermoField()->Discretization()->AddDofSet(structdofset)!=1)
       dserror("unexpected dof sets in thermo field");
-    if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
+    if (StructureField()->Discretization()->AddDofSet(thermodofset)!=1)
       dserror("unexpected dof sets in structure field");
     break;
   }
@@ -126,9 +126,9 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 #ifdef TSIPARTITIONEDASOUTPUT
     // now check if the two dofmaps are available and then bye bye
     cout << "structure dofmap" << endl;
-    cout << *StructureField().DofRowMap(0) << endl;
+    cout << *StructureField()->DofRowMap(0) << endl;
     cout << "thermo dofmap" << endl;
-    cout << *StructureField().DofRowMap(1) << endl;
+    cout << *StructureField()->DofRowMap(1) << endl;
     cout << "thermo dofmap" << endl;
     cout << *ThermoField()->DofRowMap(0) << endl;
     cout << "structure dofmap" << endl;
@@ -137,8 +137,8 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 #endif // TSIPARTITIONEDASOUTPUT
 
     // contact
-    if(StructureField().ContactManager() != null)
-      ThermoField()->PrepareThermoContact(StructureField().ContactManager(),StructureField().Discretization());
+    if(StructureField()->ContactManager() != null)
+      ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
 
 }  // Constructor
 
@@ -157,7 +157,7 @@ TSI::Partitioned::~Partitioned()
 void TSI::Partitioned::ReadRestart(int step)
 {
   ThermoField()->ReadRestart(step);
-  StructureField().ReadRestart(step);
+  StructureField()->ReadRestart(step);
   SetTimeStep(ThermoField()->GetTime(),step);
 
   return;
@@ -184,8 +184,8 @@ void TSI::Partitioned::SetupSystem()
   // get an idea of the temperatures (like in partitioned FSI)
   temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
   // get an idea of the displacements and velocities
-  disp_ = StructureField().ExtractDispn();
-  veln_ = StructureField().ExtractVeln();
+  disp_ = StructureField()->ExtractDispn();
+  veln_ = StructureField()->ExtractVeln();
 
 }  // SetupSystem()
 
@@ -204,7 +204,7 @@ void TSI::Partitioned::TimeLoop()
     DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
   // get active nodes from structural contact simulation
-  Teuchos::RCP<MORTAR::ManagerBase> cmtman = StructureField().ContactManager();
+  Teuchos::RCP<MORTAR::ManagerBase> cmtman = StructureField()->ContactManager();
 
   // tsi with or without contact
   // only tsi
@@ -288,8 +288,8 @@ void TSI::Partitioned::TimeLoop()
       if(coupling==INPAR::TSI::OneWay)
       {
         // predict and solve structural system
-        StructureField().PrepareTimeStep();
-        StructureField().Solve();
+        StructureField()->PrepareTimeStep();
+        StructureField()->Solve();
 
         ThermoField()->PrepareTimeStep();
         ThermoField()->Solve();
@@ -308,7 +308,7 @@ void TSI::Partitioned::TimeLoop()
       {
         // prepare time step
         ThermoField()->PrepareTimeStep();
-        StructureField().PrepareTimeStep();
+        StructureField()->PrepareTimeStep();
 
         // iterate between the two fields
         int  itnum = 0;
@@ -321,7 +321,7 @@ void TSI::Partitioned::TimeLoop()
           // store temperature from first solution for convergence check (like in
           // elch_algorithm: use current values)
           tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
-          dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
+          dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
 
           ThermoField()->PrepareTimeStep();
           ThermoField()->Solve();
@@ -330,10 +330,10 @@ void TSI::Partitioned::TimeLoop()
           const Teuchos::RCP<Epetra_Vector> tempnp = ThermoField()->ExtractTempnp();
 
           // apply current temperatur field
-          StructureField().ApplyTemperatures(tempnp);
+          StructureField()->ApplyTemperatures(tempnp);
 
           // solve structure system
-          StructureField().Solve();
+          StructureField()->Solve();
 
           // check convergence of temperature field for "partitioned scheme"
           stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
@@ -368,14 +368,14 @@ void TSI::Partitioned::TimeLoopOneWay()
     /// structure field
 
     // predict the structure field without influence of temperatures
-    StructureField().PrepareTimeStep();
+    StructureField()->PrepareTimeStep();
 
     /// solve structural system
     // get current displacement due to solve structure step
     DoStructureStep();
 
     // now extract the current displacements/velocities
-    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
+    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
 
     // extract the velocities of the current solution
     Teuchos::RCP<Epetra_Vector> velnp;
@@ -388,7 +388,7 @@ void TSI::Partitioned::TimeLoopOneWay()
     }
     else
     {
-      velnp = StructureField().ExtractVelnp();
+      velnp = StructureField()->ExtractVelnp();
     }
 
     /// thermo field
@@ -408,7 +408,7 @@ void TSI::Partitioned::TimeLoopOneWay()
 
     // extract final displacements,
     // since we did update, this is very easy to extract
-    disp_ = StructureField().ExtractDispnp();
+    disp_ = StructureField()->ExtractDispnp();
 
   } // displacement coupling
 
@@ -429,10 +429,10 @@ void TSI::Partitioned::TimeLoopOneWay()
     /// structure field
 
     // pass the current temperatures to the structural field
-    StructureField().ApplyTemperatures(tempnp);
+    StructureField()->ApplyTemperatures(tempnp);
 
     // call the predictor here, because the temperature is now also available
-    StructureField().PrepareTimeStep();
+    StructureField()->PrepareTimeStep();
 
     /// solve structure system
     // do the nonlinear solve for the time step. All boundary conditions have
@@ -461,8 +461,8 @@ void TSI::Partitioned::TimeLoopSequStagg()
     // predict the displacement field (structural predictor for TSI)
 
     // get structure variables of old time step (d_n, v_n)
-    disp_ = StructureField().ExtractDispn();
-    if( Step()==0 ) veln_ = StructureField().ExtractVeln();
+    disp_ = StructureField()->ExtractDispn();
+    if( Step()==0 ) veln_ = StructureField()->ExtractVeln();
 
     /// thermo field
 
@@ -486,10 +486,10 @@ void TSI::Partitioned::TimeLoopSequStagg()
     /// structure field
 
     // pass the current temperatures to the structure field
-    StructureField().ApplyTemperatures(temp_);
+    StructureField()->ApplyTemperatures(temp_);
 
     // prepare time step with coupled variables
-    StructureField().PrepareTimeStep();
+    StructureField()->PrepareTimeStep();
 
     // solve coupled equation
     DoStructureStep();
@@ -499,13 +499,13 @@ void TSI::Partitioned::TimeLoopSequStagg()
     // get the velocities needed as predictor for the thermo field for the next
     // time step
     if(quasistatic_)
-      veln_ = CalcVelocity(StructureField().ExtractDispnp());
+      veln_ = CalcVelocity(StructureField()->ExtractDispnp());
     else
-      veln_ = StructureField().ExtractVelnp();
+      veln_ = StructureField()->ExtractVelnp();
 
     // extract final displacements,
     // update is called afterwards, so we extract the newest solution
-    disp_ = StructureField().ExtractDispnp();
+    disp_ = StructureField()->ExtractDispnp();
 
   } // end displacement coupling
 
@@ -524,16 +524,16 @@ void TSI::Partitioned::TimeLoopSequStagg()
     // get current displacement due to solve structure step
 
     // pass the current temperatures to the structure field
-    StructureField().ApplyTemperatures(temp_);
+    StructureField()->ApplyTemperatures(temp_);
 
     // prepare time step with coupled variables
-    StructureField().PrepareTimeStep();
+    StructureField()->PrepareTimeStep();
 
     // solve structural coupled equation
     DoStructureStep();
 
     // extract current displacements
-    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
+    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
 
     // extract the velocities of the current solution
     // the displacement -> velocity conversion
@@ -541,7 +541,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
       velnp_ = CalcVelocity(dispnp);
     // quasistatic to exlude oszillation
     else
-      velnp_ = StructureField().ExtractVelnp();
+      velnp_ = StructureField()->ExtractVelnp();
 
     /// thermo field
 
@@ -577,7 +577,7 @@ void TSI::Partitioned::TimeLoopFull()
 
   // extract final displacement and velocity
   // update is called afterwards, so we extract the newest solution
-  disp_ = StructureField().ExtractDispnp();
+  disp_ = StructureField()->ExtractDispnp();
   temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
 
 } // TSI::Partitioned::TimeLoopFull()
@@ -622,11 +622,11 @@ void TSI::Partitioned::OuterIterationLoop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp
-        = LINALG::CreateVector(*(StructureField().DofRowMap(0)), true);
+        = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
       if ( Step()==1 )
       {
-        dispnp->Update(1.0, *(StructureField().ExtractDispn()),0.0);
-        veln_ = StructureField().ExtractVeln();
+        dispnp->Update(1.0, *(StructureField()->ExtractDispn()),0.0);
+        veln_ = StructureField()->ExtractVeln();
       }
       // else: use the velocity of the last converged step
 
@@ -638,12 +638,12 @@ void TSI::Partitioned::OuterIterationLoop()
         // store temperature from first solution for convergence check (like in
         // elch_algorithm: use current values)
         tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
-        dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
 
         // kind of mechanical predictor
         // 1st iteration: get structure variables of old time step (d_n, v_n)
         if (itnum==1)
-          dispnp->Update(1.0,*(StructureField().ExtractDispn()),0.0);
+          dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
         // for itnum>1 use the current solution dispnp of old iteration step
 
         // Begin Nonlinear Solver / Outer Iteration ******************************
@@ -674,27 +674,27 @@ void TSI::Partitioned::OuterIterationLoop()
         // pass the current temperatures to the structure field
         // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
         // just calculated incremental solutions
-        StructureField().ApplyTemperatures(temp_);
+        StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
         if (itnum==1)
-          StructureField().PrepareTimeStep();
+          StructureField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
-          StructureField().PreparePartitionStep();
+          StructureField()->PreparePartitionStep();
 
         // solve coupled structural equation
         DoStructureStep();
 
         // extract current displacements
-        dispnp->Update(1.0,*(StructureField().ExtractDispnp()),0.0);
+        dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
 
         // end nonlinear solver / outer iteration ********************************
 
         if(quasistatic_)
           veln_ = CalcVelocity(dispnp);
         else
-          veln_ = StructureField().ExtractVelnp();
+          veln_ = StructureField()->ExtractVelnp();
 
         // check convergence of both field for "partitioned scheme"
         stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
@@ -727,7 +727,7 @@ void TSI::Partitioned::OuterIterationLoop()
         // store temperature from first solution for convergence check (like in
         // elch_algorithm: here the current values are needed)
         tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
-        dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
 
         // begin nonlinear solver / outer iteration ******************************
 
@@ -736,20 +736,20 @@ void TSI::Partitioned::OuterIterationLoop()
         // pass the current temperatures to the structure field
         // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
         // just calculated incremental solutions
-        StructureField().ApplyTemperatures(temp_);
+        StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
         if (itnum==1)
-          StructureField().PrepareTimeStep();
+          StructureField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
-          StructureField().PreparePartitionStep();
+          StructureField()->PreparePartitionStep();
 
         // solve coupled structural equation
         DoStructureStep();
 
         // Extract current displacements
-        const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
+        const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
 
         // extract the velocities of the current solution
         // the displacement -> velocity conversion
@@ -757,7 +757,7 @@ void TSI::Partitioned::OuterIterationLoop()
           velnp_ = CalcVelocity(dispnp);
         // quasistatic to exlude oszillation
         else
-          velnp_ = StructureField().ExtractVelnp();
+          velnp_ = StructureField()->ExtractVelnp();
 
         /// thermo field
 
@@ -823,7 +823,7 @@ void TSI::Partitioned::OuterIterationLoop()
         // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
         //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
         tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
-        dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
 
         // get current temperatures due to solve thermo step, like predictor in FSI
         // 1. iteration: get temperatures of old time step (T_n)
@@ -844,20 +844,20 @@ void TSI::Partitioned::OuterIterationLoop()
         // pass the current temperatures to the structure field
         // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
         // just calculated incremental solutions
-        StructureField().ApplyTemperatures(temp_);
+        StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
         if (itnum==1)
-          StructureField().PrepareTimeStep();
+          StructureField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
-          StructureField().PreparePartitionStep();
+          StructureField()->PreparePartitionStep();
 
         // solve coupled structural equation
         DoStructureStep();
 
         // Extract current displacements
-        const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
+        const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
 
         // extract the velocities of the current solution
         // the displacement -> velocity conversion
@@ -865,7 +865,7 @@ void TSI::Partitioned::OuterIterationLoop()
           velnp_ = CalcVelocity(dispnp);
         // quasistatic to exlude oscillation
         else
-          velnp_ = StructureField().ExtractVelnp();
+          velnp_ = StructureField()->ExtractVelnp();
 
         /// thermo field
 
@@ -993,13 +993,13 @@ void TSI::Partitioned::OuterIterationLoop()
       // get structure variables of old time step (d_n, v_n)
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       Teuchos::RCP<Epetra_Vector> dispnp
-        = LINALG::CreateVector(*(StructureField().DofRowMap(0)), true);
+        = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
       Teuchos::RCP<Epetra_Vector> velnp
-        = LINALG::CreateVector(*(StructureField().DofRowMap(0)), true);
+        = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
       if ( Step()==1 )
       {
-        dispnp->Update(1.0,*(StructureField().ExtractDispn()),0.0);
-        veln_ = StructureField().ExtractVeln();
+        dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
+        veln_ = StructureField()->ExtractVeln();
       }
       // else: use the velocity of the last converged step
 
@@ -1017,12 +1017,12 @@ void TSI::Partitioned::OuterIterationLoop()
         // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
         //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
         tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
-        dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
 
         // kind of mechanical predictor
         // 1. iteration: get structure variables of old time step (d_n, v_n)
         if (itnum==1)
-          dispnp->Update(1.0,*(StructureField().ExtractDispn()),0.0);
+          dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
         // for itnum>1 use the current solution dispnp of old iteration step
 
         // Begin Nonlinear Solver / Outer Iteration ******************************
@@ -1053,14 +1053,14 @@ void TSI::Partitioned::OuterIterationLoop()
         // pass the current temperatures to the structure field
         // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
         // just calculated incremental solutions
-        StructureField().ApplyTemperatures(temp_);
+        StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
         if (itnum==1)
-          StructureField().PrepareTimeStep();
+          StructureField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
-          StructureField().PreparePartitionStep();
+          StructureField()->PreparePartitionStep();
 
         // solve coupled structural equation
         DoStructureStep();
@@ -1102,8 +1102,8 @@ void TSI::Partitioned::OuterIterationLoop()
         // difference of last two solutions
         if (del_ == Teuchos::null)
         {
-         del_ = LINALG::CreateVector(*(StructureField().DofRowMap(0)), true);
-         delhist_ = LINALG::CreateVector(*(StructureField().DofRowMap(0)), true);
+         del_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+         delhist_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
          del_->PutScalar(1.0e20);
          delhist_->PutScalar(0.0);
         }
@@ -1121,7 +1121,7 @@ void TSI::Partitioned::OuterIterationLoop()
         del_->Dot(*delhist_,&dot);
 
         if ((Step()==1) && (itnum == 1))
-         dispnp->Update(1.0,*(StructureField().Dispnp()),0.0);
+         dispnp->Update(1.0,*(StructureField()->Dispnp()),0.0);
         else  // (itnum > 1)
         {
          // relaxation parameter
@@ -1134,7 +1134,7 @@ void TSI::Partitioned::OuterIterationLoop()
          // d^{i+1} = d^{i+1} - omega^{i+1} * r^{i+1}
          //         = d^{i+1} - omega^{i+1} * ( d^{i+1} - d^i )
          //         = (1 - omega^{i+1}) d^{i+1} + omega^{i+1} d^i
-         dispnp->Update(1.0,*(StructureField().Dispnp()),(-omeganp_),*del_,0.0);
+         dispnp->Update(1.0,*(StructureField()->Dispnp()),(-omeganp_),*del_,0.0);
         }
 
         // update Aitken parameter omega^{i+1}_{n+1}
@@ -1186,7 +1186,7 @@ void TSI::Partitioned::DoStructureStep()
   /// solve structural system
   // do the nonlinear solve for the time step. All boundary conditions have
   // been set.
-  StructureField().Solve();
+  StructureField()->Solve();
 
   return;
 }
@@ -1246,13 +1246,13 @@ bool TSI::Partitioned::ConvergenceCheck(
   // build the current temperature increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
   tempincnp_->Update(1.0,*(ThermoField()->Tempnp()),-1.0);
-  dispincnp_->Update(1.0,*(StructureField().Dispnp()),-1.0);
+  dispincnp_->Update(1.0,*(StructureField()->Dispnp()),-1.0);
 
   // build the L2-norm of the temperature increment and the temperature
   tempincnp_->Norm2(&tempincnorm_L2);
   ThermoField()->Tempnp()->Norm2(&tempnorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
-  StructureField().Dispnp()->Norm2(&dispnorm_L2);
+  StructureField()->Dispnp()->Norm2(&dispnorm_L2);
 
   // care for the case that there is (almost) zero temperature
   // (usually not required for temperature)

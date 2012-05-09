@@ -63,7 +63,7 @@ namespace FSI
     virtual ~Algorithm();
 
     /// access to structure field
-    ADAPTER::FSIStructureWrapper& StructureField(){return *structure_;}
+    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
     /// access to fluid field
     ADAPTER::FluidMovingBoundary& MBFluidField(){return *fluid_;}
@@ -84,7 +84,7 @@ namespace FSI
     /// calculate stresses, strains, energies
     virtual void PrepareOutput()
     {
-      StructureField().PrepareOutput();
+      StructureField()->PrepareOutput();
     }
 
     /// write output

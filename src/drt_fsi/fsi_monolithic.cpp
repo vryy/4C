@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_colors.H"
 
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_constraint/constraint_manager.H"
 
@@ -40,15 +41,18 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
                                     const Teuchos::ParameterList& timeparams)
   : AlgorithmBase(comm,timeparams)
 {
+  // ask base algorithm for the structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams));
   structure_ = rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
 
   if(structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
+  // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,true));
   fluid_ = fluid->FluidFieldrcp();
 
+  // ask base algorithm for the ale time integrator
   Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(timeparams));
   ale_ = ale->AleFieldrcp();
 
@@ -69,7 +73,7 @@ FSI::MonolithicBase::~MonolithicBase()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBase::ReadRestart(int step)
 {
-  StructureField().ReadRestart(step);
+  StructureField()->ReadRestart(step);
   FluidField()    .ReadRestart(step);
   AleField()      .ReadRestart(step);
 
@@ -85,7 +89,7 @@ void FSI::MonolithicBase::PrepareTimeStep()
 
   PrintHeader();
 
-  StructureField().PrepareTimeStep();
+  StructureField()->PrepareTimeStep();
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();
 }
@@ -95,7 +99,7 @@ void FSI::MonolithicBase::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBase::Update()
 {
-  StructureField().Update();
+  StructureField()->Update();
   FluidField().    Update();
   AleField().      Update();
 }
@@ -105,7 +109,7 @@ void FSI::MonolithicBase::Update()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareOutput()
 {
-  StructureField().PrepareOutput();
+  StructureField()->PrepareOutput();
 }
 
 
@@ -117,17 +121,17 @@ void FSI::MonolithicBase::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  StructureField().Output();
+  StructureField()->Output();
   FluidField().    Output();
   AleField().      Output();
 
   FluidField().LiftDrag();
 
-  if (StructureField().GetConstraintManager()->HaveMonitor())
+  if (StructureField()->GetConstraintManager()->HaveMonitor())
   {
-    StructureField().GetConstraintManager()->ComputeMonitorValues(StructureField().Dispnp());
+    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
     if(Comm().MyPID() == 0)
-      StructureField().GetConstraintManager()->PrintMonitorValues();
+      StructureField()->GetConstraintManager()->PrintMonitorValues();
   }
 }
 
@@ -224,7 +228,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   // enable debugging
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
   {
-    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
+    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
     //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
   }
 
@@ -301,8 +305,8 @@ void FSI::Monolithic::PrepareTimeloop()
     INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
     if (pstype != INPAR::STR::prestress_none)
     {
-      time   = StructureField().GetTime();
-      dt     = StructureField().GetTimeStepSize();
+      time   = StructureField()->GetTime();
+      dt     = StructureField()->GetTimeStepSize();
       pstime = sdyn.get<double>("PRESTRESSTIME");
       if (time+dt <= pstime) dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
     }
@@ -419,7 +423,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     if (sdbg_!=Teuchos::null)
     {
       sdbg_->NewIteration();
-      sdbg_->WriteVector("x",*StructureField().Interface()->ExtractFSICondVector(sx));
+      sdbg_->WriteVector("x",*StructureField()->Interface()->ExtractFSICondVector(sx));
     }
   }
 
@@ -432,7 +436,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   {
     Epetra_Time ts(Comm());
-    StructureField().Evaluate(sx);
+    StructureField()->Evaluate(sx);
     Utils()->out() << "structure: " << ts.ElapsedTime() << "\n";
   }
 

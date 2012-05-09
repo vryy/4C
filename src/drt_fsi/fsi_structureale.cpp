@@ -54,8 +54,8 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm)
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
-    coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                   StructureField().Interface()->FSICondMap(),
+    coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                   StructureField()->Interface()->FSICondMap(),
                                   *MBFluidField().Discretization(),
                                    MBFluidField().Interface().FSICondMap(),
                                   "FSICoupling",
@@ -76,7 +76,7 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm)
   else
   {
     matchingnodes_ = false;
-    coupsfm_->Setup( *StructureField().Discretization(),
+    coupsfm_->Setup( *StructureField()->Discretization(),
                      *MBFluidField().Discretization(),
                      *(dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
                      comm,false);
@@ -104,9 +104,9 @@ void FSI::StructureALE::Timeloop()
 /*----------------------------------------------------------------------*/
 void FSI::StructureALE::Solve()
 {
-  StructureField().Solve();
+  StructureField()->Solve();
   //Comment this line to skip ALE computation!
-  MBFluidField().NonlinearSolve(StructToFluid(StructureField().ExtractInterfaceDispnp()));
+  MBFluidField().NonlinearSolve(StructToFluid(StructureField()->ExtractInterfaceDispnp()));
 }
 
 

@@ -16,6 +16,7 @@ Maintainers: Volker Gravemeier & Lena Yoshihara
 #include "fs3i_partitioned_2wc.H"
 
 #include "../drt_fsi/fsi_monolithic.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -44,7 +45,7 @@ FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
   Teuchos::RCP<DRT::DofSet> structurescatradofset = structurescatra_->ScaTraField().Discretization()->GetDofSetProxy();
 
   // check number of dof sets in structure field
-  if (fsi_->StructureField().Discretization()->AddDofSet(structurescatradofset)!=1)
+  if (fsi_->StructureField()->Discretization()->AddDofSet(structurescatradofset)!=1)
     dserror("Incorrect number of dof sets in structure field!");
 }
 
@@ -242,7 +243,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
                                            fluidscatra_->ScaTraField().ThermPressDtAm(),
                                            fluidscatra_->ScaTraField().Discretization());
 
-      fsi_->StructureField().ApplyTemperatures(structurescatra_->ScaTraField().Phiaf());
+      fsi_->StructureField()->ApplyTemperatures(structurescatra_->ScaTraField().Phiaf());
     }
     else
     {*/
@@ -255,7 +256,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
                                            fluidscatra_->ScaTraField().ThermPressDtNp(),
                                            fluidscatra_->ScaTraField().ThermPressDtNp(),
                                            fluidscatra_->ScaTraField().Discretization());
-      fsi_->StructureField().ApplyTemperatures(structurescatra_->ScaTraField().Phinp());
+      fsi_->StructureField()->ApplyTemperatures(structurescatra_->ScaTraField().Phinp());
     //}
 }
 

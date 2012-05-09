@@ -58,7 +58,7 @@ FSI::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::ReadRestart(int step)
 {
-  StructureField().ReadRestart(step);
+  StructureField()->ReadRestart(step);
   double time = MBFluidField().ReadRestart(step);
   SetTimeStep(time,step);
 }
@@ -72,7 +72,7 @@ void FSI::Algorithm::PrepareTimeStep()
 
   PrintHeader();
 
-  StructureField().PrepareTimeStep();
+  StructureField()->PrepareTimeStep();
   MBFluidField().PrepareTimeStep();
 }
 
@@ -81,7 +81,7 @@ void FSI::Algorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::Update()
 {
-  StructureField().Update();
+  StructureField()->Update();
   MBFluidField().Update();
 }
 
@@ -94,7 +94,7 @@ void FSI::Algorithm::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  StructureField().Output();
+  StructureField()->Output();
   MBFluidField().Output();
 }
 

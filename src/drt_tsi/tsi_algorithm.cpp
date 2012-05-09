@@ -23,7 +23,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
 #include "tsi_defines.H"
-#include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/adapter_thermo.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -67,7 +67,7 @@ TSI::Algorithm::~Algorithm()
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::Update()
 {
-  StructureField().Update();
+  StructureField()->Update();
   ThermoField()->Update();
   return;
 }
@@ -83,7 +83,7 @@ void TSI::Algorithm::Output()
   // In here control file entries are written. And these entries define the
   // order in which the filters handle the Discretizations, which in turn
   // defines the dof number ordering of the Discretizations.
-  StructureField().Output();
+  StructureField()->Output();
 
   ThermoField()->Output();
 
@@ -98,8 +98,8 @@ void TSI::Algorithm::Output()
     or ( (uprestart != 0) and (Step()%uprestart == 0) ) )
     {
       OutputDeformationInThr(
-          StructureField().Dispn(),
-          StructureField().Discretization()
+          StructureField()->Dispn(),
+          StructureField()->Discretization()
           );
 
       ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
@@ -179,7 +179,7 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = rcp(new Epetra_Vector( *(StructureField().ExtractDispn()) ) );
+  vel = rcp(new Epetra_Vector( *(StructureField()->ExtractDispn()) ) );
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1./Dt(), *dispnp, -1./Dt());

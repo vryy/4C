@@ -65,7 +65,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
 
     // structure to fluid
 
-    coupsfm_->Setup(*StructureField().Discretization(),
+    coupsfm_->Setup(*StructureField()->Discretization(),
                     *FluidField().Discretization(),
                     *AleField().Discretization(),
                     comm_,false);
@@ -107,7 +107,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     // create combined map
 
     std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-    vecSpaces.push_back(StructureField().DofRowMap());
+    vecSpaces.push_back(StructureField()->DofRowMap());
   #ifdef FLUIDSPLITAMG
     vecSpaces.push_back(FluidField()    .DofRowMap());
   #else
@@ -200,7 +200,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     case INPAR::FSI::FSIAMG:
       systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
                                      Extractor(),
-                                     StructureField(),
+                                     *StructureField(),
                                      FluidField(),
                                      AleField(),
                                      false,
@@ -227,7 +227,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     if(aleproj_ != INPAR::FSI::ALEprojection_none)
     {
       // set up sliding ale utils
-      slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
+      slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
                                                     FluidField().Discretization(),
                                                     *coupsfm_,
                                                     true,
@@ -248,7 +248,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupRHS");
 
   SetupVector(f,
-              StructureField().RHS(),
+              StructureField()->RHS(),
               FluidField().RHS(),
               AleField().RHS(),
               FluidField().ResidualScaling());
@@ -287,14 +287,14 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
         Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
         mortar->Multiply(true,*rhs,*tmprhs);
 
-        rhs = StructureField().Interface()->InsertFSICondVector(tmprhs);
+        rhs = StructureField()->Interface()->InsertFSICondVector(tmprhs);
 
         Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-        LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+        LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
-        if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+        if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
         {
-          Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+          Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
           stcmat->Multiply(true,*rhs,*rhs);
         }
 
@@ -309,7 +309,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
         #endif
 
         zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-        LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+        LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
         Extractor().AddVector(*rhs,1,f);
 
@@ -333,7 +333,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 #endif
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
     Extractor().AddVector(*rhs,1,f);
 
@@ -347,14 +347,14 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
     mortar->Multiply(true,*rhs,*tmprhs);
 
-    rhs = StructureField().Interface()->InsertFSICondVector(tmprhs);
+    rhs = StructureField()->Interface()->InsertFSICondVector(tmprhs);
 
     zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
-    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
       stcmat->Multiply(true,*rhs,*rhs);
     }
 
@@ -378,14 +378,14 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
 
   // get info about STC feature
-  INPAR::STR::STC_Scale stcalgo = StructureField().GetSTCAlgo();
+  INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
   Teuchos::RCP<LINALG::SparseMatrix> stcmat = Teuchos::null;
   if (stcalgo != INPAR::STR::stc_none)
-    stcmat = StructureField().GetSTCMat();
+    stcmat = StructureField()->GetSTCMat();
 
   const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
 
   // split fluid matrix
 
@@ -422,7 +422,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   lfgi->Add(*fgi,false,scale,0.0);
   lfgi->Complete(fgi->DomainMap(),s->RangeMap());
 
-  lfgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+  lfgi->ApplyDirichlet( *(StructureField()->GetDBCMapExtractor()->CondMap()),false);
 
   if (stcalgo == INPAR::STR::stc_currsym)
     lfgi = LINALG::MLMultiply(*stcmat, true, *lfgi, false, true, true, true);
@@ -553,7 +553,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     lfmgi->Add(*llfmgi,false,scale,0.0);
     lfmgi->Complete(aii.DomainMap(),s->RangeMap());
 
-    lfmgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+    lfmgi->ApplyDirichlet( *(StructureField()->GetDBCMapExtractor()->CondMap()),false);
     if (stcalgo == INPAR::STR::stc_currsym)
       lfmgi = LINALG::MLMultiply(*stcmat, true, *lfmgi, false, true, true, false);
     mat.Assign(0,2,View,*lfmgi);
@@ -561,7 +561,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   }
 
   s->Complete();
-  s->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),true);
+  s->ApplyDirichlet( *(StructureField()->GetDBCMapExtractor()->CondMap()),true);
 
   if (stcalgo != INPAR::STR::stc_none)
   {
@@ -590,7 +590,7 @@ void FSI::MortarMonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> i
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::InitialGuess");
 
   SetupVector(*ig,
-              StructureField().InitialGuess(),
+              StructureField()->InitialGuess(),
               FluidField().InitialGuess(),
               AleField().InitialGuess(),
               0.0);
@@ -666,10 +666,10 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
       dserror("ale scaling failed");
 
     // get info about STC feature and unscale solution if necessary
-    INPAR::STR::STC_Scale stcalgo = StructureField().GetSTCAlgo();
+    INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
     if (stcalgo != INPAR::STR::stc_none)
     {
-      StructureField().GetSTCMat()->Multiply(false,*sy,*sy);
+      StructureField()->GetSTCMat()->Multiply(false,*sy,*sy);
     }
 
     Extractor().InsertVector(*sy,0,x);
@@ -686,7 +686,7 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
     // get info about STC feature
     if (stcalgo != INPAR::STR::stc_none)
     {
-      StructureField().GetSTCMat()->Multiply(false,*sx,*sx);
+      StructureField()->GetSTCMat()->Multiply(false,*sx,*sx);
     }
 
     Extractor().InsertVector(*sx,0,b);
@@ -756,8 +756,8 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
 
   Utils()->out().flags(flags);
 
-  if (StructureField().GetSTCAlgo() != INPAR::STR::stc_none)
-    StructureField().SystemMatrix()->Reset();
+  if (StructureField()->GetSTCAlgo() != INPAR::STR::stc_none)
+    StructureField()->SystemMatrix()->Reset();
 
 }
 
@@ -783,20 +783,20 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> scv = LINALG::CreateVector(*StructureField().Interface()->FSICondMap());
+    Teuchos::RCP<Epetra_Vector> scv = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap());
 
     Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
     mortar->Multiply(true,*fcv,*scv);
 
-    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface()->InsertFSICondVector(scv);
+    Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(scv);
     modsv->Update(1.0, *sv, fluidscale);
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
-    LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
-    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
       stcmat->Multiply(true,*modsv,*modsv);
     }
 
@@ -806,9 +806,9 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   else
   {
     Teuchos::RCP<Epetra_Vector> modsv =  rcp(new Epetra_Vector(*sv));
-    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
       stcmat->Multiply(true,*sv,*modsv);
     }
     Extractor().InsertVector(*modsv,0,f);
@@ -980,7 +980,7 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   // right translation.)
 
   sx = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface()->ExtractFSICondVector(sx);
+  Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
 
   // get fluid displacements
 
@@ -1021,7 +1021,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
     Teuchos::RCP<Epetra_Vector> idispale =
         icoupfa_->SlaveToMaster(AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement()));
 
-    slideale_->Remeshing(StructureField(),
+    slideale_->Remeshing(*StructureField(),
                         FluidField().Discretization(),
                         idispale,
                         iprojdisp_,
@@ -1030,7 +1030,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
 
     iprojdispinc_->Update(-1.0,*iprojdisp_,1.0,*idispale,0.0);
 
-    slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp_, *coupsfm_);
+    slideale_->EvaluateMortar(StructureField()->ExtractInterfaceDispnp(), iprojdisp_, *coupsfm_);
     slideale_->EvaluateFluidMortar(idispale,iprojdisp_);
 
     RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*iprojdisp_));
@@ -1043,7 +1043,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
     FluidField().ApplyInterfaceVelocities(unew);
   }
 
-  StructureField().Update();
+  StructureField()->Update();
   FluidField().Update();
   AleField().Update();
 
@@ -1051,7 +1051,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
 
 void FSI::MortarMonolithicFluidSplit::Output()
 {
-  StructureField().Output();
+  StructureField()->Output();
   FluidField().    Output();
 
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
@@ -1069,18 +1069,18 @@ void FSI::MortarMonolithicFluidSplit::Output()
   AleField().      Output();
   FluidField().LiftDrag();
 
-  if (StructureField().GetConstraintManager()->HaveMonitor())
+  if (StructureField()->GetConstraintManager()->HaveMonitor())
   {
-    StructureField().GetConstraintManager()->ComputeMonitorValues(StructureField().Dispnp());
+    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
     if(comm_.MyPID() == 0)
-      StructureField().GetConstraintManager()->PrintMonitorValues();
+      StructureField()->GetConstraintManager()->PrintMonitorValues();
   }
 
 }
 
 void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
 {
-  StructureField().ReadRestart(step);
+  StructureField()->ReadRestart(step);
   FluidField().ReadRestart(step);
 
   SetupSystem();
@@ -1099,7 +1099,7 @@ void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
   SetTimeStep(FluidField().Time(),FluidField().Step());
 
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
-    slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispn(), iprojdisp_, *coupsfm_);
+    slideale_->EvaluateMortar(StructureField()->ExtractInterfaceDispn(), iprojdisp_, *coupsfm_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1110,9 +1110,9 @@ void FSI::MortarMonolithicFluidSplit::PrepareTimeStep()
 
   PrintHeader();
 
-  if (StructureField().GetSTCAlgo() != INPAR::STR::stc_none)
-      StructureField().SystemMatrix()->Reset();
-  StructureField().PrepareTimeStep();
+  if (StructureField()->GetSTCAlgo() != INPAR::STR::stc_none)
+      StructureField()->SystemMatrix()->Reset();
+  StructureField()->PrepareTimeStep();
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();
 }

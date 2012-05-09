@@ -55,15 +55,15 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   // needed).
 
   ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
-  ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
+  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
 
   // consistency check: all dofs contained in ale(fluid)-structure coupling need to
   // be part of the structure volume constraint, too. this needs to be checked because during
   // SetupSystemMatrix, we rely on this information!
-  const Teuchos::RCP<const Epetra_Map> asimap = StructureField().Interface()->LungASICondMap();
+  const Teuchos::RCP<const Epetra_Map> asimap = StructureField()->Interface()->LungASICondMap();
   for (int i=0; i<asimap->NumMyElements(); ++i)
   {
-    if (structfield.LungConstrMap()->LID(asimap->GID(i)) == -1)
+    if (structfield->LungConstrMap()->LID(asimap->GID(i)) == -1)
       dserror("dof of asi coupling is not contained in enclosing boundary");
   }
 
@@ -72,7 +72,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   int FluidMinLungVolConID;
   int StructMinLungVolConID;
 
-  structfield.ListLungVolCons(StructLungVolConIDs, StructMinLungVolConID);
+  structfield->ListLungVolCons(StructLungVolConIDs, StructMinLungVolConID);
   fluidfield.ListLungVolCons(FluidLungVolConIDs, FluidMinLungVolConID);
 
   // We want to be sure that both fluid and structure fields hold the
@@ -127,10 +127,10 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   IncLagrMultVec_ = rcp(new Epetra_Vector(*ConstrMap_,true));
 
   // build merged structure dof map
-  Teuchos::RCP<Epetra_Map> FullStructDofMap = LINALG::MergeMap(*StructureField().DofRowMap(),
+  Teuchos::RCP<Epetra_Map> FullStructDofMap = LINALG::MergeMap(*StructureField()->DofRowMap(),
                                                                *ConstrMap_,
                                                                false);
-  LINALG::MapExtractor StructConstrExtractor(*FullStructDofMap, ConstrMap_, StructureField().DofRowMap());
+  LINALG::MapExtractor StructConstrExtractor(*FullStructDofMap, ConstrMap_, StructureField()->DofRowMap());
 
   AddStructConstrMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(StructConstrExtractor,StructConstrExtractor,81,false,true));
 
@@ -145,7 +145,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   AleConstrMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(constrextractor, *FluidField().Interface(),108,false, true));
   ConstrAleMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*FluidField().Interface(),constrextractor,108,false, true));
 
-  AddStructRHS_ = rcp(new Epetra_Vector(*StructureField().Discretization()->DofRowMap(),true));
+  AddStructRHS_ = rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap(),true));
   AddFluidRHS_ = rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap(),true));
   ConstrRHS_ = rcp(new Epetra_Vector(*ConstrMap_,true));
 
@@ -164,7 +164,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   // determine initial volumes of parenchyma balloons
   Teuchos::RCP<Epetra_Vector> OldVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
 
-  structfield.InitializeVolCon(OldVolsRed, SignVolsRed_, OffsetID_);
+  structfield->InitializeVolCon(OldVolsRed, SignVolsRed_, OffsetID_);
 
   OldVols_->PutScalar(0.0);
   OldVols_->Export(*OldVolsRed,*ConstrImport_,Add);
@@ -206,8 +206,8 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // structure to fluid
 
-  coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface()->FSICondMap(),
+  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
@@ -215,8 +215,8 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // structure to ale
 
-  coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface()->FSICondMap(),
+  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                 "FSICoupling",
@@ -260,8 +260,8 @@ void FSI::LungMonolithic::GeneralSetup()
   //-----------------------------------------------------------------------------
 
   // coupling of structure and ale dofs at airway outflow
-  coupsaout_->SetupConstrainedConditionCoupling(*StructureField().Discretization(),
-                                                StructureField().Interface()->LungASICondMap(),
+  coupsaout_->SetupConstrainedConditionCoupling(*StructureField()->Discretization(),
+                                                StructureField()->Interface()->LungASICondMap(),
                                                 *AleField().Discretization(),
                                                 AleField().Interface().LungASICondMap(),
                                                 "StructAleCoupling",
@@ -273,8 +273,8 @@ void FSI::LungMonolithic::GeneralSetup()
   // coupling of fluid and structure dofs at airway outflow
   coupfsout_->SetupConstrainedConditionCoupling(*FluidField().Discretization(),
                                                 FluidField().Interface()->LungASICondMap(),
-                                                *StructureField().Discretization(),
-                                                StructureField().Interface()->LungASICondMap(),
+                                                *StructureField()->Discretization(),
+                                                StructureField()->Interface()->LungASICondMap(),
                                                 "StructAleCoupling",
                                                 "FSICoupling",
                                                 ndim);
@@ -382,12 +382,12 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   LINALG::Export(*LagrMultVec_,*LagrMultVecRed);
   Teuchos::RCP<Epetra_Vector> CurrVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
 
-  ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
+  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
   CurrVolsRed->PutScalar(0.0);
   AddStructRHS_->PutScalar(0.0);
   AddStructConstrMatrix_->Zero();
 
-  structfield.EvaluateVolCon(AddStructConstrMatrix_, AddStructRHS_,
+  structfield->EvaluateVolCon(AddStructConstrMatrix_, AddStructRHS_,
                              CurrVolsRed, SignVolsRed_, LagrMultVecRed, OffsetID_);
 
   // Export redundant vector into distributed one
@@ -836,7 +836,7 @@ void FSI::LungMonolithic::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  StructureField().Output();
+  StructureField()->Output();
 
   // additional output of volume constraint related forces
 //   ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
@@ -847,14 +847,14 @@ void FSI::LungMonolithic::Output()
   // is placed in between the output of the single fields.
   if ( writerestartevery_ and (Step() % writerestartevery_ == 0) )
   {
-    ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
+    const Teuchos::RCP<ADAPTER::StructureLung>& structfield = rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
     Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = rcp(new Epetra_Vector(*RedConstrMap_));
     LINALG::Export(*OldFlowRates_,*OldFlowRatesRed);
     Teuchos::RCP<Epetra_Vector> OldVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
     LINALG::Export(*OldVols_,*OldVolsRed);
     Teuchos::RCP<Epetra_Vector> LagrMultVecOldRed = rcp(new Epetra_Vector(*RedConstrMap_));
     LINALG::Export(*LagrMultVecOld_,*LagrMultVecOldRed);
-    structfield.WriteVolConRestart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
+    structfield->WriteVolConRestart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
   }
 
   FluidField().Output();
@@ -916,13 +916,13 @@ void FSI::LungMonolithic::ReadRestart(int step)
 {
   FSI::Monolithic::ReadRestart(step);
 
-  ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
+  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
 
   Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = rcp(new Epetra_Vector(*RedConstrMap_));
   Teuchos::RCP<Epetra_Vector> OldVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
   Teuchos::RCP<Epetra_Vector> OldLagrMultRed = rcp(new Epetra_Vector(*RedConstrMap_));
 
-  structfield.ReadVolConRestart(step, OldFlowRatesRed, OldVolsRed, OldLagrMultRed);
+  structfield->ReadVolConRestart(step, OldFlowRatesRed, OldVolsRed, OldLagrMultRed);
 
   // Export redundant vector into distributed one
   OldVols_->PutScalar(0.0);

@@ -16,10 +16,9 @@
 
 #include "../drt_io/io_control.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
-#ifdef PARALLEL
 #include <mpi.h>
-#endif
 
 /*----------------------------------------------------------------------*/
 // constructor (public)
@@ -27,7 +26,7 @@
 FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
                             const Teuchos::ParameterList& timeparams)
   : MonolithicBase(comm,timeparams),
-    cout0_(StructureField().Discretization()->Comm(), std::cout),
+    cout0_(StructureField()->Discretization()->Comm(), std::cout),
     zeros_(Teuchos::null)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
@@ -35,7 +34,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
   // enable debugging
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
   {
-    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
+    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
     //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
   }
 
@@ -266,7 +265,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
      if (sdbg_!=Teuchos::null)
      {
        sdbg_->NewIteration();
-       sdbg_->WriteVector("x",*StructureField().Interface()->ExtractFSICondVector(sx));
+       sdbg_->WriteVector("x",*StructureField()->Interface()->ExtractFSICondVector(sx));
      }
    }
 
@@ -274,7 +273,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
    {
      Epetra_Time ts(Comm());
-     StructureField().Evaluate(sx);
+     StructureField()->Evaluate(sx);
      //cout0_  << "structure time: " << ts.ElapsedTime() << endl;
    }
 

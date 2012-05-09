@@ -102,14 +102,14 @@ FSI::DirichletNeumann::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
   if (fillFlag==User)
   {
     // SD relaxation calculation
-    return StructureField().RelaxationSolve(iforce);
+    return StructureField()->RelaxationSolve(iforce);
   }
   else
   {
     // normal structure solve
-    StructureField().ApplyInterfaceForces(iforce);
-    StructureField().Solve();
-    return StructureField().ExtractInterfaceDispnp();
+    StructureField()->ApplyInterfaceForces(iforce);
+    StructureField()->Solve();
+    return StructureField()->ExtractInterfaceDispnp();
   }
 }
 
@@ -121,7 +121,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumann::InitialGuess()
   if (displacementcoupling_)
   {
     // predict displacement
-    return StructureField().PredictInterfaceDispnp();
+    return StructureField()->PredictInterfaceDispnp();
   }
   else
   {

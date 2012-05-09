@@ -29,7 +29,7 @@ extern struct _GENPROB     genprob;
 FSI::ConstrMonolithic::ConstrMonolithic(const Epetra_Comm& comm,
                                         const Teuchos::ParameterList& timeparams)
   : BlockMonolithic(comm,timeparams),
-    conman_(StructureField().GetConstraintManager())
+    conman_(StructureField()->GetConstraintManager())
 {
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupsaout_ = Teuchos::rcp(new ADAPTER::Coupling());
@@ -63,8 +63,8 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   // structure to fluid
   const int ndim = DRT::Problem::Instance()->NDim();
-  coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface()->FSICondMap(),
+  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
@@ -72,8 +72,8 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   // structure to ale
 
-  coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface()->FSICondMap(),
+  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                 "FSICoupling",

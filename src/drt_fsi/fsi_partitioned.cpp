@@ -67,8 +67,8 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
-    coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                   StructureField().Interface()->FSICondMap(),
+    coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                   StructureField()->Interface()->FSICondMap(),
                                   *MBFluidField().Discretization(),
                                    MBFluidField().Interface().FSICondMap(),
                                   "FSICoupling",
@@ -80,7 +80,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   else
   {
     matchingnodes_ = false;
-    coupsfm_->Setup( *StructureField().Discretization(),
+    coupsfm_->Setup( *StructureField()->Discretization(),
                      *MBFluidField().Discretization(),
                      *(dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
                      comm,false);
@@ -88,7 +88,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 
   // enable debugging
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
-    debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
+    debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
 }
 
 
@@ -353,7 +353,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
   }
 
   // get an idea of interface displacement
-  idispn_ = StructureField().ExtractInterfaceDispn();
+  idispn_ = StructureField()->ExtractInterfaceDispn();
   iveln_ = FluidToStruct(MBFluidField().ExtractInterfaceVeln());
 
   Teuchos::Time timer("time step timer");
@@ -460,7 +460,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     // extract final displacement and velocity
     // since we did update, this is very easy to extract
-    idispn_ = StructureField().ExtractInterfaceDispn();
+    idispn_ = StructureField()->ExtractInterfaceDispn();
     iveln_ = FluidToStruct(MBFluidField().ExtractInterfaceVeln());
 
     // write current solution
@@ -687,7 +687,7 @@ FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InitialGuess()
 {
-  return StructureField().PredictInterfaceDispnp();
+  return StructureField()->PredictInterfaceDispnp();
 }
 
 
@@ -696,7 +696,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InitialGuess()
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceDisp()
 {
   // extract displacements
-  return StructureField().ExtractInterfaceDispnp();
+  return StructureField()->ExtractInterfaceDispnp();
 }
 
 

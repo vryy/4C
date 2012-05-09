@@ -733,7 +733,7 @@ void fluid_fluid_fsi_drt()
     fsi->Timeloop();
 
     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(*comm);
   }
   break;
@@ -760,7 +760,7 @@ void fluid_fluid_fsi_drt()
 //     }
     fsi->Timeloop(fsi);
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(*comm);
   }
   }
@@ -909,7 +909,7 @@ void fsi_ale_drt()
 
     fsi->Timeloop();
 
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
     break;
   }
@@ -979,7 +979,7 @@ void fsi_ale_drt()
     fsi->Timeloop(fsi);
 
     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
     break;
   }
@@ -1008,7 +1008,7 @@ void fsi_ale_drt()
 
     fsi->Timeloop(fsi);
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
   }
   }
@@ -1090,7 +1090,7 @@ void xfsi_drt()
 //    fsi->Timeloop();
 //
 //    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-//    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+//    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 //    DRT::Problem::Instance()->TestAll(comm);
 
     break;
@@ -1125,7 +1125,7 @@ void xfsi_drt()
     fsi->Timeloop(fsi);
 
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
   }
   }

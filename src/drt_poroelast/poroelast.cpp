@@ -89,7 +89,7 @@ void poroelast_drt()
 
       // perform the result test
       DRT::Problem::Instance()->AddFieldTest(
-          poroelast->StructureField().CreateFieldTest());
+          poroelast->StructureField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(
           poroelast->FluidField().CreateFieldTest());
       DRT::Problem::Instance()->TestAll(comm);

@@ -95,7 +95,7 @@ namespace TSI
       ) = 0;
 
     //! access to structural field
-    ::ADAPTER::Structure& StructureField(){return *structure_;}
+    const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
 
     //! access to thermal field
     const Teuchos::RCP< ::ADAPTER::Thermo>& ThermoField(){return thermo_;}
@@ -110,7 +110,7 @@ namespace TSI
     //! calculate stresses, strains, energies
     void PrepareOutput()
     {
-      StructureField().PrepareOutput();
+      StructureField()->PrepareOutput();
     }
 
     //! take current results for converged and save for next time step

@@ -161,7 +161,7 @@ void FS3I::FS3I_Base::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >
 
   // extract structure velocities and accelerations
 
-  Teuchos::RCP<Epetra_Vector> velocity = rcp(new Epetra_Vector(*(fsi_->StructureField().ExtractVelnp())));
+  Teuchos::RCP<Epetra_Vector> velocity = rcp(new Epetra_Vector(*(fsi_->StructureField()->ExtractVelnp())));
   vel.push_back(velocity);
   // structure ScaTra: velocity and grid velocity are identical!
   Teuchos::RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(velocity->Map(),true));
@@ -180,7 +180,7 @@ void FS3I::FS3I_Base::SetVelocityFields()
   std::vector<Teuchos::RCP<DRT::Discretization> > discret;
 
   discret.push_back(fsi_->FluidField().Discretization());
-  discret.push_back(fsi_->StructureField().Discretization());
+  discret.push_back(fsi_->StructureField()->Discretization());
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {

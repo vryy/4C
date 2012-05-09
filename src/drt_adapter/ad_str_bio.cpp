@@ -83,7 +83,7 @@ ADAPTER::StructureBio::StructureBio(
 	                        ndim);
 
 	  /// do we need this ???
-	  //StructureField().SetMeshMap(coupsa_.MasterDofMap());
+	  //StructureField()->SetMeshMap(coupsa_.MasterDofMap());
 
 	   // the ale matrix might be build just once ???
 	  ale->AleField().BuildSystemMatrix();

@@ -28,7 +28,7 @@ FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(const Epetra_Comm& comm)
   INPAR::FSI::SlideALEProj aletype =
       DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
 
-	slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
+	slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
 	                                              MBFluidField().Discretization(),
 	                                              StructureFluidCouplingMortar(),
 	                                              true,
@@ -45,12 +45,12 @@ void FSI::DirichletNeumannSlideale::Remeshing()
 {
 
 	//dispn and dispnp of structure, used for surface integral and velocity of the fluid in the interface
-	Teuchos::RCP<Epetra_Vector> idispn = StructureField().ExtractInterfaceDispn();
-	Teuchos::RCP<Epetra_Vector> idisptotal = StructureField().ExtractInterfaceDispnp();
-	Teuchos::RCP<Epetra_Vector> idispstep = StructureField().ExtractInterfaceDispnp();
+	Teuchos::RCP<Epetra_Vector> idispn = StructureField()->ExtractInterfaceDispn();
+	Teuchos::RCP<Epetra_Vector> idisptotal = StructureField()->ExtractInterfaceDispnp();
+	Teuchos::RCP<Epetra_Vector> idispstep = StructureField()->ExtractInterfaceDispnp();
 	idispstep->Update(-1.0, *idispn, 1.0);
 
-	slideale_->Remeshing(StructureField(),
+	slideale_->Remeshing(*StructureField(),
                         MBFluidField().Discretization(),
                         idisptotal,
                         islave_,
@@ -58,7 +58,7 @@ void FSI::DirichletNeumannSlideale::Remeshing()
                         Comm());
 
 	slideale_->EvaluateMortar(
-	    StructureField().ExtractInterfaceDispnp(),islave_,StructureFluidCouplingMortar());
+	    StructureField()->ExtractInterfaceDispnp(),islave_,StructureFluidCouplingMortar());
 	slideale_->EvaluateFluidMortar(idisptotal,islave_);
 
 	Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(MBFluidField().ExtractInterfaceFluidVelocity());
@@ -96,7 +96,7 @@ FSI::DirichletNeumannSlideale::FluidOp(Teuchos::RCP<Epetra_Vector> idispcurr,
 		//new Epetra_Vector for aledisp in interface
 		Teuchos::RCP<Epetra_Vector> iale = Teuchos::rcp(new Epetra_Vector(*(StructureFluidCouplingMortar().MasterDofRowMap()),true));
 
-		Teuchos::RCP<Epetra_Vector> idispn = StructureField().ExtractInterfaceDispn();
+		Teuchos::RCP<Epetra_Vector> idispn = StructureField()->ExtractInterfaceDispn();
 
 		iale->Update(1.0, *idispcurr, 0.0);
 
@@ -121,14 +121,14 @@ FSI::DirichletNeumannSlideale::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
 	if (fillFlag==User)
 	{
 		// SD relaxation calculation
-		return StructureField().RelaxationSolve(iforce);
+		return StructureField()->RelaxationSolve(iforce);
 	}
 	else
 	{
 		// normal structure solve
-		StructureField().ApplyInterfaceForces(iforce);
-		StructureField().Solve();
-		return StructureField().ExtractInterfaceDispnp();
+		StructureField()->ApplyInterfaceForces(iforce);
+		StructureField()->Solve();
+		return StructureField()->ExtractInterfaceDispnp();
 	}
 }
 /*----------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 		//real displacement of slave side at time step begin on master side --> for calcualtion of FluidOp
 		FTStemp_ = FluidToStruct(islave_);
 		// predict displacement
-		return StructureField().PredictInterfaceDispnp();
+		return StructureField()->PredictInterfaceDispnp();
 	}
 	else
 	{

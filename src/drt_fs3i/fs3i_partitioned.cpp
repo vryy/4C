@@ -477,7 +477,7 @@ void FS3I::PartFS3I::SetupSystem()
 void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField().CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField()->CreateFieldTest());
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {

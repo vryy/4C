@@ -51,9 +51,9 @@ namespace POROELAST
 {
   /// monolithic Poroelasticity algorithm base
 
-  class MonolithicBase: public ADAPTER::AlgorithmBase,
-      public ADAPTER::StructureBaseAlgorithm,
-      public ADAPTER::FluidBaseAlgorithm
+  class MonolithicBase: public ADAPTER::AlgorithmBase//,
+//      public ADAPTER::StructureBaseAlgorithm,
+//      public ADAPTER::FluidBaseAlgorithm
   {
     public:
 
@@ -78,10 +78,27 @@ namespace POROELAST
       //! calculate stresses, strains, energies
       virtual void PrepareOutput()
       {
-        StructureField().PrepareOutput();
+        StructureField()->PrepareOutput();
       }
 
+      //! access to structural field
+      const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
+
+      //! access to fluid field
+      ::ADAPTER::Fluid& FluidField(){return *fluid_;}
+
     protected:
+
+      //! @name Underlying fields
+
+      //! underlying structure of the FSI problem
+      Teuchos::RCP< ::ADAPTER::Structure>    structure_;
+
+      //! underlying fluid of the FSI problem
+      Teuchos::RCP< ::ADAPTER::Fluid>        fluid_;
+
+      //@}
+
       //! @name Transfer helpers
 
       //! field transform

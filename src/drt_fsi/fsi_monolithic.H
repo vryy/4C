@@ -7,7 +7,6 @@
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
@@ -23,6 +22,7 @@ namespace LINALG
 namespace ADAPTER
 {
   class Coupling;
+  class FSIStructureWrapper;
 }
 
 namespace NOX
@@ -93,7 +93,7 @@ namespace UTILS
     virtual void Output();
 
     /// access to structural field
-    ::ADAPTER::FSIStructureWrapper& StructureField(){return *structure_;}
+    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
     /// access to fluid field
     ::ADAPTER::Fluid& FluidField(){return *fluid_;}

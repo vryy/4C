@@ -69,8 +69,8 @@ void FSI::MonolithicFluidSplit::SetupSystem()
 
   // structure to fluid
 
-  coupsf.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface()->FSICondMap(),
+  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface()->FSICondMap(),
                                 "FSICoupling",
@@ -78,8 +78,8 @@ void FSI::MonolithicFluidSplit::SetupSystem()
 
   // structure to ale
 
-  coupsa.SetupConditionCoupling(*StructureField().Discretization(),
-                                 StructureField().Interface()->FSICondMap(),
+  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
                                  "FSICoupling",
@@ -119,7 +119,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   // create combined map
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(StructureField().DofRowMap());
+  vecSpaces.push_back(StructureField()->DofRowMap());
 #ifdef FLUIDSPLITAMG
   vecSpaces.push_back(FluidField()    .DofRowMap());
 #else
@@ -212,7 +212,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   case INPAR::FSI::FSIAMG:
     systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
                                    Extractor(),
-                                   StructureField(),
+                                   *StructureField(),
                                    FluidField(),
                                    AleField(),
                                    false,
@@ -246,11 +246,11 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
   // get time integration parameters of structure an fluid time integrators
   // to enable consistent time integration among the fields
-  double stiparam = StructureField().TimIntParam();
+  double stiparam = StructureField()->TimIntParam();
   double ftiparam = FluidField().TimIntParam();
 
   SetupVector(f,
-              StructureField().RHS(),
+              StructureField()->RHS(),
               FluidField().RHS(),
               AleField().RHS(),
               FluidField().ResidualScaling());
@@ -278,7 +278,7 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     rhs = FluidField().Interface()->InsertOtherVector(rhs);
 #endif
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
     rhs->Scale((1.0-stiparam)/(1.0-ftiparam));  // scale 'rhs' due to consistent time integration
 
@@ -290,14 +290,14 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     rhs->Scale(scale*timescale*Dt());
 
     rhs = FluidToStruct(rhs);
-    rhs = StructureField().Interface()->InsertFSICondVector(rhs);
+    rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
 
     zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
-    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
       stcmat->Multiply(true,*rhs,*rhs);
     }
     Extractor().AddVector(*rhs,0,f); // add structure contributions to 'f'
@@ -336,13 +336,13 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // get info about STC feature
-  INPAR::STR::STC_Scale stcalgo = StructureField().GetSTCAlgo();
+  INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
   Teuchos::RCP<LINALG::SparseMatrix> stcmat = Teuchos::null;
   // if STC is to be used, get STC matrix from strucutre field
   if (stcalgo != INPAR::STR::stc_none)
-    stcmat = StructureField().GetSTCMat();
+    stcmat = StructureField()->GetSTCMat();
 
-  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
 
   // split fluid matrix
 
@@ -374,7 +374,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
   // get time integration parameters of structure an fluid time integrators
   // to enable consistent time integration among the fields
-  double stiparam = StructureField().TimIntParam();
+  double stiparam = StructureField()->TimIntParam();
   double ftiparam = FluidField().TimIntParam();
 
   // uncomplete because the fluid interface can have more connections than the
@@ -397,7 +397,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
                    *lfgi);
 
   lfgi->Complete(fgi.DomainMap(),s->RangeMap());
-  lfgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+  lfgi->ApplyDirichlet( *(StructureField()->GetDBCMapExtractor()->CondMap()),false);
 
   if (stcalgo == INPAR::STR::stc_currsym)
     lfgi = LINALG::MLMultiply(*stcmat, true, *lfgi, false, true, true, true);
@@ -559,7 +559,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
                         false);
 
       lfmgi->Complete(aii.DomainMap(),s->RangeMap());
-      lfmgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+      lfmgi->ApplyDirichlet( *(StructureField()->GetDBCMapExtractor()->CondMap()),false);
 
       if (stcalgo == INPAR::STR::stc_currsym)
         lfmgi = LINALG::MLMultiply(*stcmat, true, *lfmgi, false, true, true, true);
@@ -577,7 +577,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
   s->Complete();
 
-  s->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),true);
+  s->ApplyDirichlet( *(StructureField()->GetDBCMapExtractor()->CondMap()),true);
 
   //apply STC matrix on block (0,0)
   if (stcalgo != INPAR::STR::stc_none)
@@ -621,7 +621,7 @@ void FSI::MonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::InitialGuess");
 
   SetupVector(*ig,
-              StructureField().InitialGuess(),
+              StructureField()->InitialGuess(),
               FluidField().InitialGuess(),
               AleField().InitialGuess(),
               0.0);
@@ -697,10 +697,10 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
       dserror("ale scaling failed");
 
     // get info about STC feature and unscale solution if necessary
-    INPAR::STR::STC_Scale stcalgo = StructureField().GetSTCAlgo();
+    INPAR::STR::STC_Scale stcalgo = StructureField()->GetSTCAlgo();
     if (stcalgo != INPAR::STR::stc_none)
     {
-      StructureField().GetSTCMat()->Multiply(false,*sy,*sy);
+      StructureField()->GetSTCMat()->Multiply(false,*sy,*sy);
     }
 
     Extractor().InsertVector(*sy,0,x);
@@ -716,7 +716,7 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
 
     if (stcalgo != INPAR::STR::stc_none)
     {
-      StructureField().GetSTCMat()->Multiply(false,*sx,*sx);
+      StructureField()->GetSTCMat()->Multiply(false,*sx,*sx);
     }
 
     Extractor().InsertVector(*sx,0,b);
@@ -786,8 +786,8 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
 
   Utils()->out().flags(flags);
 
-  if (StructureField().GetSTCAlgo() != INPAR::STR::stc_none)
-    StructureField().SystemMatrix()->Reset();
+  if (StructureField()->GetSTCAlgo() != INPAR::STR::stc_none)
+    StructureField()->SystemMatrix()->Reset();
 }
 
 
@@ -802,7 +802,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
-  double stiparam = StructureField().TimIntParam();
+  double stiparam = StructureField()->TimIntParam();
   double ftiparam = FluidField().TimIntParam();
 
   // extract the inner and boundary dofs of all three fields
@@ -817,16 +817,16 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface()->InsertFSICondVector(FluidToStruct(fcv));
+    Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
-    LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
 
-    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
       stcmat->Multiply(true,*modsv,*modsv);
     }
 
@@ -839,9 +839,9 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   else
   {
     Teuchos::RCP<Epetra_Vector> modsv =  rcp(new Epetra_Vector(*sv));
-    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
       stcmat->Multiply(true,*sv,*modsv);
     }
 
@@ -1010,7 +1010,7 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
   // right translation.)
 
   sx = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface()->ExtractFSICondVector(sx);
+  Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
 
   // process fluid unknowns
 
@@ -1069,9 +1069,9 @@ void FSI::MonolithicFluidSplit::PrepareTimeStep()
 
   PrintHeader();
 
-  if (StructureField().GetSTCAlgo() != INPAR::STR::stc_none)
-    StructureField().SystemMatrix()->Reset();
-  StructureField().PrepareTimeStep();
+  if (StructureField()->GetSTCAlgo() != INPAR::STR::stc_none)
+    StructureField()->SystemMatrix()->Reset();
+  StructureField()->PrepareTimeStep();
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();
 }
