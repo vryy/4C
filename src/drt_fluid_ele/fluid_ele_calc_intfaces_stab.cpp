@@ -187,7 +187,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
   int master_numdof = lm_masterToPatch.size();
   int slave_numdof  = lm_slaveToPatch.size();
-  int face_numdof   = lm_slaveToPatch.size();
+  int face_numdof   = lm_faceToPatch.size();
 
   if(master_numdof != 4*piel) dserror("wrong number of master dofs");
   if(slave_numdof  != 4*niel) dserror("wrong number of slave dofs");
