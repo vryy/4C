@@ -20,6 +20,11 @@ Maintainer: Michael Gee
 
 // forward declarations
 
+namespace COMM_UTILS
+{
+  class NestedParGroup;
+}
+
 namespace STR
 {
   class TimInt;
@@ -162,7 +167,7 @@ private:
   Epetra_SerialDenseMatrix par_s_;
   Epetra_SerialDenseVector mu_s_;
   Epetra_SerialDenseVector error_s_;
-  Epetra_SerialDenseMatrix ccurve_s_;
+  //Epetra_SerialDenseMatrix ccurve_s_;
   //@}
 
   int reset_out_count_;
@@ -204,6 +209,9 @@ public:
 
   /// Calculate the new dof vector for comparison with the experimental data
   Epetra_SerialDenseVector CalcCvector(bool outputtofile);
+
+  /// NP Calculate the new dof vector for comparison with the experimental data
+  Epetra_SerialDenseVector CalcCvector(bool outputtofile,Teuchos::RCP<COMM_UTILS::NestedParGroup> group);
 
   /// acual inverse analysis loop
   void Integrate();

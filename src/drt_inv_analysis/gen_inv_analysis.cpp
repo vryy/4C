@@ -292,6 +292,7 @@ void STR::GenInvAnalysis::Integrate()
       if (i!= np_) p_cur[i] = p_[i] + perturb[i];
 
       // put perturbed material parameters to material laws
+      discret_->Comm().Broadcast(&p_cur[0],p_cur.Length(),0);
       SetParameters(p_cur);
 
       // compute nonlinear problem and obtain computed displacements
@@ -310,11 +311,10 @@ void STR::GenInvAnalysis::Integrate()
     }
 
     discret_->Comm().Barrier();
-    if (!myrank)
-      CalcNewParameters(cmatrix,perturb);
-    discret_->Comm().Barrier();
+    if (!myrank) CalcNewParameters(cmatrix,perturb);
 
     // set new material parameters
+    discret_->Comm().Broadcast(&p_[0],p_.Length(),0);
     SetParameters(p_);
     numb_run_++;
     discret_->Comm().Broadcast(&error_o_,1,0);
@@ -334,17 +334,24 @@ void STR::GenInvAnalysis::Integrate()
 /* analyse */
 void STR::GenInvAnalysis::NPIntegrate()
 {
-  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
-  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
   const int lmyrank  = lcomm->MyPID();
-  const int groupid = group->GroupId();
+  const int gmyrank  = gcomm->MyPID();
+  const int groupid  = group->GroupId();
+  const int ngroup   = group->NumGroups();
   
   // make some plausability checks:
-  // number of groups must be np_+1 to be in this control routine
+  //  np_+1 must divide by the number of groups (np_+1) % ngroup = 0
+  if ( (np_+1)%ngroup != 0)
+    dserror("# material parameters + 1 (%d) must divide by # groups (%d)",np_+1,ngroup);
+  
   // group 0 does the unpermuted solution
   // groups 1 to np_ do the permuted versions
+  // proc 0 of group 0 (which is also gproc 0) does the optimization step
+
+  if (!discret_->Filled() || !discret_->HaveDofs()) discret_->FillComplete(true,true,true);
 
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
@@ -353,13 +360,17 @@ void STR::GenInvAnalysis::NPIntegrate()
   // fitting loop
   do
   {
-    if (!lmyrank)
+    gcomm->Barrier();
+
+    if (!gmyrank)
     {
       cout << "#################################################################" << endl;
-      cout << "########################### making Jacobian matrix ##############" <<endl;
+      cout << "######################## NP making Jacobian matrix ##############" <<endl;
       cout << "#################################################################" << endl;
-      printf("Measured parameters nmp_ %d # parameters to fit np_ %d\n",nmp_,np_);
+      printf("Measured parameters nmp_ %d # parameters to fit np_ %d NP groups %d\n",nmp_,np_,ngroup);
+      fflush(stdout);
     }
+    gcomm->Barrier();
 
     // pertubation of material parameter (should be relativ to the value that is perturbed)
     vector<double> perturb(np_,0.0);
@@ -368,15 +379,18 @@ void STR::GenInvAnalysis::NPIntegrate()
     for (int i=0; i<np_; ++i)
     {
       perturb[i] = alpha + beta * p_[i];
-      if (!lmyrank) printf("perturbation[%d] %15.10e\n",i,perturb[i]);
+      if (!gmyrank) printf("perturbation[%d] %15.10e\n",i,perturb[i]);
     }
+
+    gcomm->Barrier();
 
     // as the actual inv analysis is on proc 0 only, do only provide storage on proc 0
     Epetra_SerialDenseMatrix cmatrix;
-    if (!lmyrank) cmatrix.Shape(nmp_,np_+1);
+    if (!gmyrank) cmatrix.Shape(nmp_,np_+1);
 
-    // loop over parameters to fit and build cmatrix
-    for (int i=0; i<np_+1;i++)
+    //---------------------------- loop over parameters to fit and build cmatrix
+    int i=groupid; // every group start with different material parameter perturbed
+    for (; i<np_+1; i+=ngroup) // loop with increments of ngroup
     {
       bool outputtofile = false;
       // output only for last run
@@ -396,7 +410,7 @@ void STR::GenInvAnalysis::NPIntegrate()
       // Multi-scale: if an inverse analysis is performed on the micro-level,
       // the time and step need to be reset now. Furthermore, the result file
       // needs to be opened.
-      MultiInvAnaInit();
+      MultiInvAnaInit(); // this might not work in here, I'm not sure
 
       if (!lmyrank)
         cout << "--------------------------- run "<< i+1 << " of: " << np_+1 <<" -------------------------" <<endl;
@@ -406,40 +420,64 @@ void STR::GenInvAnalysis::NPIntegrate()
       if (i!= np_) p_cur[i] = p_[i] + perturb[i];
 
       // put perturbed material parameters to material laws
+      // these are different for every group
+      lcomm->Broadcast(&p_cur[0],p_cur.Length(),0);
       SetParameters(p_cur);
-
+      
       // compute nonlinear problem and obtain computed displacements
       // output at the last step
       Epetra_SerialDenseVector cvector;
-      cvector = CalcCvector(outputtofile);
-
-      // copy displacements to sensitivity matrix
-      if (!lmyrank)
-        for (int j=0; j<nmp_;j++)
-          cmatrix(j,i) = cvector[j];
-
+      cvector = CalcCvector(outputtofile,group); 
+      // output cvector is on lmyrank=0 of every group
+      // all other procs have zero vectors of the same size here
+      // communicate cvectors to gmyrank 0 and put into cmatrix
+      for (int j=0; j<ngroup; ++j)
+      {
+        int ssender=0;
+        int sender=0;
+        if (lmyrank==0 && groupid==j) ssender = gmyrank;
+        gcomm->SumAll(&ssender,&sender,1);
+        int n[2]; 
+        n[0] = cvector.Length();
+        n[1] = i;
+        gcomm->Broadcast(n,2,sender);
+        Epetra_SerialDenseVector sendbuff(n[0]);
+        if (sender==gmyrank) sendbuff = cvector;
+        gcomm->Broadcast(sendbuff.Values(),n[0],sender);
+        if (gmyrank==0) // gproc 0 puts received cvector in cmatrix
+        {
+          if (nmp_ != n[0]) dserror("Size mismatch nmp_ %d != n %d",nmp_,n[0]);
+          int ii = n[1];
+          for (int k=0; k<nmp_; ++k)
+            cmatrix(k,ii) = sendbuff[k];
+        }
+      }
+      
+      // reset discretization to blank
       ParameterList p;
       p.set("action","calc_struct_reset_discretization");
       discret_->Evaluate(p,null,null,null,null,null);
-    }
+    } //--------------------------------------------------------------------------------
 
-    discret_->Comm().Barrier();
-    if (!lmyrank)
-      CalcNewParameters(cmatrix,perturb);
-    discret_->Comm().Barrier();
+    gcomm->Barrier();
+    if (!gmyrank) CalcNewParameters(cmatrix,perturb);
 
     // set new material parameters
+    // these are the same for all groups
+    gcomm->Broadcast(&p_[0],p_.Length(),0);
     SetParameters(p_);
+
     numb_run_++;
-    discret_->Comm().Broadcast(&error_o_,1,0);
-    discret_->Comm().Broadcast(&error_,1,0);
-    discret_->Comm().Broadcast(&numb_run_,1,0);
+    gcomm->Broadcast(&error_o_,1,0);
+    gcomm->Broadcast(&error_,1,0);
+    gcomm->Broadcast(&numb_run_,1,0);
 
   } while (error_>tol_ && numb_run_<max_itter);
+//printf("gmyrank %d reached this point\n",gmyrank); fflush(stdout); exit(0);
 
 
   // print results to file
-  if (!lmyrank) PrintFile();
+  if (!gmyrank) PrintFile();
 
   return;
 }
@@ -474,8 +512,8 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   //calculating J.T*J)
   sto.Multiply('T','N',1.0,J,J,0.0);
 
-  // calculating  (J.T*J+mu*I)
-  // do regularization by adding artifical lumped mass
+  // calculating  J.T*J + mu*diag(J.T*J)
+  // do regularization by adding artifical mass on the main diagonal
   for (int i=0; i<np_; i++)
     sto(i,i) += mu_*sto(i,i);
 
@@ -484,7 +522,7 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   for (int i=0; i<nmp_; i++)
     rcurve[i] = mcurve_[i] - ccurve[i];
 
-  // delta_p = (J.T*J+mu*diag(J.T*J)).I * J.T*R
+  // delta_p = (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
   tmp.Multiply('T','N',1.0,J,rcurve,0.0);
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
@@ -505,21 +543,15 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   //Adjust training parameter
   mu_ *= (error_/error_o_);
 
-
-
   // return cmatrix to previous size and zero out
   cmatrix.Shape(nmp_,np_+1);
 
-
-  cout << numb_run_ << endl;
   PrintStorage(cmatrix, delta_p);
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* */
-
-
 Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 {
   int myrank = discret_->Comm().MyPID();
@@ -590,6 +622,86 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 
 
 /*----------------------------------------------------------------------*/
+/* nested parallelity version of the same method            mwgee 05/12 */
+Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
+                              bool outputtofile,
+                              Teuchos::RCP<COMM_UTILS::NestedParGroup> group)
+{
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  const int lmyrank  = lcomm->MyPID();
+  //const int gmyrank  = gcomm->MyPID();
+  const int groupid  = group->GroupId();
+  //const int ngroup   = group->NumGroups();
+
+  // get input parameter lists (ioflags as deep copy to modify it)
+  Teuchos::ParameterList ioflags = DRT::Problem::Instance()->IOParams(); 
+  if (groupid != 0) ioflags.set("STDOUTEVRY",0);
+
+  const Teuchos::ParameterList& sdyn
+    = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  Teuchos::ParameterList xparams;
+  xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+  xparams.set<int>("REDUCED_OUTPUT",0);
+
+  // create time integrator
+  sti_ = TimIntCreate(ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
+  if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
+  fflush(stdout);
+  gcomm->Barrier();
+  
+  // initialize time loop / Attention the Functions give back the
+  // time and the step not timen and stepn value that is why we have
+  // to use < instead of <= for the while loop
+  double time = sti_->GetTime();
+  const double timemax = sti_->GetTimeEnd();
+  int step = sti_->GetStep();
+  const int stepmax = sti_->GetTimeNumStep();
+  Epetra_SerialDenseVector cvector(ndofs_*stepmax);
+
+  // time loop
+  while ( (time < timemax) && (step < stepmax) )
+  {
+    // integrate time step
+    // after this step we hold disn_, etc
+    sti_->IntegrateStep();
+
+    // calculate stresses, strains, energies
+    sti_->PrepareOutput();
+
+    // update displacements, velocities, accelerations
+    // after this call we will have disn_==dis_, etc
+    sti_->UpdateStepState();
+
+    // gets the displacments per timestep
+    {
+      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
+      if (!lmyrank)
+        for (int j=0; j<ndofs_; ++j)
+          cvector[step*ndofs_+j] = cvector_arg[j];
+    }
+    // update time and step
+    sti_->UpdateStepTime();
+
+    // Update Element
+    sti_->UpdateStepElement();
+
+    // print info about finished time step
+    sti_->PrintStep();
+
+    // write output
+    if (outputtofile) sti_->OutputStep();
+
+    // get current time ...
+    time = sti_->GetTime();
+    // ... and step
+    step = sti_->GetStep();
+  }
+  return cvector;
+}
+
+/*----------------------------------------------------------------------*/
 /* */
 Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& disp)
 {
@@ -629,25 +741,29 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& 
 }
 
 /*----------------------------------------------------------------------*/
-/* */
+/* only global proc 0 comes in here! mwgee 5/2012 */
 void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_SerialDenseVector delta_p)
 {
-  int myrank = discret_->Comm().MyPID();
-  // store the error and mu_
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  const int gmyrank  = group->GlobalComm()->MyPID();
+  if (gmyrank != 0) dserror("Only gmyrank=0 is supposed to be in here, but is not, gmyrank=%d",gmyrank);
 
   // storing current material parameters
-  p_s_.Reshape(numb_run_+1,  np_);
-  for (int i=0; i<np_; i++)
-    p_s_(numb_run_, i)=p_(i);
-
   // storing current material parameter increments
+  p_s_.Reshape(numb_run_+1,  np_);
   delta_p_s_.Reshape(numb_run_+1,  np_);
-  for (int i=0; i<np_; i++)
+  for (int i=0; i<np_; i++) 
+  {
+    p_s_(numb_run_, i)=p_(i);
     delta_p_s_(numb_run_, i)=delta_p(i);
+  }
 
-  ccurve_s_.Reshape(nmp_,  numb_run_+1);
-  for (int i=0; i<nmp_; i++)
-    ccurve_s_(i, numb_run_)= cmatrix(i, cmatrix.ColDim()-1);
+  // this memory is going to explode, do we really need this? mwgee
+  //ccurve_s_.Reshape(nmp_,  numb_run_+1);
+  //for (int i=0; i<nmp_; i++)
+  //  ccurve_s_(i, numb_run_)= cmatrix(i, cmatrix.ColDim()-1);
 
   mu_s_.Resize(numb_run_+1);
   mu_s_(numb_run_)=mu_;
@@ -656,7 +772,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
   error_s_(numb_run_) = error_;
   // print error and parameter
 
-  if (!myrank)
+  if (gmyrank==0) // this if should actually not be necessary since there is only gproc 0 in here
   {
       cout << endl;
       printf("################################################");
@@ -673,31 +789,37 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
       for (int i=0; i < numb_run_+1; i++)
       {
         printf("Error: ");
-        printf("%10.3f", error_s_(i));
+        printf("%10.3e", error_s_(i));
         printf("\tParameter: ");
         for (int j=0; j < delta_p.Length(); j++)
-          printf("%10.3f", p_s_(i, j));
+          printf("%10.3e", p_s_(i, j));
         //printf("\tDelta_p: ");
         //for (int j=0; j < delta_p.Length(); j++)
-        //  printf("%10.3f", delta_p_s_(i, j));
+        //  printf("%10.3e", delta_p_s_(i, j));
         printf("\tmu: ");
-        printf("%10.3f", mu_s_(i));
+        printf("%10.3e", mu_s_(i));
         printf("\n");
       }
 
+// I don't like this printout, there is no legend. Also, its sorted in x and y
+// which is absolutely not guaranteed to be true upon input. So its potentially mixed!
+// I just leave it here because somebody might need it?
+// I commented this out becauses it yields columns of zeros only anyway
+// mwgee
+#if 0
       printf("\n");
       for (int i=0; i < nmp_/2.; i++)
       {
-        printf(" %10.2f ",  mcurve_(i*2));
+        printf(" %10.5f ",  mcurve_(i*2));
         if (numb_run_<15)
         {
           for (int j=0; j<numb_run_+1; j++)
-            printf(" %10.2f ",  ccurve_s_((i)*2, j));
+            printf(" %10.5f ",  ccurve_s_((i)*2, j));
         }
         else
         {
           for (int j=numb_run_-14; j<numb_run_+1; j++)
-            printf(" %10.2f ",  ccurve_s_((i)*2, j));
+            printf(" %10.5f ",  ccurve_s_((i)*2, j));
         }
         printf("\n");
       }
@@ -706,16 +828,16 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
 
       for (int i=0; i < nmp_/2.; i++)
       {
-        printf(" %10.2f ",  mcurve_((i)*2+1));
+        printf(" %10.5f ",  mcurve_((i)*2+1));
         if (numb_run_<15)
         {
           for (int j=0; j<numb_run_+1; j++)
-            printf(" %10.2f ",  ccurve_s_((i)*2+1, j));
+            printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
         }
         else
         {
           for (int j=numb_run_-14; j<numb_run_+1; j++)
-            printf(" %10.2f ",  ccurve_s_((i)*2+1, j));
+            printf(" %10.5f ",  ccurve_s_((i)*2+1, j));
         }
         printf("\n");
       }
@@ -723,15 +845,20 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
       printf("################################################");
       printf("##############################################\n");
       cout << endl;
+#endif
+      printf("\n"); fflush(stdout);
   }
 
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/* only gmyrank=0 comes in here */
 void STR::GenInvAnalysis::PrintFile()
 {
-  FILE * cxFile;
-  FILE * cyFile;
+  //FILE * cxFile;
+  //FILE * cyFile;
   FILE * pFile;
 
   string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -750,6 +877,8 @@ void STR::GenInvAnalysis::PrintFile()
   string ycurve = name+"_Curve_y.txt";
   string para   = name+"_Para.txt";
 
+#if 0 // this only produces columns of zeros anyway
+// it will also burst memory with ccurve_s_ pretty quickly for larger problems
   cxFile = fopen((xcurve).c_str(), "w");
   for (int i=0; i < nmp_/2.; i++)
   {
@@ -769,6 +898,7 @@ void STR::GenInvAnalysis::PrintFile()
     fprintf(cyFile, "\n");
   }
   fclose(cyFile);
+#endif
 
   pFile  = fopen((para).c_str(), "w");
   fprintf(pFile, "#Error       Parameter    Delta_p      mu \n");
@@ -1057,10 +1187,13 @@ void STR::GenInvAnalysis::ReadInParameters()
 //--------------------------------------------------------------------------------------
 void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 {
-  const int myrank = discret_->Comm().MyPID();
-
-  // parameters are evaluated on proc 0 only? This should not be neccessary....
-  discret_->Comm().Broadcast(&p_cur[0],np_,0);
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  const int lmyrank  = lcomm->MyPID();
+  //const int gmyrank  = gcomm->MyPID();
+  const int groupid  = group->GroupId();
+  //const int ngroup   = group->NumGroups();
 
   // loop all materials in problem
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
@@ -1082,7 +1215,8 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
           const_cast<double&>(params->youngs_) = p_cur[j];
           const_cast<double&>(params->beta_)   = p_cur[j+1];
           //const_cast<double&>(params->nue_)    = p_cur[j+2];
-          if (myrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[j],p_cur[j+1]);
+          if (lmyrank==0)   printf("NPGroup %3d: ",groupid);
+          if (lmyrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[j],p_cur[j+1]);
           j += 2;
         }
         break;
@@ -1093,7 +1227,8 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
           // This is a tiny little bit brutal!!!
           const_cast<double&>(params->youngs_)       = p_cur[j];
           const_cast<double&>(params->poissonratio_) = p_cur[j+1];
-          if (myrank == 0) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
+          if (lmyrank==0)   printf("NPGroup %3d: ",groupid);
+          if (lmyrank == 0) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
           j += 2;
         }
         break;
@@ -1292,7 +1427,8 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
           //const_cast<double&>(params->k2_)  = p_cur[j+2];
           //const_cast<double&>(params->prestretchcollagen_) = p_cur[j];
           const_cast<double&>(params->growthfactor_) = abs(p_cur[j]);
-          if (myrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e %20.15e %20.15e\n",params->growthfactor_,params->k1_,params->k2_);
+          if (lmyrank==0)   printf("NPGroup %3d: ",groupid);
+          if (lmyrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e %20.15e %20.15e\n",params->growthfactor_,params->k1_,params->k2_);
           j += 1;
         }
         break;
@@ -1308,6 +1444,7 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
   return;
 }
 
+//===========================================================================================
 void STR::GenInvAnalysis::MultiInvAnaInit()
 {
   for (int i=0; i<discret_->NumMyColElements(); i++)
