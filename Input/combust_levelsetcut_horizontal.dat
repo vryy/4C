@@ -110,6 +110,7 @@ MAXTIME                         1.0
 NUMSTEP                         30
 TIMESTEP                        0.01
 NEUMANNINFLOW                   no
+GMSH_OUTPUT                     no // yes
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
@@ -1214,7 +1215,7 @@ FLUID DIS 1 NODE 218 POSITION vely NAME vely VALUE 3.0e+00 TOLERANCE 1e-5
 FLUID DIS 1 NODE 231 POSITION vely NAME vely VALUE 3.0e+00 TOLERANCE 1e-5
 FLUID DIS 1 NODE 255 POSITION vely NAME vely VALUE 2.0e+00 TOLERANCE 1e-5
 FLUID DIS 1 NODE 7 POSITION pressure NAME pressure VALUE 6.0e+00 TOLERANCE 1e-4
-FLUID DIS 1 NODE 69 POSITION pressure NAME pressure VALUE 4.0e+00 TOLERANCE 1e-4
+FLUID DIS 1 NODE 69 POSITION pressure NAME pressure VALUE 4.0e+00 TOLERANCE 1e-3
 FLUID DIS 1 NODE 63 POSITION pressure NAME pressure VALUE 6.0e+00 TOLERANCE 1e-4
 FLUID DIS 1 NODE 77 POSITION pressure NAME pressure VALUE 6.0e+00 TOLERANCE 1e-4
 FLUID DIS 1 NODE 91 POSITION pressure NAME pressure VALUE 6.0e+00 TOLERANCE 1e-3

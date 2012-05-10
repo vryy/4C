@@ -21,7 +21,7 @@ Maintainer: Florian Henke
 //#define COMBUST_NORMAL_ENRICHMENT // turn on/off normal velocity enrichment approach
 //#define COMBUST_HEX20
 #define COMBUST_CUT
-//#define COMBUST_MYBACI
+#define COMBUST_MYBACI
 //-----------------------------
 // combustion algorithm options
 //-----------------------------
@@ -64,12 +64,10 @@ Maintainer: Florian Henke
 #define COMBUST_NITSCHE_PRESCONSISTMEAN   // turn on/off pressure consistency term
 #define COMBUST_NITSCHE_VISCADJCONSIST    // turn on/off viscous adjoint consistency term
 #define COMBUST_NITSCHE_PRESADJCONSIST    // turn on/off pressure adjoint consistency term
-//#define COMBUST_NITSCHE_VISCCONSISTJUMP // turn on/off
-//#define COMBUST_NITSCHE_PRESCONSISTJUMP // turn on/off
 #define COMBUST_NITSCHE_FLUXJUMP          // turn on/off flux jump RHS term
 #define COMBUST_NITSCHE_NITSCHEVEL        // turn on/off Nitsche velocity stabilization term
-//#define COMBUST_NITSCHE_CONVSTAB          // turn on/off Nitsche convection stabilization
-//#define COMBUST_NITSCHE_NITSCHEPRES     // turn on/off Nitsche pressure stabilization term
+#define COMBUST_NITSCHE_CONVFLUX          // turn on/off convective inflow flux terms
+//#define COMBUST_NITSCHE_PENALTY           // turn on/off Nitsche normal and tangential penalty/stabilization terms
 
 //----------------------------------------------------------
 // combustion domain integral terms stress-based formulation
@@ -133,17 +131,12 @@ Maintainer: Florian Henke
 //#define COMBUST_YVELFREE // free Dirichlet boundary conditions y-component manually
 //#define COMBUST_PRESFREE
 
-//----------------------
-// combustion tolerances
-//----------------------
-//#define COMBUSTCONVTOL 1.0e-12 // just an example
-#define COMBUST_GMSH_NORMALFIELD
-
 //--------------------------
 // combustion output options
 //--------------------------
 //#define GMSH_AVERAGE_JUMP
 #define GMSH_WRITE_JUMPS
+//#define COMBUST_GMSH_NORMALFIELD
 //#define GMSH_REF_FIELDS
 
 

@@ -88,6 +88,7 @@ MAXTIME                         1.0
 NUMSTEP                         10
 TIMESTEP                        0.01
 NEUMANNINFLOW                   no
+GMSH_OUTPUT                     no // yes
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic

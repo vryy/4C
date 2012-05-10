@@ -303,6 +303,9 @@ void COMBUST::Algorithm::TimeLoop()
       PrepareFGIteration();
 
       // solve linear G-function equation
+      //cout << "---------------------" << endl;
+      //cout << "Level set deactivated!" << endl;
+      //cout << "---------------------" << endl;
       DoGfuncField();
 
       //(after Scatra transport but before reinitialization)

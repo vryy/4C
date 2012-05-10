@@ -126,6 +126,7 @@ MAXTIME                         1.0
 NUMSTEP                         30
 TIMESTEP                        0.01
 NEUMANNINFLOW                   no
+GMSH_OUTPUT                     no // yes
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall

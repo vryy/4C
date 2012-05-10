@@ -54,7 +54,7 @@ UPRES                           1
 COMBUSTTYPE                     Premixed_Combustion
 LAMINAR_FLAMESPEED              1.0
 MARKSTEIN_LENGTH                0.0
-NITSCHE_VELOCITY                100000
+NITSCHE_VELOCITY                10
 SMOOTHED_BOUNDARY_INTEGRATION   yes
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 VELOCITY_JUMP_TYPE              vel_jump_premixed_combustion
