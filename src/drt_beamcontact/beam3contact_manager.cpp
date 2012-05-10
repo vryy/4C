@@ -310,10 +310,10 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   stiffc_ = rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
   stiffmatrix.UnComplete();
 
-  for (int i=0;i<(int)pairs_.size();++i)
-  {
+  //for (int i=0;i<(int)pairs_.size();++i)
+  //{
     //cout << pairs_[i]->Element1().Id() << "/" << pairs_[i]->Element2().Id() << endl;
-  }
+  //}
 
   // decide wether the tangent field should be smoothed or not
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();

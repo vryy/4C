@@ -36,7 +36,7 @@ Maintainer: Christoph Meier
 #define NORMALTOL 0.1             /* tolerance how small the scalar product of normal_old and normal is allowed to be */
 #define MANIPULATERADIUS 1        /* with this parameter the geometrical radius used for contact evaluation can be
                                      chosen different from the physical radius appearing in the bending stiffness */
-#define NEIGHBORTOL 2             /* parameter that allows to also evaluate the contact normal of neighbor elements
+#define NEIGHBORTOL 3             /* parameter that allows to also evaluate the contact normal of neighbor elements
                                      needed for new gap function. It has proven useful that NEIGHBORTOL \in [1 ; 3] */
 #define GAPTOL 1.0e-12            /* tolerance for the allowable difference between old and new gap definition
                                      which should be identical in the converged state */

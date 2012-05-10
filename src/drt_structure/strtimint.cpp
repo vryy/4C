@@ -449,8 +449,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       cmtman_ = rcp(new CONTACT::MtManager(*discret_,alphaf));
     else if (apptype == INPAR::CONTACT::app_mortarcontact)
       cmtman_ = rcp(new CONTACT::CoManager(*discret_,alphaf));
-    else if (apptype == INPAR::CONTACT::app_beamcontact)
-      dserror("ERROR: Beam contact not yet implemented in new STI!");
 
     // store DBC status in contact nodes
     cmtman_->GetStrategy().StoreDirichletStatus(dbcmaps_);

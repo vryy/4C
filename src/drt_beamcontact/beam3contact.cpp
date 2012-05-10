@@ -1752,6 +1752,7 @@ double CONTACT::Beam3contact::Computeskalar()
   double skalar = 0;
   for (int j=0;j<NDIM;j++) skalar += normal_old_[j] * normal_[j];
 
+
   return skalar;
 }
 /*----------------------------------------------------------------------*
