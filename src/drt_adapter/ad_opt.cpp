@@ -52,20 +52,3 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   return;
 
 }
-
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-RCP<TOPOPT::Optimizer> ADAPTER::TopOptBaseAlgorithm::Optimizer()
-{
-  return optimizer_;
-}
-
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ADAPTER::TopOptBaseAlgorithm::~TopOptBaseAlgorithm()
-{
-}

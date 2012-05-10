@@ -15,12 +15,16 @@ General Data File BACI
 - linear fluid velocity field:
         o       u_1 = x + 2*y
         o       u_2 = -y
+- constant fluid pressure field:
+                p = 0
 - quadratic adjoint velocity field:
         o       v_1 = x*x + x*y
         o       v_2 = 2*y*y - 3*x*x
-- linear adjoint pressure field         q = 12*x + 9*y
-- bodyforce of adjoint momentum and adjoint continuity equations, NBC and DBC adequate
-- all terms active, density and viscosity unequal 1
+- linear adjoint pressure field:
+                q = 12*x + 9*y
+- all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
+- all terms active
+- all constants different and unequal 1
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    10
 //NODES       45
@@ -106,9 +110,9 @@ MAT       1 MAT_fluid  DYNVISCOSITY 3.0 DENSITY 2.0
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------FUNCT1 // initial flow field
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x+2*y
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -y
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//x+2*y//
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//-y//
+FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//0.0//
 ------------------------------------------------------------FUNCT2 // initial density field
 FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
 ------------------------------------------------------------FUNCT3 // initial adjoint field
@@ -155,13 +159,13 @@ FLUID DIS 1 NODE 44 POSITION pressure NAME pressure VALUE 0.0 TOLERANCE 1.0e-12
 
 ADJOINT DIS 1 NODE 4 POSITION velx NAME velx VALUE 0.0 TOLERANCE 1.0e-15
 ADJOINT DIS 1 NODE 4 POSITION vely NAME vely VALUE 0.02 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 4 POSITION pressure NAME pressure VALUE 0.9 TOLERANCE 1.0e-11
+ADJOINT DIS 1 NODE 4 POSITION pressure NAME pressure VALUE 0.9 TOLERANCE 1.0e-12
 ADJOINT DIS 1 NODE 39 POSITION velx NAME velx VALUE 0.1125 TOLERANCE 1.0e-15
 ADJOINT DIS 1 NODE 39 POSITION vely NAME vely VALUE -0.1075 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 39 POSITION pressure NAME pressure VALUE 4.8 TOLERANCE 1.0e-11
+ADJOINT DIS 1 NODE 39 POSITION pressure NAME pressure VALUE 4.8 TOLERANCE 1.0e-12
 ADJOINT DIS 1 NODE 44 POSITION velx NAME velx VALUE 0.325 TOLERANCE 1.0e-15
 ADJOINT DIS 1 NODE 44 POSITION vely NAME vely VALUE -0.705 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 44 POSITION pressure NAME pressure VALUE 7.35 TOLERANCE 1.0e-11
+ADJOINT DIS 1 NODE 44 POSITION pressure NAME pressure VALUE 7.35 TOLERANCE 1.0e-12
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1

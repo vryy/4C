@@ -1020,10 +1020,12 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
     double eta = (4.0*cii*cii*cii - ci*ci*cii*cii + 4.0*ci*ci*ci*ciii
                   - 18.0*ci*cii*ciii + 27.0*ciii*ciii)/27.0;
     if (eta < 0.0)
+    {
       if (fabs(eta) < EPS6)
         eta = 0.0;
       else
         dserror("Trouble with negative eta=%g", eta);
+    }
 
     // const double zeta = -2.0*ci/3.0
     //                   + pow(xi+sqrt(eta), 1.0/3.0)

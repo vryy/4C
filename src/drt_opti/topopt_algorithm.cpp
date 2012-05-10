@@ -44,13 +44,6 @@ TOPOPT::Algorithm::Algorithm(
   return;
 }
 
-/*------------------------------------------------------------------------------------------------*
- | destructor                                                                    winklmaier 12/11 |
- *------------------------------------------------------------------------------------------------*/
-TOPOPT::Algorithm::~Algorithm()
-{
-}
-
 
 void TOPOPT::Algorithm::TimeLoop()
 {
@@ -85,9 +78,14 @@ void TOPOPT::Algorithm::OptimizationLoop()
 //
 //    // update objective due to optimization approach
 //    DoOptimizationStep();
+
+//    write output of optimization step
+//    Output();
+
+    // Update data for new optimization step
+    Update();
   }
 
-//  Output();
 
   return;
 }
@@ -187,7 +185,6 @@ void TOPOPT::Algorithm::PrepareFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoFluidField()
 {
-  //FluidField().TimeLoop();
   FluidField().Integrate();
   return;
 }
@@ -258,7 +255,7 @@ void TOPOPT::Algorithm::UpdatePorosity()
    *
    * winklmaier 12/11
    * */
-  RCP<Epetra_Vector> density = Optimizer()->DensityIp();
+  RCP<const Epetra_Vector> density = Optimizer()->DensityIp();
 
   const double poro_bd_down = topopt_.get<double>("PORO_BOUNDARY_DOWN");
   const double poro_bd_up = topopt_.get<double>("PORO_BOUNDARY_UP");
@@ -283,11 +280,23 @@ void TOPOPT::Algorithm::UpdatePorosity()
 /*------------------------------------------------------------------------------------------------*
  | protected: output                                                             winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
-void TOPOPT::Algorithm::Output()
+void TOPOPT::Algorithm::Output() const
 {
   dserror("This function is currently unused!\n"
       "Output of subfields is written by their own output-functions!\n"
       "Maybe, this will be used for optimization variable(s) or for overview");
+  return;
+}
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ | protected: update after one optimization step                                 winklmaier 12/11 |
+ *------------------------------------------------------------------------------------------------*/
+void TOPOPT::Algorithm::Update()
+{
+  // clear the field data of the primal and the dual equations
+  Optimizer()->ClearFieldData();
   return;
 }
 

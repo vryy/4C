@@ -46,7 +46,7 @@ public:
   virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*  ele,
                               Teuchos::ParameterList&         params,
                               DRT::Discretization&            discretization,
-                              std::vector<int>&               lm,
+                              const std::vector<int>&         lm,
                               Epetra_SerialDenseVector&       elevec
                               ) = 0;
 
@@ -96,7 +96,7 @@ public:
   virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*    ele,
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
-                              vector<int>&               lm,
+                              const vector<int>&         lm,
                               Epetra_SerialDenseVector&  elevec
                               );
 
@@ -105,27 +105,28 @@ private:
   //! evaluate shape functions/derivatives, metric tensor and
   //! optionally, the infinitesimal area element and the normalized normal vector the at integration point
   void EvalShapeFuncAtBouIntPoint(
-      DRT::UTILS::GaussIntegration::iterator & iquad,       // actual integration point
-      const int                              eleid        // element ID
+      DRT::UTILS::GaussIntegration::iterator& iquad,       // actual integration point
+      const int                               eleid        // element ID
   );
 
   //! get material parameters
-  void GetMaterialParams(Teuchos::RCP<const MAT::Material> material  ///< reference pointer to material
-                         );
+  void GetMaterialParams(
+      Teuchos::RCP<const MAT::Material> material  ///< reference pointer to material
+  );
 
   /*!
    * \brief fill elment matrix and vectors with the global values
    */
   void ExtractValuesFromGlobalVector(
-      const DRT::Discretization&      discretization, ///< discretization
-      const std::vector<int>&              lm,             ///<
+      const DRT::Discretization&  discretization, ///< discretization
+      const std::vector<int>&     lm,             ///<
       LINALG::Matrix<nsd_,nen_>*  matrixtofill,   ///< vector field
       LINALG::Matrix<nen_,1>*     vectortofill,   ///< scalar field
-      const std::string               state           ///< state of the global vector
-  );
+      const std::string           state           ///< state of the global vector
+  ) const;
 
   //! pointer to parameter list
-  DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
+  const DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
 
   // gauss points
   DRT::UTILS::GaussIntegration intpoints_;

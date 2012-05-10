@@ -230,7 +230,7 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
   LINALG::Matrix<nen_,1> eporo(true);
   {
     // read nodal values from global vector
-    RCP<Epetra_Vector> topopt_porosity = params.get<RCP<Epetra_Vector> >("topopt_porosity");
+    RCP<const Epetra_Vector> topopt_porosity = params.get<RCP<const Epetra_Vector> >("topopt_porosity");
     for (int nn=0;nn<nen_;++nn)
     {
       int lid = (ele->Nodes()[nn])->LID();
@@ -1312,7 +1312,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcCharEleLength(
     const double  fluidvel_norm,
     double&       strle,
     double&       hk
-    )
+) const
 {
   // cast dimension to a double varibale -> pow()
   const double dim = double (nsd_);
@@ -1429,8 +1429,18 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
   }
   else // special cases
   {
-    LINALG::Matrix<nsd_,1> coords(true);
-    coords.Multiply(xyze_,funct_);
+    // get global coordinates of gauss point
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    {
+      LINALG::Matrix<nsd_,1> coords(true);
+      coords.Multiply(xyze_,funct_);
+
+      if (nsd_>0) x = coords(0);
+      if (nsd_>1) y = coords(1);
+      if (nsd_>2) z = coords(2);
+    }
 
     switch (fluidAdjoint3Parameter_->testcase_)
     {
@@ -1440,21 +1450,54 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
     }
     case INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres:
     {
-      bodyforce_(0) = 4*coords(1);
-      bodyforce_(1) = 24994*coords(0);
+      bodyforce_(0) = bodyforce_old_(0) = 4*y;
+      bodyforce_(1) = bodyforce_old_(1) = 24994*x;
       break;
     }
     case INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres:
     {
-      bodyforce_(0) = 24999*coords(0)*coords(0) - 4*coords(0)*coords(1);
-      bodyforce_(1) = -74989*coords(0)*coords(0) + 50002*coords(1)*coords(1)
-                      + 12*coords(0)*coords(1);
+      bodyforce_(0) = bodyforce_old_(0) = 24999*x*x - 4*x*y;
+      bodyforce_(1) = bodyforce_old_(1) = -74989*x*x + 50002*y*y
+                                          + 12*x*y;
       break;
     }
     case INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants:
     {
-      bodyforce_(0) = 24998*coords(0)*coords(0) + 24994*coords(0)*coords(1) - 4*coords(1)*coords(1);
-      bodyforce_(1) = -74978*coords(0)*coords(0) + 50004*coords(1)*coords(1) + 28*coords(0)*coords(1);
+      bodyforce_(0) = bodyforce_old_(0) = 24998*x*x + 24994*x*y - 4*y*y;
+      bodyforce_(1) = bodyforce_old_(1) = -74978*x*x + 50004*y*y + 28*x*y;
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_instat_varying_theta:
+    {
+      double t = fluidAdjoint3Parameter_->time_;
+      bodyforce_(0) = 5*x;
+      bodyforce_(1) = -5*y;
+
+      t += fluidAdjoint3Parameter_->dt_; // old time = t + dt
+      bodyforce_old_(0) = 5*x;
+      bodyforce_old_(1) = -5*y;
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_instat_all_terms_all_constants:
+    {
+      double t = fluidAdjoint3Parameter_->time_;
+      bodyforce_(0) = -10*x*y + 5*x*x - 4*y*y*t + 9*x*y*t;
+      bodyforce_(1) = -8*y*y*t + x*x + 24*x*y + 18*y*y*t*t + 4*x*y*t;
+
+      t += fluidAdjoint3Parameter_->dt_; // old time = t + dt
+      bodyforce_old_(0) = -10*x*y + 5*x*x - 4*y*y*t + 9*x*y*t;
+      bodyforce_old_(1) = -8*y*y*t + x*x + 24*x*y + 18*y*y*t*t + 4*x*y*t;
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_instat_primal_and_dual:
+    {
+      double t = fluidAdjoint3Parameter_->time_;
+      bodyforce_(0) = -3*x*y - 3*y*t*t - 6*y*y*t - 6*y + 8*x*y*t;
+      bodyforce_(1) = 9*x + x*t + 6*x*y*t;
+
+      t += fluidAdjoint3Parameter_->dt_; // old time = t + dt
+      bodyforce_old_(0) = -3*x*y - 3*y*t*t - 6*y*y*t - 6*y + 8*x*y*t;
+      bodyforce_old_(1) = 9*x + x*t + 6*x*y*t;
       break;
     }
     default:
@@ -1481,26 +1524,61 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContForce(
   }
   else
   {
-    LINALG::Matrix<nsd_,1> coords(true);
-    coords.Multiply(xyze_,funct_);
+    // get global coordinates of gauss point
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    {
+      LINALG::Matrix<nsd_,1> coords(true);
+      coords.Multiply(xyze_,funct_);
+
+      if (nsd_>0) x = coords(0);
+      if (nsd_>1) y = coords(1);
+      if (nsd_>2) z = coords(2);
+    }
 
     switch (fluidAdjoint3Parameter_->testcase_)
     {
     case INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres:
+    {
       break;
+    }
     case INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres:
     {
-      contforce_ = 12.0;
+      contforce_ = contforce_old_ = 12.0;
       break;
     }
     case INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres:
     {
-      contforce_ = 2*coords(0) + 4*coords(1);
+      contforce_ = contforce_old_ = 2*x + 4*y;
       break;
     }
     case INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants:
     {
-      contforce_ = 2*coords(0) + 5*coords(1);
+      contforce_ = contforce_old_ = 2*x + 5*y;
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_instat_varying_theta:
+    {
+      contforce_ = contforce_old_ = 0;
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_instat_all_terms_all_constants:
+    {
+      double t = fluidAdjoint3Parameter_->time_;
+      contforce_ = 2*x + y*t + 4*y*t*t;
+
+      t += fluidAdjoint3Parameter_->dt_; // old time = t + dt
+      contforce_old_ = 2*x + y*t + 4*y*t*t;
+      break;
+    }
+    case INPAR::TOPOPT::adjointtest_instat_primal_and_dual:
+    {
+      double t = fluidAdjoint3Parameter_->time_;
+      contforce_ = y*t + 1 + t;
+
+      t += fluidAdjoint3Parameter_->dt_; // old time = t + dt
+      contforce_old_ = y*t + 1 + t;
       break;
     }
     default:
@@ -1520,7 +1598,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MassReactionGalPart(
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          timefacfac,
     const double &                          timefacfacrhs
-)
+) const
 {
   /* inertia (contribution to mass matrix) if not is_stationary */
   /*
@@ -1577,7 +1655,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MassReactionGalPart(
   // rhs at old time step
   if (not fluidAdjoint3Parameter_->is_stationary_)
   {
-    double massreacfacrhs = dens_*fac_+reacoeff_*timefacfacrhs; // fac -> mass matrix // reac*timefacfac/dens -> reactive
+    double massreacfacrhs = -dens_*fac_+reacoeff_*timefacfacrhs; // fac -> mass matrix // reac*timefacfac/dens -> reactive
     scaled_vel.Update(massreacfacrhs,velint_old_);
 
     for (int vi=0;vi<nen_;++vi)
@@ -1603,7 +1681,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          timefacfac,
     const double &                          timefacfacrhs
-)
+) const
 {
   /* convection, part 1 */
   /*
@@ -1740,7 +1818,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ViscousGalPart(
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          timefacfac,
     const double &                          timefacfacrhs
-)
+) const
 {
   /* viscosity term: overall */
   /*
@@ -1857,7 +1935,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PressureGalPart(
     const double &                            timefacfacpre,
     const double &                            timefacfacprerhs,
     const double &                            press,
-    const double &                            press_old)
+    const double &                            press_old
+) const
 {
   /* pressure term */
   /*
@@ -1883,7 +1962,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PressureGalPart(
     } // vi
   } // ui
 
-  // rhs at new and old time step
+// rhs at new time step
   value = timefacfacpre*press;
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -1891,7 +1970,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PressureGalPart(
       velforce(jdim,vi) += derxy_(jdim,vi)*value;
   } // vi
 
-  // rhs at new and old time step
+  // rhs at old time step
   if (not fluidAdjoint3Parameter_->is_stationary_)
   {
     value = timefacfacprerhs*press_old;
@@ -1915,7 +1994,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContinuityGalPart(
     LINALG::Matrix<nen_, nen_*nsd_> &         estif_r_v,
     LINALG::Matrix<nen_,1> &                  preforce,
     const double &                            timefacfacdiv,
-    const double &                            timefacfacdivrhs)
+    const double &                            timefacfacdivrhs
+) const
 {
   double value = 0.0; // helper
   /* continuity term */
@@ -1959,7 +2039,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
     LINALG::Matrix<nsd_,nen_> &               velforce,
     const double &                            timefacfac,
-    const double &                            timefacfacrhs)
+    const double &                            timefacfacrhs
+) const
 {
   double value = 0.0;
 
@@ -1968,7 +2049,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
     value = timefacfac*bodyforce_(idim);
 
     if (not fluidAdjoint3Parameter_->is_stationary_)
-      value += timefacfacrhs*bodyforce_(idim);
+      value += timefacfacrhs*bodyforce_old_(idim);
 
     for (int vi=0; vi<nen_; ++vi)
     {
@@ -1988,12 +2069,13 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContForceGalPart(
     LINALG::Matrix<nen_,1> &                  preforce,
     const double &                            timefacfacdiv,
-    const double &                            timefacfacdivrhs)
+    const double &                            timefacfacdivrhs
+) const
 {
   double value = timefacfacdiv*contforce_;
 
   if (not fluidAdjoint3Parameter_->is_stationary_)
-    value += timefacfacdivrhs*contforce_;
+    value += timefacfacdivrhs*contforce_old_;
 
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -2021,7 +2103,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
     const LINALG::Matrix<nsd_,nen_>&    evelnp,
     const LINALG::Matrix<nsd_,nen_>&    efluidveln,
     const LINALG::Matrix<nsd_,nen_>&    efluidvelnp
-)
+) const
 {
   /*
       Left hand side terms of Galerkin part for PSPG/SUPG with Dv
@@ -2049,7 +2131,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
   if (fluidAdjoint3Parameter_->is_stationary_)
     massreacfac = reacoeff_*timefacfac;
   else
-    massreacfac = fac_+reacoeff_*timefacfac; // fac -> mass matrix // reac*timefacfac/dens -> reactive
+    massreacfac = dens_*fac_+reacoeff_*timefacfac; // fac -> mass matrix // reac*timefacfac/dens -> reactive
 
   for (int ui=0; ui<nen_; ++ui)
   {
@@ -2105,7 +2187,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
   {
     for (int idim=0;idim<nsd_;++idim)
     {
-      StrongResMomScaled(idim) = dens_*(velint_(idim)-velint_old_(idim)) // mass term last iteration
+      StrongResMomScaled(idim) = dens_*fac_*(velint_(idim)-velint_old_(idim)) // mass term last iteration
           +timefacfac* // velocity part of last iteration (at t^n) coming
             (dens_*(-conv1_(idim)+conv2_(idim))-2*visc_*viscs(idim)
             +reacoeff_*velint_(idim)-bodyforce_(idim))
@@ -2129,12 +2211,22 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
 //  {
 //    LINALG::Matrix<nsd_,1> dummy(true);
 //    cout.precision(12);
-//    dummy.Update(-dens_,conv1_);cout << "first conv terms are " << dummy << endl;
-//    dummy.Update(dens_,conv2_);cout << "second conv terms are " << dummy << endl;
-//    dummy.Update(-2.0*visc_,viscs);cout << "viscous terms are " << dummy << endl;
-//    dummy.Update(reacoeff_,velint_);cout << "reactive terms are " << dummy << endl;
-//    dummy.Update(1.0,gradp_);cout << "pressure terms are " << dummy << endl;
-//    dummy.Update(-1.0,bodyforce_);cout << "bodyforce terms are " << dummy << endl;
+//    cout << "fluidvel is " << fluidvelint_;
+//    cout << "fluidvel is " << fluidvelint_old_ << endl;
+//    cout << "vel is " << velint_;
+//    cout << "vel is " << velint_old_ << endl;
+//    dummy.Update(-dens_,conv1_);cout << "first conv terms are " << dummy;
+//    dummy.Update(-dens_,conv1_old_);cout << "first conv terms are " << dummy << endl;
+//    dummy.Update(dens_,conv2_);cout << "second conv terms are " << dummy;
+//    dummy.Update(dens_,conv2_old_);cout << "second conv terms are " << dummy << endl;
+//    dummy.Update(-2.0*visc_,viscs);cout << "viscous terms are " << dummy;
+//    dummy.Update(-2.0*visc_,viscs_old);cout << "viscous terms are " << dummy << endl;
+//    dummy.Update(1.0,gradp_);cout << "pressure terms are " << dummy;
+//    dummy.Update(1.0,gradp_old_);cout << "pressure terms are " << dummy << endl;
+//    dummy.Update(reacoeff_,velint_);cout << "reactive terms are " << dummy;
+//    dummy.Update(reacoeff_,velint_old_);cout << "reactive terms are " << dummy << endl;
+//    dummy.Update(-1.0,bodyforce_);cout << "bodyforce terms are " << dummy;
+//    dummy.Update(-1.0,bodyforce_old_);cout << "bodyforce terms are " << dummy << endl;
 //    dummy.Multiply(xyze_,funct_);cout << "gausspoint is " << dummy << endl;
 //
 //    cout << "strong residuum at gauss point is " << StrongResMomScaled << endl;
@@ -2156,7 +2248,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcDivEps(
     LINALG::Matrix<nsd_,1>&               viscs,
     LINALG::Matrix<nsd_,1>&               viscs_old,
     LINALG::Matrix<nsd_*nsd_,nen_>&       visc_shp
-)
+) const
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
   /*   /                                                \
@@ -2237,12 +2329,13 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PSPG(
     LINALG::Matrix<nen_, nen_*nsd_> &         estif_r_v,
     LINALG::Matrix<nen_,nen_> &               estif_r_q,
     LINALG::Matrix<nen_,1> &                  preforce,
-    LINALG::Matrix<nsd_*nsd_,nen_> &          GalMomResnU,
-    LINALG::Matrix<nsd_,1> &                  StrongResMomScaled,
+    const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomResnU,
+    const LINALG::Matrix<nsd_,1> &            StrongResMomScaled,
     const double &                            timefacfac,
     const double &                            timefacfacrhs,
     const double &                            timefacfacpre,
-    const double &                            timefacfacprerhs)
+    const double &                            timefacfacprerhs
+) const
 {
   const double tau=tau_(1);
 
@@ -2292,7 +2385,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PSPG(
   {
     for (int idim = 0; idim <nsd_; ++idim)
     {
-      const double v=timefacfacpre*derxy_(idim,ui)*tau;
+      const double v=tau*timefacfacpre*derxy_(idim,ui);
 
       for (int vi=0; vi<nen_; ++vi)
       {
@@ -2333,12 +2426,13 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::SUPG(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_w_v,
     LINALG::Matrix<nen_*nsd_,nen_> &          estif_w_q,
     LINALG::Matrix<nsd_,nen_> &               velforce,
-    LINALG::Matrix<nsd_*nsd_,nen_> &          GalMomResnU,
-    LINALG::Matrix<nsd_,1> &                  StrongResMomScaled,
+    const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomResnU,
+    const LINALG::Matrix<nsd_,1> &            StrongResMomScaled,
     const double &                            timefacfac,
     const double &                            timefacfacrhs,
     const double &                            timefacfacpre,
-    const double &                            timefacfacprerhs)
+    const double &                            timefacfacprerhs
+) const
 {
   /*
      test function
@@ -2372,7 +2466,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::SUPG(
              /                            \           /                              \
             |   n                          |         |                 n              |
       - rho |  u o nabla Dv   , supg_test  | + rho * |  Dv o nabla    u  , supg_test  |
-            |              (i) /           |         |            (i)                 |
+            |              (i)             |         |            (i)                 |
              \                            /           \                              /
 
               /      viscous term                    \
@@ -2446,18 +2540,22 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContRes(
     double &                                  StrongResContScaled,
     const double &                            timefacfacdiv,
     const double &                            timefacfacdivrhs
-)
+) const
 {
   StrongResContScaled = timefacfacdiv*(vdiv_-contforce_);
 
-//if (fabs(StrongResContScaled)>1.0e-10)
-//{
-//  cout << "cont res is " << StrongResContScaled << endl;
-//  dserror("stop");
-//}
-
   if (not fluidAdjoint3Parameter_->is_stationary_)
     StrongResContScaled += timefacfacdivrhs*(vdiv_old_-contforce_old_);
+
+//  if (fabs(StrongResContScaled)>1.0e-10)
+//  {
+//    cout << "div is " << vdiv_ << endl;
+//    cout << "div old is " << vdiv_old_ << endl;
+//    cout << "contforce is " << contforce_ << endl;
+//    cout << "contforce old is " << contforce_old_ << endl;
+//    cout << "cont res is " << StrongResContScaled << endl;
+//    dserror("stop");
+//  }
 }
 
 
@@ -2471,7 +2569,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContStab(
     LINALG::Matrix<nsd_,nen_> &               velforce,
     const double &                            timefacfacdiv,
     const double &                            timefacfacdivrhs
-)
+) const
 {
   double cstabfac = timefacfacdiv*tau_(2);
   double value = 0.0;
@@ -2538,7 +2636,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ExtractValuesFromGlobalVector(
     LINALG::Matrix<nsd_,nen_> *  matrixtofill,   ///< vector field
     LINALG::Matrix<nen_,1> *     vectortofill,   ///< scalar field
     const std::string            state          ///< state of the global vector
-)
+) const
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);

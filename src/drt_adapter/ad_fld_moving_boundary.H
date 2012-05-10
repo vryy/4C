@@ -17,11 +17,22 @@ Maintainer: Ulrich Kuettler
 #ifndef ADAPTER_GENERAL_FLUID_H
 #define ADAPTER_GENERAL_FLUID_H
 
-#include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_mapextractor.H"
 
-#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_lib/drt_discret.H"
+
+
+namespace DRT
+{
+  class ResultTest;
+}
+
+namespace FLD
+{
+  namespace UTILS
+  {
+    class MapExtractor;
+  }
+}
 
 namespace ADAPTER
 {

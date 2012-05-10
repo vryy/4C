@@ -22,7 +22,7 @@ Maintainer: Martin Winklmaier
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 TOPOPT::Optimizer::Optimizer(
-    RCP<DRT::Discretization> discret,
+    RCP<const DRT::Discretization> discret,
     const ParameterList& params
 ) :
 discret_(discret),
@@ -34,7 +34,6 @@ params_(params)
   dens_i_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
   dens_ip_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
 
-  // TODO segmentation fault???
   // fluid fields for optimization
   vel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
   adjointvel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
@@ -67,8 +66,8 @@ params_(params)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double TOPOPT::Optimizer::ComputeObjectiveValue(
-    Teuchos::RCP<Epetra_Vector> porosity
-)
+    const Teuchos::RCP<const Epetra_Vector> porosity
+) const
 {
   double value = 0.0;
 
@@ -129,9 +128,17 @@ void TOPOPT::Optimizer::SetInitialDensityField(
  *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::ImportFluidData(
     RCP<Epetra_Vector> vel,
-    int step)
+    int step
+)
 {
-  vel_->insert(pair<int,RCP<Epetra_Vector> >(step,vel));
+  if (vel_->find(step)!=vel_->end())
+    *(vel_->find(step)->second) = *vel;
+  else
+  {
+    // a copy is required here, otherwise the values are changed within the fluid time integration
+    RCP<Epetra_Vector> new_vel = rcp(new Epetra_Vector(*vel)); // copy
+    vel_->insert(pair<int,RCP<Epetra_Vector> >(step,new_vel));
+  }
 }
 
 
@@ -142,7 +149,14 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
     RCP<Epetra_Vector> vel,
     int step)
 {
-  adjointvel_->insert(pair<int,RCP<Epetra_Vector> >(step,vel));
+  if (adjointvel_->find(step)!=adjointvel_->end())
+    *(adjointvel_->find(step)->second) = *vel;
+  else
+  {
+    // a copy is required here, otherwise the values are changed within the adjoint time integration
+    RCP<Epetra_Vector> new_vel = rcp(new Epetra_Vector(*vel));
+    adjointvel_->insert(pair<int,RCP<Epetra_Vector> >(step,new_vel));
+  }
 }
 
 
@@ -159,7 +173,6 @@ bool TOPOPT::Optimizer::DataComplete() const
 
   return true;
 }
-
 
 
 /*----------------------------------------------------------------------*

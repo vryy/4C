@@ -35,6 +35,7 @@ TOPOPT::ADJOINT::FluidAdjointTimeInt::FluidAdjointTimeInt(
   numdim_(params_->get<int>("number of velocity degrees of freedom")),
   dt_(params_->get<double>("time step size")),
   step_(0),
+  stepmax_(params_->get<int>("max number timesteps")),
   maxtime_(params_->get<double>("total time"))
 {
   timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo");
@@ -55,10 +56,12 @@ TOPOPT::ADJOINT::FluidAdjointTimeInt::FluidAdjointTimeInt(
   else
   {
     if (fabs(maxtime_-dt_*stepmax_)>1.0e-14)
-      dserror("Fix total simulation time, time step size and number of time steps\n"
-          "so that: sim_time = dt * num_timesteps");
+    {
+      dserror("Fix total simulation time sim_time = %f, time step size dt = %f and number of time steps num_steps = %i\n"
+          "so that: sim_time = dt * num_steps",maxtime_,dt_,stepmax_);
+    }
 
-    time_ = dt_*stepmax_; // stepmax_ remains
+    time_ = maxtime_;
   }
 }
 

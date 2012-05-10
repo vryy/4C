@@ -42,7 +42,7 @@ public:
       );
 
   //! print parameter to screen
-  void PrintAdjointParameter();
+  void PrintAdjointParameter() const;
 
   //! Flag SetGeneralParameter was called
   bool set_general_adjoint_parameter_;

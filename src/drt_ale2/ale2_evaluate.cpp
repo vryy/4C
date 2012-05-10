@@ -794,7 +794,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
   // gaussian points
   const GaussRule2D gaussrule = getOptimalGaussrule(distype);
   const IntegrationPoints2D  intpoints(gaussrule);
-  double             min_detF;         /* minimal Jacobian determinant   */
+  double             min_detF = 0.0;         /* minimal Jacobian determinant   */
   ale2_min_jaco(Shape(),xyze,&min_detF);
 
   // integration loops

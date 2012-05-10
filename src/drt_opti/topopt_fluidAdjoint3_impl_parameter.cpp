@@ -195,13 +195,13 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( 
     // get time-step length and time-integration parameters
   if (not is_stationary_)
   {
-    dt_           = params.get<double>("dt",+1.0);
-    theta_        = params.get<double>("theta",-1.0);
-    omtheta_      = params.get<double>("omtheta",-1.0);
-    theta_pre_    = params.get<double>("theta_pre_",-1.0);
-    omtheta_pre_  = params.get<double>("omtheta_pre_",-1.0);
-    theta_div_    = params.get<double>("theta_div_",-1.0);
-    omtheta_pre_  = params.get<double>("omtheta_div_",-1.0);
+    dt_           = params.get<double>("dt");
+    theta_        = params.get<double>("theta");
+    omtheta_      = params.get<double>("omtheta");
+    theta_pre_    = params.get<double>("theta_pre");
+    omtheta_pre_  = params.get<double>("omtheta_pre");
+    theta_div_    = params.get<double>("theta_div");
+    omtheta_div_  = params.get<double>("omtheta_div");
   }
   else // is_stationary == true
   {
@@ -220,12 +220,19 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( 
 
 
   double TOL = 1.0e-14;
-  if (dt_ < 0.0 or theta_ < 0.0 or time_ < -TOL or omtheta_ < 0.0)
+  if (dt_ < 0.0 or time_ < -TOL
+      or theta_ < 0.0 or omtheta_ < 0.0
+      or theta_pre_ < 0.0 or omtheta_pre_ < 0.0
+      or theta_div_ < 0.0 or omtheta_div_ < 0.0)
   {
     std::cout<<"dt_: "<<dt_<<std::endl;
-    std::cout<<"theta_ "<<theta_<<std::endl;
     std::cout<<"time_ "<<time_<<std::endl;
+    std::cout<<"theta_ "<<theta_<<std::endl;
     std::cout<<"omtheta_ "<<omtheta_<<std::endl;
+    std::cout<<"theta_pre_ "<<theta_pre_<<std::endl;
+    std::cout<<"omtheta_pre_ "<<omtheta_pre_<<std::endl;
+    std::cout<<"theta_div_ "<<theta_div_<<std::endl;
+    std::cout<<"omtheta_div_ "<<omtheta_div_<<std::endl;
     dserror("Negative (or no) time-integration parameter or time-step length supplied");
   }
 }
@@ -235,7 +242,7 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementAdjointTimeParameter( 
 //----------------------------------------------------------------------*/
 // print fluid parameter to screen (AE 01-11)
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter()
+void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter() const
 {
   std::cout << std::endl << "|-----------------------------------------------------------------------------" << std::endl;
   std::cout << "|  General Fluid Adjoint parameter: " << std::endl;

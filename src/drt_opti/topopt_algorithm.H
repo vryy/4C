@@ -52,7 +52,7 @@ namespace TOPOPT
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
+    virtual ~Algorithm() {return;};
 
     /// unused time loop
     void TimeLoop();
@@ -93,11 +93,10 @@ namespace TOPOPT
     void UpdatePorosity();
 
     /// write output
-    void Output();
+    void Output() const;
 
-    /// compute volume on all processors
-    double ComputeVolume();
-
+    /// update optimization procedure
+    void Update();
   private:
 
     /// topology optimization input parameter list

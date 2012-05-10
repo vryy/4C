@@ -244,14 +244,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
 
   LINALG::Matrix<nen_,1> eporo(true);
   if ((params.getEntryPtr("topopt_porosity") != NULL) and // parameter exists and ...
-      (params.get<RCP<Epetra_Vector> >("topopt_porosity") !=Teuchos::null)) // ... according vector is filled
+      (params.get<RCP<const Epetra_Vector> >("topopt_porosity") !=Teuchos::null)) // ... according vector is filled
   {
     // activate reaction terms
     //f3Parameter_->reaction_topopt_ = true;
     //f3Parameter_->reaction_ = true;
 
     // read nodal values from global vector
-    RCP<Epetra_Vector> topopt_porosity = params.get<RCP<Epetra_Vector> >("topopt_porosity");
+    RCP<const Epetra_Vector> topopt_porosity = params.get<RCP<const Epetra_Vector> >("topopt_porosity");
     for (int nn=0;nn<nen_;++nn)
     {
       int lid = (ele->Nodes()[nn])->LID();

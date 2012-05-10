@@ -24,17 +24,22 @@ Maintainer: Martin Winklmaier
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 TOPOPT::ADJOINT::FluidAdjointResultTest::FluidAdjointResultTest(
-    ImplicitTimeInt& adjointfluid
-) : fluiddis_(adjointfluid.Discretization()),
-mysol_(adjointfluid.Velnp())
+    const ImplicitTimeInt& adjointfluid
+)
+: fluiddis_(adjointfluid.Discretization()),
+  mysol_(adjointfluid.Velnp())
 {
-      return;
+  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void TOPOPT::ADJOINT::FluidAdjointResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void TOPOPT::ADJOINT::FluidAdjointResultTest::TestNode(
+    DRT::INPUT::LineDefinition& res,
+    int& nerr,
+    int& test_count
+)
 {
   int dis;
   res.ExtractInt("DIS",dis);

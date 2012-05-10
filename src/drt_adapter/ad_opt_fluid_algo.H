@@ -62,9 +62,7 @@ namespace ADAPTER
         );
 
     /// provide access to algorithm parameters
-    virtual const Teuchos::ParameterList& AlgoParameters(){
-        return params_;
-    }
+    virtual const Teuchos::ParameterList& AlgoParameters() const {return params_;}
 
   private:
 

@@ -58,10 +58,11 @@ namespace ADAPTER {
       );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~TopOptBaseAlgorithm();
+    virtual ~TopOptBaseAlgorithm(){};
 
-    /// access to the scalar transport field solver
-    Teuchos::RCP<TOPOPT::Optimizer> Optimizer();
+    /// access to the optimizer
+    Teuchos::RCP<TOPOPT::Optimizer> Optimizer(){return optimizer_;};
+    Teuchos::RCP<const TOPOPT::Optimizer> Optimizer() const {return optimizer_;};
 
   private:
 

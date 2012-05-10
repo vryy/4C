@@ -16,35 +16,13 @@ Maintainer: Martin Winklmaier
 #define TOPOPT_FLUIDADJOINTIMPLTIMEINTEGRATION_H_
 
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_topopt.H"
 #include "topopt_fluidAdjoint_timeint.H"
 
 
 /// forward declarations
-class Epetra_Map;
-class Epetra_Vector;
-
-namespace DRT
-{
-  class Discretization;
-}
-namespace IO
-{
-  class DiscretizationWriter;
-}
 namespace LINALG
 {
-  class Solver;
-  class SparseMatrix;
-  class MapExtractor;
-  class BlockSparseMatrixBase;
   class SparseOperator;
-}
-
-namespace TOPOPT
-{
-  class Optimizer;
 }
 
 namespace TOPOPT
@@ -84,7 +62,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~ImplicitTimeInt();
+  virtual ~ImplicitTimeInt(){return;};
 
   /*!
   \brief start time loop for startingalgo, normal problems and restarts
@@ -125,7 +103,7 @@ public:
   \brief update configuration and output to file/screen
 
   */
-  void Output();
+  void Output() const;
 
   /*!
   \brief update configuration and output to gmsh file
@@ -140,7 +118,7 @@ public:
   \brief Access output object
 
   */
-  Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
+  Teuchos::RCP<const IO::DiscretizationWriter> DiscWriter() const
   {
     return output_;
   }
@@ -159,8 +137,8 @@ public:
 
   */
   void SetTopOptData(
-      Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
-      Teuchos::RCP<Epetra_Vector> porosity,
+      Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
+      Teuchos::RCP<const Epetra_Vector> porosity,
       Teuchos::RCP<TOPOPT::Optimizer> optimizer
   );
 
@@ -172,36 +150,27 @@ public:
   */
   void ReadRestart(int step);
 
-  Teuchos::RCP<const Epetra_Vector> Residual() { return residual_; }
-  Teuchos::RCP<const Epetra_Vector> Velnp() { return velnp_; }
-  Teuchos::RCP<const Epetra_Vector> Veln() { return veln_; }
+  Teuchos::RCP<const Epetra_Vector> Residual() const { return residual_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp() const { return velnp_; }
+  Teuchos::RCP<const Epetra_Vector> Veln() const { return veln_; }
+  Teuchos::RCP<const Epetra_Vector> FluidVelnp() const { return fluidvelnp_; }
+  Teuchos::RCP<const Epetra_Vector> FluidVeln() const { return fluidveln_; }
 
   /// provide access to the Dirichlet map
-  Teuchos::RCP<const LINALG::MapExtractor> DirichletMaps() { return dbcmaps_; }
+  Teuchos::RCP<const LINALG::MapExtractor> DirichletMaps() const { return dbcmaps_; }
 
-  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+  Teuchos::RCP<const LINALG::SparseMatrix> SystemMatrix() const ;
+  Teuchos::RCP<const LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const;
 
-  Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter(){ return velpressplitter_; };
-  Teuchos::RCP<const Epetra_Map> VelocityRowMap();
-  Teuchos::RCP<const Epetra_Map> PressureRowMap();
+  Teuchos::RCP<const LINALG::MapExtractor> VelPresSplitter() const { return velpressplitter_; };
+  Teuchos::RCP<const Epetra_Map> VelocityRowMap() const;
+  Teuchos::RCP<const Epetra_Map> PressureRowMap() const;
 
   double ResidualScaling() const;
-
-  /*!
-  \brief set velocity field obtained by separate computation
-
-  */
-  void SetAdjointField(Teuchos::RCP<const Epetra_Vector> setvelnp);
-
-  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+  
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest() const;
 
 protected:
-
-
-  //! @name time step size
-  double dt_;
-  //@}
 
   //! @name time-integration-scheme factors
   double theta_;
@@ -220,9 +189,6 @@ protected:
   double vresnorm_;
   double presnorm_;
   //@}
-
-  /// flag for special flow: currently channel flow or flow in a lid-driven cavity
-  std::string special_flow_;
 
   /// flag for potential Neumann inflow
   bool neumanninflow_;
@@ -249,16 +215,20 @@ protected:
   /// Nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector>    incvel_;
 
-  //! @name velocity and pressure at time n+1, n, n-1
+  //! @name adjoint velocity and pressure at time n+1, n
   Teuchos::RCP<Epetra_Vector>    velnp_;
   Teuchos::RCP<Epetra_Vector>    veln_;
+
+  //! @name fluid velocity and pressure at time n+1, n
+  Teuchos::RCP<const Epetra_Vector>    fluidvelnp_;
+  Teuchos::RCP<const Epetra_Vector>    fluidveln_;
   //@}
 
   /// map <timestep,fluid velocity/pressure>
-  Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluid_vels_;
+  Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > fluid_vels_;
 
   /// density in topology optimization
-  Teuchos::RCP<Epetra_Vector>    topopt_porosity_;
+  Teuchos::RCP<const Epetra_Vector>    topopt_porosity_;
 
   /// optimizer for topology optimization
   Teuchos::RCP<TOPOPT::Optimizer> optimizer_;
@@ -283,7 +253,7 @@ private:
          and in the fluid boundary element
 
   */
-  void SetElementGeneralAdjointParameter();
+  void SetElementGeneralAdjointParameter() const;
 
   //! @name Set general parameter in class f3Parameter
   /*!
@@ -293,7 +263,7 @@ private:
          and in the fluid boundary element
 
   */
-  void SetElementTimeParameter();
+  void SetElementTimeParameter() const;
 
 }; // class FluidImplicitTimeInt
 }

@@ -1483,8 +1483,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
   double nitsche_stab      = params.get<double>("visc_stab_fac");
   double nitsche_stab_conv = params.get<double>("conv_stab_fac");
-  INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
-  INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
+//  INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
+//  INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
   INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
 
   if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)

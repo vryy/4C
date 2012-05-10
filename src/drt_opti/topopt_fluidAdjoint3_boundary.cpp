@@ -114,7 +114,7 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
                               DRT::ELEMENTS::FluidBoundary* ele,
                               ParameterList&                 params,
                               DRT::Discretization&           discretization,
-                              vector<int>&                   lm,
+                              const vector<int>&             lm,
                               Epetra_SerialDenseVector&      elevec)
 {
   // the vectors have been allocated outside in EvaluateConditionUsingParentData()
@@ -270,8 +270,18 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
 
       INPAR::TOPOPT::AdjointTestCases testcase = params.get<INPAR::TOPOPT::AdjointTestCases>("special test case");
 
-      LINALG::Matrix<nsd_,1> coords(true);
-      coords.Multiply(xyze_,funct_);
+      // get global coordinates of gauss point
+      double x = 0.0;
+      double y = 0.0;
+      double z = 0.0;
+      {
+        LINALG::Matrix<nsd_,1> coords(true);
+        coords.Multiply(xyze_,funct_);
+
+        if (nsd_>0) x = coords(0);
+        if (nsd_>1) y = coords(1);
+        if (nsd_>2) z = coords(2);
+      }
 
       LINALG::Matrix<nsd_,1> values(true);
       LINALG::Matrix<nsd_,1> values_old(true);
@@ -280,33 +290,59 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
       {
       case INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres:
       {
-        values(0) = -9.0;
-        values(1) = 0.0;
+        values(0) = values_old(0) = -9;
+        values(1) = values_old(1) = 0;
         break;
       }
       case INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres:
       {
-        values(0) = 10.0 + 0.5*(125010.0*coords(0)*coords(0)
-                                +175000.0*coords(1)*coords(1)
-                                +100004.0*coords(0)*coords(1));
-        values(1) = 3.0*coords(0)*coords(0) + 7.0*coords(0)*coords(1) + 5.0;
+        values(0) = values_old(0) = 10 + 0.5*(125010*x*x + 175000*y*y + 100004*x*y);
+        values(1) = values_old(1) = 3*x*x + 7*x*y + 5;
         break;
       }
       case INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres:
       {
-        values(0) = coords(0)*coords(0)*coords(0) + 2*coords(0)*coords(0)*coords(1) - 2*coords(1);
-        values(1) = - 3*coords(0)*coords(0)*coords(0) + 4*coords(1)*coords(1)*coords(1)
-                    - 6*coords(0)*coords(0)*coords(1) + 2*coords(0)*coords(1)*coords(1)
-                    - 6*coords(0);
+        values(0) = values_old(0) = x*x*x + 2*x*x*y - 2*y;
+        values(1) = values_old(1) = - 3*x*x*x + 4*y*y*y - 6*x*x*y + 2*x*y*y - 6*x;
         break;
       }
       case INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants:
       {
-        values(0) = 2*coords(0)*coords(0)*coords(0) + 6*coords(0)*coords(0)*coords(1)
-                    + 4*coords(0)*coords(1)*coords(1) - 3*coords(1);
-        values(1) = - 6*coords(0)*coords(0)*coords(0) - 12*coords(0)*coords(0)*coords(1)
-                    + 4*coords(0)*coords(1)*coords(1) + 8*coords(1)*coords(1)*coords(1)
-                    - 15*coords(0);
+        values(0) = values_old(0) = 2*x*x*x + 6*x*x*y + 4*x*y*y - 3*y;
+        values(1) = values_old(1) = - 6*x*x*x - 12*x*x*y + 4*x*y*y + 8*y*y*y - 15*x;
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_instat_varying_theta:
+      {
+        double t = fluidAdjoint3Parameter_->time_;
+        values(0) = 3*x - 3*t + 4 - 5*x*t + 10*y*t;
+        values(1) = -3*y + 6*t;
+
+        t += fluidAdjoint3Parameter_->dt_; // old time = t + dt
+        values_old(0) = 3*x - 3*t + 4 - 5*x*t + 10*y*t;
+        values_old(1) = -3*y + 6*t;
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_instat_all_terms_all_constants:
+      {
+        double t = fluidAdjoint3Parameter_->time_;
+        values(0) = 2*x*x*x + 4*x*x*y + 2*x*x*y*t + 4*x*y*y*t + 18*y + 3*y*t - 24*y*t*t;
+        values(1) = - 6*x*x*x - 12*x*x*y + 4*x*y*y*t*t + 8*y*y*y*t*t - 18*x + 3*x*t;
+
+        t += fluidAdjoint3Parameter_->dt_; // old time = t + dt
+        values_old(0) = 2*x*x*x + 4*x*x*y + 2*x*x*y*t + 4*x*y*y*t + 18*y + 3*y*t - 24*y*t*t;
+        values_old(1) = - 6*x*x*x - 12*x*x*y + 4*x*y*y*t*t + 8*y*y*y*t*t - 18*x + 3*x*t;
+        break;
+      }
+      case INPAR::TOPOPT::adjointtest_instat_primal_and_dual:
+      {
+        double t = fluidAdjoint3Parameter_->time_;
+        values(0) = 3*x*y*t*t + 3*x*x*y*t + 5.5*x*x + 6*x*y*y*t + 6*x*y + 2*y*t + 4 - 1.5*y*y + 3*y*t*t + 5.5*y*y*t;
+        values(1) = 3*y*t*t - 3*x*t*t + 6*y*y*t - 3*x*y*t - 2*t + 2*x*t - 3*x*x*t;
+
+        t += fluidAdjoint3Parameter_->dt_; // old time = t + dt
+        values_old(0) = 3*x*y*t*t + 3*x*x*y*t + 5.5*x*x + 6*x*y*y*t + 6*x*y + 2*y*t + 4 - 1.5*y*y + 3*y*t*t + 5.5*y*y*t;
+        values_old(1) = 3*y*t*t - 3*x*t*t + 6*y*y*t - 3*x*y*t - 2*t + 2*x*t - 3*x*x*t;
         break;
       }
       default:
@@ -407,10 +443,10 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::ExtractValuesFromGlobalVector(
     const DRT::Discretization&      discretization, ///< discretization
     const vector<int>&              lm,             ///<
-    LINALG::Matrix<nsd_,nen_>*  matrixtofill,   ///< vector field
-    LINALG::Matrix<nen_,1>*     vectortofill,   ///< scalar field
+    LINALG::Matrix<nsd_,nen_>*      matrixtofill,   ///< vector field
+    LINALG::Matrix<nen_,1>*         vectortofill,   ///< scalar field
     const std::string               state          ///< state of the global vector
-)
+) const
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);

@@ -190,7 +190,8 @@ private:
   void CalcCharEleLength(const double  vol,       ///< volume
       const double  fluidvel_norm,  ///< norm of velocity vector
       double&       strle,     ///< streamlength (for tau_Mu)
-      double&       hk);       ///< length for tau_Mp
+      double&       hk
+  ) const;       ///< length for tau_Mp
 
   /// calculate body force from nodal conditions
   void BodyForce(
@@ -207,7 +208,7 @@ private:
       LINALG::Matrix<nsd_,nen_> &             velforce,      ///< rhs forces velocity
       const double &                          timefacfac,    ///< = timefac x fac
       const double &                          timefacfacrhs  ///< = timefacrhs * fac
-  );
+  ) const;
 
   //! Compute element matrix and rhs entries: convective terms of the Galerkin part
   void ConvectionGalPart(
@@ -215,7 +216,7 @@ private:
       LINALG::Matrix<nsd_,nen_> &             velforce,      ///< rhs forces velocity
       const double &                          timefacfac,    ///< = timefac x fac
       const double &                          timefacfacrhs  ///< = timefacrhs * fac
-  );
+  ) const;
 
   //! Compute element matrix entries: for the viscous terms of the Galerkin part
   void ViscousGalPart(
@@ -223,7 +224,7 @@ private:
       LINALG::Matrix<nsd_,nen_> &             velforce,       ///< rhs forces velocity
       const double &                          timefacfac,     ///< = timefac x fac
       const double &                          timefacfacrhs   ///< = timefacrhs * fac
-  );
+  ) const;
 
   //! Compute element matrix entries: pressure terms of the Garlerkin part and rhs
   void PressureGalPart(
@@ -233,7 +234,7 @@ private:
       const double &                            timefacfacrhspre, ///< = timefacrhspre x fac
       const double &                            press,            ///< pressure at integration point
       const double &                            press_old         ///< old pressure at integration point
-  );
+  ) const;
 
   //! Compute element matrix entries: continuity terms of the Garlerkin part and rhs
   void ContinuityGalPart(
@@ -241,21 +242,21 @@ private:
       LINALG::Matrix<nen_,1> &                  preforce,         ///< rhs forces pressure
       const double &                            timefacfacdiv,    ///< = timefac x fac
       const double &                            timefacfacdivrhs  ///< right-hand-side factor
-  );
+  ) const;
 
   //! Compute element matrix entries: body force terms on rhs
   void BodyForceGalPart(
       LINALG::Matrix<nsd_,nen_> &               velforce,
       const double &                            timefacfac,
       const double &                            timefacfacrhs
-  );
+  ) const;
 
   /// compute element matrix entries: continuous force terms on rhs
   void ContForceGalPart(
       LINALG::Matrix<nen_,1> &                  preforce,
       const double &                            timefacfacdiv,
       const double &                            timefacfacdivrhs
-  );
+  ) const;
 
   /// compute momentum residuum
   void MomRes(
@@ -269,7 +270,7 @@ private:
       const LINALG::Matrix<nsd_,nen_>&        evelnp,
       const LINALG::Matrix<nsd_,nen_>&        efluidveln,
       const LINALG::Matrix<nsd_,nen_>&        efluidvelnp
-  );
+  ) const;
 
   //! Compute element matrix and rhs entries: inertia and reactive terms of the Galerkin part
   void CalcDivEps(
@@ -278,40 +279,40 @@ private:
       LINALG::Matrix<nsd_,1>&               viscs,
       LINALG::Matrix<nsd_,1>&               viscs_old,
       LINALG::Matrix<nsd_*nsd_,nen_>&       visc_shp
-  );
+  ) const;
 
   //! Compute element matrix entries: PSPG
   void PSPG(
       LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,      ///< block (weighting function q x u)
       LINALG::Matrix<nen_,nen_> &               ppmat,          ///< block (weighting function q x p)
       LINALG::Matrix<nen_,1> &                  preforce,       ///< rhs forces pressure
-      LINALG::Matrix<nsd_*nsd_,nen_> &          GalMomResnU,    ///< linearisation of the stabilization residual
-      LINALG::Matrix<nsd_,1> &                  StrongResMomScaled,
+      const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomResnU,    ///< linearisation of the stabilization residual
+      const LINALG::Matrix<nsd_,1> &            StrongResMomScaled,
       const double &                            timefacfac,     ///< = timefac x fac
       const double &                            timefacfacrhs,  ///< = timefacrhs x fac
       const double &                            timefacfacpre,  ///< = timefacpre x fac
       const double &                            timefacfacprerhs///< = timefacprerhs x fac
-  );
+  ) const;
 
   //! Compute element matrix entries: SUPG
   void SUPG(
       LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
       LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
       LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
-      LINALG::Matrix<nsd_*nsd_,nen_> &          GalMomResnU,    ///< linearisation of the stabilization residual
-      LINALG::Matrix<nsd_,1> &                  StrongResMomScaled,
+      const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomResnU,    ///< linearisation of the stabilization residual
+      const LINALG::Matrix<nsd_,1> &            StrongResMomScaled,
       const double &                            timefacfac,     ///< = timefac x fac
       const double &                            timefacfacrhs,  ///< = timefacrhs x fac
       const double &                            timefacfacpre,  ///< = timefacpre x fac
       const double &                            timefacfacprerhs///< = timefacprerhs x fac
-  );
+  ) const;
 
   /// compute residuum of continuity equation
   void ContRes(
       double &                                  StrongResContScaled,
       const double &                            timefacfacdiv,  ///< = timefac x fac
       const double &                            timefacfacdivrhs///< = timefac x fac
-  );
+  ) const;
 
   //! Compute element matrix entries: div-grad stabilization
   void ContStab(
@@ -319,7 +320,7 @@ private:
       LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
       const double &                            timefacfacdiv,  ///< = timefac x fac
       const double &                            timefacfacdivrhs///< = timefac x fac
-  );
+  ) const;
 
   /*!
    * \brief fill elment matrix and vectors with the global values
@@ -329,7 +330,7 @@ private:
       LINALG::Matrix<nsd_,nen_> *  matrixtofill,   ///< vector field
       LINALG::Matrix<nen_,1> *     vectortofill,   ///< scalar field
       const std::string            state          ///< state of the global vector
-  );
+  ) const;
 
 
 
@@ -441,7 +442,7 @@ private:
   bool is_higher_order_ele_;
 
   //! pointer to parameter list
-  DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
+  const DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
 };
 }
 }

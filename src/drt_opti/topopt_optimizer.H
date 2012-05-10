@@ -67,31 +67,41 @@ namespace TOPOPT
   {
   public:
     /// constructor
-    explicit Optimizer(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& params);
+    explicit Optimizer(
+        Teuchos::RCP<const DRT::Discretization> discret,
+        const Teuchos::ParameterList& params
+    );
 
     /// desctructor
     virtual ~Optimizer(){};
 
     /// compute the value of the objective funtion
-    double ComputeObjectiveValue(Teuchos::RCP<Epetra_Vector> porosity);
+    double ComputeObjectiveValue(const Teuchos::RCP<const Epetra_Vector> porosity) const;
 
     /// import the fluid solution of one time step
     void ImportFluidData(Teuchos::RCP<Epetra_Vector> vel,int step);
 
     /// import the adjoint fluid solution of one time step
-    void ImportAdjointFluidData(Teuchos::RCP<Epetra_Vector> vel, int step);
+    void ImportAdjointFluidData(Teuchos::RCP<Epetra_Vector> vel,int step);
+
+    /// clear the field data for a new optimization step
+    void ClearFieldData()
+    {
+      vel_->clear();
+      adjointvel_->clear();
+    }
 
     /// export the complete fluid solution of all time steps
-    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData(){return vel_;} /// fluid velocity
+    Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return vel_;} /// fluid velocity
 
     /// density field of last optimization step
-    Teuchos::RCP<Epetra_Vector> DensityI(){return dens_i_;}
+    Teuchos::RCP<const Epetra_Vector> DensityI() const {return dens_i_;}
 
     /// density field of new optimization step
-    Teuchos::RCP<Epetra_Vector> DensityIp(){return dens_ip_;}
+    Teuchos::RCP<const Epetra_Vector> DensityIp() const {return dens_ip_;}
 
     /// discretization of fluid field
-    Teuchos::RCP<DRT::Discretization> Discret(){return discret_;}
+    Teuchos::RCP<const DRT::Discretization> Discret(){return discret_;}
 
     /// row map of optimization variable
     const Epetra_Map* RowMap();
@@ -106,8 +116,8 @@ namespace TOPOPT
 
     /// evaluate the objective function
     double EvaluateObjective(
-        Teuchos::RCP<Epetra_Vector> porosity,
-        const std::string& action);
+        const Teuchos::RCP<const Epetra_Vector> porosity,
+        const std::string& action) const;
 
   private:
 
@@ -116,7 +126,7 @@ namespace TOPOPT
 
     Teuchos::RCP<Epetra_Vector> dens_i_;/// old density in row map
     Teuchos::RCP<Epetra_Vector> dens_ip_; /// new density in row map
-    Teuchos::RCP<DRT::Discretization> discret_; /// discretization of optimization field
+    Teuchos::RCP<const DRT::Discretization> discret_; /// discretization of optimization field
     const Teuchos::ParameterList& params_; /// parameters
 
     //! @name fields for optimization

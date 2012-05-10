@@ -13,14 +13,17 @@ General Data File BACI
 - stationary adjoint fluid example in the topopt frame
 - academical, two-dimensional test case with a duct
 - linear fluid velocity field:
-        o       u_1 = x
+        o       u_1 = x + 2*y
         o       u_2 = -y
-- linear adjoint velocity field:
-        o       v_1 = 5*x + 2*y
-        o       v_2 = 3*x + 7*y
-- quadratic adjoint pressure field         q = -0.5*(125000*x*x+175000*y*y+100000*x*y)
-- bodyforce of adjoint momentum and adjoint continuity equations, NBC and DBC adequate
-- all terms active, density and viscosity unequal 1
+- constant fluid pressure field:
+                p = 0
+- quadratic adjoint velocity field:
+        o       v_1 = x*x
+        o       v_2 = 2*y*y - 3*x*x
+- linear adjoint pressure field:
+                q = 4*x + 2*y
+- all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
+- all terms active
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    10
 //NODES       45
@@ -64,7 +67,7 @@ INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
 INITIALFIELD                    field_by_function
-TESTCASE                        test_stat_lin_vel_quad_pres
+TESTCASE                        test_stat_quad_vel_lin_pres
 INITFUNCNO                      3
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
@@ -106,30 +109,36 @@ MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------FUNCT1 // initial flow field
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -y
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 25000*(0.5-x)
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//x+2*y//
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//-y//
+FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//0.0//
 ------------------------------------------------------------FUNCT2 // initial density field
 FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
 ------------------------------------------------------------FUNCT3 // initial adjoint field
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//5*x+2*y//
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//3*x+7*y//
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//-0.5*(125000*x*x+175000*y*y+100000*x*y)//
+FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//x*x//
+FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//2*y*y-3*x*x//
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//4*x+2*y//
 ------------------------------------------------------------FUNCT4 // x-component of fluid inflow profile
-FUNCT4 EXPR 0 0.0 0 FUNCTION x
+FUNCT4 EXPR 0 0.0 0 FUNCTION x+2*y
 ------------------------------------------------------------FUNCT5 // y-component of fluid inflow profile
 FUNCT5 EXPR 0 0.0 0 FUNCTION -y
-------------------------------------------------------------FUNCT6 // normal tension on right boundary in x-direction
-FUNCT6 EXPR 0 0.0 0 FUNCTION -0.5*(24999*y*y-25001*x*x)+2
+------------------------------------------------------------FUNCT6 // bodyforce in x-direction
+FUNCT6 EXPR 0 0.0 0 FUNCTION 25001*x+50000*y
+------------------------------------------------------------FUNCT7 // bodyforce in y-direction
+FUNCT7 EXPR 0 0.0 0 FUNCTION -24999*y
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  3
-NDSURF  0
+NDSURF  1
 NDVOL   0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  1
+// volume force
+E 1 - none 1 1 0 0 0 0  1.0 1.0 0.0 0.0 0.0 0.0  Live Mid 6 7 0 0 0 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // outflow
-E 3 - none 1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  Live Mid 6 0 0 0 0 0
+E 3 - none 1 1 0 0 0 0  2.0 2.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // inflow
@@ -137,25 +146,25 @@ E 1 - 1 1 0 0 0 0  1.0 1.0 0.0 0.0 0.0 0.0  none none none none none none  4 5 0
 // sides
 E 2 - 1 1 0 0 0 0  1.0 1.0 0.0 0.0 0.0 0.0  none none none none none none  4 5 0 0 0 0
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 4 POSITION velx NAME velx VALUE 0.0 TOLERANCE 1.0e-15
+FLUID DIS 1 NODE 4 POSITION velx NAME velx VALUE 0.2 TOLERANCE 1.0e-15
 FLUID DIS 1 NODE 4 POSITION vely NAME vely VALUE -0.1 TOLERANCE 1.0e-15
-FLUID DIS 1 NODE 4 POSITION pressure NAME pressure VALUE 124.995 TOLERANCE 1.0e-10
-FLUID DIS 1 NODE 39 POSITION velx NAME velx VALUE 0.25 TOLERANCE 1.0e-15
+FLUID DIS 1 NODE 4 POSITION pressure NAME pressure VALUE 0.0 TOLERANCE 1.0e-12
+FLUID DIS 1 NODE 39 POSITION velx NAME velx VALUE 0.65 TOLERANCE 1.0e-15
 FLUID DIS 1 NODE 39 POSITION vely NAME vely VALUE -0.2 TOLERANCE 1.0e-15
-FLUID DIS 1 NODE 39 POSITION pressure NAME pressure VALUE -281.30125 TOLERANCE 1.0e-10
-FLUID DIS 1 NODE 44 POSITION velx NAME velx VALUE 0.5 TOLERANCE 1.0e-13
-FLUID DIS 1 NODE 44 POSITION vely NAME vely VALUE -0.15 TOLERANCE 1.0e-13
-FLUID DIS 1 NODE 44 POSITION pressure NAME pressure VALUE -2843.88625 TOLERANCE 1.0e-10
+FLUID DIS 1 NODE 39 POSITION pressure NAME pressure VALUE 0.0 TOLERANCE 1.0e-12
+FLUID DIS 1 NODE 44 POSITION velx NAME velx VALUE 0.8 TOLERANCE 1.0e-15
+FLUID DIS 1 NODE 44 POSITION vely NAME vely VALUE -0.15 TOLERANCE 1.0e-15
+FLUID DIS 1 NODE 44 POSITION pressure NAME pressure VALUE 0.0 TOLERANCE 1.0e-12
 
-ADJOINT DIS 1 NODE 4 POSITION velx NAME velx VALUE 0.2 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 4 POSITION vely NAME vely VALUE 0.7 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 4 POSITION pressure NAME pressure VALUE -8.75e+02 TOLERANCE 1.0e-10
-ADJOINT DIS 1 NODE 39 POSITION velx NAME velx VALUE 1.65 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 39 POSITION vely NAME vely VALUE 2.15 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 39 POSITION pressure NAME pressure VALUE -9.90625e+03 TOLERANCE 1.0e-10
-ADJOINT DIS 1 NODE 44 POSITION velx NAME velx VALUE 2.8 TOLERANCE 1.0e-13
-ADJOINT DIS 1 NODE 44 POSITION vely NAME vely VALUE 2.55 TOLERANCE 1.0e-13
-ADJOINT DIS 1 NODE 44 POSITION pressure NAME pressure VALUE -2.134375e+04 TOLERANCE 1.0e-10
+ADJOINT DIS 1 NODE 4 POSITION velx NAME velx VALUE 0.0 TOLERANCE 1.0e-15
+ADJOINT DIS 1 NODE 4 POSITION vely NAME vely VALUE 0.02 TOLERANCE 1.0e-15
+ADJOINT DIS 1 NODE 4 POSITION pressure NAME pressure VALUE 0.2 TOLERANCE 1.0e-12
+ADJOINT DIS 1 NODE 39 POSITION velx NAME velx VALUE 0.0625 TOLERANCE 1.0e-15
+ADJOINT DIS 1 NODE 39 POSITION vely NAME vely VALUE -0.1075 TOLERANCE 1.0e-15
+ADJOINT DIS 1 NODE 39 POSITION pressure NAME pressure VALUE 1.4 TOLERANCE 1.0e-12
+ADJOINT DIS 1 NODE 44 POSITION velx NAME velx VALUE 0.25 TOLERANCE 1.0e-15
+ADJOINT DIS 1 NODE 44 POSITION vely NAME vely VALUE -0.705 TOLERANCE 1.0e-15
+ADJOINT DIS 1 NODE 44 POSITION pressure NAME pressure VALUE 2.3 TOLERANCE 1.0e-12
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
@@ -191,6 +200,51 @@ NODE    27 DLINE 3
 NODE    43 DLINE 3
 NODE    44 DLINE 3
 -----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURF 1
+NODE    2 DSURF 1
+NODE    3 DSURF 1
+NODE    4 DSURF 1
+NODE    5 DSURF 1
+NODE    6 DSURF 1
+NODE    7 DSURF 1
+NODE    8 DSURF 1
+NODE    9 DSURF 1
+NODE    10 DSURF 1
+NODE    11 DSURF 1
+NODE    12 DSURF 1
+NODE    13 DSURF 1
+NODE    14 DSURF 1
+NODE    15 DSURF 1
+NODE    16 DSURF 1
+NODE    17 DSURF 1
+NODE    18 DSURF 1
+NODE    19 DSURF 1
+NODE    20 DSURF 1
+NODE    21 DSURF 1
+NODE    22 DSURF 1
+NODE    23 DSURF 1
+NODE    24 DSURF 1
+NODE    25 DSURF 1
+NODE    26 DSURF 1
+NODE    27 DSURF 1
+NODE    28 DSURF 1
+NODE    29 DSURF 1
+NODE    30 DSURF 1
+NODE    31 DSURF 1
+NODE    32 DSURF 1
+NODE    33 DSURF 1
+NODE    34 DSURF 1
+NODE    35 DSURF 1
+NODE    36 DSURF 1
+NODE    37 DSURF 1
+NODE    38 DSURF 1
+NODE    39 DSURF 1
+NODE    40 DSURF 1
+NODE    41 DSURF 1
+NODE    42 DSURF 1
+NODE    43 DSURF 1
+NODE    44 DSURF 1
+NODE    45 DSURF 1
 ------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	

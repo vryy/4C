@@ -312,7 +312,7 @@ public:
 
   */
   void SetTopOptData(
-      RCP<Epetra_Vector> porosity,
+      RCP<const Epetra_Vector> porosity,
       RCP<TOPOPT::Optimizer> optimizer
   );
 
@@ -765,7 +765,7 @@ protected:
   //! @name optimization data
   
   /// density in topology optimization
-  RCP<Epetra_Vector>    topopt_porosity_;
+  RCP<const Epetra_Vector>    topopt_porosity_;
 
   /// optimizer for topology optimization
   RCP<TOPOPT::Optimizer> optimizer_;

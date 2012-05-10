@@ -3681,19 +3681,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "test_stat_const_vel_lin_pres",
           "test_stat_lin_vel_quad_pres",
           "test_stat_quad_vel_lin_pres",
-          "test_stat_all_terms_all_constants"),
+          "test_stat_all_terms_all_constants",
+          "test_instat_varying_theta",
+          "test_instat_all_terms_all_constants",
+          "test_instat_primal_and_dual"),
           tuple<int>(
               INPAR::TOPOPT::adjointtest_no,
               INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres,
               INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres,
               INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres,
-              INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants),
+              INPAR::TOPOPT::adjointtest_stat_all_terms_all_constants,
+              INPAR::TOPOPT::adjointtest_instat_varying_theta,
+              INPAR::TOPOPT::adjointtest_instat_all_terms_all_constants,
+              INPAR::TOPOPT::adjointtest_instat_primal_and_dual),
               &topoptadjointfluiddyn);
 
   IntParameter("INITFUNCNO",-1,"Function for initial field",&topoptadjointfluiddyn);
 
-  DoubleParameter("THETA_PRES",-1.0,"One-Step-Theta-factor for pressure terms",&topoptadjointfluiddyn);
-  DoubleParameter("THETA_DIV",-1.0,"One-Step-Theta-factor for divergence terms",&topoptadjointfluiddyn);
+  DoubleParameter("THETA_PRES",1.0,"One-Step-Theta-factor for pressure terms",&topoptadjointfluiddyn);
+  DoubleParameter("THETA_DIV",1.0,"One-Step-Theta-factor for divergence terms",&topoptadjointfluiddyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,

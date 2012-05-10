@@ -45,7 +45,7 @@ public:
     /*!
     \brief constructor
     */
-    FluidAdjointResultTest(ImplicitTimeInt& adjointfluid);
+    FluidAdjointResultTest(const ImplicitTimeInt& adjointfluid);
 
 
     /// our version of nodal value tests
@@ -53,7 +53,11 @@ public:
     Possible position flags are "velx", "vely", "velz" and
     "pressure". With the obvious meaning.
     */
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void TestNode(
+        DRT::INPUT::LineDefinition& res,
+        int& nerr,
+        int& test_count
+    );
 
     /// return true if this is a fluid adjoint test
     virtual bool Match(DRT::INPUT::LineDefinition& res);
@@ -61,7 +65,7 @@ public:
 private:
 
     /// pointer to fluid discretization
-    Teuchos::RCP<DRT::Discretization> fluiddis_;
+    Teuchos::RCP<const DRT::Discretization> fluiddis_;
     /// pointer to unknown vector with values
     const Teuchos::RCP<const Epetra_Vector>       mysol_;
 };

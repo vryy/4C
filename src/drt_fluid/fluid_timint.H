@@ -208,7 +208,7 @@ public:
 
   virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
 
-  virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity,Teuchos::RCP<TOPOPT::Optimizer> optimizer) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void SetTopOptData(Teuchos::RCP<const Epetra_Vector> porosity,Teuchos::RCP<TOPOPT::Optimizer> optimizer) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   /// set initial flow field
   virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) { dserror("Not implemented in the base class, may be overridden by a subclass."); }

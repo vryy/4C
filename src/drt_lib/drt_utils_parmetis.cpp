@@ -1029,8 +1029,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     int npart = numproc;         // number of partitions desired
     int options[4] = { 0,0,15,0 }; // use default metis parameters
     int edgecut = 0;             // output, number of edges cut in partitioning
-    float ubvec = 1.05;
-    vector<float> tpwgts(npart,1.0/(double)npart);
+    float ubvec = (float)1.05;
+    vector<float> tpwgts(npart,static_cast<float>(1.0/(double)npart));
     MPI_Comm mpicomm=(dynamic_cast<const Epetra_MpiComm*>(&(dis->Comm())))->Comm();
 
     ParMETIS_V3_PartKway(&(vtxdist[0]),&(xadj[0]),&(adjncy[0]),

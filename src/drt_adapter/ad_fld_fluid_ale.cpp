@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "ad_fld_fluid_ale.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "adapter_coupling.H"
 #include "../drt_inpar/inpar_fsi.H"
 

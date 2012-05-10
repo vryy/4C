@@ -434,7 +434,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
   const Teuchos::ParameterList& mcparams     = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  INPAR::CONTACT::ApplicationType apptype    = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
+//  INPAR::CONTACT::ApplicationType apptype    = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
   switch(DRT::INPUT::IntegralValue<int>(mcparams,"SYSTEM"))
   {
     case INPAR::CONTACT::system_spsimpler:

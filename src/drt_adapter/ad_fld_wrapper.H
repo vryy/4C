@@ -190,7 +190,7 @@ namespace ADAPTER
     { return fluid_->TimIntScheme(); }
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
     { return fluid_->ExtractVelocityPart(velpres); }
-    virtual void SetTopOptData(RCP<Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer){ dserror("not implemented!"); };
+    virtual void SetTopOptData(RCP<const Epetra_Vector> porosity,RCP<TOPOPT::Optimizer> optimizer){ dserror("not implemented!"); };
     virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");

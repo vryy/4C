@@ -1230,10 +1230,12 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const 
                   {
                     int currfilament = (int)(*filamentnumber_)[(int)LID(0,0)];
                     if((int)LID(0,0)<basisnodes_-1)
+                    {
                       if((int)(*filamentnumber_)[(int)LID(0,0)+1]==currfilament)
                         LID(1,0) = LID(0,0) + 1.0;
                       else
                         LID(1,0) = LID(0,0) - 1.0;
+                    }
                     if((int)LID(0,0)==basisnodes_-1)
                       if((int)(*filamentnumber_)[(int)LID(0,0)-1]==currfilament)
                         LID(1,0) = LID(0,0) - 1.0;

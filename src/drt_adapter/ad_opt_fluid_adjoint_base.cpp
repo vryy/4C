@@ -281,15 +281,11 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   // set initial field by given function
   // we do this here, since we have direct access to all necessary parameters
-  if(initfield != INPAR::TOPOPT::initadjointfield_zero_field)
-  {
-    int startfuncno = adjointfdyn.get<int>("INITFUNCNO");
-    if (initfield != INPAR::TOPOPT::initadjointfield_field_by_function)
-    {
-      startfuncno=-1;
-    }
-    adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
-  }
+  int startfuncno = adjointfdyn.get<int>("INITFUNCNO");
+  if (initfield != INPAR::TOPOPT::initadjointfield_field_by_function)
+    startfuncno=-1;
+
+  adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
   adjointTimeInt_->Output();
 
   return;

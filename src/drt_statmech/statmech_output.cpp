@@ -1356,10 +1356,12 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
             const DRT::Node *node1 = NULL;
             int currfilament = (int)(*filamentnumber_)[nodeLID];
             if(nodeLID < basisnodes_-1)
+            {
               if((*filamentnumber_)[nodeLID+1]==currfilament)
                 node1 = discret_->lColNode(nodeLID+1);
               else
                 node1 = discret_->lColNode(nodeLID-1);
+            }
             if(nodeLID == basisnodes_-1)
               if((*filamentnumber_)[nodeLID-1]==currfilament)
                 node1 = discret_->lColNode(nodeLID-1);
@@ -1485,10 +1487,12 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
               const DRT::Node *node1 = NULL;
               int currfilament = (int)(*filamentnumber_)[nodeLID];
               if(nodeLID < basisnodes_-1)
+              {
                 if((*filamentnumber_)[nodeLID+1]==currfilament)
                   node1 = discret_->lColNode(nodeLID+1);
                 else
                   node1 = discret_->lColNode(nodeLID-1);
+              }
               if(nodeLID == basisnodes_-1)
                 if((*filamentnumber_)[nodeLID-1]==currfilament)
                   node1 = discret_->lColNode(nodeLID-1);
@@ -4147,6 +4151,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
               continueloop = true;
             // only entries above main diagonal and within limits of designated number of crosslink molecules per processor
             if(j>i && continueloop)
+            {
               if(combicount<combinationsperproc+appendix)
               {
                 combicount++;
@@ -4195,6 +4200,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
                 quitloop = true;
                 break;
               }
+            }
           }
           if(quitloop)
             break;

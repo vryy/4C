@@ -68,7 +68,10 @@ namespace INPAR
       adjointtest_stat_const_vel_lin_pres,
       adjointtest_stat_lin_vel_quad_pres,
       adjointtest_stat_quad_vel_lin_pres,
-      adjointtest_stat_all_terms_all_constants
+      adjointtest_stat_all_terms_all_constants,
+      adjointtest_instat_varying_theta,
+      adjointtest_instat_all_terms_all_constants,
+      adjointtest_instat_primal_and_dual
     };
   }
 }

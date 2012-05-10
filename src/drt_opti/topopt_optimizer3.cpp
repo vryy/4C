@@ -21,9 +21,9 @@ Maintainer: Martin Winklmaier
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double TOPOPT::Optimizer::EvaluateObjective(
-    Teuchos::RCP<Epetra_Vector> porosity,
+    const Teuchos::RCP<const Epetra_Vector> porosity,
     const std::string& action
-)
+) const
 {
   double value = 0.0;
   // TODO fill!
