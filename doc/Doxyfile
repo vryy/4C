@@ -599,6 +599,7 @@ INPUT                  = index.doc \
                          ../src/drt_stru_multi \
                          ../src/drt_structure \
                          ../src/drt_surfstress \
+                         ../src/drt_thermo \
                          ../src/drt_torsion2 \
                          ../src/drt_torsion3 \
                          ../src/drt_truss2 \

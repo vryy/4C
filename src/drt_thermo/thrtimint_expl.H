@@ -78,7 +78,7 @@ namespace THR
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
     {
       dserror("not implemented for explicit time integration");
       return;
@@ -119,7 +119,7 @@ namespace THR
     virtual void Update();
 
     //! update Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp)
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
     {
       dserror("not needed for explicit time integration");
       return;

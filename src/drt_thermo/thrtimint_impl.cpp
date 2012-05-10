@@ -107,7 +107,7 @@ void THR::TimIntImpl::IntegrateStep()
  | build linear system tangent matrix, rhs/force residual   bborn 08/09 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
+void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -135,7 +135,7 @@ void THR::TimIntImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
 //  }
 
   // TSI does not use NOX --> the Newton increment is passed to the field solver
-  UpdateIterIncrementally(temp);
+  UpdateIterIncrementally(tempi);
 
   // builds tangent, residual and applies DBC
   EvaluateRhsTangResidual();
@@ -654,14 +654,14 @@ void THR::TimIntImpl::Update()
 /*----------------------------------------------------------------------*
  | update Newton step                                        dano 02/11 |
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp)
+void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments we get from NOX and apply the latest
   // increment only.
-  UpdateIterIncrementally(temp);
+  UpdateIterIncrementally(tempi);
 
   return;
 }

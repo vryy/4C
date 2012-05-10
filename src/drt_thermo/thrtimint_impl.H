@@ -73,7 +73,7 @@ namespace THR
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp);
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi);
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -226,7 +226,7 @@ namespace THR
     virtual void Update();
 
     //! update Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp);
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi);
 
     //@}
 
@@ -366,9 +366,8 @@ namespace THR
     double normtempi_;  //!< norm of residual temperatures
     Teuchos::RCP<Epetra_Vector> tempi_;  //!< residual temperatures
                                         //!< \f$\Delta{T}^{<k>}_{n+1}\f$
-    /// sum of temperature vectors already applied,
-    /// i.e. the incremental temperature
-    Teuchos::RCP<Epetra_Vector> tempinc_;
+    Teuchos::RCP<Epetra_Vector> tempinc_;  //!< sum of temperature vectors already applied,
+                                           //!< i.e. the incremental temperature
     Epetra_Time timer_;  //!< timer for solution technique
     //@}
 

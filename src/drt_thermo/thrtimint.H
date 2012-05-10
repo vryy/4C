@@ -131,8 +131,10 @@ namespace THR
       );
 
     //! prepare thermal contact
-    void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-                              Teuchos::RCP<DRT::Discretization> discretstruct);
+    void PrepareThermoContact(
+      Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+      Teuchos::RCP<DRT::Discretization> discretstruct
+      );
 
     //! prepare time step
     virtual void PrepareTimeStep() = 0;
@@ -149,12 +151,11 @@ namespace THR
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp) = 0;
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
     virtual void Evaluate() = 0;
-
 
     //! Update configuration after time step
     //!
@@ -170,7 +171,9 @@ namespace THR
     virtual void Update() = 0;
 
     //! update Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp) = 0;
+    virtual void UpdateNewton(
+      Teuchos::RCP<const Epetra_Vector> tempi
+      ) = 0;
 
     //! Reset configuration after time step
     //!
@@ -179,10 +182,10 @@ namespace THR
     //! quantities
     void ResetStep();
 
-    /// set the initial thermal field
+    //! set the initial thermal field
     void SetInitialField(
-      const INPAR::THR::InitialField,  ///< type of initial field
-      const int startfuncno  ///< number of spatial function
+      const INPAR::THR::InitialField,  //!< type of initial field
+      const int startfuncno  //!< number of spatial function
       );
 
     //@}
@@ -350,9 +353,8 @@ namespace THR
 
     //! Set external loads (heat flux) due to tfsi interface
     virtual void ApplyInterfaceForces(
-      Teuchos::RCP<Epetra_Vector> ithermoload
+      Teuchos::RCP<Epetra_Vector> ithermoload  //!< thermal interface load
       );
-
 
     //@}
 
@@ -364,9 +366,7 @@ namespace THR
 
     //! Provide title
     std::string MethodTitle() const
-    {
-      return INPAR::THR::DynamicTypeString(MethodName());
-    }
+    { return INPAR::THR::DynamicTypeString(MethodName()); }
 
     //! Return true, if time integrator is implicit
     virtual bool MethodImplicit() = 0;
@@ -391,9 +391,7 @@ namespace THR
 
     //! Access dicretisation
     Teuchos::RCP<DRT::Discretization> Discretization()
-    {
-      return discret_;
-    }
+    { return discret_; }
 
     //! non-overlapping DOF map for multiple dofsets
     Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
@@ -411,21 +409,15 @@ namespace THR
 
     //! Access solver
     Teuchos::RCP<LINALG::Solver> Solver()
-    {
-      return solver_;
-    }
+    { return solver_; }
 
     //! get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
-    {
-      return solver_;
-    }
+    { return solver_; }
 
     //! Access output object
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
-    {
-      return output_;
-    }
+    { return output_; }
 
     //! Read restart values
     void ReadRestart(
@@ -447,7 +439,7 @@ namespace THR
     //! Return temperatures \f$T_{n}\f$
     Teuchos::RCP<const Epetra_Vector> Tempn() { return (*temp_)(0); }
 
-    /// initial guess of Newton's method
+    //! initial guess of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
 
     //! Return temperatures \f$T_{n+1}\f$
@@ -500,10 +492,12 @@ namespace THR
     double GetTimeStepSize() const { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    void SetTimeStepSize(double timestepsize) { (*dt_)[0] = timestepsize; }
+    void SetTimeStepSize(double timestepsize)
+    { (*dt_)[0] = timestepsize; }
 
     //! Set time step size \f$\Delta t_n\f$ and timen_
-    void SetInitialTimeStepAndTime(double timestepsize) { (*dt_)[0] = timestepsize; timen_ = (*time_)[0] + (*dt_)[0]; }
+    void SetInitialTimeStepAndTime(double timestepsize)
+    { (*dt_)[0] = timestepsize; timen_ = (*time_)[0] + (*dt_)[0]; }
 
     //! Return current step number map
     int GetStep() const { return step_; }
@@ -519,18 +513,15 @@ namespace THR
 
     //! Return MapExtractor for Dirichlet boundary conditions
     const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
-    {
-      return dbcmaps_;
-    }
+    { return dbcmaps_; }
 
     //! Return MapExtractor for Dirichlet boundary conditions
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
-    {
-      return dbcmaps_;
-    }
+    { return dbcmaps_; }
 
     //! Return thermal contact manager
-    Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() {return thermcontman_;}
+    Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager()
+    { return thermcontman_; }
 
     //@}
 
@@ -538,15 +529,21 @@ namespace THR
 
     //! @name TFSI stuff
     //@{
+
     Teuchos::RCP<const LINALG::MapExtractor> tfsisurface_;  //!< tfsi surface
+
+    //@}
 
     //! @name Interface stuff
     //@{
+
     Teuchos::RCP<Epetra_Vector> fifc_;  //!< external interface loads
+
     //@}
 
     //! @name General purpose algorithm members
     //@{
+
     Teuchos::RCP<DRT::Discretization> discret_;           //!< attached discretisation
     Teuchos::RCP<DRT::Discretization> discretstruct_;  //!< structural discretisation
 
@@ -565,6 +562,7 @@ namespace THR
 
     //! @name Printing and output
     //@{
+
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     bool printlogo_;  //!< true: enjoy your cuppa
     int  printscreen_;  //!< print infos to standard out every n steps
@@ -579,10 +577,12 @@ namespace THR
     INPAR::THR::TempGradType writetempgrad_;
     int writeenergyevery_;  //!< write system energy every given step
     std::ofstream* energyfile_;  //!< outputfile for energy
+
     //@}
 
     //! @name General control parameters
     //@{
+
     Teuchos::RCP<TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
     Teuchos::RCP<TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
@@ -591,11 +591,14 @@ namespace THR
     int step_;  //!< time step index \f$n\f$
     int stepn_;  //!< time step index \f$n+1\f$
     bool lumpcapa_;  //!< flag for lumping the capacity matrix, default: false
+
     //@}
 
     //! @name Global vectors
     //@{
+
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+
     //@}
 
 
@@ -625,6 +628,7 @@ namespace THR
 
     //! @name System matrices
     //@{
+
     //! holds eventually effective tangent (STR: stiff_)
     Teuchos::RCP<LINALG::SparseMatrix> tang_;
     //! capacity matrix (constant)
