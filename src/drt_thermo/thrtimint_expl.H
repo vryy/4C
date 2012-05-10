@@ -95,14 +95,14 @@ namespace THR
     //! prepare time step
     virtual void PrepareTimeStep()
     {
-      dserror("not needed for explicit time integration");
+      // do nothing
       return;
     }
 
     //! for implicit partitioned schemes
     virtual void PreparePartitionStep()
     {
-      dserror("not needed for explicit time integration");
+      // do nothing
       return;
     }
 
