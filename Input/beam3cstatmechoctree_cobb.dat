@@ -89,7 +89,7 @@ BEAMS_BOXESINOCT                4
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 DBCTYPE                         std
-GMSHOUTPUT                      Yes
+GMSHOUTPUT                      No
 SPECIAL_OUTPUT none //octree
 BEAMCONTACT                     Yes
 FRICTION_MODEL                  anisotropicconsistent
