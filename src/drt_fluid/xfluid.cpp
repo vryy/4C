@@ -3079,7 +3079,7 @@ void FLD::XFluid::Output()
       };
       gmshfilecontent << "};\n";
     }
-    if( ghost_penalty_ ) // stabilization output
+    if( xdiscret->FilledExtension() == true && ghost_penalty_ ) // stabilization output
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";
@@ -3087,18 +3087,20 @@ void FLD::XFluid::Output()
       for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
       {
         const DRT::Element* actele = xdiscret->lRowIntFace(i);
-        map<int,bool>::iterator it = (state_->EdgeStab()->GetGhostPenaltyMap()).find(actele->Id());
-        if(it != state_->EdgeStab()->GetGhostPenaltyMap().end())
+        std::map<int,bool> & ghost_penalty_map = state_->EdgeStab()->GetGhostPenaltyMap();
+
+        map<int,bool>::iterator it = ghost_penalty_map.find(actele->Id());
+        if(it != ghost_penalty_map.end())
         {
           bool ghost_penalty = it->second;
-          if(ghost_penalty) IO::GMSH::elementAtInitialPositionToStream(double((int)ghost_penalty),
-              actele,
-              gmshfilecontent);
+
+          if(ghost_penalty) IO::GMSH::elementAtInitialPositionToStream(double((int)ghost_penalty),actele, gmshfilecontent);
         }
+        else dserror("face %d in map not found", actele->Id());
       }
       gmshfilecontent << "};\n";
     }
-    if(edge_based_)
+    if(xdiscret->FilledExtension() == true && edge_based_)
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "edgebased stabilized \" {\n";
@@ -3106,13 +3108,14 @@ void FLD::XFluid::Output()
       for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
       {
         const DRT::Element* actele = xdiscret->lRowIntFace(i);
-        map<int,bool>::iterator it = (state_->EdgeStab()->GetEdgeBasedMap()).find(actele->Id());
-        if(it != state_->EdgeStab()->GetEdgeBasedMap().end())
+        std::map<int,bool> & edge_based_map = state_->EdgeStab()->GetEdgeBasedMap();
+        map<int,bool>::iterator it = edge_based_map.find(actele->Id());
+
+        if(it != edge_based_map.end())
         {
           bool edge_stab =it->second;
-          if(edge_stab) IO::GMSH::elementAtInitialPositionToStream(double((int)edge_stab),
-              actele,
-              gmshfilecontent);
+
+          if(edge_stab) IO::GMSH::elementAtInitialPositionToStream(double((int)edge_stab),actele, gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";

@@ -95,10 +95,10 @@ public:
                                      );
 
   //! returns a map containing the ghost penalty stabilized internal face elements
-  std::map<int,bool> GetGhostPenaltyMap(){return ghost_penalty_stab_;}
+  std::map<int,bool> & GetGhostPenaltyMap(){return ghost_penalty_stab_;}
 
   //! returns a map containing the edge based stabilized internal face elements
-  std::map<int,bool> GetEdgeBasedMap(){return edge_based_stab_;}
+  std::map<int,bool> & GetEdgeBasedMap(){return edge_based_stab_;}
 
 
   private:

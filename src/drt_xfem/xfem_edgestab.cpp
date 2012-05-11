@@ -44,6 +44,8 @@ XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
   wizard_(wizard),
   discret_(discret)
 {
+  ghost_penalty_stab_.clear();
+  edge_based_stab_.clear();
 } // end constructor
 
 
