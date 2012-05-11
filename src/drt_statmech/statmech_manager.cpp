@@ -60,7 +60,7 @@ basiselements_(discret->NumGlobalElements()),
 outputfilenumber_(-1),
 normalgen_(0,1),
 discret_(discret),
-initialset_(false)
+useinitdbcset_(false)
 {
   Teuchos::ParameterList parameters = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -148,6 +148,9 @@ initialset_(false)
    * with any other processor; initialization with -1 indicates that so far no forcesensors have been set*/
   forcesensor_ = rcp( new Epetra_Vector(*(discret_->DofColMap())) );
   forcesensor_->PutScalar(-1.0);
+
+  // initial clearing of dbc management vectors
+  dbcnodesets_.clear();
 
   /*since crosslinkers should be established only between different filaments the number of the filament
    * each node is belonging to is stored in the condition FilamentNumber; if no such conditions have been defined
@@ -2522,8 +2525,6 @@ void STATMECH::StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int
       (*forcesensor_)[collid] = 1.0;
     }
   }
-
-  initialset_ = true;
 } // StatMechManager::UpdateForceSensors
 
 /*----------------------------------------------------------------------*
@@ -3566,327 +3567,92 @@ void STATMECH::StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVec
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::EvaluateDirichletStatMech(ParameterList&                     params,
                                                           Teuchos::RCP<Epetra_Vector>        dis,
-                                                          Teuchos::RCP<Epetra_Vector>        dirichtoggle,
-                                                          Teuchos::RCP<Epetra_Vector>        invtoggle,
                                                           Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
 {
-  // in case of activated periodic boundary conditions
-  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"PERIODICDBC"))
+  if(dbcmapextractor!=Teuchos::null)
   {
-    // new DBC management method
-    if(dbcmapextractor!=Teuchos::null)
-      EvaluateDirichletPeriodic(params, dis, Teuchos::null, Teuchos::null, dbcmapextractor);
-    else
+    INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE");
+
+    switch(dbctype)
     {
-      if(dirichtoggle==Teuchos::null || invtoggle==Teuchos::null)
-        dserror("When there is no dbcmaps, the toggle vectors have to be handed over instead!");
-      EvaluateDirichletPeriodic(params, dis, dirichtoggle, invtoggle);
+      // standard DBC application
+      case INPAR::STATMECH::dbctyp_std:
+        discret_->EvaluateDirichlet(params, dis, Teuchos::null, Teuchos::null, Teuchos::null, dbcmapextractor);
+      break;
+      // no DBCs at all
+      case INPAR::STATMECH::dbctype_none:
+        return;
+      break;
+      // default: everything involving periodic boundary conditions
+      default:
+        EvaluateDirichletPeriodic(params, dis, dbcmapextractor);
     }
-//    // convert dirichtoggle to dbcmap_
-//    dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
   }
   else
-  {
-    if(dbcmapextractor!=Teuchos::null)
-      discret_->EvaluateDirichlet(params, dis, Teuchos::null, Teuchos::null, Teuchos::null, dbcmapextractor);
-    else
-      discret_->EvaluateDirichlet(params, dis, Teuchos::null, Teuchos::null, dirichtoggle);
-  }
+    dserror("Only new DBC application method implemented using the map extractor! Old version using toggle vectors dicontinued!");
+
   return;
 }
 /*----------------------------------------------------------------------*
  |  Evaluate DBCs in case of periodic BCs (public)         mueller 02/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
+void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList& params,
                                                           Teuchos::RCP<Epetra_Vector> dis,
-                                                          Teuchos::RCP<Epetra_Vector> dirichtoggle,
-                                                          Teuchos::RCP<Epetra_Vector> invtoggle,
                                                           Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
-/*The idea behind EvaluateDirichletPeriodic() is simple:
- * Give Dirichlet values to nodes of an element that is broken in
- * z-direction due to the application of periodic boundary conditions.
- * The motion of the node close to z=0.0 in the cubic volume of edge
- * length l (==periodlength in this case) is inhibited in direction of the
- * oscillatory motion. The oscillation is imposed on the node close to z=l.
- * This method is triggered in case of periodlength>0.0 (i.e. Periodic BCs
- * exist). Since the DBC setup happens dynamically by checking element
- * positions with each new time step, the static definition of DBCs in the input
- * file is only used to get the direction of the oscillatory motion as well as
- * the time curve. Therefore, only one DBC needs to be specified.
- *
- * How it works:
- * Each time this method is called, the system vector and the toggle vector are
- * modified to fit the current geometric situation.
- * DOFs holdings Dirichlet values are marked by setting the corresponding toggle
- * vector component to 1.0. In case of an element which was broken the step before
- * and is now whole again,just the toggle vector components in question are
- * reset to 0.0.
- * A position vector deltadbc is needed in order to calculate the correct Dirichlet
- * values to be imposed on nodes of an element which has drifted over the boundaries
- * and thus has been broken.
- * These positions are used to calculate the zero position of the oscillation which then can
- * be added to the time curve value in DoDirichletConditionPeriodic().
- */
 {
 #ifdef MEASURETIME
   const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
 
+  // some preliminary checks
   if (!(discret_->Filled())) dserror("FillComplete() was not called");
   if (!(discret_->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
-  //----------------------------------- some variables
-  // indicates broken element
-  bool broken;
-  // time trigger
-  bool usetime = true;
-  // to avoid redundant or wrong actions when filling vectors or deleting the last element of the free nodes vector
-  bool alreadydone = false;
-  // store node Id of previously handled node
-  int tmpid = -1;
-  // store LIDs of element node dofs
-  vector<int>	doflids;
 
-  // get the apmlitude of the oscillation
-  double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
-  // retrieve direction of oscillatory motion
-  int oscdir = statmechparams_.get<int>("OSCILLDIR",-1);
-  // retrieve number of time curve that is to be applied
-  int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
-
-  if(oscdir!=0 && oscdir!=1 && oscdir!=2 && oscdir!=-1)
-    dserror("Please define the StatMech Parameter OSCILLDIR correctly");
-
-  // get the current time
-  const double time = params.get<double>("total time", 0.0);
-  double dt = params.get<double>("delta time", 0.01);
-  double starttime = statmechparams_.get<double>("STARTTIMEACT",-1.0);
-  // check if time has superceeded start. If not, do nothing (i.e. no application of Dirichlet values) and just return!
-  if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4) || curvenumber<0 || oscdir==-1)
-    return;
-  if (time<0.0)
-    usetime = false;
-
+  // retrieve DBC type
+  INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE");
+  // vector holding Dirichlet increments
+  Teuchos::RCP<Epetra_Vector> deltadbc = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
   // vector of DOF-IDs which are Dirichlet BCs
-  Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
-  if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
+  Teuchos::RCP<std::set<int> > dbcgids = Teuchos::rcp(new std::set<int>());
 
-  //---------------------------------------------------------- loop over elements
-  // increment vector for dbc values
-  Epetra_Vector deltadbc(*(discret_->DofRowMap()), true);
-
-  // loop over row elements
-  // enter here only ONCE if the initial set of Dirichlet Nodes shall not be changed anymore OR ALWAYS in the case of an updated Dirichlet Node Set
-  if(!initialset_ || !(DRT::INPUT::IntegralValue<int>(statmechparams_, "FIXEDDIRICHNODES")))
+  // take action according to DBC type in the input file
+  switch(dbctype)
   {
-    // vectors to manipulate DBC; reset the vectors as they will be filled for the first time OR anew
-    oscillnodes_.clear();
-    fixednodes_.clear();
-    freenodes_.clear();
-
-    for(int lid=0; lid<discret_->NumMyRowElements(); lid++)
+    // shear with a fixed Dirichlet node set
+    case INPAR::STATMECH::dbctype_shearfixed:
     {
-      // An element used to browse through local Row Elements
-      DRT::Element* element = discret_->lRowElement(lid);
-
-      // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
-      if(element->Id() > basisnodes_ || element->Id() >= statmechparams_.get<int>("NUM_EVAL_ELEMENTS", basiselements_))
-        continue;
-
-      // number of translational DOFs (not elegant but...ah well...!)
-      int numdof = 3;
-      // positions of nodes of an element with n nodes
-      LINALG::SerialDenseMatrix coord(3,(int)discret_->lRowElement(lid)->NumNode(), true);
-      // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
-      LINALG::SerialDenseMatrix cut(3,(int)discret_->lRowElement(lid)->NumNode()-1,true);
-//-------------------------------- obtain nodal coordinates of the current element
-      // get nodal coordinates and LIDs of the nodal DOFs
-      GetElementNodeCoords(element, dis, coord, &doflids);
-//-----------------------detect broken/fixed/free elements and fill position vector
-      // determine existence and location of broken element
-      CheckForBrokenElement(coord, cut, &broken);
-
-      // loop over number of cuts (columns)
-      for(int n=0; n<cut.N(); n++)
-      {
-        // case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
-        if(broken && cut(2,n)==1.0)
-        {
-          // indicates beginning of a new filament (in the very special case that this is needed)
-          bool newfilament = false;
-          // check for case: last element of filament I as well as first element of filament I+1 broken
-          if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
-          {
-            // in this case, reset alreadydone...
-            alreadydone = false;
-            // ...and set newfilament to true. Otherwise the last free nodes vector element will be deleted
-            newfilament = true;
-          }
-          // add GID of fixed node to fixed-nodes-vector (to be added to condition later)
-          if(!alreadydone)
-            fixednodes_.push_back(element->Nodes()[n]->Id());
-          // add GID of oscillating node to osc.-nodes-vector
-          oscillnodes_.push_back(element->Nodes()[n+1]->Id());
-          /* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
-           * displacement in one particular direction (oscdir), another which oscillates in the same direction.
-           * The following code section calculates increments for both node types and stores this increment in
-           * a vector deltadbc. This increment is later added to the nodes' displacement of the preceding time step.
-           */
-          // the new displacement increments
-          // incremental displacement for a fixed node...(all DOFs = 0.0)
-          for(int i=0; i<numdof; i++)
-            if(i==oscdir)
-              deltadbc[doflids.at(numdof*n+i)] = 0.0;
-          // incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir = 0.0)
-          // time step size
-          double dt = params.get<double>("delta time" ,-1.0);
-          // time curve increment
-          double tcincrement = 0.0;
-          if(curvenumber>-1)
-            tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                          DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-          deltadbc[doflids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
-          // delete last Id of freenodes if it was previously and falsely added
-          if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
-            freenodes_.pop_back();
-          // store gid of the "n+1"-node to avoid overwriting during the following iteration,
-          // e.g. oscillating node becomes free if the following CheckForBrokenElement() call yields "!broken".
-          tmpid = element->Nodes()[n+1]->Id();
-          // Set to true to initiate certain actions if the following element is also broken.
-          // If the following element isn't broken, alreadydone will be reset to false (see case: !broken)
-          alreadydone=true;
-        }// end of case 1
-
-        // case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
-        if(broken && cut(2,n)==2.0)
-        {
-          bool newfilament = false;
-          if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
-          {
-            alreadydone = false;
-            newfilament = true;
-          }
-          if(!alreadydone)
-            oscillnodes_.push_back(element->Nodes()[n]->Id());
-          fixednodes_.push_back(element->Nodes()[n+1]->Id());
-          // oscillating node
-          double dt = params.get<double>("delta time" ,-1.0);
-          double tcincrement = 0.0;
-          if(curvenumber>-1)
-            tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                          DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-          deltadbc[doflids.at(numdof*n+oscdir)] = amp*tcincrement;
-          // fixed node
-          for(int i=0; i<numdof; i++)
-            if(i==oscdir)
-              deltadbc[doflids.at(numdof*(n+1)+i)] = 0.0;
-          if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
-            freenodes_.pop_back();
-          tmpid = element->Nodes()[n+1]->Id();
-          alreadydone = true;
-        } // end of case 2
-
-        // case 3: unbroken element or broken in another than z-direction
-        if(cut(2,n)==0.0)
-        {
-          if(element->Nodes()[n]->Id()!=tmpid)
-          {
-            freenodes_.push_back(element->Nodes()[n]->Id());
-            freenodes_.push_back(element->Nodes()[n+1]->Id());
-          }
-          else
-            freenodes_.push_back(element->Nodes()[n+1]->Id());
-          tmpid=element->Nodes()[n+1]->Id();
-          // set to false to handle annoying special cases
-          alreadydone = false;
-        }
-      }
+      // if point in time is reached at which the application of Dirichlet values starts
+      if(DBCStart(params))
+        return;
+      DBCOscillatoryMotion(params,dis,deltadbc);
+      useinitdbcset_ = true;
     }
-  }
-  else // only ever use the fixed set of nodes after the first time dirichlet values were imposed
-  {
-    for(int i=0; i<(int)oscillnodes_.size(); i++)
+    break;
+    // shear with an updated Dirichlet node set (only DOF in direction of oscillation is subject to BC, others free)
+    case INPAR::STATMECH::dbctype_sheartrans:
     {
-      int nodelid = discret_->NodeRowMap()->LID(oscillnodes_[i]);
-      DRT::Node* oscnode = discret_->lRowNode(nodelid);
-      std::vector<int> dofnode = discret_->Dof(oscnode);
-      // oscillating node
-      double dt = params.get<double>("delta time" ,-1.0);
-      double tcincrement = 0.0;
-      if(curvenumber>-1)
-        tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                      DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-      deltadbc[discret_->DofRowMap()->LID(dofnode[oscdir])] = amp*tcincrement;
+      if(DBCStart(params))
+        return;
+      DBCOscillatoryMotion(params,dis,deltadbc);
     }
-    // dofs of fixednodes_ and freenodes remain untouched since fixednodes_ dofs are 0.0 and freenodes_ do not matter
+    break;
+    // pin down and release individual nodes
+    case INPAR::STATMECH::dbctype_pinnodes:
+    {
+      // apply DBCs from input file first
+      DBCGetPredefinedConditions(params,dis,dbcgids);
+      // then, determine nodes that get inhibited by Crosslinkers
+      DBCPinNodes();
+    }
+    break;
+    default:
+      return;
   }
-
-//---------check/set force sensors anew for each time step
-	// add DOF LID where a force sensor is to be set
-  if( DRT::INPUT::IntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS") && !initialset_)
-  	UpdateForceSensors(oscillnodes_, oscdir);
-  //if(!discret_->Comm().MyPID())
-  //	cout<<"\n=========================================="<<endl;
-  //for(int pid=0; pid<discret_->Comm().NumProc();pid++)
-  //{
-	//	if(pid==discret_->Comm().MyPID())
-  //		cout<<"UpdateForceSensors_"<<pid<<": "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
-  //	discret_->Comm().Barrier();
-  //}
-  //cout<<"==========================================\n"<<endl;
-
 //------------------------------------set Dirichlet values
-  // preliminary
-  DRT::Node* node = discret_->gNode(discret_->NodeRowMap()->GID(0));
-  int numdof = (int)discret_->Dof(node).size();
-  vector<int>  	 addonoff(numdof, 0);
+  DBCSetValues(dis, deltadbc, dbcgids);
 
-  // set condition for oscillating nodes
-  if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FIXEDDIRICHNODES"))
-  {
-    for(int i=0; i<3; i++)
-      addonoff.at(i) = 1;
-  }
-  else
-    addonoff.at(oscdir) = 1;
-
-  // do not do anything if vector is empty
-  if(!oscillnodes_.empty())
-    DoDirichletConditionPeriodic(&oscillnodes_, &addonoff, dis, dirichtoggle, invtoggle, deltadbc, dbcgids);
-
-  // set condition for fixed nodes
-  if(!fixednodes_.empty())
-    DoDirichletConditionPeriodic(&fixednodes_, &addonoff, dis, dirichtoggle, invtoggle, deltadbc, dbcgids);
-
-  // set condition for free or recently set free nodes
-  if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FIXEDDIRICHNODES"))
-  {
-    for(int i=0; i<3; i++)
-      addonoff.at(i) = 0;
-  }
-  else
-    addonoff.at(oscdir) = 0;
-
-  if(!freenodes_.empty())
-    DoDirichletConditionPeriodic(&freenodes_, &addonoff, dis, dirichtoggle, invtoggle, deltadbc, dbcgids);
-
-  // create DBC and free map and build their common extractor
-  if (dbcmapextractor != Teuchos::null)
-  {
-    // build map of Dirichlet DOFs
-    int nummyelements = 0;
-    int* myglobalelements = NULL;
-    std::vector<int> dbcgidsv;
-    if (dbcgids->size() > 0)
-    {
-      dbcgidsv.reserve(dbcgids->size());
-      dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
-      nummyelements = dbcgidsv.size();
-      myglobalelements = &(dbcgidsv[0]);
-    }
-    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
-    // build the map extractor of Dirichlet-conditioned and free DOFs
-    *dbcmapextractor = LINALG::MapExtractor(*(discret_->DofRowMap()), dbcmap);
-  }
+//----create DBC and free map and build their common extractor
+  DBCCreateMap(dbcgids, dbcmapextractor);
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();
@@ -3895,17 +3661,413 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 #endif // #ifdef MEASURETIME
 
   return;
+} //EvaluateDirichletPeriodic()
+
+/*----------------------------------------------------------------------*
+ | Determine if application of DBCs starts at a given time  mueller 5/12|
+ *----------------------------------------------------------------------*/
+bool STATMECH::StatMechManager::DBCStart(Teuchos::ParameterList& params)
+{
+  // get the current time
+  double time = params.get<double>("total time", 0.0);
+  double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
+  double dt = params.get<double>("delta time", 0.01);
+  if (time<0.0) dserror("t = %f ! Something is utterly wrong here. The total time should be positive!", time);
+
+  if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4))
+    return false;
+  else
+    return true;
 }
 
 /*----------------------------------------------------------------------*
- |  fill system vector and toggle vector (public)          mueller  3/10|
+ | Gather information on where DBCs are to be applied in the case of    |
+ | viscoelastic measurements                   (private)  mueller 05/12 |
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& params,
+                                                     Teuchos::RCP<Epetra_Vector> dis,
+                                                     Teuchos::RCP<Epetra_Vector> deltadbc)
+{
+  // get the absolute time, time step size, time curve number and oscillation direction
+  const double time = params.get<double>("total time", 0.0);
+  double dt = params.get<double>("delta time", 0.01);
+  int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
+  int oscdir = statmechparams_.get<int>("OSCILLDIR",-1);
+
+//----------------------------------- sanity checks
+  if(statmechparams_.get<double>("PERIODLENGTH",0.0)<=0.0)
+    dserror("PERIODLENGTH = %f! This method work only in conjunction with periodic boundary conditions!", statmechparams_.get<double>("PERIODLENGTH",0.0));
+  if(oscdir>2 || oscdir<0 || curvenumber<0)
+    dserror("In case of imposed oscillatory motion, please define the StatMech parameters OSCILLDIR={0,1,2} and/or CURVENUMBER correctly");
+
+//----------------------------------- some variables
+  // indicates broken element
+  bool broken;
+  // to avoid redundant or wrong actions when filling vectors or deleting the last element of the free nodes vector
+  bool alreadydone = false;
+  // store node Id of previously handled node
+  int tmpid = -1;
+  // store LIDs of element node dofs
+  vector<int> doflids;
+
+  // get the amplitude of the oscillation
+  double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
+
+//------------------------------------------------------gather dbc node set(s)
+  // loop over row elements
+  // after the the very first entry into the following part, reenter only if the Dirichlet Node Set is dynamically updated
+  if(!useinitdbcset_)
+  {
+    // clear node sets, as they will be filled for the first time or updated with new node sets
+    dbcnodesets_.clear();
+    // vectors to manipulate DBC
+    std::vector<int> oscillnodes;
+    std::vector<int> fixednodes;
+//    std::vector<int> freenodes; // note: we do not need freenodes since dbcgids and, hence, the dbcmapextractor is built anew each time step
+    oscillnodes.clear();
+    fixednodes.clear();
+//    freenodes.clear();
+
+    for(int lid=0; lid<discret_->NumMyRowElements(); lid++)
+    {
+      // An element used to browse through local Row Elements
+      DRT::Element* element = discret_->lRowElement(lid);
+
+      // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
+      if(element->Id() <= basisnodes_ && element->Id() < statmechparams_.get<int>("NUM_EVAL_ELEMENTS", basiselements_))
+      {
+        // number of translational DOFs (not elegant but...ah well...!)
+        int numdof = 3;
+        // positions of nodes of an element with n nodes
+        LINALG::SerialDenseMatrix coord(3,(int)discret_->lRowElement(lid)->NumNode(), true);
+        // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
+        LINALG::SerialDenseMatrix cut(3,(int)discret_->lRowElement(lid)->NumNode()-1,true);
+//-------------------------------- obtain nodal coordinates of the current element
+        // get nodal coordinates and LIDs of the nodal DOFs
+        GetElementNodeCoords(element, dis, coord, &doflids);
+//-----------------------detect broken/fixed/free elements and fill position vector
+        // determine existence and location of broken element
+        CheckForBrokenElement(coord, cut, &broken);
+
+        // loop over number of cuts (columns)
+        for(int n=0; n<cut.N(); n++)
+        {
+          // case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
+          if(broken && cut(2,n)==1.0)
+          {
+            // indicates beginning of a new filament (in the very special case that this is needed)
+            bool newfilament = false;
+            // check for case: last element of filament I as well as first element of filament I+1 broken
+            if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+            {
+              // in this case, reset alreadydone...
+              alreadydone = false;
+              // ...and set newfilament to true. Otherwise the last free nodes vector element will be deleted
+              newfilament = true;
+            }
+            // add GID of fixed node to fixed-nodes-vector (to be added to condition later)
+            if(!alreadydone)
+              fixednodes.push_back(element->Nodes()[n]->Id());
+            // add GID of oscillating node to osc.-nodes-vector
+            oscillnodes.push_back(element->Nodes()[n+1]->Id());
+            /* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
+             * displacement in one particular direction (oscdir), another which oscillates in the same direction.
+             * The following code section calculates increments for both node types and stores this increment in
+             * a vector deltadbc. This increment is later added to the nodes' displacement of the preceding time step.
+             */
+            // the new displacement increments
+            // incremental displacement for a fixed node...(all DOFs = 0.0)
+            for(int i=0; i<numdof; i++)
+              if(i==oscdir)
+                (*deltadbc)[doflids.at(numdof*n+i)] = 0.0;
+            // incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir = 0.0)
+            // time curve increment
+            double tcincrement = 0.0;
+            if(curvenumber>-1)
+              tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                            DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+            (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
+//            // delete last Id of freenodes if it was previously and falsely added
+//            if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
+//              freenodes.pop_back();
+            // store gid of the "n+1"-node to avoid overwriting during the following iteration,
+            // e.g. oscillating node becomes free if the following CheckForBrokenElement() call yields "!broken".
+            tmpid = element->Nodes()[n+1]->Id();
+            // Set to true to initiate certain actions if the following element is also broken.
+            // If the following element isn't broken, alreadydone will be reset to false (see case: !broken)
+            alreadydone=true;
+          }// end of case 1
+
+          // case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
+          if(broken && cut(2,n)==2.0)
+          {
+            bool newfilament = false;
+            if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+            {
+              alreadydone = false;
+              newfilament = true;
+            }
+            if(!alreadydone)
+              oscillnodes.push_back(element->Nodes()[n]->Id());
+            fixednodes.push_back(element->Nodes()[n+1]->Id());
+            // oscillating node
+            double tcincrement = 0.0;
+            if(curvenumber>-1)
+              tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                            DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+            (*deltadbc)[doflids.at(numdof*n+oscdir)] = amp*tcincrement;
+            // fixed node
+            for(int i=0; i<numdof; i++)
+              if(i==oscdir)
+                (*deltadbc)[doflids.at(numdof*(n+1)+i)] = 0.0;
+//            if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
+//              freenodes.pop_back();
+            tmpid = element->Nodes()[n+1]->Id();
+            alreadydone = true;
+          } // end of case 2
+
+          // case 3: unbroken element or broken in another than z-direction
+          if(cut(2,n)==0.0)
+          {
+//            if(element->Nodes()[n]->Id()!=tmpid)
+//            {
+//              freenodes.push_back(element->Nodes()[n]->Id());
+//              freenodes.push_back(element->Nodes()[n+1]->Id());
+//            }
+//            else
+//              freenodes.push_back(element->Nodes()[n+1]->Id());
+            tmpid=element->Nodes()[n+1]->Id();
+            // set to false to handle annoying special cases
+            alreadydone = false;
+          }
+        }
+      }
+    }
+//-----------------------------------------update node sets
+    dbcnodesets_.push_back(oscillnodes);
+    dbcnodesets_.push_back(fixednodes);
+    //dbcnodesets_.push_back(freenodes);
+  }
+  else // only ever use the fixed set of nodes after the first time dirichlet values were imposed
+  {
+    for(int i=0; i<(int)dbcnodesets_[0].size(); i++)
+    {
+      int nodelid = discret_->NodeRowMap()->LID(dbcnodesets_[0][i]);
+      DRT::Node* oscnode = discret_->lRowNode(nodelid);
+      std::vector<int> dofnode = discret_->Dof(oscnode);
+      // oscillating node
+      double dt = params.get<double>("delta time" ,-1.0);
+      double tcincrement = 0.0;
+      if(curvenumber>-1)
+        tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                      DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+      (*deltadbc)[discret_->DofRowMap()->LID(dofnode[oscdir])] = amp*tcincrement;
+    }
+    // dofs of fixednodes_ and freenodes remain untouched since fixednodes_ dofs are 0.0 and freenodes_ do not matter
+  }
+
+//---------check/set force sensors anew for each time step
+  // add DOF LID where a force sensor is to be set
+  if(!useinitdbcset_)
+    UpdateForceSensors(dbcnodesets_[0], oscdir);
+  //if(!discret_->Comm().MyPID())
+  //  cout<<"\n=========================================="<<endl;
+  //for(int pid=0; pid<discret_->Comm().NumProc();pid++)
+  //{
+  //  if(pid==discret_->Comm().MyPID())
+  //    cout<<"UpdateForceSensors_"<<pid<<": "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
+  //  discret_->Comm().Barrier();
+  //}
+  //cout<<"==========================================\n"<<endl;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Set Dirichlet Values                 (private)         mueller  5/12|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::DBCSetValues(Teuchos::RCP<Epetra_Vector> dis,
+                                             Teuchos::RCP<Epetra_Vector> deltadbc,
+                                             Teuchos::RCP<std::set<int> > dbcgids)
+{
+  // number of DOFs per node and DOF toggle vectors
+  int numdof = (int)discret_->Dof(discret_->gNode(discret_->NodeRowMap()->GID(0))).size();
+  // DOF toggle vector
+  std::vector<int> onoff(numdof,0);
+
+  // manipulation of onoff vectors according to the different DBC types
+  INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE");
+  switch(dbctype)
+  {
+    case INPAR::STATMECH::dbctype_shearfixed:
+      // inhibit translational degrees of freedom
+      for(int i=0; i<3; i++)
+        onoff.at(i) = 1;
+    break;
+    case INPAR::STATMECH::dbctype_sheartrans:
+    {
+      int oscdir = statmechparams_.get<int>("OSCILLDIR",-1);
+      onoff.at(oscdir) = 1;
+    }
+    break;
+    case INPAR::STATMECH::dbctype_pinnodes:
+      // DOF toggle vector for end nodes of the horizontal filament
+      for(int i=0; i<3; i++)
+        onoff.at(i) = 1;
+    break;
+    default:
+      dserror("DBC values cannot be imposed for this DBC type: %d", dbctype);
+  }
+
+  // Apply DBC values
+  for(int i=0; i<(int)dbcnodesets_.size(); i++)
+    if(!dbcnodesets_[i].empty())
+      DoDirichletConditionPeriodic(&dbcnodesets_[i], &onoff, dis, deltadbc, dbcgids);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate Dirichlet conditions (private), mwgee 01/07, mueller 05/12 |
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::DoDirichletConditionPredefined(DRT::Condition&             cond,
+                                                               DRT::Discretization&        dis,
+                                                               const bool                  usetime,
+                                                               const double                time,
+                                                               Teuchos::RCP<Epetra_Vector> systemvector,
+                                                               Teuchos::RCP<Epetra_Vector> systemvectord,
+                                                               Teuchos::RCP<Epetra_Vector> systemvectordd,
+                                                               Teuchos::RCP<Epetra_Vector> toggle,
+                                                               Teuchos::RCP<std::set<int> > dbcgids)
+{
+  const vector<int>* nodeids = cond.Nodes();
+  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+  const int nnode = (*nodeids).size();
+  const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+  const vector<int>*    funct  = cond.Get<vector<int> >("funct");
+  const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
+  const vector<double>* val    = cond.Get<vector<double> >("val");
+
+  // determine highest degree of time derivative
+  // and first existent system vector to apply DBC to
+  unsigned deg = 0;  // highest degree of requested time derivative
+  Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
+  if (systemvector != Teuchos::null)
+  {
+    deg = 0;
+    systemvectoraux = systemvector;
+  }
+  if (systemvectord != Teuchos::null)
+  {
+    deg = 1;
+    if (systemvectoraux == Teuchos::null)
+      systemvectoraux = systemvectord;
+  }
+  if (systemvectordd != Teuchos::null)
+  {
+    deg = 2;
+    if (systemvectoraux == Teuchos::null)
+      systemvectoraux = systemvectordd;
+  }
+  dsassert(systemvectoraux!=Teuchos::null, "At least one vector must be unequal to null");
+
+  // loop nodes to identify and evaluate load curves and spatial distributions
+  // of Dirichlet boundary conditions
+  for (int i=0; i<nnode; ++i)
+  {
+    // do only nodes in my row map
+    int nlid = dis.NodeRowMap()->LID((*nodeids)[i]);
+    if (nlid < 0) continue;
+    DRT::Node* actnode = dis.lRowNode( nlid );
+
+    // call explicitly the main dofset, i.e. the first column
+    std::vector<int> dofs = dis.Dof(0,actnode);
+    const unsigned total_numdf = dofs.size();
+
+    // Get native number of dofs at this node. There might be multiple dofsets
+    // (in xfem cases), thus the size of the dofs vector might be a multiple
+    // of this.
+    const int numele = actnode->NumElement();
+    const DRT::Element * const * myele = actnode->Elements();
+    int numdf = 0;
+    for (int j=0; j<numele; ++j)
+      numdf = std::max(numdf,myele[j]->NumDofPerNode(0,*actnode));
+
+    if ( ( total_numdf % numdf ) != 0 )
+      dserror( "illegal dof set number" );
+
+    for (unsigned j=0; j<total_numdf; ++j)
+    {
+      int onesetj = j % numdf;
+      if ((*onoff)[onesetj]==0)
+      {
+        const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+        if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+        if (toggle!=Teuchos::null)
+          (*toggle)[lid] = 0.0;
+        // get rid of entry in DBC map - if it exists
+        if (dbcgids != Teuchos::null)
+          (*dbcgids).erase(dofs[j]);
+        continue;
+      }
+      const int gid = dofs[j];
+      vector<double> value(deg+1,(*val)[onesetj]);
+
+      // factor given by time curve
+      std::vector<double> curvefac(deg+1, 1.0);
+      int curvenum = -1;
+      if (curve) curvenum = (*curve)[onesetj];
+      if (curvenum>=0 && usetime)
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
+      else
+        for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+
+      // factor given by spatial function
+      double functfac = 1.0;
+      int funct_num = -1;
+      if (funct)
+      {
+        funct_num = (*funct)[onesetj];
+        if (funct_num>0)
+          functfac =
+            DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
+                                                                  actnode->X(),
+                                                                  time,
+                                                                  &dis);
+      }
+
+      // apply factors to Dirichlet value
+      for (unsigned i=0; i<deg+1; ++i)
+      {
+        value[i] *= functfac * curvefac[i];
+      }
+
+      // assign value
+      const int lid = (*systemvectoraux).Map().LID(gid);
+      if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+      if (systemvector != Teuchos::null)
+        (*systemvector)[lid] = value[0];
+      if (systemvectord != Teuchos::null)
+        (*systemvectord)[lid] = value[1];
+      if (systemvectordd != Teuchos::null)
+        (*systemvectordd)[lid] = value[2];
+      // set toggle vector
+      if (toggle != Teuchos::null)
+        (*toggle)[lid] = 1.0;
+      // amend vector of DOF-IDs which are Dirichlet BCs
+      if (dbcgids != Teuchos::null)
+        (*dbcgids).insert(gid);
+    }  // loop over nodal DOFs
+  }  // loop over nodes
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  fill system vector and toggle vector (private)         mueller  3/10|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*           nodeids,
                                                              std::vector<int>*           onoff,
                                                              Teuchos::RCP<Epetra_Vector> dis,
-                                                             Teuchos::RCP<Epetra_Vector> dirichtoggle,
-                                                             Teuchos::RCP<Epetra_Vector> invtoggle,
-                                                             Epetra_Vector&              deltadbc,
+                                                             Teuchos::RCP<Epetra_Vector> deltadbc,
                                                              Teuchos::RCP<std::set<int> > dbcgids)
 /*
  * This basically does the same thing as DoDirichletCondition() (to be found in drt_discret_evaluate.cpp),
@@ -3938,10 +4100,10 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*  
     if (!discret_->NodeRowMap()->MyGID(nodeids->at(i))) continue;
     DRT::Node* actnode = discret_->gNode(nodeids->at(i));
     if (!actnode) dserror("Cannot find global node %d",nodeids->at(i));
+
     // call explicitly the main dofset, i.e. the first column
     vector<int> dofs = discret_->Dof(0,actnode);
     const unsigned numdf = dofs.size();
-
     // loop over DOFs
     for (unsigned j=0; j<numdf; ++j)
     {
@@ -3955,13 +4117,7 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*  
         // assign value
         if (lid<0) dserror("Global id %d not on this proc in system vector", dofs[j]);
         if (dis != Teuchos::null)
-          (*dis)[lid] += deltadbc[lid];
-        // set toggle vector and the inverse vector
-        if (dirichtoggle != Teuchos::null)
-        {
-          (*dirichtoggle)[lid] = 1.0;
-          (*invtoggle)[lid] = 0.0;
-        }
+          (*dis)[lid] += (*deltadbc)[lid];
         // amend vector of DOF-IDs which are Dirichlet BCs
         if (dbcgids != Teuchos::null)
           (*dbcgids).insert(gid);
@@ -3970,14 +4126,6 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*  
       {
         if (lid<0)
           dserror("Global id %d not on this proc in system vector",dofs[j]);
-
-        if (dirichtoggle!=Teuchos::null)
-        {
-          // turn off application of Dirichlet value
-          (*dirichtoggle)[lid] = 0.0;
-          // in addition, modify the inverse vector (needed for manipulation of the residual vector)
-          (*invtoggle)[lid] = 1.0;
-        }
         // get rid of entry in DBC map - if it exists
         if (dbcgids != Teuchos::null)
           (*dbcgids).erase(dofs[j]);
@@ -3986,4 +4134,128 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*  
   }  // loop over nodes
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | Get DBCs defined in Input file and ad the DBCs DOFs to dbcgids       |            |
+ |                                           (private)     mueller 05/12|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::DBCGetPredefinedConditions(Teuchos::ParameterList&      params,
+                                                           Teuchos::RCP<Epetra_Vector>  dis,
+                                                           Teuchos::RCP<std::set<int> > dbcgids)
+{
+  //get absolute time
+  double time = params.get<double>("total time", 0.0);
+  bool usetime = true;
+  if (time<0.0) usetime = false;
+
+  // get the Dirichlet conditions given in the input file
+  std::vector<DRT::Condition*> dirichlet;
+  discret_->GetCondition("Dirichlet",dirichlet);
+
+  for (int i=0; i<(int)dirichlet.size(); i++)
+  {
+    if (dirichlet[i]->Type() != DRT::Condition::LineDirichlet) continue;
+    DoDirichletConditionPredefined(*dirichlet[i],*discret_,usetime,time,dis,Teuchos::null,Teuchos::null,Teuchos::null,dbcgids);
+  }
+  for (int i=0; i<(int)dirichlet.size(); i++)
+  {
+    if (dirichlet[i]->Type() != DRT::Condition::PointDirichlet) continue;
+    DoDirichletConditionPredefined(*dirichlet[i],*discret_,usetime,time,dis,Teuchos::null,Teuchos::null,Teuchos::null,dbcgids);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | pins down a particular given node by Dirichlet BCs                   |
+ |                                           (private)     mueller 05/12|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::DBCPinNodes()
+{
+  // gather node sets
+  // end nodes of horizontal filaments
+  std::vector<int> hfilfixednodes;
+  // end nodes of vertical filaments
+  std::vector<int> vfilfixednodes;
+  // regular nodes
+  std::vector<int> fixednodes;
+
+  // clear sets initially
+  dbcnodesets_.clear();
+  hfilfixednodes.clear();
+  vfilfixednodes.clear();
+  fixednodes.clear();
+
+  int maxnodegid = discret_->NumGlobalNodes()-1;
+
+  for(int i=0; i<bspotstatus_->MyLength(); i++)
+  {
+    if((*bspotstatus_)[i]>-0.1)
+    {
+      int nodegid = bspotcolmap_->GID(i);
+      if(nodegid==0)
+      {
+        hfilfixednodes.push_back(nodegid);
+        continue;
+      }
+      // the very last node
+      if(nodegid==maxnodegid)
+      {
+        if((*filamentnumber_)[bspotcolmap_->LID(maxnodegid)]==0)
+          hfilfixednodes.push_back(nodegid);
+        else
+          vfilfixednodes.push_back(nodegid);
+        continue;
+      }
+      // in between end nodes and regular nodes
+      if(nodegid<maxnodegid && nodegid>0)
+      {
+        // look for end nodes
+        if((*filamentnumber_)[i-1]==(*filamentnumber_)[i] && (*filamentnumber_)[i+1]!=(*filamentnumber_)[i])
+        {
+          if((*filamentnumber_)[i]==0)
+            hfilfixednodes.push_back(bspotcolmap_->GID(i));
+          else
+            vfilfixednodes.push_back(bspotcolmap_->GID(i));
+        }
+        else
+          fixednodes.push_back(bspotcolmap_->GID(i));
+      }
+    }
+  }
+
+  // add to node sets
+  dbcnodesets_.push_back(hfilfixednodes);
+  dbcnodesets_.push_back(vfilfixednodes);
+  dbcnodesets_.push_back(fixednodes);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Create Dirichlet DOF maps                    (private)  mueller 05/12|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::DBCCreateMap(Teuchos::RCP<std::set<int> > dbcgids,
+                                             Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
+{
+  if (dbcmapextractor != Teuchos::null)
+  {
+    // build map of Dirichlet DOFs
+    int nummyelements = 0;
+    int* myglobalelements = NULL;
+    std::vector<int> dbcgidsv;
+    if (dbcgids->size() > 0)
+    {
+      dbcgidsv.reserve(dbcgids->size());
+      dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
+      nummyelements = dbcgidsv.size();
+      myglobalelements = &(dbcgidsv[0]);
+    }
+    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
+    // build the map extractor of Dirichlet-conditioned and free DOFs
+    *dbcmapextractor = LINALG::MapExtractor(*(discret_->DofRowMap()), dbcmap);
+  }
+  return;
+}
+
 #endif  // #ifdef CCADISCRET

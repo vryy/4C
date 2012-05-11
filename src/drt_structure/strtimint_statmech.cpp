@@ -407,11 +407,7 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
   // disn then also holds prescribed new dirichlet displacements
 
   // determine DBC evaluation mode (new vs. old)
-  if(dirichtoggle_==Teuchos::null)
-    statmechman_->EvaluateDirichletStatMech(p, disn_, Teuchos::null, Teuchos::null, dbcmaps_);
-  else
-    statmechman_->EvaluateDirichletStatMech(p,disn_,dirichtoggle_,invtoggle_);
-
+  statmechman_->EvaluateDirichletStatMech(p, disn_, dbcmaps_);
 
   discret_->ClearState();
 
@@ -1205,7 +1201,7 @@ void STR::TimIntStatMech::PTC()
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
 
-    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fres_,zeros_,dirichtoggle_);
+    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fres_,zeros_,*(dbcmaps_->CondMap()));
 
     //--------------------------------------------------- solve for disi
     const double t_solver = Teuchos::Time::wallTime();

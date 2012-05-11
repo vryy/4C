@@ -784,7 +784,7 @@ void STR::TimInt::ApplyDirichletBC
     }
     else //special implementation for StatMech
     {
-      statmechman_->EvaluateDirichletStatMech(p, dis, Teuchos::null, Teuchos::null, dbcmaps_);
+      statmechman_->EvaluateDirichletStatMech(p, dis, dbcmaps_);
     }
   }
   discret_->ClearState();

@@ -83,6 +83,7 @@ BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
+DBCTYPE                         std
 GMSHOUTPUT                      No
 BEAMCONTACT                     Yes
 FRICTION_MODEL                  anisotropicconsistent

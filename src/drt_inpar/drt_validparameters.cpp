@@ -1586,10 +1586,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "anisotropicconsistent"),
                                  //translating input strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::frictionmodel_none,
-                                                                    INPAR::STATMECH::frictionmodel_isotropiclumped,
-                                                                    INPAR::STATMECH::frictionmodel_isotropicconsistent,
-                                                                    INPAR::STATMECH::frictionmodel_anisotropicconsistent),
-                                                                    &statmech);
+                                            INPAR::STATMECH::frictionmodel_isotropiclumped,
+                                            INPAR::STATMECH::frictionmodel_isotropicconsistent,
+                                            INPAR::STATMECH::frictionmodel_anisotropicconsistent),
+                                            &statmech);
+  //Reading which kind of friction model should be applied
+  setStringToIntegralParameter<int>("DBCTYPE","none","Dirichlet BC type applied",
+                                 //listing possible strings in input file in category FRICTION_MODEL
+                                 tuple<std::string>("none",
+                                                    "std",
+                                                    "shearfixed",
+                                                    "sheartrans",
+                                                    "pinnodes"),
+                                 //translating input strings into BACI input parameters
+                                 tuple<int>(INPAR::STATMECH::dbctype_none,
+                                            INPAR::STATMECH::dbctyp_std,
+                                            INPAR::STATMECH::dbctype_shearfixed,
+                                            INPAR::STATMECH::dbctype_sheartrans,
+                                            INPAR::STATMECH::dbctype_pinnodes),
+                                            &statmech);
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
   //time after which certain action in simulation (e.g. DBCs in viscoelastic simulations) are started

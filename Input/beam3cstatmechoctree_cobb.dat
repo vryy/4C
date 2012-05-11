@@ -47,7 +47,7 @@ DYNAMICTYP                      StatMech
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
+NLNSOL                          ptc                      // fullnewton modnewton nlncg ptc
 TIMESTEP                        0.01
 NUMSTEP                         85
 MAXTIME                         1
@@ -88,7 +88,8 @@ BEAMS_TREEDEPTH                 4
 BEAMS_BOXESINOCT                4
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
-GMSHOUTPUT                      No
+DBCTYPE                         std
+GMSHOUTPUT                      Yes
 SPECIAL_OUTPUT none //octree
 BEAMCONTACT                     Yes
 FRICTION_MODEL                  anisotropicconsistent
@@ -100,7 +101,7 @@ ALPHAPTC                        6.0
 DYN_CROSSLINKERS                No
 OUTPUTINTERVALS                 1
 GMSHOUTINTERVALS                1
-PlotFactorThick                 1
+PlotFactorThick                 0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym
