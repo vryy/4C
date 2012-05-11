@@ -33,7 +33,7 @@ void TOPOPT::printTopOptLogo()
   std::cout << "      \\   \\_________      " << " wird sich bald    " << std::endl;
   std::cout << "       \\             \\    " << " teilen und wieder " << std::endl;
   std::cout << "        \\__________   \\   " << " zusammenwachsen   " << std::endl;
-  std::cout << "                   \\  |   " << " können!           " << std::endl;
+  std::cout << "                   \\  |   " << " koennen!           " << std::endl;
   std::cout << "        _          |  |    " << std::endl;
   std::cout << "       | \\        /  /    " << std::endl;
   std::cout << "        \\ \\______/  /     " << std::endl;
