@@ -47,7 +47,6 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   embdis_(embdis),
   step_(step)
   {
-
     myrank_ = bgdis->Comm().MyPID();
     numproc_ = bgdis->Comm().NumProc();
     CreateBgNodeMaps(bgdis,wizard);
@@ -116,6 +115,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
 
       nodetoparentele_[gid] = parentelements;
 
+
       GEO::CUT::Point * p = n->point();
       GEO::CUT::Point::PointPosition pos = p->Position();
       if (pos==GEO::CUT::Point::outside and bgdis->NumDof(node) != 0) //std
@@ -140,9 +140,15 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
         vector<int> gdofs = bgdis->Dof(node);
         stdnodenp_[gid] = gdofs;
       }
+      // this case only happens if the two fluid domains are both the same
+      // size (void)
+      else if (pos==GEO::CUT::Point::oncutsurface and  bgdis->NumDof(node) == 0)
+      {
+        //cout << " on the surface " <<  pos << " " << node->Id() << endl;
+      }
       else
       {
-        cout << "  hier ?! " <<  pos << " " <<  node->Id() <<  "numdof: " << bgdis->NumDof(node) << endl;
+        cout << "  hier ?! " <<  pos << " " <<  node->Id() <<  " numdof: " << bgdis->NumDof(node) << endl;
       }
     }
     else if( bgdis->NumDof(node) != 0) // no xfem node
@@ -259,6 +265,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
   else
     dserror("xfem time integration approach unknown!");
 }
+
 // -------------------------------------------------------------------
 // Always do the projection from embedded fluid. Also for the enriched
 // nodes.
