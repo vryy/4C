@@ -8,7 +8,6 @@ Maintainer: Tobias Wiesner
 </pre>
 
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SOLVER_CHEAPSIMPLE_H
 #define SOLVER_CHEAPSIMPLE_H
 
@@ -249,4 +248,3 @@ private:
 
 
 #endif // CHEAPSIMPEL_BLOCKPRECONDITIONER_H
-#endif  // #ifdef CCADISCRET

@@ -20,6 +20,7 @@ Maintainer: Tobias Wiesner
 #include "linalg_ana.H"
 #include "linalg_solver.H"
 #include "linalg_blocksparsematrix.H"
+#include "linalg_sparsematrix.H"
 #include "linalg_utils.H"				// helper functions (linear Algebra related)
 
 #include "linalg_downwindmatrix.H"
@@ -27,7 +28,7 @@ Maintainer: Tobias Wiesner
 
 #define SIMPLEC_DIAGONAL      1    // 1: row sums     0: just diagonal
 #define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve
-#define SIMPLER_ALGORITHM     0    // 1: triple solve 0: double solve
+#define SIMPLER_ALGORITHM     1    // 1: triple solve 0: double solve
 #define SIMPLER_ALPHA         0.8  // simple pressure damping parameter
 #define SIMPLER_TIMING        0    // printout timing of setup
 /*----------------------------------------------------------------------*
@@ -272,8 +273,6 @@ int LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(const Epetra_M
   return 0;
 }
 
-#ifndef CHEAPSIMPLE_ALGORITHM
-#if SIMPLER_ALGORITHM
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
  | taken from:                                                          |
@@ -281,7 +280,7 @@ int LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(const Epetra_M
  | A Multigrid Preconditioned Newton-Krylov method for the incomp.      |
  | Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  |
  *----------------------------------------------------------------------*/
-void LINALG::SOLVER::SIMPLER_BlockPreconditioner::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                                        LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
   using namespace LINALG::ANA;
@@ -307,7 +306,6 @@ void LINALG::SOLVER::SIMPLER_BlockPreconditioner::Simpler(LINALG::ANA::Vector& v
 
   return;
 }
-#else
 
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
@@ -318,11 +316,11 @@ void LINALG::SOLVER::SIMPLER_BlockPreconditioner::Simpler(LINALG::ANA::Vector& v
  | Sandia technical report SAND2007-2761, 2007                          |
  | Also appeared in JCP                                                 |
  *----------------------------------------------------------------------*/
-void LINALG::SOLVER::SIMPLER_BlockPreconditioner::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                                       LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
   using namespace LINALG::ANA;
-  SparseMatrix& A00      = (*A_)(0,0);
+  LINALG::SparseMatrix& A00      = (*A_)(0,0);
   SparseMatrix& A10      = (*A_)(1,0);
   SparseMatrix& A01      = (*A_)(0,1);
   SparseMatrix& diagAinv = *diagAinv_;
@@ -343,10 +341,7 @@ void LINALG::SOLVER::SIMPLER_BlockPreconditioner::Simple(LINALG::ANA::Vector& vx
 
   return;
 }
-#endif
-#endif
 
-#if CHEAPSIMPLE_ALGORITHM
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
  | is a cheaper variation from:                                         |
@@ -394,7 +389,6 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSimple(LINALG::ANA::V
 
   return;
 }
-#endif // CHEAP_SIMPLEALGORITHM
 
 
 
