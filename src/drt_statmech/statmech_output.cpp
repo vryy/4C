@@ -490,6 +490,10 @@ void STATMECH::StatMechManager::Output(const int ndim,
         std::ostringstream filename;
         filename << "./DoubleBondDistances.dat";
         LoomOutput(dis,filename);
+
+        std::ostringstream filename2;
+        filename2 << "./CrosslinkerDistribution_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        CrosslinkCoverageOutput(dis, filename2);
       }
     }
     break;
@@ -3965,6 +3969,53 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
     }
 
     fprintf(fp, distances.str().c_str());
+    fclose(fp);
+  }
+  return;
+}
+
+/*------------------------------------------------------------------------------*                                                 |
+ | output the coverage of crosslinker binding sites (nodes) and the distribution|
+ |of bound crosslinkers                                  (private) mueller 5/12 |
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
+{
+  /* Consider the horizontal filament of a loom setup. Go along this filament and count the
+   * number of occupied binding spots. Also, store the spatial distribution of occupied spots
+   * for analysis of cluster size, etc.*/
+  Epetra_Vector discol(*discret_->DofColMap(),true);
+  LINALG::Export(disrow,discol);
+  std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+  std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+  GetNodePositions(discol, currentpositions, currentrotations, true);
+
+  // write output
+  if(!discret_->Comm().MyPID())
+  {
+    // file pointer
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "w");
+    std::stringstream coverage;
+
+    // vector storing the crosslinker coverage and distribution
+    Epetra_Vector crosscoverage(*bspotcolmap_, true);
+
+    for(int i=0; i<bspotstatus_->MyLength(); i++)
+    {
+      // consider only filament 0 (horizontal filament)
+      if((int)(*filamentnumber_)[i]==0)
+      {
+        if((*bspotstatus_)[i]>-0.1)
+          coverage<< scientific << setprecision(15) <<bspotcolmap_->GID(i)<<"  "<<1<<"  "<<(currentpositions.find(i)->second)(0)<<endl;
+        else
+          coverage<< scientific << setprecision(15) <<bspotcolmap_->GID(i)<<"  "<<0<<"  "<<(currentpositions.find(i)->second)(0)<<endl;
+      }
+      else
+        break;
+    }
+
+    // print to file and close
+    fprintf(fp, coverage.str().c_str());
     fclose(fp);
   }
   return;
