@@ -673,7 +673,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToIfpack(const Teuchos
   {
     ifpacklist.set("relaxation: type","Jacobi");
     ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-    ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
   }
   break;
   case INPAR::SOLVER::azprec_SymmGaussSeidel:
