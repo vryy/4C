@@ -87,7 +87,45 @@ public:
 	/*!
   \brief Returns the label of this class.
 	 */
-	const char* Label() const { return "LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner"; }
+	const char* Label() const {
+	  std::stringstream strLabel;
+	  //strLabel << "LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner ";
+	  strLabel << "CheapSIMPLE ";
+
+	  const bool visml = predictSolver_list_.isSublist("ML Parameters");
+	  const bool visifpack = predictSolver_list_.isSublist("IFPACK Parameters");
+	  strLabel << "[Inv1=";
+	  if(visml) strLabel << "ML-type";
+	  else if(visifpack) {
+	    const Teuchos::ParameterList & ifpackParams = predictSolver_list_.sublist("IFPACK Parameters");
+	    if(ifpackParams.isParameter("relaxation: type")) {
+	      strLabel << ifpackParams.get<std::string>("relaxation: type");
+	      strLabel << " (" << ifpackParams.get<int>("relaxation: sweeps") << ", " << ifpackParams.get<double>("relaxation: damping factor") << ")";
+	    }
+	    else
+	      strLabel << "ILU";
+	  }
+	  else strLabel << "unknown";
+
+	  strLabel << ",Inv2=";
+	  const bool pisml = schurSolver_list_.isSublist("ML Parameters");
+	  const bool pisifpack = schurSolver_list_.isSublist("IFPACK Parameters");
+    if(pisml) strLabel << "ML-type";
+    else if(pisifpack) {
+      const Teuchos::ParameterList & ifpackParams = schurSolver_list_.sublist("IFPACK Parameters");
+      if(ifpackParams.isParameter("relaxation: type")) {
+        strLabel << ifpackParams.get<std::string>("relaxation: type");
+        strLabel << " (" << ifpackParams.get<int>("relaxation: sweeps") << ", " << ifpackParams.get<double>("relaxation: damping factor") << ")";
+      }
+      else
+        strLabel << "ILU";
+    }
+    else strLabel << "unknown";
+
+    strLabel << "]";
+	  return strLabel.str().substr(0,128).c_str();
+	  //return "LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner";
+	}
 
 	/*!
   \brief get Comm of this class
@@ -242,6 +280,7 @@ private:
 	RCP<LINALG::ANA::Vector>                            pdwin_;   // working vector
 	RCP<LINALG::ANA::Vector>                            pdwout_;  // working vector
 
+	std::string                                         label_;   // label
 }; // class  CheapSIMPLE_Operator : public virtual Epetra_Operator
 } // namespace SOLVER
 }  // namespace LINALG
