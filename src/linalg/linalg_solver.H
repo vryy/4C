@@ -382,6 +382,12 @@ public:
 
   //@}
 
+  /*!
+  \brief //! Returns the solver name that has been set in the corresponding block in the BACI dat file
+             used for debugging purposes only. has no meaning
+  */
+   inline std::string Name() const { return params_->get<std::string>("name"); }
+
 private:
    //! @name BuildSolver methods
 

@@ -996,6 +996,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   // make empty output parameters
   Teuchos::ParameterList outparams;
 
+  // read in solver name
+  outparams.set<std::string>("name", inparams.get<std::string>("NAME"));
+
   // switch type of solver
   switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(inparams,"SOLVER"))
   {
