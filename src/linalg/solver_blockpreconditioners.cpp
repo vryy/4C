@@ -85,10 +85,8 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         inv2.sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",pnewns);
       }
 
-      //P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
       P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
     }
-#if 1
     else if(fl || elch) // CheapSIMPLE for pure fluid problems
     {
       // adapt nullspace for splitted pure fluid problem
@@ -159,7 +157,6 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
 
       P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
     }
-#endif
     //else if(!params_.isSublist("Inverse1") || !params_.isSublist("Inverse2"))
     else
     {
