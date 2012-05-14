@@ -28,7 +28,7 @@ Maintainer: Tobias Wiesner
 
 #define SIMPLEC_DIAGONAL      1    // 1: row sums     0: just diagonal
 #define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve
-#define SIMPLER_ALGORITHM     1    // 1: triple solve 0: double solve
+#define SIMPLER_ALGORITHM     0    // 1: triple solve 0: double solve
 #define SIMPLER_ALPHA         0.8  // simple pressure damping parameter
 #define SIMPLER_TIMING        0    // printout timing of setup
 /*----------------------------------------------------------------------*
