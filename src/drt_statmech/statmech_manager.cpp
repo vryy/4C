@@ -58,7 +58,6 @@ istart_(0),
 basisnodes_(discret->NumGlobalNodes()),
 basiselements_(discret->NumGlobalElements()),
 outputfilenumber_(-1),
-//normalgen_(0,1),
 discret_(discret),
 useinitdbcset_(false)
 {
@@ -280,10 +279,6 @@ void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter)
     seedvariable = (statmechparams_.get<int>("INITIALSEED", 0) + seedparameter)*(discret_->Comm().MyPID() + 1);
 
     randomnumbergen_.seed((unsigned int)seedvariable);
-
-//    normalgen_.seed( (unsigned int)seedvariable);
-//    uniformclosedgen_.seed( (unsigned int)seedvariable );
-//    uniformclosedopengen_.seed( (unsigned int)seedvariable );
   }
    /*else set seed according to system time and different for each processor
    *(pseudo-random seed) if seedparameter == 0 (this allows for conveniently
@@ -295,16 +290,12 @@ void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter)
     seedvariable = time(0)*(discret_->Comm().MyPID() + 1);
 
     randomnumbergen_.seed((unsigned int)seedvariable);
-
-//    normalgen_.seed( (unsigned int)seedvariable );
-//    uniformclosedgen_.seed( (unsigned int)seedvariable );
-//    uniformclosedopengen_.seed( (unsigned int)seedvariable );
   }
 
   boost::uniform_01<>          uniformdist;
   boost::normal_distribution<> normaldist(0.0,1.0);
   uniformgen_ = Teuchos::rcp(new boost::variate_generator<randnumgen&,boost::uniform_01<> >(randomnumbergen_,uniformdist));
-  normgen_ = Teuchos::rcp(new boost::variate_generator<randnumgen&,boost::normal_distribution<> >(randomnumbergen_,normaldist));
+  normalgen_ = Teuchos::rcp(new boost::variate_generator<randnumgen&,boost::normal_distribution<> >(randomnumbergen_,normaldist));
 
   return;
 }
@@ -1188,7 +1179,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const 
             else
               probability = pself;
 
-//            if( uniformclosedgen_.random() < probability )
             if( (*uniformgen_)() < probability )
             {
               int free = 0;
@@ -1324,7 +1314,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const 
               // for now, break j-loop after a new bond was established, i.e crosslinker elements cannot be established starting from zero bonds
               if(bondestablished)
                 break;
-            }// if(uniformclosedgen_.random() < plink)
+            }//if( (*uniformgen_)() < probability )
           }// if(neighbourslid...)
         }// for(int j=0; j<(int)neighboursLID.size(); j++)
       }//if((*numbond_)[irandom]<1.9)
@@ -1670,7 +1660,6 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt,
         {
           for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
             if ((*crosslinkerbond_)[j][irandom]>-0.9)
-//              if (uniformclosedgen_.random() < punlink[irandom])
               if ((*uniformgen_)() < punlink[irandom])
               {
                 // obtain LID and reset crosslinkerbond_ at this position
@@ -1692,7 +1681,6 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt,
           std::vector<int> jorder = Permutation(crosslinkerbond_->NumVectors());
           for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
           {
-//            if (uniformclosedgen_.random() < punlink[irandom])
             if ((*uniformgen_)() < punlink[irandom])
             {
               (*numbond_)[irandom] = 1.0;
@@ -2163,8 +2151,7 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVe
 
   for (int i=0; i<randomnumbersrow.MyLength(); i++)
     for (int j=0; j<randomnumbersrow.NumVectors(); j++)
-//      randomnumbersrow[j][i] = standarddeviation*normalgen_.random() + meanvalue;
-      randomnumbersrow[j][i] = standarddeviation*(*normgen_)() + meanvalue;
+      randomnumbersrow[j][i] = standarddeviation*(*normalgen_)() + meanvalue;
 
   //export stochastic forces from row map to column map
   CommunicateMultiVector(*randomnumbers,randomnumbersrow,true,false,false);
@@ -2588,7 +2575,6 @@ std::vector<int> STATMECH::StatMechManager::Permutation(const int& N)
   for (int i=0; i<N; ++i)
   {
     //generate random number between 0 and i
-//    j = (int)floor((i + 1.0)*uniformclosedopengen_.random());
     j = (int)floor((i + 1.0)*(*uniformgen_)());
 
     /*exchange values at positions i and j (note: value at position i is i due to above initialization
@@ -2705,7 +2691,6 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
 
   //crosslinker has to pass three probability checks with respect to orientation
   return((*uniformgen_)() < pPhi);
-//  return(uniformclosedgen_.random() < pPhi);
 } // StatMechManager::CheckOrientation
 
 /*----------------------------------------------------------------------*
@@ -2752,8 +2737,7 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, d
         {
           // bonding case 1:  no bonds, diffusion
           case 0:
-//            (*crosslinkerpositions_)[j][i] += standarddev*normalgen_.random() + mean;
-            (*crosslinkerpositions_)[j][i] += standarddev*(*normgen_)() + mean;
+            (*crosslinkerpositions_)[j][i] += standarddev*(*normalgen_)() + mean;
           break;
           // bonding case 2: crosslink molecule attached to one filament
           case 1:
@@ -2864,7 +2848,6 @@ void STATMECH::StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int
         LINALG::Matrix<3, 1> deltapos;
         for (int i=0; i<(int)deltapos.M(); i++)
           deltapos(i) = (*uniformgen_)();
-//          deltapos(i) = uniformclosedgen_.random();
         deltapos.Scale(statmechparams_.get<double> ("R_LINK", 0.0) / deltapos.Norm2());
         for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
           (*crosslinkerpositions_)[i][crosslinkernumber] += deltapos(i);
@@ -3229,7 +3212,6 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
 
   for (int i=0; i<crosslinkerpositions_->MyLength(); i++)
     for (int j=0; j<crosslinkerpositions_->NumVectors(); j++)
-//      (*crosslinkerpositions_)[j][i] = upperbound.at(j) * uniformclosedgen_.random();
       (*crosslinkerpositions_)[j][i] = upperbound.at(j) * (*uniformgen_)();
 
   // initial bonding status is set (no bonds)

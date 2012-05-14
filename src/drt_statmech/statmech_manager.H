@@ -23,11 +23,7 @@ Maintainer: Kei Müller
 #include "Epetra_MultiVector.h"
 #include "Epetra_Map.h"
 
-//including random number library of blitz for statistical forces (old)
-//#include <random/uniform.h>
-//#include <random/normal.h>
-
-// include random number libraries of BOOST for statistical forces (new)
+// include random number libraries of BOOST for statistical forces
 #include <boost/random.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
@@ -583,22 +579,14 @@ protected:
   //! \brief number of file into which output is written (only important for single filament dynamics)
   int outputfilenumber_;
 
-//  //! \brief generates Gaussian random numbers with zero mean and unit standard deviation
-//  ranlib::Normal<double> normalgen_;
-//
-//  //! \brief generates uniformly distributed random numbers in interval [0;1]
-//  ranlib::UniformClosed<double> uniformclosedgen_;
-//
-//  //! \brief generates uniformly distributed random numbers in interval [0;1[
-//  ranlib::UniformClosedOpen<double> uniformclosedopengen_;
-
   //! \brief a random number generator object (boost)
   randnumgen randomnumbergen_;
 
   //! \brief generates uniformly distributed random numbers in interval [0;1[
   Teuchos::RCP<boost::variate_generator<randnumgen&,boost::uniform_01<> > > uniformgen_;
+
   //! \brief generates Gaussian random numbers with zero mean and unit standard deviation
-  Teuchos::RCP<boost::variate_generator<randnumgen&,boost::normal_distribution<> > > normgen_;
+  Teuchos::RCP<boost::variate_generator<randnumgen&,boost::normal_distribution<> > > normalgen_;
 
   //! \brief reference to current discretization
   Teuchos::RCP<DRT::Discretization> discret_;
