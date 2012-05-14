@@ -115,7 +115,7 @@ namespace GEO
     \brief computes the cross product of two LINALG::Matrix<3,1> a x b
     \param a (in) : arbitrary vector
     \param b (in) : arbitrary vector
-    \return cross product of two BlitzVecs a x b
+    \return cross product of two LINALG::Matrix<3,1> a x b
     */
     LINALG::Matrix<3,1> computeCrossProduct(
         const LINALG::Matrix<3,1>& a,
@@ -324,7 +324,7 @@ namespace GEO
   {
       bool solution = true;
 
-      // view on hopefullx column major blitz arrays
+      // view on hopefully column arrays
       /*Epetra_SerialDenseMatrix A_Epetra(Copy, A.data(), A.columns(), A.rows(), A.columns());
       Epetra_SerialDenseVector b_Epetra(Copy, b.data(), b.rows());
       Epetra_SerialDenseVector x_Epetra(dim);

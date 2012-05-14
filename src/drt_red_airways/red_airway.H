@@ -14,7 +14,6 @@ Maintainer: Mahmoud Ismail
 #ifndef RED_AIRWAY_H_
 #define RED_AIRWAY_H_
 
-#include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 using namespace std;

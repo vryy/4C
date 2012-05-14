@@ -27,7 +27,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 
-#include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::UTILS;

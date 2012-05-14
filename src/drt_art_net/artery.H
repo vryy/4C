@@ -14,7 +14,6 @@ Maintainer: Mahmoud Ismail
 #ifndef ARTERY_H
 #define ARTERY_H
 
-#include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 using namespace std;

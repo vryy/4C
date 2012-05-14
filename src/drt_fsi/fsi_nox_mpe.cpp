@@ -12,7 +12,6 @@
 #include <NOX_Epetra_Vector.H>
 
 #include <vector>
-#include <blitz/array.h>
 
 #include <Epetra_Comm.h>
 #include <Epetra_Time.h>
@@ -22,6 +21,8 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 
 
 NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RefCountPtr<NOX::Utils>& utils,
@@ -61,14 +62,9 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   const NOX::Epetra::Vector& ex = dynamic_cast<const NOX::Epetra::Vector&>(x);
 
   std::vector<Teuchos::RefCountPtr<NOX::Epetra::Vector> > q;
-  blitz::Array<double,2> r(kmax_+1,kmax_+1);
-  blitz::Array<double,1> c(kmax_+1);
-  blitz::Array<double,1> gamma(kmax_+1);
-
-  // Set the whole thing to zero so we can simple sum the whole thing.
-  c = 0.;
-  gamma = 0.;
-  r = 0.;
+  LINALG::SerialDenseMatrix r(kmax_+1,kmax_+1,true);
+  LINALG::SerialDenseVector c(kmax_+1, true);
+  LINALG::SerialDenseVector gamma(kmax_+1, true);
 
   int k;
   for (k=0; k<kmax_; ++k)
@@ -125,13 +121,17 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
       }
       c(k) = 1.;
 
-      double sc = blitz::sum(c);
+      // sum over all entries of c
+      double sc = 0.0;
+      for(int l=0; l < c.Length(); l++)
+        sc += c(l);
+
       if (fabs(sc) < 1e-16)
       {
         throwError("compute", "sum(c) equals zero");
       }
 
-      gamma = c / sc;
+      gamma.Update(1/sc, c, 0.0);
       res = r(k,k)*fabs(gamma(k));
 
       if (utils_->isPrintType(NOX::Utils::InnerIteration))
@@ -164,8 +164,13 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
         }
         gamma(i) = ci/r(i,i);
       }
-      double sc = blitz::sum(gamma);
-      gamma /= sc;
+
+      // sum over all entries of gamma
+      double sc = 0.0;
+      for(int l=0; l < gamma.Length(); l++)
+        sc += gamma(l);
+
+      gamma.Scale(1/sc);
       res = 1./sqrt(fabs(sc));
 
       if (utils_->isPrintType(NOX::Utils::InnerIteration))
@@ -194,7 +199,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   }
 
   // calc extrapolated vector
-  blitz::Array<double,1> xi(kmax_);
+  LINALG::SerialDenseVector xi(kmax_, true);
   xi(0) = 1. - gamma(0);
   for (int j=1; j<k; ++j)
   {

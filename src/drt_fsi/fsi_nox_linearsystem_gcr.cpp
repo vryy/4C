@@ -11,8 +11,8 @@
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
-#include <blitz/array.h>
-
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 #include "fsi_nox_linearsystem_gcr.H"
 
 
@@ -253,8 +253,10 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
                                           int& max_iter, double& tol, int m)
 {
   double resid = 0;
-  blitz::Array<double,1> s(m+1), cs(m+1), sn(m+1);
-  blitz::Array<double,2> H(m+1,m);
+  LINALG::SerialDenseVector s(m+1, true);
+  LINALG::SerialDenseVector cs(m+1, true);
+  LINALG::SerialDenseVector sn(m+1, true);
+  LINALG::SerialDenseMatrix H(m+1,m,true);
 
   NOX::Epetra::Vector r(x, NOX::ShapeCopy);
   NOX::Epetra::Vector w(x, NOX::ShapeCopy);
@@ -292,7 +294,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
     v.clear();
     v.push_back(Teuchos::rcp(new NOX::Epetra::Vector(r, NOX::ShapeCopy)));
     v[0]->update(1./beta, r, 0.);
-    s = 0.0;
+    s.Scale(0.0);
     s(0) = beta;
 
     for (int i = 0; i < m and j <= max_iter; i++, j++)
@@ -326,7 +328,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
       if ((resid = fabs(s(i+1)) / normb) < tol)
       {
         //Update(x, i, H, s, v);
-        blitz::Array<double,1> y(s);
+        LINALG::SerialDenseVector y(s);
 
         // Backsolve:
         for (int l = i; l >= 0; l--)
@@ -346,7 +348,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
     }
 
     //Update(x, m - 1, H, s, v);
-    blitz::Array<double,1> y(s);
+    LINALG::SerialDenseVector y(s);
 
     // Backsolve:
     for (int i = m - 1; i >= 0; i--)

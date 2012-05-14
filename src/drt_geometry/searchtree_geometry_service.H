@@ -133,7 +133,7 @@ namespace GEO
   \param dis                  discretization
   \param currentpositions     current nodal positions in discretization
   \param elementList          map of int = label and set of element ids
-  \return  AxisAlignedBoundingBox as BlitzMat3x2
+  \return  AxisAlignedBoundingBox as LINALG::Matrix<3,2>
    */
   std::vector< LINALG::Matrix<3,2> > computeXAABBForLabeledStructures(
       const DRT::Discretization&                  dis,
@@ -298,7 +298,7 @@ namespace GEO
          This is for CONTACT search!
   \param element        (in)  element
   \param xyze           (in)  nodal position array (3,numnode)
-  \return extended axis-aligned bounding box (XAABB) as BlitzMat3x2
+  \return extended axis-aligned bounding box (XAABB) as LINALG::Matrix<3,2>
    */
   LINALG::Matrix<3,2> computeContactXAABB(
       DRT::Element*       element,

@@ -40,8 +40,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/fluidporo.H"
 
-#include <blitz/array.h>
-
 
 using namespace DRT::UTILS;
 
@@ -1714,8 +1712,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
 
     //-------------------------------------------------------------------
     //  Q
-    blitz::Array<double,1> u(3);
-    u = 0.;
+    LINALG::Matrix<3,1> u(true);
     for (int dim=0;dim<3;++dim)
       for (int node=0;node<bdrynen_;++node)
         u(dim) += funct_(node) * evelnp(dim,node);
@@ -1738,7 +1735,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
       // dQ/dd
 
       // determine derivatives of surface normals wrt mesh displacements
-      blitz::Array<double,2> normalderiv(3,bdrynen_*3);
+      LINALG::Matrix<3,bdrynen_*3> normalderiv(true);
 
       for (int node=0;node<bdrynen_;++node)
       {
@@ -1806,8 +1803,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
       // (d^2 Q)/(dd)^2
 
       // determine second derivatives of surface normals wrt mesh displacements
-      blitz::Array<double,3> normalderiv2(3,bdrynen_*3,bdrynen_*3);
-      normalderiv2 = 0.;
+      std::vector<LINALG::Matrix<bdrynen_*3,bdrynen_*3> > normalderiv2(3);
 
       for (int node1=0;node1<bdrynen_;++node1)
       {
@@ -1815,14 +1811,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
         {
           double temp = deriv_(0,node1)*deriv_(1,node2)-deriv_(1,node1)*deriv_(0,node2);
 
-          normalderiv2(0,node1*3+1,node2*3+2) = temp;
-          normalderiv2(0,node1*3+2,node2*3+1) = - temp;
+          normalderiv2[0](node1*3+1,node2*3+2) = temp;
+          normalderiv2[0](node1*3+2,node2*3+1) = - temp;
 
-          normalderiv2(1,node1*3  ,node2*3+2) = - temp;
-          normalderiv2(1,node1*3+2,node2*3  ) = temp;
+          normalderiv2[1](node1*3  ,node2*3+2) = - temp;
+          normalderiv2[1](node1*3+2,node2*3  ) = temp;
 
-          normalderiv2(2,node1*3  ,node2*3+1) = temp;
-          normalderiv2(2,node1*3+1,node2*3  ) = - temp;
+          normalderiv2[2](node1*3  ,node2*3+1) = temp;
+          normalderiv2[2](node1*3+1,node2*3  ) = - temp;
         }
       }
 
@@ -1840,7 +1836,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
               {
                 for (int iterdim=0;iterdim<3;++iterdim)
                   elemat2(node1*numdofpernode_+dim1,node2*numdofpernode_+dim2) +=
-                    u(iterdim) * normalderiv2(iterdim,node1*3+dim1,node2*3+dim2) * fac;
+                    u(iterdim) * normalderiv2[iterdim](node1*3+dim1,node2*3+dim2) * fac;
               }
             }
           }

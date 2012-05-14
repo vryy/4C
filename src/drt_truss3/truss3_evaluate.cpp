@@ -11,8 +11,6 @@ Maintainer: Christian Cyron
 
  *-----------------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
-// random number library of blitz for statistical forces
-#include <random/normal.h>
 
 #include "truss3.H"
 #include "../drt_lib/drt_globalproblem.H"

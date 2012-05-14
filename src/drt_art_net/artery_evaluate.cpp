@@ -27,7 +27,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_mat/cnst_1d_art.H"
 #include "../drt_mat/matlist.H"
 
-#include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::UTILS;
