@@ -83,7 +83,6 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   if (!visml && !visifpack) dserror("Have to use either ML or Ifpack for velocities");
   if (!pisml && !pisifpack) dserror("Have to use either ML or Ifpack for pressure");
 
-
   //-------------------------------------------------------------------------
   // either do manual split or use provided BlockSparseMatrixBase
   //-------------------------------------------------------------------------
@@ -178,7 +177,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
       Ppredict_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*A00,predictSolver_list_.sublist("ML Parameters"),true));
     else
     {
-      string type = predictSolver_list_.sublist("Aztec Parameters").get("preconditioner","ILU");
+      string type = predictSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
       Ifpack factory;
       Ifpack_Preconditioner* prec = factory.Create(type,A00,0);
       prec->SetParameters(predictSolver_list_.sublist("IFPACK Parameters"));
@@ -196,7 +195,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
     else
     {
       Ifpack factory;
-      string type = schurSolver_list_.sublist("Aztec Parameters").get("preconditioner","ILU");
+      string type = schurSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
       Ifpack_Preconditioner* prec = factory.Create(type,A11,0);
       prec->SetParameters(schurSolver_list_.sublist("IFPACK Parameters"));
       prec->Initialize();
