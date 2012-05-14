@@ -32,7 +32,7 @@ namespace ELASTIC
     ///
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 CoupAnisoNeoHooke C 100 GAMMA 35.0
+    /// MAT 1 CoupAnisoNeoHooke C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
     class CoupAnisoNeoHooke : public MAT::PAR::Parameter
     {
     public:
@@ -52,6 +52,10 @@ namespace ELASTIC
       double c_;
       /// angle between circumferential and fiber direction
       double gamma_;
+      /// initalization modus;
+      int init_;
+      /// adapt angle during remodeling
+      int adapt_angle_;
 
       //@}
 
@@ -132,7 +136,9 @@ namespace ELASTIC
 
     /// Set fiber directions
     virtual void SetFiberVecs(
-        LINALG::Matrix<3,3> locsys ///< local coordinate system
+        const double newgamma,   ///< new angle
+        const LINALG::Matrix<3,3> locsys,   ///< local coordinate system
+        const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
     );
 
     /// Get fiber directions

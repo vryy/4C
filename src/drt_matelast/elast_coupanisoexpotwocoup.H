@@ -30,7 +30,7 @@ namespace ELASTIC
     /// material parameters for isochoric contribution of a passive cardiac material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18472 B4 16.026 A6 2.481 B6 11.120 A8 216 B8 11.436 GAMMA 35.0 INIT_MODE 0
+    /// MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18472 B4 16.026 A6 2.481 B6 11.120 A8 216 B8 11.436 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
     class CoupAnisoExpoTwoCoup : public MAT::PAR::Parameter
     {
       public:
@@ -56,9 +56,9 @@ namespace ELASTIC
       /// angle between circumferential and fiber direction
       double gamma_;
       /// initalization modus;
-      /// Initmodus derived from locsys = 0, Initmodus aligned to locsys = 1
-      const int init_mode_;
-      ///
+      int init_;
+      /// adapt angle during remodeling
+      int adapt_angle_;
 
       //@}
 
@@ -150,7 +150,9 @@ namespace ELASTIC
 
     /// Set fiber directions
     virtual void SetFiberVecs(
-        LINALG::Matrix<3,3> locsys ///< local coordinate system
+        const double newgamma,   ///< new angle
+        const LINALG::Matrix<3,3> locsys,   ///< local coordinate system
+        const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
     );
 
     /// Get fiber directions

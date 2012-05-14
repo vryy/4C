@@ -37,8 +37,8 @@ OUTPUT_GID                      No
 OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
 STRUCT_SM_DISP                  No
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
+STRUCT_STRAIN                   GL
+STRUCT_STRESS                   Cauchy
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 ------------------------------------------------------------PATIENT SPECIFIC
@@ -134,7 +134,12 @@ IFPACKOVERLAP                   0
 IFPACKCOMBINE                   Add                             // Add Insert Zero
 PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_HOLZAPFELCARDIO KAPPA 1000E3 MUE 33.74E3 DENS 1 K1 13.9E3 K2 13.2 GAMMA 39. MINSTRETCH 1.0 INIT 3
+//MAT 1 MAT_HOLZAPFELCARDIO KAPPA 1000E3 MUE 33.74E3 DENS 1.0 K1 13.9E3 K2 13.2 GAMMA 39. MINSTRETCH 1.0 INIT 3
+MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 2 3 5 6 DENS 1.0
+MAT 2 ELAST_IsoNeoHooke MUE 33.74E3
+MAT 3 ELAST_VolSussmanBathe KAPPA 1000E3
+MAT 5 ELAST_IsoAnisoExpo K1 13.9E3 K2 13.2 GAMMA 39.0 K1COMP 0.0 K2COMP 13.2 INIT 0 ADAPT_ANGLE 1
+MAT 6 ELAST_IsoAnisoExpo K1 13.9E3 K2 13.2 GAMMA -39.0 K1COMP 0.0 K2COMP 13.2 INIT 0 ADAPT_ANGLE 1
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1.0 100.0 FACTOR 1.0 1.0
@@ -146,10 +151,10 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1.0 100.0 FACTOR 1.0 1.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1562 POSITION dispx NAME dispx VALUE 6.014627712e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 852 POSITION dispx NAME dispx VALUE 4.252984278e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 1431 POSITION dispx NAME dispx VALUE 4.365734596e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 852 POSITION dispy NAME dispy VALUE 4.252984278e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 1562 POSITION dispx NAME dispx VALUE 6.017410620e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 852 POSITION dispx NAME dispx VALUE 4.254860682e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 1431 POSITION dispx NAME dispx VALUE 4.368017459e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 852 POSITION dispy NAME dispy VALUE 4.255039711e-01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          6

@@ -285,9 +285,28 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs)
 {
-  for (unsigned int p=0; p<potsum_.size(); ++p)
+  if (anisoprinc_ || anisomod_)
   {
-    potsum_[p]->GetFiberVecs(fibervecs);
+    for (unsigned int p=0; p<potsum_.size(); ++p)
+    {
+      potsum_[p]->GetFiberVecs(fibervecs);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::EvaluateFiberVecs(
+    const double newgamma,
+    const LINALG::Matrix<3,3>& locsys,
+    const LINALG::Matrix<3,3>& defgrd)
+{
+  if (anisoprinc_ || anisomod_)
+  {
+    for (unsigned int p=0; p<potsum_.size(); ++p)
+    {
+      potsum_[p]->SetFiberVecs(newgamma,locsys,defgrd);
+    }
   }
 }
 

@@ -40,6 +40,9 @@ Maintainer: Moritz Frenzel
 #include "../drt_patspec/patspec.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // inverse design object
@@ -414,7 +417,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_constraintmixture)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+           (mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
+           (mat->MaterialType() == INPAR::MAT::m_elasthyper)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
       {
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -506,7 +510,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_constraintmixture)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+           (mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
+           (mat->MaterialType() == INPAR::MAT::m_elasthyper)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
       {
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -2600,6 +2605,10 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
   LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
+  // interpolated values of stress and defgrd for remodeling
+  LINALG::Matrix<3,3> avg_stress(true);
+  LINALG::Matrix<3,3> avg_defgrd(true);
+
   // build deformation gradient wrt to material configuration
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
@@ -2706,9 +2715,30 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
     } else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture) {
       MAT::ConstraintMixture* comi = static_cast <MAT::ConstraintMixture*>(mat.get());
       comi->EvaluateFiberVecs(gp,locsys,defgrd);
+    } else if (mat->MaterialType() == INPAR::MAT::m_elasthyper) {
+      // we only have fibers at element center, thus we interpolate stress and defgrd
+      avg_stress.Update(1.0/NUMGPT_SOH8,cauchystress,1.0);
+      avg_defgrd.Update(1.0/NUMGPT_SOH8,defgrd,1.0);
     } else dserror("material not implemented for remodeling");
 
   } // end loop over gauss points
+
+  if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+  {
+    // evaluate eigenproblem based on stress of previous step
+    LINALG::Matrix<3,3> lambda(true);
+    LINALG::Matrix<3,3> locsys(true);
+    LINALG::SYEV(avg_stress,lambda,locsys);
+
+    // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
+    double newgamma = atan(lambda(1,1)/lambda(2,2));
+    //compression in 2nd max direction, thus fibers are alligned to max principal direction
+    if (lambda(1,1) < 0) newgamma = 0.0;
+
+    // new fiber vectors
+    MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(mat.get());
+    elast->EvaluateFiberVecs(newgamma,locsys,avg_defgrd);
+  }
 }
 
 

@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0
+  MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
 
 <pre>
 Maintainer: Susanna Tinkl
@@ -32,7 +32,7 @@ namespace ELASTIC
     /// material parameters for coupled contribution of a anisotropic exponential fiber material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0
+    /// MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
     class CoupAnisoExpo : public MAT::PAR::Parameter
     {
     public:
@@ -56,6 +56,10 @@ namespace ELASTIC
       /// fiber params for the compressible case
       double k1comp_;
       double k2comp_;
+      /// initalization modus;
+      int init_;
+      /// adapt angle during remodeling
+      int adapt_angle_;
 
       //@}
 
@@ -145,7 +149,9 @@ namespace ELASTIC
 
     /// Set fiber directions
     virtual void SetFiberVecs(
-        LINALG::Matrix<3,3> locsys ///< local coordinate system
+        const double newgamma,   ///< new angle
+        const LINALG::Matrix<3,3> locsys,   ///< local coordinate system
+        const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
     );
 
     /// Get fiber directions

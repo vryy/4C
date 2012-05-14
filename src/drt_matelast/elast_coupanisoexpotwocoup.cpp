@@ -4,7 +4,7 @@
 \brief
 
 the input line should read
-    MAT 1 ELAST_CoupAnsioExpoTwoCoup A4 18472 B4 16.026 A6 2.481 B6 11.120 A8 216 B8 11.436 GAMMA 35.0 INIT_MODE 0
+    MAT 1 ELAST_CoupAnsioExpoTwoCoup A4 18472 B4 16.026 A6 2.481 B6 11.120 A8 216 B8 11.436 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
 
 <pre>
 Maintainer: Andreas Nagler
@@ -32,7 +32,8 @@ MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
   A8_(matdata->GetDouble("A8")),
   B8_(matdata->GetDouble("B8")),
   gamma_(matdata->GetDouble("GAMMA")),
-  init_mode_(matdata->GetInt("INIT_MODE"))
+  init_(matdata->GetInt("INIT")),
+  adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
 {
 }
 
@@ -90,42 +91,58 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(const std::vector<char>& 
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* linedef)
 {
-  // fibers aligned in local element cosy with gamma around circumferential direction
-  // -> check whether element supports local element cosy
-  vector<double> rad;
-  vector<double> axi;
-  vector<double> cir;
-  if (linedef->HaveNamed("RAD") and
-      linedef->HaveNamed("AXI") and
-      linedef->HaveNamed("CIR"))
+  if (params_->init_ == 0)
   {
-    // read local (cylindrical) cosy-directions at current element
-    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-    LINALG::Matrix<3,3> locsys(true);
-    linedef->ExtractDoubleVector("RAD",rad);
-    linedef->ExtractDoubleVector("AXI",axi);
-    linedef->ExtractDoubleVector("CIR",cir);
-    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-
-    for (int i = 0; i < 3; ++i)
+    // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
+    LINALG::Matrix<3,3> Id(true);
+    for (int i=0; i<3; i++)
+      Id(i,i) = 1.0;
+    SetFiberVecs(-1.0,Id,Id);
+  }
+  else if (params_->init_ == 1 || params_->init_ == 2)
+  {
+    // fibers aligned in local element cosy with gamma around circumferential direction
+    // -> check whether element supports local element cosy
+    if (linedef->HaveNamed("RAD") and
+        linedef->HaveNamed("AXI") and
+        linedef->HaveNamed("CIR"))
     {
-      radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-    }
-    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+      vector<double> rad;
+      vector<double> axi;
+      vector<double> cir;
+      // read local (cylindrical) cosy-directions at current element
+      // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+      LINALG::Matrix<3,3> locsys(true);
+      linedef->ExtractDoubleVector("RAD",rad);
+      linedef->ExtractDoubleVector("AXI",axi);
+      linedef->ExtractDoubleVector("CIR",cir);
+      double radnorm=0.; double axinorm=0.; double cirnorm=0.;
 
-    for (int i=0; i<3; ++i)
+      for (int i = 0; i < 3; ++i)
+      {
+        radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+      }
+      radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+
+      for (int i=0; i<3; ++i)
+      {
+        locsys(i,0) = rad[i]/radnorm;
+        locsys(i,1) = axi[i]/axinorm;
+        locsys(i,2) = cir[i]/cirnorm;
+      }
+
+      LINALG::Matrix<3,3> Id(true);
+      for (int i=0; i<3; i++)
+        Id(i,i) = 1.0;
+      SetFiberVecs(0.0,locsys,Id);
+    }
+    else
     {
-      locsys(i,0) = rad[i]/radnorm;
-      locsys(i,1) = axi[i]/axinorm;
-      locsys(i,2) = cir[i]/cirnorm;
+      dserror("Reading of element local cosy for anisotropic materials failed");
     }
-
-    SetFiberVecs(locsys);
   }
   else
-  {
-    dserror("Reading of element local cosy for anisotropic materials failed");
-  }
+    dserror("INIT mode not implemented");
 }
 
 /*----------------------------------------------------------------------*/
@@ -182,39 +199,64 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(
-    LINALG::Matrix<3,3> locsys
+    const double newgamma,
+    const LINALG::Matrix<3,3> locsys,
+    const LINALG::Matrix<3,3> defgrd
 )
 {
 
-  // INIT_MODE = 0 : Fiber direction derived from local cosy
-  if(params_->init_mode_ == 0)
+  LINALG::Matrix<3,1> ca1(true);
+  LINALG::Matrix<3,1> ca2(true);
+
+  // Fiber direction derived from local cosy
+  if(params_->init_ == 0 || params_->init_ == 1)
   {
     // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
     if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
     //convert
-    const double gamma = (params_->gamma_*PI)/180.;
+    double gamma = (params_->gamma_*PI)/180.;
+
+    if (params_->adapt_angle_ && newgamma != -1.0)
+    {
+      if (gamma*newgamma < 0.0)
+        gamma = -1.0 * newgamma;
+      else
+        gamma = newgamma;
+    }
 
     for (int i = 0; i < 3; ++i)
     {
-     // a1 = cos gamma e3 + sin gamma e2
-     a1_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
-     // a2 = cos gamma e3 - sin gamma e2
-     a2_(i) = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+      // a1 = cos gamma e3 + sin gamma e2
+      ca1(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+      // a2 = cos gamma e3 - sin gamma e2
+      ca2(i) = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
     }
+
   }
-  // INIT_MODE = 1 : Fiber direction aligned to local cosy
-  else if (params_->init_mode_ == 1)
+  // INIT = 2 : Fiber direction aligned to local cosy
+  else if (params_->init_ == 2)
   {
     for (int i = 0; i < 3; ++i)
     {
-     a1_(i) = locsys(i,0);
-     a2_(i) = locsys(i,1);
+     ca1(i) = locsys(i,0);
+     ca2(i) = locsys(i,1);
     }
   }
   else
   {
     dserror("Problem with fiber initialization");
   }
+
+  // pull back in reference configuration
+  LINALG::Matrix<3,1> a1_0(true);
+  LINALG::Matrix<3,1> a2_0(true);
+  LINALG::Matrix<3,3> idefgrd(true);
+  idefgrd.Invert(defgrd);
+
+  a1_0.Multiply(idefgrd,ca1);
+  a1_.Update(1./a1_0.Norm2(),a1_0);
+  a2_0.Multiply(idefgrd,ca2);
+  a2_.Update(1./a2_0.Norm2(),a2_0);
 
   for (int i = 0; i < 3; ++i) {
     A1_(i) = a1_(i)*a1_(i);

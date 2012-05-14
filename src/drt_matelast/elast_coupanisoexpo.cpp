@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0
+  MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0  K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
 
 <pre>
 Maintainer: Susanna Tinkl
@@ -31,7 +31,9 @@ MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(
   k2_(matdata->GetDouble("K2")),
   gamma_(matdata->GetDouble("GAMMA")),
   k1comp_(matdata->GetDouble("K1COMP")),
-  k2comp_(matdata->GetDouble("K2COMP"))
+  k2comp_(matdata->GetDouble("K2COMP")),
+  init_(matdata->GetInt("INIT")),
+  adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
 {
 }
 
@@ -83,42 +85,58 @@ void MAT::ELASTIC::CoupAnisoExpo::UnpackSummand(const std::vector<char>& data,
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpo::Setup(DRT::INPUT::LineDefinition* linedef)
 {
-  // fibers aligned in local element cosy with gamma around circumferential direction
-  // -> check whether element supports local element cosy
-  vector<double> rad;
-  vector<double> axi;
-  vector<double> cir;
-  if (linedef->HaveNamed("RAD") and
-      linedef->HaveNamed("AXI") and
-      linedef->HaveNamed("CIR"))
+  if (params_->init_ == 0)
   {
-    // read local (cylindrical) cosy-directions at current element
-    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-    LINALG::Matrix<3,3> locsys(true);
-    linedef->ExtractDoubleVector("RAD",rad);
-    linedef->ExtractDoubleVector("AXI",axi);
-    linedef->ExtractDoubleVector("CIR",cir);
-    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-
-    for (int i = 0; i < 3; ++i)
+    // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
+    LINALG::Matrix<3,3> Id(true);
+    for (int i=0; i<3; i++)
+      Id(i,i) = 1.0;
+    SetFiberVecs(-1.0,Id,Id);
+  }
+  else if (params_->init_ == 1)
+  {
+    // fibers aligned in local element cosy with gamma around circumferential direction
+    // -> check whether element supports local element cosy
+    if (linedef->HaveNamed("RAD") and
+        linedef->HaveNamed("AXI") and
+        linedef->HaveNamed("CIR"))
     {
-      radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-    }
-    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+      vector<double> rad;
+      vector<double> axi;
+      vector<double> cir;
+      // read local (cylindrical) cosy-directions at current element
+      // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+      LINALG::Matrix<3,3> locsys(true);
+      linedef->ExtractDoubleVector("RAD",rad);
+      linedef->ExtractDoubleVector("AXI",axi);
+      linedef->ExtractDoubleVector("CIR",cir);
+      double radnorm=0.; double axinorm=0.; double cirnorm=0.;
 
-    for (int i=0; i<3; ++i)
+      for (int i = 0; i < 3; ++i)
+      {
+        radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+      }
+      radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+
+      for (int i=0; i<3; ++i)
+      {
+        locsys(i,0) = rad[i]/radnorm;
+        locsys(i,1) = axi[i]/axinorm;
+        locsys(i,2) = cir[i]/cirnorm;
+      }
+
+      LINALG::Matrix<3,3> Id(true);
+      for (int i=0; i<3; i++)
+        Id(i,i) = 1.0;
+      SetFiberVecs(0.0,locsys,Id);
+    }
+    else
     {
-      locsys(i,0) = rad[i]/radnorm;
-      locsys(i,1) = axi[i]/axinorm;
-      locsys(i,2) = cir[i]/cirnorm;
+      dserror("Reading of element local cosy for anisotropic materials failed");
     }
-
-    SetFiberVecs(locsys);
   }
   else
-  {
-    dserror("Reading of element local cosy for anisotropic materials failed");
-  }
+    dserror("INIT mode not implemented");
 }
 
 /*----------------------------------------------------------------------*/
@@ -152,18 +170,36 @@ void MAT::ELASTIC::CoupAnisoExpo::AddStressAnisoPrincipal(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(
-    LINALG::Matrix<3,3> locsys
+    const double newgamma,
+    const LINALG::Matrix<3,3> locsys,
+    const LINALG::Matrix<3,3> defgrd
 )
 {
   if ((params_->gamma_<-90) || (params_->gamma_ >90)) dserror("Fiber angle not in [-90,90]");
   //convert
-  const double gamma = (params_->gamma_*PI)/180.;
+  double gamma = (params_->gamma_*PI)/180.;
 
+  if (params_->adapt_angle_ && newgamma != -1.0)
+  {
+    if (gamma*newgamma < 0.0)
+      gamma = -1.0 * newgamma;
+    else
+      gamma = newgamma;
+  }
+
+  LINALG::Matrix<3,1> ca(true);
   for (int i = 0; i < 3; ++i)
   {
     // a = cos gamma e3 + sin gamma e2
-    a_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+    ca(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
   }
+  // pull back in reference configuration
+  LINALG::Matrix<3,1> a_0(true);
+  LINALG::Matrix<3,3> idefgrd(true);
+  idefgrd.Invert(defgrd);
+
+  a_0.Multiply(idefgrd,ca);
+  a_.Update(1./a_0.Norm2(),a_0);
 
   for (int i = 0; i < 3; ++i)
     A_(i) = a_(i)*a_(i);

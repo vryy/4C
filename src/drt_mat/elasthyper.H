@@ -223,6 +223,14 @@ private:
     /// get fiber vectors
     virtual void GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs);
 
+    /// evaluate fiber directions from locsys and alignment angle, pull back
+    virtual void EvaluateFiberVecs
+    (
+      const double newgamma,   ///< new angle
+      const LINALG::Matrix<3,3>& locsys,   ///< local coordinate system
+      const LINALG::Matrix<3,3>& defgrd   ///< deformation gradient
+    );
+
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 

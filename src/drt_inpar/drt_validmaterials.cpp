@@ -1442,6 +1442,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GAMMA","angle");
     AddNamedReal(m,"K1COMP","linear constant");
     AddNamedReal(m,"K2COMP","exponential constant");
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment");
+    AddNamedInt(m,"ADAPT_ANGLE","adapt angle during remodeling");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1461,7 +1463,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"A8","linear anisotropic constant for fiber 1 relating fiber 2");
     AddNamedReal(m,"B8","exponential anisotropic constant for fiber 1 relating fiber 2");
     AddNamedReal(m,"GAMMA","angle");
-    AddNamedInt(m,"INIT_MODE","initialization modus for fiber alignement");
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment");
+    AddNamedInt(m,"ADAPT_ANGLE","adapt angle during remodeling");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1476,6 +1479,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"C","linear constant");
     AddNamedReal(m,"GAMMA","angle");
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment");
+    AddNamedInt(m,"ADAPT_ANGLE","adapt angle during remodeling");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1493,6 +1498,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"GAMMA","angle");
     AddNamedReal(m,"K1COMP","linear constant");
     AddNamedReal(m,"K2COMP","exponential constant");
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment");
+    AddNamedInt(m,"ADAPT_ANGLE","adapt angle during remodeling");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1714,7 +1721,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-  
+
   /*----------------------------------------------------------------------*/
   // elastic spring
   {

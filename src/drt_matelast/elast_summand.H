@@ -444,7 +444,9 @@ namespace MAT
 
       /// Set fiber directions
       virtual void SetFiberVecs(
-          LINALG::Matrix<3,3> locsys ///< local coordinate system
+          const double newgamma,   ///< new angle
+          const LINALG::Matrix<3,3> locsys,   ///< local coordinate system
+          const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
       )
       {
         return;  // do nothing
