@@ -27,7 +27,7 @@ Maintainer: Jonas Biehler
 // this was included in stopro cc
 #include <cmath>
 // boost currently not in use, use blitz instead
-//#include <boost/random.hpp>
+#include <boost/random.hpp>
 // include fftw++ tsuff for multidimensional FFT
 #include"fftw3.h"
 //include "/home/biehler/software/fft_stuff/fftw++-1.09/fftw++.h"
@@ -66,14 +66,12 @@ RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
    // Boost random number generator (currently not in use
    //-------------------------------------------------------------------
   // This defines a random number genrator
-  // boost::mt19937 mt;
+   boost::mt19937 mt;
    // Defines random number generator for numbers between 0 and 2pi
-   //boost::uniform_real<double> random( 0, 2*pi_ );
-   //mt.seed(seed_);
+   boost::uniform_real<double> random( 0, 2*pi_ );
+   mt.seed(seed_);
 
-   // Blitz random number generator
-   //--------------------------------------------------------------------
-   uniformclosedgen_.seed(seed_ );
+
    //ofstream File("OutputPhi.csv");
 
    switch(dim_){
@@ -85,15 +83,10 @@ RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
 
      for ( int k5 = 0; k5 < N_ * N_ * N_; ++k5 )
      {
-       //Phi_0_.push_back( random( mt ) );
-      // Phi_1_.push_back( random( mt ) );
-       //Phi_2_.push_back( random( mt ) );
-       //Phi_3_.push_back( random( mt ) );
-       // blitz
-       Phi_0_.push_back( uniformclosedgen_.random()*2*pi_ );
-       Phi_1_.push_back( uniformclosedgen_.random()*2*pi_ );
-       Phi_2_.push_back( uniformclosedgen_.random()*2*pi_ );
-       Phi_3_.push_back( uniformclosedgen_.random()*2*pi_ );
+       Phi_0_.push_back( random( mt ) );
+       Phi_1_.push_back( random( mt ) );
+       Phi_2_.push_back( random( mt ) );
+       Phi_3_.push_back( random( mt ) );
      }
      break;
    case 2:
@@ -101,10 +94,8 @@ RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
         Phi_1_.reserve( N_ * N_ );
         for ( int k5 = 0; k5 < N_ * N_; ++k5 )
         {
-          //Phi_0_.push_back( random( mt ) );
-          //Phi_1_.push_back( random( mt ) );
-          Phi_0_.push_back( uniformclosedgen_.random()*2*pi_ );
-          Phi_1_.push_back( uniformclosedgen_.random()*2*pi_ );
+          Phi_0_.push_back( random( mt ) );
+          Phi_1_.push_back( random( mt ) );
         }
         break;
    default:
@@ -116,13 +107,13 @@ void RandomField::CreateNewSample(unsigned int seed)
 {
 
   // This defines a random number genrator
-  //boost::mt19937 mt;
+  boost::mt19937 mt;
   // Defines random number generator for numbers between 0 and 2pi
-  //boost::uniform_real<double> random( 0, 2*pi_ );
+  boost::uniform_real<double> random( 0, 2*pi_ );
 
   // set seed of random number generator
   // same seed produces same string of random numbers
-  //mt.seed(seed);
+  mt.seed(seed);
   //try out time in seconds since janaury
   uniformclosedgen_.seed(seed);
   switch (dim_){
@@ -135,15 +126,11 @@ void RandomField::CreateNewSample(unsigned int seed)
 
     for ( int k5 = 0; k5 < N_ * N_ * N_; ++k5 )
       {
-        //Phi_0_.push_back( random( mt ) );
-        //Phi_1_.push_back( random( mt ) );
-        //Phi_2_.push_back( random( mt ) );
+        Phi_0_.push_back( random( mt ) );
+        Phi_1_.push_back( random( mt ) );
+        Phi_2_.push_back( random( mt ) );
+        Phi_3_.push_back( random( mt ) );
         //.push_back( random( mt ) );
-        // blitz
-        Phi_0_.push_back( uniformclosedgen_.random()*2*pi_ );
-        Phi_1_.push_back( uniformclosedgen_.random()*2*pi_ );
-        Phi_2_.push_back( uniformclosedgen_.random()*2*pi_ );
-        Phi_3_.push_back( uniformclosedgen_.random()*2*pi_ );
       }
     break;
   case 2:
@@ -151,10 +138,8 @@ void RandomField::CreateNewSample(unsigned int seed)
     Phi_1_.clear();
     for ( int k5 = 0; k5 < N_ * N_ ; ++k5 )
          {
-           //Phi_0_.push_back( random( mt ) );
-           //Phi_1_.push_back( random( mt ) );
-           Phi_0_.push_back( uniformclosedgen_.random()*2*pi_ );
-           Phi_1_.push_back( uniformclosedgen_.random()*2*pi_ );
+           Phi_0_.push_back( random( mt ) );
+           Phi_1_.push_back( random( mt ) );
 
          }
     break;

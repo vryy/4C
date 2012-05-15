@@ -38,7 +38,7 @@ Maintainer: Jonas Biehler
 #include <cmath>
 #include <ctime>
 
-//including random number library of blitz for generation of random phase angles
+
 #include <random/uniform.h>
 
 
@@ -68,6 +68,8 @@ private:
   };
   double d_; //correlation length
   double sigma_0_; //= 0.25;
+  // sigma of ul gauss process ( changes during spectral matching)
+  double sigma_ul_g_cur_it_; //= 0.25;
   double mean_;
   vector<double> discrete_PSD_;
   vector<double> distribution_params_; // other distribution params
@@ -77,6 +79,7 @@ private:
   int N_; // Number of cos terms
   int M_; // length of FFT's
   double dkappa_;
+  double kappa_u_;
   double dx_;
 
   vector<double>  Phi_0_ ;// Vectors to store the random phase angles
@@ -93,8 +96,6 @@ private:
   // store the values
   double* values_;
 
-  //! \brief generates uniformly distributed random numbers in interval [0;1], taken from statmech
-   ranlib::UniformClosed<double> uniformclosedgen_;
 
 
 
@@ -108,9 +109,20 @@ public:
   // Get Value of Random Field at a specific location
   double EvalFieldAtLocation(vector<double> location, bool writetofile, bool output);
 
-
   // Write Random Field To file
   void WriteRandomFieldToFile();
+  void WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> > sample_psd);
+
+  // Compute PSD from current sample
+  void GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sample_psd);
+  void GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > sample_psd);
+
+  int NumberOfCosTerms() {return N_;}
+
+  int SizePerDim() {return M_;}
+
+  int Dimension() {return dim_;}
+
 
 
 
@@ -119,10 +131,16 @@ private:
   void CreateNewPhaseAngles(unsigned int seed);
   // Calculate Discrete Power Spectral Density based on correlation structure
   void CalcDiscretePSD();
+  void CalcDiscretePSD3D();
   // Perform Spectral Matching if RF non-gaussian
   void SpectralMatching();
+  void SpectralMatching3D();
+  void SpectralMatching3D3D();
   // simulate RandomField using FFT technique
   void SimGaussRandomFieldFFT();
+  // simulate RandomField using FFT technique
+  void SimGaussRandomFieldFFT3D();
+  double TESTSimGaussRandomField3D(double x, double y, double z);
   // Create Translation field with prescribed marginal distribution
   void TranslateToNonGaussian();
   // Helper Functions for spectral matching

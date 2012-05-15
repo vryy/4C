@@ -24,6 +24,10 @@ Maintainer: Jonas Biehler
 
 
 using namespace std;
+namespace Teuchos
+{
+  class ParameterList;
+}
 
 namespace DRT
 {
@@ -36,6 +40,7 @@ namespace LINALG
 {
   class Solver;
   class SparseMatrix;
+  class SparseOperator;
 }
 
 namespace IO
@@ -167,11 +172,14 @@ private:
   // the two discretizations
   Teuchos::RCP<DRT::Discretization> actdis_fine_;
   Teuchos::RCP<DRT::Discretization> actdis_coarse_;
-  // output
-  // Teuchos::RCP<IO::DiscretizationWriter> output_fine_ ;
+
   // need to store randomfield in class variable so that we can reuse it in every run
   Teuchos::RCP<GenRandomField> random_field_;
-
+  vector <int> AllMyOutputEleIds_;
+  // stores gids of elements we want the outpuut of
+  vector <int> my_output_elements_;
+  // Map for communicating the element data to proc 0
+  Teuchos::RCP<const Epetra_Map> OutputMap_;
   ;
 
 
@@ -223,6 +231,19 @@ public:
   void HelperFunctionOutputTube(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp);
   // Function to Evaluate the Discretization at ceratin nodes which are for now hard coded in this function
   void EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> displacement_of_discretization );
+  void EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, vector<int>  OutputEleIds );
+
+  void SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds);
+  void EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp);
+
+
+ void Evaluate2(
+                         Teuchos::ParameterList&              params,
+                         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                         Teuchos::RCP<Epetra_Vector>          systemvector1,
+                         Teuchos::RCP<Epetra_Vector>          systemvector2,
+                         Teuchos::RCP<Epetra_Vector>          systemvector3);
 };  // class MLMC
 
 }  // namespace STR

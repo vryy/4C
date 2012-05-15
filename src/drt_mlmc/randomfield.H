@@ -54,6 +54,7 @@ private:
   double sigma_0_; //= 0.25;
 
   int N_;
+
   double dkappa_;
   unsigned int  seed_;
   std::vector<double>  Phi_0_ ;
