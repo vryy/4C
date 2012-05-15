@@ -38,7 +38,9 @@ Maintainer: Jonas Biehler
 #include "../drt_comm/comm_utils.H"
 //for file output
 #include <fstream>
-
+#include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_assemblestrategy.H"
+#include "../drt_lib/drt_element.H"
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
@@ -92,6 +94,16 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   //write statistics every write_stat_ steps
   write_stats_ = mlmcp.get<int>("WRITESTATS");
 
+  // get OutputElements
+
+    double word;
+    std::istringstream bsdampingstream(Teuchos::getNumericStringParameter(mlmcp,"OUTPUT_ELEMENT_IDS"));
+    while (bsdampingstream >> word)
+      AllMyOutputEleIds_.push_back(int (word));
+
+  if(AllMyOutputEleIds_.front()== -1)
+    cout << RED_LIGHT "No elements specified for output " END_COLOR << endl;
+
   // In element critirion xsi_i < 1 + eps  eps = MLMCINELETOL
   InEleRange_ = 1.0 + 10e-3;
   //ReadInParameters();
@@ -110,6 +122,11 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 
   numb_run_ =  start_run_;//+numruns_pergroup_;     // counter of how many runs were made monte carlo
 
+//   AllMyOutputEleIds_.push_back(44);
+//   AllMyOutputEleIds_.push_back(123);
+//   AllMyOutputEleIds_.push_back(126);
+//   AllMyOutputEleIds_.push_back(124);
+   SetupEvalDisAtEleCenters(AllMyOutputEleIds_);
   //int mygroup =i;
 
   //local_numruns_=numruns_pergroup;
@@ -263,8 +280,7 @@ void STR::MLMC::Integrate()
           structadaptor.ReadRestart(restart);
         }
         structadaptor.Integrate();
-        //const Epetra_Vector* disp = structadaptor.Dispn().get();
-        //cout << "test displaement " << *disp << endl;
+
         dis_coarse= rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
         // test results
         DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
@@ -286,7 +302,10 @@ void STR::MLMC::Integrate()
       default:
         dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
     }
-    EvalDisAtNodes(dis_coarse);
+
+
+    EvalDisAtEleCenters(dis_coarse);
+    //EvalDisAtNodes(dis_coarse);
     //discret_->Comm().Barrier();
     if (numb_run_-start_run_== 0 &&  prolongate_res_)
     {
@@ -876,8 +895,7 @@ void STR::MLMC::CalcDifferenceToLowerLevel(RCP< Epetra_MultiVector> stress, RCP<
 void STR::MLMC::SetupStochMat(unsigned int random_seed)
 {
   // Variables for Random field
-  double sigma =0.0 , corrlength = 0.0,beta_mean = 0.0;
-  double youngs = 0.0, youngs_mean = 0.0;
+  double stoch_mat_par;
   // element center
   vector<double> ele_c_location;
 
@@ -900,11 +918,6 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
          stochmat_flag=1;
          MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
          if (!params) dserror("Cannot cast material parameters");
-         // these matparams are not needed anymore
-         sigma = params->sigma_0_;
-         corrlength = params->corrlength_;
-         beta_mean =params->beta_mean_;
-         youngs_mean =params->youngs_mean_;
        }
        break;
       default:
@@ -925,6 +938,50 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   if (numb_run_-start_run_== 0 )
   {
     random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
+    // Get size
+    int size = random_field_->SizePerDim();
+    int  NumCosTerms = random_field_->NumberOfCosTerms();
+    // testing
+    int dim =random_field_->Dimension();
+    int mysize = pow(size,double(dim));
+    cout << "stopped  calculation of sample psd " << endl;
+    //Teuchos::RCP<Teuchos::Array <double> > sample_psd= Teuchos::rcp( new Teuchos::Array<double>(mysize,0.0));
+    //random_field_->GetPSDFromSample(sample_psd);
+    //random_field_->WriteSamplePSDToFile(sample_psd);
+    // eof testing
+
+   if (0)
+    {
+      // little testing loop
+      Teuchos::RCP<Teuchos::Array <double> > average_psd=
+          Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
+      Teuchos::RCP<Teuchos::Array <double> > sample_psd=
+             Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
+      for (int i =0 ; i<1000; i++)
+      {
+        random_field_->CreateNewSample(random_seed+i);
+        vector<double> ele_center (3,1.0);
+        // calc average psd
+        random_field_->GetPSDFromSample(sample_psd);
+        for (int j=0;j<size *size ;j++)
+        {
+          (*average_psd)[j]+=1/1000.*(*sample_psd)[j];
+        }
+      }
+      ofstream File;
+      File.open("Psd_average.txt",ios::app);
+      for (int j=0;j<NumCosTerms;j++)
+      {
+        for (int k=0;k<NumCosTerms;k++)
+        {
+          File << k << " " << j << " " << (*average_psd)[k+j*size ] << endl;
+        }
+      }
+      File.close();
+      dserror("DONE stop now");
+    }
+
+
   }
   else
  {
@@ -941,17 +998,20 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
       vector<double> ele_center;
       ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
-
-      //special hack here assuming circular geometry with r=25 mm
-      double phi= acos(ele_center[0]/25);
-      //compute x coord
-      ele_center[0]=phi*25;
-      ele_center[1]=ele_center[2];
+      // get dim of field
+      if(random_field_->Dimension()==2)
+      {
+        //special hack here assuming circular geometry with r=25 mm
+        double phi= acos(ele_center[0]/25);
+        //compute x coord
+        ele_center[0]=phi*25;
+        ele_center[1]=ele_center[2];
+      }
       if (i==0)
-        youngs = random_field_->EvalFieldAtLocation(ele_center,false,true);
+        stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,true);
       else
-        youngs = random_field_->EvalFieldAtLocation(ele_center,false,false);
-      aaa_stopro->Init(youngs,"beta");
+        stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,false);
+      aaa_stopro->Init(stoch_mat_par,"beta");
       }
     } // EOF loop elements
 
@@ -1213,16 +1273,18 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
 {
 
   const int myrank = actdis_coarse_->Comm().MyPID();
+
   // build map that lives only on proc 0
   // nodes for fine discretization
    int node[5] = {1528, 3905, 7864, 10832, 13720};
    int dofs[15]={4584, 4585, 4586,11715, 11716, 11717,23592,23593, 23594,32496, 32497, 32498,41160, 41161, 41162};
    // nodes for coarse sicretization
    //int node[5] = {112, 257, 526, 728, 910};
-  //const int* targetgids;
-  //targetgids =
+   // set entries to zero for testing
+
+
   int numglobalelements =5;
-   int numglobalelements_dof =15;
+  int numglobalelements_dof =15;
   int nummyelements;
   int nummyelements_dof;
 
@@ -1294,7 +1356,6 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   p.set("action","postprocess_stress");
   // Multivector to store poststrains
   RCP<Epetra_MultiVector> poststrain =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeColMap()),6,true));
-
   p.set("poststress", poststrain);
   p.set("gpstressmap", gpstrainmap);
   p.set("stresstype","ndxyz");
@@ -1303,6 +1364,28 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   actdis_coarse_->Evaluate(p,null,null,null,null,null);
   actdis_coarse_->ClearState();
 
+  // also get element stresses
+  p.set("action","postprocess_stress");
+  p.set("stresstype","cxyz");
+  p.set("gpstressmap", gpstressmap);
+  RCP<Epetra_MultiVector> elestress = rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
+  p.set("poststress",elestress);
+  actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  if (elestress==null)
+  {
+    dserror("vector containing element center stresses/strains not available");
+  }
+  cout << "Result stress" << *elestress << endl;
+  dserror("stop here");
+  // and strains
+  p.set("gpstressmap", gpstrainmap);
+  RCP<Epetra_MultiVector> elestrains = rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
+  p.set("poststress",elestrains);
+  actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  if (elestress==null)
+  {
+    dserror("vector containing element center stresses/strains not available");
+  }
 
   // assamble name for outputfile
   std::stringstream outputfile2;
@@ -1383,4 +1466,313 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   actdis_coarse_->Comm().Barrier();
 }
 
-#endif /*CCARAT*/ // FFTW
+
+void STR::MLMC::SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds)
+{
+  //const int myrank = actdis_coarse_->Comm().MyPID();
+  for (unsigned int i=0; i<AllOutputEleIds.size(); i++)
+  {
+    if(actdis_coarse_->ElementRowMap()->LID(AllOutputEleIds[i]) > -1)
+    {
+      my_output_elements_.push_back(AllOutputEleIds[i]);
+    }
+  }
+
+  int NumGlobalMapElements =AllOutputEleIds.size();
+  int NumMyElements;
+
+  if (actdis_coarse_->Comm().MyPID()==0)
+  {
+    NumMyElements = AllOutputEleIds.size();
+  }
+  else
+  {
+    NumMyElements= 0;
+  }
+  cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << endl;
+  // move from vctor to array
+  int mysize = AllOutputEleIds.size();
+  int ArrayAllOutputEleIds[mysize];
+  for (int i=0; i< mysize; i++)
+  {
+    ArrayAllOutputEleIds[i]=AllOutputEleIds[i];
+  }
+
+
+  OutputMap_ = rcp(new Epetra_Map (NumGlobalMapElements,NumMyElements,&(ArrayAllOutputEleIds[0]),0,actdis_coarse_->Comm()));
+}
+//void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, vector<int>  OutputEleIds )
+void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp)
+{
+  cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << endl;
+  vector < Teuchos::RCP< vector <double > > > my_output_elements_c_disp;
+  vector < Teuchos::RCP< vector <double > > > my_output_elements_c_stresses;
+  vector < Teuchos::RCP< vector <double > > > my_output_elements_c_strains;
+  vector < Teuchos::RCP<vector <double > > > my_output_elements_mat_params;
+
+  for(unsigned int i = 0; i<my_output_elements_.size(); i++)
+  {
+    RCP <vector<double> > my_c_disp = rcp(new vector<double> (3, 0.0));
+    int myNumNodes= actdis_coarse_->gElement(my_output_elements_[i])->NumNode();
+    const int* myNodeIds = actdis_coarse_->gElement(my_output_elements_[i])->NodeIds();
+    for (int k=0; k< myNumNodes ; k++)
+    {
+      const DRT::Node* node = actdis_coarse_->gNode(myNodeIds[k]);
+      vector <int> myDofsPerNode = actdis_coarse_->Dof(node);
+      for (unsigned int l=0; l<myDofsPerNode.size(); l++)
+      {
+        (*my_c_disp)[l]+=1./myNumNodes*(*disp)[disp->Map().LID(myDofsPerNode[l])];
+      }
+    }
+    my_output_elements_c_disp.push_back(my_c_disp);
+
+    RCP <vector<double> > mat_params = rcp(new vector<double>);
+    // get the mat parameters
+    if(actdis_coarse_->gElement(my_output_elements_[i])->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
+    {
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->gElement(my_output_elements_[i])->Material().get());
+
+      mat_params->push_back(aaa_stopro->Youngs());
+      mat_params->push_back(aaa_stopro->Beta());
+    }
+    else
+    {
+      mat_params->push_back(0.0);
+      mat_params->push_back(0.0);
+    }
+    my_output_elements_mat_params.push_back(mat_params);
+  }
+  // Now we need to get ele stresses and strains
+  INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
+  INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
+  Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+  Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+  Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
+  // create the parameters for the discretization
+  ParameterList p;
+  p.set("action","calc_struct_stress");
+  p.set("stress", stress);
+  p.set("plstrain",plstrain);
+  p.set("strain", strain);
+
+  p.set<int>("iostress", iostress);
+  p.set<int>("iostrain", iostrain);
+
+  RCP<Epetra_Vector>    zeros_coarse = rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  RCP<Epetra_Vector>    vel_coarse = rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  actdis_coarse_->ClearState();
+  actdis_coarse_->SetState("residual displacement",zeros_coarse);
+  // disp is passed to the function no need for reading in results anymore
+  actdis_coarse_->SetState("displacement",disp);
+  actdis_coarse_->SetState("velocity",vel_coarse);
+  // Alrigth lets get the nodal stresses
+  p.set("action","calc_global_gpstresses_map");
+  const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  p.set("gpstressmap", gpstressmap);
+
+  const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  p.set("gpstrainmap", gpstrainmap);
+
+  //actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  Evaluate2(p,null,null,null,null,null);
+  actdis_coarse_->ClearState();
+
+  // also get element stresses
+  p.set("action","postprocess_stress");
+  p.set("stresstype","cxyz");
+  p.set("gpstressmap", gpstressmap);
+  RCP<Epetra_MultiVector> elestress = rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
+  p.set("poststress",elestress);
+  Evaluate2(p,null,null,null,null,null);
+  //actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  if (elestress==null)
+  {
+    dserror("vector containing element center stresses/strains not available");
+  }
+  // and strains
+  p.set("gpstressmap", gpstrainmap);
+  RCP<Epetra_MultiVector> elestrains = rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
+  p.set("poststress",elestrains);
+  Evaluate2(p,null,null,null,null,null);
+  //actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  if (elestress==null)
+  {
+    dserror("vector containing element center stresses/strains not available");
+  }
+  // now we have stresses and strains in elestress and elestrain which have Elementrowmap format
+  // hence loop over the elements
+  for(unsigned int i = 0; i<my_output_elements_.size(); i++)
+  {
+    RCP <vector<double> > element_c_stresses = rcp(new vector<double>);
+    RCP <vector<double> > element_c_strains = rcp(new vector<double>);
+    for(int k = 0;k<6 ; k++)
+    {
+      element_c_stresses->push_back((*elestress)[k][(elestress->Map().LID(my_output_elements_[i]))]);
+      element_c_strains->push_back((*elestrains)[k][(elestrains->Map().LID(my_output_elements_[i]))]);
+    }
+    my_output_elements_c_stresses.push_back(element_c_stresses);
+    my_output_elements_c_strains.push_back(element_c_strains);
+  }
+
+  // now we need to setup a map
+  // set up map <int,DRT::CONTAINER>
+  map<int,Teuchos::RCP <DRT::Container> >my_output_element_map;
+  for(unsigned int i = 0; i<my_output_elements_.size(); i++)
+  {
+    // put all the stuff into container
+    Teuchos::RCP<DRT::Container> mycontainer = rcp(new DRT::Container);
+    mycontainer->Add("stresses",(my_output_elements_c_stresses[i]));
+    mycontainer->Add("strains",(my_output_elements_c_strains[i]));
+    mycontainer->Add("disp",(my_output_elements_c_disp[i]));
+    mycontainer->Add("mat_params",(my_output_elements_mat_params[i]));
+    my_output_element_map.insert( pair <int,Teuchos::RCP< DRT::Container> >(my_output_elements_[i],mycontainer) );
+  }
+  // build exporter
+  DRT::Exporter myexporter(*(actdis_coarse_->ElementRowMap()),*OutputMap_,actdis_coarse_->Comm());
+  // this actually transfers everything to proc 0
+  myexporter.Export(my_output_element_map);
+
+  if (actdis_coarse_->Comm().MyPID()==0)
+  {
+    map<int,Teuchos::RCP <DRT::Container> >::iterator myit;
+    for ( myit=my_output_element_map.begin() ; myit != my_output_element_map.end(); myit++ )
+    {
+      // get back all the data
+     const vector<double> * stresses = myit->second()->Get< vector <double> >("stresses");
+     const vector<double> * strains = myit->second()->Get< vector <double> >("strains");
+     const vector<double> * mat_params = myit->second()->Get< vector <double> >("mat_params");
+     const vector<double> * disp = myit->second()->Get< vector <double> >("disp");
+      cout << "my_output_element_map first " << myit->first << *(myit->second)  << endl;
+
+
+    // assamble name for outputfile
+    std::stringstream outputfile2;
+    outputfile2 << filename_ << "_statistics_output_" << start_run_ << "_EleId_"<< myit->first << ".txt";
+    string name2 = outputfile2.str();;
+    // file to write output
+    ofstream File;
+    if (numb_run_ == 0 || numb_run_ == start_run_)
+    {
+      File.open(name2.c_str(),ios::out);
+      if (File.is_open())
+      {
+        File << "run id   "<< "disp x  disp y disp z stress xx  stress yy stress zz stress xy stress yz stress xz strain xx  strain yy strain zz strain xy strain yz strain xz mat_param1 mat_param2 "
+            << endl;
+        File.close();
+      }
+      else
+      {
+        dserror("Unable to open statistics output file");
+      }
+     }
+    // reopen in append mode
+    File.open(name2.c_str(),ios::app);
+    File << numb_run_ ;
+    for(unsigned int i=0;i<disp->size();i++)
+    {
+      File <<  "  " << (*disp)[i];
+    }
+    for(unsigned int i=0;i<stresses->size();i++)
+    {
+      File <<  "  " << (*stresses)[i];
+    }
+    for(unsigned int i=0;i<stresses->size();i++)
+    {
+      File <<  "  " << (*strains)[i];
+    }
+    for(int i=0;i<2;i++)
+    {
+       File << " " << (*mat_params)[i];
+    }
+    File << endl;
+    File.close();
+    }
+  }
+  actdis_coarse_->Comm().Barrier();
+}
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate (public) / basically copy of the Evaluate function of
+ |  the discretization                                                   |
+ *----------------------------------------------------------------------*/
+void STR::MLMC::Evaluate2(
+                        Teuchos::ParameterList&              params,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                        Teuchos::RCP<Epetra_Vector>          systemvector1,
+                        Teuchos::RCP<Epetra_Vector>          systemvector2,
+                        Teuchos::RCP<Epetra_Vector>          systemvector3)
+{
+  DRT::AssembleStrategy strategy( 0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3 );
+
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
+
+  if (!actdis_coarse_->Filled()) dserror("FillComplete() was not called");
+  if (!actdis_coarse_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  int row = strategy.FirstDofSet();
+  int col = strategy.SecondDofSet();
+
+  // call the element's register class preevaluation method
+  // for each type of element
+  // for most element types, just the base class dummy is called
+  // that does nothing
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate PreEvaluate");
+    DRT::ParObjectFactory::Instance().PreEvaluate(*actdis_coarse_,params,
+                                             strategy.Systemmatrix1(),
+                                             strategy.Systemmatrix2(),
+                                             strategy.Systemvector1(),
+                                             strategy.Systemvector2(),
+                                             strategy.Systemvector3());
+  }
+  // in the orginal function we have la(dofsets_.size()); here
+  DRT::Element::LocationArray la(1);
+  //my_output_elements_
+  for (unsigned int i=0; i<my_output_elements_.size(); ++i)
+  {
+    // only evaluate the necessary elements for efficiency
+    DRT::Element* actele = actdis_coarse_->gElement(my_output_elements_[i]);
+    {
+    TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate LocationVector");
+    // get element location vector, dirichlet flags and ownerships
+    actele->LocationVector(*actdis_coarse_,la,false);
+    }
+
+    {
+    TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate Resize");
+
+    // get dimension of element matrices and vectors
+    // Reshape element matrices and vectors and init to zero
+    strategy.ClearElementStorage( la[row].Size(), la[col].Size() );
+    }
+
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
+    // call the element evaluate method
+    int err = actele->Evaluate(params,*actdis_coarse_,la,
+                               strategy.Elematrix1(),
+                               strategy.Elematrix2(),
+                               strategy.Elevector1(),
+                               strategy.Elevector2(),
+                               strategy.Elevector3());
+    if (err) dserror("Proc %d: Element %d returned err=%d",actdis_coarse_->Comm().MyPID(),actele->Id(),err);
+    }
+
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
+      int eid = actele->Id();
+      strategy.AssembleMatrix1( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
+      strategy.AssembleMatrix2( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
+      strategy.AssembleVector1( la[row].lm_, la[row].lmowner_ );
+      strategy.AssembleVector2( la[row].lm_, la[row].lmowner_ );
+      strategy.AssembleVector3( la[row].lm_, la[row].lmowner_ );
+    }
+  } // for (int i=0; i<numcolele; ++i)
+
+  return;
+}
+
+#endif // FFTW
+
