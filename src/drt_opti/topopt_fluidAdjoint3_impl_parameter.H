@@ -44,6 +44,43 @@ public:
   //! print parameter to screen
   void PrintAdjointParameter() const;
 
+  bool GeneralParamsSet() {return set_general_adjoint_parameter_;}
+  bool ObjDissipationTerm() {return dissipation_;}
+  bool ObjInletPresTerm() {return inlet_pressure_;}
+  bool ObjPresDropTerm() {return pressure_drop_;}
+  double ObjDissipationFac() {return dissipation_fac_;}
+  double ObjInletPresFac() {return inlet_pressure_fac_;}
+  double ObjPresDropFac() {return pressure_drop_fac_;}
+
+  bool IsStationary() {return is_stationary_;}
+  bool IsInconsistent() {return is_inconsistent_;}
+  INPAR::FLUID::PSPG PSPG() {return pspg_;}
+  INPAR::FLUID::SUPG SUPG() {return supg_;}
+  INPAR::FLUID::CStab CStab() {return cstab_;}
+  INPAR::FLUID::TauType TauType() {return whichtau_;}
+  bool EvalMatAtGP() {return mat_gp_;}
+  bool EvalTauAtGP() {return tau_gp_;}
+
+  INPAR::FLUID::TimeIntegrationScheme TimeIntScheme() {return timealgo_;}
+  double Time() {return time_;}
+  double Dt() {return dt_;}
+  double Theta() {return theta_;}
+  double OmTheta() {return omtheta_;}
+  double ThetaPre() {return theta_pre_;}
+  double OmThetaPre() {return omtheta_pre_;}
+  double ThetaDiv() {return theta_div_;}
+  double OmThetaDiv() {return omtheta_div_;}
+  double Timefac() {return timefac_;}
+  double TimefacRhs() {return timefacrhs_;}
+  double TimefacPre() {return timefacpre_;}
+  double TimefacPreRhs() {return timefacprerhs_;}
+  double TimefacDiv() {return timefacdiv_;}
+  double TimefacDivRhs() {return timefacdivrhs_;}
+
+  INPAR::TOPOPT::AdjointTestCases TestCase() {return testcase_;}
+
+private:
+
   //! Flag SetGeneralParameter was called
   bool set_general_adjoint_parameter_;
 
@@ -111,7 +148,6 @@ public:
 
   //! special test case
   INPAR::TOPOPT::AdjointTestCases testcase_;
-private:
 
   // private constructor
   FluidAdjoint3ImplParameter();

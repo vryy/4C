@@ -50,7 +50,7 @@ public:
                               Epetra_SerialDenseVector&       elevec
                               ) = 0;
 
-  /// Internal implementation class for FluidBoundary elements
+  /// Internal implementation class for FluidAdjointBoundary elements
   static FluidAdjoint3BoundaryImplInterface* Impl(const DRT::Element* ele);
 };
 
@@ -126,7 +126,7 @@ private:
   ) const;
 
   //! pointer to parameter list
-  const DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
+  DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
 
   // gauss points
   DRT::UTILS::GaussIntegration intpoints_;

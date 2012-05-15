@@ -442,7 +442,7 @@ private:
   bool is_higher_order_ele_;
 
   //! pointer to parameter list
-  const DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
+  DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
 };
 }
 }
