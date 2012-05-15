@@ -3596,7 +3596,9 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
-  statisticsmanager_->DoTimeSample(step_,time_,eosfac);
+  statisticsmanager_->DoTimeSample(step_,eosfac,
+                                   thermpressaf_,thermpressam_,
+                                   thermpressdtaf_,thermpressdtam_);
 
   // -------------------------------------------------------------------
   //                        compute flow rates
@@ -3639,7 +3641,9 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
-  statisticsmanager_->DoTimeSample(step_,time_,eosfac);
+  statisticsmanager_->DoTimeSample(step_,eosfac,
+                                   thermpressaf_,thermpressam_,
+                                   thermpressdtaf_,thermpressdtam_);
 
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required

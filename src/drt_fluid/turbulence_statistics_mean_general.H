@@ -67,7 +67,6 @@ public:
   TurbulenceStatisticsGeneralMean(
     RCP<DRT::Discretization> discret        ,
     string                   homdir         ,
-    double &                 density        ,
     LINALG::MapExtractor&    velpressplitter,
     const bool               withscatra
     );
@@ -76,7 +75,6 @@ public:
     Teuchos::RCP<DRT::Discretization> discret,
     Teuchos::RCP<const DRT::DofSet>   standarddofset ,
     string                            homdir,
-    double &                          density,
     LINALG::MapExtractor&             velpressplitter,
     const bool                        withscatra
     );
@@ -208,9 +206,6 @@ private:
 
   //! the scatra discretization
   RCP<DRT::Discretization>     scatradis_      ;
-
-  //! reference to material density to rescale pressure
-  double &                     density_;
 
   //! a splitter between velocities and pressure dofs
   LINALG::MapExtractor&        velpressplitter_;

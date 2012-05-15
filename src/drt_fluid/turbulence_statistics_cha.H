@@ -154,8 +154,8 @@ public:
   average of the nodal values after a certain amount of timesteps.
   */
   void DoScatraTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                        Teuchos::RefCountPtr<Epetra_Vector> scanp,
-                        Epetra_Vector &                     force);
+                          Teuchos::RefCountPtr<Epetra_Vector> scanp,
+                          Epetra_Vector &                     force);
 
 
   /*!
@@ -242,12 +242,13 @@ public:
            (all gausspoint-quantities)
 
   */
-  void EvaluateResiduals(map<string,RCP<Epetra_Vector> > statevecs,
-                         double                          time     );
 
-  void EvaluateResidualsFluidImplInt(map<string,RCP<Epetra_Vector> >      statevecs,
-                                     map<string,RCP<Epetra_MultiVector> > statetenss,
-                                     double                               time     );
+  void EvaluateResiduals(map<string,RCP<Epetra_Vector> >      statevecs,
+                         map<string,RCP<Epetra_MultiVector> > statetenss,
+                         const double                         thermpressaf,
+                         const double                         thermpressam,
+                         const double                         thermpressdtaf,
+                         const double                         thermpressdtam);
 
   //@}
 
@@ -630,12 +631,6 @@ private:
   RefCountPtr<vector<double> >     sumabsres_;
   //! sum over all in plane values of svel/tau
   RefCountPtr<vector<double> >     sumtauinvsvel_;
-  //! sum over all in plane subscale accelerations
-  RefCountPtr<vector<double> >     sumsacc_;
-  //! sum over all in plane squared subscale accelerations
-  RefCountPtr<vector<double> >     sumsacc_sq_;
-  //! sum over all in plane subscale accelerations norms
-  RefCountPtr<vector<double> >     sumabssacc_;
   //! sum over all in plane subscale velocities
   RefCountPtr<vector<double> >     sumsvelaf_;
   //! sum over all in plane squared subscale velocities
@@ -652,8 +647,6 @@ private:
   //! sum over all in plane squared subscale pressure values at current timestep
   RefCountPtr<vector<double> >     sumspressnp_sq_;
 
-  //! sum over all in plane averaged dissipation rates from subscale acceleration
-  RefCountPtr<vector<double> >     sum_eps_sacc_;
   //! sum over all in plane averaged dissipation rates from pspg stabilisation
   RefCountPtr<vector<double> >     sum_eps_pspg_;
   //! sum over all in plane averaged dissipation rates from supg stabilisation
@@ -664,18 +657,16 @@ private:
   RefCountPtr<vector<double> >     sum_eps_rey_;
   //! sum over all in plane averaged dissipation rates from least squares continuity term
   RefCountPtr<vector<double> >     sum_eps_cstab_;
-  //! sum over all in plane averaged dissipation rates from viscous stabilisation
-  RefCountPtr<vector<double> >     sum_eps_vstab_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
   RefCountPtr<vector<double> >     sum_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
   RefCountPtr<vector<double> >     sum_eps_avm3_;
   //! sum over all in plane averaged dissipation rates from scale similarity model
-  RefCountPtr<vector<double> >     sum_eps_scsim_;
+  RefCountPtr<vector<double> >     sum_eps_mfs_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
-  RefCountPtr<vector<double> >     sum_eps_scsimfs_;
+  RefCountPtr<vector<double> >     sum_eps_mfscross_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
-  RefCountPtr<vector<double> >     sum_eps_scsimbs_;
+  RefCountPtr<vector<double> >     sum_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
   RefCountPtr<vector<double> >     sum_eps_visc_;
   //! sum over all in plane averaged dissipation rates from Galerkin convective term

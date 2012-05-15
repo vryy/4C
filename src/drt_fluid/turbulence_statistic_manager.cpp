@@ -15,7 +15,6 @@ Maintainer: Ursula Rasthofer
 */
 
 #include "turbulence_statistic_manager.H"
-#include "../drt_fluid/fluid_genalpha_integration.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H" // for LiftDrag
@@ -34,265 +33,12 @@ namespace FLD
 
   /*----------------------------------------------------------------------
 
-    Standard Constructor for Genalpha time integration (public) (Gammis Fluid Algo!!!!!!)
-
-  ----------------------------------------------------------------------*/
-//  TurbulenceStatisticManager::TurbulenceStatisticManager(FluidGenAlphaIntegration& fluid)
-//    :
-//    dt_              (fluid.dt_       ),
-//    alphaM_          (fluid.alphaM_   ),
-//    alphaF_          (fluid.alphaF_   ),
-//    gamma_           (fluid.gamma_    ),
-//    density_         (fluid.density_  ),
-//    discret_         (fluid.discret_  ),
-////    params_          (fluid.params_   ),
-//    alefluid_        (fluid.alefluid_ ),
-//    myaccnp_         (fluid.accnp_    ),
-//    myaccn_          (fluid.accn_     ),
-//    myaccam_         (fluid.accam_    ),
-//    myvelnp_         (fluid.velnp_    ),
-//    myveln_          (fluid.veln_     ),
-//    myvelaf_         (fluid.velaf_    ),
-//    myscanp_         (fluid.scaaf_    ),
-//    mydispnp_        (fluid.dispnp_   ),
-//    mydispn_         (fluid.dispn_    ),
-//    mygridveln_      (fluid.gridveln_ ),
-//    mygridvelaf_     (fluid.gridvelaf_),
-//    myforce_         (fluid.force_    ),
-//    myfilteredvel_   (null            ),
-//    myfilteredreystr_(null            ),
-//    myfsvelaf_       (null            )
-//  {
-//    params_ = Teuchos::rcp(&fluid.params_);
-//    // get density
-//
-//    // activate the computation of subgrid dissipation,
-//    // residuals etc
-//    subgrid_dissipation_=true;
-//
-//    // toogle statistics output for turbulent inflow
-//    inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
-//
-//    // the flow parameter will control for which geometry the
-//    // sampling is done
-//    if(fluid.special_flow_=="channel_flow_of_height_2")
-//    {
-//      flow_=channel_flow_of_height_2;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
-//                                                          alefluid_           ,
-//                                                          mydispnp_           ,
-//                                                          *params_             ,
-//                                                          subgrid_dissipation_));
-//    }
-//    else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
-//    {
-//      flow_=loma_channel_flow_of_height_2;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
-//                                                          alefluid_           ,
-//                                                          mydispnp_           ,
-//                                                          *params_             ,
-//                                                          subgrid_dissipation_));
-//    }
-//    else if(fluid.special_flow_=="scatra_channel_flow_of_height_2")
-//    {
-//      flow_=scatra_channel_flow_of_height_2;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
-//                                                          alefluid_           ,
-//                                                          mydispnp_           ,
-//                                                          *params_             ,
-//                                                          subgrid_dissipation_));;
-//    }
-//    else if(fluid.special_flow_=="lid_driven_cavity")
-//    {
-//      flow_=lid_driven_cavity;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
-//    }
-//    else if(fluid.special_flow_=="loma_lid_driven_cavity")
-//    {
-//      flow_=loma_lid_driven_cavity;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
-//    }
-//    else if(fluid.special_flow_=="backward_facing_step")
-//    {
-//      flow_=backward_facing_step;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
-//      if (inflow_)
-//        dserror("Sorry, no inflow generation for gammi-style fluid!");
-//    }
-//    else if(fluid.special_flow_=="loma_backward_facing_step")
-//    {
-//      flow_=loma_backward_facing_step;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
-//      if (inflow_)
-//        dserror("Sorry, no inflow generation for gammi-style fluid!");
-//    }
-//    else if(fluid.special_flow_=="combust_oracles")
-//    {
-//      flow_=combust_oracles;
-//
-//      if(discret_->Comm().MyPID()==0)
-//        std::cout << "---  setting up turbulence statistics manager for ORACLES ..." << std::flush;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",false));
-//
-//      if(discret_->Comm().MyPID()==0)
-//        std::cout << " done" << std::endl;
-//    }
-//    else if(fluid.special_flow_=="square_cylinder")
-//    {
-//      flow_=square_cylinder;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,*params_));
-//    }
-//    else if(fluid.special_flow_=="square_cylinder_nurbs")
-//    {
-//      flow_=square_cylinder_nurbs;
-//
-//      // do the time integration independent setup
-//      Setup();
-//    }
-//    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs")
-//    {
-//      flow_=rotating_circular_cylinder_nurbs;
-//      const bool withscatra = false;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
-//                                                      alefluid_           ,
-//                                                      mydispnp_           ,
-//                                                      *params_             ,
-//                                                      withscatra));
-//    }
-//    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs_scatra")
-//    {
-//      flow_=rotating_circular_cylinder_nurbs_scatra;
-//      const bool withscatra = true;
-//
-//      // do the time integration independent setup
-//      Setup();
-//
-//      // allocate one instance of the averaging procedure for
-//      // the flow under consideration
-//      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
-//                                                      alefluid_           ,
-//                                                      mydispnp_           ,
-//                                                      *params_             ,
-//                                                      withscatra));
-//    }
-//    else if(fluid.special_flow_=="time_averaging")
-//    {
-//      flow_=time_averaging;
-//
-//      // do the time integration independent setup
-//      Setup();
-//    }
-//    else
-//    {
-//      flow_=no_special_flow;
-//
-//      // do the time integration independent setup
-//      Setup();
-//    }
-//
-//    // allocate one instance of the flow independent averaging procedure
-//    // providing colorful output for paraview
-//    {
-//      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
-//
-//      string homdir = modelparams->get<string>("HOMDIR","not_specified");
-//
-//      if(flow_==rotating_circular_cylinder_nurbs_scatra)
-//      {
-//        // additional averaging of scalar field
-//        statistics_general_mean_
-//        =rcp(new TurbulenceStatisticsGeneralMean(
-//            discret_,
-//            homdir,
-//            density_,
-//            fluid.VelPresSplitter(),true));
-//      }
-//      else
-//      {
-//        statistics_general_mean_
-//        =rcp(new TurbulenceStatisticsGeneralMean(
-//            discret_,
-//            homdir,
-//            density_,
-//            fluid.VelPresSplitter(),false));
-//      }
-//    }
-//    return;
-//
-//  }
-
-  /*----------------------------------------------------------------------
-
     Standard Constructor for standard time integration (public)
 
   ----------------------------------------------------------------------*/
   TurbulenceStatisticManager::TurbulenceStatisticManager(FluidImplicitTimeInt& fluid)
     :
     dt_              (fluid.dta_           ),
-    alphaM_          (0.0                  ),
-    alphaF_          (0.0                  ),
-    gamma_           (0.0                  ),
-    density_         (1.0                  ),
     discret_         (fluid.discret_       ),
     params_          (fluid.params_        ),
     alefluid_        (fluid.alefluid_      ),
@@ -302,20 +48,19 @@ namespace FLD
     myvelnp_         (fluid.velnp_         ),
     myveln_          (fluid.veln_          ),
     myvelaf_         (fluid.velaf_         ),
-    myscanp_         (fluid.scaaf_         ),
+    myhist_          (fluid.hist_          ),
+    myscaaf_         (fluid.scaaf_         ),
+    myscaam_         (fluid.scaam_         ),
     mydispnp_        (fluid.dispnp_        ),
     mydispn_         (fluid.dispn_         ),
-    mygridveln_      (fluid.gridv_         ),
-    mygridvelaf_     (null                 ),
+    mygridvelaf_     (fluid.gridv_         ),
     myforce_         (fluid.trueresidual_  ),
     myfilteredvel_   (fluid.filteredvel_   ),
     myfilteredreystr_(fluid.filteredreystr_),
     myfsvelaf_       (fluid.fsvelaf_       )
   {
 
-    //subgrid_dissipation_=true;
-    //why: read comment in CalcDissipation() (fluid3_impl.cpp)
-    subgrid_dissipation_=false;
+    subgrid_dissipation_=true;
 
     // toogle statistics output for turbulent inflow
     inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
@@ -543,14 +288,23 @@ namespace FLD
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
-      statistics_general_mean_
+      if(flow_==rotating_circular_cylinder_nurbs_scatra)
+      {
+        // additional averaging of scalar field
+        statistics_general_mean_
         =rcp(new TurbulenceStatisticsGeneralMean(
-               discret_,
-               homdir,
-               density_,
-               fluid.VelPresSplitter(),
-               false // scatra support not yet activated.
-               ));
+            discret_,
+            homdir,
+            fluid.VelPresSplitter(),true));
+      }
+      else
+      {
+        statistics_general_mean_
+        =rcp(new TurbulenceStatisticsGeneralMean(
+            discret_,
+            homdir,
+            fluid.VelPresSplitter(),false));
+      }
     }
 
     return;
@@ -565,11 +319,7 @@ namespace FLD
   ----------------------------------------------------------------------*/
   TurbulenceStatisticManager::TurbulenceStatisticManager(CombustFluidImplicitTimeInt& timeint)
     :
-    dt_              (timeint.dta_         ),
-    alphaM_          (0.0                  ),
-    alphaF_          (0.0                  ),
-    gamma_           (0.0                  ),
-    density_         (1.0                  ),
+    dt_              (timeint.dta_           ),
     discret_         (timeint.discret_     ),
     params_          (timeint.params_      ),
     alefluid_        (false                ),
@@ -578,10 +328,11 @@ namespace FLD
     myaccam_         (null                 ), // size is not fixed
     myveln_          (null                 ), // size is not fixed
     myvelaf_         (null                 ), // size is not fixed
-    myscanp_         (null                 ),
+    myhist_          (null                 ), // size is not fixed
+    myscaaf_         (null                 ),
+    myscaam_         (null                 ),
     mydispnp_        (Teuchos::null        ),
     mydispn_         (null                 ),
-    mygridveln_      (null                 ),
     mygridvelaf_     (null                 ),
     myfilteredvel_   (null                 ),
     myfilteredreystr_(null                 ),
@@ -661,7 +412,6 @@ namespace FLD
           discret_,
           timeint.standarddofset_,
           homdir,
-          density_,  // density
           *timeint.velpressplitterForOutput_,
           withscatra // statistics for transported scalar
       ));
@@ -691,9 +441,6 @@ namespace FLD
 
     ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
-    smagorinsky_=false;
-    scalesimilarity_=false;
-    multifractal_=false;
     if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
         ==
         "CLASSICAL_LES")
@@ -713,13 +460,7 @@ namespace FLD
          "Smagorinsky"
         )
       {
-//        if(discret_->Comm().MyPID()==0)
-//        {
-//          cout << "                             Initialising output for Smagorinsky type models\n\n\n";
-//          fflush(stdout);
-//        }
-
-        smagorinsky_=true;
+        turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
       }
       // check if we want to compute averages of scale similarity
       // quantities (tau_SFS)
@@ -727,13 +468,7 @@ namespace FLD
               ==
               "Scale_Similarity")
       {
-//        if(discret_->Comm().MyPID()==0)
-//        {
-//          cout << "                             Initializing output for scale similarity type models\n\n\n";
-//          fflush(stdout);
-//        }
-
-        scalesimilarity_=true;
+        turbmodel_ = INPAR::FLUID::scale_similarity_basic;
       }
       // check if we want to compute averages of multifractal
       // quantities (N, B)
@@ -741,13 +476,7 @@ namespace FLD
            ==
            "Multifractal_Subgrid_Scales")
       {
-//        if(discret_->Comm().MyPID()==0)
-//        {
-//          cout << "                             Initializing output for multifractal subgrid scales type models\n\n\n";
-//          fflush(stdout);
-//        }
-
-        multifractal_=true;
+        turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
       }
     }
 
@@ -852,7 +581,7 @@ namespace FLD
       {
         // add computed dynamic Smagorinsky quantities
         // (effective viscosity etc. used during the computation)
-        if(smagorinsky_) statistics_channel_->AddDynamicSmagorinskyQuantities();
+        if(turbmodel_ == INPAR::FLUID::dynamic_smagorinsky) statistics_channel_->AddDynamicSmagorinskyQuantities();
         break;
       }
       default:
@@ -884,7 +613,7 @@ namespace FLD
       case loma_channel_flow_of_height_2:
       {
         // add computed subfilter stress
-        if(scalesimilarity_) statistics_channel_->AddSubfilterStresses(stress12);
+        if(turbmodel_ == INPAR::FLUID::scale_similarity_basic) statistics_channel_->AddSubfilterStresses(stress12);
         break;
       }
       default:
@@ -904,9 +633,11 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoTimeSample(int          step,
-                                                double       time,
-                                                const double eosfac
-                                                )
+                                                const double eosfac,
+                                                const double thermpressaf,
+                                                const double thermpressam,
+                                                const double thermpressdtaf,
+                                                const double thermpressdtam)
   {
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
@@ -931,7 +662,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
 
-        statistics_channel_->DoLomaTimeSample(myvelnp_,myscanp_,*myforce_,eosfac);
+        statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,*myforce_,eosfac);
         break;
       }
       case scatra_channel_flow_of_height_2:
@@ -939,7 +670,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent passive scalar transport in channel");
 
-        statistics_channel_->DoScatraTimeSample(myvelnp_,myscanp_,*myforce_);
+        statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,*myforce_);
         break;
       }
       case lid_driven_cavity:
@@ -955,7 +686,7 @@ namespace FLD
         if(statistics_ldc_==null)
           dserror("need statistics_ldc_ to do a time sample for a cavity flow at low Mach number");
 
-        statistics_ldc_->DoLomaTimeSample(myvelnp_,myscanp_,*myforce_,eosfac);
+        statistics_ldc_->DoLomaTimeSample(myvelnp_,myscaaf_,*myforce_,eosfac);
         break;
       }
       case backward_facing_step:
@@ -996,14 +727,14 @@ namespace FLD
         }
         else
         {
-          statistics_bfs_->DoLomaTimeSample(myvelnp_,myscanp_,eosfac);
+          statistics_bfs_->DoLomaTimeSample(myvelnp_,myscaaf_,eosfac);
 
           // do time sample for inflow channel flow
           if (inflow_)
           {
             if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
-              statistics_channel_->DoLomaTimeSample(myvelnp_,myscanp_,*myforce_,eosfac);
+              statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,*myforce_,eosfac);
             }
           }
         }
@@ -1067,7 +798,7 @@ namespace FLD
         if(statistics_ccy_==null)
           dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
 
-        statistics_ccy_->DoTimeSample(myvelnp_,myscanp_,myfullphinp_);
+        statistics_ccy_->DoTimeSample(myvelnp_,myscaaf_,myfullphinp_);
         break;
       }
       default:
@@ -1103,49 +834,41 @@ namespace FLD
           map<string,RCP<Epetra_Vector> > statevecs;
           map<string,RCP<Epetra_MultiVector> > statetenss;
 
-          if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_gen_alpha)
+          statevecs.insert(pair<string,RCP<Epetra_Vector> >("hist",myhist_));
+          statevecs.insert(pair<string,RCP<Epetra_Vector> >("accam",myaccam_));
+          statevecs.insert(pair<string,RCP<Epetra_Vector> >("scaaf",myscaaf_));
+          statevecs.insert(pair<string,RCP<Epetra_Vector> >("scaam",myscaam_));
+
+          if (alefluid_)
           {
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+1      ,trial)",myvelnp_));
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+alpha_F,trial)",myvelaf_));
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc     (n+alpha_M,trial)",myaccam_));
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("dispnp", mydispnp_   ));
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("gridv" , mygridvelaf_));
+          }
 
-            if (alefluid_)
-            {
-              statevecs.insert(pair<string,RCP<Epetra_Vector> >("dispnp"    , mydispnp_   ));
-              statevecs.insert(pair<string,RCP<Epetra_Vector> >("gridvelaf" , mygridvelaf_));
-            }
-
-            statistics_channel_->EvaluateResiduals(statevecs,time);
+          if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha
+            or DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
+          {
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("velaf",myvelaf_));
+            if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
+              statevecs.insert(pair<string,RCP<Epetra_Vector> >("velnp",myvelnp_));
           }
           else
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("velaf",myvelnp_));
+
+          if (params_->sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC")!= "No"
+              or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
           {
-            if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha)
-            {
-              statevecs.insert(pair<string,RCP<Epetra_Vector> >("vel",myvelaf_));
-              statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc",myaccam_));
-            }
-            else if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_one_step_theta)
-            {
-              statevecs.insert(pair<string,RCP<Epetra_Vector> >("vel",myvelnp_));
-              statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc",myaccnp_));
-            }
-            else
-              dserror("Time integartion scheme not supported!");
-
-            if (params_->sublist("SUBGRID VISCOSITY").get<string>("FSSUGRVISC")!= "No")
-            {
-              statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsvel",myfsvelaf_));
-              if (myfsvelaf_==null)
-                dserror ("Didn't got fsvel!");
-            }
-            if (scalesimilarity_)
-            {
-              statetenss.insert(pair<string,RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
-              statetenss.insert(pair<string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
-            }
-
-            statistics_channel_->EvaluateResidualsFluidImplInt(statevecs,statetenss,time);
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
+            if (myfsvelaf_==null)
+              dserror ("Have not got fsvel!");
           }
+          if (turbmodel_ == INPAR::FLUID::scale_similarity_basic)
+          {
+            statetenss.insert(pair<string,RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
+            statetenss.insert(pair<string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
+          }
+
+          statistics_channel_->EvaluateResiduals(statevecs,statetenss,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
           break;
         }
@@ -1157,10 +880,10 @@ namespace FLD
 
         if(discret_->Comm().MyPID()==0)
         {
-          cout << "                      residuals, dissipation rates etc, ";
+          cout << "\nresiduals, dissipation rates etc, ";
           cout << "all gausspoint-quantities (";
           printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
-          cout << ")\n";
+          cout << ")";
         }
       }
       if(discret_->Comm().MyPID()==0)
@@ -1168,7 +891,7 @@ namespace FLD
         cout << "\n";
       }
 
-      if(multifractal_)
+      if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
       {
         switch(flow_)
         {
@@ -1194,7 +917,7 @@ namespace FLD
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
       if (statistics_general_mean_!=Teuchos::null)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscanp_,myfullphinp_);
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscaaf_,myfullphinp_);
 
     } // end step in sampling period
 
@@ -1208,7 +931,6 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoTimeSample(int                             step,
-                                                double                          time,
                                                 Teuchos::RCP<Epetra_Vector>     velnp,
                                                 Teuchos::RCP<Epetra_Vector>     force,
                                                 Teuchos::RCP<Epetra_Vector>     phi,
@@ -1268,7 +990,7 @@ namespace FLD
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
       if (statistics_general_mean_!=Teuchos::null)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,velnp,myscanp_,myfullphinp_);
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,velnp,myscaaf_,myfullphinp_);
 
       if(discret_->Comm().MyPID()==0)
       {
@@ -1582,7 +1304,7 @@ namespace FLD
     if(flow_==scatra_channel_flow_of_height_2)
     {
       // store scatra discretization (multifractal subgrid scales only)
-      if (multifractal_)
+      if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
         statistics_channel_->StoreScatraDiscret(scatradis_);
     }
 

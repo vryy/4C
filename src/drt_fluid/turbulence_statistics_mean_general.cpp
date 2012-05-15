@@ -28,14 +28,12 @@ Maintainer: Ursula Rasthofer
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   RCP<DRT::Discretization> discret        ,
   string                   homdir         ,
-  double &                 density        ,
   LINALG::MapExtractor&    velpressplitter,
   const bool               withscatra
   )
   :
   discret_        (discret),
   standarddofset_ (Teuchos::null),
-  density_        (density),
   velpressplitter_(velpressplitter),
   withscatra_     (withscatra)
 {
@@ -88,14 +86,12 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<const DRT::DofSet>   standarddofset,
   string                            homdir,
-  double &                          density,
   LINALG::MapExtractor&             velpressplitter,
   const bool                        withscatra
   )
   :
   discret_        (discret),
   standarddofset_ (standarddofset),
-  density_        (density),
   velpressplitter_(velpressplitter),
   withscatra_     (withscatra)
 {
@@ -1176,7 +1172,6 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 
   // output real pressure
   Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(prev_avg_);
-  pressure->Scale(density_);
   output.WriteVector("averaged_pressure", pressure);
 
   return;

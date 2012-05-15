@@ -2707,7 +2707,6 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
       turbstatisticsmanager_->DoTimeSample(
           step_,
-          time_,
           velnp_out,
           trueresidual_out,
           phinp_,

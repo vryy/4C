@@ -23,6 +23,7 @@ Maintainer: Ursula Rasthofer
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
+#include "../drt_inpar/inpar_fluid.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -54,7 +55,6 @@ class FluidImplicitTimeInt;
 class CombustFluidImplicitTimeInt;
 class TurbulenceStatisticsGeneralMean;
 class TurbulenceStatisticsCha;
-//class TurbulenceStatisticsBcf;
 class TurbulenceStatisticsCcy;
 class TurbulenceStatisticsLdc;
 class TurbulenceStatisticsBfs;
@@ -64,12 +64,6 @@ class TurbulenceStatisticsSqc;
 class TurbulenceStatisticManager
 {
 public:
-
-  /*!
-  \brief Genalpha Constructor (public)
-
-  */
-//  TurbulenceStatisticManager(FluidGenAlphaIntegration& timeint);
 
   /*!
   \brief One-Step-Theta Constructor (public)
@@ -132,21 +126,18 @@ public:
   \param discretmatchingvelnp (in) : velnp built with dofrowmap from discretization
 
   */
-  void DoTimeSample(int step                                                              ,
-                    double time                                                           ,
-                    const double eosfac                                                   );
-//                    Teuchos::RCP<const Epetra_Vector> velnp                = Teuchos::null,
-//                    Teuchos::RCP<const Epetra_Vector> force                = Teuchos::null,
-//                    Teuchos::RCP<const DRT::DofSet>   stddofset            = Teuchos::null,
-//                    Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp = Teuchos::null,
-//                    Teuchos::RCP<const Epetra_Vector> phinp                = Teuchos::null);
+  void DoTimeSample(int step,
+                    const double eosfac,
+                    const double thermpressaf = 0.0,
+                    const double thermpressam = 0.0,
+                    const double thermpressdtaf = 0.0,
+                    const double thermpressdtam = 0.0);
 
   /*!
   \brief function called by the combustion time integration
 
   */
   void DoTimeSample(int                             step,
-                    double                          time,
                     Teuchos::RCP<Epetra_Vector>     velnp,
                     Teuchos::RCP<Epetra_Vector>     force,
                     Teuchos::RCP<Epetra_Vector>     phi,
@@ -205,18 +196,8 @@ private:
   */
   void Setup();
 
-
   //! time step size
   double                               dt_;
-  //! parameter for generalised alpha --- alpha "momentum"
-  double                               alphaM_;
-  //! parameter for generalised alpha --- alpha "force"
-  double                               alphaF_;
-  //! third parameter for generalised alpha
-  double                               gamma_;
-
-  //! reference to material density to rescale pressure
-  double                               density_;
 
   //! parameters for sampling/dumping period
   //! start of sampling at step samstart
@@ -252,14 +233,16 @@ private:
   RCP<Epetra_Vector>                   myveln_     ;
   RCP<Epetra_Vector>                   myvelaf_    ;
 
-  RCP<Epetra_Vector>                   myscanp_    ;
+  RCP<Epetra_Vector>                   myhist_    ;
+
+  RCP<Epetra_Vector>                   myscaaf_    ;
+  RCP<Epetra_Vector>                   myscaam_    ;
   //! scatra result vector (defined on the scatra dofrowmap!)
   RCP<Epetra_Vector>                   myfullphinp_;
 
   RCP<Epetra_Vector>                   mydispnp_   ;
   RCP<Epetra_Vector>                   mydispn_    ;
 
-  RCP<Epetra_Vector>                   mygridveln_ ;
   RCP<Epetra_Vector>                   mygridvelaf_;
 
   RCP<Epetra_Vector>                   myforce_    ;
@@ -287,15 +270,8 @@ private:
     rotating_circular_cylinder_nurbs_scatra,
     time_averaging                           }    flow_;
 
-  //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
-  //! wall damping quantities
-  bool                                 smagorinsky_;
-
-  //! toggle evaluation of scale similarity quantities
-  bool                                 scalesimilarity_;
-
-  //! toggle evaluation of scale multifractal quantities
-  bool                                 multifractal_;
+  //! toggle additional evaluations for turbulence models
+  enum INPAR::FLUID::TurbModelAction turbmodel_;
 
   //! toggle evaluation of subgrid quantities, dissipation rates etc
   //! this is only possible for the genalpha implementation since
