@@ -38,7 +38,7 @@ Maintainer: Jonas Biehler
 #include <ctime>
 
 //including random number library of blitz for generation of random phase angles
-#include <random/uniform.h>
+//#include <random/uniform.h>
 
 
 
@@ -66,11 +66,6 @@ private:
   //double Phi_Array_1_ [80][80][80];
   //double Phi_Array_2_ [80][80][80];
   //double Phi_Array_3_ [80][80][80];
-
-  //! \brief generates uniformly distributed random numbers in interval [0;1], taken from statmech
-   ranlib::UniformClosed<double> uniformclosedgen_;
-
-
 
 public:
   // Standard constructor

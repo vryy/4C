@@ -115,7 +115,6 @@ void RandomField::CreateNewSample(unsigned int seed)
   // same seed produces same string of random numbers
   mt.seed(seed);
   //try out time in seconds since janaury
-  uniformclosedgen_.seed(seed);
   switch (dim_){
 
   case 3:
