@@ -29,14 +29,12 @@ namespace ELEMENTS
 
 
 
-class FluidAdjoint3BoundaryImplInterface
+class FluidAdjoint3BoundaryImplInterface : public DRT::SingletonDestruction
 {
 
 public:
   /// Empty constructor
   FluidAdjoint3BoundaryImplInterface() {}
-  /// Empty destructor
-  virtual ~FluidAdjoint3BoundaryImplInterface() {}
 
   /// Evaluate a Neumann boundary condition
   /*!
@@ -75,7 +73,10 @@ class FluidAdjoint3BoundaryImpl: public FluidAdjoint3BoundaryImplInterface
 public:
 
   /// Singleton access method
-  static FluidAdjoint3BoundaryImpl<distype> * Instance();
+  static FluidAdjoint3BoundaryImpl<distype> * Instance(bool create = true);
+
+  /// called upon destruction
+  virtual void Done();
 
   /// Constructor
   FluidAdjoint3BoundaryImpl();

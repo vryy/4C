@@ -254,7 +254,10 @@ class FluidBoundaryImpl: public FluidBoundaryImplInterface
 public:
 
   /// Singleton access method
-  static FluidBoundaryImpl<distype> * Instance();
+  static FluidBoundaryImpl<distype> * Instance(bool create=true);
+
+  /// called upon destruction
+  virtual void Done();
 
   /// Constructor
   FluidBoundaryImpl();

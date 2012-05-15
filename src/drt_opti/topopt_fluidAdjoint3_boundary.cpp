@@ -70,12 +70,33 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImplInterface* DRT::ELEMENTS::FluidAdjoint3B
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype> * DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::Instance()
+DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype> * DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::Instance(
+    bool create)
 {
   static FluidAdjoint3BoundaryImpl<distype> * instance;
-  if ( instance==NULL )
-    instance = new FluidAdjoint3BoundaryImpl<distype>();
+  if (create)
+  {
+    if (instance==NULL)
+      instance = new FluidAdjoint3BoundaryImpl<distype>();
+  }
+  else
+  {
+    if (instance!=NULL)
+      delete instance;
+    instance = NULL;
+  }
   return instance;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
 }
 
 
@@ -219,7 +240,7 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
 //          }
 //
 //          // right hand side at old time step
-//          if (not fluidAdjoint3Parameter_->is_stationary_)
+//          if (not fluidAdjoint3Parameter_->IsStationary())
 //          {
 //            value = 0.0;
 //
@@ -250,7 +271,7 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
 //
 //            elevec(numdofpernode_*vi+idim,0) -= functval*pressint_;
 //
-//            if (not fluidAdjoint3Parameter_->is_stationary_)
+//            if (not fluidAdjoint3Parameter_->IsStationary())
 //            {
 //              elevec(numdofpernode_*vi+idim,0) -= timefacfacrhs*funct_(vi)*unitnormal_(idim)*pressint_old_;
 //            }

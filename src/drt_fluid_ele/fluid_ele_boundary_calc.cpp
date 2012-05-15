@@ -102,14 +102,37 @@ DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryImplInter
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 
+
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidBoundaryImpl<distype> * DRT::ELEMENTS::FluidBoundaryImpl<distype>::Instance()
+DRT::ELEMENTS::FluidBoundaryImpl<distype> * DRT::ELEMENTS::FluidBoundaryImpl<distype>::Instance(bool create)
 {
   static FluidBoundaryImpl<distype> * instance;
-  if ( instance==NULL )
-    instance = new FluidBoundaryImpl<distype>();
+  if (create)
+  {
+    if (instance==NULL)
+      instance = new FluidBoundaryImpl<distype>();
+  }
+  else
+  {
+    if (instance!=NULL)
+      delete instance;
+    instance = NULL;
+  }
   return instance;
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
