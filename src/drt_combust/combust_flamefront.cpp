@@ -1958,6 +1958,7 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
         COMBUST::CalcCurvature<DRT::Element::hex8>(posXiDomain,xyze,mygradphi,curvature);
 
         // cut off too small curvatures
+        // TODO define cut off
         if (fabs(curvature) < 0.0 )
         {
           curvature = 0.0;
@@ -1965,7 +1966,8 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
 
         avcurv += curvature;
       }
-      avcurv /= -numele;
+      avcurv /= numele;
+      avcurv *= -1.0;
 
       const int gid = lnode->Id();
       int nodelid = fluiddis_->NodeRowMap()->LID(gid);

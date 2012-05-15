@@ -23,7 +23,7 @@ Maintainer: Ursula Rasthofer
 #include "combust3_local_assembler.H"
 #include "combust3_utils.H"
 #include "combust3_interpolation.H"
-#include "combust_defines.H"
+#include "two_phase_defines.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fluid/time_integration_element.H"
@@ -37,6 +37,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_io/io_gmsh.H"
 
 
 namespace COMBUST
@@ -710,7 +711,8 @@ void SysmatTwoPhaseFlow(
 #ifdef SUGRVEL_OUTPUT
       const bool screen_out = false;
 
-      const std::string filename = IO::GMSH::GetFileName("SubgridVelocityFluid", step, screen_out, 0);
+      //const std::string filename = IO::GMSH::GetFileName("SubgridVelocityFluid", step, screen_out, 0);
+      const std::string filename = IO::GMSH::GetFileName("SubgridVelocityFluid", 0, screen_out, 0);
       std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
 
       LINALG::Matrix<3,1> xsi;
@@ -726,13 +728,15 @@ void SysmatTwoPhaseFlow(
       // transform gp from local (element) coordinates to global (physical) coordinates
       GEO::elementToCurrentCoordinatesInPlace(ele->Shape(), xyze, xsi);
 
+      sgvel.Update(-tau_stab_Mp*theta,res_old,0.0);
       IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, sgvel, xsi, gmshfilecontent);
 
       gmshfilecontent.close();
 //    sgvel.Clear();
 //    sgconv_c.Clear();
 
-      const std::string filename2 = IO::GMSH::GetFileName("Residual", step, screen_out, 0);
+      //const std::string filename2 = IO::GMSH::GetFileName("Residual", step, screen_out, 0);
+      const std::string filename2 = IO::GMSH::GetFileName("Residual", 0, screen_out, 0);
       std::ofstream gmshfilecontent2(filename2.c_str(), ios_base::out | ios_base::app);
 
       LINALG::Matrix<nsd,1> res_old_sugrvel;
@@ -742,7 +746,8 @@ void SysmatTwoPhaseFlow(
 
       gmshfilecontent2.close();
 
-      const std::string filename3 = IO::GMSH::GetFileName("Tau", step, screen_out, 0);
+      //const std::string filename3 = IO::GMSH::GetFileName("Tau", step, screen_out, 0);
+      const std::string filename3 = IO::GMSH::GetFileName("Tau", 0, screen_out, 0);
       std::ofstream gmshfilecontent3(filename3.c_str(), ios_base::out | ios_base::app);
       IO::GMSH::cellWithScalarToStream(DRT::Element::point1, tau_stab_Mp*timefac, xsi, gmshfilecontent3);
       gmshfilecontent3.close();
