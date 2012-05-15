@@ -11,7 +11,7 @@ Maintainer: Georg Bauer
 #ifndef IONIC_H
 #define IONIC_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -155,4 +155,3 @@ private:
 
 #endif
 
-#endif

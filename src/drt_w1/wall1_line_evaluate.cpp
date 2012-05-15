@@ -10,7 +10,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "wall1.H"
 #include "../linalg/linalg_utils.H"
@@ -516,4 +515,3 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(Epetra_SerialDenseMatrix x
 
 
 
-#endif  // #ifdef CCADISCRET

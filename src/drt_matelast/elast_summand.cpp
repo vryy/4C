@@ -12,7 +12,7 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "elast_couplogneohooke.H"
 #include "elast_coupneohooke.H"
@@ -277,4 +277,3 @@ void MAT::ELASTIC::Summand::Unpack(const vector<char>& data)
   return;
 };
 
-#endif

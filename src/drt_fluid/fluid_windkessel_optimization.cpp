@@ -10,7 +10,7 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <stdio.h>
 
@@ -1397,4 +1397,3 @@ void FLD::UTILS::FluidWkOptimizationWrapper::ReadRestart(
 
 }//FluidWkOptimizationWrapper::ReadRestart
 
-#endif

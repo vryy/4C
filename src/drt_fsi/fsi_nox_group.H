@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_NOX_GROUP_H
 #define FSI_NOX_GROUP_H
@@ -38,5 +38,4 @@ namespace FSI
 }
 }
 
-#endif
 #endif

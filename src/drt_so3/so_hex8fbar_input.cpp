@@ -10,7 +10,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_hex8fbar.H"
 #include "../drt_mat/plasticneohooke.H"
@@ -66,4 +65,3 @@ bool DRT::ELEMENTS::So_hex8fbar::ReadElement(const std::string& eletype,
   return true;
 }
 
-#endif  // #ifdef CCADISCRET

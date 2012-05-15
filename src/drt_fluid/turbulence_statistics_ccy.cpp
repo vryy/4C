@@ -6,7 +6,6 @@
 
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "turbulence_statistics_ccy.H"
 #include "../drt_lib/drt_discret.H"
@@ -1591,4 +1590,3 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
   return;
 } // FLD::TurbulenceStatisticsCcy::AddScaTraResults
 
-#endif /* CCADISCRET       */

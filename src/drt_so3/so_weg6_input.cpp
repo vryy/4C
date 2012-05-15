@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_weg6.H"
 #include "../drt_mat/artwallremod.H"
@@ -149,4 +148,3 @@ bool DRT::ELEMENTS::So_weg6::ReadElement()
 } // So_weg6::ReadElement()
 #endif
 
-#endif  // #ifdef CCADISCRET

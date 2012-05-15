@@ -5,7 +5,6 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
 
 #include "transfer_operator.H"
 #include "transfer_operator_tentative.H"
@@ -62,4 +61,3 @@ RCP<LINALG::TransferOperator> LINALG::TransferOperatorFactory::Create(const stri
   return null;
 }
 
-#endif // CCADISCRET

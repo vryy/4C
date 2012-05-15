@@ -21,7 +21,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 /*
 #include <ctime>
 #include <cstdlib>
@@ -370,4 +369,3 @@ void fluid_fluid_drt()
 
 } // end of fluid_fluid_drt()
 
-#endif  // #ifdef CCADISCRET

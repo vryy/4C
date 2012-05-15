@@ -13,7 +13,7 @@ Maintainer: Volker Gravemeier
 #ifndef FERECH_PV_H
 #define FERECH_PV_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -221,4 +221,3 @@ private:
 
 #endif
 
-#endif

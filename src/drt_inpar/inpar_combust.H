@@ -12,7 +12,6 @@ Maintainer: Florian Henke
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_COMBUST_H
 #define INPAR_COMBUST_H
 
@@ -159,5 +158,4 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_COMBUST_H
-#endif  // #ifdef CCADISCRET
 

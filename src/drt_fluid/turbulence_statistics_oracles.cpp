@@ -11,7 +11,7 @@ Maintainer: Florian Henke
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "turbulence_statistics_oracles.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -1865,4 +1865,3 @@ void COMBUST::TurbulenceStatisticsORACLES::ExportLocation(std::set<double,LineSo
 
 }
 
-#endif

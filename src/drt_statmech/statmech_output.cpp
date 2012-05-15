@@ -10,7 +10,6 @@ Maintainer: Kei Müller
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_Time.hpp>
 
@@ -4744,4 +4743,3 @@ bool STATMECH::StatMechManager::CheckForKinkedVisual(int eleid)
   return kinked;
 }//STATMECH::StatMechManager::CheckForKinkedVisual
 
-#endif  // #ifdef CCADISCRET

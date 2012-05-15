@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SIMPLER_OPERATOR_H
 #define SIMPLER_OPERATOR_H
 
@@ -242,4 +241,3 @@ private:
 
 
 #endif // SIMPLER_OPERATOR_H
-#endif  // #ifdef CCADISCRET

@@ -9,7 +9,6 @@ Maintainer: Tobias Wiesner
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 // Trilinos headers
 #include <EpetraExt_OperatorOut.h>
@@ -396,4 +395,3 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSimple(LINALG::ANA::V
 
 
 
-#endif  // #ifdef CCADISCRET

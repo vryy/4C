@@ -15,7 +15,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  definitions                                                gjb 01/08|
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifdef D_THERMO
 
 #ifndef THERMO_ELE_IMPL_H
@@ -309,4 +308,3 @@ namespace ELEMENTS
 /*----------------------------------------------------------------------*/
 #endif // THERMO_ELE_IMPL_H
 #endif // D_THERMO
-#endif // CCADISCRET

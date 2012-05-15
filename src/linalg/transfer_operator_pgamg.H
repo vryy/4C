@@ -9,7 +9,6 @@
   \file transfer_operator_pgamg.H
   \brief implementation for a PG-AMG variant of transfer operators
  */
-#ifdef CCADISCRET
 #ifndef TRANSFER_OPERATOR_PGAMG_H_
 #define TRANSFER_OPERATOR_PGAMG_H_
 
@@ -91,4 +90,3 @@ namespace LINALG
 
 
 #endif /* TRANSFER_OPERATOR_PGAMG_H_ */
-#endif /* CCADISCRET */

@@ -10,7 +10,6 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
-#ifdef CCADISCRET
 #ifdef D_THERMO
 
 #include "thermo_ele_impl_utils.H"
@@ -22,4 +21,3 @@ namespace THR
 
 
 #endif  // D_THERMO
-#endif  // CCADISCRET

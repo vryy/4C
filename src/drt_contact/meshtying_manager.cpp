@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -480,4 +479,3 @@ void CONTACT::MtManager::PostprocessTractions(IO::DiscretizationWriter& output)
   return;
 }
 
-#endif  // #ifdef CCADISCRET

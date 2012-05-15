@@ -18,7 +18,7 @@ filter. But to link the filter stubs of these functions are needed.
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "../drt_mat/micromaterial.H"
 
@@ -70,4 +70,3 @@ void MAT::MicroMaterial::InvAnaInit(const bool eleowner)
   dserror("Mat::MicroMaterial::InvAna_Init not available");
 }
 
-#endif

@@ -12,8 +12,6 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "drt_validmaterials.H"
 #include "../drt_lib/drt_materialdefinition.H"
 #include "inpar_material.H"
@@ -1740,5 +1738,3 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // deliver
   return vm;
 }
-
-#endif

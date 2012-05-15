@@ -19,7 +19,6 @@ Maintainer: Christiane Förster
 *----------------------------------------------------------------------*/
 #ifndef AAANEOHOOKE_H_
 #define AAANEOHOOKE_H_
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -168,5 +167,4 @@ private:
   };
 }
 
-#endif  // CCADISCRET
 #endif  // AAANEOHOOKE_H_

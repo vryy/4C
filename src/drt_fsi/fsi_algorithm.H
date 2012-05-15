@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_ALGORITHM_H
 #define FSI_ALGORITHM_H
@@ -122,5 +122,4 @@ namespace FSI
   };
 }
 
-#endif
 #endif

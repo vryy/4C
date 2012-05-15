@@ -23,7 +23,6 @@ Maintainer: Susanna Tinkl
 #ifndef GROWTH_IP_H_
 #define GROWTH_IP_H_
 
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -242,5 +241,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif /*CCADISCRET*/
 #endif /*GROWTH_IP_H_*/

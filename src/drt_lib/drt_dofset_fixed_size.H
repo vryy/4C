@@ -13,7 +13,6 @@ Maintainer: Ursula Rasthofer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DOFSET_FIXED_SIZE_H
 #define DOFSET_FIXED_SIZE_H
 
@@ -113,4 +112,3 @@ private:
 }
 
 #endif  // #ifndef DOFSET_INDEPENDENT_H
-#endif  // #ifdef CCADISCRET

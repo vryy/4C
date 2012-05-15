@@ -23,7 +23,6 @@ Maintainer: Caroline Danowski
 #ifndef PLASTICLINELAST_H_
 #define PLASTICLINELAST_H_
 
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -267,7 +266,6 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-#endif  // CCADISCRET
 #endif  // PLASTICLINELAST_H_
 
 

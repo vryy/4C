@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "drt_elementreader.H"
 #include "standardtypes_cpp.H"
@@ -457,4 +457,3 @@ void ElementReader::Complete()
 }
 }
 
-#endif

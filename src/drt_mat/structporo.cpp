@@ -9,7 +9,7 @@
  </pre>
  *-----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "structporo.H"
@@ -189,4 +189,3 @@ void MAT::StructPoro::SetPorosityAtGP(std::vector<double> porosity_gp)
   return;
 }
 
-#endif

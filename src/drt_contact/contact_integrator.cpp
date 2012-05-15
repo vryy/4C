@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "contact_integrator.H"
@@ -5565,4 +5564,3 @@ bool CONTACT::CoIntegrator::AssembleWear(const Epetra_Comm& comm,
   return true;
 }
 
-#endif //#ifdef CCADISCRET

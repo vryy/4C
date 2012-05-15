@@ -11,7 +11,7 @@ Maintainer: Lena Yoshihara
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include <Epetra_SerialComm.h>
 
@@ -363,4 +363,3 @@ void STRUMULTI::MicroStatic::PrintPredictor()
 }
 
 
-#endif

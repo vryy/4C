@@ -10,7 +10,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 #ifdef D_ARTNET
-#ifdef CCADISCRET
 #ifndef ARTERY_H
 #define ARTERY_H
 
@@ -364,5 +363,4 @@ private:
 
 
 #endif  // #ifndef ARTERY_H
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_ARTNET

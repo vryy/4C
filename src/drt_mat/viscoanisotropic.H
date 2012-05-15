@@ -11,7 +11,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifndef VISCOANISOTROPIC_H_
 #define VISCOANISOTROPIC_H_
-#ifdef CCADISCRET
+
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -219,5 +219,4 @@ private:
   };
 }
 
-#endif
 #endif

@@ -8,7 +8,7 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
+
 
 #ifndef ALE2_H
 #define ALE2_H
@@ -530,6 +530,5 @@ private:
 
 
 
-#endif
 #endif
 #endif

@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <iterator>
@@ -379,4 +379,3 @@ FSI::UTILS::MatrixRowColTransform::operator()(const LINALG::SparseMatrix& src,
 }
 
 
-#endif

@@ -5,7 +5,7 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
+
 
 //#define WRITEOUTAGGREGATES
 //#define ANALYSIS
@@ -524,4 +524,3 @@ RCP<LINALG::SparseMatrix> LINALG::AMGPreconditioner::Multiply(const SparseMatrix
 
 
 
-#endif

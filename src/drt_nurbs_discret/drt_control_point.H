@@ -16,7 +16,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTROL_POINT_H
 #define CONTROL_POINT_H
 
@@ -181,4 +180,3 @@ protected:
 } // namespace DRT
 
 #endif  // #ifndef CONTROL_POINT_H
-#endif  // #ifdef CCADISCRET

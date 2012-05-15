@@ -10,7 +10,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "constraint_element2.H"
 
@@ -148,4 +147,3 @@ void DRT::ELEMENTS::ConstraintElement2::Print(ostream& os) const
 
 
 
-#endif  // #ifdef CCADISCRET

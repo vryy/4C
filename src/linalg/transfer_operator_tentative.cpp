@@ -5,7 +5,6 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
 
 #include "transfer_operator.H"
 #include "transfer_operator_tentative.H"
@@ -163,4 +162,3 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
 
 
 
-#endif /* CCADISCRET */

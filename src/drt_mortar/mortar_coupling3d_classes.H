@@ -38,7 +38,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_COUPLING3D_CLASSES_H
 #define MORTAR_COUPLING3D_CLASSES_H
 
@@ -495,4 +494,3 @@ protected:
 }  // namespace MORTAR
 
 #endif  // #ifndef MORTAR_COUPLING3D_CLASSES_H
-#endif  // #ifdef CCADISCRET

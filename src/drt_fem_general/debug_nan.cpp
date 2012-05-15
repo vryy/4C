@@ -18,7 +18,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "debug_nan.H"
 #include "../drt_lib/drt_dserror.H"
@@ -83,4 +82,3 @@ void DRT::DEBUGGING::NaNChecker(const Epetra_Vector& vec)
 }
 
 
-#endif  // #ifdef CCADISCRET

@@ -10,7 +10,7 @@ Maintainer: Sophie Rausch
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "inv_analysis.H"
 #include "../drt_inpar/inpar_material.H"
@@ -1051,4 +1051,3 @@ void STR::InvAnalysis::MultiInvAnaInit()
   }
 }
 
-#endif

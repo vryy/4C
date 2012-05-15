@@ -10,7 +10,6 @@
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "bele3_4.H"
 #include "../drt_lib/drt_discret.H"
@@ -180,4 +179,3 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3_4::getOptimalGaussrule(const DRT::E
 
 
 
-#endif  // #ifdef CCADISCRET

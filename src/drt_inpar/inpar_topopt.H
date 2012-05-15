@@ -11,7 +11,6 @@ Maintainer: Martin Winklmaier
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef INPAR_TOPOPT_H_
 #define INPAR_TOPOPT_H_
@@ -76,4 +75,3 @@ namespace INPAR
   }
 }
 #endif /* INPAR_TOPOPT_H_ */
-#endif  // #ifdef CCADISCRET

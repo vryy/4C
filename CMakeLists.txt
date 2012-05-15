@@ -69,8 +69,6 @@ add_definitions("-DLINUX_MUENCH")
 add_definitions("-DPARALLEL") # TODO remove PARALLEL flag? exact meaning of this flag?
 add_definitions("-DPARMETIS") # TODO remove PARMETIS flag
 add_definitions("-DLOOPL=15")
-add_definitions("-DCCADISCRET")
-add_definitions("-DTRILINOS_PACKAGE")
 add_definitions("-DD_FLUID")
 add_definitions("-DD_FSI")
 

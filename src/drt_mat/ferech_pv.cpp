@@ -10,7 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 
@@ -231,4 +231,3 @@ double MAT::FerEchPV::ComputeReactionCoeff(const double provar) const
   return reacoeff;
 }
 
-#endif

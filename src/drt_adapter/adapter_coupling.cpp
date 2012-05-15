@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <algorithm>
 
@@ -672,4 +672,3 @@ void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap
   matsm_trans_ = tmp;
 }
 
-#endif

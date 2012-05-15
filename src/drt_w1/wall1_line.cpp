@@ -10,7 +10,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "wall1.H"
 #include "../linalg/linalg_utils.H"
@@ -117,4 +116,3 @@ void DRT::ELEMENTS::Wall1Line::Print(ostream& os) const
 
 
 
-#endif  // #ifdef CCADISCRET

@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTACT_STRATEGY_H
 #define CONTACT_STRATEGY_H
 
@@ -732,4 +731,3 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy);
 
 #endif  // #ifndef CONTACT_STRATEGY_H
-#endif  // #ifdef CCADISCRET

@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 #ifdef D_RED_AIRWAYS
-#ifdef CCADISCRET
 
 
 #include "red_airway.H"
@@ -207,5 +206,4 @@ bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(
 }
 
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_RED_AIRWAYS

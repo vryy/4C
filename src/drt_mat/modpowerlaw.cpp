@@ -10,7 +10,7 @@ Maintainer: Ursula Mayer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 
@@ -111,4 +111,3 @@ void MAT::ModPowerLaw::Unpack(const vector<char>& data)
 }
 
 
-#endif

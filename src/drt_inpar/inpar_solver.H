@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_SOLVER_H
 #define INPAR_SOLVER_H
 
@@ -129,4 +128,3 @@ namespace INPAR
 #endif  // #ifdef __cplusplus
 
 #endif  // #ifndef INPAR_SOLVER_H
-#endif  // #ifdef CCADISCRET

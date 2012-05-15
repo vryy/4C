@@ -15,7 +15,7 @@ Maintainer: Lena Wiechert
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
+
 
 #ifndef ADAPTER_STRUCTURE_LUNG_H
 #define ADAPTER_STRUCTURE_LUNG_H
@@ -105,5 +105,4 @@ private:
 };
 
 }
-#endif
 #endif

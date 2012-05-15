@@ -15,7 +15,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  | definitions                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THR_AUX_H
 #define THR_AUX_H
 
@@ -54,4 +53,3 @@ namespace AUX
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THR_AUX_H
-#endif  // #ifdef CCADISCRET

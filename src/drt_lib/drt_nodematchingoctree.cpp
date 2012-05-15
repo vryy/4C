@@ -12,7 +12,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include"drt_nodematchingoctree.H"
 
@@ -1055,4 +1054,3 @@ DRT::UTILS::OctreeElement::~OctreeElement()
 {
   return;
 }// ~OctreeElement()
-#endif /* CCADISCRET       */

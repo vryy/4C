@@ -17,7 +17,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -116,4 +115,3 @@ void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(
 }
 
 /*----------------------------------------------------------------------*/
-#endif // CCADISCRET

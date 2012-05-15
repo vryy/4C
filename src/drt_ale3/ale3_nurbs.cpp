@@ -10,7 +10,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
-#ifdef CCADISCRET
 
 #include "ale3_nurbs.H"
 #include "../drt_lib/drt_utils.H"
@@ -120,6 +119,5 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Ale3Nurbs::Shape() const
   return dis_none;
 }
 
-#endif // CCADISCRET
 
 #endif //D_ALE

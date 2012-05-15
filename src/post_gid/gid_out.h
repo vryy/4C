@@ -21,12 +21,6 @@ copied.
 #ifndef GID_OUT_H
 #define GID_OUT_H
 
-#ifndef CCADISCRET
-#include "post_gid.h"
-#include "../headers/standardtypes.h"
-#endif
-
-
 /*----------------------------------------------------------------------*/
 /*!
   \brief post element types.

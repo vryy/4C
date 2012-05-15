@@ -10,7 +10,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef DRT_UTILS_NURBS_SHAPEFUNCTION
 #define DRT_UTILS_NURBS_SHAPEFUNCTION
 
@@ -3909,4 +3908,3 @@ void nurbs_get_funct(
 
 #endif // DRT_UTILS_NURBS_SHAPEFUNCTION
 
-#endif // CCADISCRET

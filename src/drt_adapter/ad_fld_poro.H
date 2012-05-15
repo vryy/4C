@@ -10,7 +10,7 @@
                089 - 289-15264
  </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef ADAPTER_FLUID_PORO_H
 #define ADAPTER_FLUID_PORO_H
@@ -63,5 +63,4 @@ namespace ADAPTER {
   };
 }
 
-#endif
 #endif

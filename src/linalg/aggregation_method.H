@@ -10,7 +10,6 @@
   \brief basic uncoupled aggregation method
  */
 
-#ifdef CCADISCRET
 
 #ifndef AGGREGATION_METHOD_H_
 #define AGGREGATION_METHOD_H_
@@ -99,4 +98,3 @@ namespace LINALG
 }
 
 #endif /* AGGREGATION_METHOD_H_ */
-#endif /* CCADISCRET */

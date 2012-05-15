@@ -16,7 +16,7 @@ Validate a given BACI input file (after all preprocessing steps)
 */
 
 #ifdef D_EXODUS
-#ifdef CCADISCRET
+
 
 #ifndef PRE_EXODUS_VALIDATE_H_
 #define PRE_EXODUS_VALIDATE_H_
@@ -58,5 +58,4 @@ vector<int> RewindEle(vector<int> old_nodeids, const DRT::Element::Discretizatio
 
 #endif // PRE_EXODUS_VALIDATE_H_
 
-#endif
 #endif

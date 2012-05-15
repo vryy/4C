@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#ifdef CCADISCRET
 
 #include "shell8.H"
 #include "../drt_lib/drt_discret.H"
@@ -353,5 +352,4 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Surfaces()
   return surfaces;
 }
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SHELL8

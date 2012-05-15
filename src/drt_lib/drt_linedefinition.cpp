@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "drt_linedefinition.H"
 #include "drt_dserror.H"
@@ -764,4 +764,3 @@ DRT::INPUT::Lines::Read(const char* line)
 }
 
 
-#endif

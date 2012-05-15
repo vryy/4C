@@ -16,7 +16,6 @@ Maintainer: Mahmoud Ismail
 *----------------------------------------------------------------------*/
 
 
-#ifdef CCADISCRET
 #ifndef FLUID_WINDKESSEL_OPTIMIZATION_H
 #define FLUID_WINDKESSEL_OPTIMIZATION_H
 
@@ -230,4 +229,3 @@ private:
 
 #endif /* FLUID_WINDKESSEL_OPTIMIZATION_H */
 
-#endif /* CCADISCRET */

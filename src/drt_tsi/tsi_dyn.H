@@ -11,7 +11,6 @@ Maintainer: Caroline Danowski
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef TSI_DYN_H
 #define TSI_DYN_H
@@ -31,4 +30,3 @@ void tsi_dyn_drt();
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef TSI_DYN_H */
-#endif /* #ifdef CCADISCRET */

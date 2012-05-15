@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include <Epetra_Time.h>
 
@@ -461,4 +461,3 @@ const char* FSI::ConstrOverlappingBlockMatrix::Label() const
   return "FSI::ConstrOverlappingBlockMatrix";
 }
 
-#endif

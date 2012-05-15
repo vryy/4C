@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_nox_group.H"
 
@@ -76,4 +76,3 @@ NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeNewton(Teuchos::Paramet
   return status;
 }
 
-#endif

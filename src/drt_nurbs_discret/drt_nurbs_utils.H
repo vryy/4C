@@ -13,7 +13,6 @@ Maintainer: Georg Bauer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DRT_NURBS_UTILS_H
 #define DRT_NURBS_UTILS_H
 
@@ -163,4 +162,3 @@ bool GetKnotVectorAndWeightsForNurbsBoundary(
 } //namespace DRT
 
 #endif // ifndef DRT_NURBS_UTILS_H
-#endif // #ifdef CCADISCRET

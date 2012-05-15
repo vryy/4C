@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "truss2.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -110,4 +109,3 @@ bool DRT::ELEMENTS::Truss2::ReadElement()
 } // Truss2::ReadElement()
 #endif
 
-#endif  // #ifdef CCADISCRET

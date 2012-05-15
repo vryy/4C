@@ -10,7 +10,7 @@
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "so_hex8_poro.H"
 //#include "../drt_lib/drt_discret.H"
@@ -201,4 +201,3 @@ int DRT::ELEMENTS::So_hex8_poro::NumDofPerNode(const unsigned nds,
   return So_hex8::NumDofPerNode(node);
 };
 
-#endif

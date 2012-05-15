@@ -12,7 +12,6 @@ Maintainer: Jonas Biehler
 </pre>
  *!----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifdef HAVE_FFTW
 #ifndef GENRANDOMFIELD_H_
 #define GENRANDOMFIELD_H_
@@ -138,4 +137,3 @@ private:
 
 #endif /* RANDOMFIELD_H_ */
 #endif // HAVE_FFTw
-#endif  // #ifdef CCADISCRET

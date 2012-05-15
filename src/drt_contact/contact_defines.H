@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTACT_DEFINES_H
 #define CONTACT_DEFINES_H
 
@@ -86,4 +85,3 @@ Maintainer: Alexander Popp
 //#define RESTARTAFTERPRESTRESSING /* flag for allowing restart with contact switched on after prestressing - NOTE: no contact has yet occured */
 
 #endif  // #ifndef CONTACT_DEFINES_H
-#endif  // #ifdef CCADISCRET

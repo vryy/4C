@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_MORTARMONOLITHICFLUID_H
 #define FSI_MORTARMONOLITHICFLUID_H
@@ -179,5 +179,4 @@ namespace FSI
   };
 }
 
-#endif
 #endif

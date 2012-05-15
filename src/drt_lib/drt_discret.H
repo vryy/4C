@@ -40,7 +40,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DISCRET_H
 #define DISCRET_H
 
@@ -1936,4 +1935,3 @@ ostream& operator << (ostream& os, const DRT::Discretization& dis);
 
 
 #endif  // #ifndef DISCRET_H
-#endif  // #ifdef CCADISCRET

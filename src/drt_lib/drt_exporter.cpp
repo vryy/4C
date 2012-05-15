@@ -44,7 +44,6 @@ Maintainer: Michael Gee
 /*!----------------------------------------------------------------------
 \file drt_exporter.cpp
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "vector"
 #include "drt_exporter.H"
@@ -559,4 +558,3 @@ void DRT::Exporter::Export(map<int,RCP<Epetra_SerialDenseMatrix> >& data)
   GenericExport(helper);
 }
 
-#endif  // #ifdef CCADISCRET

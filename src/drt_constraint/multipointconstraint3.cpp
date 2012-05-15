@@ -10,7 +10,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 
 #include "multipointconstraint3.H"
@@ -573,4 +573,3 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
   return;
 } // end of InitializeConstraint
 
-#endif

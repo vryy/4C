@@ -14,7 +14,7 @@ Maintainer: Aline Brunon
 #ifndef VISCOGENMAX_H
 #define VISCOGENMAX_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -279,4 +279,3 @@ private:
 
 #endif
 
-#endif

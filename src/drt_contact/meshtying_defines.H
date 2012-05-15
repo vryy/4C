@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MESHTYING_DEFINES_H
 #define MESHTYING_DEFINES_H
 
@@ -56,4 +55,3 @@ Maintainer: Alexander Popp
 #define MESHTYINGASOUTPUT    /* flag for detailed active set output */
 
 #endif  // #ifndef MESHTYING_DEFINES_H
-#endif  // #ifdef CCADISCRET

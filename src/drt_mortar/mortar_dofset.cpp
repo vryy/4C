@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 //#include <iostream>
 //#include <algorithm>
@@ -120,4 +119,3 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis,
   return count;
 }
 
-#endif  // #ifdef CCADISCRET

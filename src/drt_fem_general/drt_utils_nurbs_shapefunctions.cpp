@@ -10,10 +10,8 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "drt_utils_nurbs_shapefunctions.H"
 
 using namespace std;
 
-#endif // CCADISCRET

@@ -13,7 +13,6 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifdef CCADISCRET
 #ifndef STRTIMADA_H
 #define STRTIMADA_H
 
@@ -361,4 +360,3 @@ std::ostream& operator<<
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMADA_H
-#endif  // #ifdef CCADISCRET

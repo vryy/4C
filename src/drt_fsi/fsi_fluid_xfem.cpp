@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_fluid_xfem.H"
 
@@ -102,4 +102,3 @@ void FSI::FluidXFEMAlgorithm::Output()
   MBFluidField().Output();
 }
 
-#endif

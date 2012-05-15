@@ -12,7 +12,7 @@ Maintainer: Lena Yoshihara
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include <Epetra_LinearProblem.h>
 
@@ -1173,4 +1173,3 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
   return;
 }
 
-#endif

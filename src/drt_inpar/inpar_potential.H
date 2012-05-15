@@ -10,7 +10,6 @@ Maintainer: Ursula Mayer
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_POTENTIAL_H
 #define INPAR_POTENTIAL_H
 
@@ -58,5 +57,4 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_POTENTIAL_H
-#endif  // #ifdef CCADISCRET
 

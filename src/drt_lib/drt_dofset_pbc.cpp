@@ -12,7 +12,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_dofset_pbc.H"
 
@@ -151,4 +150,3 @@ void DRT::PBCDofSet::SetCoupledNodes(RefCountPtr<map<int,vector<int> > >  couple
   return;
 }
 
-#endif  // #ifdef CCADISCRET

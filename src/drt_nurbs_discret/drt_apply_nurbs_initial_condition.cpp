@@ -12,7 +12,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #include "drt_apply_nurbs_initial_condition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
@@ -568,4 +567,3 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
 }
 
 
-#endif // #ifdef CCADISCRET

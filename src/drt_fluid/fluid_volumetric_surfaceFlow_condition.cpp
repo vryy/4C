@@ -10,7 +10,7 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <stdio.h>
 
@@ -2327,4 +2327,3 @@ FLD::UTILS::TotalTractionCorrector::~TotalTractionCorrector()
   return;
 }
 
-#endif

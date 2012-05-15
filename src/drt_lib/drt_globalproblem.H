@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #ifndef DRT_GLOBALPROBLEM_H
 #define DRT_GLOBALPROBLEM_H
 
@@ -445,5 +445,4 @@ private:
 
 }
 
-#endif
 #endif

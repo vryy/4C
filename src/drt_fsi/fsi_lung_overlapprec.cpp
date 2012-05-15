@@ -12,7 +12,7 @@ Maintainer: Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include <EpetraExt_MatrixMatrix.h>
 
@@ -438,4 +438,3 @@ const char* FSI::LungOverlappingBlockMatrix::Label() const
   return "FSI::LungOverlappingBlockMatrix";
 }
 
-#endif

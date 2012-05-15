@@ -16,7 +16,7 @@ Maintainer: Lena Yoshihara
 #ifndef MICROMATERIALGP_STAT_H
 #define MICROMATERIALGP_STAT_H
 
-#ifdef CCADISCRET
+
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RefCountPtr.hpp>
@@ -153,5 +153,4 @@ private:
 };
 }
 
-#endif
 #endif

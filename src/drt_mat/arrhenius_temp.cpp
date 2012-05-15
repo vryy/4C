@@ -10,7 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 
@@ -152,4 +152,3 @@ double MAT::ArrheniusTemp::ComputeReactionRHS(const double spmf,
   return rearhs;
 }
 
-#endif

@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef PARALLEL
 #include "Epetra_SerialComm.h"
@@ -5619,4 +5618,3 @@ void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
 }
 
 
-#endif  // #ifdef CCADISCRET

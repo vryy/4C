@@ -15,7 +15,6 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifndef ELAST_VOLSUSSMANBATHE_H_
 #define ELAST_VOLSUSSMANBATHE_H_
-#ifdef CCADISCRET
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -135,5 +134,4 @@ namespace ELASTIC
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif  // VOLSUSSMANBATHE_H_

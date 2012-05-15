@@ -9,7 +9,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <algorithm>
 #include <iterator>
@@ -690,4 +690,3 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(std::ostream& stream,
 
 
 
-#endif

@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef DRT_NODEREADER_H
 #define DRT_NODEREADER_H
@@ -78,5 +78,4 @@ private:
 }
 }
 
-#endif
 #endif

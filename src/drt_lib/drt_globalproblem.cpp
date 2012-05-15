@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>
@@ -1828,5 +1828,4 @@ void DRT::Problem::SetRestartStep(int r)
 }
 
 
-#endif
 

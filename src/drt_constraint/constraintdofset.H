@@ -39,7 +39,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONSTRAINTDOFSET_H
 #define CONSTRAINTDOFSET_H
 
@@ -130,4 +129,3 @@ ostream& operator << (ostream& os, const UTILS::ConstraintDofSet& dofset);
 
 
 #endif  // #ifndef DOFSET_H
-#endif  // #ifdef CCADISCRET

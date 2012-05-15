@@ -8,7 +8,7 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "matlist.H"
@@ -117,4 +117,3 @@ void MAT::MatList::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-#endif

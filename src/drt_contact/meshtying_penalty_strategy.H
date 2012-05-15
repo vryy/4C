@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef MESHTYING_PENALTY_STRATEGY_H
 #define MESHTYING_PENALTY_STRATEGY_H
@@ -205,4 +204,3 @@ protected:
 }  // namespace CONTACT
 
 #endif  // #ifndef MESHTYING_PENALTY_STRATEGY_H
-#endif  // #ifdef CCADISCRET

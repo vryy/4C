@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef DRT_ELEMENTREADER_H
 #define DRT_ELEMENTREADER_H
@@ -165,5 +165,4 @@ private:
 }
 }
 
-#endif
 #endif

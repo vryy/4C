@@ -12,7 +12,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *--------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_potential_volume.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -1210,11 +1209,6 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
   return;
 }
 
-
-///////////////////////// test potential //////////////////////////////////////
-
-
-#endif
 
 
 

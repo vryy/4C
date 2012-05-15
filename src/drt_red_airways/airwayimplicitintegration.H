@@ -13,7 +13,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef AIRWAYIMPLICITINTEGRATION_H
 #define AIRWAYIMPLICITINTEGRATION_H
 
@@ -359,4 +358,3 @@ protected:
 
 
 #endif  // #ifndef AIRWAYIMPLICITINTEGRATION_H
-#endif  // #ifdef CCADISCRET

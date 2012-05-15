@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_element.H"
 #include "drt_node.H"
@@ -764,4 +763,3 @@ vector<double> DRT::Element::ElementCenterRefeCoords()
 }
 
 
-#endif  // #ifdef CCADISCRET

@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "Epetra_SerialComm.h"
 #include "contact_abstract_strategy.H"
@@ -2493,4 +2492,3 @@ void CONTACT::CoAbstractStrategy::CollectMapsForPreconditioner(Teuchos::RCP<Epet
   else MasterDofMap = gmdofrowmap_;
 }
 
-#endif // CCADISCRET

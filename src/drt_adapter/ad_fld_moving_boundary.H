@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef ADAPTER_GENERAL_FLUID_H
 #define ADAPTER_GENERAL_FLUID_H
@@ -161,6 +161,5 @@ namespace ADAPTER
   };
 }
 
-#endif
 #endif
 

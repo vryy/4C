@@ -5,7 +5,6 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
 
 
 #define WRITEOUTSTATISTICS
@@ -894,5 +893,4 @@ RCP<LINALG::SparseMatrix> LINALG::SaddlePointPreconditioner::Multiply(const Spar
 }
 
 
-#endif // CCADISCRET
 

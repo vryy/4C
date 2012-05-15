@@ -17,7 +17,6 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | definitions                                              ghamm 01/12 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef COMM_UTILS_H
 #define COMM_UTILS_H
@@ -142,4 +141,3 @@ namespace COMM_UTILS
 
 /*----------------------------------------------------------------------*/
 #endif  // COMM_UTILS_H
-#endif  // CCADISCRET

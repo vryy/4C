@@ -12,8 +12,6 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "ad_fld_fluid.H"
 
 /*----------------------------------------------------------------------*/
@@ -21,6 +19,3 @@ Maintainer: Ulrich Kuettler
 ADAPTER::Fluid::~Fluid()
 {
 }
-
-
-#endif  // #ifdef CCADISCRET

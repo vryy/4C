@@ -20,7 +20,6 @@ Maintainer: Ursula Rasthofer
  * multigrid operator for AVM3.
  */
 
-#ifdef CCADISCRET
 
 #ifndef SCALE_SEP_GMO_H
 #define SCALE_SEP_GMO_H
@@ -110,4 +109,3 @@ private:
 
 #endif
 
-#endif  // #ifdef CCADISCRET

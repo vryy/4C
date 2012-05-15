@@ -8,7 +8,7 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
+
 
 #include "ale3.H"
 #include "ale3_nurbs.H"
@@ -241,5 +241,4 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Volumes()
 }
 
 
-#endif
 #endif

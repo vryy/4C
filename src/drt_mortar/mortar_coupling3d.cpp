@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_coupling3d.H"
 #include "mortar_node.H"
@@ -3830,4 +3829,3 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
   return true;
 }
 
-#endif //#ifdef CCADISCRET

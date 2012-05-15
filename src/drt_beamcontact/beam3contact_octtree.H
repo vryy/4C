@@ -8,7 +8,6 @@ Maintainer: Kei Müller
             089 - 289-15276
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef BEAM3OCTTREE_H
 #define BEAM3OCTTREE_H
 
@@ -210,4 +209,3 @@ class Beam3ContactOctTree
 };
 
 #endif  // #ifndef BEAM3OCTTREE_H
-#endif  // #ifdef CCADISCRET

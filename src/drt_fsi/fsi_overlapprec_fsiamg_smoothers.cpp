@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_overlapprec_fsiamg.H"
 #include <Epetra_Time.h>
@@ -1099,4 +1099,3 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(
 
 
 
-#endif

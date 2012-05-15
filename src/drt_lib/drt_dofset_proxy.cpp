@@ -42,7 +42,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "drt_dofset_proxy.H"
 
@@ -137,4 +137,3 @@ bool DRT::DofSetProxy::Filled() const
   return false;
 }
 
-#endif

@@ -12,7 +12,7 @@
 
 */
 
-#ifdef CCADISCRET
+
 
 #include "post_drt_generic_single_field_writers.H"
 #include <string>
@@ -81,4 +81,3 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
 
 
 
-#endif

@@ -40,7 +40,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <algorithm>
 #include <Teuchos_TimeMonitor.hpp>
@@ -849,4 +848,3 @@ void DRT::Discretization::UnPackCondition(
   Reset();
 }
 
-#endif  // #ifdef CCADISCRET

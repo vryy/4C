@@ -11,7 +11,6 @@ Maintainer: Mirella Coroneo
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ADAPTER_STRUCTURE_BIO_H
 #define ADAPTER_STRUCTURE_BIO_H
@@ -102,4 +101,3 @@ namespace ADAPTER
 } // namespace ADAPTER
 
 #endif // ADAPTER_STRUCTURE_BIO_H
-#endif // CCADISCRET

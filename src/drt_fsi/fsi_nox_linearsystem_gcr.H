@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_NOX_LINEARSYSTEM_GCR_H
 #define FSI_NOX_LINEARSYSTEM_GCR_H
@@ -287,5 +287,4 @@ namespace FSI {
 }
 }
 
-#endif
 #endif

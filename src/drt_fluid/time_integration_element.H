@@ -18,7 +18,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef TIME_INTEGRATION_SCHEME_H
 #define TIME_INTEGRATION_SCHEME_H
 
@@ -124,4 +123,3 @@ namespace TIMEINT_THETA_BDF2
 }
 
 #endif  // #ifndef TIME_INTEGRATION_SCHEME_H
-#endif  // #ifdef CCADISCRET

@@ -11,7 +11,6 @@ Maintainer: Robert Metzke
  *----------------------------------------------------------------------*/
 #ifndef PROTEIN_H_
 #define PROTEIN_H_
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -186,5 +185,4 @@ private:
     };
 }
 
-#endif // CCADISCRET
 #endif // PROTEIN_H_

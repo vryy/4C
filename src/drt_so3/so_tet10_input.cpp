@@ -10,7 +10,6 @@ Maintainer: Jonas Biehler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_tet10.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -59,4 +58,3 @@ bool DRT::ELEMENTS::So_tet10::ReadElement(const std::string& eletype,
 }
 
 
-#endif  // #ifdef CCADISCRET

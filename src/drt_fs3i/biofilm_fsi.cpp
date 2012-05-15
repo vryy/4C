@@ -1,5 +1,3 @@
-//#ifdef CCADISCRET
-
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_fsi/fsi_dyn.H"

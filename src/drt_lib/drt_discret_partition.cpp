@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Epetra_FECrsGraph.h>
 #include <Epetra_Time.h>
@@ -832,4 +831,3 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
 
 }
 
-#endif  // #ifdef CCADISCRET

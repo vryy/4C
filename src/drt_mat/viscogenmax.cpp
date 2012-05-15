@@ -22,7 +22,7 @@ Maintainer: Aline Bel
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 // unnecessary
 //#include <vector>
@@ -681,4 +681,3 @@ void MAT::ViscoGenMax::Evaluate(
 
 }
 
-#endif

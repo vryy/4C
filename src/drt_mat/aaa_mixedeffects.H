@@ -19,7 +19,6 @@ Maintainer: Andreas Maier
 *----------------------------------------------------------------------*/
 #ifndef AAA_MIXEDEFFECTS_H_
 #define AAA_MIXEDEFFECTS_H_
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -176,5 +175,4 @@ private:
   };
 }
 
-#endif  // CCADISCRET
 #endif  // AAA_MIXEDEFFECTS_H_

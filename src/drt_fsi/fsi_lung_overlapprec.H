@@ -12,7 +12,7 @@ Maintainer: Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_LUNG_OVERLAPPREC_H
 #define FSI_LUNG_OVERLAPPREC_H
@@ -103,5 +103,4 @@ namespace FSI
   };
 }
 
-#endif
 #endif

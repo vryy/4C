@@ -10,7 +10,6 @@ Maintainer: Jonas Biehler
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_MLMC_H
 #define INPAR_MLMC_H
 
@@ -41,4 +40,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_MLMC_H
-#endif  // #ifdef CCADISCRET

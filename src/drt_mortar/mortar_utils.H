@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_UTILS_H
 #define MORTAR_UTILS_H
 
@@ -168,4 +167,3 @@ namespace MORTAR
 } // namespace MORTAR
 
 #endif  // #ifndef MORTAR_UTILS_H
-#endif  // #ifdef CCADISCRET

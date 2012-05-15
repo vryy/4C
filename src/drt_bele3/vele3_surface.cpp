@@ -10,7 +10,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "vele3.H"
 #include "../drt_lib/drt_discret.H"
@@ -169,5 +168,4 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(const D
 }
 
 
-#endif  // #ifdef CCADISCRET
 

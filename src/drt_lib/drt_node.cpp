@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_node.H"
 #include "drt_dserror.H"
@@ -245,4 +244,3 @@ void DRT::Node::ChangePos(vector<double> nvector)
 }
 
 
-#endif  // #ifdef CCADISCRET

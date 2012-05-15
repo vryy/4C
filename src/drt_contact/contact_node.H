@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTACT_NODE_H
 #define CONTACT_NODE_H
 
@@ -503,4 +502,3 @@ protected:
 ostream& operator << (ostream& os, const CONTACT::CoNode& cnode);
 
 #endif  // #ifndef CNODE_H
-#endif  // #ifdef CCADISCRET

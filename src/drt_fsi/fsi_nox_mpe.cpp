@@ -1,5 +1,4 @@
 
-#ifdef TRILINOS_PACKAGE
 
 #include "fsi_nox_mpe.H"
 #include <NOX_GlobalData.H>
@@ -241,4 +240,3 @@ void NOX::FSI::MinimalPolynomial::throwError(const string& functionName,
     throw "NOX Error";
 }
 
-#endif

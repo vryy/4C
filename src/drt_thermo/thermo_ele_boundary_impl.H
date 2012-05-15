@@ -15,7 +15,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 09/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifdef D_THERMO
 
 #ifndef THERMO_ELE_BOUNDARY_IMPL_H
@@ -263,5 +262,4 @@ namespace ELEMENTS
 /*----------------------------------------------------------------------*/
 #endif //THERMO_ELE_BOUNDARY_IMPL_H
 #endif // D_THERMO
-#endif // CCADISCRET
 

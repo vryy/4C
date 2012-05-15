@@ -11,7 +11,6 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifndef YEOH_H_
 #define YEOH_H_
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -161,5 +160,4 @@ private:
   };
 }
 
-#endif /*CCADISCRET*/
 #endif /*YEOH_H_*/

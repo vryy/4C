@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_nurbs27.H"
 #include "../drt_mat/artwallremod.H"
@@ -109,4 +108,3 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(
 } // So_nurbs27::ReadElement()
 #endif
 
-#endif  // #ifdef CCADISCRET

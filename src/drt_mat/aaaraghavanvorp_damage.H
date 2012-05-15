@@ -22,7 +22,6 @@ date: 26/05/2009
 *----------------------------------------------------------------------*/
 #ifndef AAARAGHAVANVORP_DAMAGE_H
 #define AAARAGHAVANVORP_DAMAGE_H
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -215,5 +214,4 @@ private:
   };
 }
 
-#endif  // CCADISCRET
 #endif  // AAARAGHAVANVORP_DAMAGE_H

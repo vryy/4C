@@ -14,7 +14,6 @@ Maintainer: Christian J. Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef LARGEROTATIONS_DEFINES_H
 #define LARGEROTATIONS_DEFINES_H
 
@@ -78,4 +77,3 @@ namespace LARGEROTATIONS
 } // LARGEROTATIONS
 
 #endif  // #ifndef LARGEROTATIONS_DEFINES_H
-#endif  // #ifdef CCADISCRET

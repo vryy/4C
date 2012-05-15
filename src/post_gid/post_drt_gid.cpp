@@ -14,7 +14,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -529,4 +529,3 @@ int main(int argc, char** argv)
   return 0;
 }
 
-#endif

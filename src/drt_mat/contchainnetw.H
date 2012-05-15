@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifndef CONTCHAINNETW_H_
 #define CONTCHAINNETW_H_
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -271,5 +270,4 @@ private:
   const vector<double> MatPointCoords(const DRT::Element* actele,const vector<double>& mydisp, int gp=-1);
 }
 
-#endif /*CCADISCRET*/
 #endif /*CONTCHAINNETW_H_*/

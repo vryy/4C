@@ -10,7 +10,6 @@ Maintainer: Christoph Meier
 </pre>
 
 *-----------------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "beam3contact_manager.H"
 #include "beam3contact.H"
@@ -1778,4 +1777,3 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   return;
 }
 
-#endif  // #ifdef CCADISCRET

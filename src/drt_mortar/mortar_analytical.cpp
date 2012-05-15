@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <math.h>
 #include "mortar_analytical.H"
@@ -351,4 +350,3 @@ void MORTAR::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
   return;
 }
 
-#endif  // #ifdef CCADISCRET

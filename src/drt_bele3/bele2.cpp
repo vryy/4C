@@ -11,7 +11,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "bele2.H"
 #include "../drt_lib/drt_discret.H"
@@ -171,4 +170,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Surfaces()
 
 
 
-#endif  // #ifdef CCADISCRET

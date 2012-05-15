@@ -27,7 +27,7 @@ Maintainer: Robert Metzke
             089 - 289-15244
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
@@ -429,4 +429,3 @@ void MAT::Itskov::calc_Itskov (	LINALG::Matrix<3,3>&C,
 return;
 } //end of calc_Itskov
 
-#endif

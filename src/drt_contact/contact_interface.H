@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTACT_INTERFACE_H
 #define CONTACT_INTERFACE_H
 
@@ -632,4 +631,3 @@ ostream& operator << (ostream& os, const CONTACT::CoInterface& interface);
 
 
 #endif  // #ifndef CONTACT_INTERFACE_H
-#endif  // #ifdef CCADISCRET

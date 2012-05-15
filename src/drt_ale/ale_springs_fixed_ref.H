@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef ALE_SPRINGS_FIXED_REF_H
 #define ALE_SPRINGS_FIXED_REF_H
@@ -161,5 +161,4 @@ private:
 
 }
 
-#endif
 #endif

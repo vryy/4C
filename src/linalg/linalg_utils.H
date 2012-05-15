@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef LINALG_UTILS_H
 #define LINALG_UTILS_H
 
@@ -1308,4 +1307,3 @@ namespace LINALG
 
 
 #endif  // #ifndef LINALG_UTILS_H
-#endif  // #ifdef CCADISCRET

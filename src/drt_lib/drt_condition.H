@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONDITION_H
 #define CONDITION_H
 
@@ -487,4 +486,3 @@ ostream& operator << (ostream& os, const DRT::Condition& node);
 
 
 #endif  // #ifndef CONDITION_H
-#endif  // #ifdef CCADISCRET

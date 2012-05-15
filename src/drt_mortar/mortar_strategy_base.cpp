@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Teuchos_RefCountPtr.hpp"
@@ -70,4 +69,3 @@ maxdof_(maxdof)
   // (this is an abstract base class)
 }
 
-#endif // CCADISCRET

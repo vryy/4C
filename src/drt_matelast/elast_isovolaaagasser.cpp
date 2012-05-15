@@ -15,7 +15,6 @@ maintainer: Andreas Maier
 
 *----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -126,4 +125,3 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddCoefficientsPrincipal(
 
 
 /*----------------------------------------------------------------------*/
-#endif // CCADISCRET

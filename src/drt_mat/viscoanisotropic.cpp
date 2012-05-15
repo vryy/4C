@@ -9,7 +9,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
             089 - 289-15240
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "viscoanisotropic.H"
@@ -689,5 +689,4 @@ void MAT::ViscoAnisotropic::Evaluate
 }
 
 
-#endif
 

@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "ale_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -104,4 +104,3 @@ bool ALE::AleResultTest::Match(DRT::INPUT::LineDefinition& res)
   return res.HaveNamed("ALE");
 }
 
-#endif

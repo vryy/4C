@@ -10,7 +10,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_hex8fbar.H"
 #include "../drt_lib/drt_discret.H"
@@ -172,4 +171,3 @@ void DRT::ELEMENTS::So_hex8fbar::Print(ostream& os) const
   return;
 }
 
-#endif  // #ifdef CCADISCRET

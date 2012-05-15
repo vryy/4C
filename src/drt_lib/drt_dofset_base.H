@@ -39,7 +39,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DOFSETBASE_H
 #define DOFSETBASE_H
 
@@ -144,4 +143,3 @@ private:
 } // namespace DRT
 
 #endif  // #ifndef DofSetBase_H
-#endif  // #ifdef CCADISCRET

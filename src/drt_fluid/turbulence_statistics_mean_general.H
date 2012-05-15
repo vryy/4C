@@ -24,7 +24,6 @@ Maintainer: Ursula Rasthofer
 
 </pre>
 */
-#ifdef CCADISCRET
 #ifndef TURBULENCE_STATISTICS_MEAN_GENERAL_H
 #define TURBULENCE_STATISTICS_MEAN_GENERAL_H
 
@@ -255,4 +254,3 @@ private:
 } // end namespace FLD
 
 #endif  // #ifndef TURBULENCE_STATISTICS_MEAN_GENERAL_H
-#endif  // #ifdef CCADISCRET

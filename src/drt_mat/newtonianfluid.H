@@ -10,7 +10,7 @@ Maintainer: ???
 #ifndef NEWTONIANFLUID_H
 #define NEWTONIANFLUID_H
 
-#ifdef CCADISCRET
+
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -152,4 +152,3 @@ private:
 
 #endif
 
-#endif

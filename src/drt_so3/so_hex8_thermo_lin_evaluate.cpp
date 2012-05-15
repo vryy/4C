@@ -10,7 +10,6 @@ Maintainer: Caroline Danowski
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_hex8.H"
 
@@ -1249,5 +1248,4 @@ void DRT::ELEMENTS::So_hex8::soh8_stifftemp(
 } // DRT::ELEMENTS::So_hex8::soh8_stifftemp
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET
 

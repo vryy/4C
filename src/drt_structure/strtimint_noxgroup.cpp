@@ -14,7 +14,6 @@ Maintainer: Thomas Klöppel
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -85,4 +84,3 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeNewton
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

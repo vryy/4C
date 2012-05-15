@@ -13,7 +13,7 @@ Maintainer: Georg Hammerl
 </pre>
 */
 
-#ifdef CCADISCRET
+
 
 #include "ad_str_fsiwrapper.H"
 #include "../drt_lib/drt_discret.H"
@@ -217,4 +217,3 @@ void ADAPTER::FSIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vect
 
 
 
-#endif

@@ -10,7 +10,6 @@ Maintainer: Georg Bauer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "fluid_utils_infnormscaling.H"
 #include <stdio.h>
@@ -280,4 +279,3 @@ void FLD::UTILS::FluidInfNormScaling::UnscaleSolution(Teuchos::RCP<LINALG::Spars
 }
 
 
-#endif /* CCADISCRET       */

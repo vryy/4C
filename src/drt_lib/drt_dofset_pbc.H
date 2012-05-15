@@ -17,7 +17,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef PBCDOFSET_H
 #define PBCDOFSET_H
 
@@ -121,4 +120,3 @@ private:
 }
 
 #endif  // #ifndef PBCDOFSET_H
-#endif  // #ifdef CCADISCRET

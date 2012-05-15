@@ -12,7 +12,7 @@
 
  */
 
-#ifdef CCADISCRET
+
 
 #include "post_drt_generic_writer.H"
 #include "post_drt_generic_single_field_writers.H"
@@ -87,4 +87,3 @@ int main(
     return 0;
 }
 
-#endif

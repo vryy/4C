@@ -12,7 +12,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
+
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -126,4 +126,3 @@ int MAT::PAR::Bundle::FirstIdByType(
   return id;
 }
 
-#endif

@@ -12,7 +12,6 @@
  </pre>
  *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef POROELAST_UTILS_H_
 #define POROELAST_UTILS_H_
 
@@ -73,4 +72,3 @@ namespace POROELAST
 
 /*----------------------------------------------------------------------*/
 #endif // POROELAST_UTILS_H
-#endif // CCADISCRET

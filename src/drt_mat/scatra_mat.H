@@ -11,7 +11,7 @@ Maintainer: Volker Gravemeier
 #ifndef SCATRA_MAT_H
 #define SCATRA_MAT_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -148,4 +148,3 @@ private:
 
 #endif
 
-#endif

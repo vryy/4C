@@ -9,7 +9,6 @@ Maintainer: Kei Müller
             089 - 289-15276
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "beam3contact_octtree.H"
 #include "beam3contact.H"
@@ -2145,4 +2144,3 @@ void Beam3ContactOctTree::CommunicateMultiVector(Epetra_MultiVector& InVec, Epet
   return;
 }
 
-#endif /*CCADISCRET*/

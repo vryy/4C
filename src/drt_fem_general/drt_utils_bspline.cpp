@@ -9,7 +9,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #include "drt_utils_bspline.H"
 #include "../drt_lib/drt_dserror.H"
 
@@ -1161,4 +1161,3 @@ void DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const string errormessage)
   return;
 }
 
-#endif

@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef ADAPTER_FLUID_BASE_ALGORITHM_H
 #define ADAPTER_FLUID_BASE_ALGORITHM_H
@@ -81,5 +81,4 @@ namespace ADAPTER {
 
 }
 
-#endif
 #endif

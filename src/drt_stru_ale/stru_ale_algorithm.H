@@ -15,7 +15,6 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  | definitions                                               mgit 04/11 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef STRU_ALE_ALGORITHM_H
 #define STRU_ALE_ALGORITHM_H
@@ -97,4 +96,3 @@ namespace STRU_ALE
 
 /*----------------------------------------------------------------------*/
 #endif  // STRU_ALE_ALGORITHM_H
-#endif  // CCADISCRET

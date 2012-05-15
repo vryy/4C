@@ -10,7 +10,6 @@
   \brief implementation of multigrid saddlepoint preconditioner for fluid problems
  */
 
-#ifdef CCADISCRET
 #ifndef SADDLEPOINTPRECONDITIONER_H_
 #define SADDLEPOINTPRECONDITIONER_H_
 
@@ -201,4 +200,3 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 }
 
 #endif /* SADDLEPOINTPRECONDITIONER_H_ */
-#endif /* CCADISCRET */

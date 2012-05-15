@@ -22,7 +22,7 @@ its parameters and conditions.
 */
 /*----------------------------------------------------------------------*/
 #ifdef D_EXODUS
-#ifdef CCADISCRET
+
 #include "pre_exodus.H"
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -493,5 +493,4 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 }
 
 
-#endif
 #endif

@@ -10,7 +10,6 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 //#ifdef D_COUPLED_ARTNET
 #ifdef D_RED_AIRWAYS
@@ -1190,4 +1189,3 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
 
 #endif // D_ARTNET
 //#endif // D_COUPLED_ARTNET
-#endif /* CCADISCRET       */

@@ -2,7 +2,6 @@
 \file drt_dofset_independent.cpp
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_dofset_independent.H"
 
@@ -216,4 +215,3 @@ int DRT::IndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
   return count;
 }
 
-#endif  // #ifdef CCADISCRET

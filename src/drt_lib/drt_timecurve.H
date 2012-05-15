@@ -41,7 +41,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef DRT_TIMECURVE_H
 #define DRT_TIMECURVE_H
@@ -156,5 +156,4 @@ extern "C" {
 #endif
 
 
-#endif
 #endif

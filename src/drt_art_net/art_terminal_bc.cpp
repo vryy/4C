@@ -10,7 +10,6 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <stdio.h>
 
@@ -1004,4 +1003,3 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
 } //void ART::UTILS::SolveExplWindkesselBC
 
 
-#endif // CCADISCRET

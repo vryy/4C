@@ -16,7 +16,6 @@ Maintainer: Ursula Rasthofer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DOFSET_INDEPENDENT_H
 #define DOFSET_INDEPENDENT_H
 
@@ -85,4 +84,3 @@ private:
 }
 
 #endif  // #ifndef DOFSET_INDEPENDENT_H
-#endif  // #ifdef CCADISCRET

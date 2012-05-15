@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "linalg_projected_precond.H"
 
@@ -64,4 +63,3 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
 } // LINALG::LinalgPrecondOperator::ApplyInverse
 
 
-#endif // CCADISCRET

@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 
 #include "so_sh8.H"
@@ -170,4 +169,3 @@ bool DRT::ELEMENTS::So_sh8::ReadElement(const std::string& eletype,
 }
 
 
-#endif  // #ifdef CCADISCRET

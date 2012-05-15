@@ -9,7 +9,6 @@ Maintainer: Kei Müller
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef STATMECH_MANAGER_H
 #define STATMECH_MANAGER_H
 
@@ -728,4 +727,3 @@ protected:
 }
 
 #endif /*STATMECH_MANAGER_H*/
-#endif  // #ifdef CCADISCRET

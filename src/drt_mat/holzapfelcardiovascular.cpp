@@ -12,7 +12,6 @@ Maintainer: Susanna Tinkl
             089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <vector>
 #include "holzapfelcardiovascular.H"
@@ -550,4 +549,3 @@ void MAT::HolzapfelCardio::EvaluateFiberVecs
   return;
 }
 
-#endif // CCADISCRET

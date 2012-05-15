@@ -12,7 +12,7 @@
 
 */
 
-#ifdef CCADISCRET
+
 
 #include "post_drt_generic_writer.H"
 #include <string>
@@ -1157,4 +1157,3 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   return;
 }
 
-#endif

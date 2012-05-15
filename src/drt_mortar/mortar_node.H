@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_NODE_H
 #define MORTAR_NODE_H
 
@@ -490,4 +489,3 @@ ostream& operator << (ostream& os, const MORTAR::MortarNode& cnode);
 
 
 #endif  // #ifndef MORTAR_NODE_H
-#endif  // #ifdef CCADISCRET

@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_discret.H"
 #include "drt_exporter.H"
@@ -757,4 +756,3 @@ void DRT::Discretization::FindAssociatedEleIDs(RefCountPtr<DRT::Condition> cond,
   }
 }
 
-#endif  // #ifdef CCADISCRET

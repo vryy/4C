@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef DRT_VALIDPARAMETERS_H
 #define DRT_VALIDPARAMETERS_H
@@ -129,5 +129,4 @@ extern "C"
 }
 #endif
 
-#endif
 #endif

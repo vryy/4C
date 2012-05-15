@@ -11,10 +11,8 @@ Maintainer: Peter Gamnitzer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #include "drt_nurbs_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 // this is a secret place!
 
-#endif // #ifdef CCADISCRET

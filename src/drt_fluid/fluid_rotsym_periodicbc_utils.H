@@ -12,7 +12,6 @@ Maintainer: Georg Bauer
 </pre>
 
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef FLUID_ROTSYM_PERIODICBC_UTILS_H
 #define FLUID_ROTSYM_PERIODICBC_UTILS_H
 
@@ -61,4 +60,3 @@ void GetRelevantSlaveNodesOfRotSymPBC(
 } // namespace FLD
 
 #endif  // #ifndef FLUID_ROTSYM_PERIODICBC_UTILS_H
-#endif  // #ifdef CCADISCRET

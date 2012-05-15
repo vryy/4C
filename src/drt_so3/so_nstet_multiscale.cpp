@@ -10,7 +10,7 @@ Maintainer: Lena Yoshihara
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #include "so_nstet.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -59,4 +59,3 @@ void DRT::ELEMENTS::NStet::nstet_read_restart_multi()
   return;
 }
 
-#endif

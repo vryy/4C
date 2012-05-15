@@ -13,7 +13,6 @@ Maintainer: Peter Gamnitzer
 
 */
 
-#ifdef CCADISCRET
 
 #ifndef FLUID_MHD_EVALUATE_H
 #define FLUID_MHD_EVALUATE_H
@@ -94,4 +93,3 @@ private:
 }
 #endif  // not FLUID_MHD_EVALUATE
 
-#endif  // #ifdef CCADISCRET

@@ -10,7 +10,6 @@ Maintainer: Alexander Popp
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DRT_LOCSYS_H
 #define DRT_LOCSYS_H
 
@@ -354,4 +353,3 @@ ostream& operator << (ostream& os, const DRT::UTILS::LocsysManager& manager);
 
 
 #endif  // #ifndef DRT_LOCSYS_H
-#endif  // #ifdef CCADISCRET

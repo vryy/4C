@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef MESHTYING_LAGRANGE_STRATEGY_H
 #define MESHTYING_LAGRANGE_STRATEGY_H
@@ -180,4 +179,3 @@ class MtLagrangeStrategy : public MtAbstractStrategy
 
 
 #endif  // #ifndef MESHTYING_LAGRANGE_STRATEGY_H
-#endif  // #ifdef CCADISCRET

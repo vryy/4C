@@ -16,7 +16,6 @@ Maintainer: Shadan Shahmiri
 #ifndef XFLUIDFLUIDRESULTTEST_H_
 #define XFLUIDFLUIDRESULTTEST_H_
 
-#ifdef CCADISCRET
 
 #include "../drt_lib/drt_resulttest.H"
 #include "xfluidfluid.H"
@@ -61,6 +60,5 @@ private:
 
 }
 
-#endif /* CCADISCRET       */
 
 #endif /* XFLUIDFLUIDRESULTTEST_H_ */

@@ -11,7 +11,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 #ifdef D_RED_AIRWAYS
-#ifdef CCADISCRET
 
 #include "red_airway.H"
 #include "../drt_lib/drt_utils.H"
@@ -64,5 +63,4 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   return true;
 }
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_RED_AIRWAY

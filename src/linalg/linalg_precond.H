@@ -9,7 +9,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef LINALG_PRECOND_H
 #define LINALG_PRECOND_H
 
@@ -166,5 +166,4 @@ namespace LINALG
   };
 }
 
-#endif
 #endif

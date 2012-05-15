@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_lib/drt_discret.H"
@@ -1124,4 +1123,3 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
 
 
 
-#endif  // #ifdef CCADISCRET

@@ -42,7 +42,6 @@ Maintainer: Ursula Rasthofer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef TURBULENCE_STATISTICS_BCF_H
 #define TURBULENCE_STATISTICS_BCF_H
@@ -361,4 +360,3 @@ private:
 
 #endif  // not TURBULENCE_STATISTICS_BCF_H
 
-#endif /* CCADISCRET       */

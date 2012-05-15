@@ -13,7 +13,6 @@ Maintainer: Florian Henke
  */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef DRT_UTILS_SHAPEFUNCTION_SERVICE
 #define DRT_UTILS_SHAPEFUNCTION_SERVICE
 
@@ -71,4 +70,3 @@ bool secondDerivativesZero()
 } // namespace DRT
 
 #endif // #ifdef DRT_UTILS_SHAPEFUNCTION_SERVICE
-#endif // #ifdef CCADISCRET

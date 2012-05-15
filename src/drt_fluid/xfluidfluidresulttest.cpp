@@ -14,7 +14,6 @@ Maintainer: Shadan Shahmiri
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include <string>
 
@@ -189,4 +188,3 @@ bool FLD::XFluidFluidResultTest::Match(DRT::INPUT::LineDefinition& res)
   return res.HaveNamed("FLUID");
 }
 
-#endif /* CCADISCRET       */

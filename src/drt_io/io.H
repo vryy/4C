@@ -15,7 +15,7 @@ Maintainer: Ulrich Kuettler
 #ifndef IO_DRT_H
 #define IO_DRT_H
 
-#ifdef CCADISCRET
+
 
 #include <Epetra_BlockMap.h>
 
@@ -308,5 +308,4 @@ private:
 
 }
 
-#endif
 #endif

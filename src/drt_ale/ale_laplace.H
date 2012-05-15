@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef ALE_LAPLACE_H
 #define ALE_LAPLACE_H
@@ -149,5 +149,4 @@ private:
 
 }
 
-#endif
 #endif

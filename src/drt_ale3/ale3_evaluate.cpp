@@ -8,7 +8,7 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
+
 
 
 #include "ale3.H"
@@ -1972,5 +1972,4 @@ inline GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
 }
 
 
-#endif
 #endif

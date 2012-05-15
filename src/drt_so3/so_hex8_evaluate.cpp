@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_hex8.H"
 #include "../drt_lib/drt_discret.H"
@@ -2742,5 +2741,4 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
 }
 
 
-#endif  // #ifdef CCADISCRET
 

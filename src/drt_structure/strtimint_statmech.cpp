@@ -10,7 +10,6 @@ Maintainer: Kei Müller
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_Time.hpp>
 #include "Teuchos_RCP.hpp"
@@ -1748,4 +1747,3 @@ void STR::TimIntStatMech::StatMechRestoreConvState()
   return;
 } // StatMechRestoreConvState()
 
-#endif  // #ifdef CCADISCRET

@@ -11,7 +11,6 @@ Maintainer: Christiane Förster
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef FLUIDIMPEDANCECONDITION_H
 #define FLUIDIMPEDANCECONDITION_H
 
@@ -366,4 +365,3 @@ private:
 
 #endif /* FLUIDIMPEDANCECONDITION_H */
 
-#endif /* CCADISCRET */

@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include <iostream>
 
@@ -51,4 +51,3 @@ void ADAPTER::AlgorithmBase::PrintHeader()
               << "\n\n";
 }
 
-#endif

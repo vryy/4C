@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifdef PARALLEL
 #ifdef LINUX_MUENCH
@@ -565,4 +564,3 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
 }
 
 
-#endif  // #ifdef CCADISCRET

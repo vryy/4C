@@ -1,8 +1,6 @@
 #ifndef FSI_NOX_SD_H
 #define FSI_NOX_SD_H
 
-#ifdef TRILINOS_PACKAGE
-
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_GlobalData.H>
 #include <NOX_LineSearch_Generic.H>
@@ -145,5 +143,4 @@ public:
   }
 }
 
-#endif
 #endif

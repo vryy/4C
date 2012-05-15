@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SELFCONTACT_BINARYTREE_SELF_H
 #define SELFCONTACT_BINARYTREE_SELF_H
 
@@ -830,4 +829,3 @@ protected:
 
 
 #endif  // #ifndef DSELFCONTACT_BINARYTREE_H
-#endif  // #ifdef CCADISCRET

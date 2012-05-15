@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_MONOLITHIC_NONOX_H
 #define FSI_MONOLITHIC_NONOX_H
@@ -229,5 +229,4 @@ namespace FSI
   };
 }
 
-#endif
 #endif

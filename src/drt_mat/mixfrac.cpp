@@ -8,7 +8,7 @@ Maintainer: Volker Gravemeier
             089 - 289-15245
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "mixfrac.H"
@@ -136,4 +136,3 @@ double MAT::MixFrac::ComputeDensity(const double mixfrac) const
   return density;
 }
 
-#endif

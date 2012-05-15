@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef NODE_H
 #define NODE_H
 
@@ -323,4 +322,3 @@ ostream& operator << (ostream& os, const DRT::Node& node);
 
 
 #endif  // #ifndef NODE_H
-#endif  // #ifdef CCADISCRET

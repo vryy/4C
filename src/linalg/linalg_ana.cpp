@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #include "linalg_ana.H"
 
 /*----------------------------------------------------------------------*
@@ -336,4 +335,3 @@ double LINALG::ANA::norminf(const LINALG::ANA::LCBase& lc)
 }
 
 
-#endif  // #ifdef CCADISCRET

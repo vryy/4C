@@ -12,7 +12,6 @@ Maintainer: Volker Gravemeier
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include <string>
 #include <iostream>
@@ -183,4 +182,3 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
 } // loma_dyn()
 
 
-#endif  // CCADISCRET

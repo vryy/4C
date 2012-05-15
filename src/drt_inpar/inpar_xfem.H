@@ -10,7 +10,6 @@ Maintainer: Benedikt Schott
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_XFEM_H
 #define INPAR_XFEM_H
 
@@ -134,4 +133,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_FSI_H
-#endif  // #ifdef CCADISCRET

@@ -12,7 +12,6 @@ Maintainer: Ursula Rasthofer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DOFSET_INDEPENDENT_PBC_H
 #define DOFSET_INDEPENDENT_PBC_H
 
@@ -82,4 +81,3 @@ private:
 } // namespace DRT
 
 #endif  // #ifndef DOFSET_INDEPENDENT_H
-#endif  // #ifdef CCADISCRET

@@ -10,7 +10,6 @@
                089 - 289-15264
  </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef POROELAST_DEFINES_H
 #define POROELAST_DEFINES_H
 
@@ -28,4 +27,3 @@
 
 
 #endif  // #ifndef POROELAST_DEFINES_H
-#endif  // #ifdef CCADISCRET

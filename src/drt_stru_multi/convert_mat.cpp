@@ -9,7 +9,7 @@ Maintainer: Lena Yoshihara
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "microstatic.H"
 
@@ -162,4 +162,3 @@ void STRUMULTI::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
   return;
 }
 
-#endif

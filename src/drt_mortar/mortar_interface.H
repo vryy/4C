@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_INTERFACE_H
 #define MORTAR_INTERFACE_H
 
@@ -737,4 +736,3 @@ ostream& operator << (ostream& os, const MORTAR::MortarInterface& interface);
 
 
 #endif  // #ifndef MORTAR_INTERFACE_H
-#endif  // #ifdef CCADISCRET

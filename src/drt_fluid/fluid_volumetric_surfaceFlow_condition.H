@@ -11,7 +11,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef FLUIDWOMERSLEYCONDITION_H
 #define FLUIDWOMERSLEYCONDITION_H
 
@@ -529,4 +528,3 @@ private:
 
 #endif /* FLUIDWOMERSLEYCONDITION_H */
 
-#endif /* CCADISCRET */

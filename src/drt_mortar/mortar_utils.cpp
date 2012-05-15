@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -359,4 +358,3 @@ Teuchos::RCP<Epetra_CrsMatrix> MORTAR::Redistribute(const LINALG::SparseMatrix& 
   return permsrc;
 }
 
-#endif  // #ifdef CCADISCRET

@@ -21,7 +21,6 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #undef WRITEOUTSTATISTICS
 
@@ -6388,4 +6387,3 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ConvectiveVel()
 }
 
 
-#endif /* CCADISCRET       */

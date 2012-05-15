@@ -24,7 +24,6 @@ Maintainer: Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "turbulence_statistics_sqc.H"
 
@@ -2507,4 +2506,3 @@ void FLD::TurbulenceStatisticsSqc::ClearStatistics()
 
 
 
-#endif /* CCADISCRET       */

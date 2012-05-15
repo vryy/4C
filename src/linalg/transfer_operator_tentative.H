@@ -10,7 +10,6 @@
   \brief implementation for tentative transfer operators
  */
 
-#ifdef CCADISCRET
 #ifndef TRANSFER_OPERATOR_TENTATIVE_H_
 #define TRANSFER_OPERATOR_TENTATIVE_H_
 
@@ -64,4 +63,3 @@ namespace LINALG
 } /* namespace LINALG */
 
 #endif /* TRANSFER_OPERATOR_TENTATIVE_H_ */
-#endif /* CCADISCRET */

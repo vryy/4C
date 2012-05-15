@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 // Trilinos headers
 #include <Ifpack.h>
@@ -534,4 +533,3 @@ void LINALG::SOLVER::SIMPLER_Operator::CheapSimple(LINALG::ANA::Vector& vx, LINA
 
 
 
-#endif  // #ifdef CCADISCRET

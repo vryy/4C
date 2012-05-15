@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 // Trilinos headers
 #include <Ifpack.h>
@@ -493,4 +492,3 @@ void LINALG::SOLVER::SIMPLER_BlockPreconditioner::CheapSimple(LINALG::ANA::Vecto
 
 
 
-#endif  // #ifdef CCADISCRET

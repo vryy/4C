@@ -17,7 +17,6 @@ Maintainer: Christiane Förster
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "aaaneohooke.H"
 #include "matpar_bundle.H"
@@ -505,4 +504,3 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   return;
 }
 
-#endif // CCADISCRET

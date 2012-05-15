@@ -15,7 +15,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef TRANSFERTURBINF_H
 #define TRANSFERTURBINF_H
 #include "Teuchos_RefCountPtr.hpp"
@@ -134,4 +133,3 @@ private:
 } // end namespace FLD
 
 #endif  // #ifndef TRANSFERTURBINF_H
-#endif  // #ifdef CCADISCRET

@@ -36,7 +36,7 @@ Maintainer: Michael Gee
             089 - 289-15239
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef LINALG_SPARSEOPERATOR_H_
 #define LINALG_SPARSEOPERATOR_H_
@@ -306,5 +306,4 @@ class SparseOperator : public Epetra_Operator
 }
 
 #endif
-
-#endif /*LINALG_SPARSEOPERATOR_H_*/
+ /*LINALG_SPARSEOPERATOR_H_*/

@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "fsi_algorithm.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -163,4 +163,3 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(Teuchos::RCP<const Epe
 }
 
 
-#endif

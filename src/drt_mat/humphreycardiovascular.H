@@ -19,7 +19,6 @@ Maintainer: Susanna Tinkl
 #ifndef HUMPHREYCARDIOVASCULAR_H_
 #define HUMPHREYCARDIOVASCULAR_H_
 
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -220,5 +219,4 @@ private:
   };
 }  // namespace MAT
 
-#endif /*CCADISCRET*/
 #endif /*HUMPHREYCARDIOVASCULAR_H_*/

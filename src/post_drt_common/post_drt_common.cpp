@@ -14,7 +14,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "post_drt_common.H"
 
@@ -1006,4 +1006,3 @@ RCP<Epetra_MultiVector> PostResult::read_multi_result(const string name)
 //! returns the number of global Dof-Ids
 int PostField::global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
 
-#endif

@@ -16,7 +16,6 @@ maintainer: Andreas Maier
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOVOLAAAGASSER_H_
 #define ELAST_ISOVOLAAAGASSER_H_
-#ifdef CCADISCRET
 
 // Linalg matrices used instead; included in elast_summand
 //#include <Epetra_SerialDenseVector.h>
@@ -169,5 +168,4 @@ namespace ELASTIC
 
 
 
-#endif  // CCADISCRET
 #endif

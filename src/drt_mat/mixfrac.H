@@ -11,7 +11,7 @@ Maintainer: Volker Gravemeier
 #ifndef MIXFRAC_H
 #define MIXFRAC_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -164,4 +164,3 @@ private:
 
 #endif
 
-#endif

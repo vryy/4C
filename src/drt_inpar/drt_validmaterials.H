@@ -15,7 +15,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
+
 
 #ifndef DRT_VALIDMATERIALS_H
 #define DRT_VALIDMATERIALS_H
@@ -65,5 +65,4 @@ extern "C"
 }
 #endif
 
-#endif
 #endif

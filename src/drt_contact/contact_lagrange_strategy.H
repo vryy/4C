@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef CONTACT_LAGRANGE_STRATEGY_H
 #define CONTACT_LAGRANGE_STRATEGY_H
@@ -293,4 +292,3 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
 
 #endif  // #ifndef CONTACT_LAGRANGE_STRATEGY_H
-#endif  // #ifdef CCADISCRET

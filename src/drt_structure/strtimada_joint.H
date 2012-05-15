@@ -14,7 +14,6 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifdef CCADISCRET
 #ifndef STRTIMADA_JOINT_H
 #define STRTIMADA_JOINT_H
 
@@ -249,4 +248,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMADA_JOINT_H
-#endif  // #ifdef CCADISCRET

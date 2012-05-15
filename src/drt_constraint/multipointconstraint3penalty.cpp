@@ -10,7 +10,7 @@
  </pre>
 
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "multipointconstraint3penalty.H"
 #include "constraint_element3.H"
@@ -533,4 +533,3 @@ void UTILS::MPConstraint3Penalty::EvaluateError
     return;
   } // end of EvaluateError
 
-#endif

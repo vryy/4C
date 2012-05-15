@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_MORTAR_H
 #define INPAR_MORTAR_H
 
@@ -105,4 +104,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_MORTAR_H
-#endif  // #ifdef CCADISCRET

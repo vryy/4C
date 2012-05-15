@@ -16,7 +16,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  definitions                                             bborn 08/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef ADAPTER_THERMO_H
 #define ADAPTER_THERMO_H
@@ -308,4 +307,3 @@ namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
 #endif // ADAPTER_THERMO_H
-#endif // CCADISCRET

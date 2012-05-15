@@ -11,7 +11,6 @@ Maintainer: Shadan Shahmiri
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_dofset_transparent_independent.H"
 #include "../linalg/linalg_utils.H"
@@ -559,4 +558,3 @@ void DRT::TransparentIndependentDofSet::SendBlock(
   return;
 } //SendBlock
 #endif
-#endif  // #ifdef CCADISCRET

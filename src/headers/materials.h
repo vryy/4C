@@ -10,8 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
-#if defined(CCADISCRET) && !defined(D_SHELL8)
-#else
+#if defined(D_SHELL8)
 typedef enum _MATERIAL_TYP
 {
                        m_stvenant,    /* St.Venant Kirchhoff material */

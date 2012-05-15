@@ -13,7 +13,7 @@ Maintainer: Ursula Mayer
 #ifndef CARREAUYASUDA_H
 #define CARREAUYASUDA_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -161,4 +161,3 @@ private:
 
 #endif
 
-#endif

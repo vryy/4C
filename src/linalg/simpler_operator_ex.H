@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SIMPLER_BLOCKPRECONDITIONER_H
 #define SIMPLER_BLOCKPRECONDITIONER_H
 
@@ -245,4 +244,3 @@ private:
 
 
 #endif // SIMPLER_BLOCKPRECONDITIONER_H
-#endif  // #ifdef CCADISCRET

@@ -11,7 +11,6 @@ Maintainer: Andreas Ehrl
 </pre>
 
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef FLUID_MESHTYING_H_
 #define FLUID_MESHTYING_H_
 
@@ -263,4 +262,3 @@ class Meshtying
 } // end namespace FLD
 
 #endif   /* FLUID_MESHTYING_H_ */
-#endif  // #ifdef CCADISCRET

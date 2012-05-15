@@ -17,7 +17,7 @@ Maintainer: Christiane FÃ¶rster
 /*!
 \addtogroup Monitoring
 *//*! @{ (documentation module open)*/
-#ifdef CCADISCRET
+
 
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -1606,5 +1606,4 @@ int main(int argc, char** argv)
 
   return 0;
 }
-#endif
 /*! @} (documentation module close)*/

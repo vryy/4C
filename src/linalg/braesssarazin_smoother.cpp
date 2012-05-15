@@ -5,7 +5,7 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
+
 
 #include "braesssarazin_smoother.H"
 
@@ -265,4 +265,3 @@ RCP<LINALG::SparseMatrix> LINALG::BraessSarazin_Smoother::Multiply(const SparseM
 #endif
 }
 
-#endif

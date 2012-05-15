@@ -14,7 +14,6 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifdef D_ARTNET
 
 #include <ctime>
@@ -205,4 +204,3 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
 
 
 #endif //#ifdef D_ARTNET
-#endif // #ifdef CCADISCRET

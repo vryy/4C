@@ -11,7 +11,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "patspec.H"
 #include "../drt_mat/material.H"
@@ -753,5 +753,4 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
 }
 
 
-#endif
 

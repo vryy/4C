@@ -10,7 +10,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "vele3.H"
 #include "../linalg/linalg_utils.H"
@@ -74,4 +73,3 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Vele3Line::getOptimalGaussrule(const Disc
 
 
 
-#endif  // #ifdef CCADISCRET

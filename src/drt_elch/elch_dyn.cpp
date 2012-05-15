@@ -12,7 +12,6 @@ Maintainer: Georg Bauer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "elch_dyn.H"
 #include "elch_algorithm.H"
@@ -245,4 +244,3 @@ void printlogo()
     cout<<"                           "<<endl;
 }
 
-#endif  // CCADISCRET

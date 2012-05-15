@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "truss3.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -119,4 +118,3 @@ void DRT::ELEMENTS::Truss3::SetCrossSec(const double& crosssec)
   return;
 }
 
-#endif  // #ifdef CCADISCRET

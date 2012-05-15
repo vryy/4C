@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include <string>
 #include <vector>
@@ -1134,4 +1134,3 @@ void xfsi_drt()
 }
 
 
-#endif

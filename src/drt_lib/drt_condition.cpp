@@ -40,7 +40,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_condition.H"
 #include "drt_element.H"
@@ -303,4 +302,3 @@ void DRT::Condition::AdjustId(const int shift)
 }
 
 
-#endif  // #ifdef CCADISCRET

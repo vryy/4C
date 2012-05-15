@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "bele3.H"
 #include "../linalg/linalg_utils.H"
@@ -313,4 +312,3 @@ return;
 } // DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction
 
 
-#endif  // #ifdef CCADISCRET

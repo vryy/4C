@@ -10,7 +10,6 @@ Maintainer: Kei Müller
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "statmech_manager.H"
 
@@ -4258,4 +4257,3 @@ void STATMECH::StatMechManager::DBCCreateMap(Teuchos::RCP<std::set<int> > dbcgid
   return;
 }
 
-#endif  // #ifdef CCADISCRET

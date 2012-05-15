@@ -10,7 +10,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "Epetra_SerialDenseSolver.h"
 #include "so_hex8fbar.H"
@@ -1112,4 +1111,3 @@ void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
 }
 
 
-#endif  // #ifdef CCADISCRET

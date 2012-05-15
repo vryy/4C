@@ -21,7 +21,6 @@ Maintainer: Caroline Danowski
 #ifndef THERMOSTVENANTKIRCHHOFF_H_
 #define THERMOSTVENANTKIRCHHOFF_H_
 
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 02/10 |
@@ -238,5 +237,4 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-#endif  // CCADISCRET
 #endif  // THERMOSTVENANTKIRCHHOFF_H

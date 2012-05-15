@@ -14,7 +14,7 @@ Maintainer: Thomas Kloeppel
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
+
 
 #ifndef ADAPTER_STRUCTURE_CONSTR_MERGED_H
 #define ADAPTER_STRUCTURE_CONSTR_MERGED_H
@@ -186,5 +186,4 @@ namespace ADAPTER {
 }  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
-#endif
 #endif

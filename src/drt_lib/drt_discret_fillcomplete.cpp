@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_discret.H"
 #include "drt_exporter.H"
@@ -320,4 +319,3 @@ int DRT::Discretization::AssignDegreesOfFreedom(int start)
 }
 
 
-#endif  // #ifdef CCADISCRET

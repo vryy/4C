@@ -16,7 +16,7 @@ Maintainer: Lena Wiechert
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#ifdef CCADISCRET
+
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_SerialDenseVector.h>
@@ -379,5 +379,4 @@ namespace MAT
     );
 }
 
-#endif
 #endif

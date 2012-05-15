@@ -12,7 +12,6 @@ Maintainer: Alexander Popp
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef STRTIMINT_AB2_H
 #define STRTIMINT_AB2_H
 
@@ -179,4 +178,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMINT_AB2_H
-#endif  // #ifdef CCADISCRET

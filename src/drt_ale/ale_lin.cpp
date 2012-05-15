@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "ale_lin.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -377,4 +377,3 @@ void ALE::AleLinear::SolveAleXFluidFluidFSI()
   xfftoggle_->PutScalar(0.0);
   xffinterface_.InsertXFluidFluidCondVector(dispnp_xff,xfftoggle_);
 }
-#endif

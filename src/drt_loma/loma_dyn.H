@@ -11,7 +11,6 @@ Maintainer: Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef LOMA_DYN_H
 #define LOMA_DYN_H
@@ -35,4 +34,3 @@ void loma_dyn(
 
 #endif /* #ifndef LOMA_DYN_H */
 
-#endif /* #ifdef CCADISCRET */

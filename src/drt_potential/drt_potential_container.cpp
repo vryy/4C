@@ -11,7 +11,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "../drt_potential/drt_potential_container.H"
 #include "../drt_lib/drt_element.H"
@@ -185,7 +184,6 @@ void POTENTIAL::PotentialElementContainer::Print()
   cout << endl;
 }
 
-#endif  // #ifdef CCADISCRET
 
 
 

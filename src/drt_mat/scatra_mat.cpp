@@ -8,7 +8,7 @@ Maintainer: Volker Gravemeier
             089 - 289-15245
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "scatra_mat.H"
@@ -108,4 +108,3 @@ void MAT::ScatraMat::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-#endif

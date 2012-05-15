@@ -8,7 +8,7 @@
  *             089 - 289-15257
  * </pre>
  */
-#ifdef CCADISCRET
+
 #ifndef VELE3_H
 #define VELE3_H
 
@@ -614,5 +614,4 @@ private:
 } // namespace DRT
 
 
-#endif
 #endif

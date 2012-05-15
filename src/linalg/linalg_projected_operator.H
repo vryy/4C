@@ -11,7 +11,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef LINALG_PROJECTED_OPERATOR_H_
 #define LINALG_PROJECTED_OPERATOR_H_
@@ -217,4 +216,3 @@ private:
 
 #endif // LINALG_PROJECTED_OPERATOR_H_
 
-#endif // CCADISCRET

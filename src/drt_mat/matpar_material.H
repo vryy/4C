@@ -41,7 +41,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 #ifndef MATPAR_MATERIAL_H
 #define MATPAR_MATERIAL_H
 
@@ -208,4 +207,3 @@ std::ostream& operator << (std::ostream& os, const MAT::PAR::Material& node);
 
 
 #endif  // #ifndef MATPAR_MATERIAL_H
-#endif  // #ifdef CCADISCRET

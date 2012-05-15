@@ -12,7 +12,7 @@ Maintainer: Lena Wiechert
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "micromaterial.H"
 #include "micromaterialgp_static.H"
@@ -133,4 +133,3 @@ void MAT::MicroMaterial::InvAnaInit(const bool eleowner)
     actmicromatgp->NewResultFile(eleowner, newfilename);
   }
 }
-#endif

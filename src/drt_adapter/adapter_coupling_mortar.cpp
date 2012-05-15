@@ -12,7 +12,6 @@
  </pre>
  */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "adapter_coupling_mortar.H"
 #include "../drt_mortar/mortar_interface.H"
@@ -1386,4 +1385,3 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
   return mv;
 }
 
-#endif // CCADISCRET

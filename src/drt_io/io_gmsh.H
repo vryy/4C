@@ -20,7 +20,6 @@
  */
 #ifndef GMSH_H
 #define GMSH_H
-#ifdef CCADISCRET
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -454,5 +453,4 @@ namespace IO
   }
 }
 
-#endif // #ifdef CCADISCRET
 #endif /*GMSH_H*/

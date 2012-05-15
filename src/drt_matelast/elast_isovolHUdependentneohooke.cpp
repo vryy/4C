@@ -14,7 +14,6 @@ maintainer: Andreas Maier
 
 *----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 #include "elast_isovolHUdependentneohooke.H"
@@ -138,4 +137,3 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincipal(
 }
 
 /*----------------------------------------------------------------------*/
-#endif // CCADISCRET

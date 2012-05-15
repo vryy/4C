@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_element.H"
 #include "mortar_node.H"
@@ -1144,4 +1143,3 @@ bool MORTAR::MortarElement::AddSearchElements(const int & gid)
   return true;
 }
 
-#endif  // #ifdef CCADISCRET

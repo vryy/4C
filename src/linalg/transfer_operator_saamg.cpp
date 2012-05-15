@@ -5,7 +5,6 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
 
 #include "transfer_operator.H"
 #include "transfer_operator_tentative.H"
@@ -117,4 +116,3 @@ double LINALG::SAAMGTransferOperator::MaxEigCG(const SparseMatrix& A, const bool
   return -1.0;
 }
 
-#endif /* CCADISCRET */

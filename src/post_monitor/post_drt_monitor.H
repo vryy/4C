@@ -17,7 +17,6 @@ Maintainer: Christiane FÃ¶rster
 /*!
 \addtogroup Monitoring
 *//*! @{ (documentation module open)*/
-#ifdef CCADISCRET
 
 #ifndef POST_DRT_MONITOR_H_
 #define POST_DRT_MONITOR_H_
@@ -654,5 +653,4 @@ private:
 
 
 #endif  /*POST_DRT_MONITOR_H_*/
-#endif  /*CCADISCRET*/
 /*! @} (documentation module close)*/

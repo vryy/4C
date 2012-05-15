@@ -39,7 +39,6 @@ Maintainer: Ulrrich Kuettler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <iostream>
 #include <algorithm>
@@ -267,4 +266,3 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
   return;
 }
 
-#endif  // #ifdef CCADISCRET

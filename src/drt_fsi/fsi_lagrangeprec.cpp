@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_lagrangeprec.H"
 #include <Epetra_Time.h>
@@ -266,4 +266,3 @@ void FSI::LagrangianBlockMatrix::SetupPreconditioner()
 }
 
 
-#endif

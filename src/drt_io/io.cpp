@@ -12,7 +12,6 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include <iostream>
 #include <sstream>
@@ -1197,4 +1196,3 @@ void IO::DiscretizationWriter::WriteKnotvector() const
 
 #endif
 }
-#endif

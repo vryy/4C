@@ -41,7 +41,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef DRT_CONDITION_UTILS_H
 #define DRT_CONDITION_UTILS_H
@@ -293,5 +293,4 @@ namespace DRT
   }
 }
 
-#endif
 #endif

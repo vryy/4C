@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <ctime>
 #include <cstdlib>
@@ -211,4 +210,3 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 #endif
 } // end of dyn_red_airways_drt()
 
-#endif // #ifdef CCADISCRET

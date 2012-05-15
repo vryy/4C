@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 #ifdef D_ARTNET
-#ifdef CCADISCRET
 
 #include "artery.H"
 #include "../drt_lib/drt_discret.H"
@@ -205,5 +204,4 @@ void DRT::ELEMENTS::Artery::Print(ostream& os) const
 }
 
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_ARTNET

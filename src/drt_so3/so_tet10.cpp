@@ -10,7 +10,6 @@ Maintainer: Jonas Biehler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_tet10.H"
 #include "so_surface.H"
@@ -472,4 +471,3 @@ bool DRT::ELEMENTS::So_tet10::VisData(const string& name, vector<double>& data)
 }
 
 
-#endif  // #ifdef CCADISCRET

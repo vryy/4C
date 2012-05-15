@@ -11,7 +11,7 @@ Maintainer: Jonas Biehler
 </pre>
  *!----------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
-#ifdef CCADISCRET
+
 #include "../drt_adapter/ad_str_structure.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "mlmc.H"
@@ -1383,5 +1383,4 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   actdis_coarse_->Comm().Barrier();
 }
 
-#endif /*CCARAT*/
-#endif // FFTW
+#endif /*CCARAT*/ // FFTW

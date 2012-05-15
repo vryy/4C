@@ -11,7 +11,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef TRANSPARENTDOFSET_H
 #define TRANSPARENTDOFSET_H
 
@@ -122,4 +121,3 @@ namespace DRT
 } //namespace
 
 #endif  // #ifndef DRT_TRANSPARENDOFSET_H
-#endif  // #ifdef CCADISCRET

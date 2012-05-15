@@ -10,7 +10,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "monitor.H"
 #include "iostream"
@@ -174,4 +174,3 @@ void UTILS::Monitor::SetState
   actdisc_->SetState(state,V);
 }
 
-#endif

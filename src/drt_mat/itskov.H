@@ -33,7 +33,6 @@ Maintainer: Robert Metzke
 #ifndef ITSKOV_H_
 #define ITSKOV_H_
 
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -234,5 +233,4 @@ private:
   };
 }
 
-#endif /*CCADISCRET*/
 #endif /*ITSKOV_H_*/

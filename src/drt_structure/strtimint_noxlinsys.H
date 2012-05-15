@@ -14,7 +14,6 @@ Maintainer: Thomas Klöppel
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 #ifndef STRTIMINT_NOXLINSYS_H
 #define STRTIMINT_NOXLINSYS_H
@@ -226,4 +225,3 @@ namespace STR {
 
 
 #endif  //#ifndef STRTIMINT_NOXLINSYS_H
-#endif  //#ifdef CCADISCRET

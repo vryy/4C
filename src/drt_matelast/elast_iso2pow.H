@@ -14,7 +14,6 @@ Maintainer: Sophie Rausch
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISO2POW_H_
 #define ELAST_ISO2POW_H_
-#ifdef CCADISCRET
 
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -137,5 +136,4 @@ namespace ELASTIC
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif  // ISO2POW_H_

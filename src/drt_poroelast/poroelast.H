@@ -11,7 +11,6 @@
  </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef POROELAST_H
 #define POROELAST_H
@@ -30,4 +29,3 @@ extern "C"
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef POROELAST_H */
-#endif /* #ifdef CCADISCRET */

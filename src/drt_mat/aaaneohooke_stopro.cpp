@@ -23,7 +23,6 @@ Maintainer: Jonas Biehler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "aaaneohooke_stopro.H"
 #include "matpar_bundle.H"
@@ -321,4 +320,3 @@ void MAT::AAAneohooke_stopro::Evaluate(
 }
 
 
-#endif // CCADISCRET

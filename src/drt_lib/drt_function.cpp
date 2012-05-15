@@ -42,7 +42,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "drt_discret.H"
 #include "drt_function.H"
@@ -2726,4 +2726,3 @@ std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::Functi
 }
 
 
-#endif

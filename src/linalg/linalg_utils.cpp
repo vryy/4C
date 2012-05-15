@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <algorithm>
 #include <numeric>
@@ -2059,4 +2058,3 @@ void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
 
 
 
-#endif  // #ifdef CCADISCRET

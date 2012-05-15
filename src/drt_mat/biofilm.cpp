@@ -8,7 +8,7 @@ Maintainer: Mirella Coroneo
             089 - 289-15236
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "biofilm.H"
@@ -129,4 +129,3 @@ double MAT::Biofilm::ComputeReactionCoeffDeriv(const double csnp) const
   return reacoeffderiv;
 }
 
-#endif

@@ -12,7 +12,6 @@ Maintainer: Georg Bauer
 </pre>
 
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef FLUID_ROTSYM_PERIODICBC_H
 #define FLUID_ROTSYM_PERIODICBC_H
 
@@ -223,4 +222,3 @@ private:
 } // namespace FLD
 
 #endif  // #ifndef FLUID_ROTSYM_PERIODICBC_H
-#endif  // #ifdef CCADISCRET

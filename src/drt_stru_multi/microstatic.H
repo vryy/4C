@@ -13,7 +13,7 @@ Maintainer: Lena Yoshihara
 #ifndef STRU_MICRO_STAT_H
 #define STRU_MICRO_STAT_H
 
-#ifdef CCADISCRET
+
 
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
@@ -367,5 +367,4 @@ protected:
 
 
 } // namespace STRUMULTI
-#endif
 #endif

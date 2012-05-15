@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef LINALG_SOLVER_H
 #define LINALG_SOLVER_H
 
@@ -558,4 +557,3 @@ ostream& operator << (ostream& os, const LINALG::Solver& solver);
 
 
 #endif  // #ifndef LINALG_SOLVER_H
-#endif  // #ifdef CCADISCRET

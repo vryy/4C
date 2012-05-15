@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include <vector>
 
@@ -550,4 +550,3 @@ NOX::FSI::LinearSystemGCR::OperatorType NOX::FSI::LinearSystemGCR::getOperatorTy
 }
 
 
-#endif

@@ -10,7 +10,7 @@ Maintainer: Michael Gee
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "gen_inv_analysis.H"
 #include "../drt_inpar/inpar_material.H"
@@ -1461,4 +1461,3 @@ void STR::GenInvAnalysis::MultiInvAnaInit()
   }
 }
 
-#endif

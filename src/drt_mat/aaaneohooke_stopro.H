@@ -25,7 +25,6 @@ Maintainer: Jonas Biehler
 *----------------------------------------------------------------------*/
 #ifndef AAANEOHOOKE_STOPRO_H_
 #define AAANEOHOOKE_STOPRO_H_
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -203,5 +202,4 @@ private:
   };
 }
 
-#endif  // CCADISCRET
 #endif  // AAANEOHOOKE_STOPRO_H_

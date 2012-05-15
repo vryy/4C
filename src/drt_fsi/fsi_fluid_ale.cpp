@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_fluid_ale.H"
 
@@ -96,4 +96,3 @@ void FSI::FluidAleAlgorithm::Output()
   MBFluidField().Output();
 }
 
-#endif

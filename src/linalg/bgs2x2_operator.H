@@ -9,7 +9,6 @@ Maintainer: Lena Wiechert
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef BGS2X2_OPERATOR_H
 #define BGS2X2_OPERATOR_H
 
@@ -153,4 +152,3 @@ private:
 
 
 #endif // BGS2x2_OPERATOR_H
-#endif  // #ifdef CCADISCRET

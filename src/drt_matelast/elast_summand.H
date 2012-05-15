@@ -13,7 +13,7 @@ Maintainer: Burkhard Bornemann
 #ifndef ELAST_SUMMAND_H
 #define ELAST_SUMMAND_H
 
-#ifdef CCADISCRET
+
 
 #include "../drt_inpar/inpar_material.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -476,4 +476,3 @@ namespace MAT
 
 #endif
 
-#endif

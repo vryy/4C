@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 
 #include "beam3ii.H"
@@ -1640,4 +1639,3 @@ return;
 
 
 
-#endif  // #ifdef CCADISCRET

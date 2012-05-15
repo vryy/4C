@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "bele3.H"
 #include "../drt_lib/drt_discret.H"
@@ -54,4 +53,3 @@ int DRT::ELEMENTS::Bele3::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
-#endif  // #ifdef CCADISCRET

@@ -26,7 +26,7 @@ The new filters can be used in parallel.
 #ifndef POST_DRT_COMMON_H
 #define POST_DRT_COMMON_H
 
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <string>
@@ -399,5 +399,4 @@ private:
 };
 
 
-#endif
 #endif

@@ -11,7 +11,6 @@ Maintainer: Mirella Coroneo
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "ad_str_bio.H"
 #include "adapter_coupling.H"
@@ -202,4 +201,3 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureBio::StructToAle(Teuchos::RCP<cons
   return icoupsa_->MasterToSlave(iv);
 }
 
-#endif // CCADISCRET

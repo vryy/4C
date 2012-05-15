@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_DEBUGWRITER_H
 #define FSI_DEBUGWRITER_H
@@ -154,5 +154,4 @@ namespace UTILS
 }
 }
 
-#endif
 #endif

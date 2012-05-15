@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTACT_INTEGRATOR_H
 #define CONTACT_INTEGRATOR_H
 
@@ -358,4 +357,3 @@ protected:
 
 
 #endif  // #ifndef CONTACT_INTEGRATOR_H
-#endif  // #ifdef CCADISCRET

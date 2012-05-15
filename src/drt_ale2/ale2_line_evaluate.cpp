@@ -8,7 +8,6 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
 
 #include "ale2.H"
 #include "../drt_lib/drt_discret.H"
@@ -32,5 +31,4 @@ int DRT::ELEMENTS::Ale2Line::EvaluateNeumann(
 }
 
 
-#endif  // #ifdef CCADISCRET
 #endif // #ifdef D_ALE2

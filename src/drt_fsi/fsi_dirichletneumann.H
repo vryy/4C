@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_DIRICHLETNEUMANN_H
 #define FSI_DIRICHLETNEUMANN_H
@@ -105,5 +105,4 @@ private:
 
 }
 
-#endif
 #endif

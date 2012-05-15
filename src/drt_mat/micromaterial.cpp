@@ -12,7 +12,7 @@ Maintainer: Lena Yoshihara
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "micromaterial.H"
 #include "matpar_bundle.H"
@@ -119,4 +119,3 @@ void MAT::MicroMaterial::Unpack(const vector<char>& data)
 
 
 
-#endif

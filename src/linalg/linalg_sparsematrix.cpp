@@ -36,7 +36,7 @@ Maintainer: Michael Gee
             089 - 289-15239
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "linalg_sparsematrix.H"
 #include "linalg_utils.H"
@@ -1812,6 +1812,5 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Eye(const Epetra_Map& map)
 }
 
 
-#endif
 
 

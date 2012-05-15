@@ -18,7 +18,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DEBUG_NAN_H
 #define DEBUG_NAN_H
 
@@ -55,4 +54,3 @@ namespace DRT
 
 
 #endif  // #ifndef DEBUG_NAN_H
-#endif  // #ifdef CCADISCRET

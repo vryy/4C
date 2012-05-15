@@ -14,7 +14,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |  definitions                                               gjb 01/08 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <mpi.h>
@@ -77,4 +76,3 @@ void thr_dyn_drt()
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

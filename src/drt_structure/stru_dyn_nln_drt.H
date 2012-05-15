@@ -12,7 +12,6 @@ Maintainer: Thomas Klöppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef STRU_DYN_NLN_DRT_H
 #define STRU_DYN_NLN_DRT_H
@@ -59,4 +58,3 @@ void caldyn_drt();
 
 
 #endif  /* #ifndef STRU_DYN_NLN_DRT_H */
-#endif  /* #ifdef CCADISCRET */

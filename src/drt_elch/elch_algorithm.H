@@ -13,7 +13,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ELCH_ALGORITHM_H
 #define ELCH_ALGORITHM_H
@@ -123,4 +122,3 @@ namespace ELCH
 } // namespace ELCH
 
 #endif // ELCH_ALGORITHM_H
-#endif // CCADISCRET

@@ -8,7 +8,7 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
+
 
 
 #include "ale2.H"
@@ -879,5 +879,4 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
   }
 }
 
-#endif
 #endif

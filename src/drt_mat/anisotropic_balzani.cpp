@@ -9,7 +9,7 @@ Maintainer: Moritz Frenzel
             089 - 289-15240
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
@@ -501,5 +501,4 @@ void MAT::AnisotropicBalzani::Evaluate(
 }
 
 
-#endif
 

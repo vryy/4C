@@ -13,7 +13,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -1556,4 +1555,3 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
   return;
 }
 
-#endif  // #ifdef CCADISCRET

@@ -13,7 +13,7 @@ Maintainer: Lena Wiechert
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef ADAPTER_FLUID_LUNG_H
 #define ADAPTER_FLUID_LUNG_H
@@ -100,5 +100,4 @@ namespace ADAPTER {
   };
 }
 
-#endif
 #endif

@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <stdio.h>
 
@@ -700,4 +699,3 @@ void FLD::UTILS::WriteFlowRatesToFile(
   }
 }
 
-#endif /* CCADISCRET       */

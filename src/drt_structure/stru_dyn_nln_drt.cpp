@@ -12,7 +12,6 @@ Maintainer: Thomas Klöppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <ctime>
 #include <cstdlib>
@@ -165,4 +164,3 @@ void dyn_nlnstructural_drt()
 
 } // end of dyn_nlnstructural_drt()
 
-#endif  // #ifdef CCADISCRET

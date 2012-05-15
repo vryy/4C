@@ -39,7 +39,6 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DOFSET_H
 #define DOFSET_H
 
@@ -370,4 +369,3 @@ ostream& operator << (ostream& os, const DRT::DofSet& dofset);
 
 
 #endif  // #ifndef DOFSET_H
-#endif  // #ifdef CCADISCRET

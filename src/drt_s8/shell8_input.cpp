@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#ifdef CCADISCRET
 
 #include "shell8.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -322,5 +321,4 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
 #endif
 
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SHELL8

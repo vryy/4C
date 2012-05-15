@@ -12,7 +12,6 @@ Maintainer: Ursula Rasthofer
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_TURBULENCE_H
 #define INPAR_TURBULENCE_H
 
@@ -61,4 +60,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_TURBULENCE_H
-#endif  // #ifdef CCADISCRET

@@ -16,7 +16,6 @@ Maintainer: Burkhard Bornemann
 *----------------------------------------------------------------------*/
 #ifndef LOGNEOHOOKE_H_
 #define LOGNEOHOOKE_H_
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -308,5 +307,4 @@ private:
   };
 }
 
-#endif  // CCADISCRET
 #endif  // LOGNEOHOOKE_H_

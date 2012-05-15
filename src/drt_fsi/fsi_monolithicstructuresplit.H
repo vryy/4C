@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_MONOLITHICSTRUCTURESPLIT_H
 #define FSI_MONOLITHICSTRUCTURESPLIT_H
@@ -207,5 +207,4 @@ namespace FSI
   };
 }
 
-#endif
 #endif

@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_nstet.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -51,4 +50,3 @@ bool DRT::ELEMENTS::NStet::ReadElement(const std::string& eletype,
 }
 
 
-#endif  // #ifdef CCADISCRET

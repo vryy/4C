@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "bele3.H"
 #include "../linalg/linalg_utils.H"
@@ -119,4 +118,3 @@ void DRT::ELEMENTS::Bele3Line::Print(ostream& os) const
 
 
 
-#endif  // #ifdef CCADISCRET

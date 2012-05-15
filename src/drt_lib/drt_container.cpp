@@ -40,7 +40,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_container.H"
 #include "drt_dserror.H"
@@ -622,4 +621,3 @@ double DRT::Container::GetDouble(const string& name) const
 
 
 
-#endif  // #ifdef CCADISCRET

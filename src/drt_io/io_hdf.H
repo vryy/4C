@@ -15,7 +15,7 @@ Maintainer: Ulrich Kuettler
 #ifndef IO_HDF_H
 #define IO_HDF_H
 
-#ifdef CCADISCRET
+
 #ifdef BINIO
 
 #define H5Gcreate_vers 1
@@ -229,6 +229,5 @@ private:
 };
 }
 
-#endif
 #endif
 #endif

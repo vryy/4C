@@ -13,7 +13,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #include "drt_transfer_turb_inflow.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -748,4 +747,3 @@ void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
 } // SetValuesAvailableOnThisProc
 
 
-#endif  // #ifdef CCADISCRET

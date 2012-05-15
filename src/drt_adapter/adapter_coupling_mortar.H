@@ -12,7 +12,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef FSI_COUPLING_MORTAR_H
 #define FSI_COUPLING_MORTAR_H
@@ -157,4 +156,3 @@ namespace ADAPTER
 }
 
 #endif // FSI_COUPLING_MORTAR_CONTACT_H
-#endif // CCADISCRET

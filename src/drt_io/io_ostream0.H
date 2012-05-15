@@ -17,7 +17,6 @@ Maintainer: Burkhard Bornemann
 /* macros */
 #ifndef IO_OSTREAM0_H
 #define IO_OSTREAM0_H
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -119,5 +118,4 @@ template <typename CharT> inline std::ostream& operator<<(
 }
 
 /*----------------------------------------------------------------------*/
-#endif // CCADISCRET
 #endif // IO_OSTREAM0_H

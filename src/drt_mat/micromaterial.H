@@ -16,7 +16,6 @@ Maintainer: Lena Yoshihara
 #ifndef MICROMATERIAL_H
 #define MICROMATERIAL_H
 
-#ifdef CCADISCRET
 
 #include <Teuchos_RefCountPtr.hpp>
 
@@ -181,6 +180,5 @@ private:
 
 }
 
-#endif // CCADISCRET
 #endif
 

@@ -15,7 +15,6 @@ Maintainer: Christian J. Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "largerotations.H"
 #include "../drt_lib/drt_dserror.H"
@@ -453,4 +452,3 @@ void LARGEROTATIONS::directionstotriad(const LINALG::Matrix<3,1>& d1,const LINAL
 } //LARGEROTATIONS::directionstotriad
 
 
-#endif  // #ifdef CCADISCRET

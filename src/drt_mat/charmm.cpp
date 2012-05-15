@@ -9,7 +9,7 @@ Maintainer: Robert Metzke
 	    089 - 289-15244
 </pre>
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
@@ -959,4 +959,3 @@ void MAT::CHARMM::CHARMmfakeapi(const double STARTD,
 }
 
 
-#endif

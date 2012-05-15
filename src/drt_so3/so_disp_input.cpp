@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 
 #include "so_disp.H"
@@ -311,4 +310,3 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
 } // SoDisp::ReadElement()
 #endif
 
-#endif  // #ifdef CCADISCRET

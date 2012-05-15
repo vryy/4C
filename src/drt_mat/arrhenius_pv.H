@@ -13,7 +13,7 @@ Maintainer: Volker Gravemeier
 #ifndef ARRHENIUS_PV_H
 #define ARRHENIUS_PV_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -216,4 +216,3 @@ private:
 
 #endif
 
-#endif

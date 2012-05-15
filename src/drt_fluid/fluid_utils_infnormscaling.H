@@ -11,7 +11,6 @@ Maintainer: Georg Bauer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef FLUID_UTILS_INFNORMSCALING_H
 #define FLUID_UTILS_INFNORMSCALING_H
 
@@ -77,4 +76,3 @@ private:
 } // namespace FLD
 
 #endif  // #ifndef FLUID_UTILS_H
-#endif  // #ifdef CCADISCRET

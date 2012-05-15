@@ -10,7 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "permeablefluid.H"
@@ -141,4 +141,3 @@ double MAT::PermeableFluid::SetViscosity() const
   return viscosity;
 }
 
-#endif

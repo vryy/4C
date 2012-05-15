@@ -13,7 +13,6 @@ Maintainer: Mahmoud Ismail
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifdef D_RED_AIRWAYS
 
 #include "airwayimplicitintegration.H"
@@ -85,5 +84,4 @@ bool AIRWAY::RedAirwayResultTest::Match(DRT::INPUT::LineDefinition& res)
 }
 
 #endif //#ifdef D_RED_AIRWAYS
-#endif /* CCADISCRET       */
 

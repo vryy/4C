@@ -10,7 +10,6 @@ Maintainer: ???
 #ifndef STVENANTKIRCHHOFF_H_
 #define STVENANTKIRCHHOFF_H_
 
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -183,5 +182,4 @@ private:
   };
 }
 
-#endif /*CCADISCRET*/
 #endif /*STVENANTKIRCHHOFF_H_*/

@@ -39,7 +39,6 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef CCADISCRET
 #ifndef UTILS_INTEGRATION_H
 #define UTILS_INTEGRATION_H
 
@@ -405,4 +404,3 @@ private:
 } // namespace DRT
 
 #endif // #ifndef UTILS_INTEGRATION_H
-#endif  // #ifdef CCADISCRET

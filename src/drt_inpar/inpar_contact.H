@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_CONTACT_H
 #define INPAR_CONTACT_H
 
@@ -132,4 +131,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_CONTACT_H
-#endif  // #ifdef CCADISCRET

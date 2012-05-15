@@ -10,7 +10,6 @@ Maintainer: Christoph Meier
 </pre>
 
 *-----------------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "beam3contact.H"
 #include "beam3contact_defines.H"
@@ -3172,4 +3171,3 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
  *----------------------------------------------------------------------*/
 
 
-#endif  // #ifdef CCADISCRET 

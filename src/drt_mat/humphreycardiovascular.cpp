@@ -16,7 +16,6 @@ Maintainer: Susanna Tinkl
             089 - 289-15265
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <vector>
 #include "humphreycardiovascular.H"
@@ -725,4 +724,3 @@ void MAT::HumphreyCardio::EvaluateFiberVecs
   return;
 }
 
-#endif  // CCADISCRET

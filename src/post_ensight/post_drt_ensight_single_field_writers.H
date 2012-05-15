@@ -11,7 +11,7 @@
  </pre>
 
  */
-#ifdef CCADISCRET
+
 
 #ifndef POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_
 #define POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_
@@ -268,4 +268,3 @@ protected:
 
 
 #endif /*POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_*/
-#endif

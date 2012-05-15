@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 
 #include "so_shw6.H" //**
@@ -191,4 +190,3 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
 } // So_weg6::ReadElement()
 #endif
 
-#endif  // #ifdef CCADISCRET

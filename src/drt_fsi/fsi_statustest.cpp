@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "fsi_statustest.H"
 #include "fsi_nox_newton.H"
@@ -553,4 +553,3 @@ int NOX::FSI::MinIters::getNumIters() const
 }
 
 
-#endif

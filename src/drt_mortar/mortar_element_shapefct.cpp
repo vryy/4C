@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_element.H"
 #include "mortar_node.H"
@@ -2496,4 +2495,3 @@ bool MORTAR::MortarElement::DerivShapeDual(std::vector<std::vector<std::map<int,
   return true;
 }
 
-#endif  // #ifdef CCADISCRET

@@ -43,7 +43,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -181,4 +180,3 @@ void MAT::PAR::Material::Unpack(const std::vector<char>& data)
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

@@ -9,7 +9,7 @@ Maintainer: Moritz Frenzel
             089 - 289-15240
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
@@ -962,4 +962,3 @@ const vector<double> MAT::MatPointCoords(const DRT::Element* actele,const vector
 }
 
 
-#endif

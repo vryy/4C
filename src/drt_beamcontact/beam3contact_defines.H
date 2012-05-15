@@ -10,7 +10,6 @@ Maintainer: Christoph Meier
             089 - 289-15262
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef BEAM3CONTACT_DEFINES_H
 #define BEAM3CONTACT_DEFINES_H
 
@@ -50,4 +49,3 @@ Maintainer: Christoph Meier
 //#define BEAMCONTACTFDCHECKS     /* perform finite difference checks */
 
 #endif /* BEAM3CONTACT_DEFINES_H */
-#endif /* CCADISCRET */

@@ -11,7 +11,7 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef BELE2_H
 #define BELE2_H
 
@@ -210,5 +210,4 @@ private:
 } // namespace DRT
 
 
-#endif
 #endif

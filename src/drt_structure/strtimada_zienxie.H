@@ -14,7 +14,6 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifdef CCADISCRET
 #ifndef STRTIMADA_ZIENXIE_H
 #define STRTIMADA_ZIENXIE_H
 
@@ -134,4 +133,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMADA_ZIENXIE_H
-#endif  // #ifdef CCADISCRET

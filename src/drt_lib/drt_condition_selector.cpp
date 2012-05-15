@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "drt_condition_selector.H"
 #include "drt_dserror.H"
@@ -180,4 +180,3 @@ void DRT::UTILS::MultiConditionSelector::SetupCondDofSets(const DRT::Discretizat
   }
 }
 
-#endif

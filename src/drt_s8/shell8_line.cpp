@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#ifdef CCADISCRET
 
 #include "shell8.H"
 #include "../linalg/linalg_utils.H"
@@ -120,5 +119,4 @@ void DRT::ELEMENTS::Shell8Line::Print(ostream& os) const
 
 
 
-#endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SHELL8

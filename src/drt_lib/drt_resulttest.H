@@ -16,7 +16,6 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_RESULTTEST_H
 #define DRT_RESULTTEST_H
 
-#ifdef CCADISCRET
 
 #ifdef __cplusplus
 
@@ -125,6 +124,5 @@ extern "C" {
 }
 #endif
 
-#endif /* CCADISCRET       */
 
 #endif

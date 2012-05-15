@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "selfcontact_binarytree.H"
 #include "contact_node.H"
@@ -2485,4 +2484,3 @@ void CONTACT::SelfBinaryTree::UpdateNormals()
   return;
 }
 
-#endif //#ifdef CCADISCRET

@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTACT_MANAGER_H
 #define CONTACT_MANAGER_H
 
@@ -165,4 +164,3 @@ protected:
 } // namespace CONTACT
 
 #endif  // #ifndef CONTACT_MANAGER_H
-#endif  // #ifdef CCADISCRET

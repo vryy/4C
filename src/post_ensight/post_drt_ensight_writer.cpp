@@ -12,7 +12,7 @@
 
 */
 
-#ifdef CCADISCRET
+
 
 #include "post_drt_ensight_writer.H"
 #include "../post_drt_common/post_drt_common.H"
@@ -2010,4 +2010,3 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
   return;
 }
 
-#endif

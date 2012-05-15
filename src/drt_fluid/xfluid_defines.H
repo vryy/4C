@@ -10,7 +10,6 @@ Maintainer: Benedikt Schott
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef XFLUID_DEFINES_H_
 #define XFLUID_DEFINES_H_
 
@@ -18,4 +17,3 @@ Maintainer: Benedikt Schott
 //#define BOUNDARYCELL_TRANSFORMATION_OLD
 
 #endif /* XFLUID_DEFINES_H_ */
-#endif // #ifdef CCADISCRET

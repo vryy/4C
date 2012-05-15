@@ -6,7 +6,6 @@ flows.
 
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "turbulence_statistics_bcf.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -1289,4 +1288,3 @@ void COMBUST::TurbulenceStatisticsBcf::ClearStatistics()
   return;
 }// TurbulenceStatisticsBcf::ClearStatistics
 
-#endif /* CCADISCRET       */

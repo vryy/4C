@@ -39,7 +39,6 @@ Maintainer: Ulrrich Kuettler
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <iostream>
 #include <algorithm>
@@ -388,4 +387,3 @@ void DRT::DofSet::NotifyReset()
 }
 
 
-#endif  // #ifdef CCADISCRET

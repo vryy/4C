@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "wall1_nurbs.H"
 
@@ -154,4 +153,3 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
 }
 
 
-#endif // CCADISCRET

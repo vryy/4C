@@ -16,7 +16,6 @@ Maintainer: Sophie Rausch
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -92,4 +91,3 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddCoefficientsPrincipal(
 
 
 /*----------------------------------------------------------------------*/
-#endif // CCADISCRET

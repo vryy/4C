@@ -15,7 +15,7 @@ Maintainer: Mahmoud Ismail
             089 - 289-15268
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <stdio.h>
 
@@ -828,5 +828,4 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<endl;
 }//ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
 
-#endif
 

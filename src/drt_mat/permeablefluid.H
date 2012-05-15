@@ -13,7 +13,7 @@ Maintainer: Volker Gravemeier
 #ifndef PERMEABLEFLUID_H
 #define PERMEABLEFLUID_H
 
-#ifdef CCADISCRET
+
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -166,4 +166,3 @@ private:
 
 #endif
 
-#endif

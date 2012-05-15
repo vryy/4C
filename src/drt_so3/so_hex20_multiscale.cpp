@@ -11,7 +11,7 @@ Maintainer: Lena Yoshihara
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 #include "so_hex20.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -64,5 +64,4 @@ void DRT::ELEMENTS::So_hex20::soh20_read_restart_multi()
   return;
 }
 
-#endif
 

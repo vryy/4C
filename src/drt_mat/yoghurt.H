@@ -13,7 +13,7 @@ Maintainer: Volker Gravemeier
 #ifndef YOGHURT_H
 #define YOGHURT_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -180,4 +180,3 @@ private:
 
 #endif
 
-#endif

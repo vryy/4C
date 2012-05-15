@@ -12,8 +12,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *--------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "drt_potential.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1718,12 +1716,4 @@ void STR::TimIntImpl::TestForceStiffPotential
   return;
 } 
 */
-
-
-//////////////////////////////// Test methods ////////////////////////////////
-
-
-
-        
-#endif
 

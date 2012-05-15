@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_binarytree.H"
 #include "mortar_node.H"
@@ -1403,4 +1402,3 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(Teuchos::RCP<BinaryTreeNode> str
   return;
 }
 
-#endif //#ifdef CCADISCRET

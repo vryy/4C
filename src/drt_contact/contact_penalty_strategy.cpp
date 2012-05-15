@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "contact_penalty_strategy.H"
 #include "contact_interface.H"
@@ -655,4 +654,3 @@ void CONTACT::CoPenaltyStrategy::UpdateAugmentedLagrange()
   return;
 }
 
-#endif // CCADISCRET

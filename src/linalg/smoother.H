@@ -10,7 +10,6 @@
   \brief basis class for multigrid smoothers
  */
 
-#ifdef CCADISCRET
 
 #ifndef SMOOTHER_H_
 #define SMOOTHER_H_
@@ -119,4 +118,3 @@ class SmootherFactory
 } /* end namespace LINALG */
 
 #endif /* SMOOTHER_H_ */
-#endif /* CCADISCRET */

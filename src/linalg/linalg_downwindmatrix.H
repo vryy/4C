@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef LINALG_DOWNWINDMATRIX_H
 #define LINALG_DOWNWINDMATRIX_H
 
@@ -172,4 +171,3 @@ private:
 
 
 #endif // LINALG_DOWNWINDMATRIX_H
-#endif  // #ifdef CCADISCRET

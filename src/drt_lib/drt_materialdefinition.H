@@ -12,7 +12,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
+
 #ifndef DRT_MATERIALDEFINITION_H
 #define DRT_MATERIALDEFINITION_H
 
@@ -701,5 +701,4 @@ namespace DRT
 
 }  // namespace DRT
 
-#endif
 #endif

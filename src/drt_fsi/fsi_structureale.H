@@ -13,7 +13,7 @@ Maintainer: Thomas Kloeppel
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_PSEUDOFSISTRUCTURE_H
 #define FSI_PSEUDOFSISTRUCTURE_H
@@ -74,5 +74,4 @@ private:
 
 }
 
-#endif
 #endif

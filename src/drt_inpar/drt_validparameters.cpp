@@ -13,8 +13,6 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
-
 #include <Teuchos_Array.hpp>
 #include <Teuchos_StrUtils.hpp>
 #include <Teuchos_any.hpp>
@@ -5180,4 +5178,3 @@ bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
   return pes;
 }
 
-#endif

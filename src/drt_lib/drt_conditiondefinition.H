@@ -9,7 +9,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef DRT_CONDITIONDEFINITION_H
 #define DRT_CONDITIONDEFINITION_H
 
@@ -478,5 +478,4 @@ namespace INPUT
 }
 }
 
-#endif
 #endif

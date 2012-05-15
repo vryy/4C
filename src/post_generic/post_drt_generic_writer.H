@@ -11,7 +11,7 @@
  </pre>
 
  */
-#ifdef CCADISCRET
+
 
 #ifndef POST_DRT_ENSIGHT_GENERIC_H_
 #define POST_DRT_ENSIGHT_GENERIC_H_
@@ -512,4 +512,3 @@ protected:
 };
 
 #endif /*POST_DRT_ENSIGHT_WRITER_H_*/
-#endif

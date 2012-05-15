@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_nox_newton.H"
 
@@ -107,4 +107,3 @@ void NOX::FSI::Newton::Residual(double current, double desired)
 }
 
 
-#endif

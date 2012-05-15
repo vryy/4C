@@ -11,7 +11,6 @@
  </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -103,4 +102,3 @@ void poroelast_drt()
     return;
   }//poroelast_drt()
 
-#endif  // CCADISCRET

@@ -23,7 +23,6 @@ Maintainer: Susanna Tinkl
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include <vector>
 #include "constraintmixture.H"
@@ -2267,4 +2266,3 @@ void MAT::ConstraintMixtureOutputToGmsh
   return;
 }
 
-#endif // CCADISCRET

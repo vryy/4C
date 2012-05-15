@@ -17,7 +17,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef ARTNETEXPLICITINTEGRATION_H
 #define ARTNETEXPLICITINTEGRATION_H
 
@@ -350,4 +349,3 @@ protected:
 
 
 #endif  // #ifndef ARTNETEXPLICITINTEGRATION_H
-#endif  // #ifdef CCADISCRET

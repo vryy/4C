@@ -13,7 +13,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -304,4 +303,3 @@ void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol
 }
 
 
-#endif  // #ifdef CCADISCRET

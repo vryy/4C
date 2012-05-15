@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "time_integration_element.H"
 
@@ -183,4 +182,3 @@ double FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(
   return timefac;
 }
 
-#endif /* CCADISCRET       */

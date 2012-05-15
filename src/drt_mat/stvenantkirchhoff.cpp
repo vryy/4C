@@ -7,7 +7,7 @@ Maintainer: ???
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
@@ -264,4 +264,3 @@ void MAT::StVenantKirchhoff::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
   return;
 }
 
-#endif

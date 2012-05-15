@@ -40,7 +40,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #undef WRITEOUTSTATISTICS
 #ifdef WRITEOUTSTATISTICS
@@ -1971,4 +1970,3 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
 */
 
 
-#endif  // #ifdef CCADISCRET

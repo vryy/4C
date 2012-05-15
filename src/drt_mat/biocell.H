@@ -13,7 +13,6 @@ Maintainer: Robert Metzke
 #ifndef BIOCELL_H_
 #define BIOCELL_H_
 
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -154,5 +153,4 @@ private:
   };
 }
 
-#endif /*CCADISCRET*/
 #endif /*BIOCELL_H_*/

@@ -10,7 +10,6 @@
   \brief basis class for multigrid transfer operators
  */
 
-#ifdef CCADISCRET
 
 #ifndef TRANSFER_OPERATOR_H_
 #define TRANSFER_OPERATOR_H_
@@ -136,4 +135,3 @@ class TransferOperatorFactory
 } // namespace LINALG
 
 #endif /* TRANSFER_OPERATOR_H_ */
-#endif /* CCADISCRET */

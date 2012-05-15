@@ -12,7 +12,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
-#ifdef CCADISCRET
 #ifndef ALE3_NURBS_H
 #define ALE3_NURBS_H
 
@@ -175,5 +174,4 @@ private:
 
 
 #endif  // #ifndef ALE3_NURBS_H
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_ALE

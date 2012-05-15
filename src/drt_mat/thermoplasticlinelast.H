@@ -31,7 +31,6 @@ Maintainer: Caroline Danowski
 #ifndef THERMOPLASTICLINELAST_H_
 #define THERMOPLASTICLINELAST_H_
 
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -380,7 +379,6 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-#endif  // CCADISCRET
 #endif  // THERMOPLASTICLINELAST_H_
 
 

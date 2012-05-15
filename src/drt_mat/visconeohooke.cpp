@@ -9,7 +9,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
             089 - 289-15240
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "visconeohooke.H"
@@ -413,4 +413,3 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   return;
 }
 
-#endif

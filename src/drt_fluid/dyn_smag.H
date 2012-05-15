@@ -36,7 +36,7 @@ Maintainer: Ursula Rasthofer
 */
 
 
-#ifdef CCADISCRET
+
 #ifndef DYN_SMAG_H
 #define DYN_SMAG_H
 
@@ -364,4 +364,3 @@ private:
 
 #endif // not DYN_SMAG_H
 
-#endif

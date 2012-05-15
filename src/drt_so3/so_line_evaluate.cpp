@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_line.H"
 #include "../linalg/linalg_utils.H"
@@ -138,4 +137,3 @@ void DRT::ELEMENTS::StructuralLine::LineIntegration(double&                     
 
 
 
-#endif  // #ifdef CCADISCRET

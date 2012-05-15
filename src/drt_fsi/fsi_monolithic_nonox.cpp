@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -523,4 +523,3 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
   fflush(ofile);
 }
 
-#endif

@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_overlapprec.H"
 #include "fsi_debugwriter.H"
@@ -472,4 +472,3 @@ const char* FSI::OverlappingBlockMatrix::Label() const
   return "FSI::OverlappingBlockMatrix";
 }
 
-#endif

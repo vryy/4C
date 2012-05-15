@@ -16,7 +16,6 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -227,4 +226,3 @@ void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
 // }
 
 /*----------------------------------------------------------------------*/
-#endif // CCADISCRET

@@ -13,7 +13,7 @@ Maintainer: Thomas Klöppel
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "stru_aux.H"
 
@@ -89,4 +89,3 @@ Teuchos::RCP<std::set<int> > STR::AUX::MapExtractor::ConditionedElementMap(const
   return condelements;
 }
 
-#endif

@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef CONTACT_PENALTY_STRATEGY_H
 #define CONTACT_PENALTY_STRATEGY_H
@@ -243,4 +242,3 @@ protected:
 }  // namespace CONTACT
 
 #endif  // #ifndef CONTACT_PENALTY_STRATEGY_H
-#endif  // #ifdef CCADISCRET

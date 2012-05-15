@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_INVANALYSIS_H
 #define INPAR_INVANALYSIS_H
 
@@ -37,4 +36,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_INVANALYSIS_H
-#endif  // #ifdef CCADISCRET

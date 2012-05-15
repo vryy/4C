@@ -10,7 +10,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -406,4 +406,3 @@ void FS3I::FS3I_Base::ScatraOutput()
   }
 }*/
 
-#endif

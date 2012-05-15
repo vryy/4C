@@ -12,7 +12,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef PERIODICBC_H
 #define PERIODICBC_H
 
@@ -404,4 +403,3 @@ protected:
 };
 
 #endif  // #ifndef PERIODICBC_H
-#endif  // #ifdef CCADISCRET

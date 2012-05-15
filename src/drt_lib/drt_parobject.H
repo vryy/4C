@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef PAROBJECT_H
 #define PAROBJECT_H
 
@@ -671,4 +670,3 @@ public:
 
 
 #endif  // #ifndef PAROBJECT_H
-#endif  // #ifdef CCADISCRET

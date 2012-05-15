@@ -28,7 +28,6 @@ Maintainer: Susanna Tinkl
 #ifndef CONSTRAINTMIXTURE_H_
 #define CONSTRAINTMIXTURE_H_
 
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -512,5 +511,4 @@ namespace MAT
 
 }  // namespace MAT
 
-#endif /*CCADISCRET*/
 #endif /* CONSTRAINTMIXTURE_H_ */

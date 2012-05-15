@@ -12,7 +12,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "drt_condition_utils.H"
 #include "drt_condition_selector.H"
@@ -717,4 +717,3 @@ void DRT::UTILS::CollectElementsByConditionLabel(
     dserror("not all elements collected.");
 }
 
-#endif

@@ -9,7 +9,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "drt_knotvector.H"
 
@@ -1125,4 +1125,3 @@ int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
   return(gid);
 } // DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid
 
-#endif

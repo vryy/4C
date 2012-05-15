@@ -13,7 +13,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -236,4 +236,3 @@ void FS3I::PartFS3I::SetMeshDisp()
                                                 structadapter->Discretization());
 }
 
-#endif

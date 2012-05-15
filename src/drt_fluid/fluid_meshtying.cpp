@@ -14,7 +14,6 @@ Maintainer: Andreas Ehrl
 
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #define DIRECTMANIPULATION
 #define BLOCKMATRIX_2x2
@@ -1499,4 +1498,3 @@ void FLD::FluidImplicitTimeInt::PrintAbsoluteL2Norm(RCP<Epetra_Vector>&   vector
 }
   */
 
-#endif /* CCADISCRET       */

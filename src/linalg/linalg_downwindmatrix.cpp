@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #include "linalg_downwindmatrix.H"
 #include "linalg_utils.H"
 #include "Epetra_Time.h"
@@ -481,4 +480,3 @@ void LINALG::DownwindMatrix::SetL(const int i, int& nl, Epetra_IntVector& index,
 
 
 
-#endif  // #ifdef CCADISCRET

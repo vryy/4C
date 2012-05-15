@@ -10,7 +10,6 @@ Maintainer: Kei Müller
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef STRTIMINT_STATMECH_H
 #define STRTIMINT_STATMECH_H
 
@@ -228,4 +227,3 @@ namespace STR
 }
 
 #endif  // #ifndef STRTIMINT_STATMECH_H
-#endif  // #ifdef CCADISCRET

@@ -10,7 +10,7 @@ Maintainer: Florian Henke
             089 - 289-15265
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef TURBULENCE_STATISTICS_ORACLES_H_
 #define TURBULENCE_STATISTICS_ORACLES_H_
@@ -330,4 +330,3 @@ private:
 
 #endif
 
-#endif

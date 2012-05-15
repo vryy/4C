@@ -11,7 +11,6 @@ Maintainer: Benedikt Schott
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef CUT_PARALLEL_H_
 #define CUT_PARALLEL_H_
@@ -173,4 +172,3 @@ public:
 
 
 #endif /* CUT_PARALLEL_H_ */
-#endif // CCADISCRET

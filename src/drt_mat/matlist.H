@@ -11,7 +11,7 @@ Maintainer: Georg Bauer
 #ifndef MATLIST_H
 #define MATLIST_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -177,4 +177,3 @@ private:
 
 #endif
 
-#endif

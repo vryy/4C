@@ -17,7 +17,6 @@ Maintainer: Moritz Frenzel
 #ifndef THR_RESULTTEST_H
 #define THR_RESULTTEST_H
 
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*
  |  headers                                                       08/09 |
@@ -75,5 +74,4 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
-#endif // #ifdef CCADISCRET
 #endif // #ifndef THR_RESULTTEST_H

@@ -10,7 +10,6 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
 */
-#ifdef CCADISCRET
 #ifndef UTILS_GDER2_H
 #define UTILS_GDER2_H
 
@@ -538,4 +537,3 @@ void gder2(
 } // namespace DRT
 
 #endif  // #ifndef UTILS_GDER2_H
-#endif  // #ifdef CCADISCRET

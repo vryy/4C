@@ -38,7 +38,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <math.h>
 #include <iostream>
@@ -8941,4 +8940,3 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
   dsassert(max_nquad >= nquad,"increase size of double array in IntegationPoints class");
 }
 
-#endif  // #ifdef CCADISCRET

@@ -11,7 +11,6 @@ Maintainer: Shadan Shahmiri
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef TRANSPARENTINDEPENDENTDOFSET_H
 #define TRANSPARENTINDEPENDENTDOFSET_H
 
@@ -158,4 +157,3 @@ namespace DRT
 } //namespace
 
 #endif  // #ifndef  TRANSPARENTINDEPENDENTDOFSET_H
-#endif  // #ifdef CCADISCRET

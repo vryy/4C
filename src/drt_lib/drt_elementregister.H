@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef ELEMENTTYPE_H
 #define ELEMENTTYPE_H
 
@@ -239,4 +238,3 @@ ostream& operator << (ostream& os, const DRT::ElementRegister& ele);
 
 
 #endif  // #ifndef ELEMENTTYPE_H
-#endif  // #ifdef CCADISCRET

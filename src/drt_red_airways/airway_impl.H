@@ -15,7 +15,7 @@ Maintainer: Mahmoud Ismail
 /*----------------------------------------------------------------------*/
 
 #ifdef D_RED_AIRWAYS
-#ifdef CCADISCRET
+
 
 #ifndef AIRWAY_IMPL_H
 #define AIRWAY_IMPL_H
@@ -207,5 +207,4 @@ namespace ELEMENTS
 
 #endif
 
-#endif
 #endif 

@@ -36,7 +36,7 @@ Maintainer: Michael Gee
             089 - 289-15239
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef LINALG_BLOCKSPARSEMATRIX_H_
 #define LINALG_BLOCKSPARSEMATRIX_H_
@@ -700,7 +700,6 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(double val,
 
 
 
-#endif
 #endif
 
 

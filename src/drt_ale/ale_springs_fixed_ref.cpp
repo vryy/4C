@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "ale_springs_fixed_ref.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -316,4 +316,3 @@ Teuchos::RCP<DRT::ResultTest> ALE::AleSpringsFixedRef::CreateFieldTest()
   return Teuchos::rcp(new ALE::AleResultTest(*this));
 }
 
-#endif

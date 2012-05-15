@@ -9,7 +9,7 @@ Maintainer: Thomas Kloeppel
             089 - 289-15257
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
@@ -241,4 +241,3 @@ void MAT::Yeoh::Evaluate(
 }
 
 
-#endif

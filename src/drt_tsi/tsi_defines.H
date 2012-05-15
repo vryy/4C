@@ -11,7 +11,6 @@ Maintainer: Caroline Danowski
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef TSI_DEFINES_H
 #define TSI_DEFINES_H
 
@@ -43,4 +42,3 @@ Maintainer: Caroline Danowski
 //#define DEBUGMATERIAL          /* flag for material debug output */
 
 #endif  // #ifndef TSI_DEFINES_H
-#endif  // #ifdef CCADISCRET

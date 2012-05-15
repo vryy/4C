@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -1078,4 +1077,3 @@ void DRT::ELEMENTS::NStet5Type::StressOutput(
 
 
 
-#endif  // #ifdef CCADISCRET

@@ -13,7 +13,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ELCH_MOVING_BOUNDARY_ALGORITHM_H
 #define ELCH_MOVING_BOUNDARY_ALGORITHM_H
@@ -114,4 +113,3 @@ namespace ELCH
 } // namespace ELCH
 
 #endif // ELCH_MOVING_BOUNDARY_ALGORITHM_H
-#endif // CCADISCRET

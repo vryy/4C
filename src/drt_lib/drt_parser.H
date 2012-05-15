@@ -46,7 +46,6 @@ Maintainer: Burkhard Bornemann
 \date 10/07
 */
 
-#ifdef CCADISCRET
 
 #ifndef DRT_PARSER_H
 #define DRT_PARSER_H
@@ -632,4 +631,3 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
 
 #endif // DRT_PARSER_H
 
-#endif // CCADISCRET

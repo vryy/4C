@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "linalg_serialdensematrix.H"
 
@@ -237,4 +236,3 @@ void LINALG::SerialDenseMatrix::Zero()
   memset(A(), 0, M()*N()*sizeof(double));
 }
 
-#endif  // #ifdef CCADISCRET

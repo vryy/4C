@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_UTILS_H
 #define FSI_UTILS_H
@@ -252,5 +252,4 @@ namespace FSI
   }
 }
 
-#endif
 #endif

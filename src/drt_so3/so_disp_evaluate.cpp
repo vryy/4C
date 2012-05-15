@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "so_disp.H"
 #include "../drt_lib/drt_discret.H"
@@ -621,5 +620,4 @@ void DRT::ELEMENTS::SoDisp::sodisp_shapederiv(
 }
 
 
-#endif  // #ifdef CCADISCRET
 

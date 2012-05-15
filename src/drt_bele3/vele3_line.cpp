@@ -10,7 +10,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "vele3.H"
 #include "../linalg/linalg_utils.H"
@@ -126,4 +125,3 @@ void DRT::ELEMENTS::Vele3Line::Print(ostream& os) const
 
 
 
-#endif  // #ifdef CCADISCRET

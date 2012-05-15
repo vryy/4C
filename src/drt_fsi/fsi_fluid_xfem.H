@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_FLUID_XFEM_H
 #define FSI_FLUID_XFEM_H
@@ -68,5 +68,4 @@ namespace FSI
 
 }
 
-#endif
 #endif

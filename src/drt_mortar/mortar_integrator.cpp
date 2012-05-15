@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_integrator.H"
 #include "mortar_node.H"
@@ -1977,4 +1976,3 @@ bool MORTAR::MortarIntegrator::AssembleMmod(const Epetra_Comm& comm,
   return true;
 }
 
-#endif //#ifdef CCADISCRET

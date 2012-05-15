@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "contact_coupling2d.H"
 #include "contact_integrator.H"
@@ -250,4 +249,3 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
   return true;
 }
 
-#endif //#ifdef CCADISCRET

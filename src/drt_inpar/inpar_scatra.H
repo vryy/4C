@@ -10,7 +10,6 @@ Maintainer: Georg Bauer
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_SCATRA_H
 #define INPAR_SCATRA_H
 
@@ -235,4 +234,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_SCATRA_H
-#endif  // #ifdef CCADISCRET

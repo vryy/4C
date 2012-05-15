@@ -10,7 +10,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <iostream>
 
@@ -71,4 +71,3 @@ void UTILS::MPConstraint::SetConstrState
   }
 }
 
-#endif

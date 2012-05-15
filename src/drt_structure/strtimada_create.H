@@ -13,7 +13,6 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 #ifndef STRTIMADA_CREATE_H
 #define STRTIMADA_CREATE_H
@@ -55,4 +54,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  /* #ifndef STRTIMADA_CREATE_H */
-#endif  /* #ifdef CCADISCRET */

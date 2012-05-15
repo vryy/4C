@@ -12,8 +12,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *--------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
 #include "drt_potential_surface.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
@@ -2404,6 +2402,4 @@ void STR::TimIntImpl::TestForceStiffPotential
   return;
 }
 */
-
-#endif
 

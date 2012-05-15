@@ -11,7 +11,6 @@ Maintainer: Robert Metzke
  *----------------------------------------------------------------------*/
 #ifndef CHARMM_H_
 #define CHARMM_H_
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -425,6 +424,5 @@ private:
     };
 }
 
-#endif // CCADISCRET
 #endif // CHARMM_H_
 

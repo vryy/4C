@@ -18,7 +18,6 @@ Maintainer: Robert Metzke
 #ifndef NEOHOOKE_H_
 #define NEOHOOKE_H_
 
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -188,5 +187,4 @@ private:
   };
 }
 
-#endif /*CCADISCRET*/
 #endif /*NEOHOOKE_H_*/

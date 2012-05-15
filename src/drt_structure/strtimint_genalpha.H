@@ -12,7 +12,6 @@ Maintainer: Thomas Klöppel
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef STRTIMINT_GENALPHA_H
 #define STRTIMINT_GENALPHA_H
 
@@ -311,4 +310,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMINT_GENALPHA_H
-#endif  // #ifdef CCADISCRET

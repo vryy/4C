@@ -36,7 +36,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "friction_node.H"
 #include "contact_element.H"
@@ -536,4 +535,3 @@ void CONTACT::FriNode::ResetDataContainer()
   return;
 }
 
-#endif  // #ifdef CCADISCRET

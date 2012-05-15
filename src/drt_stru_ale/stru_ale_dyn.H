@@ -11,7 +11,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef STRU_ALE_DYN_H
 #define STRU_ALE_DYN_H
@@ -31,4 +30,3 @@ void stru_ale_dyn_drt(int disnumsf,int disnumaf,int restart);
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef STRU_ALE_DYN_H */
-#endif /* #ifdef CCADISCRET */

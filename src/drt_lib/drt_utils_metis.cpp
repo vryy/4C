@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #if !defined(PARALLEL) || !defined(PARMETIS)
 
@@ -149,4 +149,3 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
 #endif
 #endif
 
-#endif

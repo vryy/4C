@@ -11,7 +11,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
 #ifndef INPAR_MATERIAL_H
 #define INPAR_MATERIAL_H
 
@@ -162,4 +161,3 @@ namespace INPAR
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef __cplusplus
 #endif  // #ifndef INPAR_MATERIAL_H
-#endif  // #ifdef CCADISCRET

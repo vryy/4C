@@ -15,7 +15,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 11/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_TSI_H
 #define INPAR_TSI_H
 
@@ -68,4 +67,3 @@ namespace TSI
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_TSI_H
-#endif  // #ifdef CCADISCRET

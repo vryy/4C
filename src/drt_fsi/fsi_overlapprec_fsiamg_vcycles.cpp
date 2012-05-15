@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_overlapprec_fsiamg.H"
 #include <Epetra_Time.h>
@@ -617,4 +617,3 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockVcycle(
 
 
 
-#endif

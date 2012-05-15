@@ -38,7 +38,6 @@ Maintainer: Thomas Kloeppel
 
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <iostream>
 #include <algorithm>
@@ -117,4 +116,3 @@ int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
 }
 
 
-#endif  // #ifdef CCADISCRET

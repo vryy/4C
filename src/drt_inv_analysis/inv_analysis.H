@@ -10,7 +10,6 @@ Maintainer: Sophie Rausch
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INV_ANALYSIS_H
 #define INV_ANALYSIS_H
 
@@ -154,4 +153,3 @@ public:
 }  // namespace STR
 
 #endif /*INV_ANALYSIS_H_*/
-#endif  // #ifdef CCADISCRET

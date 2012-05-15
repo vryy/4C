@@ -14,7 +14,7 @@ Maintainer: Ursula Rasthofer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "dyn_smag.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
@@ -860,4 +860,3 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   return;
 }
 
-#endif

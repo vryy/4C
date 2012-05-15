@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_MONOLITHIC_LINEARSYSTEM_H
 #define FSI_MONOLITHIC_LINEARSYSTEM_H
@@ -72,5 +72,4 @@ namespace FSI
 }
 
 
-#endif
 #endif

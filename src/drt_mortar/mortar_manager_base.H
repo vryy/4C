@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_MANAGER_BASE_H
 #define MORTAR_MANAGER_BASE_H
 
@@ -143,4 +142,3 @@ protected:
 
 
 #endif  // #ifndef MORTAR_MANAGER_BASE_H
-#endif  // #ifdef CCADISCRET

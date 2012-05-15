@@ -9,7 +9,7 @@ Maintainer: Lena Yoshihara
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "micromaterialgp_static.H"
 #include "../drt_stru_multi/microstatic.H"
@@ -327,4 +327,3 @@ void MAT::MicroMaterialGP::Output()
 }
 
 
-#endif

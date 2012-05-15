@@ -13,7 +13,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 /************/
-#ifdef CCADISCRET
 #ifndef RED_AIRWAYS_DRT_DRT_H
 #define RED_AIRWAYS_DRT_DRT_H
 
@@ -48,5 +47,4 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 #endif /* endif __cplusplus*/
 
 #endif  /* #ifndef RED_AIRWAYS_DRT_DRT_H */
-#endif  /* #ifdef CCADISCRET */
 

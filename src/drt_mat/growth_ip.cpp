@@ -21,7 +21,6 @@ Maintainer: Susanna Tinkl
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include <vector>
 #include "growth_ip.H"
@@ -660,4 +659,3 @@ void MAT::GrowthOutputToGmsh
   return;
 }
 
-#endif // CCADISCRET

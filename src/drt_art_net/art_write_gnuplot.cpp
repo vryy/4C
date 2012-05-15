@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "art_write_gnuplot.H"
 #include <sstream>
@@ -352,4 +351,3 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
   (*fout_)<<endl;
 }
 
-#endif //CCADISCRET

@@ -5,7 +5,7 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
+
 
 #include "transfer_operator.H"
 #include "transfer_operator_saamg.H"
@@ -486,4 +486,3 @@ void LINALG::PGAMG2TransferOperator::MultiplyAll(const RCP<SparseMatrix>& left, 
 }
 
 
-#endif

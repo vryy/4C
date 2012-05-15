@@ -12,7 +12,6 @@ Maintainer: Markus Gitterle
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 #ifndef WALL1_H
 #define WALL1_H
 
@@ -1022,4 +1021,3 @@ private:
 } // namespace DRT
 
 #endif  // #ifndef WALL1_H
-#endif  // #ifdef CCADISCRET

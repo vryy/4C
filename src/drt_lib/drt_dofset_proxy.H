@@ -39,7 +39,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 */
-#ifdef CCADISCRET
+
 #ifndef DRT_DOFSET_PROXY_H
 #define DRT_DOFSET_PROXY_H
 
@@ -112,5 +112,4 @@ private:
 }
 
 
-#endif
 #endif

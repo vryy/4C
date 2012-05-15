@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef WALL1_NURBS_H
 #define WALL1_NURBS_H
 
@@ -170,4 +169,3 @@ private:
 
 
 #endif  // #ifndef WALL1_NURBS_H
-#endif  // #ifdef CCADISCRET

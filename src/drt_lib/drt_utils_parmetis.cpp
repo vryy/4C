@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #if defined(PARALLEL) && defined(PARMETIS)
 
@@ -1105,7 +1105,6 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
   return;
 }
-#endif
 #endif
 
 

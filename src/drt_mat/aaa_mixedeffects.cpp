@@ -15,7 +15,6 @@ Maintainer: Andreas Maier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "aaa_mixedeffects.H"
 #include "matpar_bundle.H"
@@ -502,4 +501,3 @@ void MAT::AAA_mixedeffects::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   return;
 }
 
-#endif // CCADISCRET

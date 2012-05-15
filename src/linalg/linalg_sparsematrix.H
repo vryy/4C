@@ -36,7 +36,7 @@ Maintainer: Michael Gee
             089 - 289-15239
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef LINALG_SPARSEMATRIX_H_
 #define LINALG_SPARSEMATRIX_H_
@@ -638,5 +638,4 @@ LINALG::SparseMatrix::Split(
 }
 
 
-#endif
 #endif

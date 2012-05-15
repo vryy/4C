@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "beam2r.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -42,4 +41,3 @@ bool DRT::ELEMENTS::Beam2r::ReadElement(const std::string& eletype,
   return true;
 }
 
-#endif  // #ifdef CCADISCRET

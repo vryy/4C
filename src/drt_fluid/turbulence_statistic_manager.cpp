@@ -13,7 +13,6 @@ Maintainer: Ursula Rasthofer
             089 - 289-15236
 
 */
-#ifdef CCADISCRET
 
 #include "turbulence_statistic_manager.H"
 #include "../drt_fluid/fluid_genalpha_integration.H"
@@ -1685,4 +1684,3 @@ namespace FLD
 
 } // end namespace FLD
 
-#endif  // #ifdef CCADISCRET

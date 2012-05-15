@@ -18,7 +18,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 
 #include "drt_periodicbc.H"
@@ -1926,4 +1925,3 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
   return;
 }// BalanceLoadUsingMetis
 
-#endif /* CCADISCRET       */

@@ -38,7 +38,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef LINALG_MAPEXTRACTOR_H
 #define LINALG_MAPEXTRACTOR_H
 
@@ -423,5 +423,4 @@ namespace LINALG
 }
 
 
-#endif
 #endif

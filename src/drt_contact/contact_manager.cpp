@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "contact_manager.H"
@@ -791,4 +790,3 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
  return;
 }
 
-#endif  // #ifdef CCADISCRET

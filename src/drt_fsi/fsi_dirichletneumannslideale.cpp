@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_debugwriter.H"
@@ -154,4 +154,3 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 	}
 }
 
-#endif

@@ -16,7 +16,6 @@ http://www.lnm.mw.tum.de/Members/kuettler
 #ifndef FLUIDRESULTTEST_H
 #define FLUIDRESULTTEST_H
 
-#ifdef CCADISCRET
 
 #include "../drt_lib/drt_resulttest.H"
 #include <Epetra_Vector.h>
@@ -74,6 +73,5 @@ private:
 
 }
 
-#endif /* CCADISCRET       */
 
 #endif

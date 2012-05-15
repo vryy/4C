@@ -10,7 +10,7 @@ Maintainer: Mahmoud Ismail
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "cnst_1d_art.H"
@@ -116,4 +116,3 @@ void MAT::Cnst_1d_art::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-#endif

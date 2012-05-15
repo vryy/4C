@@ -12,7 +12,7 @@ Maintainer: Lena Wiechert
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "matpar_parameter.H"
@@ -1204,5 +1204,4 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6,1>* pk2vol,
   return;
 }
 
-#endif
 

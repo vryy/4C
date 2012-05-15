@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_DEFINES_H
 #define MORTAR_DEFINES_H
 
@@ -78,4 +77,3 @@ Maintainer: Alexander Popp
 //#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
 
 #endif  // #ifndef MORTAR_DEFINES_H
-#endif  // #ifdef CCADISCRET

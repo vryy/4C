@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef LINALG_MLAPI_OPERATOR_H
 #define LINALG_MLAPI_OPERATOR_H
 
@@ -244,4 +243,3 @@ private:
 
 
 #endif // LINALG_MLAPI_OPERATOR_H
-#endif  // #ifdef CCADISCRET

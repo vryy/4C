@@ -13,7 +13,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -431,4 +430,3 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement()
 } // So_sh8p8::ReadElement()
 #endif
 
-#endif  // #ifdef CCADISCRET

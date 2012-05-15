@@ -18,7 +18,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef KNOTVECTOR_H
 #define KNOTVECTOR_H
 
@@ -571,4 +570,3 @@ private:
 } // namespace DRT
 
 #endif // KNOTVECTOR_H
-#endif // CCADISCRET

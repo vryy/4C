@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_CONSTR_OVERLAPPREC_H
 #define FSI_CONSTR_OVERLAPPREC_H
@@ -74,5 +74,4 @@ namespace FSI
   };
 }
 
-#endif
 #endif

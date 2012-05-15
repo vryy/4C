@@ -16,7 +16,7 @@ Validate a given BACI input file (after all preprocessing steps)
 */
 /*----------------------------------------------------------------------*/
 #ifdef D_EXODUS
-#ifdef CCADISCRET
+
 
 #include "pre_exodus_validate.H"
 #include "pre_exodus_soshextrusion.H" //just temporarly for gmsh-plot
@@ -428,5 +428,4 @@ vector<int> EXODUS::RewindEle(vector<int> old_nodeids, const DRT::Element::Discr
   return new_nodeids;
 }
 
-#endif
 #endif

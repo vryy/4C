@@ -20,7 +20,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef FLUID_DYN_NLN_DRT_H
 #define FLUID_DYN_NLN_DRT_H
@@ -67,4 +66,3 @@ void fluid_fluid_drt();
 
 
 #endif  /* #ifndef FLUID_DYN_NLN_DRT_H */
-#endif  /* #ifdef CCADISCRET */

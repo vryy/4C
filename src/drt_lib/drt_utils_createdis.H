@@ -14,7 +14,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef DRT_UTILS_CREATEDIS_H
 #define DRT_UTILS_CREATEDIS_H
@@ -317,4 +316,3 @@ private:
 } // namespace DRT
 
 #endif // #ifndef DRT_UTILS_CREATEDIS_H
-#endif // #ifdef CCADISCRET

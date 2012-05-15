@@ -16,7 +16,6 @@ Maintainer: Burkhard Bornemann
 *----------------------------------------------------------------------*/
 #ifndef ELAST_LOGNEOHOOKE_H_
 #define ELAST_LOGNEOHOOKE_H_
-#ifdef CCADISCRET
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -205,5 +204,4 @@ namespace ELASTIC
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif  // LOGNEOHOOKE_H_

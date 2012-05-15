@@ -11,7 +11,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "fs3i_partitioned_1wc.H"
 
@@ -213,4 +213,3 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
   return false;
 }
 
-#endif

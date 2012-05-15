@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "linalg_projected_operator.H"
 
@@ -62,4 +61,3 @@ int LINALG::LinalgProjectedOperator::Apply(
   return(ierr);
 } // LINALG::LinalgProjectedOperator::Apply
 
-#endif // CCADISCRET

@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "Epetra_SerialComm.h"
 #include "contact_lagrange_strategy.H"
@@ -3559,4 +3558,3 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   return;
 }
 
-#endif // CCADISCRET

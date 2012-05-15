@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_BIOFILM_GROWTH_H
 #define FSI_BIOFILM_GROWTH_H
@@ -110,5 +110,4 @@ namespace FS3I
 
 }
 
-#endif
 #endif

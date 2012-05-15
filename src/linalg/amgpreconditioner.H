@@ -5,7 +5,6 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
 #ifndef AMGPRECONDITIONER_H_
 #define AMGPRECONDITIONER_H_
 
@@ -125,4 +124,3 @@ namespace LINALG
 
 
 #endif /* AMGPRECONDITIONER_H_ */
-#endif /* CCADISCRET */

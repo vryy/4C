@@ -8,7 +8,6 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
 
 #include "ale2.H"
 #include "../linalg/linalg_utils.H"
@@ -116,5 +115,4 @@ void DRT::ELEMENTS::Ale2Line::Print(ostream& os) const
 
 
 
-#endif  // #ifdef CCADISCRET
 #endif // #ifdef D_ALE2

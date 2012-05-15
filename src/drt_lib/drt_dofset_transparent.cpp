@@ -11,7 +11,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_dofset_transparent.H"
 #include "../linalg/linalg_utils.H"
@@ -560,4 +559,3 @@ void DRT::TransparentDofSet::SendBlock(
 #endif
 
 
-#endif  // #ifdef CCADISCRET

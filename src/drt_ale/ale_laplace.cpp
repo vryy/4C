@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "ale_laplace.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -326,4 +326,3 @@ Teuchos::RCP<DRT::ResultTest> ALE::AleLaplace::CreateFieldTest()
   return Teuchos::rcp(new ALE::AleResultTest(*this));
 }
 
-#endif

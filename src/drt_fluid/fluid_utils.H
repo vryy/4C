@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef FLUID_UTILS_H
 #define FLUID_UTILS_H
 
@@ -513,4 +512,3 @@ std::map<int,LINALG::Matrix<3,1> > ComputeSurfaceImpulsRates(
 } // namespace FLD
 
 #endif  // #ifndef FLUID_UTILS_H
-#endif  // #ifdef CCADISCRET

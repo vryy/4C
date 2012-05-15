@@ -13,7 +13,6 @@ Maintainer: Mahmoud Ismail
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifdef D_ARTNET
 
 #include "artnetexplicitintegration.H"
@@ -87,5 +86,4 @@ bool ART::ArteryResultTest::Match(DRT::INPUT::LineDefinition& res)
 }
 
 #endif //#ifdef D_RED_AIRWAYS
-#endif /* CCADISCRET       */
 

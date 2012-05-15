@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 /************/
-#ifdef CCADISCRET
 #ifndef ART_NET_DYN_DRT_H
 #define ART_NET_DYN_DRT_H
 
@@ -48,5 +47,4 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt>  dyn_art_net_drt(bool CoupledTo3D);
 #endif /* endif __cplusplus*/
 
 #endif  /* #ifndef ART_NET_DYN_DRT_H */
-#endif  /* #ifdef CCADISCRET */
 

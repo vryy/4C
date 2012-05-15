@@ -43,7 +43,6 @@ http://www.lnm.mw.tum.de
 
  */
 
-#ifdef CCADISCRET
 #ifndef DRT_UTILS_FEM_SHAPEFUNCTION
 #define DRT_UTILS_FEM_SHAPEFUNCTION
 
@@ -2257,6 +2256,5 @@ namespace UTILS
 } // namespace DRT
 
 #endif  // #ifdef DRT_UTILS_FEM_SHAPEFUNCTION
-#endif  // #ifdef CCADISCRET
 
 

@@ -17,7 +17,6 @@ Maintainer: Ursula Rasthofer
 
 </pre>
 */
-#ifdef CCADISCRET
 #ifndef TURBULENCE_STATISTIC_MANAGER_H
 #define TURBULENCE_STATISTIC_MANAGER_H
 
@@ -337,4 +336,3 @@ private:
 } // end namespace FLD
 
 #endif  // #ifndef TURBULENCE_STATISTIC_MANAGER_H
-#endif  // #ifdef CCADISCRET

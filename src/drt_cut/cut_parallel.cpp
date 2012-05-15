@@ -11,7 +11,6 @@ Maintainer: Benedikt Schott
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -905,6 +904,5 @@ void GEO::CUT::Parallel::getDofSetVecIndex(int & index, int nid, int eid)
 }
 
 
-#endif // CCADISCRET
 
 

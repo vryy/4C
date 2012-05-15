@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_ANALYTICAL_H
 #define MORTAR_ANALYTICAL_H
 
@@ -75,4 +74,3 @@ namespace MORTAR
 } // namespace MORTAR
 
 #endif  // #ifndef MORTAR_ANALYTICAL_H
-#endif  // #ifdef CCADISCRET

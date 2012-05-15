@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifndef MOONEYRIVLIN_H_
 #define MOONEYRIVLIN_H_
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -162,5 +161,4 @@ private:
   };
 }
 
-#endif /*CCADISCRET*/
 #endif /*MOONEYRIVLIN_H_*/

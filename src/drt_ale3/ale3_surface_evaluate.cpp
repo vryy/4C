@@ -8,7 +8,7 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
+
 
 #include "ale3.H"
 #include "../drt_lib/drt_discret.H"
@@ -25,5 +25,4 @@ int DRT::ELEMENTS::Ale3Surface::EvaluateNeumann(
   return 0;
 }
 
-#endif
 #endif

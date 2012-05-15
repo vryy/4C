@@ -11,7 +11,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef POTENTIALCONTAINER_H_
 #define POTENTIALCONTAINER_H_
 
@@ -164,7 +163,6 @@ private:
 } //namespace
 
 #endif  /*POTENTIALCONTAINER_H_*/
-#endif  // #ifdef CCADISCRET
 
 
 

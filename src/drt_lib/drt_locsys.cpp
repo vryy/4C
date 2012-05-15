@@ -13,7 +13,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_locsys.H"
 #include "../linalg/linalg_utils.H"
@@ -1097,4 +1096,3 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<LINALG::SparseMatrix> sy
   return;
 }
 
-#endif  // #ifdef CCADISCRET

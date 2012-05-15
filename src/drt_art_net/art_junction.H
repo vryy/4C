@@ -11,7 +11,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef ART_JUNCTION_H_
 #define ART_JUNCTION_H_
 
@@ -271,4 +270,3 @@ namespace ART
 
 #endif /* ART_JUNCION_H_ */
 
-#endif /* CCADISCRET */

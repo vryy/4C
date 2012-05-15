@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "contact_interface.H"
 #include "contact_integrator.H"
@@ -4707,4 +4706,3 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
   return;
 } // FDCheckPenaltyFricTrac
 
-#endif  // #ifdef CCADISCRET

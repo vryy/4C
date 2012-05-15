@@ -16,7 +16,7 @@ Maintainer: Robert Metzke
 \param  Epetra_SerialDenseVector* stress        (o) ele stress vector
 \param  Epetra_SerialDenseMatrix* cmat          (o) constitutive matrix
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
@@ -402,4 +402,3 @@ return;
 
 
 
-#endif

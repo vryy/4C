@@ -37,7 +37,6 @@ Maintainer: Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef TURBULENCE_STATISTICS_LDC_H
 #define TURBULENCE_STATISTICS_LDC_H
@@ -263,4 +262,3 @@ private:
 
 #endif  // not TURBULENCE_STATISTICS_LDC_H
 
-#endif /* CCADISCRET       */

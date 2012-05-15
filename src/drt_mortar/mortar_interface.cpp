@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef PARALLEL
 #include "Epetra_SerialComm.h"
@@ -2992,4 +2991,3 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
   return;
 }
 
-#endif  // #ifdef CCADISCRET

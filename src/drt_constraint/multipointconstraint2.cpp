@@ -10,7 +10,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 
 #include "multipointconstraint2.H"
@@ -412,4 +412,3 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
   return;
 } // end of EvaluateCondition
 
-#endif

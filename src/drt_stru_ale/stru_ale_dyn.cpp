@@ -15,7 +15,6 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  | definitions                                                mgit 04/11 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -100,4 +99,3 @@ void stru_ale_dyn_drt(int disnumsf,int disnumaf,int restart)
 } // stru_ale_dyn_drt()
 
 /*----------------------------------------------------------------------*/
-#endif  // CCADISCRET

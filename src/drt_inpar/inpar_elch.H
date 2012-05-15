@@ -10,7 +10,6 @@ Maintainer: Georg Bauer
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_ELCH_H
 #define INPAR_ELCH_H
 
@@ -38,4 +37,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_ELCH_H
-#endif  // #ifdef CCADISCRET

@@ -12,7 +12,6 @@ Maintainer: Jonas Biehler
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef STR_MLMC_H
 #define STR_MLMC_H
@@ -39,4 +38,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  /* #ifndef STRUDYN_DIRECT_H */
-#endif  /* #ifdef CCADISCRET */

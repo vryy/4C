@@ -12,7 +12,7 @@ Maintainer: Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_LUNG_MONOLITHIC_FLUIDSPLIT_H
 #define FSI_LUNG_MONOLITHIC_FLUIDSPLIT_H
@@ -125,7 +125,6 @@ namespace FSI
   };
 }
 
-#endif
 #endif
 
 

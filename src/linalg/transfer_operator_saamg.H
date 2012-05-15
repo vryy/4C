@@ -10,7 +10,7 @@
   \brief implementation for SA-AMG transfer operators
  */
 
-#ifdef CCADISCRET
+
 #ifndef TRANSFER_OPERATOR_SAAMG_H_
 #define TRANSFER_OPERATOR_SAAMG_H_
 
@@ -78,5 +78,4 @@ namespace LINALG
 } /* namespace LINALG */
 
 
-#endif /* TRANSFER_OPERATOR_SAAMG_H_ */
-#endif /* CCADISCSRET */
+#endif /* TRANSFER_OPERATOR_SAAMG_H_ */ 

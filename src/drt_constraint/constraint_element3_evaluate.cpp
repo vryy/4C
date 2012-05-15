@@ -10,7 +10,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Epetra_SerialDenseSolver.h>
 #include "constraint_element3.H"
@@ -1889,4 +1888,3 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDerivWeightedDistance
   return;
 }
 
-#endif  // #ifdef CCADISCRET

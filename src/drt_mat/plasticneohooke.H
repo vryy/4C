@@ -20,7 +20,6 @@ Maintainer: Alexander Popp
 #ifndef PLASTICNEOHOOKE_H_
 #define PLASTICNEOHOOKE_H_
 
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -209,5 +208,4 @@ private:
   };  // class PlasticNeoHooke : public Material
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif  // PLASTICNEOHOOKE_H_

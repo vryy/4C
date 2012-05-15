@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *-----------------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "beam2r.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1086,5 +1085,4 @@ return;
 
 }//DRT::ELEMENTS::Beam2::CalcBrownian(.)
 
-#endif  // #ifdef CCADISCRET
 

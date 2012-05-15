@@ -5,7 +5,6 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
 #ifndef AGGREGATION_METHOD_ML_H_
 #define AGGREGATION_METHOD_ML_H_
 
@@ -109,4 +108,3 @@ namespace LINALG
 }
 
 #endif /* AGGREGATION_METHOD_ML_H_ */
-#endif /* CCADISCRET */

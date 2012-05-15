@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_projector.H"
 #include "mortar_interface.H"
@@ -988,4 +987,3 @@ bool MORTAR::MortarProjector::EvaluateGradFGaussPointAuxn3D(
   return true;
 }
 
-#endif //#ifdef CCADISCRET

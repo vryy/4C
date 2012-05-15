@@ -8,7 +8,7 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
+
 
 #include "ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"
@@ -231,5 +231,4 @@ GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const DiscretizationType& d
 }
 
 
-#endif
 #endif

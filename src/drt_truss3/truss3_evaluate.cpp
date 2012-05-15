@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "truss3.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1073,4 +1072,3 @@ return;
 
 }//DRT::ELEMENTS::Truss3::NodeShift
 
-#endif  // #ifdef CCADISCRET

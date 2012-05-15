@@ -13,9 +13,7 @@ Maintainer: Michael Gee
 #ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"
-#ifdef CCADISCRET
 #include "../drt_lib/drt_dserror.H"
-#endif
 /*----------------------------------------------------------------------*
  | compressible ogden-material                            m.gee 6/03    |
  | split in volumetric and deviatoric strains                           |

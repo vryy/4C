@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef ART_WRITE_GNUPLOT_H_
 #define ART_WRITE_GNUPLOT_H_
 
@@ -135,4 +134,3 @@ namespace ART
 
 
 #endif //ART_WRITE_GNUPLOT_H_
-#endif //CCADISCRET

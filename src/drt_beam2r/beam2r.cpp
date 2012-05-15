@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "beam2r.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -629,4 +628,3 @@ int DRT::ELEMENTS::Beam2rType::Initialize(DRT::Discretization& dis)
 }
 
 
-#endif  // #ifdef CCADISCRET

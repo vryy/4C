@@ -14,7 +14,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
 
 #ifndef DRT_BOOLIFYPARAMETERS_H
 #define DRT_BOOLIFYPARAMETERS_H
@@ -43,4 +42,3 @@ namespace DRT {
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef DRT_BOOLIFYPARAMETERS_H
-#endif  // #ifdef CCADISCRET

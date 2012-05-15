@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "prestress.H"
 #include "../drt_lib/drt_dserror.H"
@@ -119,4 +118,3 @@ void DRT::ELEMENTS::PreStress::Unpack(const vector<char>& data)
 
 
 
-#endif  // #ifdef CCADISCRET

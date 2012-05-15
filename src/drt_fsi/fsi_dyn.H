@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_DYN_H
 #define FSI_DYN_H
@@ -24,4 +24,3 @@ void xfsi_drt();
 
 #endif
 
-#endif

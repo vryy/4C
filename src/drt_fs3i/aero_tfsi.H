@@ -22,7 +22,6 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | definitions                                              ghamm 12/11 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef AERO_TFSI_H
 #define AERO_TFSI_H
 
@@ -152,4 +151,3 @@ namespace FS3I
 
 /*----------------------------------------------------------------------*/
 #endif  // AERO_TFSI_H
-#endif  // CCADISCRET

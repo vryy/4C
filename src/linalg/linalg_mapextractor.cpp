@@ -39,7 +39,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "linalg_mapextractor.H"
 #include "linalg_utils.H"
@@ -387,4 +387,3 @@ void LINALG::MapExtractor::Setup(const Epetra_Map& fullmap, Teuchos::RCP<const E
   MultiMapExtractor::Setup(fullmap,maps);
 }
 
-#endif

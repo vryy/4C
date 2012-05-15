@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MESHTYING_ABSTRACT_STRATEGY_H
 #define MESHTYING_ABSTRACT_STRATEGY_H
 
@@ -479,4 +478,3 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy);
 
 #endif  // #ifndef MESHTYING_ABSTRACT_STRATEGY_H
-#endif  // #ifdef CCADISCRET

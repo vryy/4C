@@ -54,7 +54,6 @@ Maintainer: Ursula Rasthofer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef TURBULENCE_STATISTICS_H
 #define TURBULENCE_STATISTICS_H
@@ -693,4 +692,3 @@ private:
 
 #endif  // not TURBULENCE_STATISTICS_H
 
-#endif /* CCADISCRET       */

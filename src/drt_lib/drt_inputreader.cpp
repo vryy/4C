@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 
 #include "drt_inputreader.H"
@@ -1070,4 +1070,3 @@ bool DatFileReader::PrintUnknownSections()
 }
 }
 
-#endif

@@ -12,7 +12,7 @@ Maintainer: Ursula Mayer
 </pre>
 
 *--------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "drt_potential_manager.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -329,5 +329,4 @@ bool POTENTIAL::PotentialManager::ComputeAnalyticalSolution()
 
 
 
-#endif
 

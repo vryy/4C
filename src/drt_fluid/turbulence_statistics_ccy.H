@@ -32,7 +32,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef TURBULENCE_STATISTICS_CCY_H
 #define TURBULENCE_STATISTICS_CCY_H
@@ -282,4 +281,3 @@ private:
 
 #endif  // not TURBULENCE_STATISTICS_CCY_H
 
-#endif /* CCADISCRET       */

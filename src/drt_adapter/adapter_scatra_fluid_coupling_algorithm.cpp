@@ -14,7 +14,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "adapter_scatra_fluid_coupling_algorithm.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
@@ -127,4 +126,3 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
 }
 
 
-#endif // CCADISCRET

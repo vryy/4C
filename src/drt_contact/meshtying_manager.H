@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MESHTYING_MANAGER_H
 #define MESHTYING_MANAGER_H
 
@@ -163,4 +162,3 @@ protected:
 } // namespace CONTACT
 
 #endif  // #ifndef MESHTYING_MANAGER_H
-#endif  // #ifdef CCADISCRET

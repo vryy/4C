@@ -12,7 +12,7 @@ Maintainer: Ursula Rasthofer
 
 */
 
-#ifdef CCADISCRET
+
 
 #include "turbulence_statistics_mean_general.H"
 #include "../drt_fluid/fluid_utils.H"
@@ -1423,4 +1423,3 @@ void  FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
 }
 
 
-#endif

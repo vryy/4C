@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_elementregister.H"
 #include "drt_dserror.H"
@@ -175,4 +174,3 @@ int DRT::ElementRegister::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-#endif  // #ifdef CCADISCRET

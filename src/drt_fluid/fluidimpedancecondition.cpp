@@ -10,7 +10,6 @@ Maintainer: Christiane Förster
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <stdio.h>
 
@@ -1781,4 +1780,3 @@ void FLD::UTILS::FluidImpedanceBc::interpolate(RCP<std::vector<double> > V1,
 
 }//FLD::UTILS::FluidImpedanceBc::interpolate
 
-#endif /* CCADISCRET       */

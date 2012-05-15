@@ -8,7 +8,7 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
+
 
 #include "ale3.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -29,5 +29,4 @@ bool DRT::ELEMENTS::Ale3::ReadElement(const std::string& eletype,
 }
 
 
-#endif
 #endif

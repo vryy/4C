@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_STATMECH_H
 #define INPAR_STATMECH_H
 
@@ -73,4 +72,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_STATMECH_H
-#endif  // #ifdef CCADISCRET

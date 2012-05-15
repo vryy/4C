@@ -12,7 +12,7 @@ Maintainer: Lena Yoshihara
 </pre>
 
 *--------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -438,5 +438,4 @@ void UTILS::SurfStressManager::WriteRestart(const int istep, const double timen)
   WriteResults(istep, timen);
 }
 
-#endif
 

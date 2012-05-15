@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_discret.H"
 #include "drt_exporter.H"
@@ -323,4 +322,3 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   dwele->ElementType().ComputeNullSpace( *this, *ns, x0, numdf, dimns );
 }
 
-#endif  // #ifdef CCADISCRET

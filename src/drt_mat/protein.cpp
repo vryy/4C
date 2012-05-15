@@ -9,7 +9,7 @@ Maintainer: Robert Metzke
 	    089 - 289-15244
 </pre>
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "protein.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -117,4 +117,3 @@ void MAT::PROTEIN::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 }
 
 
-#endif

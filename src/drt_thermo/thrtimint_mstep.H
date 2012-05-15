@@ -14,7 +14,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  | definitions                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THRTIMINT_MSTEP_H
 #define THRTIMINT_MSTEP_H
 
@@ -406,4 +405,3 @@ namespace THR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_MSTEP_H
-#endif  // #ifdef CCADISCRET

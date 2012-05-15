@@ -14,7 +14,6 @@ Maintainer: Sophie Rausch
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOQUAD_H_
 #define ELAST_ISOQUAD_H_
-#ifdef CCADISCRET
 
 // included in elast_summand -> elasthyper.H
 //#include "../drt_mat/matpar_parameter.H"
@@ -138,5 +137,4 @@ namespace ELASTIC
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif  // ISOQUAD_H_

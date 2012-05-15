@@ -39,7 +39,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "drt_dserror.H"
 #include "../../src/drt_lib/standardtypes_cpp.H"
@@ -240,7 +240,3 @@ void cpp_dserror_func(const std::string text, ...)
 #endif
   }
 } /* end of dserror_func */
-
-
-
-#endif  // #ifdef CCADISCRET

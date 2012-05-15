@@ -10,7 +10,6 @@ Maintainer: Ursula Rasthofer
             089 - 289-15236
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "turbulent_flow_algorithm.H"
 
@@ -248,4 +247,3 @@ void FLD::TurbulentFlowAlgorithm::ReadRestart(
   return;
 }
 
-#endif // #ifdef CCADISCRET

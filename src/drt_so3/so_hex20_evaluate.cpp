@@ -10,7 +10,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_hex20.H"
 #include "../drt_lib/drt_discret.H"
@@ -1409,5 +1408,4 @@ int DRT::ELEMENTS::So_hex20Type::Initialize(DRT::Discretization& dis)
 }
 
 
-#endif  // #ifdef CCADISCRET
 

@@ -10,7 +10,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <iostream>
 
@@ -494,4 +494,3 @@ void UTILS::ConstrManager::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExt
   return;
 }
 
-#endif

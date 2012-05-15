@@ -11,7 +11,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "io_control.H"
 
@@ -487,4 +487,3 @@ IO::ErrorFileControl::~ErrorFileControl()
   if (errfile_ != NULL) fclose(errfile_);
 }
 
-#endif

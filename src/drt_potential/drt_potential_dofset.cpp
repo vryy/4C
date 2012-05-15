@@ -11,7 +11,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_potential_dofset.H"
 #include "../linalg/linalg_utils.H"
@@ -104,4 +103,3 @@ void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
 
 }
 
-#endif  // #ifdef CCADISCRET

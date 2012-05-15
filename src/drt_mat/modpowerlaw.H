@@ -13,7 +13,7 @@ Maintainer: Ursula Mayer
 #ifndef MODPOWERLAW_H
 #define MODPOWERLAW_H
 
-#ifdef CCADISCRET
+
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -151,4 +151,3 @@ private:
 
 #endif
 
-#endif

@@ -41,7 +41,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include <string>
 #include <sstream>
@@ -1404,4 +1404,3 @@ std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::TimeCu
   return out;
 }
 
-#endif

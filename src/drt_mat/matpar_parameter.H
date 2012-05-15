@@ -15,7 +15,6 @@ Maintainer: Burkhard Bornemann
 #ifndef MATPAR_PARAMETER_H
 #define MATPAR_PARAMETER_H
 
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -98,5 +97,4 @@ namespace MAT
 }  // namespace DRT
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET
 #endif  // #ifndef MATPAR_PARAMETER_H

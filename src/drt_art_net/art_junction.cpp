@@ -10,7 +10,7 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <stdio.h>
 
@@ -699,4 +699,3 @@ void ART::UTILS::ArtJunctionBc::Update_Result( Epetra_SerialDenseVector & xn,
 }
 
 
-#endif

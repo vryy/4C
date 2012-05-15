@@ -11,7 +11,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef POTENTIAL_DOFSET_H_
 #define POTENTIAL_DOFSET_H_
 
@@ -70,7 +69,6 @@ namespace POTENTIAL
 } //namespace
 
 #endif  /*POTENTIAL_DOFSET_H_*/
-#endif  // #ifdef CCADISCRET
 
 
 

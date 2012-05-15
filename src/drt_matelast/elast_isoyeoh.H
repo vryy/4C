@@ -14,7 +14,6 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifndef ELAST_ISOYEOH_H_
 #define ELAST_ISOYEOH_H_
-#ifdef CCADISCRET
 
 // included in elast_summand -> elasthyper.H
 //#include "../drt_mat/matpar_parameter.H"
@@ -150,5 +149,4 @@ namespace ELASTIC
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif  // ISOYEOH_H_

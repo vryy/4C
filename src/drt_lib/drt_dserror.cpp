@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <stdexcept>
 
@@ -158,4 +157,3 @@ void cpp_dserror_func(const std::string text, ...)
 } /* end of dserror_func */
 
 
-#endif  // #ifdef CCADISCRET

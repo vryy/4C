@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include <sstream>
 
@@ -197,4 +197,3 @@ void FSI::UTILS::MonolithicDebugWriter::WriteVector(const std::string& name, con
 }
 
 
-#endif

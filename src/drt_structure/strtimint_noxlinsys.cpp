@@ -14,7 +14,6 @@ Maintainer: Thomas Klöppel
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -353,4 +352,3 @@ void NOX::STR::LinearSystem::throwError(const string& functionName,
 }
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

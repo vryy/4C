@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifndef ANISOTROPIC_BALZANI_H_
 #define ANISOTROPIC_BALZANI_H_
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -192,5 +191,4 @@ private:
   };
 }
 
-#endif /*CCADISCRET*/
 #endif /*ANISOTROPIC_BALZANI_H_*/

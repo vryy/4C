@@ -11,7 +11,6 @@ Maintainer: Georg Bauer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef ELCH_DYN_H
 #define ELCH_DYN_H
@@ -29,4 +28,3 @@ void printlogo();
 
 
 #endif /* #ifndef ELCH_DYN_H */
-#endif /* #ifdef CCADISCRET */

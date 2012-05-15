@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTACT_ELEMENT_H
 #define CONTACT_ELEMENT_H
 
@@ -269,4 +268,3 @@ private:
 ostream& operator << (ostream& os, const CONTACT::CoElement& ele);
 
 #endif  // #ifndef CONTACT_ELEMENT_H
-#endif  // #ifdef CCADISCRET

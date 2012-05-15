@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_PROJECTOR_H
 #define MORTAR_PROJECTOR_H
 
@@ -345,4 +344,3 @@ protected:
 
 
 #endif  // #ifndef MORTAR_PROJECTOR_H
-#endif  // #ifdef CCADISCRET

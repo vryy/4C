@@ -40,7 +40,6 @@ Maintainer: Michael Gee
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "linalg_serialdensevector.H"
 
@@ -189,4 +188,3 @@ void LINALG::SerialDenseVector::Zero()
   memset(A(), 0, M()*N()*sizeof(double));
 }
 
-#endif  // #ifdef CCADISCRET

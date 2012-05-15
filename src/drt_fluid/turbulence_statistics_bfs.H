@@ -40,7 +40,6 @@ Maintainer: Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef TURBULENCE_STATISTICS_BFS_H
 #define TURBULENCE_STATISTICS_BFS_H
@@ -260,4 +259,3 @@ private:
 
 #endif  // not TURBULENCE_STATISTICS_BFS_H
 
-#endif /* CCADISCRET       */

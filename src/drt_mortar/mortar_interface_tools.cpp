@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_interface.H"
 #include "mortar_node.H"
@@ -884,4 +883,3 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
   return;
 }
 
-#endif  // #ifdef CCADISCRET

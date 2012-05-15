@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -108,4 +107,3 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
   return;
 }
 
-#endif //#ifdef CCADISCRET

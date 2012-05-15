@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "contact_element.H"
 #include "contact_node.H"
@@ -383,4 +382,3 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
   return;
 }
 
-#endif  // #ifdef CCADISCRET

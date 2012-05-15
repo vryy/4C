@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -884,4 +883,3 @@ int DRT::ELEMENTS::NStet5::EvaluateNeumann(ParameterList& params,
 
 
 
-#endif  // #ifdef CCADISCRET

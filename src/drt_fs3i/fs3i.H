@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FS3I_H
 #define FS3I_H
@@ -32,5 +32,4 @@ namespace FS3I
   };
 }
 
-#endif
 #endif

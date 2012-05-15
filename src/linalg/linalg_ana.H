@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef LINALG_ANA_H
 #define LINALG_ANA_H
 
@@ -2112,4 +2111,3 @@ inline double norminf(const LINALG::ANA::LC_s_times_vec& lc) { return lc.Scalar(
 
 
 #endif // LINALG_ANA_H
-#endif  // #ifdef CCADISCRET

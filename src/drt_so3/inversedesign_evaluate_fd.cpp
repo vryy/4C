@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "inversedesign.H"
 #include "so_hex8.H"
@@ -1022,4 +1021,3 @@ void DRT::ELEMENTS::InvDesign::TensorMultiply(
 
 
 
-#endif  // #ifdef CCADISCRET

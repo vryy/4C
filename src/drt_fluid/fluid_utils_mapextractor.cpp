@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include "fluid_utils_mapextractor.H"
 #include "fluid_utils.H"
@@ -82,5 +82,4 @@ void FLD::UTILS::FluidXFluidMapExtractor::Setup(const Epetra_Map& fullmap, Teuch
   maps.push_back(xfluidmap);
   MultiMapExtractor::Setup(fullmap,maps);
 }
-#endif
 

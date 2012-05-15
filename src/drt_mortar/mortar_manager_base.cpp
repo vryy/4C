@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "Epetra_SerialComm.h"
 #include "mortar_manager_base.H"
@@ -70,4 +69,3 @@ MORTAR::ManagerBase::ManagerBase()
   return;
 }
 
-#endif  // #ifdef CCADISCRET

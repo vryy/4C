@@ -15,7 +15,7 @@ Maintainer: Mahmoud Ismail
 
 
 #ifdef D_ARTNET
-#ifdef CCADISCRET
+
 
 #include "artery_lin_exp.H"
 
@@ -1410,5 +1410,4 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   } // End of node i has a condition
 }
 
-#endif
 #endif

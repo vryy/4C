@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "fsi_partitioned.H"
 #include "fsi_utils.H"
@@ -859,4 +859,3 @@ const ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar() 
   return *coupsfm_;
 }
 
-#endif

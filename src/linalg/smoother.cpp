@@ -5,7 +5,7 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
+
 
 // Trilinos headers
 #include <Epetra_MultiVector.h>
@@ -123,4 +123,3 @@ RCP<LINALG::Smoother> LINALG::SmootherFactory::Create(const string SmootherType,
   return Teuchos::null;
 }
 
-#endif

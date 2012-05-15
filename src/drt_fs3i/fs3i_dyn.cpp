@@ -10,7 +10,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "fs3i_dyn.H"
 
@@ -88,4 +88,3 @@ void fs3i_dyn()
 
 }
 
-#endif

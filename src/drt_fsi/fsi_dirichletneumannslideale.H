@@ -15,7 +15,7 @@ Maintainer: Thomas Kloeppel
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_DIRICHLETNEUMANNSLIPALE_H
 #define FSI_DIRICHLETNEUMANNSLIPALE_H
@@ -148,5 +148,4 @@ private:
 
 }
 
-#endif
 #endif

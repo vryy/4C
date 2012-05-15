@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_Time.hpp>
 #include "Epetra_SerialComm.h"
@@ -1253,4 +1252,3 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   return;
 }
 
-#endif // CCADISCRET

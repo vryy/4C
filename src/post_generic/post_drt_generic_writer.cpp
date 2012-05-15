@@ -12,7 +12,7 @@
 
 */
 
-#ifdef CCADISCRET
+
 
 #include "post_drt_generic_writer.H"
 //#include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -1995,4 +1995,3 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
   return;
 }
 
-#endif

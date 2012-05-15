@@ -13,7 +13,7 @@ Maintainer: Alexander Popp
 #ifndef SPRING_H
 #define SPRING_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -147,4 +147,3 @@ private:
 
 #endif
 
-#endif

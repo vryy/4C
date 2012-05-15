@@ -38,7 +38,6 @@ Maintainer: Moritz Frenzel
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SERIALDENSEVECTOR_H
 #define SERIALDENSEVECTOR_H
 
@@ -164,4 +163,3 @@ protected:
 
 
 #endif  // #ifndef SERIALDENSEVECTOR_H
-#endif  // #ifdef CCADISCRET

@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#ifdef CCADISCRET
 #ifndef SHELL8_H
 #define SHELL8_H
 
@@ -827,15 +826,5 @@ private:
 } // namespace DRT
 
 
-
-
-
-
-
-
-
-
-
 #endif  // #ifndef SHELL8_H
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SHELL8

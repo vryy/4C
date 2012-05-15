@@ -12,7 +12,6 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_tet4.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -67,4 +66,3 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
 }
 
 
-#endif  // #ifdef CCADISCRET

@@ -15,10 +15,7 @@ Iterate the symbol table and visit all entries.
 
 #include "pss_table_iter.h"
 #include "pss_prototypes.h"
-
-#ifdef CCADISCRET
 #include "../drt_lib/drt_dserror.H"
-#endif
 
 /*----------------------------------------------------------------------*/
 /*!

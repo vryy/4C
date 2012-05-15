@@ -10,7 +10,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_hex8.H"
 #include "../drt_mat/artwallremod.H"
@@ -138,4 +137,3 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   return true;
 }
 
-#endif  // #ifdef CCADISCRET

@@ -11,7 +11,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "drt_nurbs_discret.H"
 
@@ -71,4 +71,3 @@ DRT::NURBS::NurbsDiscretization::GetKnotVector
   return knots_;
 }
 
-#endif

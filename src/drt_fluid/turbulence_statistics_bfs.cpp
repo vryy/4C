@@ -22,7 +22,6 @@ Maintainer: Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "turbulence_statistics_bfs.H"
 
@@ -1451,4 +1450,3 @@ void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(
 }
 
 
-#endif /* CCADISCRET       */

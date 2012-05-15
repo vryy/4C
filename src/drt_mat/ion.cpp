@@ -8,7 +8,7 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "ion.H"
@@ -110,4 +110,3 @@ void MAT::Ion::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-#endif

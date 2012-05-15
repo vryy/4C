@@ -37,7 +37,6 @@ Maintainer: Michael Gee
             089 - 289-15239
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
@@ -1077,4 +1076,3 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 #endif  // #ifndef ELEMENT_H
-#endif  // #ifdef CCADISCRET

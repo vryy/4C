@@ -13,7 +13,7 @@ Maintainer: Mahmoud Ismail
 #ifndef CNST_1D_ART_H
 #define CNST_1D_ART_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -182,4 +182,3 @@ private:
 
 #endif
 
-#endif

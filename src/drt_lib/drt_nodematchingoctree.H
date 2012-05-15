@@ -11,7 +11,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef NODEMATCHINGOCTREE_H
 #define NODEMATCHINGOCTREE_H
 
@@ -379,4 +378,3 @@ private:
 
 #endif  // not NODEMATCHINGOCTREE_H
 
-#endif  // #ifdef CCADISCRET

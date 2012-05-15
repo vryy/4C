@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "bele3.H"
 #include "../drt_lib/drt_discret.H"
@@ -211,4 +210,3 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DRT::Ele
 }
 
 
-#endif  // #ifdef CCADISCRET

@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "torsion2.H"
 #include "../drt_lib/drt_utils.H"
@@ -267,4 +266,3 @@ int DRT::ELEMENTS::Torsion2Type::Initialize(DRT::Discretization& dis)
 }
 
 
-#endif  // #ifdef CCADISCRET

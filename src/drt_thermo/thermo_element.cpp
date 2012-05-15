@@ -13,7 +13,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  definitions                                                gjb 01/08|
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifdef D_THERMO
 
 /*----------------------------------------------------------------------*
@@ -551,4 +550,3 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ThermoBoundary::Surfaces
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef D_THERMO
-#endif  // #ifdef CCADISCRET

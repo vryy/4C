@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef EXPORTER_H
 #define EXPORTER_H
 
@@ -809,4 +808,3 @@ template<typename T> void DRT::Exporter::Export(map<int,set<T> >& data)
 
 
 #endif  // #ifndef EXPORTER_H
-#endif  // #ifdef CCADISCRET

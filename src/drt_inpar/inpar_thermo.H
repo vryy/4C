@@ -12,7 +12,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 06/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_THERMO_H
 #define INPAR_THERMO_H
 
@@ -311,4 +310,3 @@ namespace THR
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef __cplusplus
 #endif  // #ifndef INPAR_THERMO_H
-#endif  // #ifdef CCADISCRET

@@ -12,7 +12,6 @@
 #ifndef DARCYFLOW_H_
 #define DARCYFLOW_H_
 
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -194,5 +193,4 @@ namespace MAT
 
 }
 
-#endif //CCADISCRET
 #endif //FluidPoro_H_

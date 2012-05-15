@@ -9,7 +9,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "linalg_krylov_projector.H"
 
@@ -219,4 +218,3 @@ int LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
 } // LINALG::KrylovProjector::ApplyPT
 
 
-#endif // CCADISCRET

@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_Time.hpp>
 #include "Epetra_SerialComm.h"
@@ -1259,4 +1258,3 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(const std::string& sidename, bo
   return;
 }
 
-#endif // CCADISCRET

@@ -14,7 +14,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -215,4 +214,3 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
 
 
 
-#endif  // CCADISCRET

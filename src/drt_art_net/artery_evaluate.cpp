@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 #ifdef D_ARTNET
-#ifdef CCADISCRET
 
 
 #include "artery.H"
@@ -203,5 +202,4 @@ bool DRT::ELEMENTS::Artery::isHigherOrderElement(
 }
 
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_ARTNET

@@ -8,7 +8,6 @@ Maintainer: Christoph Meier
             089 - 289-15262
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
 
@@ -471,4 +470,3 @@ private:
 } // namespace CONTACT
 
 #endif  // #ifndef BEAM3C_MANAGER_H
-#endif  // #ifdef CCADISCRET

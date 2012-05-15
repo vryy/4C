@@ -31,7 +31,6 @@ Maintainer: Caroline Danowski
 #ifndef VISCOPLASTICROBINSON_H_
 #define VISCOPLASTICROBINSON_H_
 
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -452,7 +451,6 @@ private:
 
 
 /*----------------------------------------------------------------------*/
-#endif  // CCADISCRET
 #endif  // ROBINSON_H_
 
 

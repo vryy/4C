@@ -15,7 +15,7 @@ Maintainer: Mahmoud Ismail
 /*----------------------------------------------------------------------*/
 
 #ifdef D_ARTNET
-#ifdef CCADISCRET
+
 
 #ifndef ARTERY_LIN_EXP_H
 #define ARTERY_LIN_EXP_H
@@ -229,5 +229,4 @@ namespace ELEMENTS
 
 #endif
 
-#endif
 #endif 

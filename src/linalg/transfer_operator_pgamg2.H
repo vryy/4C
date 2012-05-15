@@ -5,7 +5,6 @@
  *      Author: wiesner
  */
 
-#ifdef CCADISCRET
 
 #ifndef TRANSFER_OPERATOR_PGAMG2_H_
 #define TRANSFER_OPERATOR_PGAMG2_H_
@@ -63,5 +62,4 @@ namespace LINALG
 
 
 #endif /* TRANSFER_OPERATOR_PGAMG2_H_ */
-#endif /* CCADISCRET */
 

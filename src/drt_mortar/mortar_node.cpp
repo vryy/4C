@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_node.H"
 #include "mortar_element.H"
@@ -523,4 +522,3 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
   return ok;
 }
 
-#endif  // #ifdef CCADISCRET

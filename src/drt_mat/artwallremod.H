@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifndef ARTWALLREMOD_H_
 #define ARTWALLREMOD_H_
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -245,5 +244,4 @@ void ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
 }
 
 
-#endif /*CCADISCRET*/
 #endif /*ARTWALLREMOD_H_*/

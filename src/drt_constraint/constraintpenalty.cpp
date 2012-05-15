@@ -10,7 +10,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <iostream>
 
@@ -374,4 +374,3 @@ void UTILS::ConstraintPenalty::EvaluateError(
   return;
 } // end of EvaluateError
 
-#endif

@@ -14,7 +14,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* defintions */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -66,4 +65,3 @@ void DRT::INPUT::BoolifyValidInputParameters(
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

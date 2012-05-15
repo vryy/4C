@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "mortar_coupling3d.H"
 #include "mortar_coupling3d_classes.H"
@@ -842,4 +841,3 @@ alpha_(old.alpha_)
   return;
 }
 
-#endif //#ifdef CCADISCRET

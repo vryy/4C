@@ -10,7 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 
@@ -137,4 +137,3 @@ double MAT::ArrheniusSpec::ComputeReactionCoeff(const double temp) const
   return reacoeff;
 }
 
-#endif

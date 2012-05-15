@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#ifdef CCADISCRET
 
 #include "shell8.H"
 #include "../drt_lib/drt_discret.H"
@@ -4076,5 +4075,4 @@ void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, dou
 
 
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SHELL8

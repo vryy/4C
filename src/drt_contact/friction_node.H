@@ -35,7 +35,6 @@ Maintainer: Markus Gitterle
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef FRICTION_NODE_H
 #define FRICTION_NODE_H
 
@@ -525,4 +524,3 @@ protected:
 //ostream& operator << (ostream& os, const CONTACT::FriNode& cnode);
 
 #endif  // #ifndef FRICTION_NODE_H
-#endif  // #ifdef CCADISCRET

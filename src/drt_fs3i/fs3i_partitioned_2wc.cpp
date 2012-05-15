@@ -11,7 +11,7 @@ Maintainers: Volker Gravemeier & Lena Yoshihara
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "fs3i_partitioned_2wc.H"
 
@@ -358,4 +358,3 @@ void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
 }
 
 
-#endif

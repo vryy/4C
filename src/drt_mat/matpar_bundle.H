@@ -15,7 +15,6 @@ Maintainer: Burkhard Bornemann
 /* macros */
 #ifndef MATPAR_BUNDLE_H
 #define MATPAR_BUNDLE_H
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -144,5 +143,4 @@ namespace MAT
 }  // namespace MAT
 
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifndef MATPAR_BUNDLE_H

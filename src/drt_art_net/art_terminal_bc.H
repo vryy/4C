@@ -11,7 +11,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef ART_TERMINAL_BC_H_
 #define ART_TERMINAL_BC_H_
 
@@ -72,4 +71,3 @@ namespace ART
 
 #endif /* ART_TERMINAL_H_ */
 
-#endif /* CCADISCRET */

@@ -11,7 +11,6 @@ Maintainer: Ursula Rasthofer
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef FLUID_DISCRET_EXTRACTOR_H
 #define FLUID_DISCRET_EXTRACTOR_H
@@ -55,4 +54,3 @@ private:
 
 #endif
 
-#endif  // #ifdef CCADISCRET

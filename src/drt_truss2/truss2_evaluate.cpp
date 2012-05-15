@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #include <random/normal.h>
 
 #include "truss2.H"
@@ -536,4 +535,3 @@ void DRT::ELEMENTS::Truss2::t2_lumpmass(Epetra_SerialDenseMatrix* emass)
   }
 }
 
-#endif  // #ifdef CCADISCRET

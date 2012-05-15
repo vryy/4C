@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef ALE_H
 #define ALE_H
@@ -188,5 +188,4 @@ private:
 
 }
 
-#endif
 #endif

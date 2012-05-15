@@ -12,7 +12,6 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_resulttest.H"
 #include "drt_dserror.H"
@@ -291,4 +290,3 @@ void PrintResultDescrDatHeader()
 }
 
 
-#endif /* CCADISCRET       */

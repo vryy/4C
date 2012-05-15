@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 
 
@@ -1846,4 +1845,3 @@ return;
 
 
 
-#endif  // #ifdef CCADISCRET

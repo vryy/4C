@@ -51,7 +51,6 @@ The surface mapping gives the node numbers such that the 2D shape functions can 
 
  */
 
-#ifdef CCADISCRET
 #ifndef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
@@ -864,4 +863,3 @@ namespace UTILS
 } // namespace DRT
 
 #endif  // #ifdef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
-#endif  // #ifdef CCADISCRET

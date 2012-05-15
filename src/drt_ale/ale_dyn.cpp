@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "../drt_io/io_control.H"
 #include "ale_dyn.H"
@@ -118,4 +118,3 @@ void dyn_ale_drt()
 }
 
 
-#endif

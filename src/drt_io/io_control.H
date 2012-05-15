@@ -11,7 +11,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef IO_CONTROL_H
 #define IO_CONTROL_H
 
@@ -158,5 +158,4 @@ namespace IO
 
 }
 
-#endif
 #endif

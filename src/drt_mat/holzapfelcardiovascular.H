@@ -15,7 +15,6 @@ Maintainer: Susanna Tinkl
 #ifndef HOLZAPFELCARDIOVASCULAR_H_
 #define HOLZAPFELCARDIOVASCULAR_H_
 
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -200,5 +199,4 @@ private:
   };
 }  // namespace MAT
 
-#endif /*CCADISCRET*/
 #endif /*HOLZAPFELCARDIOVASCULAR_H_*/

@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -632,4 +632,3 @@ void FSI::BlockMonolithic::PrepareTimeStep()
   precondreusecount_ = 0;
 }
 
-#endif

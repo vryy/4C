@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_surface.H"
 #include "so_line.H"
@@ -150,4 +149,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::StructuralSurface::Lines()
 
 
 
-#endif  // #ifdef CCADISCRET

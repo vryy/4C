@@ -8,7 +8,7 @@
 */
 //-----------------------------------------------------------------------
 #ifdef D_ALE
-#ifdef CCADISCRET
+
 
 #include "ale3.H"
 #include "../drt_lib/drt_dserror.H"
@@ -88,5 +88,4 @@ void DRT::ELEMENTS::Ale3Surface::Print(ostream& os) const
 }
 
 
-#endif
 #endif

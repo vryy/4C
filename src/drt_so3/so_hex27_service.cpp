@@ -10,7 +10,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "so_hex27.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -45,5 +45,4 @@ const vector<double> DRT::ELEMENTS::So_hex27::soh27_ElementCenterRefeCoords()
   return centercoords;
 }
 
-#endif
 

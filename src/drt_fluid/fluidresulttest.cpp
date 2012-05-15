@@ -13,7 +13,6 @@ http://www.lnm.mw.tum.de/Members/kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include <string>
 
@@ -133,4 +132,3 @@ bool FLD::FluidResultTest::Match(DRT::INPUT::LineDefinition& res)
 }
 
 
-#endif /* CCADISCRET       */

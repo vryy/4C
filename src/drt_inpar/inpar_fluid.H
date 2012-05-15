@@ -12,7 +12,6 @@ Maintainer: Florian Henke
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_FLUID_H
 #define INPAR_FLUID_H
 
@@ -237,4 +236,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_FLUID_H
-#endif  // #ifdef CCADISCRET

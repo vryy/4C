@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "torsion3.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -579,4 +578,3 @@ return;
 
 }//DRT::ELEMENTS::Torsion3::NodeShift
 
-#endif  // #ifdef CCADISCRET

@@ -51,7 +51,6 @@ Provided are 1D, 2D and 3D shape functions
  http://www.lnm.mw.tum.de
  089 - 289-15236
  */
-#ifdef CCADISCRET
 
 #include "drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_dserror.H"
@@ -1681,4 +1680,3 @@ DRT::Element::DiscretizationType DRT::UTILS::getShapeOfBoundaryElement(
   return DRT::Element::dis_none;
 }
 
-#endif  // #ifdef CCADISCRET

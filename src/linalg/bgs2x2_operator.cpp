@@ -9,7 +9,6 @@ Maintainer: Lena Wiechert
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "ml_MultiLevelPreconditioner.h"
 
@@ -207,4 +206,3 @@ void LINALG::BGS2x2_Operator::LocalBlockRichardson(Teuchos::RCP<LINALG::Precondi
 }
 
 
-#endif  // #ifdef CCADISCRET

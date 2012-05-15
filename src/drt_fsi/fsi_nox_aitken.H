@@ -1,8 +1,6 @@
 #ifndef FSI_NOX_AITKEN_H
 #define FSI_NOX_AITKEN_H
 
-#ifdef TRILINOS_PACKAGE
-
 #include <NOX_LineSearch_Generic.H> // base class
 #include <NOX_LineSearch_UserDefinedFactory.H>
 #include <NOX_Utils.H>
@@ -76,5 +74,4 @@ private:
   }
 }
 
-#endif
 #endif

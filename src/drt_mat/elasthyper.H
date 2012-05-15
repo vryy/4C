@@ -14,7 +14,7 @@ Maintainer: Burkhard Bornemann
 #ifndef ELASTHYPER_H
 #define ELASTHYPER_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -437,4 +437,3 @@ private:
 
 #endif
 
-#endif

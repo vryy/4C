@@ -17,7 +17,6 @@ Maintainer: goe
 /*----------------------------------------------------------------------*/
 #ifndef AAAGASSER_H_
 #define AAAGASSER_H_
-#ifdef CCADISCRET
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -429,5 +428,4 @@ private:
   };
 }
 
-#endif  // CCADISCRET
 #endif  // AAAGASSER_H_

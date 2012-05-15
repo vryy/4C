@@ -11,7 +11,6 @@ Maintainer: Christian Cyron
 </pre>
 *----------------------------------------------------------------------*/
 // administrative line in order to make a difference between BACI and Ccarat files
-#ifdef CCADISCRET
 
 //header file only included if not yet included!
 #ifndef TRUSS3_H
@@ -492,4 +491,3 @@ std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
 
 #endif  // #ifndef TRUSS3_H
-#endif  // #ifdef CCADISCRET

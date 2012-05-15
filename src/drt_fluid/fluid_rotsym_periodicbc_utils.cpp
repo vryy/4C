@@ -12,7 +12,6 @@ Maintainer: Georg Bauer
 </pre>
 
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "fluid_rotsym_periodicbc_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -138,4 +137,3 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
   return;
 }
 
-#endif  // #ifdef CCADISCRET

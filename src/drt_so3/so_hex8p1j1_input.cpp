@@ -10,7 +10,6 @@ Maintainer: Lena Wiechert
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 
 #include "so_hex8p1j1.H"
@@ -59,5 +58,4 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
 }
 
 
-#endif  // #ifdef CCADISCRET
 

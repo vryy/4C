@@ -9,7 +9,6 @@ Maintainer: Georg Bauer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
@@ -727,4 +726,3 @@ void DRT::UTILS::LineGPToParentGP(
 }
 
 
-#endif  // #ifdef CCADISCRET

@@ -14,7 +14,6 @@ Maintainer: Christian Cyron
 *----------------------------------------------------------------------*/
 
 // administrative line in order to make a difference between BACI and Ccarat files
-#ifdef CCADISCRET
 
 //header file only included if not yet included!
 #ifndef BEAM3II_H
@@ -1119,4 +1118,3 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 #endif  // #ifndef BEAM_H
-#endif  // #ifdef CCADISCRET

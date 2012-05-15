@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_PARTITIONED_H
 #define FSI_PARTITIONED_H
@@ -219,5 +219,4 @@ private:
 
 }
 
-#endif
 #endif

@@ -24,7 +24,6 @@ or the well-known .dat file is created.
 #ifndef PRE_EXODUS_H_
 #define PRE_EXODUS_H_
 
-#ifdef CCADISCRET
 
 
 //! \namespace EXODUS namespace of the ExodusII-to-BACI preprocessing tool
@@ -38,6 +37,5 @@ int CreateDefaultBCFile(EXODUS::Mesh& mesh);
 
 } // of namespace EXODUS
 
-#endif /* of CCADISCRET */
 #endif /*PRE_EXODUS_H_*/
 #endif

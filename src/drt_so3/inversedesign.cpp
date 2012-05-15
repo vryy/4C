@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "inversedesign.H"
 #include "../drt_lib/drt_dserror.H"
@@ -133,4 +132,3 @@ void DRT::ELEMENTS::InvDesign::Unpack(const vector<char>& data)
 
 
 
-#endif  // #ifdef CCADISCRET

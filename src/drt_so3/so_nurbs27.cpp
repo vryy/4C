@@ -10,7 +10,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_line.H"
 #include "so_surface.H"
@@ -261,4 +260,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
 }
 
 
-#endif  // #ifdef CCADISCRET

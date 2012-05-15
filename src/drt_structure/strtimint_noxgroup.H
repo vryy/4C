@@ -13,7 +13,6 @@ Maintainer: Thomas Klöppel
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef STRTIMINT_NOXGROUP_H
 #define STRTIMINT_NOXGROUP_H
 
@@ -84,4 +83,3 @@ namespace NOX
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMINT_NOXGROUP_H
-#endif  // #ifdef CCADISCRET

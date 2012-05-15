@@ -12,7 +12,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
+
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -794,4 +794,3 @@ void DRT::INPUT::AppendMaterialDefinition(
     dserror("Trouble in determining coincidences of material definitions");
 }
 
-#endif

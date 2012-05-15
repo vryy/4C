@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifndef VISCONEOHOOKE_H_
 #define VISCONEOHOOKE_H_
-#ifdef CCADISCRET
 
 #include "material.H"
 #include "matpar_parameter.H"
@@ -182,5 +181,4 @@ private:
   };
 }
 
-#endif /*CCADISCRET*/
 #endif /*VISCONEOHOOKE_H_*/

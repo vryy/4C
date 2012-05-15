@@ -17,7 +17,6 @@ Maintainer: Georg Bauer
 </pre>
 */
 
-#ifdef CCADISCRET
 #ifndef UTILS_BOUNDARY_INTEGRATION_H
 #define UTILS_BOUNDARY_INTEGRATION_H
 
@@ -805,4 +804,3 @@ inline void BoundaryGPToParentGP3(
 } // namespace DRT
 
 #endif // #ifndef UTILS_BOUNDARY_INTEGRATION_H
-#endif  // #ifdef CCADISCRET

@@ -13,7 +13,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include "AztecOO.h"
 #include "AztecOO_StatusTestResNorm.h"
@@ -115,4 +115,3 @@ double LINALG::Condest(
 
 }
 
-#endif

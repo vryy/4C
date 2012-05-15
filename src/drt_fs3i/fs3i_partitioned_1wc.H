@@ -12,7 +12,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef FS3I_PART_1WC_H
 #define FS3I_PART_1WC_H
@@ -42,5 +42,4 @@ namespace FS3I
 
 }
 
-#endif
 #endif

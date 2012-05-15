@@ -15,7 +15,6 @@ Maintainer: Sophie Rausch
 *----------------------------------------------------------------------*/
 #ifndef ELAST_VOLPENALTY_H_
 #define ELAST_VOLPENALTY_H_
-#ifdef CCADISCRET
 
 // Linalg matrices used instead; included in elast_summand
 //#include <Epetra_SerialDenseVector.h>
@@ -143,5 +142,4 @@ namespace ELASTIC
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif  // VOLOGDEN_H_

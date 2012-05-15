@@ -9,7 +9,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <Ifpack.h>
 
@@ -450,4 +450,3 @@ const Epetra_Map& LINALG::Preconditioner::OperatorRangeMap() const
 }
 
 
-#endif

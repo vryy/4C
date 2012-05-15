@@ -13,7 +13,7 @@
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
+
 
 #ifndef ADAPTER_STRUCTURE_TIMINT_POROELAST_H_
 #define ADAPTER_STRUCTURE_TIMINT_POROELAST_H_
@@ -49,5 +49,4 @@ namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
 #endif
-
-#endif /* ADAPTER_STRUCTURE_TIMINT_POROELAST_H_ */
+ /* ADAPTER_STRUCTURE_TIMINT_POROELAST_H_ */

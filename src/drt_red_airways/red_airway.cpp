@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 
 *----------------------------------------------------------------------*/
 #ifdef D_RED_AIRWAYS
-#ifdef CCADISCRET
 
 #include "red_airway.H"
 #include "../drt_lib/drt_discret.H"
@@ -292,5 +291,4 @@ void DRT::ELEMENTS::RedAirway::getParams(std::string name, int & var)
 
 }
 
-#endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_RED_AIRWAYS

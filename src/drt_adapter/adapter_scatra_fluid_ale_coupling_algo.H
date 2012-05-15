@@ -14,7 +14,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #ifndef ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 #define ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
@@ -104,4 +103,3 @@ namespace ADAPTER
 } // namespace ADAPTER
 
 #endif // ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
-#endif // CCADISCRET

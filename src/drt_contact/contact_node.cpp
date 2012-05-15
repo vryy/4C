@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "contact_node.H"
 #include "../drt_lib/drt_dserror.H"
@@ -713,4 +712,3 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   return;
 }
 
-#endif  // #ifdef CCADISCRET

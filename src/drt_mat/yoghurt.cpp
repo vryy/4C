@@ -10,7 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 
@@ -133,4 +133,3 @@ double MAT::Yoghurt::ComputeDiffusivity() const
   return diffus;
 }
 
-#endif

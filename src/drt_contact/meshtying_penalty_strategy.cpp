@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Teuchos_Time.hpp>
 #include "meshtying_penalty_strategy.H"
@@ -412,4 +411,3 @@ void CONTACT::MtPenaltyStrategy::UpdateAugmentedLagrange()
   return;
 }
 
-#endif // CCADISCRET

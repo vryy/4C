@@ -12,7 +12,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef FSI_COUPLING_H
 #define FSI_COUPLING_H
@@ -421,5 +421,4 @@ namespace ADAPTER
 
 }
 
-#endif
 #endif

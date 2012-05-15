@@ -13,7 +13,6 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "loma_algorithm.H"
 
@@ -747,4 +746,3 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
 }
 
 
-#endif // CCADISCRET

@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_LAGRANGEPREC_H
 #define FSI_LAGRANGEPREC_H
@@ -59,5 +59,4 @@ namespace FSI
 
 }
 
-#endif
 #endif

@@ -1,8 +1,6 @@
 #ifndef FSI_NOX_JACOBIAN_H
 #define FSI_NOX_JACOBIAN_H
 
-#ifdef TRILINOS_PACKAGE
-
 #include <Epetra_Comm.h>
 #include <Epetra_Operator.h>
 #include <Epetra_Import.h>
@@ -137,5 +135,4 @@ protected:
   }
 }
 
-#endif
 #endif

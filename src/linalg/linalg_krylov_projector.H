@@ -15,7 +15,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef LINALG_KRYLOV_PROJECTOR_H_
 #define LINALG_KRYLOV_PROJECTOR_H_
@@ -197,4 +196,3 @@ private:
 
 #endif // LINALG_KRYLOV_PROJECTOR_H_
 
-#endif // CCADISCRET

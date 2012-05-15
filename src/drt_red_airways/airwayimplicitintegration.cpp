@@ -10,7 +10,7 @@ Maintainer: Mahmoud Ismail
             089 - 289-15268
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <stdio.h>
 
@@ -1167,5 +1167,4 @@ AIRWAY::RedAirwayImplicitTimeInt::~RedAirwayImplicitTimeInt()
   return;
 }
 
-#endif
 

@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include "drt_discret.H"
 #include "drt_nodereader.H"
@@ -222,4 +222,3 @@ void NodeReader::Read()
 }
 }
 
-#endif

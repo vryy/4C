@@ -15,7 +15,7 @@ Maintainer: Mahmoud Ismail
 
 
 #ifdef D_RED_AIRWAYS
-#ifdef CCADISCRET
+
 
 #include "airway_impl.H"
 
@@ -1608,5 +1608,4 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   } // End of node i has a condition
 }
 
-#endif
 #endif

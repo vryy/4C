@@ -10,7 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 
@@ -150,4 +150,3 @@ double MAT::Sutherland::ComputeDensity(const double temp,
 }
 
 
-#endif

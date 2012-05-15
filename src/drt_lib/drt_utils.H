@@ -38,7 +38,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -444,7 +443,6 @@ namespace UTILS
 
 
 #endif  // #ifndef UTILS_H
-#endif  // #ifdef CCADISCRET
 
 
 

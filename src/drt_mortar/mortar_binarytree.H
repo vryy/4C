@@ -37,7 +37,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_BINARYTREE_H
 #define MORTAR_BINARYTREE_H
 
@@ -587,4 +586,3 @@ protected:
 }  // namespace MORTAR
 
 #endif  // #ifndef MORTAR_BINARYTREE_H
-#endif  // #ifdef CCADISCRET

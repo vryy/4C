@@ -10,7 +10,6 @@ Maintainer: Ursula Rasthofer
             089 - 289-15236
 </pre>
  *------------------------------------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef FLUID_TURBULENCE_DEFINES_H
 #define FLUID_TURBULENCE_DEFINES_H
 
@@ -121,4 +120,3 @@ namespace FLD {
 
 }
 #endif // #ifndef FLUID_TURBULENCE_DEFINES_H
-#endif // #ifdef CCADISCRET

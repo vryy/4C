@@ -11,7 +11,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -432,4 +432,3 @@ void UTILS::ConstraintSolver::SolveSimple
 }
 
 
-#endif

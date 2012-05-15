@@ -12,7 +12,6 @@ Maintainer: Sophie Rausch
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef STR_INVANALYSIS_H
 #define STR_INVANALYSIS_H
@@ -41,4 +40,3 @@ namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  /* #ifndef STRUDYN_DIRECT_H */
-#endif  /* #ifdef CCADISCRET */

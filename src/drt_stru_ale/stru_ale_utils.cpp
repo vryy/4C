@@ -14,7 +14,6 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  | definitions                                               mgit 04/11 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -108,4 +107,3 @@ bool STRU_ALE::UTILS::AleStructureCloneStrategy::DetermineEleType(
 }
 
 /*----------------------------------------------------------------------*/
-#endif // CCADISCRET

@@ -2,7 +2,6 @@
 \file drt_dofset_independent_pbc.cpp
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_dofset_independent_pbc.H"
 
@@ -82,4 +81,3 @@ int DRT::IndependentPBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization&
   return count;
 }
 
-#endif  // #ifdef CCADISCRET

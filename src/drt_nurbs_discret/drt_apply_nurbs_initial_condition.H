@@ -22,7 +22,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef DRT_APPLY_NURBS_INITIAL_CONDITION_H
 #define DRT_APPLY_NURBS_INITIAL_CONDITION_H
 
@@ -131,4 +130,3 @@ This is equivalent to the solution of the following linear system:
 } //namespace DRT
 
 #endif // #ifdef DRT_APPLY_NURBS_INITIAL_CONDITION_H
-#endif // #ifdef CCADISCRET

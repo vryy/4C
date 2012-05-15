@@ -1,4 +1,3 @@
-#ifdef CCADISCRET
 #ifdef D_ARTNET
 
 #ifndef ART_NET_RESULTTEST_H
@@ -60,4 +59,3 @@ private:
 #endif //ART_NET_RESULTTEST_H
 
 #endif //#ifdef D_ARTNET
-#endif //#ifdef CCADISCRET

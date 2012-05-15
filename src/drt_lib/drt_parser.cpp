@@ -49,7 +49,6 @@ Maintainer: Burkhard Bornemann
 \date 10/07
 */
 
-#ifdef CCADISCRET
 
 #include "drt_parser.H"
 
@@ -230,4 +229,3 @@ void DRT::PARSER::Lexer::Lexan()
 
 
 
-#endif // end #ifdef CCADISCRET

@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #include "ale_utils_mapextractor.H"
 
@@ -50,4 +50,3 @@ void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
 }
 
 
-#endif

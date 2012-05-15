@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #include "linalg_mlapi_operator.H"
 #include "Epetra_Vector.h"
 
@@ -384,4 +383,3 @@ MLAPI::MultiVector LINALG::AMG_Operator::Row1Norm(Operator& A)
 }
 
 
-#endif  // #ifdef CCADISCRET

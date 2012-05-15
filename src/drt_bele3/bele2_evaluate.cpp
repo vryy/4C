@@ -10,7 +10,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "bele2.H"
 #include "../drt_lib/drt_discret.H"
@@ -49,4 +48,3 @@ int DRT::ELEMENTS::Bele2::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
-#endif  // #ifdef CCADISCRET

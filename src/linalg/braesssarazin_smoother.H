@@ -10,7 +10,6 @@
   \brief implementation of Braess-Sarazin smoother
  */
 
-#ifdef CCADISCRET
 
 #ifndef BRAESSSARAZIN_SMOOTHER_H_
 #define BRAESSSARAZIN_SMOOTHER_H_
@@ -145,4 +144,3 @@ class BraessSarazin_Smoother : public virtual Epetra_Operator
 } // namespace LINALG
 
 #endif /* BRAESSSARAZIN_SMOOTHER_H_ */
-#endif /* CCADISCRET */

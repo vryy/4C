@@ -15,7 +15,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOVARGA_H_
 #define ELAST_ISOVARGA_H_
-#ifdef CCADISCRET
 
 // Linalg matrices used instead; included in elast_summand
 //#include <Epetra_SerialDenseVector.h>
@@ -161,5 +160,4 @@ namespace ELASTIC
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // CCADISCRET
 #endif  // ELAST_ISOVARGA_H_

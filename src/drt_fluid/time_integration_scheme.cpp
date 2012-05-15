@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "time_integration_scheme.H"
 #include "../drt_lib/drt_dserror.H"
@@ -371,4 +370,3 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
 }
 
 
-#endif /* CCADISCRET       */

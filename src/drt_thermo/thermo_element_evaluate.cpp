@@ -13,7 +13,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  definitions                                                gjb 01/08|
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifdef D_THERMO
 
 
@@ -117,4 +116,3 @@ int DRT::ELEMENTS::Thermo::EvaluateNeumann(
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef D_THERMO
-#endif  // #ifdef CCADISCRET

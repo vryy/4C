@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_line.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -125,4 +124,3 @@ void DRT::ELEMENTS::StructuralLine::Print(ostream& os) const
 
 
 
-#endif  // #ifdef CCADISCRET

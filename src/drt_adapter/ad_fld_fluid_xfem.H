@@ -12,7 +12,7 @@ Maintainer:  Benedikt Schott
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #ifndef ADAPTER_FLUID_XFEM_H
 #define ADAPTER_FLUID_XFEM_H
@@ -75,5 +75,4 @@ namespace ADAPTER
 
 }
 
-#endif
 #endif

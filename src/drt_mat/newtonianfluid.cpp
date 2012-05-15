@@ -7,7 +7,7 @@ Maintainer: ???
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "newtonianfluid.H"
@@ -110,4 +110,3 @@ void MAT::NewtonianFluid::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-#endif

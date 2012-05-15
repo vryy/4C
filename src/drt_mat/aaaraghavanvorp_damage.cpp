@@ -19,7 +19,6 @@ date: 26/05/2009
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <vector>
 #include "aaaraghavanvorp_damage.H"
@@ -658,4 +657,3 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
   return;
 }
 
-#endif // CCADISCRET

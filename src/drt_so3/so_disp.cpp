@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "so_disp.H"
 #include "so_line.H"
@@ -340,4 +339,3 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Volumes()
 }
 
 
-#endif  // #ifdef CCADISCRET

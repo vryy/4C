@@ -10,7 +10,7 @@ Maintainer: Ursula Mayer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 
@@ -112,4 +112,3 @@ void MAT::CarreauYasuda::Unpack(const vector<char>& data)
 }
 
 
-#endif

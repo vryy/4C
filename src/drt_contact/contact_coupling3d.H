@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef CONTACT_COUPLING3D_H
 #define CONTACT_COUPLING3D_H
 
@@ -433,4 +432,3 @@ protected:
 
 
 #endif  // #ifndef CONTACT_COUPLING3D_H
-#endif  // #ifdef CCADISCRET

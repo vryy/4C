@@ -8,7 +8,7 @@ Maintainer: Alexander Popp
             089 - 289-15238
 </pre>
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 #include <vector>
 #include "spring.H"
@@ -106,4 +106,3 @@ void MAT::Spring::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-#endif

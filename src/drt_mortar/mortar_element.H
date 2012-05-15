@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_ELEMENT_H
 #define MORTAR_ELEMENT_H
 
@@ -747,4 +746,3 @@ protected:
 ostream& operator << (ostream& os, const MORTAR::MortarElement& ele);
 
 #endif  // #ifndef MORTAR_ELEMENT_H
-#endif  // #ifdef CCADISCRET

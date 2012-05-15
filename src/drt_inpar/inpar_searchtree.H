@@ -10,7 +10,6 @@ Maintainer: Ursula Mayer
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_SEARCHTREE_H_
 #define INPAR_SEARCHTREE_H_
 
@@ -37,4 +36,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // /*INPAR_SEARCHTREE_H_*/
-#endif  // #ifdef CCADISCRET

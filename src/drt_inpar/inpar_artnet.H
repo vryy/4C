@@ -10,7 +10,6 @@ Maintainer: Mahmoud Ismail
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_ARTNET_H
 #define INPAR_ARTNET_H
 
@@ -61,4 +60,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_ARTNET_H
-#endif  // #ifdef CCADISCRET

@@ -10,7 +10,6 @@ Maintainer: Jonas Biehler
             089 - 289-15276
 </pre>
  *!----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifdef HAVE_FFTW
 #ifndef MLMC_H
 #define MLMC_H
@@ -230,4 +229,3 @@ public:
 
 #endif /*MLMC_H_*/
 #endif // HAVE_FFTw
-#endif  // #ifdef CCADISCRET

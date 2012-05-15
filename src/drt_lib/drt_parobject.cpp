@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_parobject.H"
 
@@ -429,4 +428,3 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
 
 
 
-#endif  // #ifdef CCADISCRET

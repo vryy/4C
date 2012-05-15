@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -1464,4 +1464,3 @@ const char* FSI::OverlappingBlockMatrixFSIAMG::Label() const
   return "Unknown strategy in FSI::OverlappingBlockMatrixFSIAMG";
 }
 
-#endif

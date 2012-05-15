@@ -10,7 +10,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 
 
 #include <iostream>
@@ -462,4 +462,3 @@ void UTILS::Constraint::SetState
   actdisc_->SetState(state,V);
 }
 
-#endif

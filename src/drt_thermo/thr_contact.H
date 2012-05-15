@@ -13,7 +13,6 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  | definitions                                               mgit 06/11 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef THR_CONTACT_H
 #define THR_CONTACT_H
 
@@ -145,4 +144,3 @@ namespace THR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THR_CONTACT_H
-#endif  // #ifdef CCADISCRET

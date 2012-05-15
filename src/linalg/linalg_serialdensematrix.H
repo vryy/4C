@@ -37,7 +37,6 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef SERIALDENSEMATRIX_H
 #define SERIALDENSEMATRIX_H
 
@@ -180,4 +179,3 @@ protected:
 
 
 #endif  // #ifndef SERIALDENSEMATRIX_H
-#endif  // #ifdef CCADISCRET

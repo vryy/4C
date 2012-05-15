@@ -18,7 +18,6 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "elasthyper.H"
 #include "../drt_matelast/elast_summand.H"
@@ -930,4 +929,3 @@ void MAT::ElastHyper::ResponseStretches(
   return;
 }
 
-#endif

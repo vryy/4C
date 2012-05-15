@@ -15,7 +15,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  definitions                                              dano 09/09 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifdef D_THERMO
 
 /*----------------------------------------------------------------------*
@@ -724,4 +723,3 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
 
 /*----------------------------------------------------------------------*/
 #endif // D_THERMO
-#endif // CCADISCRET

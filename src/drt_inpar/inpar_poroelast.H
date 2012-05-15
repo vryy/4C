@@ -11,7 +11,6 @@ Maintainer: Anh-Tu Vuong
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 #ifndef INPAR_POROELAST_H_
 #define INPAR_POROELAST_H_
 
@@ -68,6 +67,5 @@ namespace POROELAST
 
 /*----------------------------------------------------------------------*/
 #endif /* INPAR_POROELAST_H_ */
-#endif  // #ifdef CCADISCRET
 
 

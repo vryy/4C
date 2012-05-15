@@ -1,5 +1,5 @@
 
-#ifdef CCADISCRET
+
 
 #ifndef FSI_MATRIXTRANSFORM_H
 #define FSI_MATRIXTRANSFORM_H
@@ -268,5 +268,4 @@ namespace FSI
   }
 }
 
-#endif
 #endif

@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#ifdef CCADISCRET
 
 #include "shell8.H"
 #include "../linalg/linalg_utils.H"
@@ -211,5 +210,4 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
 }
 
 
-#endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SHELL8

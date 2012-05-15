@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef MORTAR_STRATEGY_BASE_H
 #define MORTAR_STRATEGY_BASE_H
 
@@ -231,4 +230,3 @@ class StrategyBase
 } // namespace MORTAR
 
 #endif  // #ifndef MORTAR_STRATEGY_BASE_H
-#endif  // #ifdef CCADISCRET

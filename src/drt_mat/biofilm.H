@@ -11,7 +11,7 @@ Maintainer: Mirella Coroneo
 #ifndef BIOFILM_H
 #define BIOFILM_H
 
-#ifdef CCADISCRET
+
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -158,4 +158,3 @@ private:
 
 #endif
 
-#endif

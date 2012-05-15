@@ -39,7 +39,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
@@ -1099,4 +1098,3 @@ void  DRT::Discretization::DoInitialField(DRT::Condition& cond,
   return;
 }
 
-#endif  // #ifdef CCADISCRET

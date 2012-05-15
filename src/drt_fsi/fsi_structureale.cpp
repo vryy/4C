@@ -13,7 +13,7 @@ Maintainer: Thomas Kloeppel
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "fsi_structureale.H"
 
@@ -123,4 +123,3 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureALE::StructToFluid(Teuchos::RCP<Epetra
   }
 }
 
-#endif

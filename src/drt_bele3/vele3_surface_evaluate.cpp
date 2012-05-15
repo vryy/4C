@@ -10,7 +10,6 @@ Maintainer: Ursula Mayer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "vele3.H"
 #include "../drt_lib/drt_discret.H"
@@ -50,4 +49,3 @@ int DRT::ELEMENTS::Vele3Surface::EvaluateNeumann( ParameterList& params,
   return 0;
 }
 
-#endif  // #ifdef CCADISCRET

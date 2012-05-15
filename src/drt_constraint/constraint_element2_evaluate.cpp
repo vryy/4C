@@ -10,7 +10,6 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -1301,4 +1300,3 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivAngle
   elematrix.Scale(-1.0);
 }
 
-#endif  // #ifdef CCADISCRET

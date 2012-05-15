@@ -12,7 +12,6 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef NURBS_DISCRET_H
 #define NURBS_DISCRET_H
 
@@ -176,4 +175,3 @@ private:
 } // namespace DRT
 
 #endif  // #ifndef NURBS_DISCRET_H
-#endif  // #ifdef CCADISCRET

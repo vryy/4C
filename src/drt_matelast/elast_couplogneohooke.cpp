@@ -19,7 +19,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -120,4 +119,3 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddCoefficientsPrincipal(
 
 
 /*----------------------------------------------------------------------*/
-#endif // CCADISCRET

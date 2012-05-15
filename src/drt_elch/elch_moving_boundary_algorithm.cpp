@@ -13,7 +13,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
 
 #include "elch_moving_boundary_algorithm.H"
 #include "../drt_inpar/inpar_elch.H"
@@ -401,4 +400,3 @@ void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
 }
 
 
-#endif // CCADISCRET

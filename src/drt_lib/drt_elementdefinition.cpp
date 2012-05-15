@@ -13,7 +13,7 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef CCADISCRET
+
 
 #include "drt_elementdefinition.H"
 #include "drt_parobjectfactory.H"
@@ -169,4 +169,3 @@ DRT::INPUT::LineDefinition* DRT::INPUT::ElementDefinition::ElementLines(std::str
 }
 
 
-#endif

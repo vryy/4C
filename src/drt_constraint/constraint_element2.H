@@ -9,7 +9,7 @@ Maintainer: Thomas Kloeppel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+
 #ifndef CONSTRAINT_ELEMENT2_H
 #define CONSTRAINT_ELEMENT2_H
 
@@ -356,5 +356,4 @@ private:
 } // namespace DRT
 
 
-#endif
 #endif

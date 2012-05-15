@@ -16,7 +16,6 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #ifndef FOURIERISO_H_
 #define FOURIERISO_H_
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
@@ -195,5 +194,4 @@ private:
 } // namespace MAT
 
 /*----------------------------------------------------------------------*/
-#endif  // CCADISCRET
 #endif  // FOURIERISO_H_

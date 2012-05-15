@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "beam3ii.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -114,4 +113,3 @@ void DRT::ELEMENTS::Beam3ii::SetCrossSecShear(const double& crosssecshear)
   return;
 }
 
-#endif  // #ifdef CCADISCRET

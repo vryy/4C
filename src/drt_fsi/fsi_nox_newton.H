@@ -1,4 +1,4 @@
-#ifdef CCADISCRET
+
 
 #ifndef FSI_NOX_NEWTON_H
 #define FSI_NOX_NEWTON_H
@@ -59,5 +59,4 @@ namespace NOX
   }
 }
 
-#endif
 #endif

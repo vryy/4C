@@ -10,7 +10,6 @@ Maintainer: Ulrich Kuettler
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef INPAR_FSI_H
 #define INPAR_FSI_H
 
@@ -115,4 +114,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_FSI_H
-#endif  // #ifdef CCADISCRET

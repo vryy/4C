@@ -10,7 +10,6 @@ Maintainer: Christian Cyron
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #include "beam3ii.H"
 #include "../drt_lib/drt_discret.H"
@@ -536,4 +535,3 @@ int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
 }
 
 
-#endif  // #ifdef CCADISCRET

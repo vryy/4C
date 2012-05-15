@@ -14,7 +14,6 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  | definitions                                               mgit 04/11 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 #ifndef STRU_ALE_UTILS_H
 #define STRU_ALE_UTILS_H
@@ -82,4 +81,3 @@ namespace UTILS
 
 /*----------------------------------------------------------------------*/
 #endif // TSI_UTILS_H
-#endif // CCADISCRET
