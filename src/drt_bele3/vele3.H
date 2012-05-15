@@ -228,18 +228,6 @@ public:
 
   //@}
 
-  //! @name Input and Creation
-
-  /*!
-   * \brief Read input for this element
-   * \note Bele3 will be created on the fly for various tasks and no read in is planned
-  */
-  bool ReadElement()
-  {
-      dserror("No reading for this element! Will be created on the fly, not from a .dat file.");
-      return false;
-  }
-
   //@}
 
   //! @name Evaluation
@@ -391,18 +379,6 @@ public:
   { return Vele3SurfaceType::Instance(); }
 
   //@}
-
-  //! @name Input and Creation
-
-  /*!
-   * \brief Read input for this element
-   * \note Vele3 will be created on the fly for various tasks and no read in is planned
-  */
-  bool ReadElement()
-  {
-      dserror("No reading for this element! Will be created on the fly, not from a .dat file.");
-      return false;
-  }
 
   //@}
 

@@ -218,8 +218,6 @@ private:
 
         //! @name Input and Creation
 
-        //bool ReadElement();
-
         bool ReadElement(const std::string& eletype,
                          const std::string& distype,
                          DRT::INPUT::LineDefinition* linedef);

@@ -177,20 +177,6 @@ void DRT::Element::Print(ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  read element input dummy (public)                        mwgee 11/06|
- |  this is a base class dummy for elements that do not need            |
- |  a reading method
- *----------------------------------------------------------------------*/
-bool DRT::Element::ReadElement()
-{
-  cout << "DRT::Element::ReadElement:\n"
-       << "Base class dummy routine Element::ReadElement() called\n"
-       << __FILE__ << ":" << __LINE__ << endl;
-  return false;
-}
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::Element::ReadElement(const std::string& eletype,

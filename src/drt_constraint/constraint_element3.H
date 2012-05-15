@@ -178,19 +178,6 @@ public:
 
   //@}
 
-  //! @name Input and Creation
-
-  /*!
-  \brief Read input for this element
-  */
-  bool ReadElement()
-  {
-      dserror("No reading for this element! Will be created on the fly, not from a .dat file.");
-      return false;
-  }
-
-  //@}
-
   //! @name Evaluation
 
   /*!

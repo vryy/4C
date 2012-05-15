@@ -167,12 +167,6 @@ public:
   /*!
   \brief Read input for this element
   */
-
-  //virtual bool ReadElement();
-
-  /*!
-  \brief Read input for this element
-  */
   bool ReadElement(const std::string& eletype,
                    const std::string& eledistype,
                    DRT::INPUT::LineDefinition* linedef) = 0 ;

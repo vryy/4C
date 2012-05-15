@@ -429,17 +429,6 @@ public:
 
   //! @name Construction
 
-
-  /*!
-  \brief Read input for this element
-
-  This class implements a dummy of this method that prints a warning and
-  returns false. A derived class would read one line from the input file and
-  store all necessary information.
-
-  */
-  //virtual bool ReadElement();
-
   /*!
   \brief Read input for this element
   */

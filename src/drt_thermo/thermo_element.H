@@ -302,9 +302,6 @@ namespace ELEMENTS
     //! @name Input and Creation
 
     //! \brief Read input for this element
-    //bool ReadElement();
-
-    //! \brief Read input for this element
     bool ReadElement(
       const std::string& eletype,
       const std::string& distype,

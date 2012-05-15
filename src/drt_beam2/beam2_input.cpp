@@ -35,6 +35,4 @@ bool DRT::ELEMENTS::Beam2::ReadElement(const std::string&          eletype,
   linedef->ExtractDouble("INERMOM",mominer_);
    
   return true;
-} // Beam2::ReadElement()
-
-
+} 
