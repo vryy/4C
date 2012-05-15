@@ -216,11 +216,11 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
   Teuchos::RCP<Epetra_Comm> lcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
 
   // the global communicator is created
-  MPI_Comm mpi_global_comm;
+  Teuchos::RCP<Epetra_Comm> gcomm;
 
   if(ngroup == 1)
   {
-    mpi_global_comm = mpi_local_comm;
+    gcomm = lcomm;
     // TODO: INCA needs color = 1 and BACI needs color = 0, then the proceeding line can be removed
     color = 0;
   }
@@ -228,13 +228,14 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
   {
     // TODO: consider a second executable that is coupled to BACI in case of nested parallelism
     // TODO: the procs owned by another executable have to be removed from world_group, e.g. MPI_Group_excl
+    MPI_Comm mpi_global_comm;
     MPI_Group world_group;
     MPI_Comm_group(MPI_COMM_WORLD, &world_group);
     MPI_Comm_create(MPI_COMM_WORLD, world_group, &mpi_global_comm);
     MPI_Group_free(&world_group);
-  }
 
-  Teuchos::RCP<Epetra_Comm> gcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_global_comm));
+    gcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_global_comm));
+  }
 
   // mapping of local proc ids to global proc ids
   std::map<int, int> lpidgpid;

@@ -14,18 +14,10 @@ Maintainer: Georg Hammerl
 
 
 /*----------------------------------------------------------------------*
- | definitions                                              ghamm 12/11 |
- *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-
-/*----------------------------------------------------------------------*
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
+#include <mpi.h>
+
 #include "aero_tfsi_serv.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -528,16 +520,26 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
 }
 
 
-/// extract interface values for a given full field
-Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::ExtractInterfaceVal
+/// extract structural interface values for a given full field
+Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::StrExtractInterfaceVal
 (
   Teuchos::RCP<Epetra_Vector> fullvector)
 {
   return interface_->ExtractFSICondVector(fullvector);
 }
 
-/// apply interface displacement from the interface to a full field
-void FS3I::UTILS::AeroCouplingUtils::ApplyInterfaceVal
+
+/// extract thermal interface values for a given full field
+Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::ThrExtractInterfaceVal
+(
+  Teuchos::RCP<Epetra_Vector> fullvector)
+{
+  return thermorowmapext_->ExtractCondVector(fullvector);
+}
+
+
+/// apply interface tractions from the interface to a full field
+void FS3I::UTILS::AeroCouplingUtils::StrApplyInterfaceVal
 (
   Teuchos::RCP<Epetra_Vector> iforce,
   Teuchos::RCP<Epetra_Vector> force
@@ -547,4 +549,14 @@ void FS3I::UTILS::AeroCouplingUtils::ApplyInterfaceVal
   return;
 }
 
-#endif
+
+/// apply interface heat flux from the interface to a full field
+void FS3I::UTILS::AeroCouplingUtils::ThrApplyInterfaceVal
+(
+  Teuchos::RCP<Epetra_Vector> iforce,
+  Teuchos::RCP<Epetra_Vector> force
+)
+{
+  thermorowmapext_->InsertCondVector(iforce, force);
+  return;
+}

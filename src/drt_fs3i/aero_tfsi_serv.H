@@ -17,7 +17,6 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | definitions                                              ghamm 12/11 |
  *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 #ifndef AERO_TFSI_SERV_H
 #define AERO_TFSI_SERV_H
 
@@ -105,9 +104,6 @@ namespace FS3I
       /// get redundant dof map of the thermal field
       Teuchos::RCP<const Epetra_Map> GetReduInterfThermoMap(){ return ithermodofredumap_;}
 
-      /// get map extractor for the data exchange between the thermal field and the interface
-      Teuchos::RCP<const LINALG::MapExtractor> GetInterfaceMapExtractor(){ return thermorowmapext_;}
-
       /// access function for the interface discretization
       Teuchos::RCP<DRT::Discretization> GetInterfaceStructDis(){ return istructdis_; }
 
@@ -117,11 +113,31 @@ namespace FS3I
       /// get number of coupling interfaces
       int NumInterfaces(){ return (maxid_+1); }
 
-      /// extract interface values for a given full field
-      Teuchos::RCP<Epetra_Vector> ExtractInterfaceVal(Teuchos::RCP<Epetra_Vector> fullvector);
+      /// extract structural interface values for a given full field
+      Teuchos::RCP<Epetra_Vector> StrExtractInterfaceVal
+      (
+        Teuchos::RCP<Epetra_Vector> fullvector  ///< state vector of the full structural field
+      );
 
-      /// apply interface displacement from the interface to a full field
-      void ApplyInterfaceVal(Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> force);
+      /// extract thermal interface values for a given full field
+      Teuchos::RCP<Epetra_Vector> ThrExtractInterfaceVal
+      (
+        Teuchos::RCP<Epetra_Vector> fullvector  ///< state vector of the full thermal field
+      );
+
+      /// apply interface tractions from the interface to a full field
+      void StrApplyInterfaceVal
+      (
+        Teuchos::RCP<Epetra_Vector> iforce,  ///< state vector of the structural interface
+        Teuchos::RCP<Epetra_Vector> force  ///< state vector of the full structural field
+      );
+
+      /// apply interface heat flux from the interface to a full field
+      void ThrApplyInterfaceVal
+      (
+        Teuchos::RCP<Epetra_Vector> iforce,  ///< state vector of the thermal interface
+        Teuchos::RCP<Epetra_Vector> force  ///< state vector of the full thermal field
+      );
 
 
     protected:
@@ -168,5 +184,4 @@ namespace FS3I
   }
 }
 
-#endif
 #endif

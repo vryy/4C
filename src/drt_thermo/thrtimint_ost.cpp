@@ -12,10 +12,6 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
-/*----------------------------------------------------------------------*
- |  definitions                                              dano 08/09 |
- *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 08/09 |
@@ -148,10 +144,7 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   ApplyForceExternal(timen_, (*temp_)(0), fextn_);
 
   // interface forces to external forces
-  if (!is_null(tfsisurface_))
-  {
-    fextn_->Update(1.0, *fifc_, 1.0);
-  }
+  fextn_->Update(1.0, *fifc_, 1.0);
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -433,4 +426,3 @@ void THR::TimIntOneStepTheta::ApplyForceExternalConv(
 }
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

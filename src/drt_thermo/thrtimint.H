@@ -345,14 +345,8 @@ namespace THR
       Teuchos::RCP<const Epetra_Vector> vel  //!< current velocities
       );
 
-    //! introduce tfsi surface extractor object
-    //! Introduce the TFSI surface to the thermo algorithm.
-    void SetSurfaceTFSI(
-      Teuchos::RCP<const LINALG::MapExtractor> tfsisurface  //!< the TFSI surface
-      );
-
     //! Set external loads (heat flux) due to tfsi interface
-    virtual void ApplyInterfaceForces(
+    virtual void SetForceInterface(
       Teuchos::RCP<Epetra_Vector> ithermoload  //!< thermal interface load
       );
 
@@ -526,13 +520,6 @@ namespace THR
     //@}
 
   protected:
-
-    //! @name TFSI stuff
-    //@{
-
-    Teuchos::RCP<const LINALG::MapExtractor> tfsisurface_;  //!< tfsi surface
-
-    //@}
 
     //! @name Interface stuff
     //@{

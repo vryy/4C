@@ -11,9 +11,6 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
-/* macros */
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -82,10 +79,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   ApplyForceExternal(timen_, tempn_, fextn_);
 
   // interface forces to external forces
-  if (!is_null(tfsisurface_))
-  {
-    fextn_->Update(1.0, *fifc_, 1.0);
-  }
+  fextn_->Update(1.0, *fifc_, 1.0);
 
   // TIMING
   //double dtcpu = timer_->WallTime();
@@ -183,4 +177,3 @@ void THR::TimIntExplEuler::ReadRestartForce()
 }
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

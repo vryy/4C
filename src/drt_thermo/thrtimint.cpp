@@ -12,10 +12,6 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
-/*----------------------------------------------------------------------*
- |  definitions                                             bborn 08/09 |
- *----------------------------------------------------------------------*/
-#ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*
  |  headers                                                 bborn 08/09 |
@@ -53,8 +49,7 @@ THR::TimInt::TimInt(
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
   )
-: tfsisurface_(Teuchos::null),
-  discret_(actdis),
+: discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
   dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
@@ -87,6 +82,7 @@ THR::TimInt::TimInt(
   rate_(Teuchos::null),
   tempn_(Teuchos::null),
   raten_(Teuchos::null),
+  fifc_(Teuchos::null),
   disn_(Teuchos::null),  // needed for TSI
   veln_(Teuchos::null),  // needed for TSI
   tang_(Teuchos::null)
@@ -1068,29 +1064,14 @@ void THR::TimInt::SetInitialField(
 
 
 /*----------------------------------------------------------------------*
-| enable communication with external interfaces for applying loads      |
-|                                                           ghamm 12/10 |
- *----------------------------------------------------------------------*/
-void THR::TimInt::SetSurfaceTFSI
-(
-  Teuchos::RCP<const LINALG::MapExtractor> tfsisurface
-)
-{
-  tfsisurface_ = tfsisurface;
-}
-
-
-/*----------------------------------------------------------------------*
 | apply interface loads to the thermo field                 ghamm 12/10 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyInterfaceForces
+void THR::TimInt::SetForceInterface
 (
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
 {
-  fifc_->PutScalar(0.0);
-  tfsisurface_->InsertCondVector(ithermoload, fifc_);
+  fifc_->Update(1.0, *ithermoload, 0.0);
 }
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef CCADISCRET

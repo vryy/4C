@@ -217,11 +217,8 @@ namespace ADAPTER
     /// return thermal contact manager
     virtual Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() = 0;
 
-    /// enable communication with an external interface (e.g. tfsi) in order to apply loads
-    virtual void SetSurfaceTFSI(Teuchos::RCP<const LINALG::MapExtractor> tfsisurface) = 0;
-
     /// apply interface loads on the thermal field
-    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;
+    virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;
 
 
     //@}
