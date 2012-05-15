@@ -46,19 +46,18 @@ def getCompilerPaths():
     os.system('rm '+complicated_name_output)
     return comppath
 
-def getPaths(fname):
+def getPaths():
     """Get all include paths"""
-    f = open(fname,"r")
+    f = open("CMakeCache.txt","r")
     
     # get paths from do-configure file
     pathlist = set()
     for l in f.readlines():
-        found = l.find("INCLUDE_INSTALL_DIR=") == 0 \
-             or l.find("Trilinos_DIR=") == 0
-        if (l.find("INCLUDE_INSTALL_DIR=") == 0):
-            pathlist.add(l.split("=")[1][1:-2])
-        if (l.find("Trilinos_DIR=") == 0):
-            pathlist.add(l.split("=")[1][1:-2]+"/include")
+	
+        if (l.find("INCLUDE_INSTALL_DIR:FILEPATH=") > -1):
+            pathlist.add(l.split("=")[1][0:-1])
+        if (l.find("Trilinos_DIR:FILEPATH=") > -1):
+            pathlist.add(l.split("=")[1][0:-1]+"/include")
     pathlist.add("/usr/include/openmpi/1.2.4-gcc")
     
     # add compiler paths
@@ -96,7 +95,7 @@ def adapt(do_configure_file):
 
         project = etree.fromstring(f.read())
 
-        pathset = getPaths(do_configure_file)
+        pathset = getPaths()
         pathlist = [x for x in pathset]
         pathlist.sort()
         #print pathlist

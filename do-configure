@@ -43,16 +43,15 @@ fi
 if [ "$OS_VERSION" == "FC16" ]; then
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/lib"
-	Trilinos_DIR="/lnm/lib/Q1_2012/trilinos/fc16_openmpi_dbg/"
-	Trilinos_PREFIX="$Trilinos_DIR/lib/cmake/Trilinos"
-	Trilinos_DIR="/lnm/lib/Q1_2012/trilinos"
+	Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc16_openmpi_dbg/"
 else
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/lib"
-	Trilinos_DIR="/lnm/lib/Q1_2012/trilinos/fc8_openmpi_release/"
-	Trilinos_PREFIX="$Trilinos_DIR/lib/cmake/Trilinos"
-	Trilinos_DIR="/lnm/lib/Q1_2012/trilinos"
+	Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc8_openmpi_release/"
 fi
+
+Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
+
 
 ############################################################
 
@@ -90,7 +89,7 @@ $CMAKE_COMMAND \
     -D D_THERMO:BOOL=ON \
     -D INCLUDE_INSTALL_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D LIB_INSTALL_DIR:FILEPATH=$LIB_INSTALL_DIR \
-    -D Trilinos_DIR:FILEPATH=$Trilinos_PREFIX \
+    -D Trilinos_DIR:FILEPATH=$Trilinos_DIR \
     -D BOOST_INCLUDEDIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D BOOST_LIBRARYDIR:FILEPATH=$LIB_INSTALL_DIR \
     -D QHULL_LIBRARY_DIR:FILEPATH=$LIB_INSTALL_DIR \
