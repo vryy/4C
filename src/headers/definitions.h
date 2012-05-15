@@ -224,19 +224,7 @@ typedef char      CHAR;
 
 #endif
 
-//#ifndef CCADISCRET
-//#ifndef AZTEC_PACKAGE
-//void dsytrf(char *uplo, INT *n, DOUBLE *a, INT *lda, INT *ipiv, DOUBLE *work, INT *lwork, INT *info);
-//void dsytri(char *uplo, INT *n, DOUBLE *a, INT *lda, INT *ipiv, DOUBLE *work, INT *info);
-//void dsytrs(char *uplo, INT *n, INT *nrhs, DOUBLE *a, INT *lda, INT *ipiv, DOUBLE *b, INT *ldb, INT *info);
-//void dgetrf(INT *m, INT *n, DOUBLE *a, INT *lda, INT *ipiv, INT *info);
-//void dgetri(INT *n, DOUBLE *a, INT *lda, INT *ipiv, DOUBLE *work, INT *lwork, INT *info);
-//void dgetrs(char *trans, INT *n, INT *nrhs, DOUBLE *a, INT *lda, INT *ipiv, DOUBLE *b, INT *ldb, INT *info);
-//void dsygv(INT *itype, char *jobz, char *uplo, INT *n, DOUBLE *a, INT *lda, DOUBLE *b, INT *ldb, DOUBLE *w, DOUBLE *work, INT *lwork, INT *info);
-//void dsyevd(char *jobz, char *uplo, INT *n, DOUBLE *a, INT *lda, DOUBLE *w, DOUBLE *work, INT *lwork, INT *iwork, INT *liwork, INT *info);
-//void dsyev(char *jobz, char *uplo, INT *n, DOUBLE *a, INT *lda, DOUBLE *w, DOUBLE *work, INT *lwork, INT *info);
-//#endif
-//#endif
+
 void colsol(DOUBLE *a, DOUBLE *v, INT *maxa, INT *nn, INT *nrr, INT *nrc, INT *nwa, INT *nqm, INT *nr1, INT *nr2, INT *kkk, DOUBLE *det, INT *isc, INT *nsch, INT *ipr, INT *info);
 void iluk(INT *n, DOUBLE *a, INT *ja, INT *ia, INT *lfil, DOUBLE *alu, INT *jlu, INT *ju, INT *levs, INT *iwk, DOUBLE *w, INT *jw, INT *ierr);
 void lusol(INT *n, DOUBLE *y, DOUBLE *x, DOUBLE *alu, INT *jlu, INT *ju);
