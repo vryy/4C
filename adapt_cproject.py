@@ -83,7 +83,6 @@ def getSymbols(fname):
                           or flag[0:5] == "BINIO"
                 if valid_flag == True and status == "ON":
                     symbollist.add(flag.split(":")[0])
-    symbollist.add("CCADISCRET")
     symbollist.add("PARALLEL")
     symbollist.add("PARMETIS")
     symbollist.add("HAVE_FFTW")
