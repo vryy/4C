@@ -57,7 +57,7 @@ def getPaths():
         if (l.find("INCLUDE_INSTALL_DIR:FILEPATH=") > -1):
             pathlist.add(l.split("=")[1][0:-1])
         if (l.find("Trilinos_DIR:FILEPATH=") > -1):
-            pathlist.add(l.split("=")[1][0:-1]+"/include")
+            pathlist.add(l.split("=")[1][0:-1]+"/../../../include")
     pathlist.add("/usr/include/openmpi/1.2.4-gcc")
     
     # add compiler paths
