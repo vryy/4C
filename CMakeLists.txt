@@ -1055,8 +1055,6 @@ set(OBJS_LINALG
   src/linalg/linalg_sparsematrixbase.cpp
   src/linalg/linalg_utils.cpp
   src/linalg/saddlepointpreconditioner.cpp
-  src/linalg/simpler_operator.cpp
-  src/linalg/simpler_operator_ex.cpp
   src/linalg/solver_cheapsimplepreconditioner.cpp
   src/linalg/bgs2x2_operator.cpp
   src/linalg/smoother.cpp

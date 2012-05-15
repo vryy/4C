@@ -11,8 +11,6 @@
 
 // include header files for concrete implementation
 #include "bgs2x2_operator.H"                   // Lena's BGS implementation
-#include "simpler_operator.H"                  // Michael's SIMPLE(R) for fluid
-#include "simpler_operator_ex.H"               // Tobias' SIMPLE
 #include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
 #include "saddlepointpreconditioner.H"         // Tobias' saddle point preconditioner
 

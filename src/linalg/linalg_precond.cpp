@@ -17,7 +17,6 @@ Maintainer: Michael Gee
 #include "linalg_solver.H"
 
 #include "linalg_mlapi_operator.H"
-#include "simpler_operator.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
 
