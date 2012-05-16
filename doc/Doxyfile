@@ -615,8 +615,7 @@ INPUT                  = index.doc \
                          ../src/post_generic \
                          ../src/post_gid \
                          ../src/post_monitor \
-                         ../src/pre_exodus \
-                         ../src/shell8 \
+                         ../src/pre_exodus
 
 
 # This tag can be used to specify the character encoding of the source files 
@@ -1284,21 +1283,12 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 PREDEFINED             = __cplusplus \
-                         CCADISCRET \
                          STKADAPTIVE \
-                         TRILINOS_PACKAGE \
                          QHULL \
                          D_SHELL8 \
-                         D_BEAM2 \
-                         D_BEAM3 \
-                         D_TRUSS3 \
-                         D_TRUSS2 \
-                         D_TORSION3 \
-                         D_TORSION2 \
                          D_ALE \
                          D_FLUID2 \
                          D_FLUID3 \
-                         D_WALL1 \
                          D_THERMO \
                          DEBUG \
                          PARALLEL \
@@ -1306,9 +1296,6 @@ PREDEFINED             = __cplusplus \
                          RESULTTEST \
                          BINIO \
                          D_FLUID \
-                         D_FSI \
-                         D_SOLID3 \
-                         D_SOTET \
                          D_EXODUS
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
