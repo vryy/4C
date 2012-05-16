@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 
 extern "C"
 {
-#include "../shell8/shell8.h"
+#include "./shell8/shell8.h"
 }
 
 
