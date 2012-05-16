@@ -46,8 +46,6 @@ Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/kaiser-openmpi-gcc-1.5.5-acml/lib/cma
     -D D_ALE:BOOL=ON \
     -D D_FLUID3:BOOL=ON \
     -D D_SHELL8:BOOL=ON \
-    -D D_SOH8:BOOL=ON \
-    -D D_SOTET:BOOL=ON \
     -D D_THERMO:BOOL=ON \
     -D D_ALE_BFLOW:BOOL=ON \
     -D INCLUDE_INSTALL_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
@@ -61,5 +59,6 @@ Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/kaiser-openmpi-gcc-1.5.5-acml/lib/cma
     $EXTRA_ARGS \
     ${BACI_HOME}
 
-#cd $BACI_HOME
-#if [ -f .cproject ]; then ./adapt_cproject.py `basename $0`; fi
+# Outdated!
+# -D D_SOH8:BOOL=ON \
+# -D D_SOTET:BOOL=ON \
