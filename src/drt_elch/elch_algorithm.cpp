@@ -437,7 +437,7 @@ void ELCH::Algorithm::OuterIterationConvection()
   stringstream temp;
   temp << DRT::Problem::Instance()->OutputControlFile()->FileName()<<"_nonliniter_step"<<Step();
   string outname = temp.str();
-  string probtype = DRT::Problem::Instance()->ProblemType(); // = "elch"
+  string probtype = DRT::Problem::Instance()->ProblemName();
 
   RCP<IO::OutputControl> myoutputcontrol = rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
   // create discretization writer with my own control settings
