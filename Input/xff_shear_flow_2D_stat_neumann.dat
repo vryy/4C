@@ -66,6 +66,17 @@ TIMESTEP                        1.0
 UPRES                           1
 2DFLOW                          yes
 LINEAR_SOLVER                   1
+---------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE              residual_based //   edge_based // 
+DEFINITION_TAU        Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+TDS                   quasistatic
+TRANSIENT             no_transient
+PSPG                  yes_pspg //no_pspg /
+SUPG                  yes_supg //no_supg//yes_supg
+VSTAB                 no_vstab
+CSTAB                 no_cstab //cstab_qs
+CROSS-STRESS          no_cross
+REYNOLDS-STRESS       no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
@@ -104,10 +115,19 @@ ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 PARTITION                       Cut_Elements                    // The solver to attack the system of linear equations arising of FE approach with.
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
+VOLUME_GAUSS_POINTS_BY          Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-CONV_STAB_FAC                   0.0
-CONV_STAB_SCALING               none
+EMBEDDED_BOUNDARY               BoundaryTypeSigma  // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+//VISC_STAB_FAC                   100.0 // (relevant for nitsche)
+//VISC_STAB_SCALING               visc_div_by_hk // inv_hk // const (relevant for nitsche)
+//VISC_STAB_HK                    vol_equivalent // vol_div_by_surf // longest_ele_length (relevant for nitsche)
+CONV_STAB_FAC                   0.0 // 1.0
+CONV_STAB_SCALING               none // abs_normal_vel //abs_normal_vel // inflow // const 
+//GHOST_PENALTY_STAB              Yes
+//GHOST_PENALTY_FAC               0.001
+//MSH_L2_PROJ                     part_ele_proj //full_ele_proj (K_ss whole element or just partial) 
+//EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
