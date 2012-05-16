@@ -673,7 +673,8 @@ namespace FLD
 
     bool   monolithicfluidfluidfsi_;
     bool   samemaps_; // same maps for the current cut and the last cut
-    int relaxing_ale_;
+    int relaxing_ale_every_;
+    bool relaxing_ale_;
 
     // used for monolithic_fixedale_partitioned
     Teuchos::RCP<Epetra_Vector>    toggle_;

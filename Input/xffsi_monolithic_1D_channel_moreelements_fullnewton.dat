@@ -156,9 +156,9 @@ ML_DAMPMED                      1.0                             // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
 -------------------------------------------------------XFEM GENERAL
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT Xff_TimeInt_FullProj
 MONOLITHIC_XFFSI_APPROACH     xffsi_full_newton //xffsi_fixedALE_interpolation xffsi_fixedALE_partitioned
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY     BoundaryTypeSigma //BoundaryTypeNitsche 
 COUPLING_STRATEGY     xfluid_sided_mortaring //embedded_sided_mortaring 

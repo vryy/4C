@@ -952,8 +952,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_fluid_fluid_ale:
   {
-    fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-    xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
+    fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
+    xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
     aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     AddDis(genprob.numff, fluiddis);
@@ -1380,7 +1380,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
     case prb_structure:
-    {      
+    {
       // read microscale fields from second, third, ... inputfile if necessary
       // (in case of multi-scale material models)
       if (npType != copy_dat_file) ReadMicroFields(reader);

@@ -4359,31 +4359,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&xfem_general);
 
 
-  // xfluidfluid-fsi-monolithic approach
-  setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH","xffsi_fixedALE_partitioned","The monolithic apporach for xfluidfluid-fsi",
-                                    tuple<std::string>("xffsi_full_newton", "xffsi_fixedALE_interpolation", "xffsi_fixedALE_partitioned"),
-                                    tuple<int>(
-                                      INPAR::XFEM::XFFSI_Full_Newton,    //xffsi with no fixed xfem-coupling
-                                      INPAR::XFEM::XFFSI_FixedALE_Interpolation,  // xffsi with fixed xfem-coupling in every newtonstep
-                                                                                  // and interpolations for embedded-dis afterwards
-                                      INPAR::XFEM::XFFSI_FixedALE_Partitioned      // xffsi with fixed xfem-coupling in every newtonstep
-                                                                                  // and solving fluid-field again
-                                       ),
-                                   &xfem_general);
-
-  // How many monolithic steps we keep the fluidfluid-boundary fix
-  IntParameter("RELAXING_ALE",1,"Relaxing Ale after how many monolithic steps",&xfem_general);
-
-  // xfluidfluid time integration approach
-  setStringToIntegralParameter<int>("XFLUIDFLUID_TIMEINT","Xff_TimeInt_FullProj","The xfluidfluid-timeintegration approach",
-                                    tuple<std::string>("Xff_TimeInt_FullProj", "Xff_TimeInt_ProjIfMoved","Xff_TimeInt_KeepGhostValues"),
-                                    tuple<int>(
-                                      INPAR::XFEM::Xff_TimeInt_FullProj   ,    //always project nodes from embedded to background nodes
-                                      INPAR::XFEM::Xff_TimeInt_ProjIfMoved,     //project nodes just if the status of background nodes changed
-                                      INPAR::XFEM::Xff_TimeInt_KeepGhostValues  //always keep the ghost values of the background discretization
-                                      ),
-                                    &xfem_general);
-
   IntParameter("MAX_NUM_DOFSETS",3,"Maximum number of volumecells in the XFEM element",&xfem_general);
 
   // Integration options
@@ -4396,6 +4371,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<std::string>("Tessellation","MomentFitting","DirectDivergence"),
                                  tuple<int>(0,1,2),
                                  &xfem_general);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_dyn = list->sublist("XFLUID DYNAMIC",false,"");
@@ -4446,7 +4422,32 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("VEL_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfluid_general);
   IntParameter("VEL_INIT_FUNCT_NO",-1,"funct number for initial interface velocity",&xfluid_general);
 
+  // How many monolithic steps we keep the fluidfluid-boundary fixed
+  IntParameter("RELAXING_ALE_EVERY",1,"Relaxing Ale after how many monolithic steps",&xfluid_general);
 
+  BoolParameter("RELAXING_ALE","yes","switch on/off for relaxing Ale in monolithic fluid-fluid-fsi",&xfluid_general);
+
+  // xfluidfluid-fsi-monolithic approach
+  setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH","xffsi_fixedALE_partitioned","The monolithic apporach for xfluidfluid-fsi",
+                                    tuple<std::string>("xffsi_full_newton", "xffsi_fixedALE_interpolation", "xffsi_fixedALE_partitioned"),
+                                    tuple<int>(
+                                      INPAR::XFEM::XFFSI_Full_Newton,    //xffsi with no fixed xfem-coupling
+                                      INPAR::XFEM::XFFSI_FixedALE_Interpolation,  // xffsi with fixed xfem-coupling in every newtonstep
+                                                                                  // and interpolations for embedded-dis afterwards
+                                      INPAR::XFEM::XFFSI_FixedALE_Partitioned      // xffsi with fixed xfem-coupling in every newtonstep
+                                                                                  // and solving fluid-field again
+                                      ),
+                                    &xfluid_general);
+
+  // xfluidfluid time integration approach
+  setStringToIntegralParameter<int>("XFLUIDFLUID_TIMEINT","Xff_TimeInt_FullProj","The xfluidfluid-timeintegration approach",
+                                    tuple<std::string>("Xff_TimeInt_FullProj", "Xff_TimeInt_ProjIfMoved","Xff_TimeInt_KeepGhostValues"),
+                                    tuple<int>(
+                                      INPAR::XFEM::Xff_TimeInt_FullProj   ,    //always project nodes from embedded to background nodes
+                                      INPAR::XFEM::Xff_TimeInt_ProjIfMoved,     //project nodes just if the status of background nodes changed
+                                      INPAR::XFEM::Xff_TimeInt_KeepGhostValues  //always keep the ghost values of the background discretization
+                                      ),
+                                    &xfluid_general);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION",false,"");

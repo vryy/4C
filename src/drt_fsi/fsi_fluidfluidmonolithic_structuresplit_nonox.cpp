@@ -43,12 +43,16 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
   fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
 
-  const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+  // const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+  const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
+  RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
+
   monolithic_approach_  = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
-                          (xdyn,"MONOLITHIC_XFFSI_APPROACH");
+                          (xfluiddyn.sublist("GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
 
   currentstep_ = 0;
-  relaxing_ale_ = xdyn.get<int>("RELAXING_ALE");
+  relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
+  relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
@@ -465,6 +469,7 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicStructureSplitNoNOX::CombinedD
   vectoroverallfsimaps.push_back(scondmap);
   vectoroverallfsimaps.push_back(ffcondmap);
   vectoroverallfsimaps.push_back(acondmap);
+  //////////AUCH?????????????
   Teuchos::RCP<Epetra_Map> overallfsidbcmaps = LINALG::MultiMapExtractor::MergeMaps(vectoroverallfsimaps);
 
   //structure and ale maps should not have any fsiCondDofs, so we
@@ -482,9 +487,23 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicStructureSplitNoNOX::CombinedD
       otherdbcmapvector.push_back(gid);
   }
 
-  Teuchos::RCP<Epetra_Map> otherdbcmap = rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
+  ///////////GATHER?????????????
+    vector<int> otherdbcmapvector_all;
 
-  return otherdbcmap;
+    // information how many processors work at all
+    vector<int> allproc(FluidField().Discretization()->Comm().NumProc());
+
+    // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+    for (int i=0; i<FluidField().Discretization()->Comm().NumProc(); ++i) allproc[i] = i;
+
+    // gathers information of all processors
+    LINALG::Gather<int>(otherdbcmapvector,otherdbcmapvector_all,(int)FluidField().Discretization()->Comm().NumProc(),&allproc[0],FluidField().Discretization()->Comm());
+
+    // Teuchos::RCP<Epetra_Map> otherdbcmap = rcp(new Epetra_Map(-1, otherdbcmapvector_all.size(), &otherdbcmapvector_all[0], 0, Comm()));
+
+    Teuchos::RCP<Epetra_Map> otherdbcmap = rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
+
+    return otherdbcmap;
 }
 
 /*----------------------------------------------------------------------*/
@@ -677,9 +696,12 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
 {
   currentstep_ ++;
 
-//  cout <<"currentstep_" <<  currentstep_ <<" " << currentstep_%relaxing_ale_<< endl;
+//  cout <<"currentstep_" <<  currentstep_ <<" " << currentstep_%relaxing_ale_every_<< endl;
   bool aleupdate = false;
-  if (currentstep_%relaxing_ale_==0) aleupdate = true;
+  if (relaxing_ale_ == true)
+    if (currentstep_%relaxing_ale_every_==0) aleupdate = true;
+
+  cout << "relaxing ale " << relaxing_ale_ << endl;
 
   if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton and aleupdate)
   {

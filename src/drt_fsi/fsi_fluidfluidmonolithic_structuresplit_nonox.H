@@ -162,7 +162,9 @@ namespace FSI
 
     int currentstep_;
 
-    int relaxing_ale_;
+    int relaxing_ale_every_;
+
+    bool relaxing_ale_;
 
     /// @name Some quantities to recover the Langrange multiplier at the end of each time step
 

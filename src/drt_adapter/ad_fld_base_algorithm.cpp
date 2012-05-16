@@ -477,7 +477,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& xdyn =
       DRT::Problem::Instance()->XFEMGeneralParams();
 
-
     fluidtimeparams->sublist("XFEM").set<int>("MAX_NUM_DOFSETS", xdyn.get<int>("MAX_NUM_DOFSETS"));
     fluidtimeparams->sublist("XFEM").set<string>("VOLUME_GAUSS_POINTS_BY", xdyn.get<string>("VOLUME_GAUSS_POINTS_BY"));
     fluidtimeparams->sublist("XFEM").set<string>("BOUNDARY_GAUSS_POINTS_BY", xdyn.get<string>("BOUNDARY_GAUSS_POINTS_BY"));
@@ -488,12 +487,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_SOL_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_SOL_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_DISCRET_OUT",      DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DISCRET_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_CUT_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_CUT_OUT"));
-
-    fluidtimeparams->sublist("XFEM").set<int>("MONOLITHIC_XFFSI_APPROACH", DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(xdyn,"MONOLITHIC_XFFSI_APPROACH"));
-    fluidtimeparams->sublist("XFEM").set<int>("XFLUIDFLUID_TIMEINT", DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidFluidTimeInt>(xdyn, "XFLUIDFLUID_TIMEINT"));
-    fluidtimeparams->sublist("XFEM").set<int>("RELAXING_ALE", xdyn.get<int>("RELAXING_ALE"));
-
-
   }
 
   // ----------------------------- sublist for xfem-specific fluid parameters
@@ -509,6 +502,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL")       = xfdyn.sublist("GENERAL");
     fluidtimeparams->sublist("XFLUID DYNAMIC/STABILIZATION") = xfdyn.sublist("STABILIZATION");
 
+    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("MONOLITHIC_XFFSI_APPROACH",xfdyn.sublist("GENERAL").get<string>("MONOLITHIC_XFFSI_APPROACH"));
+    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("XFLUIDFLUID_TIMEINT",xfdyn.sublist("GENERAL").get<string>("XFLUIDFLUID_TIMEINT"));
   }
 
 

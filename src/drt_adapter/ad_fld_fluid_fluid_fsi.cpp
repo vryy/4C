@@ -42,8 +42,8 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
   meshmap_   = Teuchos::rcp(new LINALG::MapExtractor());
 
 
-  monolithic_approach_= DRT::INPUT::get<INPAR::XFEM::Monolithic_xffsi_Approach>
-                        (params->sublist("XFEM"),"MONOLITHIC_XFFSI_APPROACH");
+  monolithic_approach_= DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
+                        (params->sublist("XFLUID DYNAMIC/GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
 
   interface_->Setup(*embfluiddis);
   xfluidfluid_->SetSurfaceSplitter(&(*interface_));
