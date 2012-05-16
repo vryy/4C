@@ -11,9 +11,9 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#include "../headers/standardtypes.h"
+#include "../../headers/standardtypes.h"
 #include "shell8.h"
-#include "../math/math_prototypes.h"
+#include "../../math/math_prototypes.h"
 /*----------------------------------------------------------------------*
  | st.venant-kirchhoff-material                           m.gee 6/01    |
  *----------------------------------------------------------------------*/

@@ -11,10 +11,10 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#include "../headers/standardtypes.h"
+#include "../../headers/standardtypes.h"
 #include "shell8.h"
 
-#include "../drt_lib/drt_dserror.H"
+#include "../../drt_lib/drt_dserror.H"
 
 #if 0
 //#ifndef CCADISCRET

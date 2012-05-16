@@ -11,7 +11,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
-#include "../headers/standardtypes.h"
+#include "../../headers/standardtypes.h"
 #include "shell8.h"
 /*----------------------------------------------------------------------*
  |                                                        m.gee 4/03    |
