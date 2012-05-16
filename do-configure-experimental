@@ -99,8 +99,10 @@ $CMAKE_COMMAND \
     $EXTRA_ARGS \
     ${BACI_HOME}
 
+BUILD_FOLDER=`pwd`
 cd $BACI_HOME
-if [ -f .cproject ]; then ./adapt_cproject.py `basename $0`; fi
+
+if [ -f .cproject ]; then ./adapt_cproject.py `basename $0` $BUILD_FOLDER; fi
 
 #    -D HDF5_INCLUDE_DIRS:FILEPATH="/usr/include" \
 #    -D HDF5_LIBRARY_DIRS:FILEPATH="/usr/lib64" \

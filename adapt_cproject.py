@@ -46,9 +46,12 @@ def getCompilerPaths():
     os.system('rm '+complicated_name_output)
     return comppath
 
-def getPaths():
+def getPaths(build_folder):
     """Get all include paths"""
-    f = open("CMakeCache.txt","r")
+    
+    cachefile = str(build_folder) + "/CMakeCache.txt"
+    
+    f = open(cachefile,"r")
     
     # get paths from do-configure file
     pathlist = set()
@@ -87,7 +90,7 @@ def getSymbols(fname):
     symbollist.add("HAVE_FFTW")
     return symbollist
 
-def adapt(do_configure_file):
+def adapt(do_configure_file,build_folder):
     """update .cproject file if existing"""
 
     if os.path.isfile(".cproject"): # if file exists
@@ -95,7 +98,7 @@ def adapt(do_configure_file):
 
         project = etree.fromstring(f.read())
 
-        pathset = getPaths()
+        pathset = getPaths(build_folder)
         pathlist = [x for x in pathset]
         pathlist.sort()
         #print pathlist
@@ -144,4 +147,4 @@ def adapt(do_configure_file):
         print "++ Update of .cproject file done"
 
 if __name__=='__main__':
-    adapt(sys.argv[1])
+    adapt(sys.argv[1],sys.argv[2])
