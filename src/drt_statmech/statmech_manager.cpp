@@ -718,6 +718,7 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
     }
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+    break;
     }
 }
 
@@ -2272,7 +2273,7 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 void STATMECH::StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const string name, RCP<Epetra_MultiVector> multivector)
 {
     //we assume that information was stored like for a redundant stl vector
-    RCP<vector<double> > stlvector = rcp(new vector<double>);
+    Teuchos::RCP<std::vector<double> > stlvector = rcp(new vector<double>);
     stlvector->resize(multivector->MyLength()*multivector->NumVectors());
 
     /*ReadRedundantDoubleVector reads information of stlvector on proc 0 and distributes
@@ -3754,16 +3755,10 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
           // case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
           if(broken && cut(2,n)==1.0)
           {
-            // indicates beginning of a new filament (in the very special case that this is needed)
-            bool newfilament = false;
             // check for case: last element of filament I as well as first element of filament I+1 broken
             if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
-            {
               // in this case, reset alreadydone...
               alreadydone = false;
-              // ...and set newfilament to true. Otherwise the last free nodes vector element will be deleted
-              newfilament = true;
-            }
             // add GID of fixed node to fixed-nodes-vector (to be added to condition later)
             if(!alreadydone)
               fixednodes.push_back(element->Nodes()[n]->Id());
@@ -3786,26 +3781,19 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
               tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
                             DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
             (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
-//            // delete last Id of freenodes if it was previously and falsely added
-//            if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
-//              freenodes.pop_back();
             // store gid of the "n+1"-node to avoid overwriting during the following iteration,
             // e.g. oscillating node becomes free if the following CheckForBrokenElement() call yields "!broken".
             tmpid = element->Nodes()[n+1]->Id();
             // Set to true to initiate certain actions if the following element is also broken.
             // If the following element isn't broken, alreadydone will be reset to false (see case: !broken)
-            alreadydone=true;
+            alreadydone = true;
           }// end of case 1
 
           // case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
           if(broken && cut(2,n)==2.0)
           {
-            bool newfilament = false;
             if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
-            {
               alreadydone = false;
-              newfilament = true;
-            }
             if(!alreadydone)
               oscillnodes.push_back(element->Nodes()[n]->Id());
             fixednodes.push_back(element->Nodes()[n+1]->Id());
@@ -3819,8 +3807,6 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
             for(int i=0; i<numdof; i++)
               if(i==oscdir)
                 (*deltadbc)[doflids.at(numdof*(n+1)+i)] = 0.0;
-//            if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
-//              freenodes.pop_back();
             tmpid = element->Nodes()[n+1]->Id();
             alreadydone = true;
           } // end of case 2
@@ -3828,13 +3814,6 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
           // case 3: unbroken element or broken in another than z-direction
           if(cut(2,n)==0.0)
           {
-//            if(element->Nodes()[n]->Id()!=tmpid)
-//            {
-//              freenodes.push_back(element->Nodes()[n]->Id());
-//              freenodes.push_back(element->Nodes()[n+1]->Id());
-//            }
-//            else
-//              freenodes.push_back(element->Nodes()[n+1]->Id());
             tmpid=element->Nodes()[n+1]->Id();
             // set to false to handle annoying special cases
             alreadydone = false;
