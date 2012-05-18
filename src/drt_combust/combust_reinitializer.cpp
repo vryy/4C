@@ -228,6 +228,8 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     {
       // smallest distance to the vertex of a flame front patch
       double vertexdist = 7777.7; // default value
+      // smallest distance to the edge of a flame front patch
+      double edgedist = 6666.6; // default value
       // smallest distance to flame front
       double mindist = 5555.5; // default value
 
@@ -358,10 +360,15 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
             }
           }
 
+          //-------------------------------------------------------------
+          // compute smallest distance to edges of this flame front patch
+          //-------------------------------------------------------------
+          ComputeDistanceToEdge(tmpcoord,patch,patchcoord,edgedist);
+
           //----------------------------------------------------------------
           // compute smallest distance to vertices of this flame front patch
           //----------------------------------------------------------------
-          ComputeDistanceToPatch(tmpcoord,patch,patchcoord,normal,vertexdist);
+          ComputeDistanceToPatch(tmpcoord,patch,patchcoord,vertexdist);
         }
       }
       }// end loop over all pbc copied nodes
@@ -383,10 +390,19 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
       //cout << "minimal distance to facing patch is " << mindist << endl;
       //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
       //cout << "vertexdist " << std::setw(18) << std::setprecision(12) << std::scientific << vertexdist << endl;
+      if (fabs(edgedist) < fabs(mindist))
+      {
+        // if G-value at the node is negative, the minimal distance has to be negative
+        if ((*phivector)[doflid] < 0.0 )
+          mindist = -edgedist;
+        else
+          mindist = edgedist;
+      }
+
       if (fabs(vertexdist) < fabs(mindist)) // case 2
       {
         // if the sign has been changed by mistake in ComputeDistanceToPatch(), this has to be corrected here
-        if ((*phivector)[doflid] * vertexdist < 0.0 )
+        if ((*phivector)[doflid] < 0.0 )
           mindist = -vertexdist;
         else
           mindist = vertexdist;
@@ -861,18 +877,33 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
               }
             }
 
+            //-------------------------------------------------------------
+            // compute smallest distance to edges of this flame front patch
+            //-------------------------------------------------------------
+            // distance to the patch edge
+            double edgedist = 1.0e19;
+            ComputeDistanceToEdge(tmpcoord,patch,patchcoord,edgedist);
+
+            if (fabs(edgedist) < fabs(mindist))
+            {
+              // if G-value at the node is negative, the minimal distance has to be negative
+              if ((*phivector)[doflid] < 0.0 )
+                mindist = -edgedist;
+              else
+                mindist = edgedist;
+            }
+
             //----------------------------------------------------------------
             // compute smallest distance to vertices of this flame front patch
             //----------------------------------------------------------------
             // distance to the patch vertex
             double vertexdist = 1.0e19;
-
-            ComputeDistanceToPatch(tmpcoord,patch,patchcoord,normal,vertexdist);
+            ComputeDistanceToPatch(tmpcoord,patch,patchcoord,vertexdist);
 
             if (fabs(vertexdist) < fabs(mindist))
             {
-              // if the sign has been changed by mistake in ComputeDistanceToPatch(), this has to be corrected here
-              if ((*phivector)[doflid] * vertexdist < 0.0 )
+              // if G-value at the node is negative, the minimal distance has to be negative
+              if ((*phivector)[doflid] < 0.0 )
                 mindist = -vertexdist;
               else
                 mindist = vertexdist;
@@ -1038,13 +1069,80 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
 
 
 /*------------------------------------------------------------------------------------------------*
+ | private: compute distance to edge of patch                                         henke 08/09 |
+ *----------------------------------------------------------------------------------------------- */
+void COMBUST::Reinitializer::ComputeDistanceToEdge(
+    const LINALG::Matrix<3,1>&       node,
+    const GEO::BoundaryIntCell&      patch,
+    const LINALG::SerialDenseMatrix& patchcoord,
+    double&                          edgedist
+)
+{
+  // number of vertices of flame front patch (3 for tri3; 4 for quad4)
+  const size_t numvertices = patchcoord.N();
+
+  // current vertex of the patch (first vertex)
+  static LINALG::Matrix<3,1> vertex1(true);
+  // current next vertex of the patch (second vertex)
+  static LINALG::Matrix<3,1> vertex2(true);
+  // distance vector from node to first vertex
+  static LINALG::Matrix<3,1> nodetovertex1(true);
+  // distance vector from second vertex to first vertex
+  static LINALG::Matrix<3,1> vertex2tovertex1(true);
+
+  // compute distance to all vertices of patch
+  for(size_t ivert = 0; ivert<numvertices; ++ivert)
+  {
+    // vertex1 of flame front patch
+    vertex1(0) = patchcoord(0,ivert);
+    vertex1(1) = patchcoord(1,ivert);
+    vertex1(2) = patchcoord(2,ivert);
+
+    if (ivert < numvertices)
+    {
+      vertex2(0) = patchcoord(0,ivert+1);
+      vertex2(1) = patchcoord(1,ivert+1);
+      vertex2(2) = patchcoord(2,ivert+1);
+    }
+    else if (ivert == numvertices)
+    {
+      vertex2(0) = patchcoord(0,0);
+      vertex2(1) = patchcoord(1,0);
+      vertex2(2) = patchcoord(2,0);
+    }
+
+    // compute distance vector from current first vertex to node
+    nodetovertex1.Update(1.0, node, -1.0, vertex1);
+    // compute distance vector from current second first vertex to current frist vertex (edge)
+    vertex2tovertex1.Update(1.0, vertex2, -1.0, vertex1);
+    double normvertex2tovertex1 = vertex2tovertex1.Norm2();
+    // normalize vector
+    vertex2tovertex1.Scale(vertex2tovertex1.Norm2());
+
+    double lotfusspointdist = vertex2tovertex1.Dot(nodetovertex1);
+
+    if( (lotfusspointdist >= 0.0) and (lotfusspointdist <= normvertex2tovertex1) ) // lotfusspoint on edge
+    {
+      LINALG::Matrix<3,1> lotfusspoint(true);
+      lotfusspoint.Update(1.0,vertex1,lotfusspointdist,vertex2tovertex1);
+      LINALG::Matrix<3,1> nodetolotfusspoint(true);
+      nodetolotfusspoint.Update(1.0,node,-1.0,lotfusspoint);
+      // determine length of vector from node to lot fuss point
+      edgedist = nodetolotfusspoint.Norm2();
+    }
+  }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
  | private: compute distance to vertex of patch                                       henke 08/09 |
  *----------------------------------------------------------------------------------------------- */
 void COMBUST::Reinitializer::ComputeDistanceToPatch(
     const LINALG::Matrix<3,1>&       node,
     const GEO::BoundaryIntCell&      patch,
     const LINALG::SerialDenseMatrix& patchcoord,
-    const LINALG::Matrix<3,1>&       normal,
     double&                          vertexdist
 )
 {
@@ -1068,18 +1166,7 @@ void COMBUST::Reinitializer::ComputeDistanceToPatch(
     dist.Update(1.0, node, -1.0, vertex);
 
     // compute L2-norm of distance vector
-    double normdist = sqrt(dist(0)*dist(0) + dist(1)*dist(1) + dist(2)*dist(2));
-    if(normdist < fabs(vertexdist))
-    {
-      // determine sign of distance vector from node to flame front
-      double tmp = normal(0)*dist(0) + normal(1)*dist(1) + normal(2)*dist(2);
-      // tmp < 0 if node in burnt domain (G>0) and vice versa
-      if (tmp <= 0.0) // 'normal' and 'dist' point in different directions
-        vertexdist = normdist;
-      else // 'normal' and 'dist' point in the same direction
-        vertexdist = -normdist;
-      //cout << "distance to vertex is overwritten by: " << vertexdist << endl;
-    }
+    vertexdist = dist.Norm2();
   }
 
   return;

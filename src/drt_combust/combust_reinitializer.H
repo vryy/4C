@@ -82,13 +82,20 @@ namespace COMBUST
         LINALG::Matrix<3,1>&             normal
      );
 
+    /// compute distance to edge of patch
+    void ComputeDistanceToEdge(
+        const LINALG::Matrix<3,1>&       node,
+        const GEO::BoundaryIntCell&      patch,
+        const LINALG::SerialDenseMatrix& patchcoord,
+        double&                          edgedist
+    );
+
 
     /// compute distance to vertex of patch
     void ComputeDistanceToPatch(
         const LINALG::Matrix<3,1>&       node,
         const GEO::BoundaryIntCell&      patch,
         const LINALG::SerialDenseMatrix& patchcoord,
-        const LINALG::Matrix<3,1>&       normal,
         double&                          vertexdist
     );
 
