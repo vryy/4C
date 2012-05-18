@@ -328,10 +328,10 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 #ifdef DOFSETS_NEW
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
-      std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+      std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
       std::vector<std::vector<double> > refEqns;
 
-      e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets, refEqns, xfluid_.VolumeCellGaussPointBy_ );
+      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
 
       if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
       if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -358,6 +358,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
         // Reshapelement matrices and vectors and init to zero
         strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
 
+        for( unsigned cellcount=0;cellcount!=cells.size();cellcount++ )
         {
           TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
 
@@ -368,7 +369,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                     strategy.Elevector1(),
                                     strategy.Elevector2(),
                                     strategy.Elevector3(),
-                                    intpoints_sets[set_counter] );
+                                    intpoints_sets[set_counter][cellcount] );
 
           if (err)
             dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
@@ -385,7 +386,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           GEO::CUT::VolumeCell * vc = *i;
           if ( vc->Position()==GEO::CUT::Point::outside )
           {
-            vc->GetBoundaryCells( bcells );
+              vc->GetBoundaryCells( bcells );
           }
         }
 
@@ -482,7 +483,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             impl->ElementXfemInterfaceNIT(    ele,
                                               discret,
                                               la[0].lm_,
-                                              intpoints_sets[set_counter],
+                                              intpoints_sets[set_counter][0],
                                               cutdiscret,
                                               bcells,
                                               bintpoints,
@@ -497,7 +498,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             impl->ElementXfemInterfaceNIT2(   ele,
                                               discret,
                                               la[0].lm_,
-                                              intpoints_sets[set_counter],
+                                              intpoints_sets[set_counter][0],
                                               cutdiscret,
                                               bcells,
                                               bintpoints,
@@ -580,7 +581,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
         // after assembly the col vector it has to be exported to the row residual_ vector
         // using the 'Add' flag to get the right value for shared nodes
         LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
-
 
         set_counter += 1;
 
@@ -1128,8 +1128,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
 #else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      std::vector<std::vector<double> > refEqns;
-      e->VolumeCellGaussPoints( cells, intpoints,refEqns,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
+      e->VolumeCellGaussPoints( cells, intpoints,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
@@ -1206,8 +1205,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     {
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      std::vector<std::vector<double> > refEqns;
-      e->VolumeCellGaussPoints( cells, intpoints,refEqns,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
+
+      e->VolumeCellGaussPoints( cells, intpoints,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -4003,10 +4002,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
         std::vector< std::vector<int> > nds_sets;
-        std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
-        std::vector<std::vector<double> > refEqns;
+        std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
 
-        e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets, refEqns, VolumeCellGaussPointBy_ );
+        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy_ );
 
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -4023,11 +4021,14 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           // get element location vector, dirichlet flags and ownerships
           actele->LocationVector(*bgdis_,nds,la,false);
 
-          DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *bgdis_, la[0].lm_,
-                                                                                      elescalars,intpoints_sets[set_counter]);
+          for( unsigned cellcount=0;cellcount!=cell_sets[set_counter].size();cellcount++ )
+          {
+            DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *bgdis_, la[0].lm_,
+                                                                                        elescalars,intpoints_sets[set_counter][cellcount]);
 
-          // sum up (on each processor)
-          cpuscalars += elescalars;
+            // sum up (on each processor)
+            cpuscalars += elescalars;
+          }
 
           set_counter += 1;
         }

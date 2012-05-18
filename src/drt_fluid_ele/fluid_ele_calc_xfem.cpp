@@ -19,6 +19,7 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 
 #include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_position.H"
+#include "../drt_cut/cut_volumecell.H"
 
 #include "../drt_geometry/position_array.H"
 
@@ -87,7 +88,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
     DRT::Discretization &                                               dis,               ///< background discretization
     const std::vector<int> &                                            lm,                ///< element local map
-    const DRT::UTILS::GaussIntegration &                                intpoints,         ///< background element integration points
+    const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
     DRT::Discretization &                                               cutdis,            ///< cut discretization
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
@@ -718,104 +719,114 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
-    INPAR::XFEM::MSH_L2_Proj              msh_l2_proj,                           ///< full or partial l2 projection for MSH method
-    const DRT::UTILS::GaussIntegration &  intpoints,                             ///< background element integration points
-    std::string &                         VCellGaussPts,                         ///< volumecell gaussian points method
-    const std::vector<double>&            refEqn,                                ///< ?
-    int                                   eid,                                   ///< element ID
-    LINALG::Matrix<my::nsd_,my::nen_>&    evelaf,                                ///< element velocity
-    LINALG::Matrix<my::nen_,1>&           epreaf,                                ///< element pressure
-    LINALG::Matrix<my::nen_,my::nen_>&    bK_ss,                                 ///< block K_ss matrix
-    LINALG::Matrix<my::nen_,my::nen_>&    invbK_ss,                              ///< inverse of block K_ss matrix
-    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su, ///< K_su matrix
-    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
+    INPAR::XFEM::MSH_L2_Proj                                               msh_l2_proj,   ///< full or partial l2 projection for MSH method
+    const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,     ///< background element integration points
+    std::string &                                                          VCellGaussPts, ///< volumecell gaussian points method
+    const std::vector<double>&                                             refEqn,        ///< ?
+    int                                                                    eid,           ///< element ID
+    LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,        ///< element velocity
+    LINALG::Matrix<my::nen_,1>&                                            epreaf,        ///< element pressure
+    LINALG::Matrix<my::nen_,my::nen_>&                                     bK_ss,         ///< block K_ss matrix
+    LINALG::Matrix<my::nen_,my::nen_>&                                     invbK_ss,      ///< inverse of block K_ss matrix
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su,          ///< K_su matrix
+    LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs            ///< rhs vector
     )
 {
 
-  if( VCellGaussPts!="DirectDivergence" ) // standard case for tesselation and momentfitting
+  //----------------------------------------------------------------------------
+  //            volume integral --- build K_su, K_sp matrices and rhs
+  //----------------------------------------------------------------------------
+  if( msh_l2_proj == INPAR::XFEM::MSH_L2_Proj_full ) // projection over the full background element
   {
-    //----------------------------------------------------------------------------
-    //            volume integral --- build K_su, K_sp matrices and rhs
-    //----------------------------------------------------------------------------
-    if( msh_l2_proj == INPAR::XFEM::MSH_L2_Proj_part)
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
     {
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
-      {
-        // evaluate shape functions and derivatives at integration point
-        my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
-        MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
-      }
-    }
-    else // l2-projection on whole fluid element
-    {
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
-      {
-        // evaluate shape functions and derivatives at integration point
-        my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
-        MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
-      }
+      // evaluate shape functions and derivatives at integration point
+      my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+      MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
     }
   }
-  else // DirectDivergence integration approach
+  else //projection over the volumecells (partial projection)
   {
-    //----------------------------------------------------------------------------
-    //            volume integral --- build K_su, K_sp matrices and rhs
-    //----------------------------------------------------------------------------
-
-    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+    if( VCellGaussPts!="DirectDivergence" ) // standard case for tessellation and momentfitting
     {
-      LINALG::Matrix<my::nen_,my::nen_> invbK_ssTemp( true );
-      LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)> K_suTemp;
-      LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>                rhsTemp;
-
-      DRT::UTILS::GaussIntegration gint = InternalGaussPoints( iquad, refEqn );
-
-      for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
+      for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
       {
-        my::EvalShapeFuncAndDerivsAtIntPoint( quadint, eid );
-        MSH_EvaluateMatrices( evelaf, epreaf, bK_ss, invbK_ssTemp, K_suTemp, rhsTemp );
+        const DRT::UTILS::GaussIntegration intcell = *i;
+        for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
+        {
+          // evaluate shape functions and derivatives at integration point
+          my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+          MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
+        }
       }
+    }
+    else  // DirectDivergence method
+    {
+      for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
+      {
+        const DRT::UTILS::GaussIntegration intcell = *i;
+        //----------------------------------------------------------------------
+        //integration over the main gauss points to get the required integral
+        //----------------------------------------------------------------------
+        for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
+        {
+          LINALG::Matrix<my::nen_,my::nen_> invbK_ssTemp( true );
+          LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)> K_suTemp;
+          LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>                rhsTemp;
 
-      my::EvalShapeFuncAndDerivsAtIntPoint( iquad, eid );
-      bK_ss.MultiplyNT( my::funct_, my::funct_ );
+          DRT::UTILS::GaussIntegration gint = InternalGaussPoints( iquad, refEqn );
 
-      invbK_ss.Update( my::fac_, invbK_ssTemp, 1.0 );
+          //----------------------------------------------------------------------
+          //integration over the internal gauss points - to get modified integrand
+          //----------------------------------------------------------------------
+          for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
+          {
+            my::EvalShapeFuncAndDerivsAtIntPoint( quadint, eid );
+            MSH_EvaluateMatrices( evelaf, epreaf, bK_ss, invbK_ssTemp, K_suTemp, rhsTemp );
+          }
 
-      const unsigned Velx = 0;
-      const unsigned Vely = 1;
-      const unsigned Velz = 2;
-      const unsigned Pres = 3;
+          my::EvalShapeFuncAndDerivsAtIntPoint( iquad, eid );
+          bK_ss.MultiplyNT( my::funct_, my::funct_ );
 
-      const unsigned Sigmaxx = 0;
-      const unsigned Sigmaxy = 1;
-      const unsigned Sigmaxz = 2;
-      const unsigned Sigmayx = 1;
-      const unsigned Sigmayy = 3;
-      const unsigned Sigmayz = 4;
-      const unsigned Sigmazx = 2;
-      const unsigned Sigmazy = 4;
-      const unsigned Sigmazz = 5;
+          invbK_ss.Update( my::fac_, invbK_ssTemp, 1.0 );
 
-      K_su( Sigmaxx, Velx )->Update( my::fac_, *K_suTemp( Sigmaxx, Velx ), 1.0 );
-      K_su( Sigmaxy, Velx )->Update( my::fac_, *K_suTemp( Sigmaxy, Velx ), 1.0 );
-      K_su( Sigmayx, Vely )->Update( my::fac_, *K_suTemp( Sigmayx, Vely ), 1.0 );
-      K_su( Sigmaxz, Velx )->Update( my::fac_, *K_suTemp( Sigmaxz, Velx ), 1.0 );
-      K_su( Sigmazx, Velz )->Update( my::fac_, *K_suTemp( Sigmazx, Velz ), 1.0 );
-      K_su( Sigmayy, Vely )->Update( my::fac_, *K_suTemp( Sigmayy, Vely ), 1.0 );
-      K_su( Sigmayz, Vely )->Update( my::fac_, *K_suTemp( Sigmayz, Vely ), 1.0 );
-      K_su( Sigmazy, Velz )->Update( my::fac_, *K_suTemp( Sigmazy, Velz ), 1.0 );
-      K_su( Sigmazz, Velz )->Update( my::fac_, *K_suTemp( Sigmazz, Velz ), 1.0 );
+          const unsigned Velx = 0;
+          const unsigned Vely = 1;
+          const unsigned Velz = 2;
+          const unsigned Pres = 3;
 
-      rhs( Sigmaxx, 0 )->Update( my::fac_, *rhsTemp( Sigmaxx, 0 ), 1.0 );
-      rhs( Sigmaxy, 0 )->Update( my::fac_, *rhsTemp( Sigmaxy, 0 ), 1.0 );
-      rhs( Sigmaxz, 0 )->Update( my::fac_, *rhsTemp( Sigmaxz, 0 ), 1.0 );
-      rhs( Sigmayy, 0 )->Update( my::fac_, *rhsTemp( Sigmayy, 0 ), 1.0 );
-      rhs( Sigmayz, 0 )->Update( my::fac_, *rhsTemp( Sigmayz, 0 ), 1.0 );
-      rhs( Sigmazz, 0 )->Update( my::fac_, *rhsTemp( Sigmazz, 0 ), 1.0 );
+          const unsigned Sigmaxx = 0;
+          const unsigned Sigmaxy = 1;
+          const unsigned Sigmaxz = 2;
+          const unsigned Sigmayx = 1;
+          const unsigned Sigmayy = 3;
+          const unsigned Sigmayz = 4;
+          const unsigned Sigmazx = 2;
+          const unsigned Sigmazy = 4;
+          const unsigned Sigmazz = 5;
 
-      K_su( Sigmaxx, Pres )->Update( my::fac_, *K_suTemp( Sigmaxx, Pres ), 1.0 );
-      K_su( Sigmayy, Pres )->Update( my::fac_, *K_suTemp( Sigmayy, Pres ), 1.0 );
-      K_su( Sigmazz, Pres )->Update( my::fac_, *K_suTemp( Sigmazz, Pres ), 1.0 );
+          K_su( Sigmaxx, Velx )->Update( my::fac_, *K_suTemp( Sigmaxx, Velx ), 1.0 );
+          K_su( Sigmaxy, Velx )->Update( my::fac_, *K_suTemp( Sigmaxy, Velx ), 1.0 );
+          K_su( Sigmayx, Vely )->Update( my::fac_, *K_suTemp( Sigmayx, Vely ), 1.0 );
+          K_su( Sigmaxz, Velx )->Update( my::fac_, *K_suTemp( Sigmaxz, Velx ), 1.0 );
+          K_su( Sigmazx, Velz )->Update( my::fac_, *K_suTemp( Sigmazx, Velz ), 1.0 );
+          K_su( Sigmayy, Vely )->Update( my::fac_, *K_suTemp( Sigmayy, Vely ), 1.0 );
+          K_su( Sigmayz, Vely )->Update( my::fac_, *K_suTemp( Sigmayz, Vely ), 1.0 );
+          K_su( Sigmazy, Velz )->Update( my::fac_, *K_suTemp( Sigmazy, Velz ), 1.0 );
+          K_su( Sigmazz, Velz )->Update( my::fac_, *K_suTemp( Sigmazz, Velz ), 1.0 );
+
+          rhs( Sigmaxx, 0 )->Update( my::fac_, *rhsTemp( Sigmaxx, 0 ), 1.0 );
+          rhs( Sigmaxy, 0 )->Update( my::fac_, *rhsTemp( Sigmaxy, 0 ), 1.0 );
+          rhs( Sigmaxz, 0 )->Update( my::fac_, *rhsTemp( Sigmaxz, 0 ), 1.0 );
+          rhs( Sigmayy, 0 )->Update( my::fac_, *rhsTemp( Sigmayy, 0 ), 1.0 );
+          rhs( Sigmayz, 0 )->Update( my::fac_, *rhsTemp( Sigmayz, 0 ), 1.0 );
+          rhs( Sigmazz, 0 )->Update( my::fac_, *rhsTemp( Sigmazz, 0 ), 1.0 );
+
+          K_su( Sigmaxx, Pres )->Update( my::fac_, *K_suTemp( Sigmaxx, Pres ), 1.0 );
+          K_su( Sigmayy, Pres )->Update( my::fac_, *K_suTemp( Sigmayy, Pres ), 1.0 );
+          K_su( Sigmazz, Pres )->Update( my::fac_, *K_suTemp( Sigmazz, Pres ), 1.0 );
+        }
+      }
     }
   }
 

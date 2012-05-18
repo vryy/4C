@@ -303,17 +303,15 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       {
 
 #ifdef DOFSETS_NEW
-
           std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
           std::vector< std::vector<int> > nds_sets;
-          std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+          std::vector<std::vector< DRT::UTILS::GaussIntegration > > intpoints_sets;
           std::vector<std::vector<double> > refEqns;
 
-          e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets,refEqns, xfluid_.VolumeCellGaussPointBy_ );
+          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
 
           if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
           if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
-
 
           int set_counter = 0;
 
@@ -321,7 +319,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                s!=cell_sets.end();
                s++)
           {
-
               GEO::CUT::plain_volumecell_set & cells = *s;
               const std::vector<int> & nds = nds_sets[set_counter];
 
@@ -339,25 +336,25 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
               //------------------------------------------------------------
               // Evaluate domain integrals
+              for( unsigned cellcount=0;cellcount!=cells.size();cellcount++ )
               {
-                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 1) cut domain" );
+                TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 1) cut domain" );
 
-                  // call the element evaluate method
-                  int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
-                                            strategy.Elematrix1(),
-                                            strategy.Elematrix2(),
-                                            strategy.Elevector1(),
-                                            strategy.Elevector2(),
-                                            strategy.Elevector3(),
-                                            intpoints_sets[set_counter] );
+                // call the element evaluate method
+                int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
+                                          strategy.Elematrix1(),
+                                          strategy.Elematrix2(),
+                                          strategy.Elevector1(),
+                                          strategy.Elevector2(),
+                                          strategy.Elevector3(),
+                                          intpoints_sets[set_counter][cellcount] );
 
-                  if (err)
-                      dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+                if (err)
+                  dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
               }
 
               //------------------------------------------------------------
               // Evaluate interface integrals
-
               // do cut interface condition
 
               // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
@@ -366,19 +363,18 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
               for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
               {
-                  GEO::CUT::VolumeCell * vc = *i;
-                  if ( vc->Position()==GEO::CUT::Point::outside )
-                  {
-                      vc->GetBoundaryCells( bcells );
-                  }
+                GEO::CUT::VolumeCell * vc = *i;
+                if ( vc->Position()==GEO::CUT::Point::outside )
+                {
+                    vc->GetBoundaryCells( bcells );
+                }
               }
-
 
               if ( bcells.size() > 0 )
               {
                   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
 
-                  // Attention: switch also the flag in fluid3_impl.cpp
+                  // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
                   // original Axel's transformation
                   e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
@@ -411,7 +407,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                       impl->ElementXfemInterfaceNIT(   ele,
                                                        discret,
                                                        la[0].lm_,
-                                                       intpoints_sets[set_counter],
+                                                       intpoints_sets[set_counter][0],
                                                        cutdiscret,
                                                        bcells,
                                                        bintpoints,
@@ -424,6 +420,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                        refEqns[set_counter]);
 
               }
+
               //------------------------------------------------------------
               // Assemble matrix and vectors
 
@@ -450,11 +447,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               // using the 'Add' flag to get the right value for shared nodes
               LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
 
-
-              set_counter += 1;
+            set_counter += 1;
 
           } // end of loop over cellsets // end of assembly for each set of cells
-
 #else
 
         GEO::CUT::plain_volumecell_set cells;
@@ -702,7 +697,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     sysmat_->Complete();
 
 }
-
 
 }
 
@@ -1614,10 +1608,9 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 
         std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
         std::vector< std::vector<int> > nds_sets;
-        std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
-        std::vector<std::vector<double> > refEqns;
+        std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
 
-        e->GetCellSets_DofSets_GaussPoints_RefEqn( cell_sets, nds_sets, intpoints_sets, refEqns, VolumeCellGaussPointBy_ );
+        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy_ );
 
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -1634,11 +1627,14 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           // get element location vector, dirichlet flags and ownerships
           actele->LocationVector(*discret_,nds,la,false);
 
-          DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
-                                                                                      elescalars,intpoints_sets[set_counter]);
+          for( unsigned cellcount=0;cellcount!=cell_sets[set_counter].size();cellcount++)
+          {
+            DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
+                                                                                      elescalars,intpoints_sets[set_counter][cellcount]);
 
-          // sum up (on each processor)
-          cpuscalars += elescalars;
+            // sum up (on each processor)
+            cpuscalars += elescalars;
+          }
 
           set_counter += 1;
         }

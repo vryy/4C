@@ -130,7 +130,7 @@ namespace ELEMENTS
         DRT::ELEMENTS::Fluid *                                           ele,
         DRT::Discretization &                                             dis,
         const std::vector<int> &                                          lm,
-        const DRT::UTILS::GaussIntegration &                              intpoints,
+        const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,
         DRT::Discretization &                                             cutdis,
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,

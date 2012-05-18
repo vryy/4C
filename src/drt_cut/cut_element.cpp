@@ -741,14 +741,14 @@ void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner, 
     return;
 
   //When the cut side touches the element the shape of the element is retained
-  if(cells_.size()==1)
+  /*if(cells_.size()==1)
   {
 	  VolumeCell * vc = *cells_.begin();
       if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
       {
            return;
       }
-  }
+  }*/
 
  /* if ( mesh.CreateOptions().SimpleShapes() )
     {
@@ -775,7 +775,7 @@ void GEO::CUT::Element::DirectDivergenceGaussRule( Mesh & mesh, bool include_inn
   if ( not active_ )
     return;
 
-  //When the cut side touches the element the shape of the element is retained
+  /*//When the cut side touches the element the shape of the element is retained
   if(cells_.size()==1)
   {
     VolumeCell * vc = *cells_.begin();
@@ -783,7 +783,7 @@ void GEO::CUT::Element::DirectDivergenceGaussRule( Mesh & mesh, bool include_inn
     {
          return;
     }
-  }
+  }*/
 
  /* if ( mesh.CreateOptions().SimpleShapes() )
     {

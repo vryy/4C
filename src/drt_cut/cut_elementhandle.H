@@ -35,10 +35,9 @@ public:
    */
   virtual void GetVolumeCells( plain_volumecell_set & cells ) = 0;
 
-  virtual void GetCellSets_DofSets_GaussPoints_RefEqn ( std::vector< plain_volumecell_set > & cell_sets ,
+  virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
                                        std::vector< std::vector< int > >   & nds_sets,
-                                       std::vector< DRT::UTILS::GaussIntegration> & intpoints_sets,
-                                       std::vector<std::vector<double> >& RefEqn,
+                                       std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
                                        std::string gausstype ) = 0;
 
 
@@ -56,14 +55,6 @@ public:
   virtual void VolumeCells( plain_volumecell_set & cells ) const = 0;
 
   virtual void CollectElements( plain_element_set & elements ) = 0;
-
-  /*!
-  \brief Get the equation of reference plane for the volumecell. This is useful when DirectDivergence method is used for
-  volumecell integration
-   */
-  virtual void RefPlaneEquation( plain_volumecell_set & cells,
-                                 std::vector<std::vector<double> >& RefEqn,
-                                 std::string& gausstype )=0;
 
   virtual const std::vector<Node*> & Nodes() = 0;
 
@@ -103,7 +94,6 @@ public:
    */
   void VolumeCellGaussPoints( plain_volumecell_set & cells,
                               std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                              std::vector<std::vector<double> >& refEqn,
                               std::string gausstype);
   /*!
    \brief Collect the Gauss points of all the volumecells belong to this element. The integration rule over all the volumecells are connected.
@@ -195,10 +185,9 @@ public:
 //  virtual void GetVolumeCellsDofSets ( std::vector< plain_volumecell_set > & cellsets,
 //                                       std::vector< std::vector< int > >   & nds_sets   );
 
-  virtual void GetCellSets_DofSets_GaussPoints_RefEqn ( std::vector< plain_volumecell_set > & cell_sets ,
+  virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
                                        std::vector< std::vector< int > >   & nds_sets,
-                                       std::vector< DRT::UTILS::GaussIntegration> & intpoints_sets,
-                                       std::vector<std::vector<double> >& RefEqn,
+                                       std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
                                        std::string gausstype);
 
   // collect the volume cells of all subelements
@@ -242,10 +231,6 @@ public:
     return element_->NumGaussPoints( Shape() );
   }
 
-  virtual void RefPlaneEquation( plain_volumecell_set & cells,
-                                 std::vector<std::vector<double> >& RefEqn,
-                                 std::string& gausstype );
-
   const std::vector<plain_volumecell_set> & GetVcSetsInside() { return vc_sets_inside_; };
 
   const std::vector<plain_volumecell_set> & GetVcSetsOutside() { return vc_sets_outside_; };
@@ -284,10 +269,9 @@ public:
 //  virtual void GetVolumeCellsDofSets ( std::vector< plain_volumecell_set > & cellsets ,
 //                                       std::vector< std::vector< int > >   & nds_sets   );
 
-  virtual void GetCellSets_DofSets_GaussPoints_RefEqn ( std::vector< plain_volumecell_set > & cell_sets ,
+  virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
                                        std::vector< std::vector< int > >   & nds_sets,
-                                       std::vector< DRT::UTILS::GaussIntegration > & intpoints_sets,
-                                       std::vector<std::vector<double> >& RefEqn,
+                                       std::vector<std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
                                        std::string gausstype);
 
   // collect the volume cells of all subelements
@@ -321,11 +305,6 @@ public:
   }
 
   void BuildCellSets ( plain_volumecell_set & cells_to_connect, std::vector<plain_volumecell_set> & connected_sets);
-
-  virtual void RefPlaneEquation( plain_volumecell_set & cells,
-                                 std::vector<std::vector<double> >& RefEqn,
-                                 std::string& gausstype );
-
 
   const std::vector<plain_volumecell_set> & GetVcSetsInside() { return connected_vc_sets_inside_; };
 

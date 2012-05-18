@@ -81,7 +81,7 @@ public:
         DRT::ELEMENTS::Fluid *                                             ele,               ///< fluid element
         DRT::Discretization &                                               dis,               ///< background discretization
         const std::vector<int> &                                            lm,                ///< element local map
-        const DRT::UTILS::GaussIntegration &                                intpoints,         ///< background element integration points
+        const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
         DRT::Discretization &                                               cutdis,            ///< cut discretization
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
@@ -230,17 +230,17 @@ private:
 
     //! build volume-based K matrices for coupling stress fields
     void MSH_Build_K_Matrices(
-        INPAR::XFEM::MSH_L2_Proj              msh_l2_proj,       ///< full or partial l2 projection for MSH method
-        const DRT::UTILS::GaussIntegration &  intpoints,         ///< background element integration points
-        std::string &                         VCellGaussPts,     ///< volumecell gaussian points method
-        const std::vector<double>&            refEqn,            ///< ?
-        int                                   eid,               ///< element ID
-        LINALG::Matrix<my::nsd_,my::nen_>&    evelaf,            ///< element velocity
-        LINALG::Matrix<my::nen_,1>&           epreaf,            ///< element pressure
-        LINALG::Matrix<my::nen_,my::nen_>&    bK_ss,             ///< block K_ss matrix
-        LINALG::Matrix<my::nen_,my::nen_>&    invbK_ss,          ///< inverse of block K_ss matrix
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su, ///< K_su matrix
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
+        INPAR::XFEM::MSH_L2_Proj                                               msh_l2_proj,       ///< full or partial l2 projection for MSH method
+        const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,         ///< background element integration points
+        std::string &                                                          VCellGaussPts,     ///< volumecell gaussian points method
+        const std::vector<double>&                                             refEqn,            ///< ?
+        int                                                                    eid,               ///< element ID
+        LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,            ///< element velocity
+        LINALG::Matrix<my::nen_,1>&                                            epreaf,            ///< element pressure
+        LINALG::Matrix<my::nen_,my::nen_>&                                     bK_ss,             ///< block K_ss matrix
+        LINALG::Matrix<my::nen_,my::nen_>&                                     invbK_ss,          ///< inverse of block K_ss matrix
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su,              ///< K_su matrix
+        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs                ///< rhs vector
         );
 
     //! evaluate volume-based K matrix terms at Gaussian point
