@@ -864,7 +864,8 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
                                                       prefix,
                                                       NDim(),
                                                       Restart(),
-                                                      IOParams().get<int>("FILESTEPS")));
+                                                      IOParams().get<int>("FILESTEPS"),
+                                                      true));
 
 }
 

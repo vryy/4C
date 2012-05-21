@@ -160,7 +160,8 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                                  std::string outputname,
                                  int ndim,
                                  int restart,
-                                 int filesteps)
+                                 int filesteps,
+                                 bool adaptname)
   : problemtype_(problemtype),
     inputfile_(inputfile),
     ndim_(ndim),
@@ -170,7 +171,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 {
   if (restart)
   {
-    if (comm.MyPID()==0)
+    if (comm.MyPID()==0 && adaptname == true)
     {
       // check whether filename_ includes a dash and in case separate the number at the end
       int number = 0;

@@ -181,6 +181,10 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   {
     const int ndim = DRT::Problem::Instance()->NDim();
     const int restart = DRT::Problem::Instance()->Restart();
+    bool adaptname = true;
+    // in case of restart, the new output file name is already adapted
+    if(restart)
+      adaptname = false;
 
     Teuchos::RCP<IO::OutputControl> microcontrol =
       Teuchos::rcp(new IO::OutputControl(microdis->Comm(),
@@ -191,7 +195,8 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
                             newfilename,
                             ndim,
                             restart,
-                            macrocontrol->FileSteps()));
+                            macrocontrol->FileSteps(),
+                            adaptname));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis,microcontrol));
 

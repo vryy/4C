@@ -52,7 +52,8 @@ namespace IO
                   std::string outputfilename,
                   int ndim,
                   int restart,
-                  int filesteps);
+                  int filesteps,
+                  bool adaptname = true);
 
     /// output prefix we write to
     /*!
