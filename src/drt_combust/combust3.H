@@ -97,9 +97,9 @@ private:
               const bool                             genalpha,
               const bool                             gradphi,
               const DRT::ELEMENTS::Combust3*         ele,
-              const Epetra_Vector*      phinp,
-              const Epetra_MultiVector*      gradphinp,
-              const Epetra_Vector*      curvature
+              const Epetra_Vector*                   phinp,
+              const Epetra_MultiVector*              gradphinp,
+              const Epetra_Vector*                   curvature
               );
 
           const bool instationary_;
@@ -126,7 +126,7 @@ private:
               const bool                             genalpha,
               const bool                             gradphi,
               const DRT::ELEMENTS::Combust3*         ele,
-              const RCP<Epetra_Vector>               phinp
+              const Epetra_Vector*                   phinp
               );
 
           const bool instationary_;

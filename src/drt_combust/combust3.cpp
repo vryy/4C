@@ -437,7 +437,7 @@ DRT::ELEMENTS::Combust3::MyStateSurface::MyStateSurface(
     const bool                             genalpha,
     const bool                             gradphi,
     const DRT::ELEMENTS::Combust3*         ele,
-    const Teuchos::RCP<Epetra_Vector>      phinp
+    const Epetra_Vector*                   phinp
     ) :
       instationary_(instationary),
       genalpha_(genalpha)

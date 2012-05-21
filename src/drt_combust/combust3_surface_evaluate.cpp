@@ -78,7 +78,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
       {
         //cout << "ich werte jetzt den Neumann inflow Term aus!" << endl;
         //this->Print(std::cout);
-        Teuchos::RCP<Epetra_Vector> phinp = params.get< Teuchos::RCP<Epetra_Vector> >("phinp",Teuchos::null);
+        Epetra_Vector* phinp = parent_->Phinp();
 
         if (this->parent_->Shape() != DRT::Element::hex8)
           dserror("Neumann inflow term evaluation only implemented for hex8 elements");
