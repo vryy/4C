@@ -2222,7 +2222,6 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   // create (old) flamefront conforming to restart state of fluid
   //-------------------------------------------------------------
   flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
-//  interfacehandle_->UpdateInterfaceHandle();
 
   // show flame front to fluid time integration scheme
   FluidField().ImportFlameFront(flamefront_,true);
@@ -2260,6 +2259,11 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     //-------------------------------------------------------------
     flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
     flamefront_->UpdateOldInterfaceHandle();
+
+    // show flame front to fluid time integration scheme
+    FluidField().ImportFlameFront(flamefront_,true);
+    // delete fluid's memory of flame front; it should never have seen it in the first place!
+    FluidField().ImportFlameFront(Teuchos::null,false);
 
     if (gmshoutput_)
     {
@@ -2329,6 +2333,9 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
       if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_one_step_theta)
         *ScaTraField().Phinm() = *ScaTraField().Phinp();
       //TODO: what should be done for gen alpha and does not phidtx have to be updated too?
+
+      // update flame front according to reinitialized G-function field
+      flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
     }
   }
 
@@ -2382,13 +2389,16 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     std::cout << " done" << endl;
   }
 
+  //FluidField().Output();
+  //ScaTraField().Output();
+
   // set time in scalar transport time integration scheme
   if(restartfromfluid)
     ScaTraField().SetTimeStep(FluidField().Time(),step);
 
   SetTimeStep(FluidField().Time(),step);
 
-//  UpdateTimeStep();
+  //UpdateTimeStep();
 
   restart_ = true;
 
