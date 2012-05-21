@@ -71,6 +71,15 @@ int main(int argc, char *argv[])
   Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
   int ngroups = problem->GetNPGroup()->NumGroups();
 
+  if ((gcomm->MyPID() == 0) && (strcmp(argv[argc-1], "--interactive") == 0))
+  {
+    printf( "\n** Enter a character to continue > \n"); fflush(stdout);
+    char go = ' ';
+    scanf("%c",&go);
+  }
+
+  gcomm->Barrier();
+
   /*------------------------------------------------ attach buffer to mpi */
   buff = (char*)malloc(buffsize);
   if (!buff)

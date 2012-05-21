@@ -79,7 +79,7 @@ void PrintHelpMessage()
             << std::endl
             << "SYNOPSIS" << std::endl
             << "\t" << baci_build << " [-h] [--help] [-p] [--parameters] [-d] [--datfile] [-ngroup=x] [-glayout=a,b,c,...] [-nptype=parallelism_type]" << std::endl
-            << "\t\tdat_name output_name [restart=y] [restartfrom=restart_file_name] [ dat_name0 output_name0 [restart=y] [restartfrom=restart_file_name] ... ]" << std::endl
+            << "\t\tdat_name output_name [restart=y] [restartfrom=restart_file_name] [ dat_name0 output_name0 [restart=y] [restartfrom=restart_file_name] ... ] [--interactive]" << std::endl
             << std::endl
             << "DESCRIPTION" << std::endl
             << "\tThe am besten simulation tool in the world." << std::endl
@@ -114,6 +114,9 @@ void PrintHelpMessage()
             << std::endl
             << "\trestartfrom=restart_file_name" << std::endl
             << "\t\tRestart the simulation from the files prefixed with restart_file_name. (default: output_name)" << std::endl
+            << std::endl
+            << "\t--interactive" << std::endl
+            << "\t\tBaci waits at the beginning for keyboard input. Helpful for parallel debugging when attaching to a single job. Must be specified at the end in the command line." << std::endl
             << std::endl
             << "SEE ALSO" << std::endl
             << "\tguides/reports/global_report.pdf" << std::endl

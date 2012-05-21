@@ -186,7 +186,8 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
              (argument.substr( 0, 2 ) != "-p") and
              (argument.substr( 0, 12 ) != "--parameters") and
              (argument.substr( 0, 2 ) != "-d") and
-             (argument.substr( 0, 9 ) != "--datfile") )
+             (argument.substr( 0, 9 ) != "--datfile") and
+             (argument.substr( 0, 13 ) != "--interactive") )
     {
       printf("\n\n You have specified an argument ( %s ) for BACI starting with a \"-\" that is not valid!\n",argument.c_str());
       printf("Please refer to ./baci-release --help and try again!\n");
