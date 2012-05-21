@@ -489,10 +489,38 @@ void STATMECH::StatMechManager::Output(const int ndim,
         std::ostringstream filename;
         filename << "./DoubleBondDistances.dat";
         LoomOutput(dis,filename);
+      }
+    }
+    break;
+    case INPAR::STATMECH::statout_coverageloom:
+    {
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0)
+      {
+        std::ostringstream filename;
+        filename << "./CrosslinkerDistribution_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        CrosslinkCoverageOutput(dis, filename);
 
         std::ostringstream filename2;
-        filename2 << "./CrosslinkerDistribution_"<<std::setw(6) << setfill('0') << istep <<".dat";
-        CrosslinkCoverageOutput(dis, filename2);
+        filename2 << "./CrosslinkerCoverage.dat";
+        CrosslinkCoverageOutput(dis, filename2, true);
+      }
+    }
+    break;
+    case INPAR::STATMECH::statout_distandcoverloom:
+    {
+      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0)
+      {
+        std::ostringstream filename;
+        filename << "./DoubleBondDistances.dat";
+        LoomOutput(dis,filename);
+
+//        std::ostringstream filename2;
+//        filename2 << "./CrosslinkerDistribution_"<<std::setw(6) << setfill('0') << istep <<".dat";
+//        CrosslinkCoverageOutput(dis, filename2);
+
+        std::ostringstream filename3;
+        filename3 << "./CrosslinkerCoverage.dat";
+        CrosslinkCoverageOutput(dis, filename3,true);
       }
     }
     break;
@@ -879,6 +907,7 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
             {
               lambdaorder(dof,1) = dof;
             }
+            break;
           }
         }
         // sort the lambdas (ascending values) and indices accordingly
@@ -3893,77 +3922,104 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream distances;
 
+    //check number of overall filaments and choose actions accordingly
+    bool singlefilstudy = false;
+    if((int)(*filamentnumber_)[filamentnumber_->MyLength()-1]==0)
+      singlefilstudy = true;
+
     // step 1: determine the first double bond between vertical and horizontal filaments
     int firstvfil = -1;
     std::vector<int> nodeIDs;
     std::vector<int> evalnodes;
     nodeIDs.clear();
-    for(int i=0; i<filamentnumber_->MyLength(); i++)
+    if(!singlefilstudy)
     {
-      if((int)(*filamentnumber_)[i]==0) // horizontal filament
+      for(int i=0; i<filamentnumber_->MyLength(); i++)
       {
-        if((int)nodeIDs.size()==0 && (*numbond_)[(int)(*bspotstatus_)[i]]>1.9)
+        if((int)(*filamentnumber_)[i]==0) // horizontal filament
         {
-          nodeIDs.push_back(discret_->NodeColMap()->GID(i));
-          int currlink = (int)(*bspotstatus_)[i];
-          for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
-            if((int)(*crosslinkerbond_)[j][currlink]!=nodeIDs.at(0))
+          if((int)(*bspotstatus_)[i]>-1)
+          {
+            if(nodeIDs.empty() && (*numbond_)[(int)(*bspotstatus_)[i]]>1.9)
             {
-              nodeIDs.push_back((int)(*crosslinkerbond_)[j][currlink]);
-              firstvfil = (int)(*filamentnumber_)[discret_->NodeColMap()->LID(nodeIDs.at(1))];
-              break;
+              nodeIDs.push_back(bspotcolmap_->GID(i));
+              int currlink = (int)(*bspotstatus_)[i];
+              for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+                if((int)(*crosslinkerbond_)[j][currlink]!=nodeIDs.at(0))
+                {
+                  nodeIDs.push_back((int)(*crosslinkerbond_)[j][currlink]);
+                  firstvfil = (int)(*filamentnumber_)[discret_->NodeColMap()->LID(nodeIDs.at(1))];
+                  break;
+                }
             }
+          }
         }
+        else if((int)(*filamentnumber_)[i] == (int)evalnodes.size()+1)
+          evalnodes.push_back(bspotcolmap_->GID(i));
       }
-      else if((int)(*filamentnumber_)[i] == (int)evalnodes.size()+1)
-        evalnodes.push_back(discret_->NodeColMap()->GID(i));
+    }
+    else
+    {
+      for(int i=0; i<filamentnumber_->MyLength(); i++)
+      {
+        if((int)(*bspotstatus_)[i]>-1)
+          if((*numbond_)[(int)(*bspotstatus_)[i]]>0.9)
+            evalnodes.push_back(bspotcolmap_->GID(i));
+      }
     }
 
+
     // do the following stuff only if we have actual crosslinker elements along the horizontal filament
-    if(nodeIDs.size()>0)
+    if(!nodeIDs.empty() || singlefilstudy)
     {
       // get the nodes at which we want to measure neighbour distances
       // note: we assume nodeIDs.at(1)>=evalnodes.at(firstvfil-1).
       // "-1" because evalnodes only stores one node per VERTICAL filament.
-      int vnodeoffset = nodeIDs.at(1) - evalnodes.at(firstvfil-1);
-      for(int i=0; i<(int)evalnodes.size(); i++)
-        evalnodes.at(i) += vnodeoffset;
+      if(!nodeIDs.empty())
+      {
+        int vnodeoffset = nodeIDs.at(1) - evalnodes.at(firstvfil-1);
+        for(int i=0; i<(int)evalnodes.size(); i++)
+          evalnodes.at(i) += vnodeoffset;
+      }
 
       // sort nodes from smallest to largest x-coordinate
-      for(int i=0; i<(int)evalnodes.size()-1; i++)
+      if((int)evalnodes.size()>1)
       {
-        map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodes.at(i));
-        for(int j=i+1; j<(int)evalnodes.size(); j++)
+        for(int i=0; i<(int)evalnodes.size()-1; i++)
         {
-          map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodes.at(j));
-          if((posj->second)(0)<(posi->second)(0))
+          map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodes.at(i));
+          for(int j=i+1; j<(int)evalnodes.size(); j++)
           {
-            int tmp = evalnodes.at(i);
-            evalnodes.at(i) = evalnodes.at(j);
-            evalnodes.at(j) = tmp;
+            map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodes.at(j));
+            if((posj->second)(0)<(posi->second)(0))
+            {
+              int tmp = evalnodes.at(i);
+              evalnodes.at(i) = evalnodes.at(j);
+              evalnodes.at(j) = tmp;
+            }
           }
         }
-      }
 
-      for(int i=1; i<(int)evalnodes.size(); i++)
-      {
-        map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(i-1));
-        map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at(i));
-        LINALG::Matrix<3,1> diff = (pos1->second);
-        diff -= (pos0->second);
-        distances<<diff.Norm2()<<endl;
-      }
-      // in case of periodic BCs, we "close the loop" by calculating the distance over the boundary between first and last node
-      double periodlength = periodlength_->at(0);
-      if(periodlength>0.0)
-      {
-        map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(0));
-        map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at((int)evalnodes.size()-1));
-        LINALG::Matrix<3,1> diff;
-        for(int i=0; i<(int)(pos0->second).M(); i++)
-          diff(i) = (pos0->second)(i) - (pos1->second)(i);
-        diff(0) += periodlength;
-        distances<<diff.Norm2()<<endl;
+        for(int i=1; i<(int)evalnodes.size(); i++)
+        {
+          map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(i-1));
+          map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at(i));
+          LINALG::Matrix<3,1> diff = (pos1->second);
+          diff -= (pos0->second);
+          distances<<diff.Norm2()<<endl;
+        }
+        // in case of periodic BCs, we "close the loop" by calculating the distance over the boundary between first and last node
+        double periodlength = periodlength_->at(0);
+        if(periodlength>0.0)
+        {
+          map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(0));
+          map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at((int)evalnodes.size()-1));
+          LINALG::Matrix<3,1> diff;
+          for(int i=0; i<(int)(pos0->second).M(); i++)
+            diff(i) = (pos0->second)(i) - (pos1->second)(i);
+          diff(0) += periodlength;
+          distances<<diff.Norm2()<<endl;
+        }
       }
     }
 
@@ -3977,7 +4033,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
  | output the coverage of crosslinker binding sites (nodes) and the distribution|
  |of bound crosslinkers                                  (private) mueller 5/12 |
  *------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
+void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, bool coverageonly)
 {
   /* Consider the horizontal filament of a loom setup. Go along this filament and count the
    * number of occupied binding spots. Also, store the spatial distribution of occupied spots
@@ -3993,24 +4049,35 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
   {
     // file pointer
     FILE* fp = NULL;
-    fp = fopen(filename.str().c_str(), "w");
+    fp = fopen(filename.str().c_str(), "a");
     std::stringstream coverage;
 
     // vector storing the crosslinker coverage and distribution
     Epetra_Vector crosscoverage(*bspotcolmap_, true);
 
-    for(int i=0; i<bspotstatus_->MyLength(); i++)
+    if(!coverageonly)
     {
-      // consider only filament 0 (horizontal filament)
-      if((int)(*filamentnumber_)[i]==0)
+      for(int i=0; i<bspotstatus_->MyLength(); i++)
       {
-        if((*bspotstatus_)[i]>-0.1)
-          coverage<< scientific << setprecision(15) <<bspotcolmap_->GID(i)<<"  "<<1<<"  "<<(currentpositions.find(i)->second)(0)<<endl;
+        // consider only filament 0 (horizontal filament)
+        if((int)(*filamentnumber_)[i]==0)
+        {
+          if((*bspotstatus_)[i]>-0.1)
+            coverage<< scientific << setprecision(15) <<bspotcolmap_->GID(i)<<"  "<<1<<"  "<<(currentpositions.find(i)->second)(0)<<endl;
+          else
+            coverage<< scientific << setprecision(15) <<bspotcolmap_->GID(i)<<"  "<<0<<"  "<<(currentpositions.find(i)->second)(0)<<endl;
+        }
         else
-          coverage<< scientific << setprecision(15) <<bspotcolmap_->GID(i)<<"  "<<0<<"  "<<(currentpositions.find(i)->second)(0)<<endl;
+          break;
       }
-      else
-        break;
+    }
+    else
+    {
+      int sum = 0;
+      for(int i=0; i<bspotstatus_->MyLength(); i++)
+        if((*bspotstatus_)[i]>-0.1)
+          sum++;
+      coverage << sum << endl;
     }
 
     // print to file and close
@@ -4018,6 +4085,32 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
     fclose(fp);
   }
   return;
+}
+
+/*------------------------------------------------------------------------------*                                                 |
+ | simply counts the number of free, one-bonded, and two-bonded crosslinkers    |
+ |                                                        (public) mueller 5/12 |
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow, const std::ostringstream& filename)
+{
+  Epetra_Vector discol(*discret_->DofColMap(),true);
+  LINALG::Export(disrow,discol);
+  std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+  std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+  GetNodePositions(discol, currentpositions, currentrotations, true);
+
+//  // get the truss element (it's by input file design the last element in the discretization
+//  int springlid = discret_->ElementRowMap()->LID(basiselements_-1);
+//  int mypid = -1;
+//
+//  if(springlid>-1)
+//    mypid = discret_->Comm().MyPID();
+//  else
+//    mypid = 0;
+//
+//
+//  mypid = 0;
+//  return;
 }
 
 /*------------------------------------------------------------------------------*                                                 |

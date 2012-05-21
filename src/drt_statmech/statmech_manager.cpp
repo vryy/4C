@@ -82,12 +82,12 @@ useinitdbcset_(false)
   const Epetra_Map noderowmap = *(discret_->NodeRowMap());
 
   // fill my own row node ids into vector sdata
-  vector<int> sdata(noderowmap.NumMyElements());
+  std::vector<int> sdata(noderowmap.NumMyElements());
   for (int i=0; i<noderowmap.NumMyElements(); ++i)
     sdata[i] = noderowmap.GID(i);
 
   //if current processor has elements it writes its number into stproc
-  vector<int> stproc(0);
+  std::vector<int> stproc(0);
 
 
   if (noderowmap.NumMyElements())
@@ -95,13 +95,13 @@ useinitdbcset_(false)
 
 
   //information how many processors work at all
-  vector<int> allproc(discret_->Comm().NumProc());
+  std::vector<int> allproc(discret_->Comm().NumProc());
 
-  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  //in case of n processors allproc becomes a std::vector with entries (0,1,...,n-1)
   for (int i=0; i<discret_->Comm().NumProc(); ++i) allproc[i] = i;
 
   //declaring new variable into which the information of stproc on all processors is gathered
-  vector<int> rtproc(0);
+  std::vector<int> rtproc(0);
 
   /*gathers information of stproc and writes it into rtproc; in the end rtproc is a vector which
    * contains the numbers of all processors which have elements*/
@@ -110,13 +110,13 @@ useinitdbcset_(false)
   /*in analogy to stproc and rtproc the variable rdata gathers all the element numbers which are
    * stored on different processors in their own variables sdata; thereby each processor gets
    * the information about all the nodes numbers existing in this problem*/
-  vector<int> rdata;
+  std::vector<int> rdata;
 
   // gather all gids of nodes redundantly from sdata into rdata
   LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],discret_->Comm());
 
   // build completely overlapping map (on participating processors)
-  RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,discret_->Comm()));
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,discret_->Comm()));
   sdata.clear();
   stproc.clear();
   rdata.clear();
@@ -135,7 +135,7 @@ useinitdbcset_(false)
   /* and filamentnumber_ is generated based on a column map vector as each node has to
    * know about each other node its filament number in order to decide weather a crosslink may be established
    * or not; vectors is initalized with -1, which state is changed if filament numbering is used, only*/
-  filamentnumber_ = rcp( new Epetra_Vector(*(discret_->NodeColMap())) );
+  filamentnumber_ = Teuchos::rcp( new Epetra_Vector(*(discret_->NodeColMap())) );
   filamentnumber_->PutScalar(-1);
 
 
@@ -144,7 +144,7 @@ useinitdbcset_(false)
    * displacement, but also about whether this has a force sensor; as a consequence each processor can write the
    * complete information gathered by all force sensors into a file of its own without any additional communication
    * with any other processor; initialization with -1 indicates that so far no forcesensors have been set*/
-  forcesensor_ = rcp( new Epetra_Vector(*(discret_->DofColMap())) );
+  forcesensor_ = Teuchos::rcp( new Epetra_Vector(*(discret_->DofColMap())) );
   forcesensor_->PutScalar(-1.0);
 
   // initial clearing of dbc management vectors
@@ -156,7 +156,7 @@ useinitdbcset_(false)
    * are allowed*/
 
   //getting a vector consisting of pointers to all filament number conditions set
-  vector<DRT::Condition*> filamentnumberconditions(0);
+  std::vector<DRT::Condition*> filamentnumberconditions(0);
   discret_->GetCondition("FilamentNumber",filamentnumberconditions);
 
   //next all the pointers to all the different conditions are looped
@@ -166,7 +166,7 @@ useinitdbcset_(false)
     int filamentnumber = filamentnumberconditions[i]->GetInt("Filament Number");
 
     //get a pointer to nodal cloud covered by the current condition
-    const vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
+    const std::vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
 
     //loop through all the nodes of the nodal cloud
     for(int j=0; j<(int)nodeids->size() ; j++)
@@ -190,7 +190,7 @@ useinitdbcset_(false)
    * means of the condition sensorcondition*/
 
   //gettin a vector consisting of pointers to all filament number conditions set
-  vector<DRT::Condition*> forcesensorconditions(0);
+  std::vector<DRT::Condition*> forcesensorconditions(0);
   discret_->GetCondition("ForceSensor",forcesensorconditions);
 
   //next all the pointers to all the different conditions are looped
@@ -200,7 +200,7 @@ useinitdbcset_(false)
     int nodedofnumber = forcesensorconditions[i]->GetInt("DOF Number") ;
 
     //get a pointer to nodal cloud covered by the current condition
-    const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
+    const std::vector<int>* nodeids = forcesensorconditions[i]->Nodes();
 
     //loop through all the nodes of the nodal cloud
     for (int j=0; j<(int)nodeids->size(); j++)
@@ -358,7 +358,7 @@ void STATMECH::StatMechManager::Update(const int& istep,
                                        const double& dt,
                                        Epetra_Vector& disrow,
                                        Teuchos::RCP<LINALG::SparseOperator>& stiff,
-                                       int& ndim, RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                       int& ndim, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
                                        bool rebuildoctree,
                                        bool printscreen)
 {
@@ -664,8 +664,8 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
    * note that rotrefe for beam3 elements is related to the entry in the global total Lagrange displacement
    * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
    * rotrefe is set to zero here*/
-  vector<double> xrefe(beam->NumNode() * ndim, 0);
-  vector<double> rotrefe(beam->NumNode() * ndim, 0);
+  std::vector<double> xrefe(beam->NumNode() * ndim, 0);
+  std::vector<double> rotrefe(beam->NumNode() * ndim, 0);
 
   for (int i=0; i<beam->NumNode(); i++)
     for (int dof = 0; dof < ndim; dof++)
@@ -739,8 +739,8 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* elemen
    * note that rotrefe for beam3ii elements is related to the entry in the global total Lagrange displacement
    * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
    * rotrefe is set to zero here*/
-  vector<double> xrefe(beam->NumNode()*ndim,0);
-  vector<double> rotrefe(beam->NumNode()*ndim,0);
+  std::vector<double> xrefe(beam->NumNode()*ndim,0);
+  std::vector<double> rotrefe(beam->NumNode()*ndim,0);
 
   for(int i=0;i<beam->NumNode();i++)
   for(int dof=0; dof<ndim; dof++)
@@ -792,7 +792,8 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* elemen
       break;
     }
     default:
-    dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+    break;
   }
 }
 
@@ -810,7 +811,7 @@ void STATMECH::StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element
   const int ndim = 3;
 
   /*get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry*/
-  vector<double> xrefe(truss->NumNode() * ndim, 0);
+  std::vector<double> xrefe(truss->NumNode() * ndim, 0);
 
   for (int i=0; i<truss->NumNode(); i++)
     for (int dof = 0; dof < ndim; dof++)
@@ -842,7 +843,7 @@ void STATMECH::StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element
  | Assign crosslink molecules and nodes to volume partitions            |
  |																								(public) mueller 08/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, RCP<Epetra_MultiVector>& neighbourslid)
+void STATMECH::StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, Teuchos::RCP<Epetra_MultiVector>& neighbourslid)
 {
   //filament binding spots and crosslink molecules are indexed according to their positions within the boundary box volume
   std::vector<std::vector<std::vector<int> > > bspotinpartition;
@@ -905,7 +906,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::
                                            Epetra_MultiVector& crosslinkerpositions,
                                            Epetra_MultiVector& crosslinkpartitions,
                                            Epetra_MultiVector& bspottriadscol,
-                                           RCP<Epetra_MultiVector>& neighbourslid)
+                                           Teuchos::RCP<Epetra_MultiVector>& neighbourslid)
   {
   /* Description:
    * A vector containing the volume partitions of the crosslink molecules is handed over to this method. We loop over the partition
@@ -1043,7 +1044,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::
   if(maxneighboursglobal==0)
     maxneighboursglobal = 1;
   // copy information to Epetra_MultiVector for communication
-  RCP<Epetra_MultiVector> neighbourslidtrans = rcp(new Epetra_MultiVector(*transfermap_, maxneighboursglobal, false));
+  Teuchos::RCP<Epetra_MultiVector> neighbourslidtrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_, maxneighboursglobal, false));
 
   /* assign "-2" (also to distinguish between 'empty' and passive crosslink molecule "-1"
    * to be able to determine entries which remain "empty" due to number of LIDs < maxneighboursglobal*/
@@ -1053,7 +1054,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::
       (*neighbourslidtrans)[j][i] = (double)neighbournodes[i][j];
 
   // make information redundant on all Procs
-  neighbourslid = rcp(new Epetra_MultiVector(*crosslinkermap_,maxneighboursglobal,false));
+  neighbourslid = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,maxneighboursglobal,false));
   CommunicateMultiVector(*neighbourslidtrans, *neighbourslid, false, true);
 
   return;
@@ -1093,7 +1094,7 @@ void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axi
 void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
                                                const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
                                                const std::map<int,LINALG::Matrix<3, 1> >& currentrotations,
-                                               RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                               Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
                                                bool printscreen)
 {
   double t_search = Teuchos::Time::wallTime();
@@ -1119,7 +1120,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const 
 
   //Volume partitioning, assignment of nodes and molecules to partitions, search for neighbours
   // map filament (column map, i.e. entire node set on each proc) node positions to volume partitions every SEARCHINTERVAL timesteps
-  RCP<Epetra_MultiVector> neighbourslid;
+  Teuchos::RCP<Epetra_MultiVector> neighbourslid;
   if(statmechparams_.get<int>("SEARCHRES",1)>0)
     PartitioningAndSearch(currentpositions,bspottriadscol, neighbourslid);
 
@@ -1469,7 +1470,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int& crossgid,
   if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
   {
     // globalnodeids[0] is the larger of the two node GIDs
-    RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(crossgid,(mydiscret.gNode(globalnodeids[0]))->Owner() ) );
+    Teuchos::RCP<DRT::ELEMENTS::Beam3> newcrosslinker = Teuchos::rcp(new DRT::ELEMENTS::Beam3(crossgid,(mydiscret.gNode(globalnodeids[0]))->Owner() ) );
 
     newcrosslinker->SetNodeIds(2,globalnodeids);
     newcrosslinker->BuildNodalPointers(&nodes[0]);
@@ -1498,7 +1499,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int& crossgid,
   }
   else	// crosslinker is a truss element
   {
-    RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3(crossgid, (mydiscret.gNode(globalnodeids[0]))->Owner() ) );
+    Teuchos::RCP<DRT::ELEMENTS::Truss3> newcrosslinker = Teuchos::rcp(new DRT::ELEMENTS::Truss3(crossgid, (mydiscret.gNode(globalnodeids[0]))->Owner() ) );
 
     newcrosslinker->SetNodeIds(2,globalnodeids);
     newcrosslinker->BuildNodalPointers(&nodes[0]);
@@ -1607,7 +1608,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt,
                                                             const Epetra_Map& nodecolmap,
                                                             const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
                                                             Epetra_Vector& discol,
-                                                            RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                                            Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
                                                             bool printscreen)
 {
 //get current off-rate for crosslinkers
@@ -1823,7 +1824,7 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double& dt, const do
   for(int i=0; i<discret_->ElementRowMap()->NumMyElements(); i++)
     if((*element2crosslink_)[i]>-0.9)
     {
-      RCP<Epetra_SerialDenseVector> force = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseVector> force = Teuchos::null;
       DRT::Element* crosslinker = discret_->lRowElement(i);
       const DRT::ElementType & eot = crosslinker->ElementType();
       // retrieve internal force vector
@@ -2006,6 +2007,7 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
                 }
             }
           }
+          break;
         }// switch ((int)(*numbond_)[i])
         numdelcrosslinks++;
       }// if(numdelcrosslinks<numtoreduce)
@@ -2101,16 +2103,16 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
     newgids.push_back(i);
 
   // crosslinker column and row maps
-  crosslinkermap_ = rcp(new Epetra_Map(-1, (int)newgids.size(), &newgids[0], 0, discret_->Comm()));
-  transfermap_    = rcp(new Epetra_Map((int)newgids.size(), 0, discret_->Comm()));
+  crosslinkermap_ = Teuchos::rcp(new Epetra_Map(-1, (int)newgids.size(), &newgids[0], 0, discret_->Comm()));
+  transfermap_    = Teuchos::rcp(new Epetra_Map((int)newgids.size(), 0, discret_->Comm()));
   //vectors
-  crosslinkerpositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3));
-  visualizepositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3));
-  crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
-  crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkermap_));
-  searchforneighbours_ = rcp(new Epetra_Vector(*crosslinkermap_));
-  numbond_ = rcp(new Epetra_Vector(*crosslinkermap_));
-  crosslink2element_ = rcp(new Epetra_Vector(*crosslinkermap_));
+  crosslinkerpositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3));
+  visualizepositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3));
+  crosslinkerbond_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
+  crosslinkonsamefilament_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
+  searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
+  numbond_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
+  crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
 
   //copy information from the temporary vectors to the adjusted crosslinker vectors
   for(int i=0; i<crosslinkerpositions_->MyLength(); i++)
@@ -2142,7 +2144,7 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
  | (public) generate gaussian randomnumbers with mean "meanvalue" and   |
  | standarddeviation "standarddeviation" for parallel use     cyron10/09|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers, const double meanvalue, const double standarddeviation)
+void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetra_MultiVector> randomnumbers, const double meanvalue, const double standarddeviation)
 {
   randomnumbers->PutScalar(0.0);
 
@@ -2182,7 +2184,7 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
 
   //note: Using WriteVector and ReadMultiVector requires unique map of MultiVector thus export/import for restart to/from row map
   Epetra_Export exporter(*bspotcolmap_,*bspotrowmap_);
-  RCP<Epetra_Vector> bspotstatusrow = rcp(new Epetra_Vector(*bspotrowmap_,true));
+  Teuchos::RCP<Epetra_Vector> bspotstatusrow = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_,true));
   bspotstatusrow->Export(*bspotstatus_,exporter,Insert);
   output->WriteVector("bspotstatus",bspotstatusrow,IO::DiscretizationWriter::nodevector);
 
@@ -2207,7 +2209,7 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
 void STATMECH::StatMechManager::WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output, const string name, RCP<Epetra_MultiVector> multivector)
 {
   //create stl vector to store information in multivector
-  RCP<vector<double> > stlvector = rcp(new vector<double>);
+  Teuchos::RCP<std::vector<double> > stlvector = Teuchos::rcp(new std::vector<double>);
   stlvector->resize(multivector->MyLength()*multivector->NumVectors());
 
   for (int i=0; i<multivector->MyLength(); i++)
@@ -2247,7 +2249,7 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 
   //note: Using WriteVector and ReadMultiVector requires uniquen map of MultiVector thus export/import for restart to/from row map
   Epetra_Import importer(*bspotcolmap_,*bspotrowmap_);
-  RCP<Epetra_Vector> bspotstatusrow = rcp(new Epetra_Vector(*bspotrowmap_),true);
+  Teuchos::RCP<Epetra_Vector> bspotstatusrow = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_),true);
   reader.ReadVector(bspotstatusrow,"bspotstatus");
   bspotstatus_->Import(*bspotstatusrow,importer,Insert);
 
@@ -2270,10 +2272,10 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
  | (public) read restart information for fully redundant Epetra_Multivector   |
  | with name "name"                                                cyron 11/10|
  *----------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const string name, RCP<Epetra_MultiVector> multivector)
+void STATMECH::StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const string name, Teuchos::RCP<Epetra_MultiVector> multivector)
 {
     //we assume that information was stored like for a redundant stl vector
-    Teuchos::RCP<std::vector<double> > stlvector = rcp(new vector<double>);
+    Teuchos::RCP<std::vector<double> > stlvector = Teuchos::rcp(new std::vector<double>);
     stlvector->resize(multivector->MyLength()*multivector->NumVectors());
 
     /*ReadRedundantDoubleVector reads information of stlvector on proc 0 and distributes
@@ -2296,13 +2298,13 @@ void STATMECH::StatMechManager::ReadRestartRedundantMultivector(IO::Discretizati
 void STATMECH::StatMechManager::WriteConv()
 {
   //save relevant class variables at the very end of the time step
-  crosslinkerbondconv_ = rcp(new Epetra_MultiVector(*crosslinkerbond_));
-  crosslinkerpositionsconv_ = rcp(new Epetra_MultiVector(*crosslinkerpositions_));
-  bspotstatusconv_ = rcp(new Epetra_Vector(*bspotstatus_));
-  numbondconv_ = rcp(new Epetra_Vector(*numbond_));
-  crosslinkonsamefilamentconv_ = rcp(new Epetra_Vector(*crosslinkonsamefilament_));
-  crosslink2elementconv_ = rcp(new Epetra_Vector(*crosslink2element_));
-  searchforneighboursconv_ = rcp(new Epetra_Vector(*searchforneighbours_));
+  crosslinkerbondconv_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerbond_));
+  crosslinkerpositionsconv_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerpositions_));
+  bspotstatusconv_ = Teuchos::rcp(new Epetra_Vector(*bspotstatus_));
+  numbondconv_ = Teuchos::rcp(new Epetra_Vector(*numbond_));
+  crosslinkonsamefilamentconv_ = Teuchos::rcp(new Epetra_Vector(*crosslinkonsamefilament_));
+  crosslink2elementconv_ = Teuchos::rcp(new Epetra_Vector(*crosslink2element_));
+  searchforneighboursconv_ = Teuchos::rcp(new Epetra_Vector(*searchforneighbours_));
 
   //set addedelements_, deletedelements_ empty vectors
   addedelements_.clear();
@@ -2372,16 +2374,16 @@ void STATMECH::StatMechManager::CommunicateMultiVector(Epetra_MultiVector& InVec
 /*-----------------------------------------------------------------------*
  | (public) restore state at the beginning of this time step cyron 11/10 |
  *-----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTACT::Beam3cmanager> beamcmanager)
+void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<LINALG::SparseOperator>& stiff, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   //restore state at the beginning of time step for relevant class variables
-  crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkerbondconv_));
-  crosslinkerpositions_ = rcp(new Epetra_MultiVector(*crosslinkerpositionsconv_));
-  bspotstatus_ = rcp(new Epetra_Vector(*bspotstatusconv_));
-  numbond_ = rcp(new Epetra_Vector(*numbondconv_));
-  crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkonsamefilamentconv_));
-  crosslink2element_ = rcp(new Epetra_Vector(*crosslink2elementconv_));
-  searchforneighbours_ = rcp(new Epetra_Vector(*searchforneighboursconv_));
+  crosslinkerbond_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerbondconv_));
+  crosslinkerpositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerpositionsconv_));
+  bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotstatusconv_));
+  numbond_ = Teuchos::rcp(new Epetra_Vector(*numbondconv_));
+  crosslinkonsamefilament_ = Teuchos::rcp(new Epetra_Vector(*crosslinkonsamefilamentconv_));
+  crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslink2elementconv_));
+  searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*searchforneighboursconv_));
 
   /*restore state of the discretization at the beginning of this time step; note that to this and
    *adding and deleting crosslinker element has to be undone exactly vice-versa compared to the way
@@ -2391,14 +2393,14 @@ void STATMECH::StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, 
   //loop through all elements deleted in this time step and restore them in the discretization
   for(int i=0; i<(int)deletedelements_.size(); i++)
   {
-    vector<char> tmp;
-    vector<char>::size_type position = 0;
+    std::vector<char> tmp;
+    std::vector<char>::size_type position = 0;
     DRT::ParObject::ExtractfromPack(position,deletedelements_[i],tmp);
     DRT::ParObject* o = DRT::UTILS::Factory(tmp);
     DRT::Element* ele = dynamic_cast<DRT::Element*>(o);
     if (ele == NULL)
       dserror("Failed to build an element from the element data");
-    discret_->AddElement(rcp(ele));
+    discret_->AddElement(Teuchos::rcp(ele));
   }
   deletedelements_.clear();
 
@@ -2420,14 +2422,14 @@ void STATMECH::StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff, 
   {
     for(int i=0; i<(int)deletedcelements_.size(); i++)
     {
-      vector<char> tmp;
-      vector<char>::size_type position = 0;
+      std::vector<char> tmp;
+      std::vector<char>::size_type position = 0;
       DRT::ParObject::ExtractfromPack(position,deletedcelements_[i],tmp);
       DRT::ParObject* o = DRT::UTILS::Factory(tmp);
       DRT::Element* ele = dynamic_cast<DRT::Element*>(o);
       if (ele == NULL)
         dserror("Failed to build an element from the element data");
-      beamcmanager->ContactDiscret().AddElement(rcp(ele));
+      beamcmanager->ContactDiscret().AddElement(Teuchos::rcp(ele));
     }
     deletedcelements_.clear();
 
@@ -2477,7 +2479,7 @@ void STATMECH::StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix&
  | get a matrix with node coordinates and their DOF LIDs                |
  |																							   (public) mueller 3/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids)
+void STATMECH::StatMechManager::GetElementNodeCoords(DRT::Element* element, Teuchos::RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, std::vector<int>* lids)
 {
   // clear LID vector just in case it was handed over non-empty
   lids->clear();
@@ -2488,7 +2490,7 @@ void STATMECH::StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<
       // obtain k-th spatial component of the reference position of the j-th node
       double referenceposition = ((element->Nodes())[j])->X()[k];
       // get the GIDs of the node's DOFs
-      vector<int> dofnode = discret_->Dof((element->Nodes())[j]);
+      std::vector<int> dofnode = discret_->Dof((element->Nodes())[j]);
       // store the displacement of the k-th spatial component
       double displacement = (*dis)[discret_->DofRowMap()->LID(dofnode[k])];
       // write updated components into coord (only translational
@@ -2504,7 +2506,7 @@ void STATMECH::StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<
 /*----------------------------------------------------------------------*
  | update force sensor locations                   (public) mueller 3/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
+void STATMECH::StatMechManager::UpdateForceSensors(std::vector<int>& sensornodes, int oscdir)
 {
   // reinitialize forcesensor_
   forcesensor_->PutScalar(-1.0);
@@ -2589,7 +2591,7 @@ std::vector<int> STATMECH::StatMechManager::Permutation(const int& N)
 /*----------------------------------------------------------------------*
  | Computes current internal energy of discret_ (public)     cyron 12/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename)
+void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename)
 {
   ParameterList p;
   p.set("action", "calc_struct_energy");
@@ -2606,7 +2608,7 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> d
 
   discret_->ClearState();
   discret_->SetState("displacement", dis);
-  RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+  Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
   energies->Scale(0.0);
   discret_->EvaluateScalars(p, energies);
   discret_->ClearState();
@@ -2634,7 +2636,7 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> d
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
 
-bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, RCP<double> phifil)
+bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, Teuchos::RCP<double> phifil)
 {
 
   //if orientation is not to be checked explicitly, this function always returns true
@@ -2901,9 +2903,9 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   for (int i=0; i<ncrosslink; i++)
     gids.push_back(i);
   // crosslinker column and row map
-  crosslinkermap_ = rcp(new Epetra_Map(-1, ncrosslink, &gids[0], 0, discret_->Comm()));
-  transfermap_    = rcp(new Epetra_Map(ncrosslink, 0, discret_->Comm()));
-  startindex_ = rcp(new std::vector<double>);
+  crosslinkermap_ = Teuchos::rcp(new Epetra_Map(-1, ncrosslink, &gids[0], 0, discret_->Comm()));
+  transfermap_    = Teuchos::rcp(new Epetra_Map(ncrosslink, 0, discret_->Comm()));
+  startindex_ = Teuchos::rcp(new std::vector<double>);
 
   // create maps for binding spots in case of helical binding spot geometry of the actin filament
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
@@ -2913,7 +2915,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
     double rotperbspot = statmechparams_.get<double>("ROTPERBSPOT", -2.8999);
 
     //getting a vector consisting of pointers to all filament number conditions set
-    vector<DRT::Condition*> filaments(0);
+    std::vector<DRT::Condition*> filaments(0);
     discret_->GetCondition("FilamentNumber",filaments);
 
     // apply new beam element with intermediate binding spot positions
@@ -2935,7 +2937,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       for (int i=0; i<(int)filaments.size(); i++)
       {
         //get a pointer to nodal cloud covered by the current condition
-        const vector<int>* nodeids = filaments[i]->Nodes();
+        const std::vector<int>* nodeids = filaments[i]->Nodes();
         // retrieve filament length using first and last node of the current filament
         DRT::Node* node0 = discret_->lColNode(discret_->NodeColMap()->LID((*nodeids)[0]));
         DRT::Node* node1 = discret_->lColNode(discret_->NodeColMap()->LID((*nodeids)[((int)nodeids->size())-1]));
@@ -2993,21 +2995,21 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
 
       // maps
       // create redundant binding spot column map based upon the bspotids
-      bspotcolmap_ = rcp(new Epetra_Map(-1, (int)bspotgids.size(), &bspotgids[0], 0, discret_->Comm()));
+      bspotcolmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)bspotgids.size(), &bspotgids[0], 0, discret_->Comm()));
       // create processor-specific row maps
       std::vector<int> bspotrowgids;
       for(int i=0; i<(int)bspotonproc.size(); i++)
         if(bspotonproc[i]==1)
           bspotrowgids.push_back(i);	// note: since column map is fully overlapping: i=col. LID = GID
-      bspotrowmap_ = rcp(new Epetra_Map((int)bspotgids.size(), (int)bspotrowgids.size(), &bspotrowgids[0], 0, discret_->Comm()));
+      bspotrowmap_ = Teuchos::rcp(new Epetra_Map((int)bspotgids.size(), (int)bspotrowgids.size(), &bspotrowgids[0], 0, discret_->Comm()));
 
       // vectors
       // initialize class vectors
-      bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_));
+      bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_));
       bspotstatus_->PutScalar(-1.0);
-      bspotorientations_ = rcp(new Epetra_Vector(*bspotcolmap_,true));
-      bspotxi_ = rcp(new Epetra_Vector(*bspotcolmap_,true));
-      bspot2element_ = rcp(new Epetra_Vector(*bspotrowmap_, true));
+      bspotorientations_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_,true));
+      bspotxi_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_,true));
+      bspot2element_ = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_, true));
 
       Epetra_Vector bspotorientationsrow(*bspotrowmap_);
       Epetra_Vector bspotxirow(*bspotrowmap_);
@@ -3025,13 +3027,13 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
     else // beam3/beam3ii element: new binding spot maps are equivalent to node maps
     {
       // maps
-      bspotcolmap_ = rcp(new Epetra_Map(*(discret_->NodeColMap())));
-      bspotrowmap_ = rcp(new Epetra_Map(*(discret_->NodeRowMap())));
+      bspotcolmap_ = Teuchos::rcp(new Epetra_Map(*(discret_->NodeColMap())));
+      bspotrowmap_ = Teuchos::rcp(new Epetra_Map(*(discret_->NodeRowMap())));
       // initialize class vectors (we do not need nspotxi_ here since the nodes are the binding spots)
-      bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_));
+      bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_));
       bspotstatus_->PutScalar(-1.0);
-      bspotorientations_ = rcp(new Epetra_Vector(*bspotcolmap_));
-      bspot2element_ = rcp(new Epetra_Vector(*bspotrowmap_));
+      bspotorientations_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_));
+      bspot2element_ = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_));
 
       // orientations and vectors
       Epetra_MultiVector bspottriadscol(*bspotcolmap_,4,true);
@@ -3106,9 +3108,9 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   }
   else // conventional binding spot geometry (bspots are identical to nodes)
   {
-    bspotcolmap_ = rcp(new Epetra_Map(*(discret_->NodeColMap())));
-    bspotrowmap_ = rcp(new Epetra_Map(*(discret_->NodeRowMap())));
-    bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_));
+    bspotcolmap_ = Teuchos::rcp(new Epetra_Map(*(discret_->NodeColMap())));
+    bspotrowmap_ = Teuchos::rcp(new Epetra_Map(*(discret_->NodeRowMap())));
+    bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_));
     bspotstatus_->PutScalar(-1.0);
   }
 
@@ -3119,11 +3121,11 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
     std::vector<int> bins;
     for(int i=0; i<discret_->Comm().NumProc()*numbins; i++)
       bins.push_back(i);
-    ddcorrcolmap_ = rcp(new Epetra_Map(-1, discret_->Comm().NumProc()*numbins, &bins[0], 0, discret_->Comm()));
+    ddcorrcolmap_ = Teuchos::rcp(new Epetra_Map(-1, discret_->Comm().NumProc()*numbins, &bins[0], 0, discret_->Comm()));
     // create processor-specific density-density-correlation-function map
-    ddcorrrowmap_ = rcp(new Epetra_Map(discret_->Comm().NumProc()*numbins, 0, discret_->Comm()));
+    ddcorrrowmap_ = Teuchos::rcp(new Epetra_Map(discret_->Comm().NumProc()*numbins, 0, discret_->Comm()));
     // create new trafo matrix (for later use in DDCorr Function where we evaluate in layer directions), initialize with identity matrix
-    trafo_ = rcp(new LINALG::SerialDenseMatrix(3,3,true));
+    trafo_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,3,true));
     for(int i=0; i<trafo_->M(); i++)
       (*trafo_)(i,i) = 1.0;
     for(int i=0; i<(int)cog_.M(); i++)
@@ -3197,9 +3199,9 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   // in case the internal forces of the crosslinker affect the off-rate
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FORCEDEPUNLINKING"))
   {
-    element2crosslink_ = rcp(new Epetra_Vector(*(discret_->ElementRowMap())));
+    element2crosslink_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap())));
     element2crosslink_->PutScalar(-1.0);
-    disprev_ = rcp(new Epetra_Vector(*(discret_->DofColMap()),true));
+    disprev_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap()),true));
   }
 
   std::vector<double> upperbound = *periodlength_;
@@ -3208,31 +3210,31 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
     for(int i=0; i<(int)upperbound.size(); i++)
       upperbound.at(i) = statmechparams_.get<double> ("MaxRandValue", 0.0);
 
-  crosslinkerpositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
+  crosslinkerpositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
 
   for (int i=0; i<crosslinkerpositions_->MyLength(); i++)
     for (int j=0; j<crosslinkerpositions_->NumVectors(); j++)
       (*crosslinkerpositions_)[j][i] = upperbound.at(j) * (*uniformgen_)();
 
   // initial bonding status is set (no bonds)
-  crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
+  crosslinkerbond_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
   crosslinkerbond_->PutScalar(-1.0);
   // initial bond counter is set (no bonds)
-  numbond_ = rcp(new Epetra_Vector(*crosslinkermap_, true));
+  numbond_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
 
-  crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkermap_, true));
+  crosslinkonsamefilament_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
 
   // crosslinker element IDs of the crosslink molecules
-  crosslink2element_ = rcp(new Epetra_Vector(*crosslinkermap_));
+  crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   crosslink2element_->PutScalar(-1.0);
 
   // initialize the beautiful visuals vector (aka beevee-vector)
-  visualizepositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3, false));
+  visualizepositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3, false));
   for (int i=0; i<visualizepositions_->MyLength(); i++)
     for (int j=0; j<visualizepositions_->NumVectors(); j++)
       (*visualizepositions_)[j][i] = (*crosslinkerpositions_)[j][i];
 
-  searchforneighbours_ = rcp(new Epetra_Vector(*crosslinkermap_, false));
+  searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, false));
   searchforneighbours_->PutScalar(1.0);
 
   return;
@@ -3242,7 +3244,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
 | Set crosslinkers whereever possible before the first time step        |
 |                                                (private) mueller 11/11|
 *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanager> beamcmanager)
+void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
   {
@@ -3326,7 +3328,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(RCP<CONTACT::Beam3cmanage
     // this section creates crosslinker finite elements
     // Commented because of performance issues  when adding a large number of elements at once.
     // 2. Now, parallely search for neighbour nodes
-    RCP<Epetra_MultiVector> neighbourslid;
+    Teuchos::RCP<Epetra_MultiVector> neighbourslid;
     if(statmechparams_.get<int>("SEARCHRES",1)>0)
       PartitioningAndSearch(currentpositions,bspottriadscol, neighbourslid);
 
@@ -3586,6 +3588,7 @@ void STATMECH::StatMechManager::EvaluateDirichletStatMech(ParameterList&        
       // default: everything involving periodic boundary conditions
       default:
         EvaluateDirichletPeriodic(params, dis, dbcmapextractor);
+      break;
     }
   }
   else
@@ -3708,7 +3711,7 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
   // store node Id of previously handled node
   int tmpid = -1;
   // store LIDs of element node dofs
-  vector<int> doflids;
+  std::vector<int> doflids;
 
   // get the amplitude of the oscillation
   double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
@@ -3894,6 +3897,7 @@ void STATMECH::StatMechManager::DBCSetValues(Teuchos::RCP<Epetra_Vector> dis,
     break;
     default:
       dserror("DBC values cannot be imposed for this DBC type: %d", dbctype);
+    break;
   }
 
   // Apply DBC values
@@ -3920,10 +3924,10 @@ void STATMECH::StatMechManager::DoDirichletConditionPredefined(DRT::Condition&  
   const vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
-  const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-  const vector<int>*    funct  = cond.Get<vector<int> >("funct");
-  const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-  const vector<double>* val    = cond.Get<vector<double> >("val");
+  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+  const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
+  const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
@@ -3988,7 +3992,7 @@ void STATMECH::StatMechManager::DoDirichletConditionPredefined(DRT::Condition&  
         continue;
       }
       const int gid = dofs[j];
-      vector<double> value(deg+1,(*val)[onesetj]);
+      std::vector<double> value(deg+1,(*val)[onesetj]);
 
       // factor given by time curve
       std::vector<double> curvefac(deg+1, 1.0);
@@ -4080,7 +4084,7 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*  
     if (!actnode) dserror("Cannot find global node %d",nodeids->at(i));
 
     // call explicitly the main dofset, i.e. the first column
-    vector<int> dofs = discret_->Dof(0,actnode);
+    std::vector<int> dofs = discret_->Dof(0,actnode);
     const unsigned numdf = dofs.size();
     // loop over DOFs
     for (unsigned j=0; j<numdf; ++j)

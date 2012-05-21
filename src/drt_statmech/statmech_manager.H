@@ -386,7 +386,10 @@ protected:
   void LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
   //! \brief output the coverage of crosslinker binding sites (nodes) and the distribution of bound crosslinkers
-  void CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
+  void CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, bool coverageonly=false);
+
+  //! \brief measure the force between two loom filaments and output it
+  void LoomOutputAttraction(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
   //! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
   void CrosslinkCount(const std::ostringstream& filename);
