@@ -55,9 +55,8 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
 
   DRT::UTILS::GaussIntegration gi(cgp);
 
-  ComputeVolume( gi, RefPlaneEqn );               //compute volume of the cell by integrating 1.0
-
 #if 0 //integrate specified functions using the Gaussian rule generated -- used in postprocessing
+  ComputeVolume( gi, RefPlaneEqn );               //compute volume of the cell by integrating 1.0
   IntegrateSpecificFuntions( gi, RefPlaneEqn );  //integrate specific functions
 #endif
 
@@ -76,7 +75,6 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
                                              std::vector<double>& RefPlaneEqn,
                                              plain_facet_set::const_iterator& IteratorRefFacet )
 {
-#if 1
   const plain_facet_set & facete = volcell_->Facets();
 
   bool IsRefFacet = false,RefOnCut=false;
@@ -159,7 +157,6 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     }
   }
 //  std::cout<<"number of facets after erasing = "<<facetIterator.size()<<"\n";
-#endif
 }
 
 void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( plain_facet_set::const_iterator& IteratorRefFacet,
@@ -191,45 +188,30 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( plain_facet_set::const_ite
      Compute the volume of the considered cell by integrating 1 using the Gauss rule obtained.     sudhakar 04/12
      Then the volume in local coordinates is converted to global coordinate value
 *---------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::DirectDivergence::ComputeVolume( const DRT::UTILS::GaussIntegration & gpv,
-                                                const std::vector<double> &RefPlaneEqn    )
+void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration & gpv,
+                                              const std::vector<double> &RefPlaneEqn,
+                                              const std::vector<DRT::UTILS::GaussIntegration> intGRule )
 {
+
+  int numint=0;
   double TotalInteg=0.0;
-//  std::cout<<"gauss rule for one volume\n";
+
   for ( DRT::UTILS::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
   {
     const LINALG::Matrix<3,1> etaFacet( iquad.Point() );
     const double weiFacet = iquad.Weight();
 
-//    std::cout<<"main pt = "<<etaFacet(0,0)<<"\t"<<etaFacet(1,0)<<"\t"<<etaFacet(2,0)<<"\t"<<weiFacet<<"\n";
-
     double integVal = 0.0;
-    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 5 );
+    DRT::UTILS::GaussIntegration gi = intGRule[numint];
+
     for ( DRT::UTILS::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
     {
-      const LINALG::Matrix<1,1> eta( iqu.Point() );
       double weight = iqu.Weight();
-
-      //x-value of the particular Gauss point projected in the reference plane
-      double xbegin = (RefPlaneEqn[3]-RefPlaneEqn[1]*etaFacet(1,0)-RefPlaneEqn[2]*etaFacet(2,0))/RefPlaneEqn[0];
-      double jac = fabs(xbegin-etaFacet(0,0))*0.5; //jacobian for 1D transformation rule
-
-      /*double xmid = 0.5*(xbegin+etaFacet(0,0));
-
-      double intGausspt = (xmid-xbegin)*eta(0,0)+xmid; */
-
-      weight = weight*jac;
-      if( xbegin>etaFacet(0,0) )
-        weight = -1*weight;
-
       integVal += 1.0*weight; //Integration of 1.0 since volume is computed
-
-//      std::cout<<"beg\t"<<intGausspt<<"\t"<<etaFacet(1,0)<<"\t"<<etaFacet(2,0)<<"\t"<<weight<<"\n";
     }
     TotalInteg += integVal*weiFacet;
+    numint++;
   }
-
-
 
   //set the volume of this volumecell
   //the volume from local coordinates is converted in terms of global coordinates

@@ -3,6 +3,7 @@
 
 #include "cut_boundarycell.H"
 #include "cut_triangulateFacet.H"
+#include "cut_kernel.H"
 
 /*-----------------------------------------------------------------------------------------------------*
       compute the equation of the plane Ax+By+Cz=D with the local coordinates of corner points
@@ -117,7 +118,7 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
 #if 1 //old method of checking the ordering - separate check for different background elements (is this necessary?)
   std::string ordering;
 
-  if(cornersLocal.size()==3 || cornersLocal.size()==4)
+  if( cornersLocal.size()==3 )
   {
     if(eqn_plane[0]>0.0)
       ordering = "acw";
@@ -197,6 +198,8 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
 
     std::vector<double> eqn_par = equation_plane(corners);
 
+    // the cut sides are always convex (????)
+    // just comparing the sign of coordinates of eqn of plane will do
     bool iscut = face1_->OnCutSide();
     if(iscut)
     {
@@ -280,7 +283,6 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
 				clockwise_ = 1;
 			if(corners[0][0]==-1 && eqn_plane_[0]>0.0)
 				clockwise_ = 1;*/
-
   }
 
 #endif
@@ -395,9 +397,9 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 				std::vector<double> coords2;
 				//for the last line the end point is the first point of the facet
 				if(k!=(cornersLocal.end()-1))
-						coords2 = *(k+1);
+          coords2 = *(k+1);
 				else
-						coords2= *(cornersLocal.begin());
+          coords2= *(cornersLocal.begin());
 
   //first index decides the x or y coordinate, second index decides the start point or end point
 				LINALG::Matrix<2,2> coordLine;
@@ -599,14 +601,14 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
   {
     BoundaryCell* bcell = *i;
 
-    /********************************************************************************/
+#ifdef DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss points
     std::string filename="side";
     std::ofstream file;
 
-    static int sideno = 0;
-    sideno++;
+    static int facetno = 0;
+    facetno++;
     std::stringstream out;
-    out <<"facetid"<<sideno<<".pos";
+    out <<"facetid"<<facetno<<".pos";
     filename = out.str();
     file.open(filename.c_str());
 
@@ -626,8 +628,7 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
     {
       file<<"Line("<<ii<<")="<<"{"<<ii<<","<<(ii+1)%ptl.size()<<"};\n";
     }
-
-    /********************************************************************************/
+#endif
 
     DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 7 );
 
@@ -658,11 +659,10 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
 
       cgp->Append( x_gp_loc, wei );
 
-      /********************************************************************************/
+#ifdef DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss points (contd...)
       file<<"Point("<<mm<<")="<<"{"<<x_gp_loc(0,0)<<","<<x_gp_loc(1,0)<<","<<x_gp_loc(2,0)<<"};\n";
       mm++;
-      /********************************************************************************/
-      //std::cout<<x_gp_glo(0,0)<<"\t"<<x_gp_glo(1,0)<<"\t"<<x_gp_glo(2,0)<<"\t"<<wei<<"\n";
+#endif
     }
   }
 }
@@ -698,41 +698,19 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
 
   if(divergenceRule)
   {
+    //-----------------------------------------------------------------
+    // only facets with 3 corners are considered as the special case and a Tri3 is created directly.
+    // we cannot directly create a Quad4 by checking the number of corners, because it can be a
+    // concave facet with 4 corners for which Gaussian rules are not available
+    //-----------------------------------------------------------------
     if(corners.size()==3)
+    {
       TemporaryTri3(corners, divCells);
-
-#if 0 //triangulating the arbitrary noded shape
-    else
-    {
-      if(!face1_->IsTriangulated())
-      {
-        face1_->DoTriangulation( mesh, corners );
-      }
-      const std::vector<std::vector<Point*> > & triangulation = face1_->Triangulation();
-      for ( std::vector<std::vector<Point*> >::const_iterator j=triangulation.begin();
-                                                              j!=triangulation.end(); ++j )
-      {
-        std::vector<Point*> tri = *j;
-        if(clockwise_)
-          std::reverse(tri.begin(),tri.end());
-        if(tri.size()==3)
-          TemporaryTri3(tri, divCells);
-        else if(tri.size()==4)
-          TemporaryQuad4(tri, divCells);
-        else
-        {
-          std::cout<<"number of sides = "<<tri.size();
-          dserror("Triangulation created neither tri3 or quad4");
-        }
-      }
     }
-#endif
-
-#if 1 //split the aribtrary noded facet into cells
-    else
+    else //split the aribtrary noded facet into cells
     {
 
-     /* std::cout<<"number of corners = "<<corners.size()<<"\n";
+      /*std::cout<<"number of corners = "<<corners.size()<<"\n";
       for( std::vector<Point*>::iterator nn=corners.begin();nn!=corners.end();nn++ )
       {
         Point* pt1 = *nn;
@@ -741,17 +719,26 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
         std::cout<<xx[0]<<"\t"<<xx[1]<<"\t"<<xx[2]<<"\n";
       }*/
 
+      std::string splitMethod;
+
 #if 1 // split facet
       std::vector<std::vector<GEO::CUT::Point*> > split;
       TriangulateFacet tf( face1_, mesh, corners );
       tf.SplitFacet();
       split = tf.GetSplitCells();
+      splitMethod = "split";
 #endif
 
 #if 0 // triangulate facet
-      if(!face1_->IsTriangulated())
-        face1_->DoTriangulation( mesh, corners );
-      const std::vector<std::vector<Point*> > & split = face1_->Triangulation();
+      std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more Gauss points\n";
+      std::vector<std::vector<GEO::CUT::Point*> > split;
+      TriangulateFacet tf( face1_, mesh, corners );
+
+      std::vector<int> ptconc;
+      tf.EarClipping( ptconc, true );
+
+      split = tf.GetSplitCells();
+      splitMethod = "triangulation";
 #endif
 
       for ( std::vector<std::vector<Point*> >::const_iterator j=split.begin();
@@ -770,9 +757,12 @@ void GEO::CUT::FacetIntegration::GenerateIntegrationRuleDivergence( bool diverge
           dserror("Splitting created neither tri3 or quad4");
         }
       }
-    }
+#ifdef DEBUGCUTLIBRARY // check the area of facet computed from splitting and triangulation
+  DebugAreaCheck( divCells, splitMethod, mesh );
 #endif
+    }
   }
+
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -801,6 +791,113 @@ void GEO::CUT::FacetIntegration::TemporaryQuad4( std::vector<Point*>& corners,
     corners[i]->Coordinates( &xyz( 0, i ) );
   Quad4BoundaryCell * bc = new Quad4BoundaryCell( xyz, face1_, corners );
   divCells.insert( bc );
+}
+
+/*----------------------------------------------------------------------------------------------*
+          Check whether the area of the facet computed by the splitting and
+          triangular procedure are the same.                                       sudhakar 05/12
+          This is a check for the adopted splitting procedure
+*-----------------------------------------------------------------------------------------------*/
+void GEO::CUT::FacetIntegration::DebugAreaCheck( const plain_boundarycell_set & divCells,
+                                                 std::string alreadyDone,
+                                                 Mesh &mesh )
+{
+  double area1 = 0.0;
+  for( plain_boundarycell_set::const_iterator i=divCells.begin();i!=divCells.end();i++ )
+  {
+    BoundaryCell* bcell = *i;
+    area1 += bcell->Area();
+  }
+
+  std::vector<Point*> corners = face1_->CornerPoints();
+
+  std::vector<std::vector<GEO::CUT::Point*> > split1;
+  if( alreadyDone=="split" )
+  {
+    TriangulateFacet tf( face1_, mesh, corners );
+    std::vector<int> ptconc;
+
+    tf.EarClipping( ptconc, true );
+    split1 = tf.GetSplitCells();
+  }
+  else
+  {
+    TriangulateFacet tf( face1_, mesh, corners );
+    tf.SplitFacet();
+    split1 = tf.GetSplitCells();
+  }
+
+  plain_boundarycell_set tempCells;
+
+  for ( std::vector<std::vector<Point*> >::const_iterator j=split1.begin();
+                                                          j!=split1.end(); ++j )
+  {
+    std::vector<Point*> tri = *j;
+    if(clockwise_)
+      std::reverse(tri.begin(),tri.end());
+    if(tri.size()==3)
+      TemporaryTri3(tri, tempCells);
+    else if(tri.size()==4)
+      TemporaryQuad4(tri, tempCells);
+    else
+    {
+      std::cout<<"number of sides = "<<tri.size();
+      dserror("Splitting created neither tri3 or quad4");
+    }
+  }
+
+  double area2 = 0.0;
+  for( plain_boundarycell_set::const_iterator i=tempCells.begin();i!=tempCells.end();i++ )
+  {
+    BoundaryCell* bcell = *i;
+    area2 += bcell->Area();
+  }
+
+  if( fabs(area1-area2)>1e-5 )
+  {
+    std::cout<<"The coordinates of the facet\n";
+    for( unsigned i=0;i<corners.size();i++ )
+    {
+      Point* pt = corners[i];
+      double coo[3];
+      pt->Coordinates(coo);
+      std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
+    }
+
+    std::cout<<"cells produced by Method 1\n";
+    for( plain_boundarycell_set::const_iterator i=divCells.begin();i!=divCells.end();i++ )
+    {
+      BoundaryCell* bcell = *i;
+      const std::vector<Point*> pts = bcell->Points();
+      std::cout<<"cells\n";
+      for( unsigned j=0;j<pts.size();j++ )
+      {
+        Point *pt1 = pts[j];
+        double coo[3];
+        pt1->Coordinates(coo);
+        std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
+      }
+    }
+
+    std::cout<<"cells produced by Method 2\n";
+    for( plain_boundarycell_set::const_iterator i=tempCells.begin();i!=tempCells.end();i++ )
+    {
+      BoundaryCell* bcell = *i;
+      const std::vector<Point*> pts = bcell->Points();
+      std::cout<<"cells\n";
+      for( unsigned j=0;j<pts.size();j++ )
+      {
+        Point *pt1 = pts[j];
+        double coo[3];
+        pt1->Coordinates(coo);
+        std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
+      }
+    }
+
+    std::cout<<"Area1 = "<<area1<<"\t"<<"Area2 = "<<area2<<"\n";
+    std::cout<<"!!!WARNING!!! area predicted by splitting and triangulation are not the same\n";
+    dserror( "error: area predicted by splitting and triangulation are not the same" );
+  }
 }
 
 

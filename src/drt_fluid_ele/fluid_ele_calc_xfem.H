@@ -78,7 +78,7 @@ public:
 
     /// add mixed/stress/hybrid (MSH) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceMSH(
-        DRT::ELEMENTS::Fluid *                                             ele,               ///< fluid element
+        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
         DRT::Discretization &                                               dis,               ///< background discretization
         const std::vector<int> &                                            lm,                ///< element local map
         const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
@@ -91,15 +91,15 @@ public:
         Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
         Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
         std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
-        const std::vector<double>&                            refEqn
+        const GEO::CUT::plain_volumecell_set&                               vcSet              ///< Volumecells present in the considered set
     );
 
     /// add Nitsche (NIT) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceNIT(
-        DRT::ELEMENTS::Fluid *                                             ele,               ///< fluid element
+        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
         DRT::Discretization &                                               dis,               ///< background discretization
         const std::vector<int> &                                            lm,                ///< element local map
-        const DRT::UTILS::GaussIntegration &                                intpoints,         ///< background element integration points
+        const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
         DRT::Discretization &                                               cutdis,            ///< cut discretization
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
@@ -109,7 +109,7 @@ public:
         Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
         Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
         std::string&                                                        VCellGaussPts,      ///< Method of volumecell gauss point generation
-        const std::vector<double>&                                          refEqn
+        const GEO::CUT::plain_volumecell_set&                               vcSet
     );
 
     /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs
@@ -117,7 +117,7 @@ public:
         DRT::ELEMENTS::Fluid *                                              ele,
         DRT::Discretization &                                               dis,
         const std::vector<int> &                                            lm,
-        const DRT::UTILS::GaussIntegration &                                intpoints,
+        const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,
         DRT::Discretization &                                               cutdis,
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
@@ -129,7 +129,7 @@ public:
         Epetra_SerialDenseVector&                                           elevec1_epetra,
         Epetra_SerialDenseMatrix&                                           Cuiui,
         std::string&                                                        VCellGaussPts,
-        const std::vector<double>&                                          refEqn
+        const GEO::CUT::plain_volumecell_set&                               vcSet
       );
 
     ///
@@ -168,10 +168,10 @@ private:
 
     //! pre-compute the measure of the element's fluid volume
     double ComputeMeasVol(
-        const DRT::UTILS::GaussIntegration & intpoints,
-        int                                  eid,
-        std::string&                         VCellGaussPts,
-        const std::vector<double>&           refEqn
+        const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+        int                                               eid,
+        std::string&                                      VCellGaussPts,
+        const GEO::CUT::plain_volumecell_set &            cells
     );
 
     //! pre-compute the measure of the element's intersecting surface
@@ -233,7 +233,7 @@ private:
         INPAR::XFEM::MSH_L2_Proj                                               msh_l2_proj,       ///< full or partial l2 projection for MSH method
         const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,         ///< background element integration points
         std::string &                                                          VCellGaussPts,     ///< volumecell gaussian points method
-        const std::vector<double>&                                             refEqn,            ///< ?
+        const GEO::CUT::plain_volumecell_set&                                  cells,             ///< volumecells in the present set
         int                                                                    eid,               ///< element ID
         LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,            ///< element velocity
         LINALG::Matrix<my::nen_,1>&                                            epreaf,            ///< element pressure
@@ -252,9 +252,6 @@ private:
         LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su, ///< K_su matrix
         LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
         );
-
-    DRT::UTILS::GaussIntegration InternalGaussPoints( DRT::UTILS::GaussIntegration::iterator quadint,
-                                                      const std::vector<double>& refEqn );
 
 //    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > CreateSideImpl(
 //        bool fluidfluidcoupling,

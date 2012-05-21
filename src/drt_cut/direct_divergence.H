@@ -35,6 +35,14 @@ namespace GEO
         */
         Teuchos::RCP<DRT::UTILS::GaussPoints> VCIntegrationRule(std::vector<double> &RefPlaneEqn);
 
+        /*!
+        \brief Compute and set correspondingly the volume of the considered volumecell from the generated integration
+        rule and compare it with full application of divergence theorem
+         */
+        void DebugVolume( const DRT::UTILS::GaussIntegration & gpv,
+                          const std::vector<double> &RefPlaneEqn,
+                          const std::vector<DRT::UTILS::GaussIntegration> intGRule );
+
       private:
 
         /*!
@@ -54,11 +62,7 @@ namespace GEO
         void IntegrateSpecificFuntions( const DRT::UTILS::GaussIntegration & gpv,
                                         const std::vector<double> &RefPlaneEqn  );
 
-        /*!
-        \brief Compute and set correspondingly the volume of the considered volumecell
-         */
-        void ComputeVolume( const DRT::UTILS::GaussIntegration & gpv,
-                            const std::vector<double> &RefPlaneEqn   );
+
 
         VolumeCell* volcell_;
         Element* elem1_;

@@ -915,6 +915,60 @@ void GEO::CUT::VolumeCell::OrientationFacet(const std::vector<Point*>pts,
 }
 
 /*------------------------------------------------------------------------------------------*
+   When DirectDivergence method is used for gauss point generation, for every gauss point
+   on the facet, an internal gauss rule is to be generated to find the modified integrand
+*-------------------------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::GenerateInternalGaussRule()
+{
+  DRT::UTILS::GaussIntegration grule(gp_);
+
+  intGP_.resize( grule.NumPoints(), grule );
+
+  int num = 0;
+  for ( DRT::UTILS::GaussIntegration::iterator quadint=grule.begin(); quadint!=grule.end(); ++quadint )
+  {
+    const LINALG::Matrix<3,1> etaFacet( quadint.Point() );  //coordinates and weight of main gauss point
+    LINALG::Matrix<3,1> intpt( etaFacet );
+
+    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 7 ); //internal gauss rule for interval (-1,1)
+
+    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
+                         DRT::UTILS::CollectedGaussPoints( 0 ) );
+
+    // -----------------------------------------------------------------------------
+    // project internal gauss point from interval (-1,1) to the actual interval
+    // -----------------------------------------------------------------------------
+    for ( DRT::UTILS::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
+    {
+      const LINALG::Matrix<1,1> eta( iqu.Point() );
+      double weight = iqu.Weight();
+
+      //x-coordinate of main Gauss point is projected in the reference plane
+      double xbegin = (RefEqnPlane_[3]-RefEqnPlane_[1]*etaFacet(1,0)-
+                      RefEqnPlane_[2]*etaFacet(2,0))/RefEqnPlane_[0];
+      double jac = fabs(xbegin-etaFacet(0,0))*0.5; // jacobian for 1D transformation rule
+
+      double xmid = 0.5*(xbegin+etaFacet(0,0));
+      intpt(0,0) = (xmid-xbegin)*eta(0,0)+xmid;    // location of internal gauss points
+
+      weight = weight*jac;                         // weight of internal gauss points
+      if( xbegin>etaFacet(0,0) )
+        weight = -1.0*weight;
+
+      cgp->Append( intpt, weight );
+    }
+
+    DRT::UTILS::GaussIntegration gint(cgp);
+
+    intGP_[num] = gint;
+    num++;
+  }
+
+  if( grule.NumPoints() != num )
+    dserror( "some facet points missed?" );
+}
+
+/*------------------------------------------------------------------------------------------*
    Moment fitting equations are solved at each volume cell to construct integration rules
 *-------------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
@@ -1063,10 +1117,6 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 #endif
 
 #if 0
-  Print( std::cout );
-#endif
-
-#if 0
   const plain_facet_set & facete = Facets();
   std::cout<<"the volumecell = "<<this->ParentElement()->Id()<<"\n";
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
@@ -1089,6 +1139,14 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 
   RefEqnPlane_.reserve(4); //it has to store a,b,c,d in ax+by+cz=d
   gp_ = dd.VCIntegrationRule( RefEqnPlane_ );
+
+  GenerateInternalGaussRule();
+
+#if 1
+  DRT::UTILS::GaussIntegration gpi(gp_);
+  dd.DebugVolume( gpi, RefEqnPlane_, intGP_ );
+#endif
+
 //  std::cout<<"reference plane equation = "<<RefEqnPlane_[0]<<"\t"<<RefEqnPlane_[1]<<"\t"<<"\t"<<RefEqnPlane_[2]<<"\t"<<RefEqnPlane_[3]<<"\n";
 
 //  dserror("one volumecell done");

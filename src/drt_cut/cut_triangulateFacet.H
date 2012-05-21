@@ -101,11 +101,6 @@ private:
    */
   bool HasTwoContinuousConcavePts( std::vector<int> ptConcavity );
 
-  /*!
-  \brief Returns true if the point "check" is inside the triangle formed by other three points
-   */
-  bool PtInsideTriangle( std::vector<Point*> tri, Point* check );
-
   Facet* facet1_;
   Mesh& mesh_;
   std::vector<Point*> ptlist_;

@@ -329,7 +329,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
       std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
-      std::vector<std::vector<double> > refEqns;
 
       e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
 
@@ -478,12 +477,12 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elevector1(),
                                               Cuiui,
                                               xfluid_.VolumeCellGaussPointBy_,
-                                              refEqns[set_counter]);
+                                              cells);
           else if (xfluid_.action_ == "coupling nitsche xfluid sided")
             impl->ElementXfemInterfaceNIT(    ele,
                                               discret,
                                               la[0].lm_,
-                                              intpoints_sets[set_counter][0],
+                                              intpoints_sets[set_counter],
                                               cutdiscret,
                                               bcells,
                                               bintpoints,
@@ -493,12 +492,12 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elevector1(),
                                               Cuiui,
                                               xfluid_.VolumeCellGaussPointBy_,
-                                              refEqns[set_counter]);
+                                              cells);
           else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
             impl->ElementXfemInterfaceNIT2(   ele,
                                               discret,
                                               la[0].lm_,
-                                              intpoints_sets[set_counter][0],
+                                              intpoints_sets[set_counter],
                                               cutdiscret,
                                               bcells,
                                               bintpoints,
@@ -510,7 +509,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elevector1(),
                                               Cuiui,
                                               xfluid_.VolumeCellGaussPointBy_,
-                                              refEqns[set_counter]);
+                                              cells);
 
 
           for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
@@ -707,7 +706,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elevector1(),
                                               Cuiui,
                                               xfluid_.VolumeCellGaussPointBy_,
-                                              refEqns[set_counter]);
+                                              cells);
 
             for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
                   sc!=side_coupling.end(); ++sc )
@@ -1206,6 +1205,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
 
+      e->GetVolumeCells( cells );
       e->VolumeCellGaussPoints( cells, intpoints,xfluid_.VolumeCellGaussPointBy_);//modify gauss type
 
       int count = 0;

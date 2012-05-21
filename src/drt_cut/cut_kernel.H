@@ -154,12 +154,22 @@ namespace GEO
       /*!
       \brief Check whether the polygon defined by the set of points is convex
        */
-      std::vector<int> CheckConvexity( std::vector<Point*>& ptlist, std::string& geoType );
+      std::vector<int> CheckConvexity( const std::vector<Point*>& ptlist, std::string& geoType );
 
       /*!
       \brief Find the equation of plane that contains these non-collinear points
        */
       std::vector<double> EqnPlane( Point* & pt1, Point* & pt2, Point* & pt3 );
+
+      /*!
+      \brief Check whether the point "check" is inside the triangle formed by tri
+      */
+      bool PtInsideTriangle( std::vector<Point*> tri, Point* check );
+
+      /*!
+      \brief Return true if the points of the polygon are ordered clockwise
+       */
+      bool IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projType );
 
 
       /// generic Newton algorithm

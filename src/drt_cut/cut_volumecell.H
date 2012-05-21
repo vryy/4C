@@ -174,6 +174,38 @@ public:
   void DumpGmsh(std::ofstream& filename);
 
   /*!
+  \brief return the integration rule for this volumecell when MomentFitting or DirectDivergence is used
+   */
+  Teuchos::RCP<DRT::UTILS::GaussPoints> GetGaussRule(){return gp_;}
+
+  /*!
+  \brief Set the volume of this cell
+   */
+  void SetVolume(double vol){volume_=vol;}
+
+  /*!
+  \brief Return the equation of the reference plane when DirectDivergence is used for volumecell treatment
+   */
+  std::vector<double> GetRefEqnPlane(){return RefEqnPlane_;}
+
+  /*!
+  \brief Return internal gauss rule for a particular facet integration point
+   */
+  DRT::UTILS::GaussIntegration GetInternalRule( int facetIntNo ){ return intGP_[facetIntNo]; }
+
+private:
+
+  void SetTetPoints( const int * totet4,
+                     const std::vector<Point*> & points,
+                     std::vector<Point*> & tet4_points ) const
+  {
+    for ( int i=0; i<4; ++i )
+    {
+      tet4_points[i] = points[totet4[i]];
+    }
+  }
+
+  /*!
   \brief Compute the way in which the nodes of the facets are numbered (clockwise or anticlockwise)
    */
   void OrientationFacet(const std::vector<Point*>pts, double *coef);
@@ -190,31 +222,9 @@ public:
   Teuchos::RCP<DRT::UTILS::GaussPoints> GaussPointsFitting();
 
   /*!
-  \brief return the integration rule for this volumecell when MomentFitting or DirectDivergence is used
+  \brief Generate internal gauss rule for every integration point on the facet when DirectDivergence method is used
    */
-  Teuchos::RCP<DRT::UTILS::GaussPoints> GetGaussRule(){return gp_;}
-
-  /*!
-  \brief Set the volume of this cell
-   */
-  void SetVolume(double vol){volume_=vol;}
-
-  /*!
-  \brief Return the equation of the reference plane when DirectDivergence is used for volumecell treatment
-   */
-  std::vector<double> GetRefEqnPlane(){return RefEqnPlane_;}
-
-private:
-
-  void SetTetPoints( const int * totet4,
-                     const std::vector<Point*> & points,
-                     std::vector<Point*> & tet4_points ) const
-  {
-    for ( int i=0; i<4; ++i )
-    {
-      tet4_points[i] = points[totet4[i]];
-    }
-  }
+  void GenerateInternalGaussRule();
 
   /// the element this is a part of
   Element * element_;
@@ -252,7 +262,11 @@ private:
   /// Equation of plane which contains the reference facet when using DirectDivergence
   std::vector<double> RefEqnPlane_;
 
+  /// Gauss rule for this volumecell
   Teuchos::RCP<DRT::UTILS::GaussPoints>  gp_;
+
+  /// The internal Gauss rule for every facet gauss point
+  std::vector<DRT::UTILS::GaussIntegration> intGP_;
 
 };
 

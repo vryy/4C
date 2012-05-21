@@ -98,7 +98,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
     Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
     std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
-    const std::vector<double>&                                          refEqn
+    const GEO::CUT::plain_volumecell_set&                               cells              ///< Volumecells in the present set
   )
 {
 
@@ -156,7 +156,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
   INPAR::XFEM::MSH_L2_Proj msh_l2_proj =  params.get<INPAR::XFEM::MSH_L2_Proj>("msh_l2_proj");
 
-  MSH_Build_K_Matrices(msh_l2_proj, intpoints, VCellGaussPts, refEqn, eid, evelaf, epreaf, bK_ss, invbK_ss, K_su,rhs);
+  MSH_Build_K_Matrices(msh_l2_proj, intpoints, VCellGaussPts, cells, eid, evelaf, epreaf, bK_ss, invbK_ss, K_su,rhs);
 
 
   //----------------------------------------------------------------------------
@@ -722,7 +722,7 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
     INPAR::XFEM::MSH_L2_Proj                                               msh_l2_proj,   ///< full or partial l2 projection for MSH method
     const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,     ///< background element integration points
     std::string &                                                          VCellGaussPts, ///< volumecell gaussian points method
-    const std::vector<double>&                                             refEqn,        ///< ?
+    const GEO::CUT::plain_volumecell_set&                                  cells,         ///< volumecells in the present set
     int                                                                    eid,           ///< element ID
     LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,        ///< element velocity
     LINALG::Matrix<my::nen_,1>&                                            epreaf,        ///< element pressure
@@ -765,16 +765,20 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
       for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
       {
         const DRT::UTILS::GaussIntegration intcell = *i;
+        GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
         //----------------------------------------------------------------------
         //integration over the main gauss points to get the required integral
         //----------------------------------------------------------------------
+        int mainPtno = 0;
         for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
         {
           LINALG::Matrix<my::nen_,my::nen_> invbK_ssTemp( true );
           LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)> K_suTemp;
           LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>                rhsTemp;
 
-          DRT::UTILS::GaussIntegration gint = InternalGaussPoints( iquad, refEqn );
+          // get internal Gaussian rule for every main Gauss point
+          DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
+          mainPtno++;
 
           //----------------------------------------------------------------------
           //integration over the internal gauss points - to get modified integrand
@@ -967,49 +971,6 @@ void FluidEleCalcXFEM<distype>::MSH_EvaluateMatrices(
 
 } //EvaluateMatricesMSH
 
-
-/*--------------------------------------------------------------------------------------------------------------------*
-            All gauss points of "DirectDivergence" are in the facets of volumecell. For each gauss point,
-            an internal gaussrule is generated to find the modified integrand
-*---------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::UTILS::GaussIntegration FluidEleCalcXFEM<distype>::InternalGaussPoints( DRT::UTILS::GaussIntegration::iterator quadint,
-                                                                             const std::vector<double>& refEqn )
-{
-  const LINALG::Matrix<3,1> etaFacet( quadint.Point() );  //coordinates and weight of main gauss point
-  LINALG::Matrix<3,1> intpt( etaFacet );
-
-  DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 7 ); //internal gauss rule for interval (-1,1)
-
-  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
-                       DRT::UTILS::CollectedGaussPoints( 0 ) );
-
-  // -----------------------------------------------------------------------------
-  // project internal gauss point from interval (-1,1) to the actual interval
-  // -----------------------------------------------------------------------------
-  for ( DRT::UTILS::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
-  {
-    const LINALG::Matrix<1,1> eta( iqu.Point() );
-    double weight = iqu.Weight();
-
-    //x-coordinate of main Gauss point is projected in the reference plane
-    double xbegin = (refEqn[3]-refEqn[1]*etaFacet(1,0)-refEqn[2]*etaFacet(2,0))/refEqn[0];
-    double jac = fabs(xbegin-etaFacet(0,0))*0.5; // jacobian for 1D transformation rule
-
-    double xmid = 0.5*(xbegin+etaFacet(0,0));
-    intpt(0,0) = (xmid-xbegin)*eta(0,0)+xmid;    // location of internal gauss points
-
-    weight = weight*jac;                         // weight of internal gauss points
-    if( xbegin>etaFacet(0,0) )
-      weight = -1*weight;
-
-    cgp->Append( intpt, weight );
-  }
-
-  DRT::UTILS::GaussIntegration gint(cgp);
-  return gint;
-}
-
 /*--------------------------------------------------------------------------------
  * add Nitsche (NIT) interface condition to element matrix and rhs
  *--------------------------------------------------------------------------------*/
@@ -1018,7 +979,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
     DRT::Discretization &                                               dis,               ///< background discretization
     const std::vector<int> &                                            lm,                ///< element local map
-    const DRT::UTILS::GaussIntegration &                                intpoints,         ///< background element integration points
+    const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
     DRT::Discretization &                                               cutdis,            ///< cut discretization
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
@@ -1028,7 +989,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
     Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
     std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
-    const std::vector<double>&                                          refEqn
+    const GEO::CUT::plain_volumecell_set&                               vcSet
   )
 {
 
@@ -1062,7 +1023,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   if(compute_meas_vol)
   {
     int eid = ele->Id();
-    meas_partial_volume = ComputeMeasVol(intpoints, eid, VCellGaussPts, refEqn);
+    meas_partial_volume = ComputeMeasVol(intpoints, eid, VCellGaussPts, vcSet);
   }
 
   if(compute_meas_surf)
@@ -1470,7 +1431,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     DRT::ELEMENTS::Fluid *                                              ele,
     DRT::Discretization &                                               dis,
     const std::vector<int> &                                            lm,
-    const DRT::UTILS::GaussIntegration &                                intpoints,
+    const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,
     DRT::Discretization &                                               cutdis,
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
@@ -1482,7 +1443,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     Epetra_SerialDenseVector&                                           elevec1_epetra,
     Epetra_SerialDenseMatrix&                                           Cuiui,
     std::string&                                                        VCellGaussPts,
-    const std::vector<double>&                                          refEqn
+    const GEO::CUT::plain_volumecell_set &                              cells
   )
 {
 
@@ -1516,7 +1477,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     if(compute_meas_vol)
     {
       int eid = ele->Id();
-      meas_partial_volume = ComputeMeasVol(intpoints, eid, VCellGaussPts, refEqn);
+      meas_partial_volume = ComputeMeasVol(intpoints, eid, VCellGaussPts, cells);
     }
   }
 
@@ -2049,36 +2010,47 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
  * pre-compute the measure of the element's fluid volume
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double FluidEleCalcXFEM<distype>::ComputeMeasVol( const DRT::UTILS::GaussIntegration & intpoints,
-                                                  int                                  eid,
-                                                  std::string&                         VCellGaussPts,
-                                                  const std::vector<double>&           refEqn)
+double FluidEleCalcXFEM<distype>::ComputeMeasVol( const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                                                  int                                               eid,
+                                                  std::string&                                      VCellGaussPts,
+                                                  const GEO::CUT::plain_volumecell_set &            cells)
 {
   double vol = 0.0;
 
   if( VCellGaussPts!="DirectDivergence" )
   {
-    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
-      // evaluate shape functions and derivatives at integration point
-      my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+      const DRT::UTILS::GaussIntegration intcell = *i;
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
+      {
+        // evaluate shape functions and derivatives at integration point
+        my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
-      vol += my::fac_;
+        vol += my::fac_;
+      }
     }
   }
   else
   {
-    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
-      DRT::UTILS::GaussIntegration gint = InternalGaussPoints( iquad, refEqn );
-
-      double volLine=0.0;
-      for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
+      const DRT::UTILS::GaussIntegration intcell = *i;
+      GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
+      int mainPtno = 0;
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
       {
-        my::EvalShapeFuncAndDerivsAtIntPoint( quadint, eid );
-        volLine += my::fac_;
+        DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
+        mainPtno++;
+
+        double volLine=0.0;
+        for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
+        {
+          my::EvalShapeFuncAndDerivsAtIntPoint( quadint, eid );
+          volLine += my::fac_;
+        }
+        vol += volLine*iquad.Weight();
       }
-      vol += volLine*iquad.Weight();
     }
   }
 

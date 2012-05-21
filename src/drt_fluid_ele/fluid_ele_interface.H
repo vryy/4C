@@ -27,6 +27,8 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../drt_cut/cut_utils.H"
+
 namespace MAT
 {
   class Material;
@@ -37,6 +39,7 @@ namespace GEO
   namespace CUT
   {
     class BoundaryCell;
+    class VolumeCell;
   }
 }
 
@@ -127,7 +130,7 @@ namespace ELEMENTS
 
     /// add interface condition at cut to element matrix and rhs (mixed/stress/hybrid coupling)
     virtual void ElementXfemInterfaceMSH(
-        DRT::ELEMENTS::Fluid *                                           ele,
+        DRT::ELEMENTS::Fluid *                                            ele,
         DRT::Discretization &                                             dis,
         const std::vector<int> &                                          lm,
         const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,
@@ -140,14 +143,14 @@ namespace ELEMENTS
         Epetra_SerialDenseVector&                                         elevec1_epetra,
         Epetra_SerialDenseMatrix&                                         Cuiui,
         std::string&                                                      VCellGaussPts,
-        const std::vector<double>&                          refEqn) = 0;
+        const GEO::CUT::plain_volumecell_set &                            cells) = 0;
 
     /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
     virtual void ElementXfemInterfaceNIT(
-        DRT::ELEMENTS::Fluid * ele,
-        DRT::Discretization & dis,
+        DRT::ELEMENTS::Fluid *                                            ele,
+        DRT::Discretization &                                             dis,
         const std::vector<int> &                                          lm,
-        const DRT::UTILS::GaussIntegration &                              intpoints,
+        const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,
         DRT::Discretization &                                             cutdis,
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
@@ -157,14 +160,14 @@ namespace ELEMENTS
         Epetra_SerialDenseVector&                                         elevec1_epetra,
         Epetra_SerialDenseMatrix&                                         Cuiui,
         std::string&                                                      VCellGaussPts,
-        const std::vector<double>&                                        refEqn) = 0;
+        const GEO::CUT::plain_volumecell_set &                            cells) = 0;
 
     /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
     virtual void ElementXfemInterfaceNIT2(
-        DRT::ELEMENTS::Fluid *                                           ele,
+        DRT::ELEMENTS::Fluid *                                            ele,
         DRT::Discretization &                                             dis,
         const std::vector<int> &                                          lm,
-        const DRT::UTILS::GaussIntegration &                              intpoints,
+        const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,
         DRT::Discretization &                                             cutdis,
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
@@ -176,7 +179,7 @@ namespace ELEMENTS
         Epetra_SerialDenseVector&                                         elevec1_epetra,
         Epetra_SerialDenseMatrix&                                         Cuiui,
         std::string&                                                      VCellGaussPts,
-        const std::vector<double>&                                        refEqn) = 0;
+        const GEO::CUT::plain_volumecell_set &                            cells) = 0;
 
     virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *              ele,
                                          DRT::Discretization &                dis,

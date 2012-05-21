@@ -99,6 +99,13 @@ namespace GEO
         */
         void TemporaryQuad4(std::vector<Point*>& corners, plain_boundarycell_set& divCells);
 
+        /*!
+        \brief Check whether the facet area calculated by splitting and triangulation are the same
+         */
+        void DebugAreaCheck( const plain_boundarycell_set & divCells,
+                             std::string alreadyDone,
+                             Mesh &mesh );
+
         Facet *face1_;
         Element *elem1_;
         const GEO::CUT::Point::PointPosition position_;
