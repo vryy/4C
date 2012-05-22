@@ -43,7 +43,9 @@ element2_(element2),
 ele1pos_(ele1pos),
 ele2pos_(ele2pos),
 ngf_(false),
-contactflag_(false)
+contactflag_(false),
+ele1tangent_(3,2),
+ele2tangent_(3,2)
 {
   // initialize augmented lagrange multiplier to zero
   lmuzawa_ = 0.0;
@@ -67,11 +69,8 @@ contactflag_(false)
     firstcall_ = true;
   }
 
-
-
   //For both elements the neighbor elements are determined and saved in the B3CNeighbor-Class variables neighbor1_ and neighbor2_
   DetermineNeigbours(element1,element2);
-
   return;
 }
 /*----------------------------------------------------------------------*
@@ -133,7 +132,6 @@ bool CONTACT::Beam3contact::PreEvaluation(int beams_smoothing, std::map<int,LINA
 
   xicontact_.Size(2);
   elementscolinear_ = false;
-  //Test:
     if (beams_smoothing != INPAR::CONTACT::bsm_none)
     {
          CalculateNodalTangents(currentpositions);
@@ -1333,6 +1331,23 @@ void CONTACT::Beam3contact::ComputeTangentsAndDerivs
   Epetra_SerialDenseMatrix nodetangent1(NDIM,numnode1);
   Epetra_SerialDenseMatrix nodetangent2(NDIM,numnode2);
 
+  cout << "nodetangent";
+  for (int i=0;i<NDIM;i++)
+    for (int j=0;j<numnode1;j++)
+      cout << nodetangent1(i,j) << endl;
+  for (int i=0;i<NDIM;i++)
+    for (int j=0;j<numnode2;j++)
+      cout << nodetangent1(i,j) << endl;
+
+  cout << "eletangent";
+    for (int i=0;i<NDIM;i++)
+      for (int j=0;j<numnode1;j++)
+        cout << ele1tangent_(i,j) << endl;
+    for (int i=0;i<NDIM;i++)
+      for (int j=0;j<numnode2;j++)
+        cout << ele2tangent_(i,j) << endl;
+
+
   // full coord1 and coord2
   for (int i=0;i<NDIM;i++)
     for (int j=0;j<numnode1;j++)
@@ -1999,286 +2014,237 @@ void CONTACT::Beam3contact::CalculateNodalTangents(std::map<int,LINALG::Matrix<3
 
 
      // number of nodes of each element
-     const int numnode1 = Element1()->NumNode();
-     const int numnode2 = Element2()->NumNode();
+  const int numnode1 = Element1()->NumNode();
+  const int numnode2 = Element2()->NumNode();
 
-     // determine boundary node of element1
-     int n_right1=0;
-     GetBoundaryNode(n_right1, numnode1);
+  // determine boundary node of element1
+  int n_right1 = 0;
+  GetBoundaryNode(n_right1, numnode1);
 
-     // determine boundary node of element2
-     int n_right2=0;
-     GetBoundaryNode(n_right2, numnode2);
+  // determine boundary node of element2
+  int n_right2 = 0;
+  GetBoundaryNode(n_right2, numnode2);
 
-
-     // vectors for shape functions and their derivatives
-     Epetra_SerialDenseMatrix node_tangent1(3,numnode1);          // = vector of element1's node tangents
-     Epetra_SerialDenseMatrix node_tangent2(3,numnode2);        // = vector of element2's node tangents
-     Epetra_SerialDenseMatrix deriv1(1,numnode1); // = matrix for derivatives of shape functions of element1
-     Epetra_SerialDenseMatrix deriv2(1,numnode2); // = matrix for derivatives of shape functions of element1
-     double length_ele1 = 0;
-     GetEleLength(ele1pos_,n_right1,length_ele1);
-     double length_ele2 = 0;
-     GetEleLength(ele2pos_,n_right2,length_ele2);
-
-
-    const DRT::Element::DiscretizationType distype1 = element1_->Shape();
-    const DRT::Element::DiscretizationType distype2 = element2_->Shape();
+  // vectors for shape functions and their derivatives
+  Epetra_SerialDenseMatrix node_tangent1(3, numnode1); // = vector of element1's node tangents
+  Epetra_SerialDenseMatrix node_tangent2(3, numnode2); // = vector of element2's node tangents
+  Epetra_SerialDenseMatrix deriv1(1, numnode1); // = matrix for derivatives of shape functions of element1
+  Epetra_SerialDenseMatrix deriv2(1, numnode2); // = matrix for derivatives of shape functions of element1
+  double length_ele1 = 0;
+  GetEleLength(ele1pos_, n_right1, length_ele1);
+  double length_ele2 = 0;
+  GetEleLength(ele2pos_, n_right2, length_ele2);
 
 
-    //******************************contribution of element 1*****************************************
-     for (int node=1;node<numnode1 + 1;node++)
-     {
-         // calculate nodal derivatives
-         GetNodalDerivatives(deriv1,node,numnode1,length_ele1, distype1);
+  const DRT::Element::DiscretizationType distype1 = element1_->Shape();
+  const DRT::Element::DiscretizationType distype2 = element2_->Shape();
 
-         for (int k=0;k<3;k++)
-         { for (int j=0;j<numnode1;j++)
-             {
-             node_tangent1(k,node-1) += deriv1(0,j) * ele1pos_(k,j);}
-         }
-     }
+  //******************************contribution of element 1*****************************************
+  for (int node = 1; node < numnode1 + 1; node++) {
+    // calculate nodal derivatives
+    GetNodalDerivatives(deriv1, node, numnode1, length_ele1, distype1);
 
-     //******************************end: contribution of element 1*****************************************
+    for (int k = 0; k < 3; k++) {
+      for (int j = 0; j < numnode1; j++) {
+        node_tangent1(k, node - 1) += deriv1(0, j) * ele1pos_(k, j);
+      }
+    }
+  }
 
-     //****************************** contribution of left neighbor of element 1*****************************************
-     if (neighbor1_->left_neighbor_ != NULL)
-     {
+  //******************************end: contribution of element 1*****************************************
 
+  //****************************** contribution of left neighbor of element 1*****************************************
+  if (neighbor1_->left_neighbor_ != NULL) {
 
-       DRT::Element::DiscretizationType distype_ele1l = neighbor1_->left_neighbor_->Shape();
-       int numnode_ele1l = neighbor1_->left_neighbor_->NumNode();
-       Epetra_SerialDenseMatrix deriv_neighbors_ele1l(1,numnode_ele1l); // =matrix for derivatives of shape functions for neighbors
-       int node_ele1l = neighbor1_->connecting_node_left_ +1;
+    DRT::Element::DiscretizationType distype_ele1l =
+        neighbor1_->left_neighbor_->Shape();
+    int numnode_ele1l = neighbor1_->left_neighbor_->NumNode();
+    Epetra_SerialDenseMatrix deriv_neighbors_ele1l(1, numnode_ele1l); // =matrix for derivatives of shape functions for neighbors
+    int node_ele1l = neighbor1_->connecting_node_left_ + 1;
 
+    Epetra_SerialDenseMatrix temppos(3, numnode_ele1l);
 
-       Epetra_SerialDenseMatrix temppos (3,numnode_ele1l);
+    for (int j = 0; j < numnode_ele1l; j++) {
+      int tempGID = (neighbor1_->left_neighbor_->NodeIds())[j];
+      LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
+      for (int i = 0; i < 3; i++)
+        temppos(i, j) = tempposvector(i);
+    }
 
-       for (int j=0;j<numnode_ele1l;j++)
-                     {
-                         int tempGID = (neighbor1_->left_neighbor_->NodeIds())[j];
-                         LINALG::Matrix<3,1> tempposvector = currentpositions[tempGID];
-                         for (int i=0;i<3;i++)
-                         temppos(i,j) = tempposvector(i);
-                     }
+    int n_boundary = 0;
+    GetBoundaryNode(n_boundary, numnode_ele1l);
+    double length_ele1l = 0;
+    GetEleLength(temppos, n_boundary, length_ele1l);
 
+    GetNodalDerivatives(deriv_neighbors_ele1l, node_ele1l, numnode_ele1l,
+        length_ele1l, distype_ele1l);
 
-       int n_boundary=0;
-       GetBoundaryNode(n_boundary, numnode_ele1l);
-       double length_ele1l = 0;
-       GetEleLength(temppos,n_boundary,length_ele1l);
+    for (int j = 0; j < numnode_ele1l; j++) {
+      int tempGID = (neighbor1_->left_neighbor_->NodeIds())[j];
+      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
-       GetNodalDerivatives(deriv_neighbors_ele1l,node_ele1l,numnode_ele1l, length_ele1l,distype_ele1l);
+      for (int k = 0; k < 3; k++) {
 
-       for (int j=0;j<numnode_ele1l;j++)
-       {
-         int tempGID = (neighbor1_->left_neighbor_->NodeIds())[j];
-         LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+        node_tangent1(k, 0) += deriv_neighbors_ele1l(0, j) * temppos(k);
 
+      }
+    }
 
-         for (int k=0;k<3;k++)
-         {
+    for (int k = 0; k < 3; k++) {
+      node_tangent1(k, 0) = 0.5 * node_tangent1(k, 0);
+    }
 
-           node_tangent1(k,0) += deriv_neighbors_ele1l(0,j) * temppos(k);
-
-         }
-       }
-
-       for (int k=0;k<3;k++)
-       {
-         node_tangent1(k,0) = 0.5*node_tangent1(k,0);
-       }
-
-
-     }
-     //******************************end: contribution of left neighbor of element 1*****************************************
-
-
+  }
+  //******************************end: contribution of left neighbor of element 1*****************************************
 
 //******************************contribution of right neighbor of element 1*****************************************
-     if (neighbor1_->right_neighbor_ != NULL)
-     {
+  if (neighbor1_->right_neighbor_ != NULL) {
+
+    DRT::Element::DiscretizationType distype_ele1r =
+        neighbor1_->right_neighbor_->Shape();
+    int numnode_ele1r = neighbor1_->right_neighbor_->NumNode();
+    Epetra_SerialDenseMatrix deriv_neighbors_ele1r(1, numnode_ele1r); // =matrix for derivatives of shape functions for neighbors
+    int node_ele1r = neighbor1_->connecting_node_right_ + 1;
+
+    Epetra_SerialDenseMatrix temppos(3, numnode_ele1r);
+
+    for (int j = 0; j < numnode_ele1r; j++) {
+      int tempGID = (neighbor1_->right_neighbor_->NodeIds())[j];
+      LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
+      for (int i = 0; i < 3; i++)
+        temppos(i, j) = tempposvector(i);
+    }
 
-     DRT::Element::DiscretizationType distype_ele1r = neighbor1_->right_neighbor_->Shape();
-     int numnode_ele1r = neighbor1_->right_neighbor_->NumNode();
-     Epetra_SerialDenseMatrix deriv_neighbors_ele1r(1,numnode_ele1r); // =matrix for derivatives of shape functions for neighbors
-     int node_ele1r = neighbor1_->connecting_node_right_ +1;
+    int n_boundary = 0;
+    GetBoundaryNode(n_boundary, numnode_ele1r);
+    double length_ele1r = 0;
+    GetEleLength(temppos, n_boundary, length_ele1r);
+
+    GetNodalDerivatives(deriv_neighbors_ele1r, node_ele1r, numnode_ele1r,
+        length_ele1r, distype_ele1r);
 
+    for (int j = 0; j < numnode_ele1r; j++) {
+      int tempGID = (neighbor1_->right_neighbor_->NodeIds())[j];
+      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
-     Epetra_SerialDenseMatrix temppos (3,numnode_ele1r);
+      for (int k = 0; k < 3; k++) {
+        node_tangent1(k, n_right1) += deriv_neighbors_ele1r(0, j) * temppos(k);
+      }
+    }
+
+    for (int k = 0; k < 3; k++) {
+      //TESTCASE //node_tangent1(k, n_right1) = 0.5 * node_tangent1(3 * n_right1 + k, 0);
+      node_tangent1(k, n_right1) = 0.5 * node_tangent1(k, n_right1);
+    }
 
+  }
+  //******************************end: contribution of right neighbor of element 1*****************************************
+  ele1tangent_ = node_tangent1;
+
+  //****************************** contribution of element 2*****************************************
+  for (int node = 1; node < numnode2 + 1; node++) {
+    // calculate nodal derivatives
+    GetNodalDerivatives(deriv2, node, numnode2, length_ele2, distype2);
 
-            for (int j=0;j<numnode_ele1r;j++)
-                          {
-                              int tempGID = (neighbor1_->right_neighbor_->NodeIds())[j];
-                              LINALG::Matrix<3,1> tempposvector = currentpositions[tempGID];
-                              for (int i=0;i<3;i++)
-                              temppos(i,j) = tempposvector(i);
-                          }
+    for (int k = 0; k < 3; k++) {
+      for (int j = 0; j < numnode2; j++)
+        node_tangent2(k, node - 1) += deriv2(0, j) * ele2pos_(k, j);
+    }
+  }
+  //******************************end: contribution of element 2*****************************************
 
-            int n_boundary=0;
-            GetBoundaryNode(n_boundary, numnode_ele1r);
-            double length_ele1r = 0;
-            GetEleLength(temppos,n_boundary,length_ele1r);
+  //******************************contribution of left neighbor of element 2*****************************************
 
+  if (neighbor2_->left_neighbor_ != NULL) {
+    DRT::Element::DiscretizationType distype_ele2l =
+        neighbor2_->left_neighbor_->Shape();
+    int numnode_ele2l = neighbor2_->left_neighbor_->NumNode();
+    Epetra_SerialDenseMatrix deriv_neighbors_ele2l(1, numnode_ele2l); // =matrix for derivatives of shape functions for neighbors
+    int node_ele2l = neighbor2_->connecting_node_left_ + 1;
 
-         GetNodalDerivatives(deriv_neighbors_ele1r,node_ele1r,numnode_ele1r, length_ele1r, distype_ele1r);
+    Epetra_SerialDenseMatrix temppos(3, numnode_ele2l);
 
+    for (int j = 0; j < numnode_ele2l; j++) {
+      int tempGID = (neighbor2_->left_neighbor_->NodeIds())[j];
+      LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
+      for (int i = 0; i < 3; i++)
+        temppos(i, j) = tempposvector(i);
+    }
 
+    int n_boundary = 0;
+    GetBoundaryNode(n_boundary, numnode_ele2l);
+    double length_ele2l = 0;
+    GetEleLength(temppos, n_boundary, length_ele2l);
 
+    GetNodalDerivatives(deriv_neighbors_ele2l, node_ele2l, numnode_ele2l,
+        length_ele2l, distype_ele2l);
 
-         for (int j=0;j<numnode_ele1r;j++)
-                 {
-                   int tempGID = (neighbor1_->right_neighbor_->NodeIds())[j];
-                   LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+    for (int j = 0; j < numnode_ele2l; j++) {
+      int tempGID = (neighbor2_->left_neighbor_->NodeIds())[j];
+      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
+      for (int k = 0; k < 3; k++) {
+        node_tangent2(k, 0) += deriv_neighbors_ele2l(0, j) * temppos(k);
+      }
+    }
 
-                   for (int k=0;k<3;k++)
-                   {
-                     node_tangent1(k,n_right1) += deriv_neighbors_ele1r(0,j) * temppos(k);
-                   }
-                 }
+    for (int k = 0; k < 3; k++) {
+      node_tangent2(k, 0) = 0.5 * node_tangent2(k, 0);
+    }
 
+  }
+  //******************************end: contribution of left neighbor of element 2*****************************************
 
-         for (int k=0;k<3;k++)
-         {
-           node_tangent1(k,n_right1) = 0.5*node_tangent1(3*n_right1 +k,0);
-         }
+  //******************************contribution of right neighbor of element 2*****************************************
 
+  if (neighbor2_->right_neighbor_ != NULL) {
 
-     }
-     //******************************end: contribution of right neighbor of element 1*****************************************
-         ele1tangent_ = node_tangent1;
+    DRT::Element::DiscretizationType distype_ele2r =
+        neighbor2_->right_neighbor_->Shape();
 
+    int numnode_ele2r = neighbor2_->right_neighbor_->NumNode();
 
+    Epetra_SerialDenseMatrix deriv_neighbors_ele2r(1, numnode_ele2r); // =matrix for derivatives of shape functions for neighbors
 
+    int node_ele2r = neighbor2_->connecting_node_right_ + 1;
 
-         //****************************** contribution of element 2*****************************************
-         for (int node=1;node<numnode2 + 1;node++)
-         {
-             // calculate nodal derivatives
-             GetNodalDerivatives(deriv2,node,numnode2, length_ele2, distype2);
+    Epetra_SerialDenseMatrix temppos(3, numnode_ele2r);
 
+    for (int j = 0; j < numnode_ele2r; j++) {
+      int tempGID = (neighbor2_->right_neighbor_->NodeIds())[j];
+      LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
+      for (int i = 0; i < 3; i++)
+        temppos(i, j) = tempposvector(i);
+    }
 
+    int n_boundary = 0;
+    GetBoundaryNode(n_boundary, numnode_ele2r);
+    double length_ele2r = 0;
+    GetEleLength(temppos, n_boundary, length_ele2r);
 
+    // calculate nodal derivatives
+    GetNodalDerivatives(deriv_neighbors_ele2r, node_ele2r, numnode_ele2r,
+        length_ele2r, distype_ele2r);
 
-             for (int k=0;k<3;k++)
-             { for (int j=0;j<numnode2;j++)
-                 node_tangent2(k,node-1) += deriv2(0,j) * ele2pos_(k,j);
-             }
-         }
-         //******************************end: contribution of element 2*****************************************
+    for (int j = 0; j < numnode_ele2r; j++) {
+      int tempGID = (neighbor2_->right_neighbor_->NodeIds())[j];
+      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
+      for (int k = 0; k < 3; k++) {
+        node_tangent2(k, n_right2) += deriv_neighbors_ele2r(0, j) * temppos(k);
 
-         //******************************contribution of left neighbor of element 2*****************************************
+      }
+    }
 
-         if (neighbor2_->left_neighbor_ != NULL)
-         {
-           DRT::Element::DiscretizationType distype_ele2l = neighbor2_->left_neighbor_->Shape();
-           int numnode_ele2l = neighbor2_->left_neighbor_->NumNode();
-           Epetra_SerialDenseMatrix deriv_neighbors_ele2l(1,numnode_ele2l); // =matrix for derivatives of shape functions for neighbors
-           int node_ele2l = neighbor2_->connecting_node_left_ +1;
+    for (int k = 0; k < 3; k++) {
+      //TESTCASE node_tangent2(k, n_right2) = 0.5 * node_tangent2(3 * n_right2 + k, 0);
+      node_tangent2(k, n_right2) = 0.5 * node_tangent2(k, n_right2);
+    }
 
+  }
+  //******************************end: contribution of right neighbor of element 2*****************************************
 
-           Epetra_SerialDenseMatrix temppos (3,numnode_ele2l);
-
-           for (int j=0;j<numnode_ele2l;j++)
-                         {
-                             int tempGID = (neighbor2_->left_neighbor_->NodeIds())[j];
-                             LINALG::Matrix<3,1> tempposvector = currentpositions[tempGID];
-                             for (int i=0;i<3;i++)
-                             temppos(i,j) = tempposvector(i);
-                         }
-
-           int n_boundary=0;
-           GetBoundaryNode(n_boundary, numnode_ele2l);
-           double length_ele2l = 0;
-           GetEleLength(temppos,n_boundary,length_ele2l);
-
-
-           GetNodalDerivatives(deriv_neighbors_ele2l,node_ele2l,numnode_ele2l, length_ele2l,distype_ele2l);
-
-
-           for (int j=0;j<numnode_ele2l;j++)
-                        {
-                          int tempGID = (neighbor2_->left_neighbor_->NodeIds())[j];
-                          LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
-
-
-                          for (int k=0;k<3;k++)
-                            {node_tangent2(k,0) += deriv_neighbors_ele2l(0,j) * temppos(k);
-                            }
-                        }
-
-
-           for (int k=0;k<3;k++)
-                       {
-                         node_tangent2(k,0) = 0.5*node_tangent2(k,0);
-                       }
-
-         }
-         //******************************end: contribution of left neighbor of element 2*****************************************
-
-
-         //******************************contribution of right neighbor of element 2*****************************************
-
-         if (neighbor2_->right_neighbor_ != NULL)
-          {
-
-         DRT::Element::DiscretizationType distype_ele2r = neighbor2_->right_neighbor_->Shape();
-
-         int numnode_ele2r = neighbor2_->right_neighbor_->NumNode();
-
-         Epetra_SerialDenseMatrix deriv_neighbors_ele2r(1,numnode_ele2r); // =matrix for derivatives of shape functions for neighbors
-
-         int node_ele2r = neighbor2_->connecting_node_right_ +1;
-
-
-
-         Epetra_SerialDenseMatrix temppos (3,numnode_ele2r);
-
-
-                     for (int j=0;j<numnode_ele2r;j++)
-                                   {
-                                       int tempGID = (neighbor2_->right_neighbor_->NodeIds())[j];
-                                       LINALG::Matrix<3,1> tempposvector = currentpositions[tempGID];
-                                       for (int i=0;i<3;i++)
-                                       temppos(i,j) = tempposvector(i);
-                                   }
-
-                     int n_boundary=0;
-                     GetBoundaryNode(n_boundary, numnode_ele2r);
-                     double length_ele2r = 0;
-                     GetEleLength(temppos,n_boundary,length_ele2r);
-
-
-
-                  // calculate nodal derivatives
-                  GetNodalDerivatives(deriv_neighbors_ele2r,node_ele2r,numnode_ele2r, length_ele2r, distype_ele2r);
-
-
-             for (int j=0;j<numnode_ele2r;j++)
-                     {
-                       int tempGID = (neighbor2_->right_neighbor_->NodeIds())[j];
-                       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
-
-
-                       for (int k=0;k<3;k++)
-                       {
-                         node_tangent2(k,n_right2) += deriv_neighbors_ele2r(0,j) * temppos(k);
-
-                       }
-                     }
-
-             for (int k=0;k<3;k++)
-                                    {
-               node_tangent2(k,n_right2) = 0.5*node_tangent2(3*n_right2 +k,0);
-                                    }
-
-          }
-         //******************************end: contribution of right neighbor of element 2*****************************************
-
-             ele2tangent_ = node_tangent2;
+  ele2tangent_ = node_tangent2;
 
 //***************** Uncomment this output to check the tangent calculation*************************
 //             cout << "nodal tangents Element " << element1_->Id() << " : " << ele1tangent_ << endl;
