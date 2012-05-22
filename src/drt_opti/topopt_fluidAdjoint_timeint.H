@@ -90,6 +90,8 @@ namespace ADJOINT
 
     /// direct access to discretization
     virtual Teuchos::RCP<const DRT::Discretization> Discretization() const {return discret_;}
+    /// direct access to adjoint fluid parameter
+    virtual Teuchos::RCP<Teuchos::ParameterList>& AdjointParams() {return params_;}
     /// direct access to system matrix
     virtual Teuchos::RCP<const LINALG::SparseMatrix> SystemMatrix() const = 0;
     /// direct access to system matrix
@@ -130,7 +132,7 @@ namespace ADJOINT
     virtual void SetTopOptData(
         Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
         Teuchos::RCP<const Epetra_Vector> porosity,
-        Teuchos::RCP<Optimizer> optimizer) = 0;
+        Teuchos::RCP<Optimizer>& optimizer) = 0;
     /// call the algorithm's computation
     virtual void Integrate() = 0;
     /// create a field test for the computation's result

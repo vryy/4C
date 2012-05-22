@@ -36,10 +36,11 @@ TOPOPT::Algorithm::Algorithm(
   max_iter_(topopt_.sublist("TOPOLOGY OPTIMIZER").get<int>("MAX_ITER")),
   res_tol_(topopt_.get<double>("RESTOL")),
   inc_tol_(topopt_.get<double>("INCTOL")),
-  conv_check_type_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::ConvCheck>(topopt_,"CONV_CHECK_TYPE"))
+  conv_check_type_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::ConvCheck>(topopt_,"CONV_CHECK_TYPE")),
+  optimizer_(Optimizer())
 {
   // initialize system vector (without values)
-  poro_ = rcp(new Epetra_Vector(*Optimizer()->Discret()->NodeColMap(),false));
+  poro_ = rcp(new Epetra_Vector(*optimizer_->Discret()->NodeColMap(),false));
 
   return;
 }
@@ -72,9 +73,9 @@ void TOPOPT::Algorithm::OptimizationLoop()
 
     // solve the adjoint equations
     DoAdjointField();
-//
-//    // compute the gradient of the objective function
-//    GetGradient();
+
+    // compute the gradient of the objective function
+    GetGradient();
 //
 //    // update objective due to optimization approach
 //    DoOptimizationStep();
@@ -97,6 +98,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareOptimization()
 {
+  optimizer_->ImportFlowParams(AdjointFluidField()->AdjointParams());
   return;
 }
 
@@ -139,8 +141,8 @@ bool TOPOPT::Algorithm::OptimizationNotFinished()
       if ((conv_check_type_==INPAR::TOPOPT::inc) or
           (conv_check_type_==INPAR::TOPOPT::inc_and_res))
       {
-        Epetra_Vector inc(*Optimizer()->RowMap(),false);
-        inc.Update(1.0,*Optimizer()->DensityIp(),-1.0,*Optimizer()->DensityI(),0.0);
+        Epetra_Vector inc(*optimizer_->RowMap(),false);
+        inc.Update(1.0,*optimizer_->DensityIp(),-1.0,*optimizer_->DensityI(),0.0);
 
         double incvelnorm;
         inc.Norm2(&incvelnorm);
@@ -174,7 +176,7 @@ bool TOPOPT::Algorithm::OptimizationNotFinished()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareFluidField()
 {
-  FluidField().SetTopOptData(poro_,Optimizer());
+  FluidField().SetTopOptData(poro_,optimizer_);
   return;
 }
 
@@ -196,7 +198,7 @@ void TOPOPT::Algorithm::DoFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareAdjointField()
 {
-  RCP<TOPOPT::Optimizer> optimizer = Optimizer();
+  RCP<TOPOPT::Optimizer>& optimizer = optimizer_;
   AdjointFluidField()->SetTopOptData(optimizer->ExportFluidData(),poro_,optimizer);
   return;
 }
@@ -218,7 +220,7 @@ void TOPOPT::Algorithm::DoAdjointField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::GetGradient()
 {
-  dserror("global topology optimization has no time loop");
+  optimizer_->ComputeGradient();
   return;
 }
 
@@ -255,7 +257,7 @@ void TOPOPT::Algorithm::UpdatePorosity()
    *
    * winklmaier 12/11
    * */
-  RCP<const Epetra_Vector> density = Optimizer()->DensityIp();
+  RCP<const Epetra_Vector> density = optimizer_->DensityIp();
 
   const double poro_bd_down = topopt_.get<double>("PORO_BOUNDARY_DOWN");
   const double poro_bd_up = topopt_.get<double>("PORO_BOUNDARY_UP");
@@ -265,7 +267,7 @@ void TOPOPT::Algorithm::UpdatePorosity()
 
   // evaluate porosity due to density
   Epetra_Vector poro_row(density->Map(),false);
-  for (int lnodeid=0; lnodeid<Optimizer()->Discret()->NumMyRowNodes(); lnodeid++)  // loop over processor nodes
+  for (int lnodeid=0; lnodeid<optimizer_->Discret()->NumMyRowNodes(); lnodeid++)  // loop over processor nodes
   {
     const double dens = (*density)[lnodeid];
     (poro_row)[lnodeid] = poro_bd_up + poro_diff*dens*(1+fac)/(dens+fac);
@@ -296,7 +298,7 @@ void TOPOPT::Algorithm::Output() const
 void TOPOPT::Algorithm::Update()
 {
   // clear the field data of the primal and the dual equations
-  Optimizer()->ClearFieldData();
+  optimizer_->ClearFieldData();
   return;
 }
 

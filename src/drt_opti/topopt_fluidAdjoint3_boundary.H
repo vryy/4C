@@ -127,7 +127,7 @@ private:
   ) const;
 
   //! pointer to parameter list
-  DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
+  Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fluidAdjoint3Parameter_;
 
   // gauss points
   DRT::UTILS::GaussIntegration intpoints_;

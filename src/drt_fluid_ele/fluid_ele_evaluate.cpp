@@ -156,12 +156,12 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
   }
   else if (action == "set_general_adjoint_parameter")
   {
-    DRT::ELEMENTS::FluidAdjoint3ImplParameter* fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
     fldpara->SetElementGeneralAdjointParameter(p);
   }
   else if (action == "set_adjoint_time_parameter")
   {
-    DRT::ELEMENTS::FluidAdjoint3ImplParameter* fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
     fldpara->SetElementAdjointTimeParameter(p);
   }
 

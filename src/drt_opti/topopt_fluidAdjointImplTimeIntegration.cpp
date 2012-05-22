@@ -111,6 +111,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   // adjoint velocity/pressure at time n+1, n and n-1
   velnp_ = LINALG::CreateVector(*dofrowmap,true);
   veln_  = LINALG::CreateVector(*dofrowmap,true);
+  velnm_ = LINALG::CreateVector(*dofrowmap,true);
 
   // adjoint velocity/pressure at time n+1, n and n-1
   fluidvelnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -683,6 +684,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::TimeUpdate()
 {
   // velocities/pressures of this step become most recent
   // velocities/pressures of the last step
+  velnm_->Update(1.0,*veln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
 
   return;
@@ -717,6 +719,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     {
       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
       output_->WriteVector("veln", veln_);
+      output_->WriteVector("velnm",velnm_);
+
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -730,11 +734,25 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
 
     // velocity/pressure vector at time n and n-1
     output_->WriteVector("veln", veln_);
+    output_->WriteVector("velnm",velnm_);
     output_->WriteVector("neumann_loads",neumann_loads_);
   }
 
   if (topopt_porosity_!=Teuchos::null)
-    optimizer_->ImportAdjointFluidData(velnp_,step_);
+  {
+    if (timealgo_==INPAR::FLUID::timeint_stationary)
+      optimizer_->ImportAdjointFluidData(velnp_,1);
+    else
+    {
+      // we have to switch the step here since we start with step 0 at end-time,
+      // but the step of adjoint fluid and fluid equations shall fit
+      optimizer_->ImportAdjointFluidData(velnp_,stepmax_-step_);
+
+      // initial solution (=v_t_max) is old solution at step 1
+      if (step_==1)
+        optimizer_->ImportAdjointFluidData(velnm_,stepmax_); // currently velnm contains veln because timeupdate was called before
+    }
+  }
 
   return;
 } // ImplicitTimeInt::Output
@@ -795,6 +813,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::ReadRestart(int step)
 
   reader.ReadVector(velnp_,"velnp");
   reader.ReadVector(veln_, "veln");
+  reader.ReadVector(velnm_,"velnm");
 
   // set element time parameter after restart:
   // Here it is already needed by AVM3 and impedance boundary condition!!
@@ -860,7 +879,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
 void TOPOPT::ADJOINT::ImplicitTimeInt::SetTopOptData(
     Teuchos::RCP<const std::map<int,RCP<Epetra_Vector> > > fluidvelocities,
     RCP<const Epetra_Vector> porosity,
-    RCP<TOPOPT::Optimizer> optimizer
+    RCP<TOPOPT::Optimizer>& optimizer
 )
 {
   fluid_vels_= fluidvelocities;
@@ -1035,14 +1054,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
 
   // set if objective contains dissipation
   eleparams.set<bool>("dissipation",params_->get<bool>("OBJECTIVE_DISSIPATION"));
-  // set if objective contains inlet pressure
-  eleparams.set<bool>("inletPres",params_->get<bool>("OBJECTIVE_INLET_PRESSURE"));
   // set if objective contains pressure drop
   eleparams.set<bool>("presDrop",params_->get<bool>("OBJECTIVE_PRESSURE_DROP"));
   // set objective's dissipation factor
   eleparams.set<double>("dissipationFac" ,params_->get<double>("DISSIPATION_FAC"));
-  // set objective's inlet pressure factor
-  eleparams.set<double>("inletPresFac" ,params_->get<double>("PRESSURE_INLET_FAC"));
   // set objective's pressure drop factor
   eleparams.set<double>("presDropFac" ,params_->get<double>("PRESSURE_DROP_FAC"));
 

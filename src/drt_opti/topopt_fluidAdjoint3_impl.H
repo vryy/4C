@@ -442,7 +442,7 @@ private:
   bool is_higher_order_ele_;
 
   //! pointer to parameter list
-  DRT::ELEMENTS::FluidAdjoint3ImplParameter* fluidAdjoint3Parameter_;
+  Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fluidAdjoint3Parameter_;
 };
 }
 }

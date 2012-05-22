@@ -3923,7 +3923,7 @@ void FLD::FluidImplicitTimeInt::Output()
   {
     optimizer_->ImportFluidData(velnp_,step_);
 
-    // initial solution (=u_0) is old solution in step 1
+    // initial solution (=u_0) is old solution at time step 1
     if (step_==1 and timealgo_!=INPAR::FLUID::timeint_stationary)
       optimizer_->ImportFluidData(velnm_,0); // currently velnm contains veln because timeupdate was called before
   }
@@ -4903,7 +4903,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractVelocityPart
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetTopOptData(
     RCP<const Epetra_Vector> porosity,
-    RCP<TOPOPT::Optimizer> optimizer
+    RCP<TOPOPT::Optimizer>& optimizer
 )
 {
   // currently the maps have to fit and, thus, this works

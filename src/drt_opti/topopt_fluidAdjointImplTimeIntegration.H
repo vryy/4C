@@ -139,7 +139,7 @@ public:
   void SetTopOptData(
       Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
       Teuchos::RCP<const Epetra_Vector> porosity,
-      Teuchos::RCP<TOPOPT::Optimizer> optimizer
+      Teuchos::RCP<TOPOPT::Optimizer>& optimizer
   );
 
   void EvaluateDirichlet();
@@ -153,6 +153,7 @@ public:
   Teuchos::RCP<const Epetra_Vector> Residual() const { return residual_; }
   Teuchos::RCP<const Epetra_Vector> Velnp() const { return velnp_; }
   Teuchos::RCP<const Epetra_Vector> Veln() const { return veln_; }
+  Teuchos::RCP<const Epetra_Vector> Velnm() const { return velnm_; }
   Teuchos::RCP<const Epetra_Vector> FluidVelnp() const { return fluidvelnp_; }
   Teuchos::RCP<const Epetra_Vector> FluidVeln() const { return fluidveln_; }
 
@@ -218,6 +219,9 @@ protected:
   //! @name adjoint velocity and pressure at time n+1, n
   Teuchos::RCP<Epetra_Vector>    velnp_;
   Teuchos::RCP<Epetra_Vector>    veln_;
+  Teuchos::RCP<Epetra_Vector>    velnm_;
+  //@}
+
 
   //! @name fluid velocity and pressure at time n+1, n
   Teuchos::RCP<const Epetra_Vector>    fluidvelnp_;

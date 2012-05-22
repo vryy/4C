@@ -114,6 +114,7 @@ namespace TOPOPT
 
     /// pseudo-porosity function for topology optimization
     Teuchos::RCP<Epetra_Vector> poro_;
+    Teuchos::RCP<TOPOPT::Optimizer>& optimizer_;
 
     /// objective fields
     double objective_ip_; // objective at new iteration in row map

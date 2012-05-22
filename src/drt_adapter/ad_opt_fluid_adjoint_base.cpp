@@ -198,14 +198,10 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // ---------------------------------------------- objective variables
   // set if objective contains dissipation
   fluidadjointtimeparams->set<bool>          ("OBJECTIVE_DISSIPATION" ,DRT::INPUT::IntegralValue<int>(opti,"OBJECTIVE_DISSIPATION")==1);
-  // set if objective contains inlet pressure
-  fluidadjointtimeparams->set<bool>          ("OBJECTIVE_INLET_PRESSURE" ,DRT::INPUT::IntegralValue<int>(opti,"OBJECTIVE_INLET_PRESSURE")==1);
   // set if objective contains pressure drop
   fluidadjointtimeparams->set<bool>          ("OBJECTIVE_PRESSURE_DROP" ,DRT::INPUT::IntegralValue<int>(opti,"OBJECTIVE_PRESSURE_DROP")==1);
   // set objective's dissipation factor
   fluidadjointtimeparams->set<double>        ("DISSIPATION_FAC" ,opti.get<double>("DISSIPATION_FAC"));
-  // set objective's inlet pressure factor
-  fluidadjointtimeparams->set<double>        ("PRESSURE_INLET_FAC" ,opti.get<double>("PRESSURE_INLET_FAC"));
   // set objective's pressure drop factor
   fluidadjointtimeparams->set<double>        ("PRESSURE_DROP_FAC" ,opti.get<double>("PRESSURE_DROP_FAC"));
 

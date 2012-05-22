@@ -19,16 +19,16 @@ Maintainer: Martin Winklmaier
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidAdjoint3ImplParameter* DRT::ELEMENTS::FluidAdjoint3ImplParameter::instance_;
+Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> DRT::ELEMENTS::FluidAdjoint3ImplParameter::instance_;
 
 
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidAdjoint3ImplParameter* DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance()
+Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance()
 {
-  if (instance_==NULL)
-    instance_ = new FluidAdjoint3ImplParameter();
+  if (instance_==Teuchos::null)
+    instance_ = Teuchos::rcp(new FluidAdjoint3ImplParameter());
   return instance_;
 }
 
@@ -40,10 +40,8 @@ DRT::ELEMENTS::FluidAdjoint3ImplParameter::FluidAdjoint3ImplParameter()
   :
   set_general_adjoint_parameter_(false),
   dissipation_(false),
-  inlet_pressure_(false),
   pressure_drop_(false),
   dissipation_fac_(0.0),
-  inlet_pressure_fac_(0.0),
   pressure_drop_fac_(0.0),
   is_stationary_(false),
   is_inconsistent_(false),
@@ -97,11 +95,6 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementGeneralAdjointParamete
   dissipation_ = params.get<bool>("dissipation");
   if (dissipation_) dissipation_fac_ = params.get<double>("dissipationFac");
   else              dissipation_fac_ = 0.0;
-
-  // set if objective contains inlet pressure and according factor
-  inlet_pressure_ = params.get<bool>("inletPres");
-  if (inlet_pressure_)  inlet_pressure_fac_ = params.get<double>("inletPresFac");
-  else                  inlet_pressure_fac_ = 0.0;
 
   // set if objective contains pressure drop and according factor
   pressure_drop_ = params.get<bool>("presDrop");

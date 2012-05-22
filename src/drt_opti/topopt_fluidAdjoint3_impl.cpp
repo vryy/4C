@@ -2044,18 +2044,67 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
 {
   double value = 0.0;
 
-  for (int idim = 0; idim <nsd_; ++idim)
+  if (fluidAdjoint3Parameter_->TestCase() == INPAR::TOPOPT::adjointtest_no)
   {
-    value = timefacfac*bodyforce_(idim);
-
-    if (not fluidAdjoint3Parameter_->IsStationary())
-      value += timefacfacrhs*bodyforce_old_(idim);
-
-    for (int vi=0; vi<nen_; ++vi)
+    if (fluidAdjoint3Parameter_->ObjDissipationTerm())
     {
-      velforce(idim,vi)+=value*funct_(vi);
+      const double dissipation = fluidAdjoint3Parameter_->ObjDissipationFac();
+
+      /*
+       *  d   /             \                    /         \
+       * --- |   sigma*u*u   | (w)   =   2*reac |   u , w   |
+       *  du  \             /                    \         /
+       */
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        value = timefacfac*2*dissipation*reacoeff_*fluidvelint_(idim);
+
+        if (not fluidAdjoint3Parameter_->IsStationary())
+          value += timefacfacrhs*2*dissipation*reacoeff_*fluidvelint_old_(idim);
+
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          velforce(idim,vi)+=value*funct_(vi);
+        }
+      }  // end for(idim)
+
+
+      /*
+       *  d   /                    \                  /                    \
+       * --- |  2*mu*eps(u)*eps(u)  | (w)   =   4*mu |   eps(u) , nabla w   |
+       *  du  \                    /                  \                    /
+       */      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        for (int jdim = 0; jdim<nsd_; ++jdim)
+        {
+          value = timefacfac*2*visc_*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+
+          if (not fluidAdjoint3Parameter_->IsStationary())
+            value = timefacfacrhs*2*visc_*(fluidvelxy_old_(idim,jdim)+fluidvelxy_old_(jdim,idim));
+
+          for (int vi=0;vi<nen_; ++vi)
+          {
+            velforce(jdim,vi)+= derxy_(idim,vi)*value;
+          }
+        }
+      }  // end for(idim)
     }
-  }  // end for(idim)
+  }
+  else // special cases -> no partial integration
+  {
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      value = timefacfac*bodyforce_(idim);
+
+      if (not fluidAdjoint3Parameter_->IsStationary())
+        value += timefacfacrhs*bodyforce_old_(idim);
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        velforce(idim,vi)+=value*funct_(vi);
+      }
+    }  // end for(idim)
+  }
 
   return;
 }

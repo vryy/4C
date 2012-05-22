@@ -61,8 +61,7 @@ namespace ADAPTER {
     virtual ~TopOptBaseAlgorithm(){};
 
     /// access to the optimizer
-    Teuchos::RCP<TOPOPT::Optimizer> Optimizer(){return optimizer_;};
-    Teuchos::RCP<const TOPOPT::Optimizer> Optimizer() const {return optimizer_;};
+    Teuchos::RCP<TOPOPT::Optimizer>& Optimizer(){return optimizer_;};
 
   private:
 

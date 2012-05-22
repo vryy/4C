@@ -13,6 +13,7 @@ Maintainer: Martin Winklmaier
 
 
 #include "topopt_optimizer.H"
+#include "topopt_fluidAdjoint3_impl_parameter.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -30,33 +31,22 @@ params_(params)
 {
   const Teuchos::ParameterList& optimizer_params = params_.sublist("TOPOLOGY OPTIMIZER");
 
-  // topology density fields
-  dens_i_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
-  dens_ip_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
-
   // fluid fields for optimization
   vel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
   adjointvel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
 
+  // topology density fields
+  dens_i_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
+  dens_ip_ = rcp(new Epetra_Vector(*discret_->NodeRowMap(),false));
+
+  // value of the objective function
+  obj_value_ = 0.0;
+  // gradient of the objective function
+  obj_grad_ = rcp(new Epetra_Vector(*discret_->NodeRowMap()));
+
   // set initial density field if present
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
       optimizer_params.get<int>("INITFUNCNO"));
-
-  // set parameters for the objective
-  dissipation_ = (DRT::INPUT::IntegralValue<int>(params_,"OBJECTIVE_DISSIPATION")==1);
-  pressure_inlet_ = (DRT::INPUT::IntegralValue<int>(params_,"OBJECTIVE_INLET_PRESSURE")==1);
-  pressure_drop_ = (DRT::INPUT::IntegralValue<int>(params_,"OBJECTIVE_PRESSURE_DROP")==1);
-
-  dissipation_fac_ = params_.get<double>("DISSIPATION_FAC");
-  pressure_inlet_fac_ = params_.get<double>("PRESSURE_INLET_FAC");
-  pressure_drop_fac_ = params_.get<double>("PRESSURE_DROP_FAC");
-
-  // general data
-  if (DRT::INPUT::IntegralValue<int>(params_,"IS_STATIONARY")==1)
-    num_timesteps_ = 1;
-  else
-    num_timesteps_ = params_.get<int>("NUMSTEP");
-
 
   return;
 }
@@ -65,24 +55,23 @@ params_(params)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double TOPOPT::Optimizer::ComputeObjectiveValue(
-    const Teuchos::RCP<const Epetra_Vector> porosity
-) const
+void TOPOPT::Optimizer::ComputeObjective()
 {
-  double value = 0.0;
-
+  // check if all data is present
   DataComplete();
 
-  if (dissipation_)
-    value += EvaluateObjective(porosity,"dissipation");
+  EvaluateObjective3();
+}
 
-  if (pressure_inlet_)
-    value += EvaluateObjective(porosity,"pressure inlet");
 
-  if (pressure_drop_)
-    value += EvaluateObjective(porosity,"pressure drop");
 
-  return value;
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TOPOPT::Optimizer::ComputeGradient()
+{
+  DataComplete();
+
+  EvaluateGradient3();
 }
 
 
@@ -122,6 +111,15 @@ void TOPOPT::Optimizer::SetInitialDensityField(
   dens_i_->Update(1.0,*dens_ip_,0.0);
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TOPOPT::Optimizer::ImportFlowParams(
+    Teuchos::RCP<Teuchos::ParameterList>& fluidParams
+)
+{
+  fluidParams_ = fluidParams;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -165,14 +163,25 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
  *----------------------------------------------------------------------*/
 bool TOPOPT::Optimizer::DataComplete() const
 {
-  if (num_timesteps_!=vel_->size())
-    return false;
+  // n timesteps
+  // -> solutions at time t^0,t^1,...,t^n
+  // -> n+1 solutions
 
-  if (num_timesteps_!=adjointvel_->size())
-    return false;
+  size_t num_sols = 0;
+  if (fluidParams_->get<int>("time int algo")==INPAR::FLUID::timeint_stationary)
+    num_sols = 1;
+  else
+    num_sols = fluidParams_->get<int>("max number timesteps")+1;
+
+  if (num_sols!=vel_->size())
+    dserror("fluid field and time step numbers do not fit: n_f = %i, n_t = %i",vel_->size(),num_sols);
+
+  if (num_sols!=adjointvel_->size())
+    dserror("adjoint field and time step numbers do not fit: n_a = %i, n_t = %i",adjointvel_->size(),num_sols);
 
   return true;
 }
+
 
 
 /*----------------------------------------------------------------------*

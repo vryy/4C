@@ -313,7 +313,7 @@ public:
   */
   void SetTopOptData(
       RCP<const Epetra_Vector> porosity,
-      RCP<TOPOPT::Optimizer> optimizer
+      RCP<TOPOPT::Optimizer>& optimizer
   );
 
   /*!

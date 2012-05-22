@@ -3626,7 +3626,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& topoptcontrol = list->sublist("TOPOLOGY OPTIMIZATION CONTROL",false,
       "control parameters for topology optimization problems");
 
-  BoolParameter("IS_STATIONARY","no","optimization of stationary problem",&topoptcontrol);
   DoubleParameter("MAXTIME",10.0,"Total simulation time",&topoptcontrol);
   IntParameter("NUMSTEP",100,"Total number of timesteps",&topoptcontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&topoptcontrol);
@@ -3664,11 +3663,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("INCTOL",1e-5,"Convergence tolerance of the optimized variable",&topoptcontrol);
 
   BoolParameter("OBJECTIVE_DISSIPATION","No","dissipation part of the objective function",&topoptcontrol);
-  BoolParameter("OBJECTIVE_INLET_PRESSURE","No","inlet pressure part of the objective function",&topoptcontrol);
   BoolParameter("OBJECTIVE_PRESSURE_DROP","No","pressure drop part of the objective function",&topoptcontrol);
 
   DoubleParameter("DISSIPATION_FAC",0.0,"factor for the dissipation part of the objective",&topoptcontrol);
-  DoubleParameter("PRESSURE_INLET_FAC",0.0,"factor for the inlet pressure part of the objective",&topoptcontrol);
   DoubleParameter("PRESSURE_DROP_FAC",0.0,"factor for the mean pressure drop part of the objective",&topoptcontrol);
 
   /*----------------------------------------------------------------------*/

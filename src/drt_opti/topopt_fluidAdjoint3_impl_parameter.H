@@ -31,7 +31,7 @@ class FluidAdjoint3ImplParameter
 public:
 
   //! Singleton access method
-  static FluidAdjoint3ImplParameter* Instance();
+  static Teuchos::RCP<FluidAdjoint3ImplParameter> Instance();
 
   //! general fluid parameter are set
   void SetElementGeneralAdjointParameter(Teuchos::ParameterList& params    //> parameter list
@@ -46,10 +46,8 @@ public:
 
   bool GeneralParamsSet() {return set_general_adjoint_parameter_;}
   bool ObjDissipationTerm() {return dissipation_;}
-  bool ObjInletPresTerm() {return inlet_pressure_;}
   bool ObjPresDropTerm() {return pressure_drop_;}
   double ObjDissipationFac() {return dissipation_fac_;}
-  double ObjInletPresFac() {return inlet_pressure_fac_;}
   double ObjPresDropFac() {return pressure_drop_fac_;}
 
   bool IsStationary() {return is_stationary_;}
@@ -86,14 +84,10 @@ private:
 
   // set if objective contains dissipation
   bool dissipation_;
-  // set if objective contains inlet pressure
-  bool inlet_pressure_;
   // set if objective contains pressure drop
   bool pressure_drop_;
   // set objective's dissipation factor
   double dissipation_fac_;
-  // set objective's inlet pressure factor
-  double inlet_pressure_fac_;
   // set objective's pressure drop factor
   double pressure_drop_fac_;
 
@@ -159,7 +153,7 @@ private:
   FluidAdjoint3ImplParameter& operator=(const FluidAdjoint3ImplParameter&);
 
   /// the single instance
-  static FluidAdjoint3ImplParameter* instance_;
+  static Teuchos::RCP<FluidAdjoint3ImplParameter> instance_;
 };
 
 }
