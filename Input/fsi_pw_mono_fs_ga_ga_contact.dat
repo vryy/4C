@@ -362,11 +362,8 @@ DSURF                           0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           2
-//                              fsicoupling
-E 5 - 1 structure conforming
-//                              fsicoupling
-E 5 - 1 fluid conforming
+DSURF                           1
+E 5 - 1
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS

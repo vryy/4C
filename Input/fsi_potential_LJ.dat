@@ -549,13 +549,13 @@ DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           4
 // hydrogel left mantel
-E 2 - 1 structure conforming fsi_real
+E 2 - 1
 // hydrogel right mantel
-E 5 - 2 structure conforming fsi_real
+E 5 - 2
 // fluid hole left
-E 13 - 1 fluid conforming fsi_real
+E 13 - 1
 // fluid hole right
-E 14 - 2 fluid conforming fsi_real
+E 14 - 2
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS

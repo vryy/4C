@@ -286,8 +286,8 @@ DVOL                            0
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
-E 4 - 1 fluid conforming fsi_real
-E 5 - 1 structure conforming fsi_real
+E 4 - 1
+E 5 - 1
 ----------------------DESIGN SURF 3D To REDUCED D ARTERY COUPLING CONDITIONS
 DSURF                           0
 ----------------------DESIGN NODE REDUCED D To 3D ARTERY COUPLING CONDITIONS

@@ -161,9 +161,9 @@ DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DLINE                           3
-E 1 - 1 fluid conforming fsi_real
-E 5 - 1 ale conforming fsi_real
-E 9 - 1 structure conforming fsi_real
+E 1 - 1
+E 5 - 1
+E 9 - 1
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 //                              DOBJECT
 DLINE                           0

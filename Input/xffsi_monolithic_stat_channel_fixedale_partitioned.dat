@@ -226,9 +226,9 @@ E 1 - 1 1 1  0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF  2
 // fluid surfaces fsi
-E 1 - 1 structure conforming
+E 1 - 1
 // fluid surfaces fsi
-E 1 - 1 fluid conforming
+E 1 - 1
 ------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF  1
 // xfem

@@ -261,10 +261,10 @@ DVOL                            0
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           4
-E 1 - 1 fluid conforming
-E 2 - 1 fluid conforming
-E 5 - 1 structure conforming
-E 6 - 1 structure conforming
+E 1 - 1
+E 2 - 1
+E 5 - 1
+E 6 - 1
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS

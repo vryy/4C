@@ -242,8 +242,8 @@ DSURF                           0
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
-E 2 - 1 fluid conforming fsi_real
-E 5 - 1 structure conforming fsi_real
+E 2 - 1
+E 5 - 1
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS

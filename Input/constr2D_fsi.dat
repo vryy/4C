@@ -229,9 +229,9 @@ DVOL                            0
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE                           2
 //connect7
-E 6 - 1 structure conforming fsi_real
+E 6 - 1
 //connect13
-E 11 - 1 fluid conforming fsi_real
+E 11 - 1
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DSURF                           0

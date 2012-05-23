@@ -486,9 +486,9 @@ E 8 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none  0 0 0 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF  2
 // solid fsi
-E 1 - 1 structure conforming fsi_real
+E 1 - 1
 // fluid fsi
-E 4 - 1 fluid conforming fsi_real
+E 4 - 1
 ----------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF  2
 // solid fsi
