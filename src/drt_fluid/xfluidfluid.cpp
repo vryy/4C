@@ -357,18 +357,21 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
         // Reshapelement matrices and vectors and init to zero
         strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
 
-        for( unsigned cellcount=0;cellcount!=cells.size();cellcount++ )
         {
+          //------------------------------------------------------------
+          // Evaluate domain integrals
           TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
 
           // call the element evaluate method
-          int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
-                                    strategy.Elematrix1(),
-                                    strategy.Elematrix2(),
-                                    strategy.Elevector1(),
-                                    strategy.Elevector2(),
-                                    strategy.Elevector3(),
-                                    intpoints_sets[set_counter][cellcount] );
+          int err = impl->EvaluateXFEM( ele, discret, la[0].lm_, eleparams, mat,
+                                        strategy.Elematrix1(),
+                                        strategy.Elematrix2(),
+                                        strategy.Elevector1(),
+                                        strategy.Elevector2(),
+                                        strategy.Elevector3(),
+                                        intpoints_sets[set_counter],
+                                        xfluid_.VolumeCellGaussPointBy_,
+                                        cells);
 
           if (err)
             dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);

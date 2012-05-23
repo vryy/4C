@@ -784,7 +784,7 @@ bool GEO::CUT::TriangulateFacet::HasTwoContinuousConcavePts( std::vector<int> pt
 void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,
                                               bool triOnly )           //create triangles only?
 {
-  std::cout<<"I am ear clipped\n";
+  //std::cout<<"I am ear clipped\n";
   std::vector<int> convex;
 
   /*std::cout<<"number of points before deleting = "<<ptlist_.size()<<"\n";

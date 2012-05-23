@@ -95,6 +95,22 @@ namespace ELEMENTS
                          const DRT::UTILS::GaussIntegration & intpoints,
                          bool                                 offdiag = false) = 0;
 
+    /// Evaluate the XFEM cut element
+    virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid*                             ele,
+                             DRT::Discretization &                             discretization,
+                             const std::vector<int> &                          lm,
+                             Teuchos::ParameterList&                           params,
+                             Teuchos::RCP<MAT::Material> &                     mat,
+                             Epetra_SerialDenseMatrix&                         elemat1_epetra,
+                             Epetra_SerialDenseMatrix&                         elemat2_epetra,
+                             Epetra_SerialDenseVector&                         elevec1_epetra,
+                             Epetra_SerialDenseVector&                         elevec2_epetra,
+                             Epetra_SerialDenseVector&                         elevec3_epetra,
+                             const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                             std::string&                                      VCellGaussPts,
+                             const GEO::CUT::plain_volumecell_set &            cells,
+                             bool                                              offdiag = false) = 0;
+
     /// Integrate shape function
     /*!
       This class does not provide a definition for this function; it

@@ -248,12 +248,10 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
 
     if(res<0.0)
     {
-      std::cout<<"left\n";//blockkk
       leftind.push_back(i);
     }
     else
     {
-      std::cout<<"right\n";//blockkk
       rightind.push_back(i);
     }
   }
