@@ -511,6 +511,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_th_fourier_gen:
   default:
     dserror("unknown material type %d", curmat->Type());
+    break;
   }
 
   return Teuchos::null;

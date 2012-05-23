@@ -93,6 +93,7 @@ void ntainp_ccadiscret(
   break;
   default:
     dserror("nptype (nested parallelity type) not recognized");
+    break;
   }
   
   // all reading is done at this point!

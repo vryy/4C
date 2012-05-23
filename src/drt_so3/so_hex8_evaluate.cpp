@@ -1178,6 +1178,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   //==================================================================================
   default:
     dserror("Unknown type of action for So_hex8");
+    break;
   }
   return 0;
 }
@@ -1623,6 +1624,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       break;
     default:
       dserror("requested strain type not available");
+      break;
     }
 
     /* non-linear B-operator (may so be called, meaning
@@ -1729,6 +1731,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
        break;
      default:
        dserror("requested plastic strain type not available");
+       break;
      }
 
     // return gp stresses
@@ -1774,6 +1777,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       break;
     default:
       dserror("requested stress type not available");
+      break;
     }
 
     double detJ_w = detJ*gpweights[gp];
@@ -2073,6 +2077,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
       break;
     default:
       dserror("requested strain type not available");
+      break;
     }
 
     /* non-linear B-operator (may so be called, meaning
@@ -2209,6 +2214,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
       break;
     default:
       dserror("requested stress type not available");
+      break;
     }
 
     double detJ_w = detJ*gpweights[gp];

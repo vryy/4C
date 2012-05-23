@@ -26,14 +26,6 @@ Maintainer: Lena Yoshihara
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|
  *-------------------------------------------------------------------*/
@@ -56,6 +48,7 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
       break;
     default:
       dserror("Surface stresses are only implemented for imr-like generalized alpha");
+      break;
     }
 
     havesurfstress_ = true;

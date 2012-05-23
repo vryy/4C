@@ -444,6 +444,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   //==================================================================================
   default:
   dserror("Unknown type of action for So_hex8");
+  break;
   } // action
 
   return 0;
@@ -647,6 +648,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
       break;
     default:
       dserror("requested stress type not available");
+      break;
     }
 
     double detJ_w = detJ*gpweights[gp];

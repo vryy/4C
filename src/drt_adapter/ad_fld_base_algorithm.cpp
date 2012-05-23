@@ -299,6 +299,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       default:
         // no block matrix
         actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
+        break;
     }
   }
 

@@ -508,6 +508,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
                              DRT::Problem::Instance()->ErrorFile()->Handle()));
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
     }
+    break;
   }
 
   return solver;

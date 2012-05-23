@@ -89,7 +89,7 @@ void ntacal()
 
     case prb_ale:
       dyn_ale_drt();
-
+      break;
     case prb_thermo:
       thr_dyn_drt();
       break;

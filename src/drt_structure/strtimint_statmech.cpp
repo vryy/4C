@@ -1521,6 +1521,7 @@ void STR::TimIntStatMech::BeamContactNonlinearSolve()
     break;
     default:
       dserror("Only penalty and augmented Lagrange implemented in statmech_time.cpp for beam contact");
+      break;
   }
   return;
 }

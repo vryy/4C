@@ -709,6 +709,7 @@ bool STR::TimIntImpl::Converged()
     break;
   default:
     dserror("Cannot check for convergence of residual displacements!");
+    break;
   }
 
   // residual forces
@@ -725,6 +726,7 @@ bool STR::TimIntImpl::Converged()
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
+    break;
   }
 
   // check constraint
@@ -764,6 +766,7 @@ bool STR::TimIntImpl::Converged()
       break;
      default:
       dserror("Cannot check for convergence of residual pressures! Only for absolute residuals implemeted so far!");
+      break;
     }
 
     // incompressible residual
@@ -774,6 +777,7 @@ bool STR::TimIntImpl::Converged()
       break;
     default:
       dserror("Cannot check for convergence of incompressible force residuals!");
+      break;
     }
 
 
@@ -1920,6 +1924,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 
   if (pressure_ != Teuchos::null)
@@ -1931,6 +1936,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
       break;
     default:
       dserror("You should not turn up here.");
+      break;
     }
   }
 
@@ -1947,6 +1953,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 
   if (pressure_ != Teuchos::null)
@@ -1958,6 +1965,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
       break;
     default:
       dserror("You should not turn up here.");
+      break;
     }
   }
 
@@ -2035,6 +2043,7 @@ void STR::TimIntImpl::PrintNewtonIterText
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 
   if (pressure_ != Teuchos::null)
@@ -2046,6 +2055,7 @@ void STR::TimIntImpl::PrintNewtonIterText
       break;
     default:
       dserror("You should not turn up here.");
+      break;
     }
   }
 
@@ -2062,6 +2072,7 @@ void STR::TimIntImpl::PrintNewtonIterText
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 
   if (pressure_ != Teuchos::null)
@@ -2073,6 +2084,7 @@ void STR::TimIntImpl::PrintNewtonIterText
       break;
     default:
       dserror("You should not turn up here.");
+      break;
     }
   }
 
