@@ -56,6 +56,13 @@ namespace STRUMULTI
 {
 
 /*!
+\brief Stop nested parallelism support by sending a message to the
+supporting procs
+
+*/
+void stop_np_multiscale();
+
+/*!
 \brief Quasi-static control for microstructural analysis
 in case of multi-scale problems
 

@@ -14,6 +14,7 @@ Maintainer: Lena Yoshihara
 #include "so_tet4.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_discret.H"
 
 extern struct _GENPROB     genprob;
@@ -26,17 +27,20 @@ extern struct _GENPROB     genprob;
 
 void DRT::ELEMENTS::So_tet4::sotet4_homog(ParameterList&  params)
 {
-  double homogdens = 0.;
-  const static vector<double> weights = so_tet4_1gp_weights();
-  const double density = Material()->Density();
-
-  for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
+  if(DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
   {
-    homogdens += V_ * weights[gp] * density;
-  }
+    double homogdens = 0.;
+    const static vector<double> weights = so_tet4_1gp_weights();
+    const double density = Material()->Density();
 
-  double homogdensity = params.get<double>("homogdens", 0.0);
-  params.set("homogdens", homogdensity+homogdens);
+    for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
+    {
+      homogdens += V_ * weights[gp] * density;
+    }
+
+    double homogdensity = params.get<double>("homogdens", 0.0);
+    params.set("homogdens", homogdensity+homogdens);
+  }
 
   return;
 }

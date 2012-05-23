@@ -14,6 +14,7 @@ Maintainer: Lena Yoshihara
 #include "so_nstet.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_discret.H"
 
 extern struct _GENPROB     genprob;
@@ -26,12 +27,15 @@ extern struct _GENPROB     genprob;
 
 void DRT::ELEMENTS::NStet::nstet_homog(ParameterList&  params)
 {
-  const double density = Material()->Density();
+  if(DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
+  {
+    const double density = Material()->Density();
 
-  double homogdens = V_ * density;
+    double homogdens = V_ * density;
 
-  double homogdensity = params.get<double>("homogdens", 0.0);
-  params.set("homogdens", homogdensity+homogdens);
+    double homogdensity = params.get<double>("homogdens", 0.0);
+    params.set("homogdens", homogdensity+homogdens);
+  }
 
   return;
 }

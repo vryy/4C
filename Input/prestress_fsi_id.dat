@@ -54,7 +54,7 @@ K_DAMP                          0.5
 TOLDISP                         1.0E-07
 MAXITER                         50
 TIMEADAPT                       0
-PREDICT                         ConstDisVelAcc
+PREDICT                         ConstDis
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 INITIALFIELD                    zero_field

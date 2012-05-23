@@ -43,6 +43,7 @@ namespace DRT
 /// COMM_UTILS
 namespace COMM_UTILS
 {
+  // forward declaration
   class NestedParGroup;
   
   //! create a local and a global communicator for the problem
@@ -110,6 +111,12 @@ namespace COMM_UTILS
     /// return local communicator
     Teuchos::RCP<Epetra_Comm> GlobalComm(){ return gcomm_; }
 
+    /// set a sub group communicator
+    void SetSubComm(Teuchos::RCP<Epetra_Comm> subcomm);
+
+    /// return sub group communicator
+    Teuchos::RCP<Epetra_Comm> SubComm(){ return subcomm_; }
+
     /// return nested parallelism type
     NP_TYPE NpType(){ return npType_; }
 
@@ -128,6 +135,9 @@ namespace COMM_UTILS
 
     /// global communicator
     Teuchos::RCP<Epetra_Comm> gcomm_;
+
+    /// sub communicator
+    Teuchos::RCP<Epetra_Comm> subcomm_;
 
     /// nested parallelism type
     NP_TYPE npType_;

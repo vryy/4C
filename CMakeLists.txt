@@ -554,6 +554,7 @@ set(OBJS_DRT_BEAMCONTACT_LIB
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp
   src/drt_stru_multi/microstatic.cpp
+  src/drt_stru_multi/microstatic_npsupport.cpp
   src/drt_stru_multi/microstatic_service.cpp
 )
 set(OBJS_SOH8_LIB

@@ -26,6 +26,7 @@ Maintainer: Lena Yoshihara
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_lib/drt_elementtype.H"
@@ -93,9 +94,9 @@ V0_(V0)
   // -------------------------------------------------------------------
   // new time intgration implementation -> generalized alpha
   // parameters are located in a sublist
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_micro,"DYNAMICTYP") == INPAR::STR::dyna_genalpha)
   {
-    const Teuchos::ParameterList& genalpha  = DRT::Problem::Instance()->StructuralDynamicParams().sublist("GENALPHA");
+    const Teuchos::ParameterList& genalpha  = DRT::Problem::Instance(microdisnum_)->StructuralDynamicParams().sublist("GENALPHA");
     beta_ = genalpha.get<double>("BETA");
     gamma_ = genalpha.get<double>("GAMMA");
     alpham_ = genalpha.get<double>("ALPHA_M");
@@ -106,13 +107,15 @@ V0_(V0)
 
   INPAR::STR::PredEnum pred = DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
-  combdisifres_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdyn_macro,"NORMCOMBI_RESFDISP");
-  normtypedisi_ = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_macro,"NORM_DISP");
-  normtypefres_ = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_macro,"NORM_RESF");
+  combdisifres_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdyn_micro,"NORMCOMBI_RESFDISP");
+  normtypedisi_ = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_micro,"NORM_DISP");
+  normtypefres_ = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_micro,"NORM_RESF");
   INPAR::STR::VectorNorm iternorm = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn_micro,"ITERNORM");
   iternorm_ = iternorm;
 
   dt_    = sdyn_macro.get<double>("TIMESTEP");
+  // broadcast important data that must be consistent on macro and micro scale (master and supporting procs)
+  discret_->Comm().Broadcast(&dt_, 1, 0);
   time_  = 0.0;
   timen_ = time_ + dt_;
   step_  = 0;
@@ -141,6 +144,11 @@ V0_(V0)
 
   isadapttol_ = (DRT::INPUT::IntegralValue<int>(sdyn_micro,"ADAPTCONV")==1);
   adaptolbetter_ = sdyn_micro.get<double>("ADAPTCONV_BETTER");
+
+  // broadcast important data that must be consistent on macro and micro scale (master and supporting procs)
+  discret_->Comm().Broadcast(&numstep_, 1, 0);
+  discret_->Comm().Broadcast(&restart_, 1, 0);
+  discret_->Comm().Broadcast(&restartevry_, 1, 0);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -241,12 +249,6 @@ V0_(V0)
     V0_ = V0;
   else
   {
-    if (DRT::Problem::Instance()->Dis(0,0)->Comm().MyPID()==0)
-      cout << "You have not specified the initial volume of the RVE with number "
-           << microdisnum_ << ", therefore it will now be calculated.\n\n"
-           << "CAUTION: This calculation works only for RVEs without holes penetrating the surface!\n"
-           << endl;
-
     // -------------------------- Calculate initial volume of microstructure
     ParameterList p;
     // action for elements
@@ -257,6 +259,10 @@ V0_(V0)
     if (V0_ == -1.0)
       dserror("Calculation of initial volume failed");
   }
+  // sum initial volume over all procs (including supporting procs)
+  double sum = 0.0;
+  discret_->Comm().SumAll(&V0_, &sum, 1);
+  V0_ = sum;
 
   // ------------------------- Calculate initial density of microstructure
   // the macroscopic density has to be averaged over the entire
@@ -274,7 +280,11 @@ V0_(V0)
   discret_->Evaluate(par,null,null,null,null,null);
   discret_->ClearState();
 
-  density_ = 1/V0_*par.get<double>("homogdens", 0.0);
+  // sum initial density over all procs (including supporting procs)
+  double my = 1/V0_*par.get<double>("homogdens", 0.0);
+  sum = 0.0;
+  discret_->Comm().SumAll(&my, &sum, 1);
+  density_ = sum;
   if (density_ == 0.0)
     dserror("Density determined from homogenization procedure equals zero!");
 
@@ -568,7 +578,6 @@ void STRUMULTI::MicroStatic::FullNewton()
 
   Epetra_Time timer(discret_->Comm());
   timer.ResetStartTime();
-  bool print_unconv = true;
 
   while (!Converged() && numiter_<=maxiter_)
   {
@@ -654,7 +663,6 @@ void STRUMULTI::MicroStatic::FullNewton()
     ++numiter_;
   }
   //============================================= end equilibrium loop
-  print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
   if (numiter_>=maxiter_)
@@ -723,9 +731,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
 
     DRT::PackBuffer data;
 
-    // note that the microstructure is (currently) serial only i.e. we
-    // can use the GLOBAL number of elements!
-    for (int i=0;i<discret_->NumGlobalElements();++i)
+    for (int i=0;i<discret_->ElementColMap()->NumMyElements();++i)
     {
       if ((*lastalpha_)[i]!=null)
       {
@@ -737,7 +743,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
       }
     }
     data.StartPacking();
-    for (int i=0;i<discret_->NumGlobalElements();++i)
+    for (int i=0;i<discret_->ElementColMap()->NumMyElements();++i)
     {
       if ((*lastalpha_)[i]!=null)
       {
@@ -783,6 +789,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
       break;
     default:
       dserror ("requested stress type not supported");
+      break;
     }
 
     switch (iostrain_)
@@ -796,7 +803,8 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     case INPAR::STR::strain_none:
       break;
     default:
-      dserror("requested strain type not supported");;
+      dserror("requested strain type not supported");
+      break;
     }
 
     switch (ioplstrain_)
@@ -810,7 +818,8 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     case INPAR::STR::strain_none:
       break;
     default:
-      dserror("requested plastic strain type not supported");;
+      dserror("requested plastic strain type not supported");
+      break;
     }
   }
 
@@ -1079,6 +1088,10 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
         P(i,j) += (*freactm_)[n*3+i]*(*Xp_)[n*3+j];
       }
       P(i,j) /= V0_;
+			// sum P(i,j) over the microdis
+      double sum = 0.0;
+      DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->SumAll(&(P(i,j)), &sum, 1);
+      P(i,j) = sum;
     }
   }
 
@@ -1105,6 +1118,8 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
 
   if (build_stiff)
   {
+    if(discret_->Comm().NumProc() > 1)
+      dserror("static homogenization currently only in serial available");
     // The calculation of the consistent macroscopic constitutive tensor
     // follows
     //
@@ -1170,6 +1185,15 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
 
   *density = density_;
 
+  return;
+}
+
+
+void STRUMULTI::stop_np_multiscale()
+{
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  int task[2] = {9,0};
+  subcomm->Broadcast(task, 2, 0);
   return;
 }
 

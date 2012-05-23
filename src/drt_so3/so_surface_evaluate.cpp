@@ -953,76 +953,79 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   break;
   case calc_init_vol:
   {
-    // the reference volume of the RVE (including inner
-    // holes) is calculated by evaluating the following
-    // surface integral:
-    // V = 1/3*int(div(X))dV = 1/3*int(N*X)dA
-    // with X being the reference coordinates and N the
-    // normal vector of the surface element (exploiting the
-    // fact that div(X)=1.0)
-
-    // this is intended to be used in the serial case (microstructure)
-
-    // NOTE: there must not be any holes penetrating the boundary!
-
-    double V = params.get<double>("V0", 0.0);
-    double dV = 0.0;
-    const int numnode = NumNode();
-    LINALG::SerialDenseMatrix x(numnode,3);
-    MaterialConfiguration(x);
-
-    // allocate vector for shape functions and matrix for derivatives
-    LINALG::SerialDenseVector  funct(numnode);
-    LINALG::SerialDenseMatrix  deriv(2,numnode);
-
-    /*----------------------------------------------------------------------*
-         |               start loop over integration points                     |
-     *----------------------------------------------------------------------*/
-    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-
-    for (int gp=0; gp<intpoints.nquad; gp++)
+    if(Comm.MyPID()==Owner())
     {
-      const double e0 = intpoints.qxg[gp][0];
-      const double e1 = intpoints.qxg[gp][1];
+      // the reference volume of the RVE (including inner
+      // holes) is calculated by evaluating the following
+      // surface integral:
+      // V = 1/3*int(div(X))dV = 1/3*int(N*X)dA
+      // with X being the reference coordinates and N the
+      // normal vector of the surface element (exploiting the
+      // fact that div(X)=1.0)
 
-      // get shape functions and derivatives in the plane of the element
-      DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
-      DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+      // this is intended to be used in the serial case (microstructure)
 
-      vector<double> normal(3);
-      double detA;
-      SurfaceIntegration(detA,normal,x,deriv);
-      const double fac = intpoints.qwgt[gp] * detA;
+      // NOTE: there must not be any holes penetrating the boundary!
 
-      double temp = 0.0;
-      vector<double> X(3,0.);
+      double V = params.get<double>("V0", 0.0);
+      double dV = 0.0;
+      const int numnode = NumNode();
+      LINALG::SerialDenseMatrix x(numnode,3);
+      MaterialConfiguration(x);
 
-      for (int i=0; i<numnode; i++)
+      // allocate vector for shape functions and matrix for derivatives
+      LINALG::SerialDenseVector  funct(numnode);
+      LINALG::SerialDenseMatrix  deriv(2,numnode);
+
+      /*----------------------------------------------------------------------*
+           |               start loop over integration points                     |
+       *----------------------------------------------------------------------*/
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+
+      for (int gp=0; gp<intpoints.nquad; gp++)
       {
-        X[0] += funct[i]*x(i,0);
-        X[1] += funct[i]*x(i,1);
-        X[2] += funct[i]*x(i,2);
-      }
+        const double e0 = intpoints.qxg[gp][0];
+        const double e1 = intpoints.qxg[gp][1];
 
-      for (int i=0;i<3;++i)
-      {
-        temp += normal[i]*normal[i];
-      }
+        // get shape functions and derivatives in the plane of the element
+        DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
+        DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
-      if (temp<0.)
-        dserror("calculation of initial volume failed in surface element");
-      double absnorm = sqrt(temp);
+        vector<double> normal(3);
+        double detA;
+        SurfaceIntegration(detA,normal,x,deriv);
+        const double fac = intpoints.qwgt[gp] * detA;
 
-      for (int i=0;i<3;++i)
-      {
-        normal[i] /= absnorm;
+        double temp = 0.0;
+        vector<double> X(3,0.);
+
+        for (int i=0; i<numnode; i++)
+        {
+          X[0] += funct[i]*x(i,0);
+          X[1] += funct[i]*x(i,1);
+          X[2] += funct[i]*x(i,2);
+        }
+
+        for (int i=0;i<3;++i)
+        {
+          temp += normal[i]*normal[i];
+        }
+
+        if (temp<0.)
+          dserror("calculation of initial volume failed in surface element");
+        double absnorm = sqrt(temp);
+
+        for (int i=0;i<3;++i)
+        {
+          normal[i] /= absnorm;
+        }
+        for (int i=0;i<3;++i)
+        {
+          dV += 1/3.0*fac*normal[i]*X[i];
+        }
       }
-      for (int i=0;i<3;++i)
-      {
-        dV += 1/3.0*fac*normal[i]*X[i];
-      }
+      params.set("V0", V+dV);
     }
-    params.set("V0", V+dV);
   }
   break;
   case calc_surfstress_stiff:
@@ -1300,6 +1303,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   break;
   default:
     dserror("Unimplemented type of action for StructuralSurface");
+    break;
   }
   return 0;
   }

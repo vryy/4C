@@ -49,14 +49,12 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
 
-  // we are using some parameters from the macroscale input file
-  // (e.g. time step size, alphaf etc. which need to be consistent in
-  // both micro- and macroscale input file) whereas individual
-  // parameters for the microscale can be used e.g. wrt output
-  // options, kind of predictor etc.
+  // data must be consistent between micro and macro input file
   const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn_micro = microproblem->StructuralDynamicParams();
 
   dt_    = sdyn_macro.get<double>("TIMESTEP");
+  microdis->Comm().Broadcast(&dt_, 1, 0);
   step_  = 0;
   stepn_ = step_ + 1;
   time_  = 0.;
@@ -86,11 +84,11 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   // Note that this has to be done _after_ finding the output file name!
   // Note also that we are using the macroscale parameterlist here
   // because the SurfStressManager needs to know alphaf here
-  surf_stress_man_ = Teuchos::rcp(new UTILS::SurfStressManager(microdis, sdyn_macro, newfilename));
+  surf_stress_man_ = Teuchos::rcp(new UTILS::SurfStressManager(microdis, sdyn_micro, newfilename));
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
-  if (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn_macro,"NLNSOL")==INPAR::STR::soltech_newtonmod)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn_micro,"NLNSOL")==INPAR::STR::soltech_newtonmod)
     mod_newton_ = true;
   else
     mod_newton_ = false;
@@ -140,41 +138,77 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   Teuchos::RCP<DRT::Problem> microproblem = DRT::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->Dis(0, 0);
 
-  // figure out how the file we restart from is called on the microscale
-  size_t pos = microprefix.rfind('-');
-  if (pos!=std::string::npos)
+  if(microdis->Comm().MyPID() == 0)
   {
-    std::string number = microprefix.substr(pos+1);
-    std::string prefix = microprefix.substr(0,pos);
-    ostringstream s;
-    s << prefix << "_el" << ele_ID_ << "_gp" << gp_;
-    microprefix = s.str();
-    s << "-" << number;
-    restartname_ = s.str();
-  }
-  else
-  {
-    ostringstream s;
-    s << microprefix << "_el" << ele_ID_ << "_gp" << gp_;
-    restartname_ = s.str();
+      // figure out how the file we restart from is called on the microscale
+    size_t pos = microprefix.rfind('-');
+    if (pos!=std::string::npos)
+    {
+      std::string number = microprefix.substr(pos+1);
+      std::string prefix = microprefix.substr(0,pos);
+      ostringstream s;
+      s << prefix << "_el" << ele_ID_ << "_gp" << gp_;
+      microprefix = s.str();
+      s << "-" << number;
+      restartname_ = s.str();
+    }
+    else
+    {
+      ostringstream s;
+      s << microprefix << "_el" << ele_ID_ << "_gp" << gp_;
+      restartname_ = s.str();
+    }
+
+    // figure out how the new output file is called on the microscale
+    // note: the trailing number must be the same as on the macroscale
+    size_t posn = micronewprefix.rfind('-');
+    if (posn!=std::string::npos)
+    {
+      std::string number = micronewprefix.substr(posn+1);
+      std::string prefix = micronewprefix.substr(0,posn);
+      ostringstream s;
+      s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
+      newfilename = s.str();
+    }
+    else
+    {
+      ostringstream s;
+      s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
+      newfilename = s.str();
+    }
+
   }
 
-  // figure out how the new output file is called on the microscale
-  // note: the trailing number must be the same as on the macroscale
-  size_t posn = micronewprefix.rfind('-');
-  if (posn!=std::string::npos)
+	// restart file name and new output file name are sent to supporting procs
+  if (microdis->Comm().NumProc()>1)
   {
-    std::string number = micronewprefix.substr(posn+1);
-    std::string prefix = micronewprefix.substr(0,posn);
-    ostringstream s;
-    s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
-    newfilename = s.str();
-  }
-  else
-  {
-    ostringstream s;
-    s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
-    newfilename = s.str();
+    {
+      // broadcast restartname_ for micro scale
+      int length = restartname_.length();
+      std::vector<int> name(restartname_.begin(),restartname_.end());
+      int err = microdis->Comm().Broadcast(&length, 1, 0);
+      if (err)
+        dserror("communication error");
+      name.resize(length);
+      err = microdis->Comm().Broadcast(&name[0], length, 0);
+      if (err)
+        dserror("communication error");
+      restartname_.assign(name.begin(),name.end());
+    }
+
+    {
+      // broadcast newfilename for micro scale
+      int length = newfilename.length();
+      std::vector<int> name(newfilename.begin(),newfilename.end());
+      int err = microdis->Comm().Broadcast(&length, 1, 0);
+      if (err)
+        dserror("communication error");
+      name.resize(length);
+      err = microdis->Comm().Broadcast(&name[0], length, 0);
+      if (err)
+        dserror("communication error");
+      newfilename.assign(name.begin(),name.end());
+    }
   }
 
   if (eleowner)

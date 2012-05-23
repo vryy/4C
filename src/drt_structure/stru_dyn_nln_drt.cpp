@@ -31,6 +31,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_mlmc.H"
@@ -45,14 +46,6 @@ Maintainer: Thomas Klöppel
 #ifdef HAVE_FFTW
 #include "str_mlmc.H"
 #endif
-
-#include "../drt_comm/comm_utils.H"
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -101,6 +94,7 @@ void caldyn_drt()
       break;
     default:
       dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+      break;
     }
   }
   return;
@@ -157,7 +151,12 @@ void dyn_nlnstructural_drt()
   DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
 
   // print monitoring of time consumption
+#ifdef TRILINOS_DEV
+  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
+#else
   Teuchos::TimeMonitor::summarize();
+#endif
 
   // time to go home...
   return;

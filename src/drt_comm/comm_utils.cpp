@@ -277,6 +277,7 @@ COMM_UTILS::NestedParGroup::NestedParGroup(
   lpidgpid_(lpidgpid),
   lcomm_(lcomm),
   gcomm_(gcomm),
+  subcomm_(Teuchos::null),
   npType_(npType)
 {
   return;
@@ -301,6 +302,16 @@ int COMM_UTILS::NestedParGroup::LPID(int GPID)
   exit(1);
 
   return -1;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set sub communicator                                     ghamm 04/12 |
+ *----------------------------------------------------------------------*/
+void COMM_UTILS::NestedParGroup::SetSubComm(Teuchos::RCP<Epetra_Comm> subcomm)
+{
+  subcomm_ = subcomm;
+  return;
 }
 
 

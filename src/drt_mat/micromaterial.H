@@ -137,12 +137,24 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MicroMaterial( *this ) ); }
 
+	  /// evaluate micro material on a processor with macro scale
     void Evaluate(LINALG::Matrix<3,3>* defgrd,
                   LINALG::Matrix<6,6>* cmat,
                   LINALG::Matrix<6,1>* stress,
                   double* density,
                   const int gp,
                   const int ele_ID);
+
+	  /// evaluate micro material on a processor which only knows about the micro scale (supporting proc)
+    void Evaluate(LINALG::Matrix<3,3>* defgrd,
+                  LINALG::Matrix<6,6>* cmat,
+                  LINALG::Matrix<6,1>* stress,
+                  double* density,
+                  const int gp,
+                  const int ele_ID,
+                  const int microdisnum,
+                  double V0,
+                  bool eleowner);
 
     /// Calculate stresses and strains on the micro-scale
     void PrepareOutput();
@@ -153,8 +165,11 @@ private:
     // Update state vectors
     void Update();
 
-    /// Read restart on micro-scale
+    /// Read restart of micro scale on a processor with macro scale
     void ReadRestart(const int gp, const int eleID, const bool eleowner);
+
+    /// restart micro material on a processor which only knows about the micro scale (supporting proc)
+    void ReadRestart(const int gp, const int eleID, const bool eleowner, int microdisnum, double V0);
 
     /// Prepare new run of inverse analysis
     void InvAnaInit(const bool eleowner);

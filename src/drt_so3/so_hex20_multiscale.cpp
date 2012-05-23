@@ -15,6 +15,7 @@ Maintainer: Lena Yoshihara
 #include "so_hex20.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_discret.H"
 
 extern struct _GENPROB     genprob;
@@ -27,17 +28,20 @@ extern struct _GENPROB     genprob;
 
 void DRT::ELEMENTS::So_hex20::soh20_homog(ParameterList&  params)
 {
-  double homogdens = 0.;
-  const static std::vector<double> weights = soh20_weights();
-  const double density = Material()->Density();
-
-  for (int gp=0; gp<NUMGPT_SOH20; ++gp)
+  if(DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
   {
-    homogdens += detJ_[gp] * weights[gp] * density;
-  }
+    double homogdens = 0.;
+    const static std::vector<double> weights = soh20_weights();
+    const double density = Material()->Density();
 
-  double homogdensity = params.get<double>("homogdens", 0.0);
-  params.set("homogdens", homogdensity+homogdens);
+    for (int gp=0; gp<NUMGPT_SOH20; ++gp)
+    {
+      homogdens += detJ_[gp] * weights[gp] * density;
+    }
+
+    double homogdensity = params.get<double>("homogdens", 0.0);
+    params.set("homogdens", homogdensity+homogdens);
+  }
 
   return;
 }

@@ -124,11 +124,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   Teuchos::RCP<Teuchos::ParameterList> mlmcp
       = Teuchos::rcp(new Teuchos::ParameterList (DRT::Problem::Instance()->MultiLevelMonteCarloParams()));
   bool perform_mlmc = Teuchos::getIntegralValue<int>((*mlmcp),"MLMC");
-    if (perform_mlmc!=true)
-    {
-      output->WriteMesh(0, 0.0);
-    }
-    // get input parameter lists and copy them, because a few parameters are overwritten
+  if (perform_mlmc!=true)
+  {
+    output->WriteMesh(0, 0.0);
+  }
+  // get input parameter lists and copy them, because a few parameters are overwritten
   //const Teuchos::ParameterList& probtype
   //  = DRT::Problem::Instance()->ProblemTypeParams();
   Teuchos::RCP<Teuchos::ParameterList> ioflags

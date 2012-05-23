@@ -311,6 +311,41 @@ public:
   */
   void Add(const string& name, Epetra_Vector& data);
 
+  /*!
+  \brief Add a LINALG::Matrix to the container, templated on the dimension
+         of the LINALG::Matrix
+
+  \param name : Name of data to store data with
+  \param data : matrix to store
+
+  \note Internally transformed into a Epetra_SerialDenseMatrix.
+
+  Usage is<br>
+  \code
+    DRT::Container->Add<6,6>("mfool_name", LINALG::Matrix<6,6>);
+  \endcode
+
+  \note Extracting only possible via Epetra_SerialDenseMatrix, which then
+        can be used to set a view on the data:
+
+  Usage is<br>
+  \code
+        LINALG::Matrix<6,6> xyz(*(const_cast<Epetra_SerialDenseMatrix*>(Container::
+        Get<Epetra_SerialDenseMatrix>("mfool_name"))), true);
+  \endcode
+  */
+  template<int row, int col>
+  void Add(const string& name, const LINALG::Matrix<row,col>& matrix)
+  {
+    Epetra_SerialDenseMatrix data(row,col);
+    for(int i=0; i<row; i++)
+      for(int j=0; j<col; j++)
+        data(i,j) = matrix(i,j);
+
+    Add(name,data);
+    return;
+  };
+
   //@}
 
   //! @name Access methods

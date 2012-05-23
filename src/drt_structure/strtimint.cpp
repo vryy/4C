@@ -32,6 +32,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -51,6 +52,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_statmech/statmech_manager.H"
+#include "../drt_stru_multi/microstatic.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -315,9 +317,9 @@ STR::TimInt::TimInt
 
   // check if we have elements with a micro-material
   havemicromat_ = false;
-  for (int i=0; i<discret_->NumMyRowElements(); i++)
+  for (int i=0; i<discret_->NumMyColElements(); i++)
   {
-    DRT::Element* actele = discret_->lRowElement(i);
+    DRT::Element* actele = discret_->lColElement(i);
     RefCountPtr<MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
@@ -616,6 +618,7 @@ void STR::TimInt::PrepareStatMech()
           cout << "======== Statistical Mechanics: thermal bath, shearflow ========\n" << endl;
           break;
         default: dserror("Undefined thermalbath type!");
+        break;
       }
     }
   }
@@ -1875,6 +1878,12 @@ void STR::TimInt::Integrate()
 
     // print info about finished time step
     PrintStep();
+  }
+
+  // stop supporting processors in multi scale simulations
+  if (havemicromat_)
+  {
+    STRUMULTI::stop_np_multiscale();
   }
 
   // that's it

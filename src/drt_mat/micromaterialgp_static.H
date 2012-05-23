@@ -82,6 +82,9 @@ public:
   /// analyses with multiple runs)
   void ResetTimeAndStep();
 
+  /// get ele id
+  int eleID() {return ele_ID_; }
+
 
 private:
 

@@ -466,6 +466,7 @@ void DRT::Problem::InputControl()
   }
   default:
     dserror("problem type %d unknown", ProblemType());
+    break;
   }
 
   // set field ARTNET and RED_AIRWAY numbers
@@ -488,6 +489,7 @@ void DRT::Problem::InputControl()
     //    genprob.numawf  = 4;
     genprob.numawf  = 6;
 #endif
+    break;
   }
   default:
     break;
@@ -724,6 +726,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
         break;
       default:
         dserror("geometry type unspecified");
+        break;
       }
 
       // Iterate through all discretizations and sort the appropiate condition
@@ -1328,6 +1331,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
   default:
     dserror("Unknown problem type: %d",ProblemType());
+    break;
   }
 
   // add artery or airways discretizations only for the following problem types
@@ -1359,6 +1363,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
 #endif
   }
+  break;
   default:
     break;
   }
@@ -1392,7 +1397,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     case prb_np_support:
     {
-      // read microscale fields from second, third, ... inputfile for supportin processors
+      // read microscale fields from second, third, ... inputfile for supporting processors
       ReadMicrofields_NPsupport();
       break;
     }
@@ -1478,8 +1483,9 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   // sort out macro procs that do not have micro material
   if(foundmicromat == 1)
   {
-    // sub communicator is created for each group
+    // create the sub communicator that includes one macro proc and some supporting procs
     Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
+    npgroup_->SetSubComm(subgroupcomm);
 
     // find out how many micro problems have to be solved on this macro proc
     int microcount = 0;
@@ -1617,7 +1623,9 @@ void DRT::Problem::ReadMicrofields_NPsupport()
   MPI_Comm  mpi_local_comm;
   MPI_Comm_split((rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,gcomm->MyPID(),&mpi_local_comm);
 
+  // create the sub communicator that includes one macro proc and some supporting procs
   Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
+  npgroup_->SetSubComm(subgroupcomm);
 
   // number of micro problems for this sub group
   int microcount = 0;
@@ -1680,7 +1688,6 @@ void DRT::Problem::ReadMicrofields_NPsupport()
 
   }
 
-  dserror("implementation not yet finished!");
   return;
 }
 
