@@ -1106,10 +1106,9 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 
   if (A11rowmap==null && A22rowmap != null)
     A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
-  else if (A11rowmap != null && A22rowmap != null);
   else if (A11rowmap != null && A22rowmap == null)
     A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
-  else
+  else if (A11rowmap == null && A22rowmap == null)
     dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   vector<RCP<const Epetra_Map> > maps(2);
@@ -1412,19 +1411,17 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   // check and complete input row maps
   if (A11rowmap==null && A22rowmap != null)
     A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
-  else if (A11rowmap != null && A22rowmap != null);
   else if (A11rowmap != null && A22rowmap == null)
     A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
-  else
+  else if (A11rowmap == null && A22rowmap == null)
     dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
   if (A11domainmap==null && A22domainmap != null)
   	A11domainmap = LINALG::SplitMap(A->DomainMap(),*A22domainmap);
-  else if (A11domainmap != null && A22domainmap != null);
   else if (A11domainmap != null && A22domainmap == null)
     A22domainmap = LINALG::SplitMap(A->DomainMap(),*A11domainmap);
-  else
+  else if (A11rowmap == null && A22rowmap == null)
     dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
 
   // local variables
