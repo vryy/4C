@@ -117,13 +117,12 @@ namespace UTILS {
         return(-1);
       };
 
-    /*!
-
-    \brief output operator
-
-    */
-    friend std::ostream& operator<<(std::ostream& out, const Function& funct);
   };
+
+  /*!
+  \brief output operator
+  */
+  std::ostream& operator<<(std::ostream& out, const Function& funct);
 
   /// class that manages all defined spatial functions
   class FunctionManager
