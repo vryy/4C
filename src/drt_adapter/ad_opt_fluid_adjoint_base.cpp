@@ -116,9 +116,6 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   const Teuchos::ParameterList& adjointfdyn = DRT::Problem::Instance()->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
   const Teuchos::ParameterList& opti        = DRT::Problem::Instance()->OptimizationControlParams();
 
-  if (actdis->Comm().MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
-
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------

@@ -104,10 +104,8 @@ public:
       Teuchos::ParameterList&       params,
       Teuchos::RCP<MAT::Material> & mat,
       Epetra_SerialDenseMatrix&     elesysmat,
-      Epetra_SerialDenseMatrix&     eledummymat,
-      Epetra_SerialDenseVector&     elerhs,
-      Epetra_SerialDenseVector&     eledummyrhs1,
-      Epetra_SerialDenseVector&     eledummyrhs2 );
+      Epetra_SerialDenseVector&     elerhs
+  );
 
   /// Evaluate the element at specified gauss points
   virtual int Evaluate(

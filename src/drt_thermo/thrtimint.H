@@ -521,13 +521,6 @@ namespace THR
 
   protected:
 
-    //! @name Interface stuff
-    //@{
-
-    Teuchos::RCP<Epetra_Vector> fifc_;  //!< external interface loads
-
-    //@}
-
     //! @name General purpose algorithm members
     //@{
 
@@ -610,6 +603,13 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
                                               //!< \f${V}_{n+1}\f$
                                               //!< at \f$t_{n+1}\f$
+
+    //@}
+
+    //! @name Interface stuff
+    //@{
+
+    Teuchos::RCP<Epetra_Vector> fifc_;  //!< external interface loads
 
     //@}
 

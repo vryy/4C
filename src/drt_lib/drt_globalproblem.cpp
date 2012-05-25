@@ -451,6 +451,7 @@ void DRT::Problem::InputControl()
   case prb_fluid_topopt:
   {
     genprob.numff = 0; /* fluid field index */
+    genprob.numof = 1; /* optimization field index */
     break;
   }
   case prb_poroelast:
@@ -1304,7 +1305,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    optidis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+
     AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numof, optidis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 

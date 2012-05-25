@@ -13,8 +13,6 @@ Maintainer: Peter Gamnitzer
 #ifndef DRT_UTILS_NURBS_SHAPEFUNCTION
 #define DRT_UTILS_NURBS_SHAPEFUNCTION
 
-#include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_serialdensematrix.H"
 #include "drt_utils_bspline.H"
 #include "drt_utils_local_connectivity_matrices.H"
 

@@ -167,40 +167,16 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Integrate()
   // output of stabilization details
   if (myrank_==0)
   {
-    ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
-
-    cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-    cout << "                             " << stabparams->get<string>("TDS")<< "\n";
-    cout << "\n";
-    cout << "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
-    cout << "                             " << "Evaluation Tau  = " << stabparams->get<string>("EVALUATION_TAU") <<"\n";
-    cout << "\n";
-
-    if(stabparams->get<string>("TDS") == "quasistatic")
-    {
-      if(stabparams->get<string>("TRANSIENT")=="yes_transient")
-      {
-        dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-      }
-    }
-    cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-    cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-    cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-    cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-    cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-    cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-    cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-    cout << endl;
-    cout << "                             " << "Evaluation Mat  = " << stabparams->get<string>("EVALUATION_MAT") <<"\n";
-    cout << "\n";
+    cout << "\n\n\n";
+    cout << "           ------------------------------------------------------------------------------           \n";
+    cout << "          |                          solving adjoint equations                           |          \n";
+    cout << "           ------------------------------------------------------------------------------           \n";
+    cout << "\n" << endl;
   }
 
   // distinguish stationary and instationary case
   if (timealgo_==INPAR::FLUID::timeint_stationary) SolveStationaryProblem();
   else                                             TimeLoop();
-
-  // print the results of time measurements
-  TimeMonitor::summarize();
 
   return;
 } // ImplicitTimeInt::Integrate

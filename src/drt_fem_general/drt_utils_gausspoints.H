@@ -1,12 +1,7 @@
 #ifndef DRT_UTILS_GAUSSPOINTS_H
 #define DRT_UTILS_GAUSSPOINTS_H
 
-#include <vector>
-#include <map>
-
-#include "../drt_lib/drt_singletondestruction.H"
 #include "drt_utils_fem_shapefunctions.H"
-#include "drt_utils_boundary_integration.H"
 
 namespace DRT
 {

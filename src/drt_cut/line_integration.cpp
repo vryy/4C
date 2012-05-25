@@ -1,6 +1,7 @@
 #include "line_integration.H"
 #include "base.H"
 #include "base_boundarycell.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 
 #include<cmath>
 #include<iostream>

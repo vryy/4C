@@ -843,10 +843,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(ParameterList&            params,
           params,
           mat,
           elemat1,
-          elemat2,
-          elevec1,
-          elevec2,
-          elevec3 );
+          elevec1 );
       break;
     }
     default:

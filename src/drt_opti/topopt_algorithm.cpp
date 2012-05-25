@@ -40,7 +40,7 @@ TOPOPT::Algorithm::Algorithm(
   optimizer_(Optimizer())
 {
   // initialize system vector (without values)
-  poro_ = rcp(new Epetra_Vector(*optimizer_->Discret()->NodeColMap(),false));
+  poro_ = rcp(new Epetra_Vector(*optimizer_->OptiDis()->NodeColMap(),false));
 
   return;
 }
@@ -267,7 +267,7 @@ void TOPOPT::Algorithm::UpdatePorosity()
 
   // evaluate porosity due to density
   Epetra_Vector poro_row(density->Map(),false);
-  for (int lnodeid=0; lnodeid<optimizer_->Discret()->NumMyRowNodes(); lnodeid++)  // loop over processor nodes
+  for (int lnodeid=0; lnodeid<optimizer_->OptiDis()->NumMyRowNodes(); lnodeid++)  // loop over processor nodes
   {
     const double dens = (*density)[lnodeid];
     (poro_row)[lnodeid] = poro_bd_up + poro_diff*dens*(1+fac)/(dens+fac);

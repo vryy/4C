@@ -21,21 +21,24 @@ Maintainer: Martin Winklmaier
 /// constructor
 ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
-    const int disnum                   ///< fluid field discretization number (default: 0)
+    const int disnum                   ///< optimization field discretization number (default: 0)
 )
 {
   // setup topology optimization algorithm
 
   // -------------------------------------------------------------------
-  // access the discretization
+  // access the fluid and the optimization discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numff,disnum);
+  RCP<DRT::Discretization> optidis = null;
+  optidis = DRT::Problem::Instance()->Dis(genprob.numof,disnum);
+  RCP<DRT::Discretization> fluiddis = null;
+  fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
 
   // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
+  // check degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) dserror("fluid discretization should be filled before");
+  if (!optidis->Filled()) dserror("optimization discretization should be filled before");
+  if (!fluiddis->Filled()) dserror("fluid discretization should be filled before");
 
 //  // -------------------------------------------------------------------
 //  // context for output and restart
@@ -47,7 +50,7 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // -------------------------------------------------------------------
   // create instance of the optimization class (call the constructor)
   // -------------------------------------------------------------------
-  optimizer_ = rcp(new TOPOPT::Optimizer(actdis,prbdyn));
+  optimizer_ = rcp(new TOPOPT::Optimizer(optidis,fluiddis,prbdyn));
 
   return;
 

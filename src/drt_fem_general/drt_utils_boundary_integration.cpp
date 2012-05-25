@@ -10,7 +10,8 @@ Maintainer: Georg Bauer
 
 *----------------------------------------------------------------------*/
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "drt_utils_boundary_integration.H"
+#include "drt_utils_integration.H"
 
 
 /* compute kovariant metric tensor G for surface element     gammi 04/07

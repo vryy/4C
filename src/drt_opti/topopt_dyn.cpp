@@ -18,11 +18,12 @@ Maintainer: Martin Winklmaier
 #include <Epetra_SerialComm.h>
 #endif
 #include <Teuchos_TimeMonitor.hpp>
+#include <Epetra_Time.h>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "topopt_algorithm.H"
 #include "topopt_dyn.H"
+#include "topopt_algorithm.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "topopt_utils.H"
 
 
@@ -54,23 +55,53 @@ void fluid_topopt_dyn()
   if (comm.MyPID()==0) TOPOPT::printTopOptLogo();
 
   //------------------------------------------------------------------------------------------------
-  // create G-function discretization by copying the fluid discretization (fill with scatra elements)
+  // create optimization discretization by copying the fluid discretization (fill with opti elements)
   //------------------------------------------------------------------------------------------------
   // get discretization ids
   int disnumff = genprob.numff; // discretization number fluid; typically 0
+  int disnumof = genprob.numof; // discretization number optimization field; typically 1
+
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   // access fluid discretization
-  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
+  RCP<DRT::Discretization> fluiddis = problem->Dis(disnumff,0);
   if (!fluiddis->Filled()) fluiddis->FillComplete(false,false,false);
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
 
-  // currently the optimization field has no own discretization
-  // it uses the fluid node maps for creating the required vector(s)
+  // access optimization discretization (it should be empty if it will be cloned)
+  RCP<DRT::Discretization> optidis = problem->Dis(disnumof,0);
+  if (!optidis->Filled()) optidis->FillComplete(false,false,false);
 
-//  //------------------------------------------------------------------------------------------------
-//  // create a topology optimization algorithm
-//  //------------------------------------------------------------------------------------------------
+  if (optidis->NumGlobalNodes()==0)
+  {
+    Epetra_Time time(comm);
+
+    //get the material map for cloning
+    std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+
+    // create the fluid discretization
+    {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TOPOPT::TopoptFluidCloneStrategy> > clonewizard
+      = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<TOPOPT::TopoptFluidCloneStrategy>() );
+
+      std::pair<string,string> key("fluid","scatra");
+      std::map<int,int> matmap = clonefieldmatmap[key];
+      clonewizard->CreateMatchingDiscretization(fluiddis,optidis,matmap);
+    }
+
+    if (comm.MyPID()==0)
+      cout<<"Created optimization discretization from fluid discretization in...."
+          <<time.ElapsedTime() << " secs\n\n";
+  }
+  else
+    dserror("Optimization discretization is not empty as it should be!");
+  // TODO this shall be ok later if optimization has different discretization than fluid (winklmaier)
+  // therefore later a fillcomplete has to be called here also!
+
+  //------------------------------------------------------------------------------------------------
+  // create a topology optimization algorithm
+  //------------------------------------------------------------------------------------------------
   // get the topology optimization parameter list
   Teuchos::ParameterList topoptdyn = DRT::Problem::Instance()->OptimizationControlParams();
   // create a COMBUST::Algorithm instance
@@ -101,10 +132,10 @@ cout << "test restart action: 0=fluid,1=adjoint,2=grad,3=opti-step: " << restart
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  DRT::Problem::Instance()->AddFieldTest(topopt_->FluidField().CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(topopt_->AdjointFluidField()->CreateFieldTest());
+  problem->AddFieldTest(topopt_->FluidField().CreateFieldTest());
+  problem->AddFieldTest(topopt_->AdjointFluidField()->CreateFieldTest());
 
-  DRT::Problem::Instance()->TestAll(comm);
+  problem->TestAll(comm);
 
   return;
 

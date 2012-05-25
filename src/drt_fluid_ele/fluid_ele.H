@@ -1018,6 +1018,7 @@ public:
 
   //@}
 
+private:
 
   enum ActionType
   {
@@ -1042,8 +1043,6 @@ public:
     no_penetration,
     adjoint_neumann
   };
-
-private:
 
   // don't want = operator
   FluidBoundary& operator = (const FluidBoundary& old);

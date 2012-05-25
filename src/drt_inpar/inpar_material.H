@@ -131,6 +131,7 @@ namespace INPAR
       m_fluidporo,       ///< darcy fluid for poroelasticity problems
       m_structporo,		//< wrapper material for poroelasticity (structure)
       m_spring,       ///< elastic spring (translational or rotational)
+      m_opti_dens,    ///< density field for topology optimization
       m_none          ///< undefined
     };
 

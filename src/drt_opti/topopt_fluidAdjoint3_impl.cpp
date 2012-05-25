@@ -177,10 +177,7 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
                                                  Teuchos::ParameterList&    params,
                                                  Teuchos::RCP<MAT::Material> & mat,
                                                  Epetra_SerialDenseMatrix&  elesysmat,
-                                                 Epetra_SerialDenseMatrix&  elematdummy,
-                                                 Epetra_SerialDenseVector&  elerhs,
-                                                 Epetra_SerialDenseVector&  elevecdummy1,
-                                                 Epetra_SerialDenseVector&  elevecdummy2
+                                                 Epetra_SerialDenseVector&  elerhs
 )
 {
   return Evaluate( ele, discretization, lm, params, mat,

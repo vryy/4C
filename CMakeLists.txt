@@ -397,6 +397,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/mooneyrivlin.cpp
   src/drt_mat/neohooke.cpp
   src/drt_mat/newtonianfluid.cpp
+  src/drt_mat/optimization_density.cpp
   src/drt_mat/permeablefluid.cpp
   src/drt_mat/plasticneohooke.cpp
   src/drt_mat/plasticlinelast.cpp
@@ -931,9 +932,16 @@ set(OBJS_DRT_TOPOPT
   src/drt_opti/topopt_algorithm.cpp
   src/drt_opti/topopt_dyn.cpp
   src/drt_opti/topopt_optimizer.cpp
-  src/drt_opti/topopt_optimizer3.cpp
   src/drt_opti/topopt_utils.cpp
 )
+
+set(OBJS_DRT_TOPOPT_LIB
+  src/drt_opti/topopt_optimizer_ele.cpp
+  src/drt_opti/topopt_optimizer_ele_evaluate.cpp
+  src/drt_opti/topopt_optimizer_ele_impl.cpp
+  src/drt_opti/topopt_optimizer_ele_parameter.cpp
+)
+
 set(OBJS_DRT_TOPOPT_ADJOINT
   src/drt_opti/topopt_fluidAdjointImplTimeIntegration.cpp
   src/drt_opti/topopt_fluidAdjointResulttest.cpp
@@ -1378,6 +1386,7 @@ add_library(ele_b3 ${OBJS_DRT_B3_LIB})
 add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
+add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
@@ -1388,6 +1397,7 @@ add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
 add_library(ele_w1 ${OBJS_DRT_W1_LIB})
 
+
 set(ELEMENT_LIBRARIES 
   ele_ale
   ele_b2
@@ -1397,6 +1407,7 @@ set(ELEMENT_LIBRARIES
   ele_bele3
   ele_combust3
   ele_fluid
+  ele_opti
   ele_s8
   ele_scatra
   ele_so

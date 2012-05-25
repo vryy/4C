@@ -42,10 +42,10 @@ element1_(element1),
 element2_(element2),
 ele1pos_(ele1pos),
 ele2pos_(ele2pos),
-ngf_(false),
-contactflag_(false),
 ele1tangent_(3,2),
-ele2tangent_(3,2)
+ele2tangent_(3,2),
+ngf_(false),
+contactflag_(false)
 {
   // initialize augmented lagrange multiplier to zero
   lmuzawa_ = 0.0;

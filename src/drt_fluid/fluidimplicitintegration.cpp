@@ -713,8 +713,10 @@ void FLD::FluidImplicitTimeInt::Integrate()
   else                                             TimeLoop();
 
   // print the results of time measurements
-  //cout<<endl<<endl;
-  TimeMonitor::summarize();
+  if (DRT::Problem::Instance()->ProblemType() != prb_fluid_topopt)
+  {
+    TimeMonitor::summarize();
+  }
 
   return;
 } // FluidImplicitTimeInt::Integrate

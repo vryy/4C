@@ -399,7 +399,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
   //  if (!gp) printf("strXX %15.10e",sqrt(rcg(0,0)));
 
   for(unsigned i = 0;i<NUM_STRESS_3D;i++) // in the first step could be problem without it
-     if(rcg(i)<0 | rcg(i) < 1.0e-12)
+     if((rcg(i)<0) | (rcg(i) < 1.0e-12))
        rcg(i)=0.0;
 
   // invariants

@@ -77,7 +77,8 @@ namespace TOPOPT
   public:
     /// constructor
     explicit Optimizer(
-        Teuchos::RCP<const DRT::Discretization> discret,
+        Teuchos::RCP<DRT::Discretization> optidis,
+        Teuchos::RCP<DRT::Discretization> fluiddis,
         const Teuchos::ParameterList& params
     );
 
@@ -102,12 +103,12 @@ namespace TOPOPT
     /// clear the field data for a new optimization step
     void ClearFieldData()
     {
-      vel_->clear();
+      fluidvel_->clear();
       adjointvel_->clear();
     }
 
-    Teuchos::RCP<const DRT::Discretization> Discret(){return discret_;}
-    Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return vel_;} /// fluid velocity
+    Teuchos::RCP<const DRT::Discretization> OptiDis(){return optidis_;}
+    Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return fluidvel_;} /// fluid velocity
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportAdjointData() const {return adjointvel_;} /// fluid velocity
     Teuchos::RCP<const Epetra_Vector> DensityI() const {return dens_i_;}
     Teuchos::RCP<const Epetra_Vector> DensityIp() const {return dens_ip_;}
@@ -129,27 +130,27 @@ namespace TOPOPT
     /// set the initial density field of the optimization variable
     void SetInitialDensityField(const INPAR::TOPOPT::InitialDensityField init,const int startfuncno);
 
-    /// evaluate the value of the objective function
-    void EvaluateObjective3();
-
-    /// evaluate the gradient of the objective function
-    void EvaluateGradient3();
-
   private:
 
     /// check if all required data for an optimization step is present
     bool DataComplete() const;
 
+    void TransformFlowFields();
+
     //! @name general stuff
-    Teuchos::RCP<const DRT::Discretization> discret_; /// discretization of optimization field
+    Teuchos::RCP<DRT::Discretization> optidis_; /// discretization of optimization field
+    Teuchos::RCP<DRT::Discretization> fluiddis_; /// discretization of optimization field
     const Teuchos::ParameterList& params_; /// parameters
     Teuchos::RCP<Teuchos::ParameterList> fluidParams_; /// fluid parameters
 
     //@}
 
     //! @name fluid fields
-    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > vel_; /// velocities of all time steps
-    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > adjointvel_; /// adjoint velocities of all time steps
+
+    /// velocities of all time steps
+    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvel_;
+    /// adjoint velocities of all time steps
+    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > adjointvel_;
 
     //@}
 

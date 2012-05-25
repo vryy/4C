@@ -46,17 +46,28 @@ Maintainer: Axel Gerstenberger
 #ifndef DRT_CONDITION_UTILS_H
 #define DRT_CONDITION_UTILS_H
 
-#include "drt_discret.H"
-#include "drt_discret_iterator.H"
-#include "../linalg/linalg_mapextractor.H"
+
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
+
+namespace LINALG
+{
+  class MapExtractor;
+}
 
 namespace DRT
 {
+  class Condition;
+  class Discretization;
+  class Element;
+  class Node;
+
   namespace UTILS
   {
-
     // forward declaration
     class ConditionSelector;
+    class DiscretizationNodeIterator;
 
     /// std unary function version of Epetra_Map::MyGID()
     struct MyGID : public std::unary_function<int, bool>
@@ -89,7 +100,7 @@ namespace DRT
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,
                               std::string condname,
-                              map<int, DRT::Node*>& nodes);
+                              std::map<int, DRT::Node*>& nodes);
 
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,
@@ -116,13 +127,13 @@ namespace DRT
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,
                               const std::vector<DRT::Condition*>& conds,
-                              map<int, DRT::Node*>& nodes);
+                              std::map<int, DRT::Node*>& nodes);
 
     /// find all local nodes from discretization marked with condition and
     /// put them into a vector indexed by Id of the condition
     void FindConditionedNodes(const DRT::Discretization& dis,
                               const std::vector<DRT::Condition*>& conds,
-                              map<int, map<int, DRT::Node*> >& nodes);
+                              std::map<int, std::map<int, DRT::Node*> >& nodes);
 
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,
@@ -138,8 +149,8 @@ namespace DRT
       \param condname name of condition
      */
     void FindConditionObjects(const DRT::Discretization& dis,
-                              map<int, DRT::Node*>& nodes,
-                              map<int, RCP<DRT::Element> >& elements,
+        std::map<int, DRT::Node*>& nodes,
+        std::map<int, Teuchos::RCP<DRT::Element> >& elements,
                               const string& condname);
 
     /// collect all nodes (in- and excluding 'ghosts') and
@@ -152,10 +163,10 @@ namespace DRT
       \param condname name of condition
      */
     void FindConditionObjects(const DRT::Discretization& dis,
-                              map<int, DRT::Node*>& nodes,
-                              map<int, DRT::Node*>& ghostnodes,
-                              map< int, RCP<DRT::Element> >& elements,
-                              vector<DRT::Condition*>& conds);
+                              std::map<int, DRT::Node*>& nodes,
+                              std::map<int, DRT::Node*>& ghostnodes,
+                              std::map< int, Teuchos::RCP<DRT::Element> >& elements,
+                              std::vector<DRT::Condition*>& conds);
 
     /// collect all nodes (in- and excluding 'ghosts') and
     /// elements (including ghosts) in a condition
@@ -167,9 +178,9 @@ namespace DRT
       \param condname name of condition
      */
     void FindConditionObjects(const DRT::Discretization& dis,
-                              map<int, DRT::Node*>& nodes,
-                              map<int, DRT::Node*>& ghostnodes,
-                              map< int, RCP<DRT::Element> >& elements,
+                              std::map<int, DRT::Node*>& nodes,
+                              std::map<int, DRT::Node*>& ghostnodes,
+                              std::map< int, Teuchos::RCP<DRT::Element> >& elements,
                               const string& condname);
 
     /// collect all nodes (in- and excluding 'ghosts') and
@@ -182,9 +193,9 @@ namespace DRT
       \param condname name of condition
      */
     void FindConditionObjects(const DRT::Discretization& dis,
-                              map<int, map<int, DRT::Node*> >& nodes,
-                              map<int, map<int, DRT::Node*> >& ghostnodes,
-                              map<int, map< int, RCP<DRT::Element> > >& elements,
+                              std::map<int, std::map<int, DRT::Node*> >& nodes,
+                              std::map<int, std::map<int, DRT::Node*> >& ghostnodes,
+                              std::map<int, std::map< int, Teuchos::RCP<DRT::Element> > >& elements,
                               const string& condname);
 
     /// collect all elements in a condition including ghosts
@@ -194,7 +205,7 @@ namespace DRT
       \param condname name of condition
      */
     void FindConditionObjects(const DRT::Discretization& dis,
-                              map<int, RCP<DRT::Element> >& elements,
+                              std::map<int, Teuchos::RCP<DRT::Element> >& elements,
                               const string& condname);
 
 

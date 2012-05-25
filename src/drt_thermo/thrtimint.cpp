@@ -82,9 +82,9 @@ THR::TimInt::TimInt(
   rate_(Teuchos::null),
   tempn_(Teuchos::null),
   raten_(Teuchos::null),
-  fifc_(Teuchos::null),
   disn_(Teuchos::null),  // needed for TSI
   veln_(Teuchos::null),  // needed for TSI
+  fifc_(Teuchos::null),
   tang_(Teuchos::null)
 //  capa_(Teuchos::null)
 {

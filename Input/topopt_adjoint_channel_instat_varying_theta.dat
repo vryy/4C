@@ -51,15 +51,15 @@ FILESTEPS              1000
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL
 CONV_CHECK_TYPE                 Residuum
 INCTOL                          1e-6
-MAXTIME                         1.0
-NUMSTEP                         1
+MAXTIME                         0.5
+NUMSTEP                         5
 PORO_BOUNDARY_DOWN              0
 PORO_BOUNDARY_UP                5
 RESTARTEVRY                     100000
 RESTOL                          1e-6
 RESTART_ACTION                  Fluid_Time_Step
 SMEARING_FACTOR                 1
-TIMESTEP                        1.0
+TIMESTEP                        0.1
 UPRES                           1
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
 MAX_ITER                        1
@@ -106,8 +106,11 @@ VSTAB                           no_vstab
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver_for_Top_Opt
 SOLVER                          UMFPACK
+-----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  DYNVISCOSITY 2.0 DENSITY 3.0
+MAT     1       MAT_fluid  DYNVISCOSITY 2.0 DENSITY 3.0
+MAT     2       MAT_optimization
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3

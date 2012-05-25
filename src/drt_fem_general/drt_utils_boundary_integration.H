@@ -20,15 +20,18 @@ Maintainer: Georg Bauer
 #ifndef UTILS_BOUNDARY_INTEGRATION_H
 #define UTILS_BOUNDARY_INTEGRATION_H
 
-#include "../linalg/linalg_fixedsizematrix.H"
+
 #include "drt_utils_local_connectivity_matrices.H"
-#include "drt_utils_integration.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 namespace DRT
 {
 namespace UTILS
 {
+  class IntegrationPoints1D;
+  class IntegrationPoints2D;
+
 /*-----------------------------------------------------------------
 
 \brief Transform Gausspoints on surface element to 3d space of

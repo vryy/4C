@@ -65,10 +65,7 @@ namespace ELEMENTS
                          Teuchos::ParameterList&    params,
                          Teuchos::RCP<MAT::Material> & mat,
                          Epetra_SerialDenseMatrix&  elemat1_epetra,
-                         Epetra_SerialDenseMatrix&  elemat2_epetra,
-                         Epetra_SerialDenseVector&  elevec1_epetra,
-                         Epetra_SerialDenseVector&  elevec2_epetra,
-                         Epetra_SerialDenseVector&  elevec3_epetra
+                         Epetra_SerialDenseVector&  elevec1_epetra
       ) = 0;
 
     /// Internal implementation class for fluid element

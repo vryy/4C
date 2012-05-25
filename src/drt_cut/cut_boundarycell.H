@@ -4,7 +4,9 @@
 #include "cut_cycle.H"
 #include "cut_element.H"
 
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 
 namespace GEO
 {
