@@ -3698,8 +3698,10 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
   int oscdir = statmechparams_.get<int>("OSCILLDIR",-1);
 
 //----------------------------------- sanity checks
-  if(statmechparams_.get<double>("PERIODLENGTH",0.0)<=0.0)
-    dserror("PERIODLENGTH = %f! This method work only in conjunction with periodic boundary conditions!", statmechparams_.get<double>("PERIODLENGTH",0.0));
+  if(periodlength_->at(0)!=periodlength_->at(1) || periodlength_->at(0)!=periodlength_->at(2) || periodlength_->at(1)!=periodlength_->at(2))
+    dserror("Check PERIODLENGTH in your input file! This method only works for a cubic boundary volume");
+  if(periodlength_->at(0)<=0.0)
+    dserror("PERIODLENGTH = %f! This method work only in conjunction with periodic boundary conditions!", periodlength_->at(0));
   if(oscdir>2 || oscdir<0 || curvenumber<0)
     dserror("In case of imposed oscillatory motion, please define the StatMech parameters OSCILLDIR={0,1,2} and/or CURVENUMBER correctly");
 
