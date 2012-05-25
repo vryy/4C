@@ -19,15 +19,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | struct _GENPROB       genprob;                                       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB  genprob;
-
-
 /*----------------------------------------------------------------------*/
 /*
   Setup of input and output files. No actual read is performed here.

@@ -229,13 +229,13 @@ int main(int argc, char *argv[])
                 << line
                 << "\n" << std::endl;
 
-      DRT::Problem::Done();
-
       if(ngroups > 1)
       {
         printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",gcomm->MyPID());
         gcomm->Barrier();
       }
+
+      DRT::Problem::Done();
 
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
     }
