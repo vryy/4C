@@ -699,7 +699,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             impl->ElementXfemInterfaceMSH(    ele,
                                               discret,
                                               la[0].lm_,
-                                              intpoints_sets[set_counter],
+                                              intpoints[count],
                                               cutdiscret,
                                               bcells,
                                               bintpoints,
@@ -1084,10 +1084,10 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   }
 
 
-  const int numcolele = discret.NumMyColElements();
-  for (int i=0; i<numcolele; ++i)
+  const int numrowele = discret.NumMyRowElements();
+  for (int i=0; i<numrowele; ++i)
   {
-    DRT::Element* actele = discret.lColElement(i);
+    DRT::Element* actele = discret.lRowElement(i);
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
@@ -1177,10 +1177,10 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     gmshfilecontent_press << "View \"" << "SOL " << "embedded " << "_" << step << "\" {\n";
   }
 
-  const int numalecolele = alefluiddis.NumMyColElements();
-  for (int i=0; i<numalecolele; ++i)
+  const int numalerowele = alefluiddis.NumMyRowElements();
+  for (int i=0; i<numalerowele; ++i)
   {
-    DRT::Element* actele = alefluiddis.lColElement(i);
+    DRT::Element* actele = alefluiddis.lRowElement(i);
     GmshOutputElementEmb( alefluiddis, gmshfilecontent_vel, gmshfilecontent_press, actele,col_alevel,col_dis );
   }
 
@@ -1198,9 +1198,9 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     gmshfilecontent_press << "View \"" << "SOL " << "void " << "_" << step  << "\" {\n";
   }
 
-  for (int i=0; i<numcolele; ++i)
+  for (int i=0; i<numrowele; ++i)
   {
-    DRT::Element* actele = discret.lColElement(i);
+    DRT::Element* actele = discret.lRowElement(i);
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
@@ -4038,7 +4038,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 #else
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        e->VolumeCellGaussPoints( cells, intpoints ,VolumeCellGaussPointBy_);//modify gauss type
+        std::vector<std::vector<double> > refEqns;
+
+        e->VolumeCellGaussPoints( cells, intpoints , refEqns, VolumeCellGaussPointBy_);//modify gauss type
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator s=cells.begin(); s!=cells.end(); ++s )

@@ -535,6 +535,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                 xfluid_.VolumeCellGaussPointBy_,
                                                 cells);
 
+
               if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
                   impl->ElementXfemInterfaceNIT( ele,
                                                  discret,
@@ -550,6 +551,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                  Cuiui,
                                                  xfluid_.VolumeCellGaussPointBy_,
                                                  cells);
+
 
 
             }
@@ -1641,7 +1643,8 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 #else
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        e->VolumeCellGaussPoints( cells, intpoints ,VolumeCellGaussPointBy_);//modify gauss type
+        std::vector<std::vector<double> > refEqns;
+        e->VolumeCellGaussPoints( cells, intpoints ,refEqns, VolumeCellGaussPointBy_);//modify gauss type
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator s=cells.begin(); s!=cells.end(); ++s )

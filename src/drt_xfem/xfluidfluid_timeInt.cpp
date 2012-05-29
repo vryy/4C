@@ -1624,8 +1624,9 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
 #else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
+      std::vector<std::vector<double> > refEqns;
       std::string VolumeCellGaussPointBy =  params_.sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
-      e->VolumeCellGaussPoints( cells, intpoints, VolumeCellGaussPointBy);//modify gauss type
+      e->VolumeCellGaussPoints( cells, intpoints, refEqns, VolumeCellGaussPointBy);//modify gauss type
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )

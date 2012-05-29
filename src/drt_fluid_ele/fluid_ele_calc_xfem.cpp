@@ -311,7 +311,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
         si->Evaluate(eta,x_side,normal,drs);
 
         // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( xyze_, x_side );
+        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
         pos.Compute();
         rst = pos.LocalCoordinates();
 
@@ -1240,7 +1240,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         si->Evaluate(eta,x_side,normal,drs);
 
         // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( xyze_, x_side );
+        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
         pos.Compute();
         rst = pos.LocalCoordinates();
 
@@ -1578,7 +1578,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   {
 
     stabfac_scaling      = nitsche_stab * visceff_max / h_k;  // scaling factor for standard Nitsche stabilization
-    stabfac_conv_scaling = nitsche_stab_conv / h_k;            // scaling factor for convecitve Nitsche stabilization
+    stabfac_conv_scaling = nitsche_stab_conv;            // scaling factor for convecitve Nitsche stabilization
 
     if( h_k <= 0.0 ) dserror("element length is <= 0.0");
 
@@ -1595,7 +1595,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     if( h_k <= 0.0 ) dserror("element length is <= 0.0");
 
     stabfac_scaling      = nitsche_stab * visceff_max / h_k;  // scaling factor for standard Nitsche stabilization
-    stabfac_conv_scaling = nitsche_stab_conv / h_k;            // scaling factor for convecitve Nitsche stabilization
+    stabfac_conv_scaling = nitsche_stab_conv;            // scaling factor for convecitve Nitsche stabilization
 
     kappa1 = 0.5;
   }
@@ -1710,7 +1710,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
       if(h_k < 1e-006) dserror("element length is smaller than 1e-006");
 
       stabfac_scaling      = nitsche_stab * visceff_max / h_k;  // scaling factor for standard Nitsche stabilization
-      stabfac_conv_scaling = nitsche_stab_conv / h_k;            // scaling factor for convecitve Nitsche stabilization
+      stabfac_conv_scaling = nitsche_stab_conv;            // scaling factor for convecitve Nitsche stabilization
     }
 
 
@@ -1742,7 +1742,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         si->Evaluate(eta,x_side,normal,drs);
 
         // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( xyze_, x_side );
+        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
         pos.Compute();
         rst = pos.LocalCoordinates();
 
@@ -2111,8 +2111,8 @@ double FluidEleCalcXFEM<distype>::ComputeMeasSurf(
         LINALG::Matrix<3,1> normal(true);
 
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-
-        si->Evaluate(eta,x_side,normal,drs);
+        dserror("at the moment not available -> fix it");
+//        si->Evaluate(eta,x_side,normal,drs);
 
 #else
         LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface

@@ -28,6 +28,8 @@ Maintainer: Benedikt Schott
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../drt_fem_general/drt_utils_gder2.H"
+
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -58,19 +60,15 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   // 3D:
   case DRT::Element::quad4:
   {
-    static FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::hex8,DRT::Element::hex8>* fsurfq4;
-
     if(    surfele->ParentMasterElement()->Shape()==DRT::Element::hex8
         && surfele->ParentSlaveElement()->Shape()== DRT::Element::hex8)
     {
-      if (fsurfq4==NULL)
-        fsurfq4 = new FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::hex8,DRT::Element::hex8>();
+      return new FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::hex8,DRT::Element::hex8>();
     }
     else
     {
       dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
     }
-    return fsurfq4;
   }
   // 2D:
   case DRT::Element::line2:
@@ -100,6 +98,44 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   return NULL;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype,
+         DRT::Element::DiscretizationType pdistype,
+         DRT::Element::DiscretizationType ndistype>
+DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype> * DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype,ndistype>::Instance(bool create)
+{
+  static FluidInternalSurfaceStab<distype,pdistype,ndistype>* instance;
+
+  if (create)
+  {
+    if (instance==NULL)
+    {
+      instance = new FluidInternalSurfaceStab<distype,pdistype,ndistype>();
+    }
+  }
+  else
+  {
+    if (instance!=NULL)
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype,
+         DRT::Element::DiscretizationType pdistype,
+         DRT::Element::DiscretizationType ndistype>
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
+}
 
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
@@ -411,7 +447,21 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: gauss point loop" );
 
     //-----------------------------------------------------
-    double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, pele->Id(), nele->Id());
+    double fac = 0;
+
+    bool use2ndderiv = false;
+
+    if(ghost_penalty and
+        (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4)) use2ndderiv=true;
+
+    if( use2ndderiv )
+    {
+      fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, pele->Id(), nele->Id(), true);
+    }
+    else
+    {
+      fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, pele->Id(), nele->Id());
+    }
 
 
     //-----------------------------------------------------
@@ -519,6 +569,47 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     vderxyaf_diff.Update(1.0, nvderxyaf_, -1.0, pvderxyaf_);
 
 
+    if(use2ndderiv)
+    {
+
+
+      //-----------------------------------------------------
+      // get velocity (n+alpha_F,i) derivatives at integration point
+      //
+      //       n+af      +-----  dN (x)
+      //   dvel    (x)    \        k         n+af
+      //   ----------- =   +     ------ * vel
+      //       dx         /        dx        k
+      //         jl      +-----      jl
+      //                 node k
+      //
+      // jl : direction of derivative xx/yy/zz/xy/xz/yz
+      //
+      for(int rr=0;rr<3;++rr)
+      {
+        for(int mm=0;mm<6;++mm)
+        {
+          // parent element
+          pvderxy2af_(rr,mm)=pderxy2_(mm,0)*pevelaf_(rr,0);
+          for(int nn=1;nn<piel;++nn)
+          {
+            pvderxy2af_(rr,mm)+=pderxy2_(mm,nn)*pevelaf_(rr,nn);
+          }
+
+          // neighbor element
+          nvderxy2af_(rr,mm)=nderxy2_(mm,0)*nevelaf_(rr,0);
+          for(int nn=1;nn<niel;++nn)
+          {
+            nvderxy2af_(rr,mm)+=nderxy2_(mm,nn)*nevelaf_(rr,nn);
+          }
+
+        }
+      }
+
+    }
+
+
+
     //-----------------------------------------------------
 
 
@@ -552,7 +643,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         elevector_s,
         timefacfac,
         tau_grad,
-        ghost_penalty);
+        ghost_penalty,
+        use2ndderiv);
 
 
 #if(1)
@@ -574,7 +666,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
       // assemble combined divergence and streamline(EOS) stabilization terms for fluid
       double normal_vel_lin_space = fabs(velintaf_.Dot(n_));
+      // STREAMLINE stabilization
       double div_streamline_tau = tau_div + tau_u * normal_vel_lin_space;
+      // with additional CROSSWIND stabilization
+//      double div_streamline_tau = tau_div + tau_u * 1.0;
+
 
       div_streamline_EOS(   elematrix_mm,
                             elematrix_ms,
@@ -1116,7 +1212,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
     DRT::UTILS::IntegrationPoints2D&  intpoints,     ///< reference to 2D integration points
     int                               iquad,         ///< actual integration point
     int                               master_eid,    ///< master parent element
-    int                               slave_eid      ///< slave parent element
+    int                               slave_eid,      ///< slave parent element
+    bool                              use2ndderiv
 )
 {
 
@@ -1274,6 +1371,13 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
   }
   else dserror("not implemented for nurbs");
 
+  //-----------------------------------------------------
+
+  if( use2ndderiv )
+  {
+    DRT::UTILS::shape_function_3D_deriv2(pderiv2_,pr,ps,pt,pdistype);
+    DRT::UTILS::shape_function_3D_deriv2(nderiv2_,pr,ps,pt,ndistype);
+  }
 
   //-----------------------------------------------------
   // get Jacobian matrix and determinant for master element
@@ -1441,6 +1545,17 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
     }
   }
 
+  if(use2ndderiv)
+  {
+    DRT::UTILS::gder2<pdistype>(pxjm_,pderxy_,pderiv2_,pxyze_,pderxy2_);
+    DRT::UTILS::gder2<ndistype>(nxjm_,nderxy_,nderiv2_,nxyze_,nderxy2_);
+  }
+  else
+  {
+    pderxy2_.Clear();
+    nderxy2_.Clear();
+  }
+
 
   return fac;
 }
@@ -1461,7 +1576,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
             LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
             const double &                                    timefacfac,
             double &                                          tau_grad,
-            bool &                                            ghost_penalty)
+            bool &                                            ghost_penalty,
+            bool &                                            use2ndderiv)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: GhostPenalty" );
@@ -1550,6 +1666,90 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
 
 
   }// end if ghost_penalty
+
+
+
+
+//  if(ghost_penalty && use2ndderiv)
+//  {
+//    double tau_timefacfac = 0.0001 * tau_grad * timefacfac;
+//
+//    // additional stability of gradients
+//    // parent column
+//    for (int ui=0; ui<piel; ++ui)
+//    {
+//      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+//      {
+//        int col = ui*4+ijdim;
+//
+//        for(int k=0; k<6; k++) // 2nd order derivatives
+//        {
+//          // v_parent * u_parent
+//          //parent row
+//          for (int vi=0; vi<piel; ++vi)
+//          {
+//            elematrix_mm(vi*4+ijdim, col) += tau_timefacfac*pderxy2_(k,vi)*pderxy2_(k,ui);
+//          }
+//
+//          // neighbor row
+//          for (int vi=0; vi<niel; ++vi)
+//          {
+//            elematrix_sm(vi*4+ijdim, col) -= tau_timefacfac*nderxy2_(k,vi)*pderxy2_(k,ui);
+//          }
+//
+//        }
+//      }
+//    }
+//
+//    for (int ui=0; ui<niel; ++ui)
+//    {
+//      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+//      {
+//        int col = ui*4+ijdim;
+//
+//
+//        for(int k=0; k<6; k++) // 2nd order derivatives
+//        {
+//          // v_parent * u_parent
+//          //parent row
+//          for (int vi=0; vi<piel; ++vi)
+//          {
+//            elematrix_ms(vi*4+ijdim, col) -= tau_timefacfac*pderxy2_(k,vi)*nderxy2_(k,ui);
+//          }
+//
+//          //neighbor row
+//          for (int vi=0; vi<niel; ++vi)
+//          {
+//            elematrix_ss(vi*4+ijdim, col) += tau_timefacfac*nderxy2_(k,vi)*nderxy2_(k,ui);
+//          }
+//        }
+//
+//      }
+//
+//    }
+//
+//
+//    for(int idim = 0; idim <3; ++idim)
+//    {
+//
+//      for(int k=0; k<6; k++) // 2nd order derivatives pvderxy2af_
+//      {
+//        double diff_2nderiv_u = tau_timefacfac * (nvderxy2af_(idim,k)-pvderxy2af_(idim,k));
+//
+//        // v_parent (u_neighbor-u_parent)
+//        for (int vi=0; vi<piel; ++vi)
+//        {
+//          elevector_m(vi*4+idim,0) +=  pderxy2_(k,vi)*diff_2nderiv_u;
+//        }
+//
+//        // v_neighbor (u_neighbor-u_parent)
+//        for (int vi=0; vi<niel; ++vi)
+//        {
+//          elevector_s(vi*4+idim,0) -=  nderxy2_(k,vi)*diff_2nderiv_u;
+//        }
+//      }
+//    }
+//  }
 
   return;
 }
@@ -2435,11 +2635,20 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 //    gamma_p = 0.5 / 100.0;
 //    gamma_p = 1.0 / 100.0;
     // each face has to be evaluated only once -> doubled stabfac, either unstable for multibody test case!
-    gamma_p = 2.0 / 100.0;
+    gamma_p = 5.0 / 100.0;
 
 
     //scaling with h^2 (non-viscous case)
     tau_p = gamma_p * p_hk_*p_hk_;
+
+
+    //-----------------------------------------------
+    // streamline
+    tau_u = tau_p;
+
+    //-----------------------------------------------
+    // divergence
+    tau_div= 0.05*tau_p;
 
     // nu-weighting
     if(nu_weighting) // viscous -> non-viscous case
@@ -2451,13 +2660,6 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
       if(kinvisc >= p_hk_) tau_p /= (kinvisc/p_hk_);
     }
 
-    //-----------------------------------------------
-    // streamline
-    tau_u = tau_p;
-
-    //-----------------------------------------------
-    // divergence
-    tau_div= 0.05*tau_p;
 
   }
   break;
@@ -2509,8 +2711,8 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   //--------------------------------------------------------------------------------------------------------------
 
 //  tau_grad = gamma_grad*kinvisc * density * p_hk_;
-//  tau_grad = gamma_grad*0.0001;
-  tau_grad = gamma_ghost_penalty*p_hk_;
+//  gamma_grad = 0.1;
+  tau_grad = gamma_ghost_penalty*kinvisc*density*p_hk_;
 //  tau_grad = 0.0;
 
 

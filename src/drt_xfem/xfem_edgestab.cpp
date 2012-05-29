@@ -137,6 +137,21 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
     }
 
+    //--------------------------------------------------------------------------------------------
+
+    // call evaluate and assemble routine
+    if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
+                                                                       edge_based_stab,
+                                                                       ghost_penalty,
+                                                                       faceele,
+                                                                       nds_master,
+                                                                       nds_slave,
+                                                                       *xdiscret,
+                                                                       systemmatrix,
+                                                                       systemvector);
+
+    //--------------------------------------------------------------------------------------------
+
   }
   //------------------------------------------------------------------------------
   // second case: element handles for both parent elements
@@ -210,6 +225,20 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             // at least one element has to be cut
             if(p_master_handle->IsCut() or p_slave_handle->IsCut()) ghost_penalty   = true;
 
+            //--------------------------------------------------------------------------------------------
+
+            // call evaluate and assemble routine
+            if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
+                                                                               edge_based_stab,
+                                                                               ghost_penalty,
+                                                                               faceele,
+                                                                               nds_master,
+                                                                               nds_slave,
+                                                                               *xdiscret,
+                                                                               systemmatrix,
+                                                                               systemvector);
+
+            //--------------------------------------------------------------------------------------------
 
           }
           else if(vcs.size() == 1)
@@ -312,6 +341,21 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               if(p_slave_handle->IsCut()) ghost_penalty   = true;
             }
 
+            //--------------------------------------------------------------------------------------------
+
+            // call evaluate and assemble routine
+            if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
+                                                                               edge_based_stab,
+                                                                               ghost_penalty,
+                                                                               faceele,
+                                                                               nds_master,
+                                                                               nds_slave,
+                                                                               *xdiscret,
+                                                                               systemmatrix,
+                                                                               systemvector);
+
+            //--------------------------------------------------------------------------------------------
+
           }
 
       } // if outside
@@ -320,21 +364,6 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   } // end last case
 
 
-
-  //--------------------------------------------------------------------------------------------
-
-  // call evaluate and assemble routine
-  if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
-                                                                     edge_based_stab,
-                                                                     ghost_penalty,
-                                                                     faceele,
-                                                                     nds_master,
-                                                                     nds_slave,
-                                                                     *xdiscret,
-                                                                     systemmatrix,
-                                                                     systemvector);
-
-  //--------------------------------------------------------------------------------------------
 
   if(gmsh_discret_out)
   {

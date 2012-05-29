@@ -55,9 +55,10 @@ namespace DRT
     \author schott (schott@lnm.mw.tum.de), 02/12
 
     -----------------------------------------------------------------*/
-    class FluidIntFaceStab
+    class FluidIntFaceStab : DRT::SingletonDestruction
     {
     public:
+
       //! Empty constructor
       FluidIntFaceStab() {}
       //! Empty destructor
@@ -124,6 +125,13 @@ namespace DRT
     class FluidInternalSurfaceStab: public FluidIntFaceStab
     {
     public:
+
+      /// Singleton access method
+      static FluidInternalSurfaceStab<distype,pdistype,ndistype> * Instance(bool create=true);
+
+      /// called upon destruction
+      virtual void Done();
+
       /// Constructor with number of nodes
       FluidInternalSurfaceStab();
 
@@ -221,7 +229,8 @@ namespace DRT
           DRT::UTILS::IntegrationPoints2D&  intpoints,     ///< reference to 2D integration points
           int                               iquad,         ///< actual integration point
           int                               master_eid,    ///< master parent element
-          int                               slave_eid      ///< slave parent element
+          int                               slave_eid,     ///< slave parent element
+          bool                              use2ndderiv = false
       );
 
       //! Provide ghost penalty assembly for xfluid case
@@ -234,7 +243,8 @@ namespace DRT
           LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
           const double &                                    timefacfac,    ///< (time factor) x (integration factor)
           double &                                          tau_grad,      ///< penalty parameter for ghost penalty terms
-          bool &                                            ghost_penalty  ///< boolian if ghost penalty terms has to be assembled
+          bool &                                            ghost_penalty, ///< boolian if ghost penalty terms has to be assembled
+          bool &                                            use2ndderiv
       );
 
       //! Provide pressure (EOS) stabilization assembly for fluid
@@ -463,6 +473,10 @@ namespace DRT
       LINALG::Matrix<3,piel> pderiv_;
       //! vector of shape function derivatives in global coordinate system
       LINALG::Matrix<3,piel> pderxy_;
+      //! vector of shape function (2nd) derivatives in reference coordinate system, parent element
+      LINALG::Matrix<6,piel> pderiv2_;
+      //! vector of shape function (2nd) derivatives in global coordinate system
+      LINALG::Matrix<6,piel> pderxy2_;
 
       // ----------------------------------------------------------------------------------
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
@@ -475,6 +489,10 @@ namespace DRT
       LINALG::Matrix<3,niel> nderiv_;
       //! vector of shape function derivatives in global coordinate system
       LINALG::Matrix<3,niel> nderxy_;
+      //! vector of shape function (2nd) derivatives in reference coordinate system, parent element
+      LINALG::Matrix<6,niel> nderiv2_;
+      //! vector of shape function (2nd) derivatives in global coordinate system
+      LINALG::Matrix<6,niel> nderxy2_;
 
 
       //! vector of shape functions, boundary element
@@ -503,6 +521,10 @@ namespace DRT
       LINALG::Matrix<3,3>    pvderxyaf_;
       //! neighbor velocity derivatives in gausspoint, time n+af
       LINALG::Matrix<3,3>    nvderxyaf_;
+      //! parent velocity (2nd) derivatives in gausspoint, time n+af
+      LINALG::Matrix<3,6>    pvderxy2af_;
+      //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
+      LINALG::Matrix<3,6>    nvderxy2af_;
       //! pressure in gausspoint, time n+1
       double                 prenp_;
       //! parent pressure derivatives in gausspoint, time n+1

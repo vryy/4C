@@ -47,7 +47,7 @@ namespace ELEMENTS
   this class actually defines is Impl, which returns a pointer to
   the appropriate version of FluidIntFaceImpl.
  */
-class FluidIntFaceImplInterface
+class FluidIntFaceImplInterface : DRT::SingletonDestruction
 {
 
 public:
@@ -117,7 +117,10 @@ class FluidIntFaceImpl: public FluidIntFaceImplInterface
 public:
 
   /// Singleton access method
-  static FluidIntFaceImpl<distype> * Instance();
+  static FluidIntFaceImpl<distype> * Instance(bool create=true);
+
+  /// called upon destruction
+  virtual void Done();
 
   /// Constructor
   FluidIntFaceImpl();

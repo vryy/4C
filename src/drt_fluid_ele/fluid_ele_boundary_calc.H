@@ -41,7 +41,7 @@ namespace ELEMENTS
   this class actually defines is Impl, which returns a pointer to
   the appropriate version of FluidBoundaryImpl.
  */
-class FluidBoundaryImplInterface
+class FluidBoundaryImplInterface : DRT::SingletonDestruction
 {
 
 public:

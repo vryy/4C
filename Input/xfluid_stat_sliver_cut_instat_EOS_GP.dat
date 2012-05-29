@@ -76,10 +76,10 @@ CSTAB                           no_cstab //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT_SCREEN           Yes
+GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    Yes
-GMSH_DISCRET_OUT                Yes
+GMSH_SOL_OUT                    No
+GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
@@ -98,7 +98,7 @@ VISC_STAB_FAC                   1.0
 CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.001
+GHOST_PENALTY_FAC               0.1
 EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
