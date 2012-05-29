@@ -1582,10 +1582,14 @@ bool STATMECH::StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID
           if((*filamentnumber_)[k]==currfilnumber+1)
             break;
           // check if any of the filament's nodes has a linker attached
-          if((*filamentnumber_)[k]==currfilnumber && (*numbond_)[(int)(*bspotstatus_)[k]]>1.9)
+          // make sure that the binding spot is occupied (i.e. the entry is the linker ID, not "-1")
+          if((*bspotstatus_)[k]>-0.1)
           {
-            setcrosslinker = false;
-            break;
+            if((*filamentnumber_)[k]==currfilnumber && (*numbond_)[(int)(*bspotstatus_)[k]]>1.9)
+            {
+              setcrosslinker = false;
+              break;
+            }
           }
         }
       }
@@ -2557,6 +2561,8 @@ void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& para
   params.set("STARTTIMEACT",statmechparams_.get<double>("STARTTIMEACT",0.0));
   params.set("DELTA_T_NEW",statmechparams_.get<double>("DELTA_T_NEW",0.0));
   params.set("PERIODLENGTH",GetPeriodLength());
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FORCEDEPUNLINKING") || DRT::INPUT::IntegralValue<int>(statmechparams_,"LOOMSETUP"))
+    params.set<string>("internalforces","yes");
   return;
 }
 

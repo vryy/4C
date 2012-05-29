@@ -480,6 +480,10 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList&   params,
       dserror("Unknown type kintype_ for Truss3");
   }
 
+  // internal force vector stored by class variable before application of stochastic excitations
+  if(params.get<string>("internalforces","no")=="yes" && force != NULL)
+    internalforces_ = rcp(new Epetra_SerialDenseVector(*force));
+
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of truss3 elements in the frame of statistical mechanics problems; for these problems a
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
@@ -610,7 +614,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(std::vector<double>&      dis
       (*massmatrix)(i+3,i) = density*lrefe_*crosssec_ / 6;
     }
   }
-
 
   return;
 } // DRT::ELEMENTS::Truss3::t3_nlnstiffmass

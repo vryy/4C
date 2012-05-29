@@ -302,6 +302,9 @@ public:
 
   //!\brief return cross section of the truss
   const double& CSec() const { return crosssec_;}
+
+  //! \brief internal force vector
+  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
   //@}
 
 private:
@@ -367,6 +370,9 @@ private:
 
   //! cross section area
   double crosssec_;
+
+  //! internal force vector
+  Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
 
   //! Kinematic type
   KinematicType kintype_;

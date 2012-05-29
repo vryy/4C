@@ -1217,7 +1217,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
   CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
 
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
-  if(params.get<string>("forcedepunlinking","no")=="yes" && force != NULL)
+  if(params.get<string>("internalforces","no")=="yes" && force != NULL)
   	internalforces_ = rcp(new Epetra_SerialDenseVector(*force));
 
   return;
