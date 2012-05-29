@@ -996,8 +996,8 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
   }
   else if (interp_type_ == "Linear")
   {
-    double phi = PI/11.0;
-    return -500.0 -350.0/2.0*(1.0 - cos(2.0*PI*t/period_ + phi ));
+    //double phi = PI/11.0;
+    //return -500.0 -350.0/2.0*(1.0 - cos(2.0*PI*t/period_ + phi ));
     // get the time within a period
     double loc_time = Sacado::Fad::DFad<Sacado::Fad::DFad<double> > (t) .val().val();
 
