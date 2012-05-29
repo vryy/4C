@@ -94,9 +94,9 @@ V0_(V0)
   // -------------------------------------------------------------------
   // new time intgration implementation -> generalized alpha
   // parameters are located in a sublist
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_micro,"DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_genalpha)
   {
-    const Teuchos::ParameterList& genalpha  = DRT::Problem::Instance(microdisnum_)->StructuralDynamicParams().sublist("GENALPHA");
+    const Teuchos::ParameterList& genalpha  = DRT::Problem::Instance()->StructuralDynamicParams().sublist("GENALPHA");
     beta_ = genalpha.get<double>("BETA");
     gamma_ = genalpha.get<double>("GAMMA");
     alpham_ = genalpha.get<double>("ALPHA_M");
@@ -149,6 +149,10 @@ V0_(V0)
   discret_->Comm().Broadcast(&numstep_, 1, 0);
   discret_->Comm().Broadcast(&restart_, 1, 0);
   discret_->Comm().Broadcast(&restartevry_, 1, 0);
+  discret_->Comm().Broadcast(&beta_, 1, 0);
+  discret_->Comm().Broadcast(&gamma_, 1, 0);
+  discret_->Comm().Broadcast(&alpham_, 1, 0);
+  discret_->Comm().Broadcast(&alphaf_, 1, 0);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -1090,7 +1094,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
       P(i,j) /= V0_;
 			// sum P(i,j) over the microdis
       double sum = 0.0;
-      DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->SumAll(&(P(i,j)), &sum, 1);
+      discret_->Comm().SumAll(&(P(i,j)), &sum, 1);
       P(i,j) = sum;
     }
   }
@@ -1118,8 +1122,6 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
 
   if (build_stiff)
   {
-    if(discret_->Comm().NumProc() > 1)
-      dserror("static homogenization currently only in serial available");
     // The calculation of the consistent macroscopic constitutive tensor
     // follows
     //
@@ -1131,40 +1133,86 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     Epetra_MultiVector cmatpf(D_->Map(), 9);
 
-    Epetra_Vector x(*dofrowmap);
-    Epetra_Vector y(*dofrowmap);
-
     // make a copy
     stiff_dirich_ = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_));
 
     stiff_->ApplyDirichlet(dirichtoggle_);
 
-    Epetra_LinearProblem linprob(&(*stiff_->EpetraMatrix()), &x, &y);
-    int error=linprob.CheckInput();
-    if (error)
-      dserror("Input for linear problem inconsistent");
-#ifndef HAVENOT_UMFPACK
-    Amesos_Umfpack solver(linprob);
-    int err = solver.NumericFactorization();   // LU decomposition of stiff_ only once
+    // get parameter list of structural dynamics
+//    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance(microdisnum_)->StructuralDynamicParams();
+    // use solver blocks for structure
+    // get the solver number used for structural solver
+    const int linsolvernumber = 9; //sdyn.get<int>("LINEAR_SOLVER");
+    // check if the structural solver has a valid solver number
+    if (linsolvernumber == (-1))
+      dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+
+    //TODO: insert input parameter from dat file for solver block Belos
+
+    // get solver parameter list of linear solver
+    const Teuchos::ParameterList& solverparams = DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber);
+
+    const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+
+    if (solvertype != INPAR::SOLVER::belos)
+      dserror("You have to choose BELOS as solver for the micro structure!");
+
+    // create belos solver
+    Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(
+                           solverparams,
+                           discret_->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()
+                           )
+                       );
+
+    // prescribe rigid body modes
+    discret_->ComputeNullSpaceIfNecessary(solver->Params());
+
+    Teuchos::RCP<Epetra_MultiVector> iterinc = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
+
+    // apply Dirichlet BCs to system of equations
+    iterinc->PutScalar(0.0);
+
+    // solve for 9 rhs at the same time --> thanks to Belos
+    solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, true, true);
+
+    Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
+    stiff_dirich_->Multiply(false, *iterinc, *temp);
+
+    Epetra_MultiVector fexp(*pdof_, 9);
+    int err = fexp.Import(*temp, *importp_, Insert);
     if (err)
-      dserror("Numeric factorization of stiff_ for homogenization failed");
+      dserror("Export of boundary 'forces' failed with err=%d", err);
 
-    for (int i=0;i<9;++i)
+    // multiply manually D_ and fexp because D_ is not distributed as usual Epetra_MultiVectors and,
+    // hence, standard Multiply functions do not apply.
+    // NOTE: D_ has the same row GIDs (0-8), but different col IDs on different procs (corresponding to pdof_).
+    // fexp is distributed normally with 9 vectors (=cols) and np_ rows.
+    // result is saved as a std::vector<double> to ease subsequent communication
+    std::vector<double> val(81, 0.0);
+    int D_rows = D_->NumVectors();
+    for(int i=0; i<D_rows; i++)
     {
-      x.PutScalar(0.0);
-      y.Update(1.0, *((*rhs_)(i)), 0.0);
-      solver.Solve();
-
-      Epetra_Vector f(*dofrowmap);
-      stiff_dirich_->Multiply(false, x, f);
-      Epetra_Vector fexp(*pdof_);
-      int err = fexp.Import(f, *importp_, Insert);
-      if (err)
-        dserror("Export of boundary 'forces' failed with err=%d", err);
-
-      (cmatpf(i))->Multiply('N', 'N', 1.0/V0_, *D_, fexp, 0.0);
+      for(int j=0; j<fexp.NumVectors(); j++)
+      {
+        for(int k=0; k<D_->MyLength(); k++)
+        {
+          val[i*D_rows + j] += ((*(*D_)(i))[k]) * ((*fexp(j))[k]);
+        }
+      }
     }
-#endif
+
+    // sum result of matrix-matrix product over procs
+    std::vector<double> sum(81, 0.0);
+    discret_->Comm().SumAll(&val[0], &sum[0], 81);
+
+    // write as a 9x9 matrix
+    for(int i=0; i<9; i++)
+      for(int j=0; j<9; j++)
+        (*(cmatpf(j)))[i] = sum[i*9+j];
+
+    // scale with inverse of RVE volume
+    cmatpf.Scale(1.0/V0_);
 
     // We now have to transform the calculated constitutive tensor
     // relating first Piola-Kirchhoff stresses to the deformation

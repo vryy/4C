@@ -24,7 +24,7 @@ Maintainer: Lena Yoshihara
 //-----------------------------------------------------------------------
 void STRUMULTI::MicroStatic::DetermineToggle()
 {
-  int np = 0;   // number of prescribed (=boundary) dofs needed for the
+  int np = 0;   // local number of prescribed (=boundary) dofs needed for the
                 // creation of vectors and matrices for homogenization
                 // procedure
 
@@ -146,24 +146,22 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   *Xp_ = Xp_temp;
 
   // now create D and its transpose DT (following Miehe et al., 2002)
-
-  Epetra_Map Dmap(9, 0, Epetra_SerialComm());
-  D_ = rcp(new Epetra_MultiVector(Dmap, np_));
+  // NOTE: D_ has the same row GIDs (0-8), but different col IDs on different procs (corresponding to pdof_).
+  D_ = Teuchos::rcp(new Epetra_MultiVector(*pdof_, 9));
 
   for (int n=0;n<np_/3;++n)
   {
-    Epetra_Vector* temp1 = (*D_)(3*n);
-    (*temp1)[0] = (*Xp_)[3*n];
-    (*temp1)[3] = (*Xp_)[3*n+1];
-    (*temp1)[6] = (*Xp_)[3*n+2];
-    Epetra_Vector* temp2 = (*D_)(3*n+1);
-    (*temp2)[1] = (*Xp_)[3*n+1];
-    (*temp2)[4] = (*Xp_)[3*n+2];
-    (*temp2)[7] = (*Xp_)[3*n];
-    Epetra_Vector* temp3 = (*D_)(3*n+2);
-    (*temp3)[2] = (*Xp_)[3*n+2];
-    (*temp3)[5] = (*Xp_)[3*n];
-    (*temp3)[8] = (*Xp_)[3*n+1];
+    (*(*D_)(0))[3*n] = (*Xp_)[3*n];
+    (*(*D_)(3))[3*n] = (*Xp_)[3*n+1];
+    (*(*D_)(6))[3*n] = (*Xp_)[3*n+2];
+
+    (*(*D_)(1))[3*n+1] = (*Xp_)[3*n+1];
+    (*(*D_)(4))[3*n+1] = (*Xp_)[3*n+2];
+    (*(*D_)(7))[3*n+1] = (*Xp_)[3*n];
+
+    (*(*D_)(2))[3*n+2] = (*Xp_)[3*n+2];
+    (*(*D_)(5))[3*n+2] = (*Xp_)[3*n];
+    (*(*D_)(8))[3*n+2] = (*Xp_)[3*n+1];
   }
 
   Epetra_MultiVector DT(*pdof_, 9);
@@ -214,6 +212,7 @@ bool STRUMULTI::MicroStatic::Converged()
     break;
   default:
     dserror("Cannot check for convergence of residual displacements!");
+    break;
   }
 
   // residual forces
@@ -230,6 +229,7 @@ bool STRUMULTI::MicroStatic::Converged()
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
+    break;
   }
 
   // combine displacement-like and force-like residuals

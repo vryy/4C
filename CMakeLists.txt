@@ -1618,11 +1618,16 @@ macro (baci_test arg nproc restart)
 endmacro (baci_test)
 
 # Run test case for nested parallelism
-macro (baci_test_Nested_Par arg restart)
-  add_test(NAME ${arg}-nestedPar
-    COMMAND ${MPI_DIR}/bin/mpirun -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart} ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxxAdditional restart=${restart})
+macro (baci_test_Nested_Par arg1 arg2 restart)
+  add_test(NAME ${arg1}-nestedPar
+    COMMAND ${MPI_DIR}/bin/mpirun -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional)
 
-  set_tests_properties ( ${arg}-nestedPar PROPERTIES TIMEOUT 200 )
+  if (${restart})
+    add_test(NAME ${arg1}-nestedPar-restart
+    COMMAND ${MPI_DIR}/bin/mpirun -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx restart=${restart} ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional restart=${restart})
+  endif (${restart})
+
+  set_tests_properties ( ${arg1}-nestedPar PROPERTIES TIMEOUT 200 )
 endmacro (baci_test_Nested_Par)
 
 ###------------------------------------------------------------------ List of tests
@@ -2375,7 +2380,9 @@ baci_test(two_phase_rayleigh_taylor_instability_32x128_FGI 2 "")
 baci_test(two_phase_rayleigh_taylor_instability_32x128_redis 3 "")
 baci_test(two_phase_stat_bubble_surftens_20x20x20 2 "")
 baci_test(two_phase_stat_bubble_surftens_50x50x1 1 "")
-baci_test_Nested_Par(tsi_heatconvection_monolithic "")
+baci_test_Nested_Par(tsi_heatconvection_monolithic tsi_heatconvection_monolithic "")
+baci_test_Nested_Par(sohex8_multiscale_macro sohex8_multiscale_npsupport "1")
+baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport "1")
 
 
 if (HAVE_MueLu)

@@ -24,7 +24,6 @@
 
 void LINALG::Solver::BuildBelosSolver(const Epetra_Comm & comm, Teuchos::ParameterList & params, FILE * outfile)
 {
-  cout << "build Belos solver" << endl;
   solver_ = Teuchos::rcp( new LINALG::SOLVER::BelosSolver( comm, params, outfile));
 }
 
@@ -134,10 +133,6 @@ void LINALG::SOLVER::BelosSolver::Solve()
   if (ret!=Belos::Converged)
   {
     std::cout << std::endl << "WARNING: Belos did not converge!" << std::endl;
-  }
-  else
-  {
-    std::cout << std::endl << "SUCCESS: Belos converged after " << newSolver->getNumIters() << " iterations" << endl;
   }
 
   ncall_ += 1; // increment counter of solver calls

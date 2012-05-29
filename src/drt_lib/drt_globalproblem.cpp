@@ -1575,6 +1575,9 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         structdis_micro->FillComplete();
         DRT::UTILS::PrintParallelDistribution(*structdis_micro);
 
+        // broadcast restart information
+        subgroupcomm->Broadcast(&restartstep_, 1, 0);
+
         // set the problem number from which to call materials again to zero
         // (i.e. macro problem), cf. MAT::Material::Factory!
         materials_->ResetReadFromProblem();
@@ -1685,6 +1688,9 @@ void DRT::Problem::ReadMicrofields_NPsupport()
     // subsequent reading is only for macroscale
     structdis_micro->FillComplete();
     DRT::UTILS::PrintParallelDistribution(*structdis_micro);
+
+    // broadcast restart information
+    subgroupcomm->Broadcast(&restartstep_, 1, 0);
 
     // set the problem number from which to call materials again to zero
     // (i.e. macro problem), cf. MAT::Material::Factory!
