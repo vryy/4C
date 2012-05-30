@@ -4521,7 +4521,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("GHOST_PENALTY_STAB","no","switch on/off ghost penalty interface stabilization",&xfluid_stab);
 
-  DoubleParameter("GHOST_PENALTY_FAC",       0.001, "define stabilization parameter ghost penalty interface stabilization",&xfluid_stab);
+  DoubleParameter("GHOST_PENALTY_FAC",       0.1, "define stabilization parameter ghost penalty interface stabilization",&xfluid_stab);
 
   setStringToIntegralParameter<int>("EOS_GP_PATTERN","u-v-w-p-diagonal-block","which matrix pattern shall be assembled for 'Edgebased' fluid stabilization and 'GhostPenalty' stabilization?",
                                tuple<std::string>("u-v-w-p-diagonal-block", "u-p-block", "full"),

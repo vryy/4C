@@ -64,7 +64,7 @@ TIMESTEP                        1
 NEUMANNINFLOW    		no
 LINEAR_SOLVER                   1
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE             edge_based //    residual_based //
+STABTYPE              edge_based //    residual_based //
 DEFINITION_TAU        Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                   quasistatic
 TRANSIENT             no_transient
@@ -86,7 +86,7 @@ VISC_STAB_HK                    vol_equivalent // vol_div_by_surf // longest_ele
 CONV_STAB_FAC                   0.0 // 1.0
 CONV_STAB_SCALING               none // abs_normal_vel //abs_normal_vel // inflow // const 
 GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.001
+GHOST_PENALTY_FAC               0.1
 MSH_L2_PROJ                     part_ele_proj //full_ele_proj (K_ss whole element or just partial) 
 EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
 -------------------------------------------------------ALE DYNAMIC
@@ -1986,17 +1986,17 @@ NODE 612  	COORD	6.8999999999999995e-01	-2.9375000000000001e-01	5.00000000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 18 POSITION velx NAME velx VALUE 9.99729848770016583e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 18 POSITION pressure NAME pressure VALUE 2.80958129122446643e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 18 POSITION velx NAME velx VALUE 1.00023608673713449e+00 TOLERANCE 1e-6
+FLUID DIS 1 NODE 18 POSITION pressure NAME pressure VALUE 2.81011852604536223e+01 TOLERANCE 1e-6
 FLUID DIS 1 NODE 25 POSITION velx NAME velx VALUE 7.50000000000000000e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 25 POSITION pressure NAME pressure VALUE 3.01267377391619107e+01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 51 POSITION velx NAME velx VALUE 4.38054087309710183e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 51 POSITION pressure NAME pressure VALUE 2.60318492949202565e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 25 POSITION pressure NAME pressure VALUE 3.01504846560029911e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 51 POSITION velx NAME velx VALUE 4.37031506771456135e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 51 POSITION pressure NAME pressure VALUE 2.60703873121629215e+01 TOLERANCE 1e-6
 FLUID DIS 1 NODE 53 POSITION velx NAME velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 53 POSITION pressure NAME pressure VALUE 2.60323302868065305e+01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 61 POSITION velx NAME velx VALUE 9.36978244926636061e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 61 POSITION pressure NAME pressure VALUE 2.39873821414776423e+01 TOLERANCE 1e-6
-FLUID DIS 2 NODE 429 POSITION velx NAME velx VALUE 4.38347200760645761e-01 TOLERANCE 1e-6
-FLUID DIS 2 NODE 429 POSITION pressure NAME pressure VALUE 1.93960725955252151e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 53 POSITION pressure NAME pressure VALUE 2.60785568644911976e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 61 POSITION velx NAME velx VALUE 9.38600314305814365e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 61 POSITION pressure NAME pressure VALUE 2.39762921736325936e+01 TOLERANCE 1e-6
+FLUID DIS 2 NODE 429 POSITION velx NAME velx VALUE 4.37631873265257598e-01 TOLERANCE 1e-6
+FLUID DIS 2 NODE 429 POSITION pressure NAME pressure VALUE 1.93428740073522683e+01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
