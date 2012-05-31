@@ -264,8 +264,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     }
     case INPAR::MAT::m_struct_multiscale: /*------------------- multiscale approach */
     {
-//      if (gp==0 and Id()==0)
-//      {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
       // Check if we use EAS on this (macro-)scale
@@ -305,31 +303,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       }
 
       micro->Evaluate(defgrd, cmat, stress, density, gp, Id());
-//      }
-//      else
-//      {
-//        double nu = 0.2;
-//        double Emod = 10.0;
-//        *density = 1.0;
-//
-//        const double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  // factor
-//            // write non-zero components
-//            (*cmat)(0,0) = mfac*(1.0-nu);
-//            (*cmat)(0,1) = mfac*nu;
-//            (*cmat)(0,2) = mfac*nu;
-//            (*cmat)(1,0) = mfac*nu;
-//            (*cmat)(1,1) = mfac*(1.0-nu);
-//            (*cmat)(1,2) = mfac*nu;
-//            (*cmat)(2,0) = mfac*nu;
-//            (*cmat)(2,1) = mfac*nu;
-//            (*cmat)(2,2) = mfac*(1.0-nu);
-//            // ~~~
-//            (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-//            (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-//            (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
-//
-//            stress->MultiplyNN(*cmat,*glstrain);
-//      }
       break;
     }
     case INPAR::MAT::m_biocell: /*----------------- Biological Cell Material */
