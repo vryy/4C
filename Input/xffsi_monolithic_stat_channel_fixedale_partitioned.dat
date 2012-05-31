@@ -64,7 +64,7 @@ TIMESTEP                        1
 NEUMANNINFLOW    		no
 LINEAR_SOLVER                   1
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE              edge_based //    residual_based //
+STABTYPE              edge_based //     residual_based //
 DEFINITION_TAU        Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                   quasistatic
 TRANSIENT             no_transient
@@ -78,6 +78,11 @@ REYNOLDS-STRESS       no_reynolds
 GMSH_DEBUG_OUT                  Yes
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
+------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUIDFLUID_TIMEINT  Xff_TimeInt_ProjIfMoved  // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues //// //  
+MONOLITHIC_XFFSI_APPROACH xffsi_fixedALE_partitioned// xffsi_full_newton //   xffsi_fixedALE_interpolation
+RELAXING_ALE      Yes 
+//RELAXING_ALE_EVERY
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeSigma  // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 VISC_STAB_FAC                   100.0 // (relevant for nitsche)
@@ -121,7 +126,7 @@ ENERGYCHECK                     no
 TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          10
-CONVTOL                         1.0E-6
+CONVTOL                         1.0E-12
 BASETOL                         1.0E-3
 STRUCTPCOMEGA                   1.0 1.0
 STRUCTPCITER                    1 1
@@ -1986,17 +1991,17 @@ NODE 612  	COORD	6.8999999999999995e-01	-2.9375000000000001e-01	5.00000000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 18 POSITION velx NAME velx VALUE 1.00023608673713449e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 18 POSITION pressure NAME pressure VALUE 2.81011852604536223e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 18 POSITION velx NAME velx VALUE 1.00018600583657213e+00 TOLERANCE 1e-6
+FLUID DIS 1 NODE 18 POSITION pressure NAME pressure VALUE  2.81199346145289368e+01 TOLERANCE 1e-6
 FLUID DIS 1 NODE 25 POSITION velx NAME velx VALUE 7.50000000000000000e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 25 POSITION pressure NAME pressure VALUE 3.01504846560029911e+01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 51 POSITION velx NAME velx VALUE 4.37031506771456135e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 51 POSITION pressure NAME pressure VALUE 2.60703873121629215e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 25 POSITION pressure NAME pressure VALUE 3.01692624671719614e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 51 POSITION velx NAME velx VALUE 4.37140514498139954e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 51 POSITION pressure NAME pressure VALUE 2.60864461922441109e+01 TOLERANCE 1e-6
 FLUID DIS 1 NODE 53 POSITION velx NAME velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 53 POSITION pressure NAME pressure VALUE 2.60785568644911976e+01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 61 POSITION velx NAME velx VALUE 9.38600314305814365e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 61 POSITION pressure NAME pressure VALUE 2.39762921736325936e+01 TOLERANCE 1e-6
-FLUID DIS 2 NODE 429 POSITION velx NAME velx VALUE 4.37631873265257598e-01 TOLERANCE 1e-6
-FLUID DIS 2 NODE 429 POSITION pressure NAME pressure VALUE 1.93428740073522683e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 53 POSITION pressure NAME pressure VALUE 2.60931897724378139e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 61 POSITION velx NAME velx VALUE 9.38433043889121743e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 61 POSITION pressure NAME pressure VALUE 2.39969580209620439e+01 TOLERANCE 1e-6
+FLUID DIS 2 NODE 429 POSITION velx NAME velx VALUE 4.37819271486948491e-01 TOLERANCE 1e-6
+FLUID DIS 2 NODE 429 POSITION pressure NAME pressure VALUE 1.93477272492460521e+01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
