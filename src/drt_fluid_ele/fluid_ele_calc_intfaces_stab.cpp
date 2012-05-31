@@ -60,10 +60,11 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   // 3D:
   case DRT::Element::quad4:
   {
+
     if(    surfele->ParentMasterElement()->Shape()==DRT::Element::hex8
         && surfele->ParentSlaveElement()->Shape()== DRT::Element::hex8)
     {
-      return new FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::hex8,DRT::Element::hex8>();
+      return FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::hex8,DRT::Element::hex8>::Instance();
     }
     else
     {
@@ -75,21 +76,6 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   {
     dserror("Edgebased stabilization not implemented for 2D elements!");
     break;
-//    static FluidInternalLineStabilization<DRT::Element::line2,DRT::Element::quad4>* fline2;
-//
-//    if(f3bdry->ParentElement()->Shape()==DRT::Element::quad4)
-//    {
-//      if (fline2==NULL)
-//      {
-//        fline2 = new FluidInternalLineStabilization<DRT::Element::line2,DRT::Element::quad4>();
-//      }
-//    }
-//    else
-//    {
-//      dserror("expected combination line2/quad4 for line/parent pair");
-//    }
-//
-//    return fline2;
   }
   default:
     dserror("shape %d (%d nodes) not supported by internalfaces stabilization", surfele->Shape(), surfele->NumNode());
