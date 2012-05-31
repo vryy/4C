@@ -14,8 +14,12 @@ Maintainer: Martin Winklmaier
 
 #include "topopt_algorithm.H"
 #include "topopt_fluidAdjoint_timeint.H"
-#include "../linalg/linalg_utils.H"
 #include "topopt_optimizer.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/optimization_density.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -75,7 +79,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
     DoAdjointField();
 
     // compute the gradient of the objective function
-    GetGradient();
+    PrepareOptimizationStep();
 //
 //    // update objective due to optimization approach
 //    DoOptimizationStep();
@@ -198,8 +202,7 @@ void TOPOPT::Algorithm::DoFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareAdjointField()
 {
-  RCP<TOPOPT::Optimizer>& optimizer = optimizer_;
-  AdjointFluidField()->SetTopOptData(optimizer->ExportFluidData(),poro_,optimizer);
+  AdjointFluidField()->SetTopOptData(optimizer_->ExportFluidData(),poro_,optimizer_);
   return;
 }
 
@@ -218,8 +221,9 @@ void TOPOPT::Algorithm::DoAdjointField()
 /*------------------------------------------------------------------------------------------------*
  | protected: evaluate the gradient of the optimization objectives               winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
-void TOPOPT::Algorithm::GetGradient()
+void TOPOPT::Algorithm::PrepareOptimizationStep()
 {
+  optimizer_->ComputeObjective();
   optimizer_->ComputeGradient();
   return;
 }
@@ -259,9 +263,32 @@ void TOPOPT::Algorithm::UpdatePorosity()
    * */
   RCP<const Epetra_Vector> density = optimizer_->DensityIp();
 
-  const double poro_bd_down = topopt_.get<double>("PORO_BOUNDARY_DOWN");
-  const double poro_bd_up = topopt_.get<double>("PORO_BOUNDARY_UP");
-  const double fac = topopt_.get<double>("SMEARING_FACTOR");
+  // get the optimization material
+  const MAT::PAR::TopOptDens* mat = NULL;
+  const int nummat = DRT::Problem::Instance()->Materials()->Num();
+  for (int id = 1; id-1 < nummat; ++id)
+  {
+    Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
+
+    if (imat == Teuchos::null)
+      dserror("Could not find material Id %d", id);
+    else
+    {
+      if (imat->Type() == INPAR::MAT::m_opti_dens)
+      {
+        const MAT::PAR::Parameter* matparam = imat->Parameter();
+        mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
+        break;
+      }
+    }
+  }
+  if (mat==NULL)
+    dserror("optimization material not found");
+
+  // and then the material parameters
+  const double poro_bd_down = mat->poro_bd_down_;
+  const double poro_bd_up = mat->poro_bd_up_;
+  const double fac = mat->smear_fac_;
 
   const double poro_diff = poro_bd_down - poro_bd_up;
 

@@ -43,6 +43,13 @@ namespace MAT
       /// @name material parameters
       //@{
 
+      /// lower boundary for pseudo-porosity field
+      const double poro_bd_down_;
+      /// upper boundary for pseudo-porosity field
+      const double poro_bd_up_;
+      /// smearing factor for computation of porosity field out of density field
+      const double smear_fac_;
+
       //@}
 
       /// create material instance of matching type with my parameters
@@ -122,6 +129,15 @@ private:
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new TopOptDens( *this ) ); }
+
+    /// return upper boundary of porosity field
+    virtual const double MaxPoro() const {return params_->poro_bd_up_;}
+
+    /// return upper boundary of porosity field
+    virtual const double MinPoro() const {return params_->poro_bd_down_;}
+
+    /// return upper boundary of porosity field
+    virtual const double SmearFactor() const {return params_->smear_fac_;}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

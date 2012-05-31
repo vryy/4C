@@ -74,7 +74,7 @@ int LINALG::AggregationMethod_ML::GetAggregates(const RCP<Epetra_CrsMatrix>& A, 
   int ns_size = ThisNS.MyLength();
 
   double* null_vect = 0;
-  ML_memory_alloc((void **)(&null_vect), sizeof(double) * ns_size * ThisNS.NumVectors(), "ns");
+  ML_memory_alloc((void **)(&null_vect), sizeof(double) * ns_size * ThisNS.NumVectors(), (char*)"ns");
 
   int incr = 1;
   for (int v = 0 ; v < ThisNS.NumVectors() ; ++v)

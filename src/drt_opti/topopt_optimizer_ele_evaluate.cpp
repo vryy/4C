@@ -45,7 +45,7 @@ DRT::ELEMENTS::TopOpt::ActionType DRT::ELEMENTS::TopOpt::convertStringToActionTy
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TopOpt::Evaluate(
     ParameterList&            params,
-    DRT::Discretization&      discretization,
+    DRT::Discretization&      optidis,
     vector<int>&              lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
@@ -57,19 +57,24 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
   const string action = params.get<string>("action","none");
   const DRT::ELEMENTS::TopOpt::ActionType act = convertStringToActionType(action);
 
+  // get material
+  RCP<MAT::Material> mat = Material();
+
   switch (act)
   {
   case set_general_optimization_parameter:
   {
     RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
     optiparam->SetGeneralOptimizationParameter(params);
+    break;
   }
   case compute_objective:
   {
     return DRT::ELEMENTS::TopOptImplInterface::Impl(this)->EvaluateObjective(
         this,
         params,
-        discretization,
+        optidis,
+        mat,
         lm
     );
     break;
@@ -79,7 +84,8 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
     return DRT::ELEMENTS::TopOptImplInterface::Impl(this)->EvaluateGradient(
         this,
         params,
-        discretization,
+        optidis,
+        mat,
         lm,
         elevec1
     );
@@ -159,7 +165,7 @@ int DRT::ELEMENTS::TopOptBoundary::Evaluate(
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
     ParameterList&            params,
-    DRT::Discretization&      discretization,
+    DRT::Discretization&      optidis,
     DRT::Condition&           condition,
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1,
@@ -168,6 +174,9 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
   // get the action required
   const string action = params.get<string>("action","none");
   const DRT::ELEMENTS::TopOptBoundary::ActionType act = convertStringToActionType(action);
+
+  // get material
+  RCP<MAT::Material> mat = Material();
 
   switch (act)
   {
@@ -181,7 +190,8 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
     return DRT::ELEMENTS::TopOptBoundaryImplInterface::Impl(this)->EvaluateBoundaryObjective(
         this,
         params,
-        discretization,
+        optidis,
+        mat,
         lm
     );
     break;
@@ -191,7 +201,8 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
     return DRT::ELEMENTS::TopOptBoundaryImplInterface::Impl(this)->EvaluateBoundaryGradient(
         this,
         params,
-        discretization,
+        optidis,
+        mat,
         lm,
         elevec1
     );

@@ -17,6 +17,7 @@ Maintainer: Martin Winklmaier
 
 
 #include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 
 namespace DRT
@@ -55,7 +56,8 @@ public:
   virtual int EvaluateObjective(
       DRT::Element*              ele,
       ParameterList&             params,
-      DRT::Discretization&       discretization,
+      DRT::Discretization&       optidis,
+      RCP<MAT::Material>         mat,
       vector<int>&               lm
   ) = 0;
 
@@ -67,7 +69,8 @@ public:
   virtual int EvaluateGradient(
       DRT::Element*              ele,
       ParameterList&             params,
-      DRT::Discretization&       discretization,
+      DRT::Discretization&       optidis,
+      RCP<MAT::Material>         mat,
       vector<int>&               lm,
       Epetra_SerialDenseVector&  elevec1_epetra
   ) = 0;
@@ -132,7 +135,8 @@ public:
   virtual int EvaluateObjective(
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
-      DRT::Discretization&       discretization, //!< the discretization the element is part of
+      DRT::Discretization&       optidis, //!< the discretization the element is part of
+      RCP<MAT::Material>         mat,
       vector<int>&               lm              //!< location matrix
   );
 
@@ -140,7 +144,8 @@ public:
   virtual int EvaluateObjective(
       DRT::Element*                 ele,            //!< the element we are dealing with
       ParameterList&                params,         //!< the parameter list
-      DRT::Discretization&          discretization, //!< the discretization the element is part of
+      DRT::Discretization&          optidis, //!< the discretization the element is part of
+      RCP<MAT::Material>            mat,
       vector<int>&                  lm,             //!< location matrix
       DRT::UTILS::GaussIntegration& intpoints       ///< gauss points
   );
@@ -149,7 +154,8 @@ public:
   virtual int EvaluateGradient(
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
-      DRT::Discretization&       discretization, //!< the discretization the element is part of
+      DRT::Discretization&       optidis, //!< the discretization the element is part of
+      RCP<MAT::Material>         mat,
       vector<int>&               lm,             //!< location matrix
       Epetra_SerialDenseVector&  elevec1_epetra
   );
@@ -158,7 +164,8 @@ public:
   virtual int EvaluateGradient(
       DRT::Element*                 ele,            //!< the element we are dealing with
       ParameterList&                params,         //!< the parameter list
-      DRT::Discretization&          discretization, //!< the discretization the element is part of
+      DRT::Discretization&          optidis, //!< the discretization the element is part of
+      RCP<MAT::Material>            mat,
       vector<int>&                  lm,             //!< location matrix
       Epetra_SerialDenseVector&     elevec1_epetra,
       DRT::UTILS::GaussIntegration& intpoints       ///< gauss points
@@ -180,74 +187,41 @@ private:
   //! @name general framework
   /*========================================================================*/
 
-//  //! Calculate matrix and rhs. Here the whole thing is hidden.
-//  virtual void Sysmat(
-//      DRT::Element*                         ele,       //!< the element we are dealing with
-//      Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-//      Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-//      Epetra_SerialDenseVector&             subgrdiff, //!< subgrid-diff.-scaling vector
-//      const double                          time,      //!< current simulation time
-//      const double                          dt,        //!< current time-step length
-//      const double                          timefac,   //!< time discretization factor
-//      const double                          alphaF,    //!< factor for generalized-alpha time integration
-//      const enum INPAR::SCATRA::AssgdType   whichassgd,//!< all-scale subgrid-diffusivity definition
-//      const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,//!< fine-scale subgrid-diffusivity definition
-//      const bool                            assgd,     //!< all-scale subgrid-diff. flag
-//      const bool                            fssgd,     //!< fine-scale subgrid-diff. flag
-//      const double                          Cs,        //!< Smagorinsky constant
-//      const double                          tpn,       //!< turbulent Prandtl number
-//      const double                          Csgs_sgvel,//!< parameter of multifractal subgrid-scales (velocity)
-//      const double                          alpha,     //!< grid-filter to test-filter ratio
-//      const bool                            calc_N,    //!< flag to activate calculation of N
-//      const double                          N_vel,     //!< value for N if not calculated
-//      const enum INPAR::FLUID::RefVelocity  refvel,    //!< reference velocity
-//      const enum INPAR::FLUID::RefLength    reflength, //!< reference length
-//      const double                          c_nu,      //!< scaling for Re
-//      const bool                            nwl,       //!< flag to activate near-wall limit
-//      const double                          Csgs_sgphi,//!< parameter of multifractal subgrid-scales (phi)
-//      const double                          c_diff,    //!< scaling for Re*Pr
-//      const bool                            BD_gp,     //!< evaluation of model coefficient at gp
-//      const double                          frt,       //!< factor F/RT needed for ELCH calculations
-//      const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-//  );
-//
-//  //! get the material parameters
-//  virtual void GetMaterialParams(
-//      const DRT::Element*                   ele,       //!< the element we are dealing with
-//      const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
-//  );
-//
-//  //! integral of shape functions over the element
-//  void IntegrateShapeFunctions(
-//      const DRT::Element*                ele,    //!< the current element
-//      Epetra_SerialDenseVector&          elevec1,//!< result vector (to be assembled)
-//      const Epetra_IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
-//  );
-//
-//  //! evaluate shape functions and their derivatives at current integration point
-//  virtual double EvalShapeFuncAndDerivsAtIntPoint(
-//      const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, //!< integration points
-//      const int                                    iquad,     //!< id of current Gauss point
-//      const int                                    eleid      //!< the element id
-//  );
-//
-//  //! calculate error compared to analytical solutions
-//  virtual void CalErrorComparedToAnalytSolution(
-//      const DRT::Element*          ele,                 //!< the element
-//      const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
-//      ParameterList&               params,              //!< parameter list
-//      Epetra_SerialDenseVector&    errors               //!< computed error contributions
-//  );
-//
-//  //! calculate characteristic element length
-//  virtual double CalcCharEleLength(
-//      const double  vol,     //!< element volume
-//      const double  vel_norm //!?
-//  );
+  /// calculate objective value - main computation function
+  virtual void Objective(
+    const int eid,
+    map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
+    LINALG::Matrix<nen_,1>& edens,
+    double& objective,
+    RCP<MAT::Material> mat,
+    DRT::UTILS::GaussIntegration& intpoints
+  );
+
+  /// Calculate gradient of objective - main computation function
+  virtual void Gradient(
+    const int eid,
+    std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
+    std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
+    LINALG::Matrix<nen_,1>& edens,
+    LINALG::Matrix<nen_,1>& egrad,
+    RCP<MAT::Material> mat,
+    DRT::UTILS::GaussIntegration& intpoints
+  );
+
+  //! evaluate shape functions and their derivatives at current integration point
+  virtual void EvalShapeFuncAndDerivsAtIntPoint(
+      DRT::UTILS::GaussIntegration::iterator&      iquad,      ///< actual integration point
+      const int                                    eleid      //!< the element id
+  );
+
+  /// evaluate porosity at integration point
+  void EvalPorosityAtIntPoint(
+      LINALG::Matrix<nen_,1> edens /// nodal densities
+  );
 
   /// extract element data from global vector
   void ExtractValuesFromGlobalVector(
-      Teuchos::RCP<DRT::Discretization> discretization, ///< discretization
+      DRT::Discretization&         optidis, ///< discretization
       const vector<int>&           lm,                  ///<
       LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
       LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
@@ -255,12 +229,46 @@ private:
   ) const;
 
 
+  //! @name coordinate data
+
+  //! node coordinates
+  LINALG::Matrix<nsd_,nen_> xyze_;
+  //@}
+
+
+  //! @name shape functions
+
+  //! array for shape functions
+  LINALG::Matrix<nen_,1> funct_;
+  //! array for shape function derivatives w.r.t r,s,t
+  LINALG::Matrix<nsd_,nen_> deriv_;
+  //! global derivative of shape functions w.r.t x,y,z
+  LINALG::Matrix<nsd_,nen_> derxy_;
+  //@}
+
+
   //! @name flow data
 
-  /// fluid velocity at gauss point
-  std::map<int,LINALG::Matrix<nsd_,1> > fluidvel_;
-  /// adjoint velocity at gauss point
-  std::map<int,LINALG::Matrix<nsd_,1> > adjointvel_;
+  /// fluid velocity of one time step
+  LINALG::Matrix<nsd_,nen_> efluidvel_;
+  /// adjoint velocity of one time step
+  LINALG::Matrix<nsd_,nen_> eadjointvel_;
+
+  /// fluid velocity of one time step at gauss point
+  LINALG::Matrix<nsd_,1> fluidvelint_;
+  /// adjoint velocity of one time step at gauss point
+  LINALG::Matrix<nsd_,1> adjointvelint_;
+
+  /// first derivative of fluid velocity of one time step at gauss point w.r.t. x,y,z
+  LINALG::Matrix<nsd_,nsd_> fluidvelxy_;
+  //@}
+
+  /// @name optimization data
+
+  /// porosity at integration point
+  double poroint_;
+  /// first derivative of porosity at gauss point w.r.t. density function
+  double poroderdens_;
   //@}
 
   //! @name gauss point data
@@ -322,7 +330,8 @@ public:
   virtual int EvaluateBoundaryObjective(
       DRT::Element*              ele,
       ParameterList&             params,
-      DRT::Discretization&       discretization,
+      DRT::Discretization&       optidis,
+      RCP<MAT::Material>         mat,
       vector<int>&               lm
   ) = 0;
 
@@ -334,7 +343,8 @@ public:
   virtual int EvaluateBoundaryGradient(
       DRT::Element*              ele,
       ParameterList&             params,
-      DRT::Discretization&       discretization,
+      DRT::Discretization&       optidis,
+      RCP<MAT::Material>         mat,
       vector<int>&               lm,
       Epetra_SerialDenseVector&  elevec1_epetra
   ) = 0;
@@ -404,7 +414,8 @@ public:
   virtual int EvaluateBoundaryObjective(
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
-      DRT::Discretization&       discretization, //!< the discretization the element is part of
+      DRT::Discretization&       optidis, //!< the discretization the element is part of
+      RCP<MAT::Material>         mat,
       vector<int>&               lm              //!< location matrix
   );
 
@@ -412,7 +423,8 @@ public:
   virtual int EvaluateBoundaryGradient(
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
-      DRT::Discretization&       discretization, //!< the discretization the element is part of
+      DRT::Discretization&       optidis, //!< the discretization the element is part of
+      RCP<MAT::Material>         mat,
       vector<int>&               lm,             //!< location matrix
       Epetra_SerialDenseVector&  elevec1_epetra
   );
@@ -437,7 +449,7 @@ private:
 
   /// extract element data from global vector
   void ExtractValuesFromGlobalVector(
-      Teuchos::RCP<DRT::Discretization> discretization, ///< discretization
+      DRT::Discretization&         optidis, ///< discretization
       const vector<int>&           lm,                  ///<
       LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
       LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field

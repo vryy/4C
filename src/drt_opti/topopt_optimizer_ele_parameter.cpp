@@ -13,6 +13,8 @@ Maintainer: Martin Winklmaier
 
 
 #include "topopt_optimizer_ele_parameter.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../headers/definitions.h"
 
 
 using namespace std;
@@ -39,14 +41,22 @@ Teuchos::RCP<DRT::ELEMENTS::TopOptParam> DRT::ELEMENTS::TopOptParam::Instance()
 // private constructor of FluidImplParameter
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::TopOptParam::TopOptParam()
-: dissipation_(false),
+: dens_(-1.0),
+  visc_(-1.0),
+  min_poro_(-1.0),
+  max_poro_(-1.0),
+  smear_fac_(-1.0),
+  dissipation_(false),
   pressure_drop_(false),
   dissipation_fac_(0.0),
   pressure_drop_fac_(0.0),
   is_stationary_(false),
   timealgo_(INPAR::FLUID::timeint_one_step_theta),
   dt_(-1.0),
-  max_timesteps_(-1)
+  max_timesteps_(-1),
+  theta_(-1.0),
+  theta_pre_(-1.0),
+  theta_div_(-1.0)
 {
 }
 
@@ -59,6 +69,20 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
 //----------------------------------------------------------------------
 // get flags to switch on/off different fluid formulations
 //----------------------------------------------------------------------
+
+  // flow material parameter
+  dens_ = params.get<double>("density");
+  visc_ = params.get<double>("viscosity");
+
+  // optimization material parameter
+  min_poro_ = params.get<double>("min_poro");
+  max_poro_ = params.get<double>("max_poro");
+  smear_fac_ = params.get<double>("smear_fac");
+
+  // check whether there is zero or negative (physical) viscosity
+  // (expect for permeable fluid)
+  if (visc_ < EPS15)
+    dserror("zero or negative (physical) diffusivity");
 
   // set flag, time integration scheme
   timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
@@ -86,10 +110,13 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
   {
     dt_ = params.get<double>("dt");
     max_timesteps_ = params.get<int>("maxtimesteps");
+    theta_ = params.get<double>("theta");
+    theta_pre_ = params.get<double>("theta_pre");
+    theta_div_ = params.get<double>("theta_div");
   }
   else
   {
-    dt_ = 1.0;
+    dt_ = theta_ = theta_pre_ = theta_div_ = 1.0;
     max_timesteps_ = 1;
   }
 }
@@ -102,6 +129,19 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
 void DRT::ELEMENTS::TopOptParam::PrintAdjointParameter() const
 {
   cout << endl << "|-----------------------------------------------------------------------------" << endl;
+  cout << "|  Material parameter: " << endl;
+  cout << "|-----------------------------------------------------------------------------" << endl;
+  // boolean is true if objective contains dissipation
+  cout << "|    physical density    " << dens_ << endl;
+  // boolean is true if objective contains pressure drop
+  cout << "|    physical viscosity    " << visc_ << endl;
+  // minimal inverse modelling porosity
+  cout << "|    minimal pseudo-porosity:    " << min_poro_ << endl;
+  // maximal inverse modelling porosity
+  cout << "|    maximal pseudo-porosity:    " << max_poro_ << endl;
+  // smearing factor between density and porosity
+  cout << "|    smearing factor:    " << smear_fac_ << endl;
+
   cout << "|  General optimization parameter: " << endl;
   cout << "|-----------------------------------------------------------------------------" << endl;
   // boolean is true if objective contains dissipation
@@ -124,6 +164,12 @@ void DRT::ELEMENTS::TopOptParam::PrintAdjointParameter() const
   cout << "|    time step:    " << dt_ << endl;
   /// maximal number of time steps
   cout << "|    maximal number of time steps:     " << max_timesteps_ << endl;
+  /// theta
+  cout << "|    theta:     " << theta_ << endl;
+  /// theta for pressure terms
+  cout << "|    theta:     " << theta_pre_ << endl;
+  /// theta for divergence terms
+  cout << "|    theta:     " << theta_div_ << endl;
   cout << "|---------------------------------------------------------------------------" << endl;
 }  /// @name objective parameters
 

@@ -72,8 +72,8 @@ double        wgtt[3];
 
 #if 0
 
-/* TODO: check, if still necessary!
-#ifndef CCADISCRET
+// TODO: check, if still necessary!
+//#ifndef CCADISCRET
 
 
 /*----------------------------------------------------------------------*

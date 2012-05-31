@@ -1691,9 +1691,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // optimization modeling
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_optimization",
+      = Teuchos::rcp(new MaterialDefinition("MAT_opti",
                                             "optimization material",
                                             INPAR::MAT::m_opti_dens));
+
+    AddNamedReal(m,"MINPORO","minimal porosity");
+    AddNamedReal(m,"MAXPORO","maximal porosity");
+    AddNamedReal(m,"SMEARFAC","smearing factor");
 
     AppendMaterialDefinition(matlist,m);
   }

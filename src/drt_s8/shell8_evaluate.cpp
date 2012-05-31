@@ -326,7 +326,7 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
   Epetra_SerialDenseMatrix gp_stress;
   gp_stress.Shape(18,nir*nis);
   ARRAY C_a;
-  double** C = (double**)amdef("C",&C_a,6 ,6,"DA");
+  double** C = (double**)amdef((char*)"C",&C_a,6 ,6,(char*)"DA");
   for (int lr=0; lr<nir; ++lr)
   {
     const double e1   = s8data.xgpr[lr];
@@ -944,7 +944,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   double strain[6];
   double stress_r[12]; // mid surface stress resultants
   ARRAY C_a;
-  double** C = (double**)amdef("C",&C_a,6 ,6,"DA");
+  double** C = (double**)amdef((char*)"C",&C_a,6 ,6,(char*)"DA");
   double a3r[3][MAXNOD_SHELL8];
   double a3c[3][MAXNOD_SHELL8];
   double xrefe[3][MAXNOD_SHELL8];
@@ -1751,7 +1751,7 @@ void DRT::ELEMENTS::Shell8::s8tmat(
     case m_stvenant:/*------------------------ st.venant-kirchhoff-material */
     {
       ARRAY tmp;
-      double** gmkonrtmp = (double**)amdef("tmp",&tmp,3,3,"DA");
+      double** gmkonrtmp = (double**)amdef((char*)"tmp",&tmp,3,3,(char*)"DA");
       for (int i=0; i<3; ++i)
       for (int j=0; j<3; ++j) gmkonrtmp[i][j] = gmkonr[i][j];
       s8_mat_linel(material->m.stvenant,gmkonrtmp,C);
@@ -1763,8 +1763,8 @@ void DRT::ELEMENTS::Shell8::s8tmat(
     {
       ARRAY tmp1;
       ARRAY tmp2;
-      double** gkonrtmp = (double**)amdef("tmp",&tmp1,3,3,"DA");
-      double** gmkovctmp = (double**)amdef("tmp",&tmp2,3,3,"DA");
+      double** gkonrtmp = (double**)amdef((char*)"tmp",&tmp1,3,3,(char*)"DA");
+      double** gmkovctmp = (double**)amdef((char*)"tmp",&tmp2,3,3,(char*)"DA");
       for (int i=0; i<3; ++i)
       for (int j=0; j<3; ++j)
       {

@@ -157,9 +157,7 @@ DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidAdjoint3Impl()
     xsi_(true),
     det_(0.0),
     fac_(0.0),
-    visc_(0.0),
     reacoeff_(0.0),
-    dens_(0.0),
     is_higher_order_ele_(false)
 {
   // pointer to class FluidImplParameter (access to the general parameter)
@@ -305,14 +303,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
   // evaluate shape functions and derivatives at element center
   EvalShapeFuncAndDerivsAtEleCenter(eid);
 
-  //------------------------------------------------------------------------
-  // potential evaluation of material parameters, subgrid viscosity
-  // and/or stabilization parameters at element center
-  //------------------------------------------------------------------------
-  // get material parameters at element center
-  if (not fluidAdjoint3Parameter_->EvalMatAtGP() or not fluidAdjoint3Parameter_->EvalTauAtGP())
-    GetMaterialParams(material,evelnp);
-
   // calculate subgrid viscosity and/or stabilization parameter at element center
   if (not fluidAdjoint3Parameter_->EvalTauAtGP())
   {
@@ -369,14 +359,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     // 1) t^n=last iteration 2) t^n+1 = last time step
     gradp_.Multiply(derxy_,eprenp);
     gradp_old_.Multiply(derxy_,epren);
-
-    //----------------------------------------------------------------------
-    // potential evaluation of material parameters and/or
-    // stabilization parameters at integration point
-    //----------------------------------------------------------------------
-    // get material parameters at integration point
-    if (fluidAdjoint3Parameter_->EvalMatAtGP())
-      GetMaterialParams(material,evelnp);
 
     // get reaction coefficient due to porosity for topology optimization
     // !do this only at gauss point!
@@ -760,39 +742,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint
 
 
 
-/*-------------------------------------------------------------------------------*
- | get material params                                          winklmaier 02/12 |
- *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::GetMaterialParams(
-  Teuchos::RCP<const MAT::Material>  material,
-  const LINALG::Matrix<nsd_,nen_>&   evelnp
-)
-{
-
-if (material->MaterialType() == INPAR::MAT::m_fluid)
-{
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
-
-  // get constant density
-  dens_ = actmat->Density();
-
-  // get constant dynamic viscosity
-  visc_ = actmat->Viscosity();
-}
-else
-  dserror("Material type is not supported");
-
-// check whether there is zero or negative (physical) viscosity
-// (expect for permeable fluid)
-if (visc_ < EPS15)
-  dserror("zero or negative (physical) diffusivity");
-
-return;
-}
-
-
-
 /*----------------------------------------------------------------------*
  |  calculation of stabilization parameter             winklmaier 03/12 |
  *----------------------------------------------------------------------*/
@@ -813,6 +762,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
   double fluidvel_norm = 0.0;
   double re12     = 0.0;
   double c3       = 0.0;
+
+  // material parameters
+  const double dens = fluidAdjoint3Parameter_->Density();
+  const double visc = fluidAdjoint3Parameter_->Viscosity();
 
   //---------------------------------------------------------------------
   // first step: computation of tau_M with the following options
@@ -914,7 +867,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     // (trace of covariant metric tensor required for computation of tau_C below)
     double G;
     double normG = 0.0;
-    const double dens_sqr = dens_*dens_;
+    const double dens_sqr = dens*dens;
     for (int nn=0;nn<nsd_;++nn)
     {
       const double dens_sqr_velint_nn = dens_sqr*fluidvelint_(nn);
@@ -935,7 +888,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     }
 
     // compute viscous part
-    Gvisc = c3*visc_*visc_*normG;
+    Gvisc = c3*visc*normG;
 
     // computation of stabilization parameters tau_Mu and tau_Mp
     // -> identical for the present definitions
@@ -982,12 +935,12 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     // various parameter computations for case with dt:
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-    const double re01 = 4.0 * visc_ / (mk * dens_ * sigma_tot * DSQR(strle));
-    const double re11 = 4.0 * visc_ / (mk * dens_ * sigma_tot * DSQR(hk));
+    const double re01 = 4.0 * visc / (mk * dens * sigma_tot * DSQR(strle));
+    const double re11 = 4.0 * visc / (mk * dens * sigma_tot * DSQR(hk));
 
     // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-    const double re02 = mk * dens_ * fluidvel_norm * strle / (2.0 * visc_);
-                 re12 = mk * dens_ * fluidvel_norm * hk / (2.0 * visc_);
+    const double re02 = mk * dens * fluidvel_norm * strle / (2.0 * visc);
+                 re12 = mk * dens * fluidvel_norm * hk / (2.0 * visc);
 
     // respective "switching" parameters
     const double xi01 = DMAX(re01,1.0);
@@ -995,8 +948,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double xi02 = DMAX(re02,1.0);
     const double xi12 = DMAX(re12,1.0);
 
-    tau_(0) = DSQR(strle)/(DSQR(strle)*dens_*sigma_tot*xi01+(4.0*visc_/mk)*xi02);
-    tau_(1) = DSQR(hk)/(DSQR(hk)*dens_*sigma_tot*xi11+(4.0*visc_/mk)*xi12);
+    tau_(0) = DSQR(strle)/(DSQR(strle)*dens*sigma_tot*xi01+(4.0*visc/mk)*xi02);
+    tau_(1) = DSQR(hk)/(DSQR(hk)*dens*sigma_tot*xi11+(4.0*visc/mk)*xi12);
     break;
   }
 
@@ -1015,12 +968,12 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
 
     // various parameter computations for case without dt:
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-    double re01 = 4.0 * visc_ / (mk * dens_ * reacoeff_ * DSQR(strle));
-    double re11 = 4.0 * visc_ / (mk * dens_ * reacoeff_ * DSQR(hk));
+    double re01 = 4.0 * visc / (mk * dens * reacoeff_ * DSQR(strle));
+    double re11 = 4.0 * visc / (mk * dens * reacoeff_ * DSQR(hk));
 
     // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-    const double re02 = mk * dens_ * fluidvel_norm * strle / (2.0 * visc_);
-                 re12 = mk * dens_ * fluidvel_norm * hk / (2.0 * visc_);
+    const double re02 = mk * dens * fluidvel_norm * strle / (2.0 * visc);
+                 re12 = mk * dens * fluidvel_norm * hk / (2.0 * visc);
 
     // respective "switching" parameters
     const double xi01 = DMAX(re01,1.0);
@@ -1028,8 +981,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double xi02 = DMAX(re02,1.0);
     const double xi12 = DMAX(re12,1.0);
 
-    tau_(0) = DSQR(strle)/(DSQR(strle)*dens_*reacoeff_*xi01+(4.0*visc_/mk)*xi02);
-    tau_(1) = DSQR(hk)/(DSQR(hk)*dens_*reacoeff_*xi11+(4.0*visc_/mk)*xi12);
+    tau_(0) = DSQR(strle)/(DSQR(strle)*dens*reacoeff_*xi01+(4.0*visc/mk)*xi02);
+    tau_(1) = DSQR(hk)/(DSQR(hk)*dens*reacoeff_*xi11+(4.0*visc/mk)*xi12);
     break;
   }
 
@@ -1081,12 +1034,12 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     c3 = 4.0/(mk*mk);
     // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-    tau_(0) = 1.0/(sqrt(c1*DSQR(dens_)*DSQR(sigma_tot)
-                      + c2*DSQR(dens_)*DSQR(fluidvel_norm)/DSQR(strle)
-                      + c3*DSQR(visc_)/(DSQR(strle)*DSQR(strle))));
-    tau_(1) = 1.0/(sqrt(c1*DSQR(dens_)*DSQR(sigma_tot)
-                      + c2*DSQR(dens_)*DSQR(fluidvel_norm)/DSQR(hk)
-                      + c3*DSQR(visc_)/(DSQR(hk)*DSQR(hk))));
+    tau_(0) = 1.0/(sqrt(c1*DSQR(dens)*DSQR(sigma_tot)
+                      + c2*DSQR(dens)*DSQR(fluidvel_norm)/DSQR(strle)
+                      + c3*DSQR(visc)/(DSQR(strle)*DSQR(strle))));
+    tau_(1) = 1.0/(sqrt(c1*DSQR(dens)*DSQR(sigma_tot)
+                      + c2*DSQR(dens)*DSQR(fluidvel_norm)/DSQR(hk)
+                      + c3*DSQR(visc)/(DSQR(hk)*DSQR(hk))));
     break;
   }
   case INPAR::FLUID::tau_codina:
@@ -1125,12 +1078,12 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double c2 = 2.0;
     c3 = 4.0/mk;
 
-    tau_(0) = 1.0/(sqrt(c1*dens_*sigma_tot
-                      + c2*dens_*fluidvel_norm/strle
-                      + c3*visc_/DSQR(strle)));
-    tau_(1) = 1.0/(sqrt(c1*dens_*sigma_tot
-                      + c2*dens_*fluidvel_norm/hk
-                      + c3*visc_/DSQR(hk)));
+    tau_(0) = 1.0/(sqrt(c1*dens*sigma_tot
+                      + c2*dens*fluidvel_norm/strle
+                      + c3*visc/DSQR(strle)));
+    tau_(1) = 1.0/(sqrt(c1*dens*sigma_tot
+                      + c2*dens*fluidvel_norm/hk
+                      + c3*visc/DSQR(hk)));
     break;
   }
   default:
@@ -1269,7 +1222,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     // "switching" parameter
     const double xi_tau_c = DMIN(re12,1.0);
 
-    tau_(2) = 0.5 * dens_ * fluidvel_norm * hk * xi_tau_c;
+    tau_(2) = 0.5 * dens * fluidvel_norm * hk * xi_tau_c;
   }
   break;
 
@@ -1395,7 +1348,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
             laplaceU(idim) += fluidvelxy2(idim,jdim);
         }
 
-        bodyforce_.Update(-dissipation*visc_,laplaceU,1.0);
+        bodyforce_.Update(-dissipation*fluidAdjoint3Parameter_->Viscosity(),laplaceU,1.0);
       }
 
 
@@ -1419,7 +1372,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
               laplaceU_old(idim) += fluidvelxy2_old(idim,jdim);
           }
 
-          bodyforce_old_.Update(-dissipation*visc_,laplaceU_old,1.0);
+          bodyforce_old_.Update(-dissipation*fluidAdjoint3Parameter_->Viscosity(),laplaceU_old,1.0);
         }
       }
     }
@@ -1617,7 +1570,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MassReactionGalPart(
   if (fluidAdjoint3Parameter_->IsStationary())
     massreacfac = reacoeff_*timefacfac;
   else
-    massreacfac = dens_*fac_+reacoeff_*timefacfac; // fac -> mass matrix // reac*timefacfac/dens -> reactive
+    massreacfac = fluidAdjoint3Parameter_->Density()*fac_+reacoeff_*timefacfac; // fac -> mass matrix // reac*timefacfac/dens -> reactive
 
   for (int ui=0; ui<nen_; ++ui)
   {
@@ -1652,7 +1605,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MassReactionGalPart(
   // rhs at old time step
   if (not fluidAdjoint3Parameter_->IsStationary())
   {
-    double massreacfacrhs = -dens_*fac_+reacoeff_*timefacfacrhs; // fac -> mass matrix // reac*timefacfac/dens -> reactive
+    double massreacfacrhs = -fluidAdjoint3Parameter_->Density()*fac_+reacoeff_*timefacfacrhs; // fac -> mass matrix // reac*timefacfac/dens -> reactive
     scaled_vel.Update(massreacfacrhs,velint_old_);
 
     for (int vi=0;vi<nen_;++vi)
@@ -1700,7 +1653,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
     for (int dim=0;dim<nsd_;++dim)
       value += derxy_(dim,vi)*fluidvelint_(dim);
 
-    value *= dens_*timefacfac;
+    value *= fluidAdjoint3Parameter_->Density()*timefacfac;
 
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -1721,7 +1674,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
     for (int dim=0;dim<nsd_;++dim)
       value += derxy_(dim,vi)*fluidvelint_(dim);
 
-    value *= dens_*timefacfac;
+    value *= fluidAdjoint3Parameter_->Density()*timefacfac;
 
     for (int jdim=0;jdim<nsd_;++jdim)
       velforce(jdim,vi) -= value*velint_(jdim);
@@ -1737,7 +1690,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
       for (int dim=0;dim<nsd_;++dim)
         value += derxy_(dim,vi)*fluidvelint_old_(dim);
 
-      value *= dens_*timefacfacrhs;
+      value *= fluidAdjoint3Parameter_->Density()*timefacfacrhs;
 
       for (int jdim=0;jdim<nsd_;++jdim)
         velforce(jdim,vi) -= value*velint_old_(jdim);
@@ -1754,7 +1707,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
   */
   for (int ui=0;ui<nen_;++ui)
   {
-    value = dens_*timefacfac*funct_(ui);
+    value = fluidAdjoint3Parameter_->Density()*timefacfac*funct_(ui);
 
     for (int idim=0;idim<nsd_;++idim)
     {
@@ -1780,7 +1733,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
     for (int dim=0;dim<nsd_;++dim)
       value+=fluidvelxy_(dim,jdim)*velint_(dim);
 
-    value*=dens_*timefacfac;
+    value*=fluidAdjoint3Parameter_->Density()*timefacfac;
 
     for (int vi=0;vi<nen_;++vi)
       velforce(jdim,vi) -= funct_(vi)*value;
@@ -1796,7 +1749,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ConvectionGalPart(
       for (int dim=0;dim<nsd_;++dim)
         value+=fluidvelxy_old_(dim,jdim)*velint_old_(dim);
 
-      value*=dens_*timefacfacrhs;
+      value*=fluidAdjoint3Parameter_->Density()*timefacfacrhs;
 
       for (int vi=0;vi<nen_;++vi)
         velforce(jdim,vi) -= funct_(vi)*value;
@@ -1847,7 +1800,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ViscousGalPart(
   */
 
   double value = 0.0; // helper
-  const double viscdenstimefac = timefacfac*visc_;
+  const double viscdenstimefac = timefacfac*fluidAdjoint3Parameter_->Viscosity();
 
   for (int ui=0; ui<nen_; ++ui)
   {
@@ -1894,7 +1847,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ViscousGalPart(
   // viscosity at new and old time step (if instationary)
   LINALG::Matrix<nsd_,nsd_> viscstress(true);
 
-  double viscdenstimefacrhs = timefacfacrhs*visc_; // for instationary problems
+  double viscdenstimefacrhs = timefacfacrhs*fluidAdjoint3Parameter_->Viscosity(); // for instationary problems
   for (int jdim = 0; jdim < nsd_; ++jdim)
   {
     for (int idim = 0; idim < nsd_; ++idim)
@@ -2074,10 +2027,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
       {
         for (int jdim = 0; jdim<nsd_; ++jdim)
         {
-          value = timefacfac*2*visc_*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+          value = timefacfac*2*fluidAdjoint3Parameter_->Viscosity()*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
 
           if (not fluidAdjoint3Parameter_->IsStationary())
-            value = timefacfacrhs*2*visc_*(fluidvelxy_old_(idim,jdim)+fluidvelxy_old_(jdim,idim));
+            value = timefacfacrhs*2*fluidAdjoint3Parameter_->Viscosity()*(fluidvelxy_old_(idim,jdim)+fluidvelxy_old_(jdim,idim));
 
           for (int vi=0;vi<nen_; ++vi)
           {
@@ -2177,7 +2130,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
   if (fluidAdjoint3Parameter_->IsStationary())
     massreacfac = reacoeff_*timefacfac;
   else
-    massreacfac = dens_*fac_+reacoeff_*timefacfac; // fac -> mass matrix // reac*timefacfac/dens -> reactive
+    massreacfac = fluidAdjoint3Parameter_->Density()*fac_+reacoeff_*timefacfac; // fac -> mass matrix // reac*timefacfac/dens -> reactive
 
   for (int ui=0; ui<nen_; ++ui)
   {
@@ -2195,7 +2148,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
     for (int dim=0;dim<nsd_;++dim)
       value += fluidvelint_(dim)*derxy_(dim,ui);
 
-    value *= dens_*timefacfac;
+    value *= fluidAdjoint3Parameter_->Density()*timefacfac;
 
     for (int idim = 0; idim <nsd_; ++idim)
       GalMomResnU(idim*nsd_+idim,ui) -= value;
@@ -2203,7 +2156,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
 
   for (int ui=0;ui<nen_;++ui)
   {
-    const double uifunct = dens_*timefacfac*funct_(ui);
+    const double uifunct = fluidAdjoint3Parameter_->Density()*timefacfac*funct_(ui);
 
     for (int idim=0;idim<nsd_;++idim)
     {
@@ -2224,7 +2177,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
     CalcDivEps(eveln,evelnp,viscs,viscs_old,visc_shp);
 
     // add viscous part
-    GalMomResnU.Update(-2.0*timefacfac*visc_,visc_shp,1.0);
+    GalMomResnU.Update(-2.0*timefacfac*fluidAdjoint3Parameter_->Viscosity(),visc_shp,1.0);
   }
 
 
@@ -2233,13 +2186,13 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
   {
     for (int idim=0;idim<nsd_;++idim)
     {
-      StrongResMomScaled(idim) = dens_*fac_*(velint_(idim)-velint_old_(idim)) // mass term last iteration
+      StrongResMomScaled(idim) = fluidAdjoint3Parameter_->Density()*fac_*(velint_(idim)-velint_old_(idim)) // mass term last iteration
           +timefacfac* // velocity part of last iteration (at t^n) coming
-            (dens_*(-conv1_(idim)+conv2_(idim))-2*visc_*viscs(idim)
+            (fluidAdjoint3Parameter_->Density()*(-conv1_(idim)+conv2_(idim))-2*fluidAdjoint3Parameter_->Viscosity()*viscs(idim)
             +reacoeff_*velint_(idim)-bodyforce_(idim))
           +timefacfacpre*gradp_(idim) // pressure part of last iteration (at t^n)
           +timefacfacrhs* // last time step (= t^n+1) coming
-            (dens_*(-conv1_old_(idim)+conv2_old_(idim))-2*visc_*viscs_old(idim)
+            (fluidAdjoint3Parameter_->Density()*(-conv1_old_(idim)+conv2_old_(idim))-2*fluidAdjoint3Parameter_->Viscosity()*viscs_old(idim)
             +reacoeff_*velint_old_(idim)-bodyforce_old_(idim))
           +timefacfacprerhs*gradp_old_(idim);
     }
@@ -2248,7 +2201,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
   {
     for (int idim=0;idim<nsd_;++idim)
     {
-      StrongResMomScaled(idim) = timefacfac*(dens_*(-conv1_(idim)+conv2_(idim))-2*visc_*viscs(idim)
+      StrongResMomScaled(idim) = timefacfac*(fluidAdjoint3Parameter_->Density()*(-conv1_(idim)+conv2_(idim))-2*fluidAdjoint3Parameter_->Viscosity()*viscs(idim)
                       +reacoeff_*velint_(idim)+gradp_(idim)-bodyforce_(idim));
     }
   }
@@ -2261,12 +2214,12 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
 //    cout << "fluidvel is " << fluidvelint_old_ << endl;
 //    cout << "vel is " << velint_;
 //    cout << "vel is " << velint_old_ << endl;
-//    dummy.Update(-dens_,conv1_);cout << "first conv terms are " << dummy;
-//    dummy.Update(-dens_,conv1_old_);cout << "first conv terms are " << dummy << endl;
-//    dummy.Update(dens_,conv2_);cout << "second conv terms are " << dummy;
-//    dummy.Update(dens_,conv2_old_);cout << "second conv terms are " << dummy << endl;
-//    dummy.Update(-2.0*visc_,viscs);cout << "viscous terms are " << dummy;
-//    dummy.Update(-2.0*visc_,viscs_old);cout << "viscous terms are " << dummy << endl;
+//    dummy.Update(-fluidAdjoint3Parameter_->Density(),conv1_);cout << "first conv terms are " << dummy;
+//    dummy.Update(-fluidAdjoint3Parameter_->Density(),conv1_old_);cout << "first conv terms are " << dummy << endl;
+//    dummy.Update(fluidAdjoint3Parameter_->Density(),conv2_);cout << "second conv terms are " << dummy;
+//    dummy.Update(fluidAdjoint3Parameter_->Density(),conv2_old_);cout << "second conv terms are " << dummy << endl;
+//    dummy.Update(-2.0*fluidAdjoint3Parameter_->Viscosity(),viscs);cout << "viscous terms are " << dummy;
+//    dummy.Update(-2.0*fluidAdjoint3Parameter_->Viscosity(),viscs_old);cout << "viscous terms are " << dummy << endl;
 //    dummy.Update(1.0,gradp_);cout << "pressure terms are " << dummy;
 //    dummy.Update(1.0,gradp_old_);cout << "pressure terms are " << dummy << endl;
 //    dummy.Update(reacoeff_,velint_);cout << "reactive terms are " << dummy;
@@ -2487,7 +2440,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::SUPG(
                      \            (i) /
    */
 
-  double supgfac=-dens_*tau_(0);
+  double supgfac=-fluidAdjoint3Parameter_->Density()*tau_(0);
 
   LINALG::Matrix<nen_,1> supg_test(true);
   for (int vi=0; vi<nen_; ++vi)

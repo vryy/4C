@@ -3631,9 +3631,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&topoptcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&topoptcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&topoptcontrol);
-  DoubleParameter("PORO_BOUNDARY_UP",25000,"maximal porosity",&topoptcontrol);
-  DoubleParameter("PORO_BOUNDARY_DOWN",0,"minimal porosity",&topoptcontrol);
-  DoubleParameter("SMEARING_FACTOR",1.0,"smearing factor between density and porosity",&topoptcontrol);
 
   setStringToIntegralParameter<int>("RESTART_ACTION","Fluid_Time_Step","Startint field of Restart",
       tuple<std::string>(

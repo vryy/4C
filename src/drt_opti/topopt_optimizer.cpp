@@ -18,6 +18,9 @@ Maintainer: Martin Winklmaier
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/optimization_density.H"
 #include "../linalg/linalg_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -62,6 +65,8 @@ params_(params)
  *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::ComputeObjective()
 {
+  obj_value_ = 0.0; // initialize with zero
+
   // check if all data is present
   DataComplete();
 
@@ -72,16 +77,20 @@ void TOPOPT::Optimizer::ComputeObjective()
 
   params.set("action","compute_objective");
 
+  params.set("objective_value",obj_value_);
+
   params.set("fluidvel",fluidvel_);
-  params.set("adjointvel",adjointvel_);
   params.set("fluiddis",fluiddis_);
 
   optidis_->ClearState();
 
   optidis_->SetState("density",dens_ip_);
-  optidis_->Evaluate(params,Teuchos::null,obj_grad_);
+  optidis_->Evaluate(params,Teuchos::null,Teuchos::null);
 
   optidis_->ClearState();
+
+  // extract objective value from parameter list
+  obj_value_ = params.get<double>("objective_value");
 }
 
 
@@ -102,8 +111,6 @@ void TOPOPT::Optimizer::ComputeGradient()
 
   params.set("action","compute_gradient");
 
-  params.set("objective_value",obj_value_);
-
   params.set("fluidvel",fluidvel_);
   params.set("adjointvel",adjointvel_);
   params.set("fluiddis",fluiddis_);
@@ -111,7 +118,7 @@ void TOPOPT::Optimizer::ComputeGradient()
   optidis_->ClearState();
 
   optidis_->SetState("density",dens_ip_);
-  optidis_->Evaluate(params,Teuchos::null,Teuchos::null);
+  optidis_->Evaluate(params,Teuchos::null,obj_grad_);
 
   optidis_->ClearState();
 }
@@ -160,16 +167,60 @@ void TOPOPT::Optimizer::ImportFlowParams(
     Teuchos::RCP<Teuchos::ParameterList>& fluidParams
 )
 {
+  // save the fluid parameter
   fluidParams_ = fluidParams;
 
   // set the general parameter on element level
   Teuchos::ParameterList opti_ele_params;
   opti_ele_params.set("action","set_general_optimization_parameter");
 
+  // set material parameters of fluid and optimization material
+  {
+    // get the material
+    const int nummat = DRT::Problem::Instance()->Materials()->Num();
+    for (int id = 1; id-1 < nummat; ++id)
+    {
+      Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
+
+      if (imat == Teuchos::null)
+        dserror("Could not find material Id %d", id);
+      else
+      {
+        switch (imat->Type())
+        {
+        case INPAR::MAT::m_fluid:
+        {
+          const MAT::PAR::Parameter* matparam = imat->Parameter();
+          const MAT::PAR::NewtonianFluid* mat = static_cast<const MAT::PAR::NewtonianFluid* >(matparam);
+
+          opti_ele_params.set("density",mat->density_);
+          opti_ele_params.set("viscosity",mat->viscosity_);
+          break;
+        }
+        case INPAR::MAT::m_opti_dens:
+        {
+          const MAT::PAR::Parameter* matparam = imat->Parameter();
+          const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
+
+          opti_ele_params.set("min_poro",mat->poro_bd_down_);
+          opti_ele_params.set("max_poro",mat->poro_bd_up_);
+          opti_ele_params.set("smear_fac",mat->smear_fac_);
+          break;
+        }
+        default:
+          dserror("unknown material %s",imat->Name().c_str());
+        }
+      }
+    }
+  }
+
   // flow parameter
   opti_ele_params.set("timealgo",fluidParams_->get<int>("time int algo"));
   opti_ele_params.set("dt",fluidParams_->get<double>("time step size"));
   opti_ele_params.set("maxtimesteps",fluidParams_->get<int>("max number timesteps"));
+  opti_ele_params.set("theta",fluidParams_->get<double>("theta"));
+  opti_ele_params.set("theta_pre",fluidParams_->get<double>("theta_pre"));
+  opti_ele_params.set("theta_div",fluidParams_->get<double>("theta_div"));
 
   // objective parameter
   opti_ele_params.set("dissipation",fluidParams_->get<bool>("OBJECTIVE_DISSIPATION"));

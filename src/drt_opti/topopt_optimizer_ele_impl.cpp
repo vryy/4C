@@ -15,7 +15,9 @@ Maintainer: Martin Winklmaier
 #include "topopt_optimizer_ele_impl.H"
 #include "topopt_optimizer_ele_parameter.H"
 
+#include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_mat/optimization_density.H"
 
 
 /*----------------------------------------------------------------------*
@@ -121,7 +123,17 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::TopOptImpl<distype>::TopOptImpl()
-: intpoints_( distype ),
+: xyze_(true),
+funct_(true),
+deriv_(true),
+derxy_(true),
+efluidvel_(true),
+eadjointvel_(true),
+fluidvelint_(true),
+adjointvelint_(true),
+fluidvelxy_(true),
+poroint_(0.0),
+intpoints_( distype ),
 xsi_(true),
 det_(0.0),
 fac_(0.0),
@@ -143,14 +155,16 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
   DRT::Element*              ele,
   ParameterList&             params,
-  DRT::Discretization&       discretization,
+  DRT::Discretization&       optidis,
+  RCP<MAT::Material>         mat,
   vector<int>&               lm
 )
 {
   return EvaluateObjective(
       ele,
       params,
-      discretization,
+      optidis,
+      mat,
       lm,
       intpoints_
   );
@@ -163,16 +177,139 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
   DRT::Element*                 ele,
   ParameterList&                params,
-  DRT::Discretization&          discretization,
+  DRT::Discretization&          optidis,
+  RCP<MAT::Material>            mat,
   vector<int>&                  lm,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
-  // TODO coming...
+  double& objective = params.get<double>("objective_value");
 
-  // work is done
+  RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
+
+  RCP<map<int,RCP<Epetra_Vector> > > fluidvels = params.get<RCP<map<int,RCP<Epetra_Vector> > > >("fluidvel");
+
+  map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
+
+  LINALG::Matrix<nsd_,nen_> efluidvel;
+
+  // extract element data of all time steps from fluid solution
+  vector<int> fluidlm;
+  {
+    vector<int> lmowner; // dummy for function call
+    vector<int> lmstride; // dummy for function call
+    ele->LocationVector(*fluiddis,fluidlm,lmowner,lmstride);
+  }
+
+  for (map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
+      i!=fluidvels->end();i++)
+  {
+    ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&efluidvel,NULL,i->second);
+    efluidvels.insert(pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
+  }
+
+  RCP<const Epetra_Vector> dens = optidis.GetState("density");
+  LINALG::Matrix<nen_,1> edens(true);
+
+  std::vector<double> mymatrix(lm.size());
+  DRT::UTILS::ExtractMyValues(*dens,mymatrix,lm);
+  for (int inode=0; inode<nen_; ++inode) edens(inode,0) = mymatrix[inode];
+
+  // get node coordinates and number of elements per node
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+
+  Objective(
+      ele->Id(),
+      efluidvels,
+      edens,
+      objective,
+      mat,
+      intpoints
+  );
+
   return 0;
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TopOptImpl<distype>::Objective(
+  const int eid,
+  map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
+  LINALG::Matrix<nen_,1>& edens,
+  double& objective,
+  RCP<MAT::Material> mat,
+  DRT::UTILS::GaussIntegration& intpoints
+)
+{
+  double value = 0.0; // total unscaled entries at one gauss point
+
+  //------------------------------------------------------------------------
+  //  start loop over integration points
+  //------------------------------------------------------------------------
+  for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+
+    EvalPorosityAtIntPoint(edens);
+
+    // dissipation in objective present?
+    if (optiparams_->ObjDissipationTerm())
+    {
+      switch (optiparams_->TimeIntScheme())
+      {
+      case INPAR::FLUID::timeint_stationary:
+      case INPAR::FLUID::timeint_one_step_theta: // handle these two cases together
+      {
+        for (int timestep=0;timestep<=optiparams_->NumTimesteps();timestep++)
+        {
+          if (optiparams_->IsStationary())
+            timestep=1; // just one stationary time step 1
+
+          efluidvel_ = efluidvel.find(timestep)->second;
+
+          fluidvelint_.Multiply(efluidvel_,funct_);
+          fluidvelxy_.MultiplyNT(efluidvel_,derxy_);
+
+          // weighting of the timesteps
+          // if stationary, we have the second case with theta = 1, so all is ok
+          double timefac = 0.0;
+          if (timestep==0) // first time step -> factor 1-theta (old sol at first time step)
+            timefac = 1.0 - optiparams_->Theta();
+          else if (timestep==optiparams_->NumTimesteps()) // last time step -> factor theta (new sol at last time step)
+            timefac = optiparams_->Theta();
+          else // all other time steps -> factor 1-theta as old sol, factor theta as new sol -> overall factor 1
+            timefac = 1.0;
+
+          for (int idim=0;idim<nsd_;idim++)
+          {
+            value += poroint_*fluidvelint_.Dot(fluidvelint_);
+
+            for (int jdim=0;jdim<nsd_;jdim++)
+            {
+              value += visc_*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+            }
+          }
+        }
+      }
+      break;
+      default:
+        dserror("unknown time integration scheme while evaluating objective gradient");
+      }
+
+      objective += optiparams_->Dt()*fac_*optiparams_->ObjDissipationFac()*value;
+    }
+  }
+  //------------------------------------------------------------------------
+  //  end loop over integration points
+  //------------------------------------------------------------------------
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -180,7 +317,8 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
   DRT::Element*              ele,
   ParameterList&             params,
-  DRT::Discretization&       discretization,
+  DRT::Discretization&       optidis,
+  RCP<MAT::Material>         mat,
   vector<int>&               lm,
   Epetra_SerialDenseVector&  elevec1_epetra
   )
@@ -188,7 +326,8 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
   return EvaluateGradient(
       ele,
       params,
-      discretization,
+      optidis,
+      mat,
       lm,
       elevec1_epetra,
       intpoints_
@@ -202,24 +341,27 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
   DRT::Element*                 ele,
   ParameterList&                params,
-  DRT::Discretization&          discretization,
+  DRT::Discretization&          optidis,
+  RCP<MAT::Material>            mat,
   vector<int>&                  lm,
   Epetra_SerialDenseVector&     elevec1_epetra,
   DRT::UTILS::GaussIntegration& intpoints
-
-  )
+)
 {
+  LINALG::Matrix<nen_,1> egrad(elevec1_epetra,true);
+
   RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
 
   RCP<map<int,RCP<Epetra_Vector> > > fluidvels = params.get<RCP<map<int,RCP<Epetra_Vector> > > >("fluidvel");
   RCP<map<int,RCP<Epetra_Vector> > > adjointvels = params.get<RCP<map<int,RCP<Epetra_Vector> > > >("adjointvel");
 
-  map<int,LINALG::Matrix<nsd_,nen_> > fluidnodalvels;
-  map<int,LINALG::Matrix<nsd_,nen_> > adjointnodalvels;
+  map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
+  map<int,LINALG::Matrix<nsd_,nen_> > eadjointvels;
 
-  LINALG::Matrix<nsd_,nen_> fluidnodalvel;
-  LINALG::Matrix<nsd_,nen_> adjointnodalvel;
+  LINALG::Matrix<nsd_,nen_> efluidvel;
+  LINALG::Matrix<nsd_,nen_> eadjointvel;
 
+  // extract element data of all time steps from fluid solution
   vector<int> fluidlm;
   {
     vector<int> lmowner; // dummy for function call
@@ -230,347 +372,193 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
   for (map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
       i!=fluidvels->end();i++)
   {
-    ExtractValuesFromGlobalVector(fluiddis,fluidlm,&fluidnodalvel,NULL,i->second);
-    fluidnodalvels.insert(pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,fluidnodalvel));
+    ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&efluidvel,NULL,i->second);
+    efluidvels.insert(pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
   }
 
   for (map<int,RCP<Epetra_Vector> >::iterator i=adjointvels->begin();
       i!=adjointvels->end();i++)
   {
-    ExtractValuesFromGlobalVector(fluiddis,fluidlm,&adjointnodalvel,NULL,i->second);
-    adjointnodalvels.insert(pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,fluidnodalvel));
+    ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&eadjointvel,NULL,i->second);
+    eadjointvels.insert(pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,eadjointvel));
   }
 
-//  std::vector<double> nodalfluidvel(dim);
-//  std::vector<double> nodaladjointvel(dim);
-//
-//  double dissipation_fac = 0.0;
-//  if (fluidParams_->get<bool>("OBJECTIVE_DISSIPATION")) dissipation_fac = fluidParams_->get<double>("DISSIPATION_FAC");
-//
-//  for (int inode=0;inode<discret_->NumMyRowNodes();inode++)
-//  {
-//    node = discret_->lRowNode(inode);
-//
-//    vector<int> lm = discret_->Dof(node);
-//    lm.pop_back(); // delete pressure dof
-//
-//    value = 0.0;
-//
-//    if (fluidParams_->get<int>("time int algo")==INPAR::FLUID::timeint_stationary)
-//    {
-//      fluidvel = vel_->find(1)->second;
-//      adjointvel = adjointvel_->find(1)->second;
-//
-//      DRT::UTILS::ExtractMyValues(*fluidvel,nodalfluidvel,lm);
-//      DRT::UTILS::ExtractMyValues(*adjointvel,nodaladjointvel,lm);
-//
-//      for (int idim=0;idim<dim;idim++)
-//        value +=
-//            dissipation_fac*nodalfluidvel[idim]*nodalfluidvel[idim] // dissipation part
-//            -nodalfluidvel[idim]*nodaladjointvel[idim]; // adjoint part
-//    }
-//    else
-//    {
-//      for (int timestep=0;timestep<=fluidParams_->get<int>("max number timesteps");timestep++)
-//      {
-//        fluidvel = vel_->find(timestep)->second;
-//        adjointvel = adjointvel_->find(timestep)->second;
-//
-//        DRT::UTILS::ExtractMyValues(*fluidvel,nodalfluidvel,lm);
-//        DRT::UTILS::ExtractMyValues(*adjointvel,nodaladjointvel,lm);
-//        if (inode==6) cout << "initial value is " << value << endl;
-//        if (timestep!=0 && timestep!=fluidParams_->get<int>("max number timesteps")) // default case, weight 1
-//        {
-//          for (int idim=0;idim<dim;idim++)
-//          {
-//            value +=
-//                dissipation_fac*nodalfluidvel[idim]*nodalfluidvel[idim] // dissipation part
-//                -nodalfluidvel[idim]*nodaladjointvel[idim]; // adjoint part
-//          }
-//        }
-//        else // first and last time step, weight 0.5
-//        {
-//          for (int idim=0;idim<dim;idim++)
-//          {
-//            value += 0.5*(
-//                dissipation_fac*nodalfluidvel[idim]*nodalfluidvel[idim] // dissipation part
-//                -nodalfluidvel[idim]*nodaladjointvel[idim]); // adjoint part
-//          }
-//        }
-//      }
-//      value *= dt; // scale with time step size
-//    }
-//
-//    int err = obj_grad_->SumIntoMyValue(inode,0,value);
-//    if (err)
-//      dserror("error while adding value to gradient of objective");
-//  }
-  // work is done
+  RCP<const Epetra_Vector> dens = optidis.GetState("density");
+  LINALG::Matrix<nen_,1> edens(true);
+
+  std::vector<double> mymatrix(lm.size());
+  DRT::UTILS::ExtractMyValues(*dens,mymatrix,lm);
+  for (int inode=0; inode<nen_; ++inode) edens(inode,0) = mymatrix[inode];
+
+  // get node coordinates and number of elements per node
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+
+  Gradient(
+      ele->Id(),
+      efluidvels,
+      eadjointvels,
+      edens,
+      egrad,
+      mat,
+      intpoints
+  );
+
   return 0;
 }
 
 
-///*----------------------------------------------------------------------*
-//|  calculate system matrix and rhs (public)                 g.bau 08/08|
-//*----------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//void DRT::ELEMENTS::TopOptImpl<distype>::Sysmat(
-//  DRT::Element*                         ele, ///< the element those matrix is calculated
-//  Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-//  Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-//  Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
-//  const double                          time, ///< current simulation time
-//  const double                          dt, ///< current time-step length
-//  const double                          timefac, ///< time discretization factor
-//  const double                          alphaF, ///< factor for generalized-alpha time integration
-//  const enum INPAR::SCATRA::AssgdType   whichassgd, ///< all-scale subgrid-diffusivity definition
-//  const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
-//  const bool                            assgd, ///< all-scale subgrid-diff. flag
-//  const bool                            fssgd, ///< fine-scale subgrid-diff. flag
-//  const double                          Cs, ///< Smagorinsky constant
-//  const double                          tpn, ///< turbulent Prandtl number
-//  const double                          Csgs_sgvel, ///< parameter of multifractal subgrid-scales
-//  const double                          alpha, ///< grid-filter to test-filter ratio
-//  const bool                            calc_N, ///< flag to activate calculation of N
-//  const double                          N_vel, ///< value for N if not calculated
-//  const enum INPAR::FLUID::RefVelocity  refvel, ///< reference velocity
-//  const enum INPAR::FLUID::RefLength    reflength, ///< reference length
-//  const double                          c_nu, ///< scaling for Re
-//  const bool                            nwl, ///< flag to activate near-wall limit
-//  const double                          Csgs_sgphi, ///< parameter of multifractal subgrid-scales
-//  const double                          c_diff, ///< scaling for Re*Pr
-//  const bool                            BD_gp, ///< evaluation of model coefficient at gp
-//  const double                          frt, ///< factor F/RT needed for ELCH calculations
-//  const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
-//  )
-//{
-//}
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TopOptImpl<distype>::Gradient(
+  const int eid,
+  map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
+  map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
+  LINALG::Matrix<nen_,1>& edens,
+  LINALG::Matrix<nen_,1>& egrad,
+  RCP<MAT::Material> mat,
+  DRT::UTILS::GaussIntegration& intpoints
+)
+{
+  double value = 0.0;
+
+  //------------------------------------------------------------------------
+  //  start loop over integration points
+  //------------------------------------------------------------------------
+  for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+
+    EvalPorosityAtIntPoint(edens);
+
+    // dissipation in objective present?
+    double dissipation_fac = 0.0;
+    if (optiparams_->ObjDissipationTerm())
+      dissipation_fac = optiparams_->ObjDissipationFac();
+
+
+    switch (optiparams_->TimeIntScheme())
+    {
+    case INPAR::FLUID::timeint_stationary:
+    case INPAR::FLUID::timeint_one_step_theta: // handle these two cases together
+    {
+      for (int timestep=0;timestep<=optiparams_->NumTimesteps();timestep++)
+      {
+        if (optiparams_->IsStationary())
+          timestep=1; // just one stationary time step 1
+
+        efluidvel_ = efluidvel.find(timestep)->second;
+        eadjointvel_ = eadjointvel.find(timestep)->second;
+
+        fluidvelint_.Multiply(efluidvel_,funct_);
+        adjointvelint_.Multiply(eadjointvel_,funct_);
+
+        double timefac = 0.0;
+        if (timestep==0)                                timefac = 1.0 - optiparams_->Theta();
+        else if (timestep==optiparams_->NumTimesteps()) timefac = optiparams_->Theta();
+        else                                            timefac = 1.0;
+
+        for (int idim=0;idim<nsd_;idim++)
+        {
+          value += timefac*(
+              dissipation_fac*fluidvelint_.Dot(fluidvelint_) // dissipation part
+              -fluidvelint_.Dot(adjointvelint_)); // adjoint part
+        }
+      }
+    }
+    break;
+    default:
+      dserror("unknown time integration scheme while evaluating objective gradient");
+    }
+
+    value*= fac_*optiparams_->Dt()*poroderdens_; // scale with integration factor, time step size and poro-derivative
+
+    for (int vi=0;vi<nen_;vi++)
+    {
+      egrad(vi,0) += value*funct_(vi);
+    }
+  }
+  //------------------------------------------------------------------------
+  //  end loop over integration points
+  //------------------------------------------------------------------------
+
+  return;
+}
 
 
 
-///*----------------------------------------------------------------------*
-//  |  get the material constants  (private)                      gjb 10/08|
-//  *----------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//void DRT::ELEMENTS::TopOptImpl<distype>::GetMaterialParams(
-//  const DRT::Element*  ele
-//)
-//{
-//  // get the material
-//  RefCountPtr<MAT::Material> material = ele->Material();
-//
-//  if (material->MaterialType() == INPAR::MAT::m_scatra)
-//  {
-//    const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
-//
-//    dsassert(numdofpernode_==1,"more than 1 dof per node for SCATRA material");
-//
-//    // get constant diffusivity
-//    diffus_[0] = actmat->Diffusivity();
-//
-//    // in case of reaction with (non-zero) constant coefficient:
-//    // read coefficient and set reaction flag to true
-//    reacoeff_[0] = actmat->ReaCoeff();
-//    if (reacoeff_[0] > EPS14) is_reactive_ = true;
-//    if (reacoeff_[0] < -EPS14)
-//      dserror("Reaction coefficient is not positive: %f",0, reacoeff_[0]);
-//
-//    reacoeffderiv_[0] = reacoeff_[0];
-//
-//    // set specific heat capacity at constant pressure to 1.0
-//    shc_ = 1.0;
-//
-//    // set temperature rhs for reactive equation system to zero
-//    reatemprhs_[0] = 0.0;
-//
-//    // set density at various time steps and density gradient factor to 1.0/0.0
-//    densn_[0]       = 1.0;
-//    densnp_[0]      = 1.0;
-//    densam_[0]      = 1.0;
-//    densgradfac_[0] = 0.0;
-//
-//    // in case of multifrcatal subgrid-scales, read Schmidt number
-//    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales or sgvel_)
-//    {
-//      double scnum = actmat->ScNum();
-//      visc_ = scnum * diffus_[0];
-//    }
-//  }
-//  else dserror("Material type is not supported");
-//
-//// check whether there is negative (physical) diffusivity
-//  if (diffus_[0] < -EPS15) dserror("negative (physical) diffusivity");
-//
-//  return;
-//} //TopOptImpl::GetMaterialParams
+/*----------------------------------------------------------------------*
+  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TopOptImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
+  DRT::UTILS::GaussIntegration::iterator&      iquad,      ///< actual integration point
+  const int                                    eleid       ///< the element id
+  )
+{
+  // coordinates of the current integration point
+  const double* gpcoord = iquad.Point();
+  for (int idim=0;idim<nsd_;idim++)
+     xsi_(idim) = gpcoord[idim];
+
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+
+  // compute Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+  */
+  LINALG::Matrix<nsd_,nsd_> xjm(true); // jacobian dx/ds
+  LINALG::Matrix<nsd_,nsd_> xij(true); // invers transposed jacobian ds/dx
+
+  xjm.MultiplyNT(deriv_,xyze_);
+  const double det = xij.Invert(xjm);
+
+  if (det < 1E-16)
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
+
+  // compute integration factor
+  fac_ = iquad.Weight()*det_;
+
+  // compute global derivatives
+  derxy_.Multiply(xij,deriv_);
+
+} //TopOptImpl::CalcSubgrVelocity
 
 
 
-///*----------------------------------------------------------------------*
-//  |  Integrate shape functions over domain (private)           gjb 07/09 |
-//  *----------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//void DRT::ELEMENTS::TopOptImpl<distype>::IntegrateShapeFunctions(
-//  const DRT::Element*             ele,
-//  Epetra_SerialDenseVector&       elevec1,
-//  const Epetra_IntSerialDenseVector& dofids
-//)
-//{
-//  // integrations points and weights
-//  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-//
-//  // safety check
-//  if (dofids.M() < numdofpernode_)
-//    dserror("Dofids vector is too short. Received not enough flags");
-//
-//  // loop over integration points
-//  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
-//  {
-//    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid,ele->Id());
-//
-//    // compute integral of shape functions (only for dofid)
-//    for (int k=0;k<numdofpernode_;k++)
-//    {
-//      if (dofids[k] >= 0)
-//      {
-//        for (int node=0;node<nen_;node++)
-//        {
-//          elevec1[node*numdofpernode_+k] += funct_(node) * fac;
-//        }
-//      }
-//    }
-//
-//  } //loop over integration points
-//
-//  return;
-//
-//} //TopOptImpl<distype>::IntegrateShapeFunction
-//
-//
-///*----------------------------------------------------------------------*
-//  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
-//  *----------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//double DRT::ELEMENTS::TopOptImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-//  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-//  const int                                    iquad,      ///< id of current Gauss point
-//  const int                                    eleid       ///< the element id
-//  )
-//{
-//  // coordinates of the current integration point
-//  const double* gpcoord = (intpoints.IP().qxg)[iquad];
-//  for (int idim=0;idim<nsd_;idim++)
-//    xsi_(idim) = gpcoord[idim];
-//
-//  // shape functions and their first derivatives
-//  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-//  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-//  if (use2ndderiv_)
-//  {
-//    // get the second derivatives of standard element at current GP
-//    DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
-//  }
-//
-//  // compute Jacobian matrix and determinant
-//  // actually compute its transpose....
-//  /*
-//    +-            -+ T      +-            -+
-//    | dx   dx   dx |        | dx   dy   dz |
-//    | --   --   -- |        | --   --   -- |
-//    | dr   ds   dt |        | dr   dr   dr |
-//    |              |        |              |
-//    | dy   dy   dy |        | dx   dy   dz |
-//    | --   --   -- |   =    | --   --   -- |
-//    | dr   ds   dt |        | ds   ds   ds |
-//    |              |        |              |
-//    | dz   dz   dz |        | dx   dy   dz |
-//    | --   --   -- |        | --   --   -- |
-//    | dr   ds   dt |        | dt   dt   dt |
-//    +-            -+        +-            -+
-//  */
-//
-//  xjm_.MultiplyNT(deriv_,xyze_);
-//  const double det = xij_.Invert(xjm_);
-//
-//  if (det < 1E-16)
-//    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
-//
-//  // set integration factor: fac = Gauss weight * det(J)
-//  const double fac = intpoints.IP().qwgt[iquad]*det;
-//
-//  // compute global derivatives
-//  derxy_.Multiply(xij_,deriv_);
-//
-//  // compute second global derivatives (if needed)
-//  if (use2ndderiv_)
-//  {
-//    // get global second derivatives
-//    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
-//  }
-//  else
-//    derxy2_.Clear();
-//
-//  // return integration factor for current GP: fac = Gauss weight * det(J)
-//  return fac;
-//
-//} //TopOptImpl::CalcSubgrVelocity
-//
-//
-//
-///*---------------------------------------------------------------------*
-//  |  calculate error compared to analytical solution           gjb 10/08|
-//  *---------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//void DRT::ELEMENTS::TopOptImpl<distype>::CalErrorComparedToAnalytSolution(
-//  const DRT::Element*                   ele,
-//  const enum INPAR::SCATRA::ScaTraType  scatratype,
-//  ParameterList&                        params,
-//  Epetra_SerialDenseVector&             errors
-//  )
-//{
-//  return;
-//} // TopOptImpl::CalErrorComparedToAnalytSolution
-//
-//
-//
-///*----------------------------------------------------------------------*
-//  |  calculation of characteristic element length               vg 01/11 |
-//  *----------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//double DRT::ELEMENTS::TopOptImpl<distype>::CalcCharEleLength(
-//  const double  vol,
-//  const double  vel_norm
-//  )
-//{
-//  //---------------------------------------------------------------------
-//  // various definitions for characteristic element length
-//  //---------------------------------------------------------------------
-//  // a) streamlength due to Tezduyar et al. (1992) -> default
-//  // normed velocity vector
-//  LINALG::Matrix<nsd_,1> velino;
-//  if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convelint_);
-//  else
-//  {
-//    velino.Clear();
-//    velino(0,0) = 1;
-//  }
-//
-//  // get streamlength using the normed velocity at element centre
-//  LINALG::Matrix<nen_,1> tmp;
-//  tmp.MultiplyTN(derxy_,velino);
-//  const double val = tmp.Norm1();
-//  const double hk = 2.0/val; // h=streamlength
-//
-//  // b) volume-equivalent diameter (warning: 3-D formula!)
-//  //hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-//
-//  // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
-//  // cast dimension to a double varibale -> pow()
-//  //const double dim = (double) nsd_;
-//  //hk = pow(vol,1/dim);
-//
-//  return hk;
-//}
+/*---------------------------------------------------------------------------------*
+ | evaluate porosity at gauss point                               winklmaier 05/12 |
+ *---------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TopOptImpl<distype>::EvalPorosityAtIntPoint(
+    LINALG::Matrix<nen_,1> edens
+)
+{
+  double densint = edens.Dot(funct_);
+  poroint_ = optiparams_->MaxPoro() + (optiparams_->MinPoro()-optiparams_->MaxPoro())*densint
+                                      *(1+optiparams_->SmearFac())/(densint+optiparams_->SmearFac());
+
+  poroderdens_ = (optiparams_->MinPoro()-optiparams_->MaxPoro())
+                *(optiparams_->SmearFac()+optiparams_->SmearFac()*optiparams_->SmearFac())
+                /(densint+optiparams_->SmearFac());
+}
 
 
 
@@ -579,7 +567,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TopOptImpl<distype>::ExtractValuesFromGlobalVector(
-    Teuchos::RCP<DRT::Discretization> discretization, ///< discretization
+    DRT::Discretization&         discretization, ///< discretization
     const vector<int>&           lm,                  ///<
     LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
     LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
@@ -589,7 +577,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::ExtractValuesFromGlobalVector(
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
   DRT::UTILS::ExtractMyValues(*globalvector,mymatrix,lm);
-cout << "here not" << endl;
+
   for (int inode=0; inode<nen_; ++inode)  // number of nodes
   {
     // fill a vector field via a pointer
@@ -730,7 +718,8 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryObjective(
   DRT::Element*              ele,
   ParameterList&             params,
-  DRT::Discretization&       discretization,
+  DRT::Discretization&       optidis,
+  RCP<MAT::Material>         mat,
   vector<int>&               lm
   )
 {
@@ -747,7 +736,8 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryGradient(
   DRT::Element*              ele,
   ParameterList&             params,
-  DRT::Discretization&       discretization,
+  DRT::Discretization&       optidis,
+  RCP<MAT::Material>         mat,
   vector<int>&               lm,
   Epetra_SerialDenseVector&  elevec1_epetra
   )
@@ -867,7 +857,7 @@ int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryGradient(
  *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TopOptBoundaryImpl<distype>::ExtractValuesFromGlobalVector(
-    Teuchos::RCP<DRT::Discretization> discretization, ///< discretization
+    DRT::Discretization&         discretization, ///< discretization
     const vector<int>&           lm,                  ///<
     LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
     LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field

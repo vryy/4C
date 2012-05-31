@@ -23,7 +23,10 @@ Maintainer: Martin Winklmaier
 MAT::PAR::TopOptDens::TopOptDens(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata)
+: Parameter(matdata),
+  poro_bd_down_(matdata->GetDouble("MINPORO")),
+  poro_bd_up_(matdata->GetDouble("MAXPORO")),
+  smear_fac_(matdata->GetDouble("SMEARFAC"))
 {
 }
 

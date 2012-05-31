@@ -53,12 +53,9 @@ CONV_CHECK_TYPE                 Residuum
 INCTOL                          1e-6
 MAXTIME                         0.5
 NUMSTEP                         1
-PORO_BOUNDARY_DOWN              0
-PORO_BOUNDARY_UP                25000
 RESTARTEVRY                     100000
 RESTOL                          1e-6
 RESTART_ACTION                  Fluid_Time_Step
-SMEARING_FACTOR                 1
 TIMESTEP                        0.05
 UPRES                           1
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
@@ -108,7 +105,7 @@ SOLVER                          UMFPACK
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ---------------------------------------------------------MATERIALS
 MAT     1       MAT_fluid  DYNVISCOSITY 3.0 DENSITY 2.0
-MAT     2       MAT_optimization
+MAT     2       MAT_opti        MINPORO 0       MAXPORO 25000       SMEARFAC        1
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
@@ -167,7 +164,7 @@ ADJOINT DIS 1 NODE 39 POSITION velx NAME velx VALUE 0.1125 TOLERANCE 1.0e-15
 ADJOINT DIS 1 NODE 39 POSITION vely NAME vely VALUE -0.1075 TOLERANCE 1.0e-15
 ADJOINT DIS 1 NODE 39 POSITION pressure NAME pressure VALUE 4.8 TOLERANCE 1.0e-11
 ADJOINT DIS 1 NODE 44 POSITION velx NAME velx VALUE 0.325 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 44 POSITION vely NAME vely VALUE -0.705 TOLERANCE 1.0e-15
+ADJOINT DIS 1 NODE 44 POSITION vely NAME vely VALUE -0.705 TOLERANCE 1.0e-14
 ADJOINT DIS 1 NODE 44 POSITION pressure NAME pressure VALUE 7.35 TOLERANCE 5.0e-11
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY

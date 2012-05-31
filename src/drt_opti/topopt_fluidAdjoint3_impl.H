@@ -175,12 +175,6 @@ private:
       const int                                eleid              ///< element ID
   );
 
-
-  //! get material parameters
-  void GetMaterialParams(Teuchos::RCP<const MAT::Material>       material,  ///< reference pointer to material
-      const LINALG::Matrix<nsd_,nen_>&        evelnp    ///< velocity at time n+alpha_f / n+1
-  );
-
   //! calculate stabilization parameter
   void CalcStabParameter(const double  vol);  ///< volume
 
@@ -426,12 +420,8 @@ private:
 
   //! @name physical coefficients
 
-  //! physical viscosity
-  double visc_;
   //! reaction coefficient
   double reacoeff_;
-  //! density
-  double dens_;
   //@}
 
   //! Flag to (de)activate higher order elements

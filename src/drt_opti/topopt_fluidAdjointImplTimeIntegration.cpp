@@ -22,6 +22,8 @@ Maintainer: Martin Winklmaier
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/newtonianfluid.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_opti/topopt_optimizer.H"
@@ -1024,9 +1026,40 @@ Teuchos::RCP<const LINALG::BlockSparseMatrixBase> TOPOPT::ADJOINT::ImplicitTimeI
 
 void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
 {
+  // get the optimization material
+  const MAT::PAR::NewtonianFluid* mat = NULL;
+  const int nummat = DRT::Problem::Instance()->Materials()->Num();
+  for (int id = 1; id-1 < nummat; ++id)
+  {
+    Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
+
+    if (imat == Teuchos::null)
+      dserror("Could not find material Id %d", id);
+    else
+    {
+      if (imat->Type() == INPAR::MAT::m_fluid)
+      {
+        const MAT::PAR::Parameter* matparam = imat->Parameter();
+        mat = static_cast<const MAT::PAR::NewtonianFluid* >(matparam);
+        break;
+      }
+    }
+  }
+  if (mat==NULL)
+    dserror("optimization material not found");
+
+  // and then the material parameters
+  const double density = mat->density_;
+  const double viscosity = mat->viscosity_;
+
+
   ParameterList eleparams;
 
   eleparams.set("action","set_general_adjoint_parameter");
+
+  // set material parameters
+  eleparams.set<double>("density" ,density);
+  eleparams.set<double>("viscosity" ,viscosity);
 
   // set if objective contains dissipation
   eleparams.set<bool>("dissipation",params_->get<bool>("OBJECTIVE_DISSIPATION"));

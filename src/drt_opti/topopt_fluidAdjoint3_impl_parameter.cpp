@@ -167,6 +167,12 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementGeneralAdjointParamete
   if (matloc == "integration_point") mat_gp_ = true;
   else                               mat_gp_ = false;
 
+  //-------------------------------
+  // get material parameter
+  //-------------------------------
+  dens_ = params.get<double>("density");
+  visc_ = params.get<double>("viscosity");
+
   // set flag for test cases
   testcase_ = params.get<INPAR::TOPOPT::AdjointTestCases>("special test case");
 }
@@ -258,6 +264,12 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter() const
   std::cout << "|    material evaluation at Gaussian integration points:    " << mat_gp_ << std::endl;
   //! flag for stabilization parameter evaluation at Gaussian integration points
   std::cout << "|    stabilization parameter evaluation at Gaussian integration points:    " << tau_gp_ << std::endl;
+  //! value of physical density
+  std::cout << "|    physical density:    " << dens_ << std::endl;
+  //! value of physical viscosity
+  std::cout << "|    physical viscosity:    " << visc_ << std::endl;
+  /// enumeration of testcase
+  std::cout << "|    academical testcase:    " << testcase_ << std::endl;
   std::cout << "|---------------------------------------------------------------------------" << std::endl;
 
   std::cout << std::endl << "|---------------------------------------------------------------------------" << std::endl;

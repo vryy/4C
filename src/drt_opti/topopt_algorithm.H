@@ -84,7 +84,7 @@ namespace TOPOPT
     void DoAdjointField();
 
     /// evaluate the gradient of the objective
-    void GetGradient();
+    void PrepareOptimizationStep();
 
     /// perform an optimization step
     void DoOptimizationStep();

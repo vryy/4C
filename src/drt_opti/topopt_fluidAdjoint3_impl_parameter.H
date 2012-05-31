@@ -75,6 +75,9 @@ public:
   double TimefacDiv() {return timefacdiv_;}
   double TimefacDivRhs() {return timefacdivrhs_;}
 
+  double Density() {return dens_;}
+  double Viscosity() {return visc_;}
+
   INPAR::TOPOPT::AdjointTestCases TestCase() {return testcase_;}
 
 private:
@@ -139,6 +142,11 @@ private:
   double timefacdiv_;
   //! timefacrhs = dt_ * (1-theta_div_)
   double timefacdivrhs_;
+
+  /// physical density
+  double dens_;
+  /// physical viscosity
+  double visc_;
 
   //! special test case
   INPAR::TOPOPT::AdjointTestCases testcase_;

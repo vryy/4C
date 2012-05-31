@@ -40,6 +40,13 @@ public:
   //! print parameter to screen
   void PrintAdjointParameter() const;
 
+  double Density() {return dens_;}
+  double Viscosity() {return visc_;}
+
+  double MinPoro() {return min_poro_;}
+  double MaxPoro() {return max_poro_;}
+  double SmearFac() {return smear_fac_;}
+
   bool ObjDissipationTerm() {return dissipation_;}
   bool ObjPresDropTerm() {return pressure_drop_;}
   double ObjDissipationFac() {return dissipation_fac_;}
@@ -48,10 +55,34 @@ public:
   bool IsStationary() {return is_stationary_;}
   INPAR::FLUID::TimeIntegrationScheme TimeIntScheme() {return timealgo_;}
   double Dt() {return dt_;}
+  int NumTimesteps() {return max_timesteps_;}
+  double Theta() {return theta_;}
+  double ThetaPre() {return theta_pre_;}
+  double ThetaDiv() {return theta_div_;}
 
 private:
 
+  /// @name flow material parameters
+
+  //! fluid density
+  double dens_;
+  /// fluid viscosity
+  double visc_;
+
+  //@}
+
+
+  /// @name optimization material parameters
+
+  double min_poro_;
+  double max_poro_;
+  double smear_fac_;
+
+  //@}
+
+
   /// @name objective parameters
+
   // set if objective contains dissipation
   bool dissipation_;
   // set if objective contains pressure drop
@@ -64,6 +95,7 @@ private:
   //@}
 
   /// @name parameters for the time integration
+
   //! flag to (de)activate stationary formulation
   bool is_stationary_;
   //! time algorithm
@@ -72,6 +104,12 @@ private:
   double dt_;
   /// maximal number of time steps
   int max_timesteps_;
+  /// theta in one-step-theta scheme
+  double theta_;
+  /// theta for pressure terms in one-step-theta scheme
+  double theta_pre_;
+  /// theta for divergence terms in one-step-theta scheme
+  double theta_div_;
 
   //@}
 
