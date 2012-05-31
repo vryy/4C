@@ -422,7 +422,7 @@ void STR::TimIntStatMech::EvaluateForceStiffResidual(bool predict)
   EvaluateMidState();
 
   // build new external forces
-  ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
+  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);

@@ -1,0 +1,377 @@
+/*!----------------------------------------------------------------------
+\file beam3eb.H
+
+\brief three dimensional nonlinear torsionless rod based on a C1 curve
+
+<pre>
+Maintainer: Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15301
+</pre>
+3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
+nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
+tension and bending curvature based on the curve describing the centerline of an initially (i.e. stress free) straight beam.
+There is no shear deformation and no torsion. The expansion of the model to a full Euler Bernoulli beam (inclusive torsion) is possible.
+To be able to use this element correctly so far structural dynamic parameters need to be set to:
+
+	LOADLIN	     Yes
+
+since due to this beam formulation the external point loads are being linearized and have an effect on the stiffness matrix
+
+As the beam curve has to be C1 it is interpolated with hermitien polynomials of order 3. Therefore each node has 6 dofs: the position
+vector of the node (3 dofs) and the tangent vector to the curve at the node (3 dofs). If Dirichlet BC are applied one has to make sure that
+the last three flags refer to the tangent at the node (rotational defree of freedom). The flag of the tangent in beam centerline direction must
+be set to 0, otherwise the axial tension at the boundary would be prescribed.
+*----------------------------------------------------------------------*/
+
+
+
+//header file only included if not yet included!
+#ifndef BEAM3EB_H
+#define BEAM3EB_H
+
+
+#include "Teuchos_RefCountPtr.hpp"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+#include "Epetra_Vector.h"
+
+#include "../drt_lib/drt_elementtype.H"
+
+//! \brief DRT: namespace of the ccarat discretization module
+namespace DRT
+{
+
+namespace ELEMENTS
+{
+
+class Beam3ebType : public DRT::ElementType
+{
+public:
+
+  std::string Name() const { return "Beam3ebType"; }
+
+  static Beam3ebType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static Beam3ebType instance_;
+};
+
+/*!
+\brief 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
+nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
+tension and bending curvature based on the curve describing the centerline of an initially (i.e. stress free) straight beam.
+There is no shear deformation and no torsion. The expansion of the model to a full Euler Bernoulli beam (inclusive torsion) is possible.
+
+author meier (meier@lnm.mw.tum.de)
+*/
+class Beam3eb : public DRT::Element
+{
+public:
+
+  //! @name Friends
+  friend class Beam3ebType;
+
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  \param id    (in): A globally unique element id
+  \param etype (in): Type of element
+  \param owner (in): owner processor of the element
+  */
+  Beam3eb(int id, int owner);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+  */
+  Beam3eb(const Beam3eb& old);
+
+  /*!
+  \brief Destructor
+  */
+  virtual ~Beam3eb();
+
+  /*!
+  \brief Deep copy this instance of Beam3eb and return pointer to the copy
+
+  The Clone() method is used by the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+.
+  */
+  virtual DRT::Element* Clone() const;
+
+   /*!
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const;
+
+
+  /*!
+  \brief Return unique ParObject id
+
+  Every class implementing ParObject needs a unique id defined at the
+  top of drt_parobject.H
+  */
+  virtual int UniqueParObjectId() const { return Beam3ebType::Instance().UniqueParObjectId(); }
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Unpack(const vector<char>& data);
+
+  virtual DRT::ElementType & ElementType() const
+  { return Beam3ebType::Instance(); }
+
+  //@}
+
+  /*!
+  \brief Return number of lines to this element
+  */
+  virtual int NumLine() const {return 1;}
+
+
+  /*!
+  \brief Get vector of RefCountPtrs to the lines of this element
+  */
+  virtual vector<RCP<DRT::Element> > Lines();
+
+
+  /*!
+  \brief Get number of degrees of freedom of a single node
+  */
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
+    *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
+    *number of DOF to this node requested by any element connected to this node*/
+    return 6;
+  }
+
+  /*!
+  \brief Get number of degrees of freedom per element not including nodal degrees of freedom
+  */
+  virtual int NumDofPerElement() const { return 0;}
+
+  /*!
+  \brief Print this element
+  */
+  virtual void Print(ostream& os) const;
+
+
+  //@}
+
+  //! @name Construction
+
+
+  /*!
+  \brief Read input for this element
+
+  This class implements a dummy of this method that prints a warning and
+  returns false. A derived class would read one line from the input file and
+  store all necessary information.
+
+  */
+  //virtual bool ReadElement();
+
+  /*!
+  \brief Read input for this element
+  */
+  bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
+
+  //@}
+
+
+  //! @name Evaluation methods
+
+
+  /*!
+  \brief Evaluate an element
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates element matrices and
+  vectors accoring to the command in params.
+
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element depending on commands
+                              given in params
+  \param elemat2 (out)      : matrix to be filled by element depending on commands
+                              given in params
+  \param elevec1 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \param elevec2 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \param elevec3 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(ParameterList&            params,
+                       DRT::Discretization&      discretization,
+                       vector<int>&              lm,
+                       Epetra_SerialDenseMatrix& elemat1,
+                       Epetra_SerialDenseMatrix& elemat2,
+                       Epetra_SerialDenseVector& elevec1,
+                       Epetra_SerialDenseVector& elevec2,
+                       Epetra_SerialDenseVector& elevec3);
+
+  /*!
+  \brief Evaluate a Neumann boundary condition
+
+  An element derived from this class uses the EvaluateNeumann method to receive commands
+  and parameters from some control routine in params and evaluates a Neumann boundary condition
+  given in condition
+
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : Force vector to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateNeumann(ParameterList& params,
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+
+
+  //@}
+
+
+private:
+
+  //! action parameters recognized by Beam3eb
+  enum ActionType
+  {
+    calc_none,
+    calc_struct_linstiff,
+    calc_struct_nlnstiff,
+    calc_struct_internalforce,
+    calc_struct_linstiffmass,
+    calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
+    calc_struct_stress,
+    calc_struct_eleload,
+    calc_struct_fsiload,
+    calc_struct_update_istep,
+    calc_struct_update_imrlike,
+    calc_struct_reset_istep,
+    calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
+  };
+
+
+  //! variable saving whether element has already been initialized (then isinit_ == true)
+  bool isinit_;
+
+  //! cross section area
+  double crosssec_;
+
+  //!moment of inertia of area around y-axis(orthognoal to rod axis in yz-plane)
+  double Iyy_;
+
+  //!moment of inertia of area around z-axis(forming cartesian system with rod- and y-axis)
+  double Izz_;
+
+  //!polar moment of inertia of area
+  double Irr_;
+
+  //! Vector holding value of Jacobi determinant jacobi for each Gauss point for underintegration
+  double jacobi_;
+
+  //! Matrix holding tangents at each node in reference configuration
+  vector<LINALG::Matrix<3,1> > Tref_;
+
+  //! @name methods for initilization of the element
+
+  //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
+  void SetUpReferenceGeometry(const vector<double>& xrefe,const bool secondinit = false);
+
+  //@}
+
+  //! @name auxiliary computation methods for non-additive, large rotation variables
+
+
+
+
+  //@}
+
+  //! @name Internal calculation methods
+
+  //!calculation of nonlinear stiffness and mass matrix
+  void eb_nlnstiffmass( ParameterList& params,
+                        vector<double>&           vel,
+                        vector<double>&           disp,
+                        Epetra_SerialDenseMatrix* stiffmatrix,
+                        Epetra_SerialDenseMatrix* massmatrix,
+                        Epetra_SerialDenseVector* force);
+
+  //! lump mass matrix
+  void lumpmass(Epetra_SerialDenseMatrix* emass);
+
+
+  // don't want = operator
+  Beam3eb& operator = (const Beam3eb& old);
+
+
+}; // class Beam3eb
+
+
+
+// << operator
+ostream& operator << (ostream& os, const DRT::Element& ele);
+
+
+} // namespace Elements
+} // namespace DRT
+
+
+#endif  // #ifndef BEAM3EB_H

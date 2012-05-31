@@ -2152,6 +2152,92 @@ namespace UTILS
 
   }
 
+  /*!
+  \brief Fill a matrix of type M with 1D hermite shape function
+  */
+  template <class M>
+  void shape_function_hermite_1D(
+    M&                                       funct,  ///< to be filled with shape function values
+    const double&                            r,       ///< r coordinate
+    const double&              l,     ///< length of element
+    const DRT::Element::DiscretizationType&  distype  ///< distinguish between DiscretizationType
+    )
+  {
+      switch (distype)
+      {
+      case DRT::Element::line2:
+      {
+          funct(0)= 0.25*(2.0 - 3.0*r + pow(r,3.0));
+          funct(1)= l / 8.0 * (1.0 - r - pow(r,2.0) + pow(r,3.0));
+          funct(2)= 0.25*(2.0 + 3.0*r - pow(r,3.0));
+          funct(3)= l / 8.0 * (-1.0 - r + pow(r,2.0) + pow(r,3.0));
+          break;
+      }
+      default:
+          dserror("distype unknown\n");
+      }
+
+      return;
+
+  }
+
+  /*!
+  \brief Fill a matrix of type M with 1D hermite shape function derivatives
+  */
+  template <class M>
+  void shape_function_hermite_1D_deriv1(
+    M&                                       deriv1,  ///< to be filled with hermite shape function first derivative values
+    const double&                            r,       ///< r coordinate
+    const double&              l,     ///< length of element
+    const DRT::Element::DiscretizationType&  distype  ///< distinguish between DiscretizationType
+    )
+  {
+      switch (distype)
+      {
+      case DRT::Element::line2:
+      {
+          deriv1(0)= 0.25*(- 3.0 + 3.0 * pow(r,2.0));
+          deriv1(1)= l / 8.0 * (- 1.0 - 2.0 * r + 3.0 * pow(r,2.0));
+          deriv1(2)= 0.25*(3.0 - 3.0 * pow(r,2.0));
+          deriv1(3)= l / 8.0 * (- 1.0 + 2.0 * r + 3.0 * pow(r,2.0));
+          break;
+      }
+      default:
+          dserror("distype unknown\n");
+      }
+
+      return;
+
+  }
+
+  /*!
+  \brief Fill a matrix of type M with 1D hermite shape function derivatives
+  */
+  template <class M>
+  void shape_function_hermite_1D_deriv2(
+    M&                                       deriv2,  ///< to be filled with hermite shape function second derivative values
+    const double&                            r,       ///< r coordinate
+    const double&              l,     ///< length of element
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    )
+  {
+      switch (distype)
+      {
+      case DRT::Element::line2:
+      {
+          deriv2(0)= 1.5 * r;
+          deriv2(1)= l / 8.0 * (- 2.0 + 6.0 * r);
+          deriv2(2)= - 1.5 * r;
+          deriv2(3)= l / 8.0 * (2.0 + 6.0 * r);
+          break;
+      }
+      default:
+          dserror("distype unknown\n");
+      }
+
+      return;
+
+  }
 
   /*!
   \brief Fill vector with the shape function values evaluated at given point

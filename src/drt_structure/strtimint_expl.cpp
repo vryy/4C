@@ -83,6 +83,32 @@ void STR::TimIntExpl::SetForceInterface
   extractor.AddFSICondVector(iforce, fifc_);
 }
 
+/*----------------------------------------------------------------------*/
+/* evaluate external forces at t_{n+1} */
+void STR::TimIntExpl::ApplyForceExternal
+(
+  const double time,  //!< evaluation time
+  const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+  const Teuchos::RCP<Epetra_Vector> vel,  //!< velocity state
+  Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+)
+{
+  ParameterList p;
+  // other parameters needed by the elements
+  p.set("total time", time);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  discret_->SetState(0,"displacement", dis);
+  if (damping_ == INPAR::STR::damp_material)
+    discret_->SetState(0,"velocity", vel);
+  // get load vector
+  discret_->EvaluateNeumann(p, *fext);
+
+  // go away
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /* print step summary */

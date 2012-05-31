@@ -645,15 +645,15 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   Teuchos::RCP<Epetra_Vector> fint
     = LINALG::CreateVector(*dofrowmap_, true); // internal force
 
+  // initialise matrices
+  stiff_->Zero();
+  mass_->Zero();
+
   // overwrite initial state vectors with DirichletBCs
   ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), (*acc_)(0), false);
 
   // get external force
-  ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext);
-
-  // initialise matrices
-  stiff_->Zero();
-  mass_->Zero();
+  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext, stiff_);
 
   // get initial internal force and stiffness and mass
   {
@@ -1716,9 +1716,11 @@ void STR::TimInt::OutputPatspec()
 void STR::TimInt::ApplyForceExternal
 (
   const double time,  //!< evaluation time
-  const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+  const Teuchos::RCP<Epetra_Vector> dis,  //!< old displacement state
+  const Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
   const Teuchos::RCP<Epetra_Vector> vel,  //!< velocity state
-  Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+  Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
+  Teuchos::RCP<LINALG::SparseOperator>& fextlin //!<linearization of external force
 )
 {
   ParameterList p;
@@ -1731,7 +1733,15 @@ void STR::TimInt::ApplyForceExternal
   if (damping_ == INPAR::STR::damp_material)
     discret_->SetState(0,"velocity", vel);
   // get load vector
-  discret_->EvaluateNeumann(p, *fext);
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  bool loadlin = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "LOADLIN");
+  if (!loadlin)
+    discret_->EvaluateNeumann(p, *fext);
+  else
+  {
+    discret_->SetState(0,"displacement new", disn);
+    discret_->EvaluateNeumann(p, fext, fextlin);
+  }
 
   // go away
   return;
@@ -1767,10 +1777,10 @@ void STR::TimInt::ApplyForceStiffInternal
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
-  // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0,"residual displacement", disi);
   discret_->SetState(0,"displacement", dis);
-  if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", vel);
+  if (damping_ == INPAR::STR::damp_material)
+    discret_->SetState(0,"velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   // set the temperature for the coupled problem
   if(tempn_!=Teuchos::null)

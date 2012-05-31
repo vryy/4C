@@ -219,6 +219,15 @@ namespace STR
       dserror("just here for overloading reasons, should go as soon as possible");
     }
 
+    //! Apply external force
+    void ApplyForceExternal
+    (
+      const double time,  //!< evaluation time
+      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
+      Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+    );
+
     /// has to be renamed either here or PrintStep()
     virtual void Output()
     {

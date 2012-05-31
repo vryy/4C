@@ -364,9 +364,11 @@ namespace STR
     void ApplyForceExternal
     (
       const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+      const Teuchos::RCP<Epetra_Vector> dis,  //!< old displacement state
+      const Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-      Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+      Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
+      Teuchos::RCP<LINALG::SparseOperator>& fextlin //!<linearization of external force
     );
 
     //! Evaluate ordinary internal force, its stiffness at state

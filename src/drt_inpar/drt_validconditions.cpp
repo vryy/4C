@@ -85,6 +85,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::PointNeumann,
                                          false,
                                          DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> pointneumanneb =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT MOMENT EB CONDITIONS",
+                                         "PointNeumannEB",
+                                         "Point Neumann Moment auf Euler-Bernoulli Balken",
+                                         DRT::Condition::PointNeumannEB,
+                                         false,
+                                         DRT::Condition::Point));
   Teuchos::RCP<ConditionDefinition> lineneumann =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE NEUMANN CONDITIONS",
                                          "LineNeumann",
@@ -231,6 +238,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   for (unsigned i=0; i<neumanncomponents.size(); ++i)
   {
     pointneumann->AddComponent(neumanncomponents[i]);
+    pointneumanneb->AddComponent(neumanncomponents[i]);
     lineneumann->AddComponent(neumanncomponents[i]);
     surfneumann->AddComponent(neumanncomponents[i]);
     volneumann->AddComponent(neumanncomponents[i]);
@@ -257,6 +265,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   }
 
   condlist.push_back(pointneumann);
+  condlist.push_back(pointneumanneb);
   condlist.push_back(lineneumann);
   condlist.push_back(surfneumann);
   condlist.push_back(volneumann);

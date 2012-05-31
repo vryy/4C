@@ -981,6 +981,11 @@ set(OBJS_DRT_B3II_LIB
   src/drt_beam3ii/beam3ii_evaluate.cpp
   src/drt_beam3ii/beam3ii_input.cpp
 )
+set(OBJS_DRT_B3EB_LIB
+  src/drt_beam3eb/beam3eb.cpp
+  src/drt_beam3eb/beam3eb_evaluate.cpp
+  src/drt_beam3eb/beam3eb_input.cpp
+)
 set(OBJS_PRE_CURVE
   src/pre_curve/pre_curve.cpp
 )
@@ -1384,6 +1389,7 @@ add_library(ele_b2 ${OBJS_DRT_B2_LIB})
 add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
 add_library(ele_b3 ${OBJS_DRT_B3_LIB})
 add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
+add_library(ele_b3eb ${OBJS_DRT_B3EB_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
@@ -1404,6 +1410,7 @@ set(ELEMENT_LIBRARIES
   ele_b2r
   ele_b3
   ele_b3ii
+  ele_b3eb
   ele_bele3
   ele_combust3
   ele_fluid

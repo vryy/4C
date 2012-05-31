@@ -109,6 +109,9 @@ void STR::TimIntExplEuler::IntegrateStep()
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null, false);
 
+  // initialise stiffness matrix to zero
+  stiff_->Zero();
+
   // build new external forces
   fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, disn_, veln_, fextn_);
@@ -121,9 +124,6 @@ void STR::TimIntExplEuler::IntegrateStep()
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
-
-  // initialise stiffness matrix to zero
-  stiff_->Zero();
 
   // ordinary internal force and stiffness
   {

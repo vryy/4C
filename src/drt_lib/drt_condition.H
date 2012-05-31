@@ -117,6 +117,7 @@ public:
     SurfaceDirichlet,
     VolumeDirichlet,
     PointNeumann,
+    PointNeumannEB,
     LineNeumann,
     SurfaceNeumann,
     VolumeNeumann,

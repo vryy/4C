@@ -107,18 +107,18 @@ void STR::TimIntStatics::PredictConstDisConsistVelAcc()
  * with respect to end-point displacements \f$D_{n+1}\f$ */
 void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
 {
+  // initialise stiffness matrix to zero
+  stiff_->Zero();
+
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
+  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
-
-  // initialise stiffness matrix to zero
-  stiff_->Zero();
 
   // ordinary internal force and stiffness
   ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_);

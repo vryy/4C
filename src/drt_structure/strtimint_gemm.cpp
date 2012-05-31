@@ -95,7 +95,7 @@ STR::TimIntGEMM::TimIntGEMM
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), (*vel_)(0), fext_);
+  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
 
   // inertial mid-point force vector F_inert
   finertm_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -185,9 +185,12 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(bool predict)
   // the predicted mid-state
   EvaluateMidState();
 
+  // initialise stiffness matrix to zero
+  stiff_->Zero();
+
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*dis_)(0), (*vel_)(0), fextn_);
+  ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -199,9 +202,6 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(bool predict)
 
   // initialise internal forces
   fintm_->PutScalar(0.0);
-
-  // initialise stiffness matrix to zero
-  stiff_->Zero();
 
   // ordinary internal force and stiffness
   disi_->Scale(1.-alphaf_);  // CHECK THIS
