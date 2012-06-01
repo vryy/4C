@@ -69,7 +69,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
                 idispcol,                              // interface displacements
                 xfluid_.VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
                 xfluid_.BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
-                true,                                  // parallel cut framework
+                true,                                   // parallel cut framework
                 xfluid_.gmsh_cut_out_,                 // gmsh output for cut library
                 true                                   // find point positions
                 );
@@ -188,7 +188,6 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   if(xfluid_.edge_based_ or xfluid_.ghost_penalty_)
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
   //--------------------------------------------------------------------------------------
-
 }
 
 // -------------------------------------------------------------------
@@ -352,6 +351,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(discret,nds,la,false);
+
 
         // get dimension of element matrices and vectors
         // Reshapelement matrices and vectors and init to zero
@@ -2434,6 +2434,14 @@ void FLD::XFluidFluid::PrepareTimeStep()
   //  Set time parameter for element call
   // -------------------------------------------------------------------
   SetElementTimeParameter();
+
+  if (monolithicfluidfluidfsi_)
+  {
+    SetHistoryValues();
+
+    SetDirichletNeumannBC();
+  }
+
 }//FLD::XFluidFluid::PrepareTimeStep()
 
 // ----------------------------------------------------------------
@@ -2441,7 +2449,6 @@ void FLD::XFluidFluid::PrepareTimeStep()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::PrepareNonlinearSolve()
 {
-
   // do the cut for this timestep
   if (alefluid_)
     CutAndSaveBgFluidStatus();
@@ -2458,7 +2465,30 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
   SetHistoryValues();
 
   SetDirichletNeumannBC();
+
 }//FLD::XFluidFluid::PrepareNonlinearSolve()
+
+// ----------------------------------------------------------------
+// Prepare monolithic step (called in TimeUpdate)
+// - set time parameters
+// - do the cut and xfluidfluid time integration
+// - do the nonlinearsolve with fsi-dofs as dirichlet values
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::PrepareMonolithicFixedAle()
+{
+  // for BDF2, theta is set by the time-step sizes, 2/3 for const. dtp_
+  if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+
+  // -------------------------------------------------------------------
+  //  Set time parameter for element call
+  // -------------------------------------------------------------------
+  SetElementTimeParameter();
+
+  // cut and do xfluidfluid time integration.
+  PrepareNonlinearSolve();
+
+  UpdateMonolithicFluidSolution();
+}
 
 // ----------------------------------------------------------------
 //
@@ -2483,7 +2513,6 @@ void FLD::XFluidFluid::NonlinearSolve()
   dtele_    = 0.0;
   dtfilter_ = 0.0;
 
-
   if (myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
@@ -2506,6 +2535,7 @@ void FLD::XFluidFluid::NonlinearSolve()
 //        cout << endl;
 //      }
 //    }
+
 
   while (stopnonliniter==false)
   {
@@ -2557,7 +2587,6 @@ void FLD::XFluidFluid::NonlinearSolve()
         state_->EvaluateFluidFluid( eleparams, *bgdis_, *boundarydis_, *embdis_);
       }
 
-
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
 
@@ -2576,22 +2605,15 @@ void FLD::XFluidFluid::NonlinearSolve()
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
 
-
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
     aledbcmaps_->InsertCondVector(aledbcmaps_->ExtractCondVector(alezeros_), aleresidual_);
-
 
     if(monotype_ == "fixedale_partitioned")
     {
       // set the aleresidual values to zeros at the fsi-interface
-      for (int iter=0; iter<toggle_->MyLength();++iter)
-      {
-        int gid = toggle_->Map().GID(iter);
-        if (aleresidual_->Map().MyGID(gid))
-          (*aleresidual_)[aleresidual_->Map().LID(gid)]=0.0;
-      }
+      Teuchos::RCP<Epetra_Vector> fixedfsizeros = LINALG::CreateVector(*fixedfsidofmap_,true);
+      LINALG::Export(*fixedfsizeros,*aleresidual_);
     }
-
 
     // insert fluid and alefluid residuals to fluidfluidresidual
     state_->fluidfluidsplitter_->InsertXFluidVector(state_->residual_,state_->fluidfluidresidual_);
@@ -2750,7 +2772,9 @@ void FLD::XFluidFluid::NonlinearSolve()
 
     // set the fsi dirichlet values for monolithic_fixedale_partitioned
     if(monotype_ == "fixedale_partitioned")
+    {
       LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,state_->fluidfluidzeros_,toggle_);
+    }
 
 
     //-------solve for residual displacements to correct incremental displacements
@@ -2892,10 +2916,6 @@ void FLD::XFluidFluid::Evaluate(
 //     state_->velnp_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidvelnp_);
 //     alevelnp_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidvelnp_);
 
-    ParameterList eleparams;
-    bgdis_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null);
-    embdis_->EvaluateDirichlet(eleparams,alevelnp_,null,null,null);
-
     // extract residual
     state_->residual_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidresidual_);
     aleresidual_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidresidual_);
@@ -2960,14 +2980,12 @@ void FLD::XFluidFluid::Evaluate(
   LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,
                                  state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_);
 
- //  if (monolithic_approach_==INPAR::XFEM::XFFSI_Full_Newton)
-//     if(monotype_ == "fully_newton")
-//       state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_inter", gmsh_count_, step_, state_->velnp_, alevelnp_,
+//   if(monotype_ == "fully_newton")
+//     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_inter", gmsh_count_, step_, state_->velnp_, alevelnp_,
 //                          aledispnp_);
-//     else
-//       state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_fixedfsi", -1, step_, state_->velnp_, alevelnp_,
-//                          aledispnp_);
-
+//   else
+//     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_fixedfsi", -1, step_, state_->velnp_, alevelnp_,
+//                        aledispnp_);
 
   // save the old state of the ale displacement
   aledispnpoldstate_->Update(1.0,*aledispnp_,0.0);
@@ -3044,16 +3062,12 @@ void FLD::XFluidFluid::TimeUpdate()
   else
     RelaxingAleInthisTimestep = false;
 
-
   if ((monotype_ == "fixedale_partitioned" or monotype_ == "fixedale_interpolation")
       and (RelaxingAleInthisTimestep))
   {
-    // cut and do xfluidfluid time integration.
-    PrepareNonlinearSolve();
-
-    if (monotype_ == "fixedale_partitioned")
-      UpdateMonolithicFluidSolution();
+    PrepareMonolithicFixedAle();
   }
+
 
   ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
@@ -3168,12 +3182,6 @@ void FLD::XFluidFluid::TimeUpdate()
     aledispn_->Update(1.0,*aledispnp_,0.0);
   }
 
-  if (monolithicfluidfluidfsi_)
-  {
-    SetHistoryValues();
-
-    SetDirichletNeumannBC();
-  }
 } //XFluidFluid::TimeUpdate()
 
 // -------------------------------------------------------------------
@@ -3305,43 +3313,21 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution()
     }
   }
 
-  vector<int> conddofs_all;
-
-  // information how many processors work at all
-  vector<int> allproc(embdis_->Comm().NumProc());
-
-  // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0; i<embdis_->Comm().NumProc(); ++i) allproc[i] = i;
-
-  // gathers information of all processors
-  LINALG::Gather<int>(conddofs,conddofs_all,(int)embdis_->Comm().NumProc(),&allproc[0],embdis_->Comm());
-
-  // TODO need it?
-//  fixedfsidofmap_ = rcp(new Epetra_Map(-1, conddofs_all.size(), &conddofs_all[0], 0, embdis_->Comm()));
   fixedfsidofmap_ = rcp(new Epetra_Map(-1, conddofs.size(), &conddofs[0], 0, embdis_->Comm()));
 
-
-  Teuchos::RCP<Epetra_Vector> testvec = rcp(new Epetra_Vector(*fixedfsidofmap_));
-  testvec->PutScalar(1.0);
+  Teuchos::RCP<Epetra_Vector> tmpvec = rcp(new Epetra_Vector(*fixedfsidofmap_));
+  tmpvec->PutScalar(1.0);
 
   // the toggle vector with values 1 and 0
   toggle_ = LINALG::CreateVector(*state_->fluidfluiddofrowmap_,true);
-  //LINALG::Export(*(testvec),*(toggle_));
+  LINALG::Export(*tmpvec,*toggle_);
 
-  for (int iter=0; iter<toggle_->MyLength();++iter)
-  {
-    int gid = toggle_->Map().GID(iter);
-    if (fixedfsidofmap_->MyGID(gid))
-      (*toggle_)[toggle_->Map().LID(gid)]=1.0;
-  }
-
-//   int count = 1;
-//   Teuchos::RCP<Epetra_Vector> testbg = state_->fluidfluidsplitter_->ExtractXFluidVector(toggle_);
-//   Teuchos::RCP<Epetra_Vector> testemb = state_->fluidfluidsplitter_->ExtractFluidVector(toggle_);
-//   state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "toggle", count,  step_, testbg , testemb, aledispnp_);
+  int count = 1;
+  Teuchos::RCP<Epetra_Vector> testbg = state_->fluidfluidsplitter_->ExtractXFluidVector(toggle_);
+  Teuchos::RCP<Epetra_Vector> testemb = state_->fluidfluidsplitter_->ExtractFluidVector(toggle_);
+  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "toggle", count,  step_, testbg , testemb, aledispnp_);
 
   NonlinearSolve();
-
 
 }//FLD::XFluidFluid::UpdateMonolithicFluidSolution()
 
@@ -3364,12 +3350,12 @@ void FLD::XFluidFluid::SetDirichletNeumannBC()
     bgdis_->SetState("velaf",state_->velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    bgdis_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null);
+    bgdis_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null,state_->dbcmaps_);
     bgdis_->ClearState();
 
     embdis_->ClearState();
     embdis_->SetState("velaf",alevelnp_);
-    embdis_->EvaluateDirichlet(eleparams,alevelnp_,null,null,null);
+    embdis_->EvaluateDirichlet(eleparams,alevelnp_,null,null,null,aledbcmaps_);
     embdis_->ClearState();
 
     // set thermodynamic pressure
@@ -3761,13 +3747,15 @@ void FLD::XFluidFluid::SetElementTimeParameter()
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
   DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*embdis_,eleparams,null,null,null,null,null);
 #else
   dserror("D_FLUID3 required");
 #endif
 }
 
-
-/// return time integration factor
+// -------------------------------------------------------------------
+// return time integration factor
+// -------------------------------------------------------------------
 double FLD::XFluidFluid::TimIntParam() const
 {
   double retval = 0.0;

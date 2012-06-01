@@ -269,6 +269,9 @@ namespace FLD
     /// new cut and xfem-Timeintegration happens here
     void PrepareNonlinearSolve();
 
+    /// new cut, xfem-Timeintegration and solving fluid for monolithic fixed-ale
+    void PrepareMonolithicFixedAle();
+
     /// Implement ADAPTER::Fluid
     void PrepareSolve() { PrepareNonlinearSolve(); }
 
@@ -335,7 +338,7 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() {return state_->fluidfluidincvel_ ;}
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() { return state_->fluidfluidincvel_; }
     Teuchos::RCP<Epetra_Vector> Residual() { return state_->fluidfluidresidual_; }
     /// implement adapter fluid
     Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }

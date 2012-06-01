@@ -291,6 +291,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
   if (a==Teuchos::null)
     dserror("expect ale block matrix");
 
+
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
@@ -302,7 +303,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
 
   double scale     = FluidField().ResidualScaling();
   double timescale = FluidField().TimeScaling();
-
 
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
@@ -326,7 +326,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
                    ADAPTER::CouplingMasterConverter(coupsf),
                    systemmatrix_->Matrix(0,1));
   (*sggtransform_)(s->Matrix(1,1),
-                   ((1.0-ftiparam)/(1.0-stiparam))*1./(scale*timescale),
+                   ((1.0-ftiparam)/(1.0-stiparam))*(1./(scale*timescale)),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    *f,
@@ -469,7 +469,7 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicStructureSplitNoNOX::CombinedD
   vectoroverallfsimaps.push_back(scondmap);
   vectoroverallfsimaps.push_back(ffcondmap);
   vectoroverallfsimaps.push_back(acondmap);
-  //////////AUCH?????????????
+
   Teuchos::RCP<Epetra_Map> overallfsidbcmaps = LINALG::MultiMapExtractor::MergeMaps(vectoroverallfsimaps);
 
   //structure and ale maps should not have any fsiCondDofs, so we
@@ -487,23 +487,9 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicStructureSplitNoNOX::CombinedD
       otherdbcmapvector.push_back(gid);
   }
 
-  ///////////GATHER?????????????
-    vector<int> otherdbcmapvector_all;
+  Teuchos::RCP<Epetra_Map> otherdbcmap = rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
 
-    // information how many processors work at all
-    vector<int> allproc(FluidField().Discretization()->Comm().NumProc());
-
-    // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-    for (int i=0; i<FluidField().Discretization()->Comm().NumProc(); ++i) allproc[i] = i;
-
-    // gathers information of all processors
-    LINALG::Gather<int>(otherdbcmapvector,otherdbcmapvector_all,(int)FluidField().Discretization()->Comm().NumProc(),&allproc[0],FluidField().Discretization()->Comm());
-
-    // Teuchos::RCP<Epetra_Map> otherdbcmap = rcp(new Epetra_Map(-1, otherdbcmapvector_all.size(), &otherdbcmapvector_all[0], 0, Comm()));
-
-    Teuchos::RCP<Epetra_Map> otherdbcmap = rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
-
-    return otherdbcmap;
+  return otherdbcmap;
 }
 
 /*----------------------------------------------------------------------*/
@@ -591,8 +577,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
     // modfv: whole embedded fluid map but entries at fsi dofs
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface()->InsertFSICondVector(StructToFluid(scv));
 
-    // modfv = modfv * 1/fluidscale * (1.0-ftiparam)/(1.0-stiparam)
-    modfv->Scale( 1./fluidscale*(1.0-ftiparam)/(1.0-stiparam));
+    // modfv = modfv * 1/fluidscale * d/b
+    modfv->Scale( (1./fluidscale)*(1.0-ftiparam)/(1.0-stiparam));
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
@@ -694,6 +680,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
 {
+  // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
+  // (i.e. condensed forces onto the structure) needed for rhs in next time step
+  RecoverLagrangeMultiplier();
+
   currentstep_ ++;
 
 //  cout <<"currentstep_" <<  currentstep_ <<" " << currentstep_%relaxing_ale_every_<< endl;
@@ -701,7 +691,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
   if (relaxing_ale_ == true)
     if (currentstep_%relaxing_ale_every_==0) aleupdate = true;
 
-  cout << "relaxing ale " << relaxing_ale_ << endl;
 
   if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton and aleupdate)
   {
@@ -776,7 +765,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
 
   firstcall_ = true;
 
-  // equilibrium iteration loop (loop over k)
+  // non linear loop
   while ( ((not Converged()) and (iter_ <= itermax_)) or (iter_ ==  1) )
   {
     // compute residual forces #rhs_ and tangent #tang_
@@ -954,7 +943,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
    /* \lambda^{n+1} =  - a/b*\lambda^n - f_\Gamma^S
     *                  - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma
     */
-   lambda_->Update(1.0, *fgcur_, -stiparam/(1.0-stiparam));
+   lambda_->Update(1.0, *fgcur_, -stiparam);
    lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
    lambda_->Scale(1/(1.0-stiparam)); // entire Lagrange multiplier ist divided by (1.-strtimintparam)
 
