@@ -418,8 +418,8 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   "has 9417816 Elements"<<endl<<
   "'*eb0=\"ELEMENT\"'"<<endl<<
   "sectionname=\"FLUID\""<<endl<<
-  "description=\"MAT 1 NA Euler GP_TET 4 GP_ALT standard\""<<endl<<
-  "elementname=\"FLUID3\" \n"<<endl<<
+  "description=\"MAT 1 NA Euler\""<<endl<<
+  "elementname=\"FLUID\" \n"<<endl<<
   "Element Block, named: "<<endl<<
   "of Shape: HEX8"<<endl<<
   "has 9417816 Elements"<<endl<<

@@ -226,6 +226,111 @@ void DRT::ELEMENTS::FluidType::SetupElementDefinition( std::map<std::string,std:
      .AddNamedInt("MAT")
      .AddNamedString("NA")
      ;
+
+   std::map<std::string,DRT::INPUT::LineDefinition>& defsgeneral = definitions["FLUID"];
+
+     defsgeneral["HEX8"]
+       .AddIntVector("HEX8",8)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["HEX20"]
+       .AddIntVector("HEX20",20)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["HEX27"]
+       .AddIntVector("HEX27",27)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["TET4"]
+       .AddIntVector("TET4",4)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["TET10"]
+       .AddIntVector("TET10",10)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["WEDGE6"]
+       .AddIntVector("WEDGE6",6)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["WEDGE15"]
+       .AddIntVector("WEDGE15",15)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["PYRAMID5"]
+       .AddIntVector("PYRAMID5",5)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["NURBS8"]
+       .AddIntVector("NURBS8",8)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["NURBS27"]
+       .AddIntVector("NURBS27",27)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     // 2D elements
+     defsgeneral["QUAD4"]
+       .AddIntVector("QUAD4",4)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["QUAD8"]
+       .AddIntVector("QUAD8",8)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["QUAD9"]
+       .AddIntVector("QUAD9",9)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["TRI3"]
+       .AddIntVector("TRI3",3)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["TRI6"]
+       .AddIntVector("TRI6",6)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["NURBS4"]
+       .AddIntVector("NURBS4",4)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
+
+     defsgeneral["NURBS9"]
+       .AddIntVector("NURBS9",9)
+       .AddNamedInt("MAT")
+       .AddNamedString("NA")
+       ;
 }
 
 
