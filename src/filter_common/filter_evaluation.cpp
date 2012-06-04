@@ -65,7 +65,7 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
   dserror("MAT::MicroMaterial::ReadRestart not available");
 }
 
-void MAT::MicroMaterial::InvAnaInit(const bool eleowner)
+void MAT::MicroMaterial::InvAnaInit(bool eleowner, int eleID)
 {
   dserror("Mat::MicroMaterial::InvAna_Init not available");
 }

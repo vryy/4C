@@ -1456,7 +1456,7 @@ void STR::GenInvAnalysis::MultiInvAnaInit()
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
       bool eleowner = false;
       if (discret_->Comm().MyPID()==actele->Owner()) eleowner = true;
-      micro->InvAnaInit(eleowner);
+      micro->InvAnaInit(eleowner,actele->Id());
     }
   }
 }

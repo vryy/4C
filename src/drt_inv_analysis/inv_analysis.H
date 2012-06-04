@@ -40,8 +40,23 @@ namespace DRT
   class Discretization;
 }
 
+namespace MAT
+{
+  namespace PAR
+  {
+    class Material;
+  }
+}
+
 namespace STR
 {
+
+/// Set material parameters
+void SetMaterialParameters(int prob,
+    Epetra_SerialDenseVector& p_cur,
+    std::set<int>& mymatset,
+    std::set<int>& myehmatset);
+
 
 /// Inverse Analysis of Structures
 ///

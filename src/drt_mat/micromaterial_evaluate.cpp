@@ -256,8 +256,19 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
 }
 
 
-void MAT::MicroMaterial::InvAnaInit(const bool eleowner)
+void MAT::MicroMaterial::InvAnaInit(bool eleowner, int eleID)
 {
+  // get sub communicator including the supporting procs
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  if(subcomm->MyPID() == 0)
+  {
+    // tell the supporting procs that the micro material initializes inverse analysis
+    int task[2] = {5,eleID};
+    subcomm->Broadcast(task, 2, 0);
+    int owner = eleowner;
+    subcomm->Broadcast(&owner, 1, 0);
+  }
+
   std::map<int, Teuchos::RCP<MicroMaterialGP> >::iterator it;
   for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {

@@ -172,7 +172,7 @@ private:
     void ReadRestart(const int gp, const int eleID, const bool eleowner, int microdisnum, double V0);
 
     /// Prepare new run of inverse analysis
-    void InvAnaInit(const bool eleowner);
+    void InvAnaInit(bool eleowner, int eleID);
 
     /// @name Access parameters
     //@{

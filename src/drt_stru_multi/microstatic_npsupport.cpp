@@ -19,6 +19,8 @@ Maintainer: Lena Yoshihara
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_container.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_inv_analysis/inv_analysis.H"
 
 #include <hdf5.h>
 
@@ -150,6 +152,42 @@ void STRUMULTI::np_support_drt()
 
       // dummy material is used to restart the micro material
       dummymaterials[eleID]->ReadRestart(gp, eleID, eleowner, microdisnum, V0);
+      break;
+    }
+    case 5:
+    {
+      // receive data from the master proc for inverse analysis
+      int owner = -1;
+      subcomm->Broadcast(&owner, 1, 0);
+      const bool eleowner = owner;
+      // dummy material is used initialize the inverse analysis on the micro material
+      dummymaterials[eleID]->InvAnaInit(eleowner,eleID);
+      break;
+    }
+    case 6:
+    {
+      // receive data from the master proc for inverse analysis
+      // Note: task[1] does not contain an element id in this case, 
+      // it's the length of the vector that will be broadcast
+      int np = task[1];
+      Epetra_SerialDenseVector p_cur(np);
+      // receive the parameter vector
+      subcomm->Broadcast(&p_cur[0], np, 0);
+
+      // loop over all problem instances and set parameters accordingly
+      // Further work has to be done for parameter fitting on micro and macro scale
+      // due to the layout of p_cur
+      for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
+      {
+        std::set<int> mymatset;
+        std::set<int> myehmatset;
+        // broadcast sets within micro scale once per problem instance
+        LINALG::GatherAll<int>(mymatset, *subcomm);
+        LINALG::GatherAll<int>(myehmatset, *subcomm);
+
+        // material parameters are set for the current problem instance
+        STR::SetMaterialParameters(prob, p_cur, mymatset, myehmatset);
+      }
       break;
     }
     case 9:

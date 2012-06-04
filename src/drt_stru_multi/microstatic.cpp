@@ -1154,10 +1154,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
 
     const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-    if (solvertype != INPAR::SOLVER::belos)
-      dserror("You have to choose BELOS as solver for the micro structure!");
-
-    // create belos solver
+    // create solver
     Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(
                            solverparams,
                            discret_->Comm(),
@@ -1169,12 +1166,31 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
     discret_->ComputeNullSpaceIfNecessary(solver->Params());
 
     Teuchos::RCP<Epetra_MultiVector> iterinc = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
-
-    // apply Dirichlet BCs to system of equations
     iterinc->PutScalar(0.0);
 
-    // solve for 9 rhs at the same time --> thanks to Belos
-    solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, true, true);
+    switch(solvertype)
+    {
+      case INPAR::SOLVER::belos:
+      {
+        // solve for 9 rhs at the same time --> thanks to Belos
+        solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, true, true);
+        break;
+      }
+      case INPAR::SOLVER::aztec_msr:
+      {
+        // solve for 9 rhs iteratively
+        for(int i=0; i<rhs_->NumVectors(); i++)
+        {
+          solver->Solve(stiff_->EpetraOperator(), Teuchos::rcp(((*iterinc)(i)),false), Teuchos::rcp(((*rhs_)(i)),false), true, true);
+        }
+        break;
+      }
+      default:
+      {
+        dserror("You have to choose Belos or Aztec_MSR as solver for micro structures! Belos is superior for this application.");
+        break;
+      }
+    }
 
     Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
     stiff_dirich_->Multiply(false, *iterinc, *temp);
