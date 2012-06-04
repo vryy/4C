@@ -76,11 +76,7 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 void fluid_ale_drt()
 {
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with

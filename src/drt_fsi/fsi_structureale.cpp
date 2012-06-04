@@ -32,14 +32,6 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::StructureALE::StructureALE(const Epetra_Comm& comm)

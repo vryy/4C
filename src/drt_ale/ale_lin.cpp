@@ -21,14 +21,6 @@ Maintainer: Ulrich Kuettler
 
 #define scaling_infnorm true
 
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ALE::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,

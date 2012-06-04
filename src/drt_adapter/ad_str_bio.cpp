@@ -22,10 +22,6 @@ Maintainer: Mirella Coroneo
 #include "../drt_structure/stru_aux.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
-
-extern struct _GENPROB     genprob;
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureBio::StructureBio(

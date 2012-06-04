@@ -28,7 +28,6 @@
 #include "../drt_inpar/inpar_fluid.H"
 
 using namespace std;
-extern struct _GENPROB genprob;
 
 #define ALLDOF
 

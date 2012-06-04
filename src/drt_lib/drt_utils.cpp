@@ -78,14 +78,6 @@ extern "C"
 #include "drt_parobjectfactory.H"
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
-/*----------------------------------------------------------------------*
  |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)

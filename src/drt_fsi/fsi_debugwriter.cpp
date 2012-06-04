@@ -16,15 +16,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
-
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)

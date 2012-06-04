@@ -8,14 +8,6 @@
 #include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_utils.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
 /*======================================================================*/
 /* constructor */
 ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)

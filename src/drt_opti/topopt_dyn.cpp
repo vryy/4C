@@ -12,11 +12,7 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 

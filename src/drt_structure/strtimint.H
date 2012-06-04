@@ -223,11 +223,47 @@ namespace STR
                         //!< have been changed.
     );
 
+    /// start new time step
+    virtual void PrepareTimeStep() = 0;
+
     //! Do time integration of multiple steps
     void Integrate();
 
     //! Do time integration of single step
     virtual void IntegrateStep() = 0;
+
+    /// non-linear solve
+    ///
+    /// Do the nonlinear solve for the time step. All boundary conditions have
+    /// been set.
+    virtual void Solve() = 0;
+
+    //! Linear structure solve with just an interface load
+    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
+
+    /// update displacement and evaluate elements
+    ///
+    /// there are two displacement increments possible
+    ///
+    /// x^n+1_i+1 = x^n+1_i + disiterinc  (sometimes referred to as residual increment), and
+    ///
+    /// x^n+1_i+1 = x^n     + disstepinc
+    ///
+    /// with n and i being time and Newton iteration step
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
+
+    /// update at time step end
+    virtual void Update() = 0;
+
+    /// Update iteration
+    /// Add residual increment to Lagrange multipliers stored in Constraint manager
+    virtual void UpdateIterIncrConstr
+    (
+      Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
+    ) = 0;
+
+    /// output results
+    virtual void Output() = 0;
 
     //! Update configuration after time step
     //!
@@ -279,6 +315,9 @@ namespace STR
 
     //! Calculate kinetic, internal and external energy
     void DetermineEnergy();
+
+    /// create result test for encapsulated structure algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
     //@}
 
@@ -405,15 +444,6 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
     );
 
-    //@}
-
-    //! @name Thermo-structure-interaction specific methods
-    //@{
-    //! Apply the current temperatures to the structure problem
-    void ApplyTemperatures
-    (
-      Teuchos::RCP<const Epetra_Vector> temp  //!< current temperatures
-    );
     //@}
 
     //! @name porous media specific methods
@@ -544,11 +574,23 @@ namespace STR
     //! Read and set restart values for multi scale materials
     void ReadRestartMultiScale();
 
+    //! initial guess of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+
+    //! right-hand-side of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+
     //! Return displacements \f$D_{n}\f$
     Teuchos::RCP<Epetra_Vector> Dis() { return (*dis_)(0); }
 
+    //! unknown displacements at \f$t_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
+
     //! Return displacements \f$D_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> DisNew() { return disn_; }
+
+    //! unknown displacements at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
 
     //! Return velocities \f$V_{n}\f$
     Teuchos::RCP<Epetra_Vector> Vel() { return (*vel_)(0); }
@@ -574,6 +616,13 @@ namespace STR
     //! Return reaction forces
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
+    //! dof map of vector of unknowns
+    Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+    //! dof map of vector of unknowns
+    // new method for multiple dofsets
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
+
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
@@ -591,6 +640,26 @@ namespace STR
 
     //! Return domain map of mass matrix
     const Epetra_Map& GetDomainMap();
+
+    //! domain map of system matrix (do we really need this?)
+    virtual const Epetra_Map& DomainMap(){ return GetDomainMap(); }
+
+    //! are there any algebraic constraints?
+    virtual bool HaveConstraint() = 0;
+
+    //! get constraint manager defined in the structure
+    virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+
+    //! get type of thickness scaling for thin shell structures
+    virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
+
+    //! Access to scaling matrix for STC
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0 ;
+
+    //@}
+
+    //! @name Time step helpers
+    //@{
 
     //! Return current step number map
     double GetTime() const { return (*time_)[0]; }
@@ -613,6 +682,9 @@ namespace STR
     //! Return current step number map
     int GetStep() const { return step_; }
 
+    //! Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
+    virtual int GetTimeStep() const { return step_; }
+
     //! Get number of time steps
     int GetTimeNumStep() const { return stepmax_; }
 
@@ -631,6 +703,53 @@ namespace STR
 
     //! Sets the time for the next time step needed for the inverse analysis
     void SetTimen(double time){timen_ = time;};  //!< target time \f$t_{n+1}\f$
+
+    //@}
+
+    //! @name Extract methods
+    //@{
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp(){ return DisNew(); }
+
+    //! extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn(){ return Dis(); }
+
+    //! extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln(){ return Vel(); }
+
+    //! extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp(){ return VelNew(); }
+
+    //! extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf(){ return Velaf(); }
+
+    //! extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractAccn(){ return Acc(); }
+
+    //@}
+
+    //! @name TSI specific methods
+    //@{
+
+    //! Apply the current temperatures to the structure problem
+    void ApplyTemperatures
+    (
+      Teuchos::RCP<const Epetra_Vector> temp  //!< current temperatures
+    );
+
+    //! specific method for iterative staggered partitioned TSI
+
+    /// Identify residual
+    /// This method does not predict the target solution but
+    /// evaluates the residual and the stiffness matrix.
+    /// In partitioned solution schemes, it is better to keep the current
+    /// solution instead of evaluating the initial guess (as the predictor)
+    /// does.
+    virtual void PreparePartitionStep() = 0;
+
+    /// recalculate structural matrices for tsi simulations
+    virtual void TSIMatrix() = 0;
 
     //@}
 
@@ -877,134 +996,6 @@ namespace STR
     //@{
     Teuchos::RCP<Teuchos::ParameterList> pslist_;
     //@}
-
-
-
-    //----------------------------------------------------------------
-    // the following methods are imported from the adapter_structure_timint and need a
-    // merge with the already existing ones above
-    //----------------------------------------------------------------
-  public:
-
-    /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
-
-    /// right-hand-side of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
-
-    /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp(){ return DisNew(); }
-
-    /// unknown displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn(){ return Dis(); }
-
-    /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
-
-    /// dof map of vector of unknowns
-    // new method for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
-
-    /// recalculate structural matrices for tsi simulations
-    virtual void TSIMatrix() = 0;
-
-    /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
-    virtual int GetTimeStep() const { return GetStep(); }
-
-    /// start new time step
-    virtual void PrepareTimeStep() = 0;
-
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
-
-    /// update at time step end
-    virtual void Update() = 0;
-
-    /// Update iteration
-    /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void UpdateIterIncrConstr
-    (
-      Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
-    ) = 0;
-
-
-    /// output results
-    virtual void Output() = 0;
-
-    /// domain map of system matrix (do we really need this?)
-    virtual const Epetra_Map& DomainMap(){ return GetDomainMap(); }
-
-    /// are there any algebraic constraints?
-    virtual bool HaveConstraint() = 0;
-
-    /// get constraint manager defined in the structure
-    virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
-
-    /// get type of thickness scaling for thin shell structures
-    virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
-
-
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0 ;
-
-
-    /// @name Solver calls
-    //@{
-
-    /// non-linear solve
-    ///
-    /// Do the nonlinear solve for the time step. All boundary conditions have
-    /// been set.
-    virtual void Solve() = 0;
-
-    //! Linear structure solve with just an interface load
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
-
-    /// linear structure solve with just a interface load
-    ///
-    /// The very special solve done in steepest descent relaxation
-    /// calculation (and matrix free Newton Krylov).
-    ///
-    /// \note Can only be called after a valid structural solve.
-//    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-//      Teuchos::RCP<Epetra_Vector> iforce
-//    ) = 0;
-
-    //@}
-
-    //! @name Extract methods
-    //@{
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp(){ return DisNew(); }
-
-    /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn(){ return Dis(); }
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln(){ return Vel(); }
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp(){ return VelNew(); }
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf(){ return Velaf(); }
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractAccn(){ return Acc(); }
-
-    //@}
-
-    //! specific method for iterative staggered partitioned TSI
-
-    /// Identify residual
-    /// This method does not predict the target solution but
-    /// evaluates the residual and the stiffness matrix.
-    /// In partitioned solution schemes, it is better to keep the current
-    /// solution instead of evaluating the initial guess (as the predictor)
-    /// does.
-    virtual void PreparePartitionStep() = 0;
-
-    /// create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
   };
 

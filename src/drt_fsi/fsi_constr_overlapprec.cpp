@@ -9,8 +9,6 @@
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 
-extern struct _GENPROB     genprob;
-
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/
 FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,

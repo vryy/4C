@@ -17,14 +17,6 @@
 
 #include "../drt_io/io_control.H"
 
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplitNoNOX(const Epetra_Comm& comm,

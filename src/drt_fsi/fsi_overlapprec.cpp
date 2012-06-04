@@ -6,7 +6,6 @@
 
 #include "../drt_adapter/ad_fld_fluid.H"
 
-extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
