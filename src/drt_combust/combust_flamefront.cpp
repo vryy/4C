@@ -5419,26 +5419,26 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
   bool inGplus = false;
   Epetra_SerialDenseVector  cellcenter(3);
 
-  int numcellnodes = 0;
-  switch(distype_cell)
-  {
-  //    case DRT::Element::tet4:
-  //    {
-  //      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
-  //      break;
-  //    }
-  case DRT::Element::hex8:
-  {
-    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-    break;
-  }
-  case DRT::Element::hex20: {
-    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-    break;
-  }
-  default:
-    dserror("Discretization Type (IntCell) not supported yet!");
-  }
+//  int numcellnodes = 0;
+//  switch(distype_cell)
+//  {
+//  //    case DRT::Element::tet4:
+//  //    {
+//  //      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+//  //      break;
+//  //    }
+//  case DRT::Element::hex8:
+//  {
+//    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+//    break;
+//  }
+//  case DRT::Element::hex20: {
+//    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+//    break;
+//  }
+//  default:
+//    dserror("Discretization Type (IntCell) not supported yet!");
+//  }
 
   int numelenodes = 0;
   if (xfem_distype==DRT::Element::hex8) {

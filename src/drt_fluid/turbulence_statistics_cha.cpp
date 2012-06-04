@@ -455,16 +455,16 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       vector<double>::iterator coord;
 
       for (coord  = (*nodeplanes_).begin();
-	   coord != (*nodeplanes_).end()  ;
-	   ++coord)
+           coord != (*nodeplanes_).end()  ;
+           ++coord)
       {
-	*coord=0;
+        *coord=0;
       }
       for (coord  = planecoordinates_->begin();
-	   coord != planecoordinates_->end()  ;
-	   ++coord)
+           coord != planecoordinates_->end()  ;
+           ++coord)
       {
-	*coord=0;
+        *coord=0;
       }
     }
 
@@ -498,11 +498,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
       for (int inode=0; inode<numnp; ++inode)
       {
-	DRT::NURBS::ControlPoint* cp
-	  =
-	  dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+        DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
 
-	weights(inode) = cp->W();
+        weights(inode) = cp->W();
       }
 
       // get shapefunctions, compute all visualisation point positions
@@ -513,111 +513,111 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       case DRT::Element::nurbs8:
       case DRT::Element::nurbs27:
       {
-	// element local point position
-	Epetra_SerialDenseVector uv(3);
+         // element local point position
+         Epetra_SerialDenseVector uv(3);
 
-	{
-	  // standard
+        {
+          // standard
 
-	  //               v
-	  //              /
+          //               v
+          //              /
           //  w  7       /   8
-	  //  ^   +---------+
-	  //  |  /         /|
-	  //  | /         / |
-	  // 5|/        6/  |
-	  //  +---------+   |
-	  //  |         |   |
-	  //  |         |   +
-	  //  |         |  / 4
-	  //  |         | /
-	  //  |         |/
-	  //  +---------+ ----->u
-	  // 1           2
-	  // use v-coordinate of point 1 and 8
-	  // temporary x vector
-	  std::vector<double> x(3);
+      //  ^   +---------+
+      //  |  /         /|
+      //  | /         / |
+      // 5|/        6/  |
+      //  +---------+   |
+      //  |         |   |
+      //  |         |   +
+      //  |         |  / 4
+      //  |         | /
+      //  |         |/
+      //  +---------+ ----->u
+      // 1           2
+      // use v-coordinate of point 1 and 8
+      // temporary x vector
+          std::vector<double> x(3);
 
-	  // point 1
-	  uv(0)= -1.0;
-	  uv(1)= -1.0;
-	  uv(2)= -1.0;
-	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-						uv               ,
-						knots            ,
-						weights          ,
-						actele->Shape()  );
-	  for (int isd=0; isd<3; ++isd)
-	  {
-	    double val = 0;
-	    for (int inode=0; inode<numnp; ++inode)
-	    {
-	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
-	    }
-	    x[isd]=val;
-	  }
+         // point 1
+         uv(0)= -1.0;
+         uv(1)= -1.0;
+         uv(2)= -1.0;
+         DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                        uv               ,
+                        knots            ,
+                        weights          ,
+                        actele->Shape()  );
+        for (int isd=0; isd<3; ++isd)
+        {
+          double val = 0;
+          for (int inode=0; inode<numnp; ++inode)
+          {
+            val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+          }
+          x[isd]=val;
+        }
 
-	  (*nodeplanes_      )[ele_cart_id[1]]                    +=x[1];
-	  (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)]+=x[1];
+        (*nodeplanes_      )[ele_cart_id[1]]                    +=x[1];
+        (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)]+=x[1];
 
-	  for (int isd=0; isd<3; ++isd)
-	  {
-	    if ((*boundingbox_)(0,isd)>x[isd])
-	    {
-	      (*boundingbox_)(0,isd)=x[isd];
-	    }
-	    if ((*boundingbox_)(1,isd)<x[isd])
-	    {
-	      (*boundingbox_)(1,isd)=x[isd];
-	    }
-	  }
+        for (int isd=0; isd<3; ++isd)
+        {
+          if ((*boundingbox_)(0,isd)>x[isd])
+          {
+            (*boundingbox_)(0,isd)=x[isd];
+          }
+          if ((*boundingbox_)(1,isd)<x[isd])
+          {
+            (*boundingbox_)(1,isd)=x[isd];
+          }
+        }
 
-	  for(int rr=1;rr<numsubdivisions-1;++rr)
-	  {
-	    uv(1) += 2.0/(numsubdivisions-1);
+        for(int rr=1;rr<numsubdivisions-1;++rr)
+        {
+          uv(1) += 2.0/(numsubdivisions-1);
 
-	    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-						  uv               ,
-						  knots            ,
-						  weights          ,
-						  actele->Shape()  );
-	    for (int isd=0; isd<3; ++isd)
-	    {
-	      double val = 0;
-	      for (int inode=0; inode<numnp; ++inode)
-	      {
-		val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
-	      }
-	      x[isd]=val;
-	    }
-	    (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)+rr]+=x[1];
-	  }
+          DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                         uv               ,
+                         knots            ,
+                         weights          ,
+                         actele->Shape()  );
+          for (int isd=0; isd<3; ++isd)
+          {
+            double val = 0;
+            for (int inode=0; inode<numnp; ++inode)
+            {
+              val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+            }
+            x[isd]=val;
+          }
+          (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)+rr]+=x[1];
+        }
 
 
-	  // set upper point of element, too (only for last layer)
-	  if(ele_cart_id[1]+1 == nele_x_mele_x_lele[1])
-	  {
-	    // point 8
-	    uv(0)=  1.0;
-	    uv(1)=  1.0;
-	    uv(2)=  1.0;
-	    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-						  uv               ,
-						  knots            ,
-						  weights          ,
-						  actele->Shape()  );
-	    for (int isd=0; isd<3; ++isd)
-	    {
-	      double val = 0;
-	      for (int inode=0; inode<numnp; ++inode)
-	      {
-		val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
-	      }
-	      x[isd]=val;
-	    }
+        // set upper point of element, too (only for last layer)
+        if(ele_cart_id[1]+1 == nele_x_mele_x_lele[1])
+        {
+          // point 8
+          uv(0)=  1.0;
+          uv(1)=  1.0;
+          uv(2)=  1.0;
+          DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                         uv               ,
+                         knots            ,
+                         weights          ,
+                          actele->Shape()  );
+          for (int isd=0; isd<3; ++isd)
+          {
+            double val = 0;
+            for (int inode=0; inode<numnp; ++inode)
+            {
+              val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+            }
+            x[isd]=val;
+          }
 
-	    (*nodeplanes_)      [ele_cart_id[1]                   +1]+=x[1];
-	    (*planecoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions-1)]+=x[1];
+          (*nodeplanes_)      [ele_cart_id[1]                   +1]+=x[1];
+          (*planecoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions-1)]+=x[1];
 
             for (int isd=0; isd<3; ++isd)
             {
@@ -630,13 +630,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
                 (*boundingbox_)(1,isd)=x[isd];
               }
             }
-	  }
+        }
 
-	}
-	break;
+      }
+      break;
       }
       default:
-	dserror("Unknown element shape for a nurbs element or nurbs type not valid for turbulence calculation\n");
+        dserror("Unknown element shape for a nurbs element or nurbs type not valid for turbulence calculation\n");
       }
     }
 
@@ -658,16 +658,16 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       int nelelayer = (nele_x_mele_x_lele[0])*(nele_x_mele_x_lele[2]);
 
       for (coord  = (*nodeplanes_).begin();
-	   coord != (*nodeplanes_).end()  ;
-	   ++coord)
+           coord != (*nodeplanes_).end()  ;
+           ++coord)
       {
-	*coord/=(double)(nelelayer);
+        *coord/=(double)(nelelayer);
       }
       for (coord  = planecoordinates_->begin();
-	   coord != planecoordinates_->end()  ;
-	   ++coord)
+           coord != planecoordinates_->end()  ;
+           ++coord)
       {
-	*coord/=(double)(nelelayer);
+       *coord/=(double)(nelelayer);
       }
     }
 
@@ -3442,13 +3442,11 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
 
   //----------------------------------------------------------------------
   // we expect nonzero forces (tractions) only in flow direction
-  int flowdirection =0;
 
   // ltau is used to compute y+
   double ltau = 0;
   if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
-    flowdirection=0;
     if(abs(sumforceu_)< 1.0e-12)
     {
       dserror("zero force during computation of wall shear stress\n");
@@ -3458,12 +3456,10 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
-    flowdirection=1;
     ltau = visc_/sqrt(sumforcev_/dens_/area);
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
-    flowdirection=2;
     ltau = visc_/sqrt(sumforcew_/dens_/area);
   }
   else
@@ -3852,23 +3848,19 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
 
   //----------------------------------------------------------------------
   // we expect nonzero forces (tractions) only in flow direction
-  int flowdirection =0;
 
   // ltau is used to compute y+
   double ltau = 0;
   if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
-    flowdirection=0;
     ltau = visc_/sqrt(sumforceu_/dens_/(area*numsamp_));
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
-    flowdirection=1;
     ltau = visc_/sqrt(sumforcev_/dens_/(area*numsamp_));
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
-    flowdirection=2;
     ltau = visc_/sqrt(sumforcew_/dens_/(area*numsamp_));
   }
   else
@@ -4147,7 +4139,6 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
 
   //----------------------------------------------------------------------
   // we expect nonzero forces (tractions) only in flow direction
-  int flowdirection =0;
 
   // rho_w and tau_w at bottom and top wall
   const double rhowb = (*sumrho_)[0]/aux;
@@ -4156,19 +4147,16 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
   double tauwt = 0;
   if      (sumforcebu_>sumforcebv_ && sumforcebu_>sumforcebw_)
   {
-    flowdirection=0;
     tauwb = sumforcebu_/areanumsamp;
     tauwt = sumforcetu_/areanumsamp;
   }
   else if (sumforcebv_>sumforcebu_ && sumforcebv_>sumforcebw_)
   {
-    flowdirection=1;
     tauwb = sumforcebv_/areanumsamp;
     tauwt = sumforcetv_/areanumsamp;
   }
   else if (sumforcebw_>sumforcebu_ && sumforcebw_>sumforcebv_)
   {
-    flowdirection=2;
     tauwb = sumforcebw_/areanumsamp;
     tauwt = sumforcetw_/areanumsamp;
   }
@@ -4438,26 +4426,22 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(int step)
 
   //----------------------------------------------------------------------
   // we expect nonzero forces (tractions) only in flow direction
-  int flowdirection =0;
 
   // tau_w at bottom and top wall
   double tauwb = 0;
   double tauwt = 0;
   if      (sumforcebu_>sumforcebv_ && sumforcebu_>sumforcebw_)
   {
-    flowdirection=0;
     tauwb = sumforcebu_/areanumsamp;
     tauwt = sumforcetu_/areanumsamp;
   }
   else if (sumforcebv_>sumforcebu_ && sumforcebv_>sumforcebw_)
   {
-    flowdirection=1;
     tauwb = sumforcebv_/areanumsamp;
     tauwt = sumforcetv_/areanumsamp;
   }
   else if (sumforcebw_>sumforcebu_ && sumforcebw_>sumforcebv_)
   {
-    flowdirection=2;
     tauwb = sumforcebw_/areanumsamp;
     tauwt = sumforcetw_/areanumsamp;
   }

@@ -18,8 +18,8 @@ flows.
 
   ---------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
-  RefCountPtr<DRT::Discretization>	actdis,
-  ParameterList&			params)
+  RefCountPtr<DRT::Discretization>   actdis,
+  ParameterList&                     params)
   :
   discret_(actdis),
   params_ (params)
@@ -140,11 +140,11 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
       {
        if ((*boundingbox_)(0,row)>node->X()[row])
        {
-	 (*boundingbox_)(0,row)=node->X()[row];
+         (*boundingbox_)(0,row)=node->X()[row];
        }
        if ((*boundingbox_)(1,row)<node->X()[row])
        {
-	 (*boundingbox_)(1,row)=node->X()[row];
+         (*boundingbox_)(1,row)=node->X()[row];
        }
       }
     }
@@ -187,35 +187,35 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
       for (int np=0;np<numprocs;++np)
       {
-	DRT::PackBuffer data;
+        DRT::PackBuffer data;
 
        for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
-	    plane!=availablecoords.end();
-	    ++plane)
+            plane!=availablecoords.end();
+            ++plane)
        {
-	 DRT::ParObject::AddtoPack(data,*plane);
+         DRT::ParObject::AddtoPack(data,*plane);
        }
-	data.StartPacking();
+       data.StartPacking();
        for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
-	    plane!=availablecoords.end();
-	    ++plane)
+            plane!=availablecoords.end();
+            ++plane)
        {
-	 DRT::ParObject::AddtoPack(data,*plane);
+         DRT::ParObject::AddtoPack(data,*plane);
        }
-	swap( sblock, data() );
+       swap( sblock, data() );
 
 #ifdef PARALLEL
        MPI_Request request;
-       int	   tag    =myrank;
+       int   tag    =myrank;
 
-       int	   frompid=myrank;
-       int	   topid  =(myrank+1)%numprocs;
+       int   frompid=myrank;
+       int   topid  =(myrank+1)%numprocs;
 
-       int	   length=sblock.size();
+       int   length=sblock.size();
 
        exporter.ISend(frompid,topid,
-		      &(sblock[0]),sblock.size(),
-		      tag,request);
+        &(sblock[0]),sblock.size(),
+        tag,request);
 
        rblock.clear();
 
@@ -231,8 +231,8 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
        exporter.Wait(request);
 
        {
-	 // for safety
-	 exporter.Comm().Barrier();
+         // for safety
+         exporter.Comm().Barrier();
        }
 #else
        // dummy communication
@@ -242,17 +242,17 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
        // Unpack received block into set of all planes.
        {
-	 vector<double> coordsvec;
+          vector<double> coordsvec;
 
-	 coordsvec.clear();
+          coordsvec.clear();
 
-	 vector<char>::size_type index = 0;
-	 while (index < rblock.size())
-	 {
-	   double onecoord;
-	   DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
-	   availablecoords.insert(onecoord);
-	 }
+          vector<char>::size_type index = 0;
+          while (index < rblock.size())
+          {
+            double onecoord;
+            DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
+            availablecoords.insert(onecoord);
+          }
        }
       }
     }
@@ -262,8 +262,8 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
     {
       for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
-	 coord!=availablecoords.end();
-	 ++coord)
+          coord!=availablecoords.end();
+          ++coord)
       {
        nodeplanes_->push_back(*coord);
       }
@@ -278,7 +278,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
     {
       DRT::Node* node = discret_->lRowNode(i);
       if ((*nodeplanes_)[0] > node->X()[dim_] - 2e-9 and (*nodeplanes_)[0] < node->X()[dim_] + 2e-9)
-	loccount++;
+         loccount++;
     }
     discret_->Comm().SumAll(&loccount,&numnode_,1);
   }
@@ -392,9 +392,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 }// TurbulenceStatisticsChaMultPhase::TurbulenceStatisticsChaMultPhase
 
 /*----------------------------------------------------------------------*
-
-			   Destructor
-
+   Destructor
  -----------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsBcf::~TurbulenceStatisticsBcf()
 {
@@ -402,11 +400,9 @@ COMBUST::TurbulenceStatisticsBcf::~TurbulenceStatisticsBcf()
 }// TurbulenceStatisticsBcf::~TurbulenceStatisticsBcf()
 
 /*----------------------------------------------------------------------*
-
        Compute the in-plane mean values of first and second order
        moments for velocities, pressure and Cs are added to global
-			    'sum' vectors.
-
+       'sum' vectors.
  -----------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   Teuchos::RefCountPtr<const Epetra_Vector> stdvelnp,
@@ -493,8 +489,8 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   {
     // only true for top and bottom plane
     if ((*plane-2e-9 < (*nodeplanes_)[0] and *plane+2e-9 > (*nodeplanes_)[0])
-	or
-	(*plane-2e-9 < (*nodeplanes_)[nodeplanes_->size()-1] and *plane+2e-9 > (*nodeplanes_)[nodeplanes_->size()-1]))
+        or
+        (*plane-2e-9 < (*nodeplanes_)[nodeplanes_->size()-1] and *plane+2e-9 > (*nodeplanes_)[nodeplanes_->size()-1]))
     {
       // toggle vectors are one in the position of a dof in this plane,
       // else 0
@@ -505,59 +501,59 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
       // activate toggles for in plane dofs
       for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
       {
-	DRT::Node* node = discret_->lRowNode(nn);
+         DRT::Node* node = discret_->lRowNode(nn);
 
-	// this node belongs to the plane under consideration
-	if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
-	{
-	  vector<int> dof = stddofset_->Dof(node);
-	  double      one = 1.0;
+         // this node belongs to the plane under consideration
+         if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+         {
+           vector<int> dof = stddofset_->Dof(node);
+           double      one = 1.0;
 
-	  toggleu_[0]->ReplaceGlobalValues(1,&one,&(dof[0]));
-	  togglev_[0]->ReplaceGlobalValues(1,&one,&(dof[1]));
-	  togglew_[0]->ReplaceGlobalValues(1,&one,&(dof[2]));
-	}
+           toggleu_[0]->ReplaceGlobalValues(1,&one,&(dof[0]));
+           togglev_[0]->ReplaceGlobalValues(1,&one,&(dof[1]));
+           togglew_[0]->ReplaceGlobalValues(1,&one,&(dof[2]));
+         }
       }
 
       // compute forces by dot product
       double inc=0.0;
       {
-	double local_inc=0.0;
-	for(int rr=0;rr<(*(toggleu_[0])).MyLength();++rr)
-	{
-	  local_inc+=(*(toggleu_[0]))[rr]*(*(toggleu_[0]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
+         double local_inc=0.0;
+         for(int rr=0;rr<(*(toggleu_[0])).MyLength();++rr)
+         {
+           local_inc+=(*(toggleu_[0]))[rr]*(*(toggleu_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
 
-	if(abs(inc)<1e-9)
-	{
-	  dserror("there are no forced nodes on the boundary\n");
-	}
+         if(abs(inc)<1e-9)
+         {
+           dserror("there are no forced nodes on the boundary\n");
+         }
 
-	local_inc=0.0;
-	for(int rr=0; rr<stdforce->MyLength(); ++rr)
-	{
-	  local_inc+=(*stdforce)[rr] * (*(toggleu_[0]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	sumforceu_+=inc;
+         local_inc=0.0;
+         for(int rr=0; rr<stdforce->MyLength(); ++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(toggleu_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforceu_+=inc;
 
-	local_inc=0.0;
-	for(int rr=0;rr<stdforce->MyLength();++rr)
-	{
-	  local_inc+=(*stdforce)[rr] * (*(togglev_[0]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	sumforcev_+=inc;
+         local_inc=0.0;
+         for(int rr=0;rr<stdforce->MyLength();++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(togglev_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforcev_+=inc;
 
 
-	local_inc=0.0;
-	for(int rr=0;rr<stdforce->MyLength();++rr)
-	{
-	  local_inc+=(*stdforce)[rr] * (*(togglew_[0]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	sumforcew_+=inc;
+         local_inc=0.0;
+         for(int rr=0;rr<stdforce->MyLength();++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(togglew_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforcew_+=inc;
       }
     }
   }
@@ -572,20 +568,18 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   togglev_.clear();
   togglew_.clear();
 
-  stdvelnp_	     = Teuchos::null;
+  stdvelnp_     = Teuchos::null;
   pointsquaredvelnp_ = Teuchos::null;
-  fullvelnp_	     = Teuchos::null;
+  fullvelnp_     = Teuchos::null;
 
-  phinp_	     = Teuchos::null;
+  phinp_     = Teuchos::null;
 
   return;
 }// TurbulenceStatisticsBcf::DoTimeSample
 
 
 /*----------------------------------------------------------------------*
-
-	  Compute in plane means of u,u^2 etc. (integral version)
-
+  Compute in plane means of u,u^2 etc. (integral version)
  -----------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
 {
@@ -665,14 +659,14 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
     {
       double fullvolplane = 0.0;
       for(size_t j = 0; j < numphase_; j++)
-	fullvolplane += (*(globvol[j]))[i];
+         fullvolplane += (*(globvol[j]))[i];
 
       if (fullvolplane == 0.0)
-	dserror("Apparently we got an empty (vol=0.0) element plane");
+         dserror("Apparently we got an empty (vol=0.0) element plane");
 
       for(size_t j = 0; j < numphase_; j++)
       {
-	(*(sumvol_[j]))[i] += (*(globvol[j]))[i] / fullvolplane;
+         (*(sumvol_[j]))[i] += (*(globvol[j]))[i] / fullvolplane;
       }
     }
   }
@@ -682,9 +676,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
 
 
 /*----------------------------------------------------------------------*
-
-	  Compute in plane means of u,u^2 etc. (nodal quantities)
-
+  Compute in plane means of u,u^2 etc. (nodal quantities)
   ----------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
 {
@@ -720,60 +712,60 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
       // this node belongs to the plane under consideration
       if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
       {
-	vector<int> dof = stddofset_->Dof(node);
-	double      one = 1.0;
-	int	  index = -1;
+         vector<int> dof = stddofset_->Dof(node);
+         double      one = 1.0;
+         int  index = -1;
 
-	// This is a dirty hack.  The statistics channel should  not know
-	// anything about  the combust specific phi.  There ought to be a
-	// method to let either the node decide to which phase it belongs
-	// or to ask the discretization or similar.
-	// Perhaps a node condition?
-	const int lid = phinp_->Map().LID(node->Id());
-	if (lid < 0)
-	  dserror("Node %i is not on this proc.", node->Id());
-	if ((*phinp_)[lid] < 0 )
-	  index = 1;
-	else
-	  index = 0;
-	// end hack
+         // This is a dirty hack.  The statistics channel should  not know
+         // anything about  the combust specific phi.  There ought to be a
+         // method to let either the node decide to which phase it belongs
+         // or to ask the discretization or similar.
+         // Perhaps a node condition?
+         const int lid = phinp_->Map().LID(node->Id());
+         if (lid < 0)
+           dserror("Node %i is not on this proc.", node->Id());
+         if ((*phinp_)[lid] < 0 )
+           index = 1;
+         else
+           index = 0;
+         // end hack
 
-	toggleu_[index]->ReplaceGlobalValues(1,&one,&(dof[0]));
-	togglev_[index]->ReplaceGlobalValues(1,&one,&(dof[1]));
-	togglew_[index]->ReplaceGlobalValues(1,&one,&(dof[2]));
-	togglep_[index]->ReplaceGlobalValues(1,&one,&(dof[3]));
+         toggleu_[index]->ReplaceGlobalValues(1,&one,&(dof[0]));
+         togglev_[index]->ReplaceGlobalValues(1,&one,&(dof[1]));
+         togglew_[index]->ReplaceGlobalValues(1,&one,&(dof[2]));
+         togglep_[index]->ReplaceGlobalValues(1,&one,&(dof[3]));
 
-	// now check whether we have a pbc condition on this node
-	vector<DRT::Condition*> mypbc;
+         // now check whether we have a pbc condition on this node
+         vector<DRT::Condition*> mypbc;
 
-	node->GetCondition("SurfacePeriodic",mypbc);
+         node->GetCondition("SurfacePeriodic",mypbc);
 
-	// yes, we have a pbc
-	if (mypbc.size()>0)
-	{
-	  // loop them and check, whether this is a pbc pure master node
-	  // for all previous conditions
-	  size_t ntimesmaster = 0;
-	  for (size_t numcond=0;numcond<mypbc.size();++numcond)
-	  {
-	    const string* mymasterslavetoggle
-	      = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
+         // yes, we have a pbc
+         if (mypbc.size()>0)
+         {
+           // loop them and check, whether this is a pbc pure master node
+           // for all previous conditions
+           size_t ntimesmaster = 0;
+           for (size_t numcond=0;numcond<mypbc.size();++numcond)
+           {
+             const string* mymasterslavetoggle
+               = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
 
-	    if(*mymasterslavetoggle=="Master")
-	    {
-	      ++ntimesmaster;
-	    } // end is slave?
-	  } // end loop this conditions
+             if(*mymasterslavetoggle=="Master")
+             {
+               ++ntimesmaster;
+             } // end is slave?
+           } // end loop this conditions
 
-	  if(ntimesmaster!=mypbc.size())
-	  {
-	    continue;
-	  }
-	  // we have a master. Remember this cause we have to extend the patch
-	  // to the other side...
-	}
+           if(ntimesmaster!=mypbc.size())
+           {
+             continue;
+           }
+           // we have a master. Remember this cause we have to extend the patch
+           // to the other side...
+         }
 
-	(countnodesinplane[index])++;
+         (countnodesinplane[index])++;
       }
     }
 
@@ -786,109 +778,109 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
       // if there are no nodes in this plane, there is nothing to do anyways
       if (countnodesinplaneonallprocs[iphase])
       {
-	double inc=0.0;
-	double local_inc=0.0;
-	//----------------------------------------------------------------------
-	// sum up the number of nodes per plane
-	(*(pointsumnode_[iphase]))[planenum] += countnodesinplaneonallprocs[iphase];
+         double inc=0.0;
+         double local_inc=0.0;
+         //----------------------------------------------------------------------
+         // sum up the number of nodes per plane
+         (*(pointsumnode_[iphase]))[planenum] += countnodesinplaneonallprocs[iphase];
 
-	//----------------------------------------------------------------------
-	// compute scalar products from velnp and toggle vec to sum up
-	// values in this plane
-	local_inc=0.0;
-	for(int rr=0; rr<stdvelnp_->MyLength(); ++rr)
-	{
-	  local_inc += (*stdvelnp_)[rr] * (*(toggleu_[iphase]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumu_[iphase]))[planenum] += inc;
+         //----------------------------------------------------------------------
+         // compute scalar products from velnp and toggle vec to sum up
+         // values in this plane
+         local_inc=0.0;
+         for(int rr=0; rr<stdvelnp_->MyLength(); ++rr)
+         {
+           local_inc += (*stdvelnp_)[rr] * (*(toggleu_[iphase]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumu_[iphase]))[planenum] += inc;
 
-	local_inc=0.0;
-	for(int rr=0;rr<stdvelnp_->MyLength();++rr)
-	{
-	  local_inc+=(*stdvelnp_)[rr] * (*(togglev_[iphase]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumv_[iphase]))[planenum] += inc;
+         local_inc=0.0;
+         for(int rr=0;rr<stdvelnp_->MyLength();++rr)
+         {
+           local_inc+=(*stdvelnp_)[rr] * (*(togglev_[iphase]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumv_[iphase]))[planenum] += inc;
 
-	local_inc=0.0;
-	for(int rr=0;rr<stdvelnp_->MyLength();++rr)
-	{
-	  local_inc+=(*stdvelnp_)[rr]*(*(togglew_[iphase]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumw_[iphase]))[planenum] += inc;
+         local_inc=0.0;
+         for(int rr=0;rr<stdvelnp_->MyLength();++rr)
+         {
+           local_inc+=(*stdvelnp_)[rr]*(*(togglew_[iphase]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumw_[iphase]))[planenum] += inc;
 
-	local_inc=0.0;
-	for(int rr=0;rr<stdvelnp_->MyLength();++rr)
-	{
-	  local_inc+=(*stdvelnp_)[rr]*(*(togglep_[iphase]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsump_[iphase]))[planenum]+=inc;
+         local_inc=0.0;
+         for(int rr=0;rr<stdvelnp_->MyLength();++rr)
+         {
+           local_inc+=(*stdvelnp_)[rr]*(*(togglep_[iphase]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsump_[iphase]))[planenum]+=inc;
 
-	//----------------------------------------------------------------------
-	// compute scalar products from squaredvelnp and toggle vec to
-	// sum up values for second order moments in this plane
+         //----------------------------------------------------------------------
+         // compute scalar products from squaredvelnp and toggle vec to
+         // sum up values for second order moments in this plane
 
-	local_inc=0.0;
-	for(int rr=0; rr < stdvelnp_->MyLength(); rr += 4)
-	{
-	  local_inc += ((*stdvelnp_)[rr]*(*(toggleu_[iphase]))[rr]) * ((*stdvelnp_)[rr+1]*(*(togglev_[iphase]))[rr+1]);
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumuv_[iphase]))[planenum]+=inc;
+         local_inc=0.0;
+         for(int rr=0; rr < stdvelnp_->MyLength(); rr += 4)
+         {
+           local_inc += ((*stdvelnp_)[rr]*(*(toggleu_[iphase]))[rr]) * ((*stdvelnp_)[rr+1]*(*(togglev_[iphase]))[rr+1]);
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumuv_[iphase]))[planenum]+=inc;
 
-	local_inc=0.0;
-	for(int rr=0; rr < stdvelnp_->MyLength(); rr += 4)
-	{
-	  local_inc += ((*stdvelnp_)[rr]*(*(toggleu_[iphase]))[rr]) * ((*stdvelnp_)[rr+2]*(*(togglew_[iphase]))[rr+2]);
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumuw_[iphase]))[planenum]+=inc;
+         local_inc=0.0;
+         for(int rr=0; rr < stdvelnp_->MyLength(); rr += 4)
+         {
+           local_inc += ((*stdvelnp_)[rr]*(*(toggleu_[iphase]))[rr]) * ((*stdvelnp_)[rr+2]*(*(togglew_[iphase]))[rr+2]);
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumuw_[iphase]))[planenum]+=inc;
 
-	local_inc=0.0;
-	for(int rr=0; rr < stdvelnp_->MyLength(); rr += 4)
-	{
-	  local_inc += ((*stdvelnp_)[rr+1]*(*(togglev_[iphase]))[rr+1]) * ((*stdvelnp_)[rr+2]*(*(togglew_[iphase]))[rr+2]);
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumvw_[iphase]))[planenum]+=inc;
+         local_inc=0.0;
+         for(int rr=0; rr < stdvelnp_->MyLength(); rr += 4)
+         {
+           local_inc += ((*stdvelnp_)[rr+1]*(*(togglev_[iphase]))[rr+1]) * ((*stdvelnp_)[rr+2]*(*(togglew_[iphase]))[rr+2]);
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumvw_[iphase]))[planenum]+=inc;
 
-	//----------------------------------------------------------------------
-	// compute scalar products from squaredvelnp and toggle vec to
-	// sum up values for second order moments in this plane
-	local_inc=0.0;
-	for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
-	{
-	  local_inc+=(*pointsquaredvelnp_)[rr]*(*(toggleu_[iphase]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumsqu_[iphase]))[planenum] += inc;
+         //----------------------------------------------------------------------
+         // compute scalar products from squaredvelnp and toggle vec to
+         // sum up values for second order moments in this plane
+         local_inc=0.0;
+         for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
+         {
+           local_inc+=(*pointsquaredvelnp_)[rr]*(*(toggleu_[iphase]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumsqu_[iphase]))[planenum] += inc;
 
-	local_inc=0.0;
-	for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
-	{
-	  local_inc+=(*pointsquaredvelnp_)[rr]*(*(togglev_[iphase]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumsqv_[iphase]))[planenum] += inc;
+         local_inc=0.0;
+         for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
+         {
+           local_inc+=(*pointsquaredvelnp_)[rr]*(*(togglev_[iphase]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumsqv_[iphase]))[planenum] += inc;
 
-	local_inc=0.0;
-	for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
-	{
-	  local_inc+=(*pointsquaredvelnp_)[rr]*(*(togglew_[iphase]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumsqw_[iphase]))[planenum] += inc;
+         local_inc=0.0;
+         for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
+         {
+           local_inc+=(*pointsquaredvelnp_)[rr]*(*(togglew_[iphase]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumsqw_[iphase]))[planenum] += inc;
 
-	local_inc=0.0;
-	for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
-	{
-	  local_inc+=(*pointsquaredvelnp_)[rr]*(*(togglep_[iphase]))[rr];
-	}
-	discret_->Comm().SumAll(&local_inc,&inc,1);
-	(*(pointsumsqp_[iphase]))[planenum] += inc;
+         local_inc=0.0;
+         for(int rr=0;rr<pointsquaredvelnp_->MyLength();++rr)
+         {
+           local_inc+=(*pointsquaredvelnp_)[rr]*(*(togglep_[iphase]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         (*(pointsumsqp_[iphase]))[planenum] += inc;
       }
     } //end for (size_t iphase = 0; iphase < numphase_; ++iphase)
     planenum++;
@@ -920,19 +912,19 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
     {
       (*(sumvol_[j]))[i] /= numsamp_;
 
-//	(*(sumu_[j])  )[i] /=numsamp_;
-//	(*(sumv_[j])  )[i] /=numsamp_;
-//	(*(sumw_[j])  )[i] /=numsamp_;
-//	(*(sump_[j])  )[i] /=numsamp_;
+//(*(sumu_[j])  )[i] /=numsamp_;
+//(*(sumv_[j])  )[i] /=numsamp_;
+//(*(sumw_[j])  )[i] /=numsamp_;
+//(*(sump_[j])  )[i] /=numsamp_;
 //
-//	(*(sumuv_[j]) )[i] /=numsamp_;
-//	(*(sumuw_[j]) )[i] /=numsamp_;
-//	(*(sumvw_[j]) )[i] /=numsamp_;
+//(*(sumuv_[j]) )[i] /=numsamp_;
+//(*(sumuw_[j]) )[i] /=numsamp_;
+//(*(sumvw_[j]) )[i] /=numsamp_;
 //
-//	(*(sumsqu_[j]))[i] /=numsamp_;
-//	(*(sumsqv_[j]))[i] /=numsamp_;
-//	(*(sumsqw_[j]))[i] /=numsamp_;
-//	(*(sumsqp_[j]))[i] /=numsamp_;
+//(*(sumsqu_[j]))[i] /=numsamp_;
+//(*(sumsqv_[j]))[i] /=numsamp_;
+//(*(sumsqw_[j]))[i] /=numsamp_;
+//(*(sumsqp_[j]))[i] /=numsamp_;
     }
   }
 
@@ -943,19 +935,19 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
       const double numsamp = ((*(pointsumnode_[j]))[i]);
       if(numsamp > 0.0)
       {
-	(*(pointsumu_[j]))[i]	/= numsamp;
-	(*(pointsumv_[j]))[i]	/= numsamp;
-	(*(pointsumw_[j]))[i]	/= numsamp;
-	(*(pointsump_[j]))[i]	/= numsamp;
+         (*(pointsumu_[j]))[i]	/= numsamp;
+         (*(pointsumv_[j]))[i]	/= numsamp;
+         (*(pointsumw_[j]))[i]	/= numsamp;
+         (*(pointsump_[j]))[i]	/= numsamp;
 
-	(*(pointsumsqu_[j]))[i] /= numsamp;
-	(*(pointsumsqv_[j]))[i] /= numsamp;
-	(*(pointsumsqw_[j]))[i] /= numsamp;
-	(*(pointsumsqp_[j]))[i] /= numsamp;
+         (*(pointsumsqu_[j]))[i] /= numsamp;
+         (*(pointsumsqv_[j]))[i] /= numsamp;
+         (*(pointsumsqw_[j]))[i] /= numsamp;
+         (*(pointsumsqp_[j]))[i] /= numsamp;
 
-	(*(pointsumuv_[j]))[i]  /= numsamp;
-	(*(pointsumuw_[j]))[i]  /= numsamp;
-	(*(pointsumvw_[j]))[i]  /= numsamp;
+         (*(pointsumuv_[j]))[i]  /= numsamp;
+         (*(pointsumuw_[j]))[i]  /= numsamp;
+         (*(pointsumvw_[j]))[i]  /= numsamp;
       }
     }
   }
@@ -979,13 +971,11 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
 
   //----------------------------------------------------------------------
   // we expect nonzero forces (tractions) only in flow direction
-  int flowdirection =0;
 
   // ltau is used to compute y+
   vector<double> ltau(numphase_);
   if	  (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
-    flowdirection=0;
     if(abs(sumforceu_)< 1.0e-12)
     {
       dserror("zero force during computation of wall shear stress\n");
@@ -996,13 +986,11 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
-    flowdirection=1;
     for (size_t i = 0; i < numphase_; i++)
       ltau[i] = visc_[i]/sqrt(sumforcev_/area);
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
-    flowdirection=2;
     for (size_t i = 0; i < numphase_; i++)
       ltau[i] = visc_[i]/sqrt(sumforcew_/area);
   }
@@ -1030,11 +1018,11 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
       int matid = -1;
       for (std::map<int, int>::const_iterator it = matidtoindex_->begin(); it != matidtoindex_->end(); ++it)
       {
-	if ((unsigned)it->second == j)
-	{
-	  matid = it->first;
-	  break;
-	}
+         if ((unsigned)it->second == j)
+         {
+           matid = it->first;
+           break;
+         }
       }
 
       (*log) << "# Material ID  	 : ";
@@ -1053,32 +1041,32 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
       (*log) << "wise-------------------------------------------";
       (*log) << "------------------------------------------------------------------------|\n";
 
-      (*log) << "#     y	    y+      volfraction";
-      (*log) << "	umean	      vmean	    wmean	  pmean";
-      (*log) << "	 mean u^2      mean v^2      mean w^2";
-      (*log) << "      mean u*v      mean u*w	   mean v*w	  mean p^2    no. samp \n";
+      (*log) << "#     y        y+      volfraction";
+      (*log) << "   umean         vmean      wmean     pmean";
+      (*log) << "   mean u^2      mean v^2      mean w^2";
+      (*log) << "      mean u*v      mean u*w     mean v*w    mean p^2    no. samp \n";
       (*log) << scientific;
       for(size_t i=0; i<nodeplanes_->size(); ++i)
       {
-	// y, y+ and volfraction
-	(*log) <<  " "  << setw(11) << setprecision(4) << (*nodeplanes_)[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*nodeplanes_)[i]/ltau[j];
-	(*log) <<  " "  << setw(11) << setprecision(4) << (*(sumvol_[j]))[i];
+         // y, y+ and volfraction
+         (*log) <<  " "  << setw(11) << setprecision(4) << (*nodeplanes_)[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*nodeplanes_)[i]/ltau[j];
+         (*log) <<  " "  << setw(11) << setprecision(4) << (*(sumvol_[j]))[i];
 
-	// pointwise means
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumu_   [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumv_   [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumw_   [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsump_   [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqu_ [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqv_ [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqw_ [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuv_  [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuw_  [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumvw_  [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqp_ [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumnode_[j]))[i];
-	(*log) << "   \n";
+         // pointwise means
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumu_   [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumv_   [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumw_   [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsump_   [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqu_ [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqv_ [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqw_ [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuv_  [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuw_  [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumvw_  [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqp_ [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumnode_[j]))[i];
+         (*log) << "   \n";
       }
     }
     log->flush();
@@ -1123,25 +1111,21 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
 
   //----------------------------------------------------------------------
   // we expect nonzero forces (tractions) only in flow direction
-  int flowdirection =0;
 
   // ltau is used to compute y+
   vector<double> ltau(numphase_);
   if	  (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
-    flowdirection=0;
     for (size_t i = 0; i < numphase_; i++)
       ltau[i] = visc_[i]/sqrt(sumforceu_/(area*numsamp_));
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
-    flowdirection=1;
     for (size_t i = 0; i < numphase_; i++)
       ltau[i] = visc_[i]/sqrt(sumforcev_/(area*numsamp_));
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
-    flowdirection=2;
     for (size_t i = 0; i < numphase_; i++)
       ltau[i] = visc_[i]/sqrt(sumforcew_/(area*numsamp_));
   }
@@ -1170,11 +1154,11 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
       int matid = -1;
       for (std::map<int, int>::const_iterator it = matidtoindex_->begin(); it != matidtoindex_->end(); ++it)
       {
-	if ((unsigned)it->second == j)
-	{
-	  matid = it->first;
-	  break;
-	}
+         if ((unsigned)it->second == j)
+         {
+           matid = it->first;
+           break;
+         }
       }
 
       (*log) << "# Material ID  	 : ";
@@ -1196,45 +1180,45 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
       (*log) << scientific;
       for(size_t i=0; i<nodeplanes_->size(); ++i)
       {
-	const double numsamp = ((*(pointsumnode_[j]))[i]);
-	if(numsamp > 0.0)
-	{
-	  (*(pointsumu_[j]))[i]   /= numsamp;
-	  (*(pointsumv_[j]))[i]   /= numsamp;
-	  (*(pointsumw_[j]))[i]   /= numsamp;
-	  (*(pointsump_[j]))[i]   /= numsamp;
+         const double numsamp = ((*(pointsumnode_[j]))[i]);
+         if(numsamp > 0.0)
+         {
+           (*(pointsumu_[j]))[i]   /= numsamp;
+           (*(pointsumv_[j]))[i]   /= numsamp;
+           (*(pointsumw_[j]))[i]   /= numsamp;
+           (*(pointsump_[j]))[i]   /= numsamp;
 
-	  (*(pointsumsqu_[j]))[i] /= numsamp;
-	  (*(pointsumsqv_[j]))[i] /= numsamp;
-	  (*(pointsumsqw_[j]))[i] /= numsamp;
-	  (*(pointsumsqp_[j]))[i] /= numsamp;
+           (*(pointsumsqu_[j]))[i] /= numsamp;
+           (*(pointsumsqv_[j]))[i] /= numsamp;
+           (*(pointsumsqw_[j]))[i] /= numsamp;
+           (*(pointsumsqp_[j]))[i] /= numsamp;
 
-	  (*(pointsumuv_[j]))[i]   /= numsamp;
-	  (*(pointsumuw_[j]))[i]   /= numsamp;
-	  (*(pointsumvw_[j]))[i]   /= numsamp;
-	}
+           (*(pointsumuv_[j]))[i]   /= numsamp;
+           (*(pointsumuw_[j]))[i]   /= numsamp;
+           (*(pointsumvw_[j]))[i]   /= numsamp;
+         }
 
-	(*log) <<  " "  << setw(11) << setprecision(4) << (*nodeplanes_)[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*nodeplanes_)[i]/ltau[j];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(sumvol_[j]))[i]/numsamp_;
+         (*log) <<  " "  << setw(11) << setprecision(4) << (*nodeplanes_)[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*nodeplanes_)[i]/ltau[j];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(sumvol_[j]))[i]/numsamp_;
 
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumu_       [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumv_       [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumw_       [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsump_       [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumu_       [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumv_       [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumw_       [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsump_       [j]))[i];
 
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqu_     [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqv_     [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqw_     [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqp_     [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqu_     [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqv_     [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqw_     [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqp_     [j]))[i];
 
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuv_       [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuw_       [j]))[i];
-	(*log) << "   " << setw(11) << setprecision(4) << (*(pointsumvw_       [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuv_       [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuw_       [j]))[i];
+         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumvw_       [j]))[i];
 
-	(*log) << "   " << setw(11) << setprecision(4) << numsamp;
+         (*log) << "   " << setw(11) << setprecision(4) << numsamp;
 
-	(*log) << "\n\n";
+         (*log) << "\n\n";
       }
     }
     log->flush();

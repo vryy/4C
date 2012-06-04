@@ -224,7 +224,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     // conditions for reinitialization
     //--------------------------------
     if (!reinitband_ or // reinitialize entire level set field
-        (reinitband_ and fabs((*phivector)[doflid]) <= reinitbandwidth_)); // reinitialize only within a band around the zero level set
+        (reinitband_ and fabs((*phivector)[doflid]) <= reinitbandwidth_)) // reinitialize only within a band around the zero level set
     {
       // smallest distance to the vertex of a flame front patch
       double vertexdist = 7777.7; // default value
@@ -499,11 +499,6 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
 {
   // get communicator (for output)
   const Epetra_Comm& comm = scatra_.Discretization()->Comm();
-
-  // array of procs involved in communication (all)
-  int targetprocs[comm.NumProc()];
-  for(int i = 0; i < comm.NumProc(); ++i)
-    targetprocs[i] = i;
 
   if (comm.MyPID()==0)
   {

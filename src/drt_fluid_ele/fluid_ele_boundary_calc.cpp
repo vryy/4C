@@ -1915,40 +1915,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
   //  const double thsl = params.get("thsl",0.0);
   const double thsl = fldpara_->TimeFacRhs();
 
-  double invdensity=0.0; // inverse density of my parent element
-
-  // get material of volume element this surface belongs to
-  RCP<MAT::Material> mat = ele->ParentElement()->Material();
-
-  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
-      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid
-      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
-          dserror("Material law is not a fluid");
-
-  if(mat->MaterialType()== INPAR::MAT::m_fluid)
-  {
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-    invdensity = 1.0/actmat->Density();
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
-  {
-    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
-    invdensity = 1.0/actmat->Density();
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
-  {
-    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
-    invdensity = 1.0/actmat->Density();
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
-  {
-    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
-    invdensity = 1.0/actmat->Density();
-  }
-  else
-    dserror("Fluid material expected but got type %d", mat->MaterialType());
-
   double pressure = params.get<double>("ConvolutedPressure");
 
   // get Gaussrule
@@ -3821,7 +3787,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   RCP<Epetra_Vector> cond_velocities = params.get<RCP<Epetra_Vector> > ("condition velocities");
   RCP<Epetra_Map>    cond_dofrowmap  = params.get<RCP<Epetra_Map> > ("condition dofrowmap");
 
-  double invdensity=0.0; // inverse density of my parent element
+  double density=0.0; // inverse density of my parent element
 
   // get material of volume element this surface belongs to
   RCP<MAT::Material> mat = ele->ParentElement()->Material();
@@ -3835,22 +3801,22 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-    invdensity = 1.0/actmat->Density();
+    density = actmat->Density();
   }
   else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
   {
     const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
-    invdensity = 1.0/actmat->Density();
+    density = actmat->Density();
   }
   else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
   {
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
-    invdensity = 1.0/actmat->Density();
+    density = actmat->Density();
   }
   else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
   {
     const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
-    invdensity = 1.0/actmat->Density();
+    density = actmat->Density();
   }
   else
     dserror("Fluid material expected but got type %d", mat->MaterialType());
@@ -3923,8 +3889,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
       for(int idim=0;idim<nsd_;++idim)
       {
         // evaluate the value of the Un.U at the corresponding Gauss point
-        const double  uV = n_vel*vel_gps[idim];
-        const double fac_thsl_pres_inve = fac_ *  timefac  * uV;
+        const double  uV = n_vel*vel_gps[idim] * density;
+        const double fac_thsl_pres_inve = fac_ * timefac  * uV;
 
         // remove the Neumann-inflow contribution only if the normal velocity is an inflow velocity
         // i.e n_vel < 0
