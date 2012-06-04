@@ -1892,7 +1892,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PressureGalPart(
   /*
        /                \
       |                  |
-    - | Dq  , nabla o w  |
+    + | Dq  , nabla o w  |
       |                  |
        \                /
   */
@@ -1908,7 +1908,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PressureGalPart(
       const int fvi = vi*nsd_;
 
       for (int jdim=0;jdim<nsd_;++jdim)
-        estif_w_q(fvi+jdim,ui) -= derxy_(jdim,vi)*value;
+        estif_w_q(fvi+jdim,ui) += derxy_(jdim,vi)*value;
     } // vi
   } // ui
 
@@ -1917,7 +1917,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PressureGalPart(
   for (int vi=0; vi<nen_; ++vi)
   {
     for (int jdim=0;jdim<nsd_;++jdim) // derivative of u known by jdim
-      velforce(jdim,vi) += derxy_(jdim,vi)*value;
+      velforce(jdim,vi) -= derxy_(jdim,vi)*value;
   } // vi
 
   // rhs at old time step
@@ -1927,7 +1927,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PressureGalPart(
     for (int vi=0; vi<nen_; ++vi)
     {
       for (int jdim=0;jdim<nsd_;++jdim) // derivative of u known by jdim
-        velforce(jdim,vi) += derxy_(jdim,vi)*value;
+        velforce(jdim,vi) -= derxy_(jdim,vi)*value;
     } // vi
   }
 
@@ -2190,11 +2190,11 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
           +timefacfac* // velocity part of last iteration (at t^n) coming
             (fluidAdjoint3Parameter_->Density()*(-conv1_(idim)+conv2_(idim))-2*fluidAdjoint3Parameter_->Viscosity()*viscs(idim)
             +reacoeff_*velint_(idim)-bodyforce_(idim))
-          +timefacfacpre*gradp_(idim) // pressure part of last iteration (at t^n)
+          -timefacfacpre*gradp_(idim) // pressure part of last iteration (at t^n)
           +timefacfacrhs* // last time step (= t^n+1) coming
             (fluidAdjoint3Parameter_->Density()*(-conv1_old_(idim)+conv2_old_(idim))-2*fluidAdjoint3Parameter_->Viscosity()*viscs_old(idim)
             +reacoeff_*velint_old_(idim)-bodyforce_old_(idim))
-          +timefacfacprerhs*gradp_old_(idim);
+          -timefacfacprerhs*gradp_old_(idim);
     }
   }
   else
@@ -2202,7 +2202,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::MomRes(
     for (int idim=0;idim<nsd_;++idim)
     {
       StrongResMomScaled(idim) = timefacfac*(fluidAdjoint3Parameter_->Density()*(-conv1_(idim)+conv2_(idim))-2*fluidAdjoint3Parameter_->Viscosity()*viscs(idim)
-                      +reacoeff_*velint_(idim)+gradp_(idim)-bodyforce_(idim));
+                      +reacoeff_*velint_(idim)-gradp_(idim)-bodyforce_(idim));
     }
   }
 
@@ -2344,20 +2344,20 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PSPG(
         instationary + reactive
      /                            \
     |                              |
-    |  (rho + alpha) Du , nabla r  |
+  - |  (rho + alpha) Du , nabla r  |
     |                              |
      \                            /
 
                    convective term 1                      convective term 2
              /                          \           /                            \
             |   n                        |         |                 n            |
-      - rho |  u o nabla Dv   , nabla r  | + rho * |  Dv o nabla    u  , nabla r  |
+      + rho |  u o nabla Dv   , nabla r  | - rho * |  Dv o nabla    u  , nabla r  |
             |              (i)           |         |            (i)               |
              \                          /           \                            /
 
               /      viscous term                  \
              |                                      |
-      - 2 mu |  nabla o epsilon   ( Dv ) , nabla q  |
+      + 2 mu |  nabla o epsilon   ( Dv ) , nabla q  |
              |                 (i)                  |
               \                                    /
   */
@@ -2374,7 +2374,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PSPG(
 
         for (int vi=0; vi<nen_; ++vi)
         {
-          estif_r_v(vi,fui_p_jdim) += tau*derxy_(idim,vi)*GalMomResnU(nsd_idim+jdim,ui);
+          estif_r_v(vi,fui_p_jdim) -= tau*derxy_(idim,vi)*GalMomResnU(nsd_idim+jdim,ui);
         } // jdim
       } // vi
     } // ui
@@ -2392,7 +2392,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PSPG(
         /*
                /                    \
               |                      |
-              |  nabla Dq , nabla r  |
+            + |  nabla Dq , nabla r  |
               |                      |
                \                    /
          */
@@ -2409,7 +2409,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::PSPG(
     for (int vi=0; vi<nen_; ++vi)
     {
       // pressure stabilisation
-      preforce(vi) += derxy_(idim, vi)*resmom_scaled;
+      preforce(vi) -= derxy_(idim, vi)*resmom_scaled;
     }
   } // end for(idim)
   return;
@@ -2500,7 +2500,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::SUPG(
   /*
               /                      \
              |                        |
-             |  nabla Dq , supg_test  |
+           - |  nabla Dq , supg_test  |
              |                        |
               \                      /
    */
@@ -2514,7 +2514,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::SUPG(
 
       for (int ui=0; ui<nen_; ++ui)
       {
-        estif_w_q(fvi,ui) += v*derxy_(idim, ui);
+        estif_w_q(fvi,ui) -= v*derxy_(idim, ui);
       }
     }
   }  // end for(idim)

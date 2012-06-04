@@ -21,7 +21,7 @@ General Data File BACI
         o       v_1 = 5*x + 2*y
         o       v_2 = 3*x + 7*y
 - quadratic adjoint pressure field:
-                q = -0.5 * (125000*x*x + 175000*y*y + 100000*x*y)
+                q = 0.5 * (125000*x*x + 175000*y*y + 100000*x*y)
 - all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
 - theta = 0.5, dt = 1
 ------------------------------------------------------PROBLEM SIZE
@@ -117,7 +117,7 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
 ------------------------------------------------------------FUNCT3 // initial adjoint field
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5*x+2*y
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 3*x+7*y
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -0.5*(125000*x*x+175000*y*y+100000*x*y)
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.5*(125000*x*x+175000*y*y+100000*x*y)
 ------------------------------------------------------------FUNCT4 // x-component of fluid inflow profile
 FUNCT4 EXPR 0 0.0 0 FUNCTION x
 ------------------------------------------------------------FUNCT5 // y-component of fluid inflow profile
@@ -152,13 +152,13 @@ FLUID DIS 1 NODE 44 POSITION pressure NAME pressure VALUE -2843.88625 TOLERANCE 
 
 ADJOINT DIS 1 NODE 4 POSITION velx NAME velx VALUE 0.2 TOLERANCE 1.0e-13
 ADJOINT DIS 1 NODE 4 POSITION vely NAME vely VALUE 0.7 TOLERANCE 1.0e-13
-ADJOINT DIS 1 NODE 4 POSITION pressure NAME pressure VALUE -875 TOLERANCE 1.0e-10
+ADJOINT DIS 1 NODE 4 POSITION pressure NAME pressure VALUE 875 TOLERANCE 1.0e-10
 ADJOINT DIS 1 NODE 39 POSITION velx NAME velx VALUE 1.65 TOLERANCE 1.0e-13
 ADJOINT DIS 1 NODE 39 POSITION vely NAME vely VALUE 2.15 TOLERANCE 1.0e-13
-ADJOINT DIS 1 NODE 39 POSITION pressure NAME pressure VALUE -9906.25 TOLERANCE 1.0e-10
+ADJOINT DIS 1 NODE 39 POSITION pressure NAME pressure VALUE 9906.25 TOLERANCE 1.0e-10
 ADJOINT DIS 1 NODE 44 POSITION velx NAME velx VALUE 2.8 TOLERANCE 1.0e-13
 ADJOINT DIS 1 NODE 44 POSITION vely NAME vely VALUE 2.55 TOLERANCE 1.0e-13
-ADJOINT DIS 1 NODE 44 POSITION pressure NAME pressure VALUE -21343.75 TOLERANCE 1.0e-10
+ADJOINT DIS 1 NODE 44 POSITION pressure NAME pressure VALUE 21343.75 TOLERANCE 1.0e-10
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1

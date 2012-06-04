@@ -22,7 +22,7 @@ General Data File BACI
         o       v_1 = 1
         o       v_2 = 0
 - constant adjoint pressure field:
-                q = 10
+                q = -10
 - all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
 - theta = 1.0, dt = 1
 ------------------------------------------------------PROBLEM SIZE
@@ -118,7 +118,7 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION 1.0 // 1=fluid,0=no fluid
 ------------------------------------------------------------FUNCT3 // initial adjoint field
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 10.0
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -10.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  3
@@ -147,13 +147,13 @@ FLUID DIS 1 NODE 17 POSITION pressure NAME pressure VALUE 0.0 TOLERANCE 1.0e-14
 
 ADJOINT DIS 1 NODE 4 POSITION velx NAME velx VALUE 1.0 TOLERANCE 1.0e-15
 ADJOINT DIS 1 NODE 4 POSITION vely NAME vely VALUE 0.0 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 4 POSITION pressure NAME pressure VALUE 10.0 TOLERANCE 1.0e-12
+ADJOINT DIS 1 NODE 4 POSITION pressure NAME pressure VALUE -10.0 TOLERANCE 1.0e-12
 ADJOINT DIS 1 NODE 12 POSITION velx NAME velx VALUE 1.0 TOLERANCE 1.0e-15
 ADJOINT DIS 1 NODE 12 POSITION vely NAME vely VALUE 0.0 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 12 POSITION pressure NAME pressure VALUE 10.0 TOLERANCE 1.0e-12
+ADJOINT DIS 1 NODE 12 POSITION pressure NAME pressure VALUE -10.0 TOLERANCE 1.0e-12
 ADJOINT DIS 1 NODE 17 POSITION velx NAME velx VALUE 1.0 TOLERANCE 1.0e-15
 ADJOINT DIS 1 NODE 17 POSITION vely NAME vely VALUE 0.0 TOLERANCE 1.0e-15
-ADJOINT DIS 1 NODE 17 POSITION pressure NAME pressure VALUE 10.0 TOLERANCE 1.0e-12
+ADJOINT DIS 1 NODE 17 POSITION pressure NAME pressure VALUE -10.0 TOLERANCE 1.0e-12
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1

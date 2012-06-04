@@ -21,7 +21,7 @@ General Data File BACI
         o       v_1 = x - t
         o       v_2 = 2*t - y
 - spatial linear, temporal linear adjoint pressure field:
-                q = 5*t*x - 10*t*y
+                q = -5*t*x + 10*t*y
 - all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
 - all constants different and unequal 1
 - theta for all terms 0.5
@@ -120,7 +120,7 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
 ------------------------------------------------------------FUNCT3 // initial adjoint field
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x-t
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2*t-y
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 5*t*x-10*t*y
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -5*t*x+10*t*y
 ------------------------------------------------------------FUNCT4 // x-component of fluid inflow profile
 FUNCT4 EXPR 0 0.0 0 FUNCTION 1
 ------------------------------------------------------------FUNCT5 // y-component of fluid inflow profile
