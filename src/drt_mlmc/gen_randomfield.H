@@ -44,10 +44,10 @@ Maintainer: Jonas Biehler
 class GenRandomField {
 
 private:
-  // do we need to perform spectral matching
-  bool init_psd_;
+  // do we want/need to perform spectral matching
+  bool perform_spectral_matching_;
   // which proc am i on
-   int myrank_;
+  int myrank_;
   // variables of random field
   int dim_; // dimension of stochastic field
   enum PROBABILITY_DISTRIBUTIONS
@@ -64,9 +64,9 @@ private:
     whatever,
   };
   double d_; //correlation length
-  double sigma_0_; //= 0.25;
+  double sigma_0_;
   // sigma of ul gauss process ( changes during spectral matching)
-  double sigma_ul_g_cur_it_; //= 0.25;
+  double sigma_ul_g_cur_it_;
   double mean_;
   vector<double> discrete_PSD_;
   vector<double> distribution_params_; // other distribution params
@@ -85,61 +85,80 @@ private:
   vector<double>  Phi_3_ ;
   unsigned int  seed_;
 
-  // parametres for evaluation
+  // parameters for evaluation
   vector<double> bb_min_;// min Bounding Box
   vector<double> bb_max_; // max Bounding Box
   double pi_;// = M_PI;
 
   // store the values
   double* values_;
+  // define calculation method
+  int UseFFT_;
 
 
 
 
 public:
-  // Standard constructor
+  //! \brief Standard constructor
   GenRandomField(unsigned int seed,Teuchos::RCP<DRT::Discretization> discret);
 
-  // generates new realization
+  //! \brief generates new realization of random field
   void CreateNewSample(unsigned int seed);
 
-  // Get Value of Random Field at a specific location
+  //! \brief get value of random field at a specific location
   double EvalFieldAtLocation(vector<double> location, bool writetofile, bool output);
 
-  // Write Random Field To file
+  //! \brief write random field To file
   void WriteRandomFieldToFile();
+
+  //! \brief write PSD computed from sample to file
   void WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> > sample_psd);
 
-  // Compute PSD from current sample
+  //! \brief compute PSD from current sample
   void GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sample_psd);
+
+  //! \brief compute PSD from current sample for 3D field
   void GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > sample_psd);
 
+  //! \brief return number of cosinus terms per dimension used for computation
   int NumberOfCosTerms() {return N_;}
 
+  //! \brief size of array of randomfield per dimension
   int SizePerDim() {return M_;}
 
+  //! \brief return dimension of random field (either 2 or 3)
   int Dimension() {return dim_;}
 
 
 
 
 private:
-  // generates new random Phase vector Phi_
+  //! \brief generate new random phase angles
   void CreateNewPhaseAngles(unsigned int seed);
-  // Calculate Discrete Power Spectral Density based on correlation structure
+
+  //! \brief calculate discrete Power Spectral Density (PSD) based on correlation function
   void CalcDiscretePSD();
+
+  //! \brief calculate discrete Power Spectral Density (PSD) based on correlation function for 3D fields
   void CalcDiscretePSD3D();
-  // Perform Spectral Matching if RF non-gaussian
+
+  //! \brief perform spectral matching of PSD if random field is non-gaussian
   void SpectralMatching();
+
+  //! \brief perform spectral matching of PSD if random field is non-gaussian for 3D PSD's
   void SpectralMatching3D();
+
+  //! \brief perform spectral matching of PSD if random field is non-gaussian for 3D PSD's
   void SpectralMatching3D3D();
+
   // simulate RandomField using FFT technique
   void SimGaussRandomFieldFFT();
   // simulate RandomField using FFT technique
   void SimGaussRandomFieldFFT3D();
-  double TESTSimGaussRandomField3D(double x, double y, double z);
+  double SimGaussRandomFieldCOS3D(double x, double y, double z);
   // Create Translation field with prescribed marginal distribution
   void TranslateToNonGaussian();
+  void TranslateToNonGaussian( double *value);
   // Helper Functions for spectral matching
   double Integrate(double xmin, double xmax, double ymin, double ymax, double rho);
   double Testfunction(double argument_x, double argument_y, double rho);

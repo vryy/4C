@@ -21,6 +21,7 @@ Maintainer: Jonas Biehler
 #include <Epetra_Operator.h>
 #include "Epetra_FECrsMatrix.h"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 using namespace std;
@@ -51,6 +52,7 @@ namespace IO
   class ErrorFileControl;
 }
 class GenRandomField;
+
 namespace STR
 {
 
@@ -231,10 +233,10 @@ public:
   void HelperFunctionOutputTube(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp);
   // Function to Evaluate the Discretization at ceratin nodes which are for now hard coded in this function
   void EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> displacement_of_discretization );
-  void EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, vector<int>  OutputEleIds );
+  void EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,INPAR::STR::StressType iostress, INPAR::STR::StrainType iostrain);
 
   void SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds);
-  void EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp);
+
 
 
  void Evaluate2(

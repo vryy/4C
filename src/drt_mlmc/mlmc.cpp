@@ -24,7 +24,6 @@ Maintainer: Jonas Biehler
 #include "../drt_mat/material.H"
 #include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "randomfield.H"
 #include "gen_randomfield.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -122,13 +121,9 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 
   numb_run_ =  start_run_;//+numruns_pergroup_;     // counter of how many runs were made monte carlo
 
-//   AllMyOutputEleIds_.push_back(44);
-//   AllMyOutputEleIds_.push_back(123);
-//   AllMyOutputEleIds_.push_back(126);
-//   AllMyOutputEleIds_.push_back(124);
+
    SetupEvalDisAtEleCenters(AllMyOutputEleIds_);
   //int mygroup =i;
-
   //local_numruns_=numruns_pergroup;
 
 
@@ -242,8 +237,11 @@ void STR::MLMC::Integrate()
     }
     //double t1 = timer.ElapsedTime();
     if (myrank == 0)
-      cout << RED_LIGHT " PRESTRESS NOT RESET " END_COLOR << endl;
-    // ResetPrestress();
+    {
+      //cout << RED_LIGHT " PRESTRESS NOT RESET " END_COLOR << endl;
+      cout << GREEN_LIGHT " RESET PRESTRESS " END_COLOR << endl;
+    }
+     ResetPrestress();
     SetupStochMat((random_seed+(unsigned int)numb_run_));
     discret_->Comm().Barrier();
 
@@ -303,8 +301,11 @@ void STR::MLMC::Integrate()
         dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
     }
 
-
-    EvalDisAtEleCenters(dis_coarse);
+    //INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
+     // INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
+    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl);
+    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea);
+    dserror("testing");
     //EvalDisAtNodes(dis_coarse);
     //discret_->Comm().Barrier();
     if (numb_run_-start_run_== 0 &&  prolongate_res_)
@@ -938,61 +939,57 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   if (numb_run_-start_run_== 0 )
   {
     random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
-    // Get size
-    int size = random_field_->SizePerDim();
-    int  NumCosTerms = random_field_->NumberOfCosTerms();
-    // testing
-    int dim =random_field_->Dimension();
-    int mysize = pow(size,double(dim));
-    cout << "stopped  calculation of sample psd " << endl;
-    //Teuchos::RCP<Teuchos::Array <double> > sample_psd= Teuchos::rcp( new Teuchos::Array<double>(mysize,0.0));
-    //random_field_->GetPSDFromSample(sample_psd);
-    //random_field_->WriteSamplePSDToFile(sample_psd);
-    // eof testing
-
-   if (0)
+    if (0)
     {
       // little testing loop
-      Teuchos::RCP<Teuchos::Array <double> > average_psd=
-          Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
-      Teuchos::RCP<Teuchos::Array <double> > sample_psd=
-             Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
-      for (int i =0 ; i<1000; i++)
-      {
-        random_field_->CreateNewSample(random_seed+i);
-        vector<double> ele_center (3,1.0);
-        // calc average psd
-        random_field_->GetPSDFromSample(sample_psd);
-        for (int j=0;j<size *size ;j++)
-        {
-          (*average_psd)[j]+=1/1000.*(*sample_psd)[j];
-        }
-      }
-      ofstream File;
-      File.open("Psd_average.txt",ios::app);
-      for (int j=0;j<NumCosTerms;j++)
-      {
-        for (int k=0;k<NumCosTerms;k++)
-        {
-          File << k << " " << j << " " << (*average_psd)[k+j*size ] << endl;
-        }
-      }
-      File.close();
-      dserror("DONE stop now");
+      // Get size
+      //int size = random_field_->SizePerDim();
+      //int  NumCosTerms = random_field_->NumberOfCosTerms();
+
+      //int dim =random_field_->Dimension();
+      //int mysize = pow(size,double(dim));
+      //cout << "stopped  calculation of sample psd " << endl;
+      //Teuchos::RCP<Teuchos::Array <double> > sample_psd= Teuchos::rcp( new Teuchos::Array<double>(mysize,0.0));
+      //Teuchos::RCP<Teuchos::Array <double> > average_psd= Teuchos::rcp( new Teuchos::Array<double>(mysize,0.0));
+      //random_field_->GetPSDFromSample3D(sample_psd);
+      //random_field_->GetPSDFromSample(sample_psd);
+      //random_field_->WriteSamplePSDToFile(sample_psd);
+      // eof testing
+      //dserror("stop here");
+//      Teuchos::RCP<Teuchos::Array <double> > average_psd=
+//          Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
+//      Teuchos::RCP<Teuchos::Array <double> > sample_psd=
+//             Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
+//      for (int i =0 ; i<500; i++)
+//      {
+//        random_field_->CreateNewSample(random_seed+i);
+//        vector<double> ele_center (3,1.0);
+//        // calc average psd
+//        //random_field_->GetPSDFromSample3D(sample_psd);
+//        random_field_->GetPSDFromSample(sample_psd);
+//        for (int j=0;j<size *size;j++)
+//        {
+//          (*average_psd)[j]+=1/500.*(*sample_psd)[j];
+//        }
+//        cout << "Run " << i << " of 1000" << endl;
+//      }
+//      ofstream File;
+//      File.open("Psd_average.txt",ios::app);
+//      for (int j=0;j<size*size;j++)
+//      {
+//          File << (*average_psd)[j] << endl;
+//      }
+//      File.close();
+//      dserror("DONE stop now");
     }
-
-
   }
   else
- {
-   random_field_->CreateNewSample(random_seed);
- }
-    //random_field_->WriteRandomFieldToFile();
-    //dserror("stop right here");
+  {
+    random_field_->CreateNewSample(random_seed);
+  }
   // loop over all elements
   for (int i=0; i< (discret_->NumMyColElements()); i++)
   {
-
     if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
     {
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
@@ -1011,6 +1008,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
         stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,true);
       else
         stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,false);
+
       aaa_stopro->Init(stoch_mat_par,"beta");
       }
     } // EOF loop elements
@@ -1116,7 +1114,6 @@ void STR::MLMC::WriteStatOutput()
 void STR::MLMC::ResetPrestress()
 {
   // Reset Presstress possibly still present in Discretization
-
   // Get prestress parameter
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // get prestress type
@@ -1146,62 +1143,6 @@ void STR::MLMC::ResetPrestress()
     }
 }
 
-void STR::MLMC::HelperForDebuggin()
-{
-  double sigma = 1.0;
-  double corrlength = 30.0;
-  //double beta_mean =2.9;
-  /// file to write beta output
-  ofstream File("OutputStopro2.txt");
-  cout << "Debugging LINE "<< __LINE__ <<endl;
-  // get element 12 centercoords
-  DRT::Node** nodes = discret_->gElement(2)->Nodes();
-  vector<double> ele_center;
-  // init to zero
-  ele_center.push_back(0.0);
-  ele_center.push_back(0.0);
-  ele_center.push_back(0.0);
-  cout << "Debugging LINE "<< __LINE__ <<endl;
-  for (int i = 0; i < 8; i++ )
-  {
-    ele_center[0] += nodes[i]->X()[0]/8.;
-    ele_center[1] += nodes[i]->X()[1]/8.;
-    ele_center[2] += nodes[i]->X()[2]/8.;
-  }
-
-  // Eval Random Field at same location and write results to file
-  RandomField field(1232132,sigma,corrlength);
-  cout << "sigma  " << sigma << "corrlenght " << corrlength << endl;
-  // generate grid
-  int num_grid_points= 1000 ;
-  double spacing = 5.0;
-  vector<double> x;
-  vector<double> y;
-  vector<double> z;
-  vector<double> result;
-  x.reserve( num_grid_points);
-  y.reserve( num_grid_points);
-  z.reserve( num_grid_points);
-  for(int i = 0; i < num_grid_points ; i++)
-  {
-    x[i]= spacing*i;
-    y[i]= spacing*i;
-    z[i]= spacing*i;
-  }
-  //result.reserve( num_grid_points*num_grid_points*num_grid_points);
-  for (int i=0;i <num_grid_points; i++)
-  {
-    for (int j=0;j <num_grid_points; j++)
-    {
-      //for (int k=0;k <num_grid_points; k++)
-      //{
-        //result[i + j*num_grid_points + k*num_grid_points*num_grid_points]=field.EvalRandomField3D(x[i],y[j],z[k]);
-        File << field.EvalRandomField2D(x[i],y[j],z[j])<< endl;
-      //}
-    }
-  }
-
-}
 
 void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp)
 {
@@ -1501,8 +1442,7 @@ void STR::MLMC::SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds)
 
   OutputMap_ = rcp(new Epetra_Map (NumGlobalMapElements,NumMyElements,&(ArrayAllOutputEleIds[0]),0,actdis_coarse_->Comm()));
 }
-//void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, vector<int>  OutputEleIds )
-void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp)
+void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPAR::STR::StressType iostress,INPAR::STR::StrainType iostrain )
 {
   cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << endl;
   vector < Teuchos::RCP< vector <double > > > my_output_elements_c_disp;
@@ -1543,8 +1483,8 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp)
     my_output_elements_mat_params.push_back(mat_params);
   }
   // Now we need to get ele stresses and strains
-  INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
-  INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
+  //INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
+ // INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
   Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
   Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
   Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
@@ -1565,7 +1505,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp)
   // disp is passed to the function no need for reading in results anymore
   actdis_coarse_->SetState("displacement",disp);
   actdis_coarse_->SetState("velocity",vel_coarse);
-  // Alrigth lets get the nodal stresses
+  // Alright lets get the nodal stresses
   p.set("action","calc_global_gpstresses_map");
   const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstressmap", gpstressmap);
@@ -1642,12 +1582,27 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp)
      const vector<double> * strains = myit->second()->Get< vector <double> >("strains");
      const vector<double> * mat_params = myit->second()->Get< vector <double> >("mat_params");
      const vector<double> * disp = myit->second()->Get< vector <double> >("disp");
-      cout << "my_output_element_map first " << myit->first << *(myit->second)  << endl;
+     // cout << "my_output_element_map first " << myit->first << *(myit->second)  << endl;
 
 
     // assamble name for outputfile
     std::stringstream outputfile2;
-    outputfile2 << filename_ << "_statistics_output_" << start_run_ << "_EleId_"<< myit->first << ".txt";
+    string stresstype;
+    string straintype;
+    if (iostress==INPAR::STR::stress_cauchy)
+      stresstype="cauchy";
+    else if (iostress==INPAR::STR::stress_2pk)
+      stresstype="piola2";
+    else
+      dserror("unknown stresstype");
+    if (iostrain==INPAR::STR::strain_ea)
+      straintype="ea";
+    else if (iostrain==INPAR::STR::strain_gl)
+      straintype="gl";
+    else
+          dserror("unknown straintype");
+
+    outputfile2 << filename_ << "_statistics_output_" << start_run_ << "_stress_" << stresstype << "_strain_" << straintype << "_EleId_"<< myit->first << ".txt";
     string name2 = outputfile2.str();;
     // file to write output
     ofstream File;

@@ -22,6 +22,8 @@ Maintainer: Jonas Biehler
 #include <iostream>
 #include <complex>
 #include <cmath>
+// For coloer couts
+#include "../drt_lib/drt_colors.H"
 
 
 #include <boost/random.hpp>
@@ -53,12 +55,12 @@ using  boost::accumulators::stats;
 /* standard constructor */
 GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret)
 {
-  init_psd_=false;
    myrank_ = discret->Comm().MyPID();
   // Init the necessesary stuff
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   // Dimension
   dim_ = mlmcp.get<int>("RANDOM_FIELD_DIMENSION");
+  perform_spectral_matching_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"SPECTRAL_MATCHING");
   if(dim_!=3&&dim_!=2)
       dserror("Dimension of random field must be 2 or 3, fix your input file");
   N_= mlmcp.get<int>("NUM_COS_TERMS");
@@ -81,7 +83,7 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
   INPAR::MLMC::CorrStruct cstruct = DRT::INPUT::IntegralValue<INPAR::MLMC::CorrStruct>(mlmcp,"CORRSTRUCT");
   switch(cstruct){
     case INPAR::MLMC::corr_gaussian:
-      //blebla
+      //blabla
       break;
     default:
       dserror("Unknown Correlation structure");
@@ -122,26 +124,30 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
       dserror("Unknown Marginal pdf");
   }
 
+  // Get calculatoin method
+
+  INPAR::MLMC::CalcMethod calcm = DRT::INPUT::IntegralValue<INPAR::MLMC::CalcMethod>(mlmcp,"CALC_METHOD");
+  switch(calcm)
+  {
+    case INPAR::MLMC::calc_m_fft:
+      UseFFT_=1;
+      break;
+    case INPAR::MLMC::calc_m_cos:
+      UseFFT_=0;
+       break;
+    default:
+      dserror("Unknown Calculation Method for RF choose fft or cos");
+  }
+
+
   // create Multidimesional array to store the values
   double mydim= dim_;
   // transform needed because pow does not like to get two ints
   int size_of_field= int(pow(M_,mydim));
   values_ = new double[size_of_field];
   // The StoPro will have a period of 2*pi / Deltakappa == 2*pi*N*d / 6.
-  // We want this to be >= 200.
-  // ceil:= return next largest integer
-  //N_ = (int)ceil( 600.0 / ( pi_ * d_ ) );
-// Heuristic: PSD is of `insignificant magnitude' for
-   //   abs(kappa) <= 6/d
 
 
-
-  //new formular
-
-  //dkappa_=pi_/(2*N_);
-  //dkappa_=pi_/(3*N_);
-
-  //dkappa_ = 2*pi_/(mlmcp.get<double>("PERIODICITY"));
   if (myrank_ == 0)
   {
     cout << "Random Field Parameters "<< endl;
@@ -173,70 +179,90 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
 
   ComputeBoundingBox(discret);
   CreateNewPhaseAngles(seed_);
-  switch(dim_)
-  {
+
+    switch(dim_)
+    {
     case 3:
       CalcDiscretePSD3D();
-      SimGaussRandomFieldFFT3D();
-      for (int i= 0 ; i<10000; i++)
-       {
-        CreateNewPhaseAngles(seed_+i);
-        //SimGaussRandomFieldFFT3D();
-        //TranslateToNonGaussian();
-        ofstream File;
-        File.open("RFatPoint.txt",ios::app);
-        // use at() to get an error massage just in case
-        //File << setprecision (9) << values_[2323]<< endl;
-        File << setprecision (9) << TESTSimGaussRandomField3D(5.0, 5.0, 5.0)<< endl;
+      if(UseFFT_)
+        SimGaussRandomFieldFFT3D();
+      //for (int i= 0 ; i<10000; i++)
+      // {
+      //  CreateNewPhaseAngles(seed_+i);
+      //     SimGaussRandomFieldFFT3D();
 
-        File.close();
-        }
-      dserror("You did it");
-   //   EOF 3D testing
+      //           for (int j=0;j<M_;j++)
+      //        {
+      //          for (int k=0;k<M_;k++)
+      //          {
+      //            for (int l=0;l<M_;l++)
+      //            {
+      //              vector <double> test;
+      //              test.push_back(l*dx_);
+      //              test.push_back(k*dx_);
+      //              test.push_back(j*dx_);
+      //              values_[l+M_*(k+M_*j)]=EvalFieldAtLocation(test,false,false);
+      //
+      //            }
+      //          }
+      //          cout << "j " << j << endl;
+      //        }
+
+      //vector <double> test (3,5.0);
+      //EvalFieldAtLocation(test,true,false);
+      // }
+      //dserror("You did it");
+      //EOF 3D testing
       break;
     case 2:
       CalcDiscretePSD();
-      SimGaussRandomFieldFFT();
+      if(UseFFT_)
+        SimGaussRandomFieldFFT();
       // testing
-            for (int i= 0 ; i<10000; i++)
-             {
-              CreateNewPhaseAngles(seed_+i);
-              SimGaussRandomFieldFFT();
-              TranslateToNonGaussian();
-              ofstream File;
-              File.open("RFatPoint.txt",ios::app);
-              // use at() to get an error massage just in case
-              File << setprecision (9) << values_[2323]<< endl;
-              File.close();
-              }
-            dserror("You did it");
-            //EOF 3D testing
+//            for (int i= 0 ; i<10000; i++)
+//             {
+//              CreateNewPhaseAngles(seed_+i);
+//              SimGaussRandomFieldFFT();
+//              TranslateToNonGaussian();
+//              ofstream File;
+//              File.open("RFatPoint.txt",ios::app);
+//              // use at() to get an error massage just in case
+//              File << setprecision (9) << values_[2323]<< endl;
+//              File.close();
+//              }
+//            dserror("You did it");
+//            //EOF 3D testing
       break;
     default:
       dserror("Dimension of random field must be 2 or 3, fix your input file");
       break;
-  }
-  WriteRandomFieldToFile();
-  TranslateToNonGaussian();
+    }
+    //WriteRandomFieldToFile();
+    if(UseFFT_)
+      TranslateToNonGaussian();
 
 
 }
 void GenRandomField::CreateNewSample(unsigned int seed)
 {
+  // check wether we use fft
   CreateNewPhaseAngles(seed);
-  switch(dim_)
+  if(UseFFT_)
+  {
+    switch(dim_)
     {
-      case 3:
-        SimGaussRandomFieldFFT3D();
+    case 3:
+      SimGaussRandomFieldFFT3D();
+      break;
+    case 2:
+      SimGaussRandomFieldFFT();;
         break;
-      case 2:
-        SimGaussRandomFieldFFT();;
-        break;
-      default:
-        dserror("Dimension of random field must be 2 or 3, fix your input file");
-        break;
+    default:
+      dserror("Dimension of random field must be 2 or 3, fix your input file");
+      break;
     }
     TranslateToNonGaussian();
+  }
 }
 
 
@@ -333,7 +359,6 @@ void GenRandomField::CalcDiscretePSD()
 
 void GenRandomField::CalcDiscretePSD3D()
 {
-  // just compute PSD
    cout << "sigma_0_" << sigma_0_ << endl;
   // just compute PSD
   for (int j=0;j<N_;j++)
@@ -344,15 +369,26 @@ void GenRandomField::CalcDiscretePSD3D()
       {
         if(k==0||j==0||l==0)
         {
-          discrete_PSD_.push_back(0.25*(pow(sigma_0_,2)*pow(d_,3)/(pow((2*sqrt(pi_)),3))*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))-(pow(d_*l*dkappa_/2,2)) )));
+          discrete_PSD_.push_back(0.5*(pow(sigma_0_,2)*pow(d_,3)/(pow((2*sqrt(pi_)),3))*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))-(pow(d_*l*dkappa_/2,2)) )));
         }
         else
         {
-        //discrete_PSD_.push_back((pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/(2*sqrt(pi_)),2))-(pow(d_*k*dkappa_/(2*sqrt(pi_)),2)))));
-        discrete_PSD_.push_back((pow(sigma_0_,2)*pow(d_,3)/(pow((2*sqrt(pi_)),3))*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))-(pow(d_*l*dkappa_/2,2)) )));
+          discrete_PSD_.push_back((pow(sigma_0_,2)*pow(d_,3)/(pow((2*sqrt(pi_)),3))*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))-(pow(d_*l*dkappa_/2,2)) )));
         }
       }
     }
+  }
+  // Write to file
+  if (myrank_ == 0)
+  {
+    ofstream File;
+    File.open("DiscretePSD.txt",ios::out);
+    int size = int (pow(N_,3.0));
+    for(int i=0;i<size;i++)
+    {
+      File << discrete_PSD_[i]<< endl;
+    }
+    File.close();
   }
 
 
@@ -360,8 +396,17 @@ void GenRandomField::CalcDiscretePSD3D()
   {
     // compute underlying gaussian distribution based on shields2011
    // cout << "NO SPECTRAL MATHCING"<< endl;
+    if(perform_spectral_matching_)
+    {
+      SpectralMatching3D();
+      //SpectralMatching3D3D();
+    }
+    else
+    {
+      cout << RED_LIGHT " WARNING NO SPECTRAL MATCHING BUT PDF NONGAUSS " END_COLOR << endl;
+      sigma_ul_g_cur_it_=sigma_0_;
+    }
 
-   SpectralMatching3D();
   }
   else
   {
@@ -374,22 +419,20 @@ void GenRandomField::CalcDiscretePSD3D()
 void GenRandomField::SimGaussRandomFieldFFT()
 {
   double A; // store some stuff
-  // store coefficients
+
   Teuchos::RCP<Teuchos::Array <complex<double> > > b1=  Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
   Teuchos::RCP<Teuchos::Array <complex<double> > > b2=  Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
 
   Teuchos::RCP<Teuchos::Array <complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
   Teuchos::RCP<Teuchos::Array <complex<double> > > d2= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
 
-  // define complex i
+
   complex<double> i_comp (0,1);
   for (int j=0;j<M_;j++)
   {
     for (int k=0;k<M_;k++)
     {
-      //A=sqrt(2*(pow(sigma_0_,2)*d_/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
-      // sort entries row major style
-      // set first elements to zero
+      // sort entries row major style set first elements to zero
       if(k==0||j==0||j>(N_-2)||k>(N_-2))
       {
         (*b1)[k+M_*j]=0.0;
@@ -397,13 +440,11 @@ void GenRandomField::SimGaussRandomFieldFFT()
       }
       else
       {
-        //A=sqrt(2*(pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
         A=sqrt(2*(discrete_PSD_[k+j*N_]*(pow(dkappa_,2))));
         real((*b1)[k+M_*j])=A*sqrt(2)*cos(Phi_0_[k+N_*j]);
         imag((*b1)[k+M_*j])= A*sqrt(2)*sin(Phi_0_[k+N_*j]);
         real((*b2)[k+M_*j])= A*sqrt(2)*cos(Phi_1_[k+N_*j]);
         imag((*b2)[k+M_*j])= A*sqrt(2)*sin(Phi_1_[k+N_*j]);
-        // last 4 lines was M_ before
       }
     }
   }
@@ -458,7 +499,6 @@ void GenRandomField::SimGaussRandomFieldFFT()
 
   fftw_execute(ifft_of_rows);
   fftw_execute(ifft_of_rows2);
-  //complex<double> scaling (M_,M_);
   // transpose d1
   for (int k=0;k<M_*M_;k++)
   {
@@ -480,25 +520,18 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
 {
   double A; // store some stuff
   // store coefficients
-  //cout << "classic line " << __LINE__ << endl;
   Teuchos::RCP<Teuchos::Array <complex<double> > > b1= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  //cout << "classic line " << __LINE__ << endl;
   Teuchos::RCP<Teuchos::Array <complex<double> > > b2= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  //cout << "classic line " << __LINE__ << endl;
   Teuchos::RCP<Teuchos::Array <complex<double> > > b3= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  //cout << "classic line " << __LINE__ << endl;
   Teuchos::RCP<Teuchos::Array <complex<double> > > b4= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  //cout << "classic line " << __LINE__ << endl;
   Teuchos::RCP<Teuchos::Array <complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  //cout << "classic line " << __LINE__ << endl;
   Teuchos::RCP<Teuchos::Array <complex<double> > > d2= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
   Teuchos::RCP<Teuchos::Array <complex<double> > > d3= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
   Teuchos::RCP<Teuchos::Array <complex<double> > > d4= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  //cout << "classic line " << __LINE__ << endl;
   Teuchos::RCP<Teuchos::Array <complex<double> > > d5= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
   Teuchos::RCP<Teuchos::Array <complex<double> > > d6= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
   Teuchos::RCP<Teuchos::Array <complex<double> > > d7= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  // define complex i
+
   complex<double> i_comp (0,1);
   for (int j=0;j<M_;j++)
   {
@@ -506,10 +539,7 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
     {
       for (int l=0;l<M_;l++)
       {
-
-        //A=sqrt(2*(pow(sigma_0_,2)*d_/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
-        // sort entries row major style
-        // set first elements to zero
+        // sort entries row major style set first elements to zero
         if(k==0||j==0||l==0||j>(N_-2)||k>(N_-2)||l>(N_-2))
         {
           (*b1)[l+M_*(k+M_*j)]=0.0;
@@ -519,7 +549,6 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
         }
         else
         {
-          //A=sqrt(2*(pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
           A=sqrt(2*(discrete_PSD_[l+N_*(k+N_*j)]*(pow(dkappa_,3))));
           real((*b1)[l+M_*(k+M_*j)])= A*sqrt(2)*cos(Phi_0_[l+N_*(k+N_*j)]);
           imag((*b1)[l+M_*(k+M_*j)])= A*sqrt(2)*sin(Phi_0_[l+N_*(k+N_*j)]);
@@ -529,7 +558,7 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
           imag((*b3)[l+M_*(k+M_*j)])= A*sqrt(2)*sin(Phi_2_[l+N_*(k+N_*j)]);
           real((*b4)[l+M_*(k+M_*j)])= A*sqrt(2)*cos(Phi_3_[l+N_*(k+N_*j)]);
           imag((*b4)[l+M_*(k+M_*j)])= A*sqrt(2)*sin(Phi_3_[l+N_*(k+N_*j)]);
-      }
+        }
       }
     }
   }
@@ -617,34 +646,28 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
    fftw_execute(ifft_of_rows3);
    fftw_execute(ifft_of_rows4);
    for (int k=0;k<M_*M_*M_;k++)
-    {
+   {
       (*d2)[k]=conj((*d2)[k]);
       (*d4)[k]=conj((*d4)[k]);
       (*d2)[k]=(*d1)[k]+(*d2)[k];
       (*d4)[k]=(*d3)[k]+(*d4)[k];
-      //old
-//      (*d2)[k]=conj((*d2)[k]);
-//      (*d4)[k]=conj((*d4)[k]);
-//      (*d1)[k]=(*d1)[k]+(*d2)[k];
-//      (*d3)[k]=(*d3)[k]+(*d4)[k];
-
-    }
+   }
    // start here we need to transpose the arrays first
    // We need cannot do a pure 1D decomposition of 3D FFT
    // transpose
     for (int j=0;j<M_;j++)
-       {
-         for (int k=0;k<M_;k++)
-         {
-           for (int l=0;l<M_;l++)
-           {
-             real((*d1)[l+(M_)*(k+(M_)*j)])=real((*d2)[k+(M_)*(l+(M_)*j)]);
-             imag((*d1)[l+(M_)*(k+(M_)*j)])=imag((*d2)[k+(M_)*(l+(M_)*j)]);
-             real((*d3)[l+(M_)*(k+(M_)*j)])=real((*d4)[k+(M_)*(l+(M_)*j)]);
-             imag((*d3)[l+(M_)*(k+(M_)*j)])=imag((*d4)[k+(M_)*(l+(M_)*j)]);
-           }
-         }
-       }
+    {
+      for (int k=0;k<M_;k++)
+      {
+        for (int l=0;l<M_;l++)
+        {
+          real((*d1)[l+(M_)*(k+(M_)*j)])=real((*d2)[k+(M_)*(l+(M_)*j)]);
+          imag((*d1)[l+(M_)*(k+(M_)*j)])=imag((*d2)[k+(M_)*(l+(M_)*j)]);
+          real((*d3)[l+(M_)*(k+(M_)*j)])=real((*d4)[k+(M_)*(l+(M_)*j)]);
+          imag((*d3)[l+(M_)*(k+(M_)*j)])=imag((*d4)[k+(M_)*(l+(M_)*j)]);
+        }
+      }
+    }
    fftw_execute(ifft_of_collums1);
    fftw_execute(ifft_of_collums2);
    for (int j=0;j<M_;j++)
@@ -663,18 +686,14 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
    // and back here
 
    for (int k=0;k<M_*M_*M_;k++)
-       {
-         (*d6)[k]=conj((*d3)[k]);
-         (*d5)[k]=(*d1)[k]+(*d6)[k];
-         // old
-//         (*d6)[k]=conj((*d6)[k]);
-//         (*d5)[k]=(*d5)[k]+(*d6)[k];
-       }
+   {
+     (*d6)[k]=conj((*d3)[k]);
+     (*d5)[k]=(*d1)[k]+(*d6)[k];
+   }
    fftw_execute(ifft_of_rank);
    for(int i=0;i<M_*M_*M_;i++)
      {
        values_[i]=real((*d7)[i]);
-       //cout << "d7 " << real((*d7)[i])<< endl;
      }
    fftw_destroy_plan(ifft_of_rows1);
    fftw_destroy_plan(ifft_of_rows2);
@@ -684,15 +703,8 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
    fftw_destroy_plan(ifft_of_collums2);
    fftw_destroy_plan(ifft_of_rank);
 }
-double GenRandomField::TESTSimGaussRandomField3D(double x, double y, double z)
+double GenRandomField::SimGaussRandomFieldCOS3D(double x, double y, double z)
 {
-  //double A; // store some stuff
-  // store grid
-  Teuchos::RCP<Teuchos::Array <complex<double> > > grid= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  //for( int g=0;g<M_*M_*M_;g++)
-  {
-    //grid
-  }
   double result = 0;
   for (int j=0;j<N_;j++)
     {
@@ -702,51 +714,32 @@ double GenRandomField::TESTSimGaussRandomField3D(double x, double y, double z)
         {
           // set first elements to zero
          // if(k==0||j==0||l==0||j>(N_-2)||k>(N_-2)||l>(N_-2))
-          {
-
-          }
-          //else
-          {
-            //A=sqrt(2*(pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
-            //A=sqrt(2*(discrete_PSD_[l+N_*(k+N_*j)]*(pow(dkappa_,3))));
-
             result += sqrt( 2*discrete_PSD_[l+N_*(k+N_*j)]* pow( dkappa_, 3 ) ) *
                                            (cos( (l) * dkappa_ * x  + (k) * dkappa_ * y + (j) * dkappa_ * z + Phi_0_[l+N_*(k+N_*j)])+
                                                cos( (l) * dkappa_ * x  + (k) * dkappa_ * y - (j) * dkappa_ * z + Phi_1_[l+N_*(k+N_*j)])+
                                                cos( (l) * dkappa_ * x  - (k) * dkappa_ * y - (j) * dkappa_ * z + Phi_2_[l+N_*(k+N_*j)])+
                                                cos( (l) * dkappa_ * x  - (k) * dkappa_ * y + (j) * dkappa_ * z + Phi_3_ [l+N_*(k+N_*j)] )
                                                );
-
-        }
         }
       }
     }
   return sqrt( 2 ) * result;
-
-
 }
 
-  //
 void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
 {
   // root bounding Box
   vector<double> maxrbb;
-//  maxrbb.push_back(10.0e-19);
-//  maxrbb.push_back(10.0e-19);
-//  maxrbb.push_back(10.0e-19);
+
   maxrbb.push_back(-10.0e19);
   maxrbb.push_back(-10.0e19);
   maxrbb.push_back(-10.0e19);
- // maxrbb.push_back(10.0e-19);
+
   vector<double> minrbb;
   minrbb.push_back(10.0e19);
   minrbb.push_back(10.0e19);
   minrbb.push_back(10.0e19);
 
-
-//  bb_max_.push_back(10.0e-19);
-//  bb_max_.push_back(10.0e-19);
-//  bb_max_.push_back(10.0e-19);
   bb_max_.push_back(-10.0e19);
   bb_max_.push_back(-10.0e19);
   bb_max_.push_back(-10.0e19);
@@ -790,43 +783,69 @@ void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discre
 }
 double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writetofile, bool output)
 {
-  int index_x;
-  int index_y;
-  int index_z;
+  // manage the two different variants for evalutation in here so that it cannot be seen from the outside
+  // and so that we can call the same function with the same syntax
+ if (UseFFT_)
+  {
+    int index_x;
+    int index_y;
+    int index_z;
 
-  // Compute indices
-  index_x=int(floor((location[0]-bb_min_[0])/dx_));
-  index_y=int(floor((location[1]-bb_min_[1])/dx_));
-  // HACK for 2D art_aorta_case SET z to y
-   if (myrank_ == 0&& output && dim_==2)
+    // Compute indices
+    index_x=int(floor((location[0]-bb_min_[0])/dx_));
+    index_y=int(floor((location[1]-bb_min_[1])/dx_));
+    // HACK for 2D art_aorta_case SET z to y
+     if (myrank_ == 0&& output && dim_==2)
+     {
+       cout << "hack in use" << endl;
+     }
+     if (dim_==2)
+       index_y=int(floor((location[2]-bb_min_[2])/dx_));
+     index_z=int(floor((location[2]-bb_min_[2])/dx_));
+    // check index
+    if (index_x>M_||index_y>M_||index_z>M_)
+      dserror("Index out of bounds");
+    if (writetofile && myrank_==0 )
+    {
+      ofstream File;
+      File.open("RFatPoint.txt",ios::app);
+      // use at() to get an error massage just in case
+      File << setprecision (9) << values_[index_x+M_*index_y]<< endl;
+      File.close();
+    }
+    if (dim_==2)
+    {
+      return values_[index_x+M_*index_y];
+    }
+    else
+      return values_[index_x+M_*(index_y+M_*index_z)];
+  }
+ else
+ {
+   if(dim_==3)
    {
-     cout << "hack in use" << endl;
+     double value;
+     value=SimGaussRandomFieldCOS3D(location[0], location[1], location[2]);
+     TranslateToNonGaussian( &value);
+     if (writetofile && myrank_==0 )
+         {
+           ofstream File;
+           File.open("RFatPoint.txt",ios::app);
+           File << setprecision (9) << value<< endl;
+           File.close();
+         }
+     return value;
    }
-   if (dim_==2)
-     index_y=int(floor((location[2]-bb_min_[2])/dx_));
-  index_z=int(floor((location[2]-bb_min_[2])/dx_));
-  // check index
-  if (index_x>M_||index_y>M_||index_z>M_)
-    dserror("Index out of bounds");
-  if (writetofile && myrank_==0 )
-  {
-    ofstream File;
-    File.open("RFatPoint.txt",ios::app);
-    // use at() to get an error massage just in case
-    File << setprecision (9) << values_[index_x+M_*index_y]<< endl;
-    File.close();
-  }
-  if (dim_==2)
-  {
-    return values_[index_x+M_*index_y];
-  }
-  else
-    return values_[index_x+M_*(index_y+M_*index_z)];
+   else
+   {
+     dserror("Computation using Cos series only for dim = 3" );
+     return -1;
+   }
 
-  cout << "end of writing field" << endl;
-
+ }
 
 }
+
 // Translate Gaussian to nonGaussian process based on Mircea Grigoriu's translation process
 // theory
 void GenRandomField::TranslateToNonGaussian()
@@ -841,50 +860,32 @@ void GenRandomField::TranslateToNonGaussian()
 
     case beta:
     {
-      dserror("fix this function");
-      normal_distribution<>  my_norm(0,sigma_0_);
-      cout << "sigma_ul_g_cur_it_" << sigma_ul_g_cur_it_ << endl;
-      // init a prefixed beta distribution
-      //double a_beta = 4.0;
-      //double b_beta = 2.0;
-      beta_distribution<> my_beta(distribution_params_[0],distribution_params_[1]);
-      //translate
-
-      for(int i=0;i<(pow(M_,dim));i++)
-      {
-        //cout << "value[i] " << values_[i] << endl;
-        values_[i]=quantile(my_beta,cdf(my_norm, values_[i]))*distribution_params_[3]+distribution_params_[2];;
-      }
+      dserror("Beta distribution not supported yet");
+//      for(int i=0;i<(pow(M_,dim));i++)
+//      {
+//        values_[i]=quantile(my_beta,cdf(my_norm, values_[i]))*distribution_params_[3]+distribution_params_[2];;
+//      }
     }
     break;
 
     case lognormal:
     {
-      //normal_distribution<>  my_norm2(0,sigma_ul_g_cur_it_);
+      // This works if we use FFT
       boost::accumulators::accumulator_set<double, stats<boost::accumulators::tag::variance> > acc;
-      // loop over i < pow(M_,dim_) so we dont need seperate functions for each dim
       for(int i=0;i<(pow(M_,dim));i++)
       {
         acc(values_[i]);
       }
-      cout << "mean(acc) "<< mean(acc) << endl;
-      cout << "var "<< sqrt(variance(acc)) << endl;
-      normal_distribution<>  my_norm2(0,sqrt(variance(acc)));
-      //cout << "sigma_ul_g_cur_it_" << sigma_ul_g_cur_it_ << endl;
-      // init params for logn distribution based on shields paper
-      //double mu_bar=1.8;
-      //double sigma_N = sqrt(log(1+1/(pow(1.8,2))));
-      //double mu_N = log(mu_bar)-pow(sigma_N,2)/2;
-      //lognormal_distribution<>  my_lognorm(mu_N,sigma_N);
+      //normal_distribution<>  my_norm2(0,sqrt(variance(acc)));
+      // End of FFT
+
+      //normal_distribution<>  my_norm2(0,sigma_ul_g_cur_it_);
+      cout << "translating with sigma_ul_g_cur_it_= " << sigma_ul_g_cur_it_<< endl;
+      normal_distribution<>  my_norm2(0,sigma_ul_g_cur_it_);
       lognormal_distribution<>  my_lognorm(distribution_params_[0],distribution_params_[1]);
       cout << "distribution_params_[0]" << distribution_params_[0] << endl;
       cout << "distribution_params_[1]" << distribution_params_[1] << endl;
-      // Try to calc sigma here
-      //double sigma_logn=sqrt(my_lognorm.variance());
-      //double sigma_logn= sqrt(variance(my_lognorm));
-      //cout << "sigma_logn " << sigma_logn << endl;
-      //dserror("Stop rigth here");
-      //accumulator_set<int, stats<tag::variance> > acc2;
+      //actual translation see Grigoriu1995 for details
       for(int i=0;i<(pow(M_,dim));i++)
       {
         values_[i]=quantile(my_lognorm,cdf(my_norm2, values_[i]));
@@ -895,7 +896,35 @@ void GenRandomField::TranslateToNonGaussian()
       dserror("Only lognormal and beta distribution supported fix your input file");
   }
 }
+// Overloaded function to translate single point only
+void GenRandomField::TranslateToNonGaussian( double *value)
+{
+  // check wether pdf is gaussian
+  switch(marginal_pdf_)
+  {
+    case normal:
+      //cout << RED_LIGHT << "WARNING: Target marginal PDF is gaussian so nothing to do here"<< END_COLOR << endl;
+    break;
+    case beta:
+    {
+      dserror("fix this function");
+    }
+    break;
 
+    case lognormal:
+    {
+      // estimate variance from PSD
+      normal_distribution<>  my_norm2(0,sigma_ul_g_cur_it_);
+      lognormal_distribution<>  my_lognorm(distribution_params_[0],distribution_params_[1]);
+      //cout << "distribution_params_[0]" << distribution_params_[0] << endl;
+     // cout << "distribution_params_[1]" << distribution_params_[1] << endl;
+        *value=quantile(my_lognorm,cdf(my_norm2, *value ));
+    }
+    break;
+    default:
+      dserror("Only lognormal and beta distribution supported fix your input file");
+  }
+}
 // Transform PSD of underlying gauusian process
 void GenRandomField::SpectralMatching()
 {
@@ -910,9 +939,9 @@ void GenRandomField::SpectralMatching()
   vector<double> rho(2*N_*2*N_,0.0);
 
   PSD_ng_target=discrete_PSD_;
-  // do i need to set this zero??
+
   PSD_ng_target[0]=0.0;
-  // calc sigma form discrete PSD
+
 
   Teuchos::RCP<Teuchos::Array <complex<double> > > autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >( N_*2*N_*2,0.0));
   Teuchos::RCP<Teuchos::Array <complex<double> > > almost_autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >( N_*2*N_*2,0.0));
@@ -938,8 +967,8 @@ void GenRandomField::SpectralMatching()
         imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
         if(k==0||j==0)
         {
-          // comment later on
-          //real((*PSD_ul_g_complex)[k+N_*2*j])=real((*PSD_ul_g_complex)[k+N_*2*j])*0.5;
+          // we have 0.5 already in computation of discrete psd
+          //r//eal((*PSD_ul_g_complex)[k+N_*2*j])=real((*PSD_ul_g_complex)[k+N_*2*j])*0.5;
           //imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
         }
         else if (k==0&&j==0)
@@ -951,16 +980,6 @@ void GenRandomField::SpectralMatching()
       }
     }
   }
-//  fftw_plan test1;
-//  fftw_plan test2;
-//  test1= fftw_plan_dft_2d(2*N_, 2*N_, (reinterpret_cast<fftw_complex*>(&((*PSD_ul_g_complex)[0]))),
-//       (reinterpret_cast<fftw_complex*>(&((*autocorr)[0]))),
-//                                   1, FFTW_ESTIMATE);
-//
-//   test2= fftw_plan_dft_2d(2*N_, 2*N_,(reinterpret_cast<fftw_complex*>(&((*autocorr_ng)[0]))),
-//         (reinterpret_cast<fftw_complex*>(&((*PSD_ng_complex)[0]))),
-//                                     1, FFTW_ESTIMATE);
-  // TWO DIM FFTS for spectral matching
   int rank = 1; /* not 2: we are computing 1d transforms int n[] = {1024}; 1d transforms of length 10 */
   int N_fftw = 2*N_;
   int howmany = 2*N_; // same here
@@ -1036,7 +1055,9 @@ void GenRandomField::SpectralMatching()
             imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
             if(k==0||j==0)
             {
+              // was working when commented out
               //real((*PSD_ul_g_complex)[k+N_*2*j])=real((*PSD_ul_g_complex)[k+N_*2*j])*0.5;
+              // factor 0.5 taken care of by updating formular
             }
           }
         }
@@ -1046,17 +1067,13 @@ void GenRandomField::SpectralMatching()
       {
         sigma_ul_g_cur_it_helper_+=real((*PSD_ul_g_complex)[g])*pow(dkappa_,2);
       }
-      sigma_ul_g_cur_it_helper_=sigma_ul_g_cur_it_helper_-real((*PSD_ul_g_complex)[0])*pow(dkappa_,2)*0.0;
+      sigma_ul_g_cur_it_helper_=sigma_ul_g_cur_it_helper_-real((*PSD_ul_g_complex)[0])*pow(dkappa_,2)*1.0;
       sigma_ul_g_cur_it_=sqrt(4*sigma_ul_g_cur_it_helper_);
       cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << endl;
     }
-    cout << "PSD( 132) "<< (*PSD_ul_g_complex)[280] << endl;
-    //fftw_execute(test1);
     fftw_execute(ifft_of_rows_of_psd);
     fftw_execute(ifft_of_columns_of_psd);
-    double scaling_fac= 2*pi_;
-    // Check is this supposed to be kappa_cutof (probably yes)
-     scaling_fac=dkappa_*N_;
+    double scaling_fac= dkappa_*N_;
 
     // loop over vectorlength
     for(int k=0;k<2*N_*2*N_;k++)
@@ -1064,11 +1081,9 @@ void GenRandomField::SpectralMatching()
       rho[k] = real((*autocorr)[k])*2*pow((scaling_fac),2)/(2*N_*2*N_*(pow(sigma_0_,2)));
         //lets go for +_ 3 * sigma here
       real((*autocorr_ng)[k])=Integrate(-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,rho[k]);
-      // maybe intergration is different for beta
     }
     fftw_execute(ifft_of_rows_of_autocorr_ng);
     fftw_execute(ifft_of_columns_of_autocorr_ng);
-    cout << "PSD ng ( 132) "<< real((*PSD_ng_complex)[280])/(pow(scaling_fac,2))*2 << endl;
 
     for (int j=0;j<N_*2;j++)
     {
@@ -1099,18 +1114,6 @@ void GenRandomField::SpectralMatching()
     else
       PSD_ul_g[k]=10e-10;
     }
-
-
-    //ofstream File2;
-    //File2.open("Psd_coplex.txt",ios::app);
-    //for (int j=0;j<2*N_;j++)
-     // {
-      //for (int k=0;k<2*N_;k++)
-       // {
-        //File2 << k << " " << j << " " << real(PSD_ng_complex[k+j*2*N_])/(4*pow(pi_,2)) << endl;
-        //}
-     //}
-     //File2.close();
      // compute error based on equation(19) from shield2011
     error_numerator=0.0;
     error_denominator=0.0;
@@ -1126,7 +1129,7 @@ void GenRandomField::SpectralMatching()
     i++;
   }
   // set error threshold for spectral matching to 0.5 %
-  while(psd_error >0.5);
+  while(psd_error >0.1);
 
 
 
@@ -1159,17 +1162,14 @@ void GenRandomField::SpectralMatching()
          File << discrete_PSD_[i]<< endl;
        }
        File.close();
+       ofstream File2;
+       File2.open("PSD_ng.txt",ios::out);
+         for(int i=0;i<size;i++)
+         {
+           File2 << PSD_ng[i]<< endl;
+         }
+         File2.close();
      }
-  //ofstream File;
-  //File.open("Psd.txt",ios::app);
- // for (int j=0;j<N_;j++)
- // {
- //   for (int k=0;k<N_;k++)
-  //  {
-  //    File << k << " " << j << " " << PSD_ng_target[k+j*N_] << " " << PSD_ng[k+j*N_]<< " "  << PSD_ul_g[k+j*N_] << endl;
-  //  }
-  //}
-  //File.close();
   cout<< "Spectral Matching done "<< endl;
 }
 // Transform PSD of underlying gauusian process
@@ -1186,9 +1186,9 @@ void GenRandomField::SpectralMatching3D()
   vector<double> rho(2*N_*2*N_*2*N_,0.0);
 
   PSD_ng_target=discrete_PSD_;
-  // do i need to set this zero??
+
   PSD_ng_target[0]=0.0;
-  // calc sigma form discrete PSD
+
 
   Teuchos::RCP<Teuchos::Array <complex<double> > > autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >               ( N_*2*N_*2*N_*2,0.0));
   Teuchos::RCP<Teuchos::Array <complex<double> > > almost_autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >        ( N_*2*N_*2*N_*2,0.0));
@@ -1210,7 +1210,6 @@ void GenRandomField::SpectralMatching3D()
         // sort entries ro w major style
         if(j>(N_-1)||k>(N_-1)||l>(N_-1))
         {
-          //l+M_*(k+M_*j)
           real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
           imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
         }
@@ -1326,48 +1325,48 @@ void GenRandomField::SpectralMatching3D()
             {
               real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=PSD_ul_g[l+(N_)*(k+(N_)*j)];
               imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
-              if(k==0||j==0||l==0)
-              {
-                //real((*PSD_ul_g_complex)[k+N_*2*j])=real((*PSD_ul_g_complex)[k+N_*2*j])*0.25;
-              }
             }
           }
         }
       }
+      double sigma_ul_g_cur_it_helper_=0;
+         for (int g=0; g<8*N_*N_*N_;g++)
+         {
+           sigma_ul_g_cur_it_helper_+=real((*PSD_ul_g_complex)[g])*pow(dkappa_,3);
+         }
+         sigma_ul_g_cur_it_=sqrt(8*sigma_ul_g_cur_it_helper_);
+         cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << endl;
     }
     cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << endl;
 
-
-    cout << "PSD( 16644) "<< (*PSD_ul_g_complex)[10+(2*N_)*(10+(2*N_)*2)] << endl;
-    cout << "PSD( 16644) "<< (*PSD_ul_g_complex)[16644] << endl;
     fftw_execute(ifft_of_rows_of_psd);
 
     for (int j=0;j<N_*2;j++)
-       {
-         for (int k=0;k<N_*2;k++)
-         {
-           for (int l=0;l<N_*2;l++)
-           {
-             real((*temp)[l+(2*N_)*(k+(2*N_)*j)])=real((*autocorr)[k+(2*N_)*(l+(2*N_)*j)]);
-             imag((*temp)[l+(2*N_)*(k+(2*N_)*j)])=imag((*autocorr)[k+(2*N_)*(l+(2*N_)*j)]);
-           }
-         }
-       }
-  fftw_execute(ifft_of_columns_of_psd);
-  // and transpose back
-  // transpose
-      for (int j=0;j<N_*2;j++)
-         {
-           for (int k=0;k<N_*2;k++)
-           {
-             for (int l=0;l<N_*2;l++)
-             {
-               real((*almost_autocorr)[l+(2*N_)*(k+(2*N_)*j)])=real((*almost_autocorr2)[k+(2*N_)*(l+(2*N_)*j)]);
-               // if you forget the imaginary part it will mess with your scaling
-               imag((*almost_autocorr)[l+(2*N_)*(k+(2*N_)*j)])=imag((*almost_autocorr2)[k+(2*N_)*(l+(2*N_)*j)]);
-             }
-           }
-         }
+    {
+      for (int k=0;k<N_*2;k++)
+      {
+        for (int l=0;l<N_*2;l++)
+        {
+          real((*temp)[l+(2*N_)*(k+(2*N_)*j)])=real((*autocorr)[k+(2*N_)*(l+(2*N_)*j)]);
+          imag((*temp)[l+(2*N_)*(k+(2*N_)*j)])=imag((*autocorr)[k+(2*N_)*(l+(2*N_)*j)]);
+        }
+      }
+    }
+    fftw_execute(ifft_of_columns_of_psd);
+    // and transpose back
+    // transpose
+    for (int j=0;j<N_*2;j++)
+    {
+      for (int k=0;k<N_*2;k++)
+      {
+        for (int l=0;l<N_*2;l++)
+        {
+          real((*almost_autocorr)[l+(2*N_)*(k+(2*N_)*j)])=real((*almost_autocorr2)[k+(2*N_)*(l+(2*N_)*j)]);
+          // if you forget the imaginary part it will mess with your scaling
+          imag((*almost_autocorr)[l+(2*N_)*(k+(2*N_)*j)])=imag((*almost_autocorr2)[k+(2*N_)*(l+(2*N_)*j)]);
+        }
+      }
+    }
 
 
     fftw_execute(ifft_of_rank_of_psd);
@@ -1378,45 +1377,43 @@ void GenRandomField::SpectralMatching3D()
       //scaling with sigma to get autocorrelation function
       // Factor 2 to here at the back is essential (altough not quite sure were it comes from)
       rho[k] = real((*autocorr)[k])*2*pow((scaling_fac),3)/(2*N_*2*N_*2*N_*(pow(sigma_0_,2)));
+
       real((*autocorr_ng)[k])=Integrate(-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,rho[k]);
       imag((*autocorr_ng)[k])=0.0;
       // The followign lines are good for testing if the FFT works correctly
       //rho[k] = real((*autocorr)[k])*pow((scaling_fac),3)/(2*N_*2*N_*2*N_);
-      //if (k==16644)
-      //  cout << "rho[]" << rho[16644]  << endl;
-     // real((*autocorr_ng)[k])=rho[k] ;
     }
-   fftw_execute(ifft_of_rows_of_autocorr_ng);
+    fftw_execute(ifft_of_rows_of_autocorr_ng);
    // transpose
-  for (int j=0;j<N_*2;j++)
-     {
-       for (int k=0;k<N_*2;k++)
-       {
-         for (int l=0;l<N_*2;l++)
-         {
-           real((*autocorr_ng)[l+(2*N_)*(k+(2*N_)*j)])=real((*PSD_ng_complex)[k+(2*N_)*(l+(2*N_)*j)]);
-           imag((*autocorr_ng)[l+(2*N_)*(k+(2*N_)*j)])=imag((*PSD_ng_complex)[k+(2*N_)*(l+(2*N_)*j)]);
-         }
-       }
-     }
-   fftw_execute(ifft_of_columns_of_autocorr_ng);
-   // transpose back
     for (int j=0;j<N_*2;j++)
-       {
-         for (int k=0;k<N_*2;k++)
-         {
-           for (int l=0;l<N_*2;l++)
-           {
-             real((*almost_PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)])=real((*almost_PSD_ng_complex2)[k+(2*N_)*(l+(2*N_)*j)]);
-             imag((*almost_PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)])=imag((*almost_PSD_ng_complex2)[k+(2*N_)*(l+(2*N_)*j)]);
-           }
-         }
-       }
+    {
+      for (int k=0;k<N_*2;k++)
+      {
+        for (int l=0;l<N_*2;l++)
+        {
+          real((*autocorr_ng)[l+(2*N_)*(k+(2*N_)*j)])=real((*PSD_ng_complex)[k+(2*N_)*(l+(2*N_)*j)]);
+          imag((*autocorr_ng)[l+(2*N_)*(k+(2*N_)*j)])=imag((*PSD_ng_complex)[k+(2*N_)*(l+(2*N_)*j)]);
+        }
+      }
+     }
+    fftw_execute(ifft_of_columns_of_autocorr_ng);
+    // transpose back
+    for (int j=0;j<N_*2;j++)
+    {
+      for (int k=0;k<N_*2;k++)
+      {
+        for (int l=0;l<N_*2;l++)
+        {
+          real((*almost_PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)])=real((*almost_PSD_ng_complex2)[k+(2*N_)*(l+(2*N_)*j)]);
+          imag((*almost_PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)])=imag((*almost_PSD_ng_complex2)[k+(2*N_)*(l+(2*N_)*j)]);
+        }
+      }
+    }
 
 
-     fftw_execute(ifft_of_rank_of_autocorr_ng);
-     // cout << "PSD after fft ( 10 10 10) "<< real((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*2<< "imag "<< imag((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8.  << endl;
-     // cout << "PSD after fft ( 16644) "<< real((*PSD_ng_complex)[16644])/pow((scaling_fac),3)*2 << endl;
+    fftw_execute(ifft_of_rank_of_autocorr_ng);
+    // cout << "PSD after fft ( 10 10 10) "<< real((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*2<< "imag "<< imag((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8.  << endl;
+    // cout << "PSD after fft ( 16644) "<< real((*PSD_ng_complex)[16644])/pow((scaling_fac),3)*2 << endl;
     for (int j=0;j<N_*2;j++)
     {
       for (int k=0;k<N_*2;k++)
@@ -1440,12 +1437,10 @@ void GenRandomField::SpectralMatching3D()
       if(PSD_ng[k]>10e-10)
       {
         PSD_ul_g[k]=pow(PSD_ng_target[k]/PSD_ng[k],1.4)*PSD_ul_g[k];
-      cout << "psd_ul_g" << PSD_ul_g[k] <<  endl;
       }
       // do not set to zero because if once zero you'll never get it non-zero again
       else
       {
-        //cout<<  " PSD ul g " << PSD_ul_g[k] << endl;
         PSD_ul_g[k]=10e-10;
       }
     }
@@ -1461,7 +1456,6 @@ void GenRandomField::SpectralMatching3D()
     psd_error=100*sqrt(error_numerator/error_denominator);
     if (myrank_ == 0)
       cout<< "Error to target PSD: " << psd_error << endl;
-    // increase counter
     i++;
   }
   // set error threshold for spectral matching to 0.5 %
@@ -1473,6 +1467,15 @@ void GenRandomField::SpectralMatching3D()
   fftw_destroy_plan(ifft_of_rows_of_autocorr_ng);
   fftw_destroy_plan(ifft_of_columns_of_autocorr_ng);
   fftw_destroy_plan(ifft_of_rank_of_autocorr_ng);
+
+  for(int h=0;h<N_*N_*N_;h++)
+  {
+    if(PSD_ng[h]>10e-10)// change that
+      discrete_PSD_[h]=PSD_ul_g[h];
+    else
+      //remove all the very small entries to get rid of the wiggles
+      discrete_PSD_[h]=0.0;
+  }
 }
 
 // Routine to calculate
@@ -1553,20 +1556,22 @@ void GenRandomField::SpectralMatching3D3D()
             {
               real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=PSD_ul_g[l+(N_)*(k+(N_)*j)];
               imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
-              if(k==0||j==0||l==0)
-              {
-                real((*PSD_ul_g_complex)[k+N_*2*j])=real((*PSD_ul_g_complex)[k+N_*2*j])*0.25;
-              }
             }
           }
         }
       }
+      double sigma_ul_g_cur_it_helper_=0;
+      for (int g=0; g<8*N_*N_*N_;g++)
+      {
+        sigma_ul_g_cur_it_helper_+=real((*PSD_ul_g_complex)[g])*pow(dkappa_,3);
+      }
+      sigma_ul_g_cur_it_helper_=sigma_ul_g_cur_it_helper_-real((*PSD_ul_g_complex)[0])*pow(dkappa_,2)*0.0;
+      sigma_ul_g_cur_it_=sqrt(8*sigma_ul_g_cur_it_helper_);
+      cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << endl;
     }
 
     fftw_execute(fft_of_psd);
     double scaling_fac= dkappa_*N_;
-    // Check is this supposed to be kappa_cutof (probably yes)
-    //scaling_fac=;
 
     for(int k=0;k<2*N_*2*N_*2*N_;k++)
     {
@@ -1576,9 +1581,6 @@ void GenRandomField::SpectralMatching3D3D()
       // The followign lines are good for testing if the FFT works correctly
       //rho[k] = real((*autocorr)[k])*pow((scaling_fac),3)/(2*N_*2*N_*2*N_);
       //rho[k] = real((*autocorr)[k])*2*pow((scaling_fac),3)/(2*N_*2*N_*2*N_*(pow(sigma_0_,2)));
-      // if (k==16644)
-      //  cout << "rho[]" << rho[16644]  << endl;
-      ///real((*autocorr_ng)[k])=rho[k] ;
     }
     fftw_execute(fft_of_autocorr_ng);
     // cout << "PSD after fft ( 10 10 10) "<< real((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8. << "imag "<< imag((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8.  << endl;
@@ -1632,11 +1634,20 @@ void GenRandomField::SpectralMatching3D3D()
   // free memory
   fftw_destroy_plan(fft_of_psd);
   fftw_destroy_plan(fft_of_autocorr_ng);
+  for(int h=0;h<N_*N_*N_;h++)
+  {
+    if(PSD_ng[h]>10e-10)// change that
+      discrete_PSD_[h]=PSD_ul_g[h];
+    else
+      //remove all the very small entries to get rid of the wiggles
+      discrete_PSD_[h]=0.0;
+  }
 }
 double GenRandomField::Integrate(double xmin, double xmax, double ymin, double ymax, double rho)
 {
   // get trillios gausspoints with high order
-  Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussPointCache::Instance().Create( DRT::Element::quad4, 30 );
+  //Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussPointCache::Instance().Create( DRT::Element::quad4, 30 );
+  Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussPointCache::Instance().Create( DRT::Element::quad4, 14 );
   // needed for transformation in [-1,1];[-1,1] space
   double hx= abs(xmax-xmin);
   double hy= abs(ymax-ymin);
@@ -1653,18 +1664,11 @@ double GenRandomField::Integrate(double xmin, double xmax, double ymin, double y
 double GenRandomField::Testfunction(double argument_x ,double argument_y, double rho)
 {
   double result = 0.0;
-  //double mu_bar = 1.8;
-  //double sigma_N = sqrt(log(1+1/(pow(1.8,2))));
-  //double mu_N = log(mu_bar)-pow(sigma_N,2)/2;
-  //beta_distribution<>
-  //lognormal_distribution<>  my_lognorm(mu_N,sigma_N);
   normal_distribution<> my_normal(0,sigma_ul_g_cur_it_);
-  //get parametres
   switch(marginal_pdf_)
   {
     case lognormal:
     {
-      //lognormal_distribution<>  my_lognorm(mu_N,sigma_N);
       lognormal_distribution<>  my_lognorm(distribution_params_[0],distribution_params_[1]);
 
       result=quantile(my_lognorm,(cdf(my_normal,(argument_x))))*quantile(my_lognorm,(cdf(my_normal,argument_y)))*
@@ -1680,21 +1684,12 @@ double GenRandomField::Testfunction(double argument_x ,double argument_y, double
       result=(quantile(my_beta,(cdf(my_normal,(argument_x))))*distribution_params_[3]+distribution_params_[2])*(quantile(my_beta,(cdf(my_normal,argument_y)))*distribution_params_[3]+distribution_params_[2])*
        (1/(2*pi_*pow(sigma_0_,2)*sqrt(1-pow(rho,2))))*exp(-(pow((argument_x),2)+pow((argument_y),2)-2*rho*(argument_x)*(argument_y))
        /(2*pow(sigma_0_,2)*(1-pow(rho,2))));
-       // cout << " quantile " << quantile(my_beta,0.9) << endl;
-        //cout << "distribution_params_[0],distribution_params_[1] " << distribution_params_[0] << " " << distribution_params_[1]<< endl;
     }
     break;
     default:
-    dserror("Only Beta and Lognorm distribution supported so far fix your input file");
+    dserror(" Lognorm distribution supported so far fix your input file");
     break;
   }
-  // calc function value
-
-   //Testing do with to gauss distributions
-  //result=quantile(my_normal,(cdf(my_normal,(argument_x))))*quantile(my_normal,(cdf(my_normal,argument_y)))*
-    //    (1/(2*pi_*pow(sigma_0_,2)*sqrt(1-pow(rho,2))))*exp(-(pow((argument_x),2)+pow((argument_y),2)-2*rho*(argument_x)*(argument_y))
-      //      /(2*pow(sigma_0_,2)*(1-pow(rho,2))));
-
   return result;
 }
 
@@ -1740,7 +1735,6 @@ void GenRandomField::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sam
   fftw_plan fft_of_rows;
   fftw_plan fft_of_collums;
 
-
   int rank = 1; /* not 2: we are computing 1d transforms */
   /* 1d transforms of length M_ */
   int N_fftw = M_;
@@ -1773,7 +1767,6 @@ void GenRandomField::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sam
   fftw_execute(fft_of_rows);
   fftw_execute(fft_of_collums);
 
-  // move values into class variable
   for(int i=0;i<M_*M_;i++)
   {
     (*sample_psd)[i]=1/(pow(dkappa_,2))*1/(M_*M_)*1/(M_*M_)*pow(abs((*d2)[i]),2);

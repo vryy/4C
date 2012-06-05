@@ -962,7 +962,6 @@ set(OBJS_INV_ANALYSIS
 set(OBJS_MLMC
   src/drt_mlmc/mlmc.cpp
   src/drt_structure/str_mlmc.cpp 
-  src/drt_mlmc/randomfield.cpp 
   src/drt_mlmc/gen_randomfield.cpp
 )
 set(OBJS_DRT_MAT
