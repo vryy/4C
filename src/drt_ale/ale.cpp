@@ -46,9 +46,9 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ALE::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+ALE::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn, int disnum)
 {
-  SetupAle(prbdyn);
+  SetupAle(prbdyn,disnum);
 }
 
 
@@ -61,7 +61,7 @@ ALE::AleBaseAlgorithm::~AleBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
+void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int disnum)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::SetupAle");
   Teuchos::TimeMonitor monitor(*t);
@@ -70,7 +70,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
+  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,disnum);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
