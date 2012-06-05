@@ -33,6 +33,11 @@ namespace INPAR
           pdf_lognormal,// lognormal distribution
           // more to follow
         };
+  enum CalcMethod
+          {
+    calc_m_fft,// using fftw
+    calc_m_cos, // as cosinus series
+          };
     /// To be filled with input params
   }  // namespace MLMC
 

@@ -1255,6 +1255,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("SIZE_PER_DIM",512,"Number of points per dimension",&mlmcp);
   DoubleParameter("CORRLENGTH",30,"Correlation length of Random Field",&mlmcp);
   IntParameter("NUM_COS_TERMS",64,"Number of terms in geometric row ",&mlmcp);
+  setStringToIntegralParameter<int>("SPECTRAL_MATCHING","Yes",
+                                    "Perform spectral matching with psd 1 yes ",
+                                    yesnotuple,yesnovalue,&mlmcp);
   DoubleParameter("SIGMA",1.0,"sigma of random field",&mlmcp);
   DoubleParameter("MEAN",0.0,"Mean value of random field",&mlmcp);
   setStringToIntegralParameter<int>("CORRSTRUCT","gaussian",
@@ -1275,7 +1278,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("NONGAUSSPARAM1",0,"First parameter for non-gaussian pdf",&mlmcp);
   DoubleParameter("NONGAUSSPARAM2",0,"Second parameter for non-gaussian pdf",&mlmcp);
   DoubleParameter("KAPPA_U",6.283185307,"CUTOFF WAVE NUMBER FOR PSD",&mlmcp);
-
+  setStringToIntegralParameter<int>("CALC_METHOD","FFT",
+                                "Calculation method for the random field",
+                                tuple<std::string>("FFT","COS"),
+                                tuple<int>(
+                                    INPAR::MLMC::calc_m_fft,INPAR::MLMC::calc_m_cos),
+                                &mlmcp);
   setNumericStringParameter("OUTPUT_ELEMENT_IDS","-1",
                               "Set ID's of Output Elements, default is -1 which is none",
                               &mlmcp);
