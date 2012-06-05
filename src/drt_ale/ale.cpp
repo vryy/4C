@@ -125,7 +125,12 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   bool dirichletcond = true;
   // what's the current problem type?
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-  if (probtype == prb_fsi or probtype == prb_fluid_fluid_fsi)
+  if (probtype == prb_fsi or
+      probtype == prb_fsi_lung or
+      probtype == prb_gas_fsi or
+      probtype == prb_thermo_fsi or
+      probtype == prb_biofilm_fsi or
+      probtype == prb_fluid_fluid_fsi)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
