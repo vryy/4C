@@ -186,52 +186,11 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
       CalcDiscretePSD3D();
       if(UseFFT_)
         SimGaussRandomFieldFFT3D();
-      //for (int i= 0 ; i<10000; i++)
-      // {
-      //  CreateNewPhaseAngles(seed_+i);
-      //     SimGaussRandomFieldFFT3D();
-
-      //           for (int j=0;j<M_;j++)
-      //        {
-      //          for (int k=0;k<M_;k++)
-      //          {
-      //            for (int l=0;l<M_;l++)
-      //            {
-      //              vector <double> test;
-      //              test.push_back(l*dx_);
-      //              test.push_back(k*dx_);
-      //              test.push_back(j*dx_);
-      //              values_[l+M_*(k+M_*j)]=EvalFieldAtLocation(test,false,false);
-      //
-      //            }
-      //          }
-      //          cout << "j " << j << endl;
-      //        }
-
-      //vector <double> test (3,5.0);
-      //EvalFieldAtLocation(test,true,false);
-      // }
-      //dserror("You did it");
-      //EOF 3D testing
       break;
     case 2:
       CalcDiscretePSD();
       if(UseFFT_)
         SimGaussRandomFieldFFT();
-      // testing
-//            for (int i= 0 ; i<10000; i++)
-//             {
-//              CreateNewPhaseAngles(seed_+i);
-//              SimGaussRandomFieldFFT();
-//              TranslateToNonGaussian();
-//              ofstream File;
-//              File.open("RFatPoint.txt",ios::app);
-//              // use at() to get an error massage just in case
-//              File << setprecision (9) << values_[2323]<< endl;
-//              File.close();
-//              }
-//            dserror("You did it");
-//            //EOF 3D testing
       break;
     default:
       dserror("Dimension of random field must be 2 or 3, fix your input file");
@@ -378,18 +337,18 @@ void GenRandomField::CalcDiscretePSD3D()
       }
     }
   }
-  // Write to file
-  if (myrank_ == 0)
-  {
-    ofstream File;
-    File.open("DiscretePSD.txt",ios::out);
-    int size = int (pow(N_,3.0));
-    for(int i=0;i<size;i++)
-    {
-      File << discrete_PSD_[i]<< endl;
-    }
-    File.close();
-  }
+//  // Write to file
+//  if (myrank_ == 0)
+//  {
+//    ofstream File;
+//    File.open("DiscretePSD.txt",ios::out);
+//    int size = int (pow(N_,3.0));
+//    for(int i=0;i<size;i++)
+//    {
+//      File << discrete_PSD_[i]<< endl;
+//    }
+//    File.close();
+//  }
 
 
   if(marginal_pdf_!=normal)

@@ -301,13 +301,8 @@ void STR::MLMC::Integrate()
         dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
     }
 
-    //INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
-     // INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
     EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl);
     EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea);
-    dserror("testing");
-    //EvalDisAtNodes(dis_coarse);
-    //discret_->Comm().Barrier();
     if (numb_run_-start_run_== 0 &&  prolongate_res_)
     {
      // not parallel
@@ -338,7 +333,6 @@ void STR::MLMC::Integrate()
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::SetupProlongatorParallel()
 {
-
   // number of outliers
   int num_outliers = 0;
   const Epetra_Map* rmap_disp = NULL;
@@ -362,13 +356,11 @@ void STR::MLMC::SetupProlongatorParallel()
   for (int i=0; i< actdis_fine_->NumMyRowNodes(); i++  )
   //  for (int i=0; i<2; i++  )
   {
-    //cout << "in ele looop " << endl;
-    // Get node
     DRT::Node* node = actdis_fine_->lRowNode(i);
-    //cout << "node " << node->Id() << endl;
+
     // Get background element and local coordinates
     num_outliers += FindBackgroundElement(*node, actdis_coarse_, &bg_ele_id, xsi);
-    //cout << "in ele looop 2" << endl;
+
     // Get element
     DRT::Element* bg_ele = actdis_coarse_->gElement(bg_ele_id);
 
@@ -388,9 +380,7 @@ void STR::MLMC::SetupProlongatorParallel()
     rows = new int[numRows];
     values = new double[numColumns];
 
-
     // fill prolongators
-    //
     // DIM = 3
     for (int j = 0; j<3 ; j++)
     {
@@ -411,7 +401,6 @@ void STR::MLMC::SetupProlongatorParallel()
       }
 
     } // loop j
-    //cout << "Setup Prolongator LINE  "<< __LINE__ << " myrank  " << myrank << endl;
     // stress prolongator
     for (int k=0; k< bg_ele->NumNode(); k ++)
     {
@@ -420,14 +409,11 @@ void STR::MLMC::SetupProlongatorParallel()
       values[k]=shape_fcts[k];
     }
     rows[0]=i;
-    //cout << "row i  " << rows[0] << endl;
     int err=  prolongator_stress_crs_->InsertGlobalValues(1,rows,8,cols,values,Epetra_FECrsMatrix::COLUMN_MAJOR);
-    //cout << "errror   " << err << endl;
     if (err != 0)
     {
       dserror("Could not insert global values");
     }
-    //cout << "Setup Prolongator LINE  "<< __LINE__ << " myrank  " << myrank << endl;
 
     delete [] cols;
     delete [] rows;
