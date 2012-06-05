@@ -74,6 +74,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_prestress_update")     act = So_weg6::prestress_update;
   else if (action=="calc_struct_inversedesign_update") act = So_weg6::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_weg6::inversedesign_switch;
+  else if (action=="calc_global_gpstresses_map")       act = So_weg6::calc_global_gpstresses_map;
   else dserror("Unknown type of action for So_weg6");
 
   // check for patient specific data
@@ -442,6 +443,104 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       time_ = params.get<double>("total time");
     }
     break;
+    //==================================================================================
+    // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses >
+    case calc_global_gpstresses_map:
+    {
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
+      {
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        if (stressdata==null) dserror("Cannot get 'stress' data");
+        if (straindata==null) dserror("Cannot get 'strain' data");
+        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+          params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+        if (gpstressmap==null)
+          dserror("no gp stress map available for writing gpstresses");
+        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
+          params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",null);
+        if (gpstrainmap==null)
+          dserror("no gp strain map available for writing gpstrains");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        vector<double> myres(lm.size());
+        DRT::UTILS::ExtractMyValues(*res,myres,lm);
+        LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> stress;
+        LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> strain;
+        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+
+
+        // if a linear analysis is desired
+        if (kintype_ == DRT::ELEMENTS::So_weg6::sow6_linear)
+        {
+          dserror("Linear case not implemented");
+        }
+
+
+        else
+        {
+          if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+            invdesign_->sow6_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
+          else // standard analysis
+            sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        }
+        // add stresses to global map
+        //get EleID Id()
+        int gid = Id();
+        RCP<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
+        gpstress->Shape(NUMGPT_WEG6,NUMSTR_WEG6);
+
+        //move stresses to serial dense matrix
+        for(int i=0;i<NUMGPT_WEG6;i++)
+        {
+          for(int j=0;j<NUMSTR_WEG6;j++)
+          {
+            (*gpstress)(i,j)=stress(i,j);
+          }
+        }
+
+        //strains
+        RCP<Epetra_SerialDenseMatrix> gpstrain = rcp(new Epetra_SerialDenseMatrix);
+        gpstrain->Shape(NUMGPT_WEG6,NUMSTR_WEG6);
+
+        //move stresses to serial dense matrix
+        for(int i=0;i<NUMGPT_WEG6;i++)
+        {
+          for(int j=0;j<NUMSTR_WEG6;j++)
+          {
+            (*gpstrain)(i,j)=strain(i,j);
+          }
+        }
+
+        //add to map
+        (*gpstressmap)[gid]=gpstress;
+        (*gpstrainmap)[gid]=gpstrain;
+
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, stress);
+          data.StartPacking();
+          AddtoPack(data, stress);
+          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+        }
+
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, strain);
+          data.StartPacking();
+          AddtoPack(data, strain);
+          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
+      }
+    }
+    break;
+
 
     default:
       dserror("Unknown type of action for Solid3");

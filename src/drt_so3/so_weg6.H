@@ -365,7 +365,9 @@ protected:
     postprocess_stress,
     prestress_update,
     inversedesign_update,
-    inversedesign_switch
+    inversedesign_switch,
+    calc_global_gpstresses_map //! basically calc_struct_stress but with assembly of global gpstresses map
+
   };
 
   //! kinematic types of so_weg6
