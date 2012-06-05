@@ -128,7 +128,7 @@ void fluid_fluid_drt()
     Epetra_SerialComm comm;
   #endif
 
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
   bgfluiddis->FillComplete();

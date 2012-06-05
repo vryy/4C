@@ -112,7 +112,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   // controlling parameter
   start_run_ = mlmcp.get<int>("START_RUN");
   int numruns = mlmcp.get<int>("NUMRUNS");
-  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
   int NNestedGroups = problem->GetNPGroup()->NumGroups();
   int i = problem->GetNPGroup()->GroupId();

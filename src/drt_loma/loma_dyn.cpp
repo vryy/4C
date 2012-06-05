@@ -51,7 +51,7 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
     cout << "You are now about to enter the module for low-Mach-number flow!" <<endl;
 
   // define abbreviation
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   // access fluid and (typically empty) scatra discretization
   RefCountPtr<DRT::Discretization> fluiddis  = problem->Dis(disnumff,0);

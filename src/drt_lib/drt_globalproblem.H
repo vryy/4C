@@ -154,7 +154,7 @@ public:
   /// @name Instances
 
   /// return an instance of this class
-  static RCP<Problem> Instance(int num=0);
+  static Problem* Instance(int num=0);
 
   /// return number of problem instances
   static unsigned NumInstances() { return instances_.size(); }
@@ -401,7 +401,7 @@ private:
   //@}
 
   /// the single instance
-  static vector<RCP<Problem> > instances_;
+  static vector<Problem* > instances_;
 
   /// the problem type
   PROBLEM_TYP probtype_;

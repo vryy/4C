@@ -57,17 +57,17 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 // the instances
 /*----------------------------------------------------------------------*/
-vector<RefCountPtr<DRT::Problem> > DRT::Problem::instances_;
+vector<DRT::Problem* > DRT::Problem::instances_;
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RefCountPtr<DRT::Problem> DRT::Problem::Instance(int num)
+DRT::Problem* DRT::Problem::Instance(int num)
 {
   if (num > static_cast<int>(instances_.size())-1)
   {
     instances_.resize(num+1);
-    instances_[num] = rcp(new Problem());
+    instances_[num] = new Problem();
   }
   return instances_[num];
 }
@@ -78,12 +78,12 @@ RefCountPtr<DRT::Problem> DRT::Problem::Instance(int num)
 void DRT::Problem::Done()
 {
   // destroy singleton objects when the problem object is still alive
-  for ( vector<RCP<Problem> >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
+  for ( vector<Problem* >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
   {
-    Problem * p = &**i;
-    for (vector<DRT::SingletonDestruction *>::iterator i=p->sds_.begin(); i!=p->sds_.end(); ++i)
+    Problem * p = *i;
+    for (vector<DRT::SingletonDestruction *>::iterator j=p->sds_.begin(); j!=p->sds_.end(); ++j)
     {
-      DRT::SingletonDestruction * sd = *i;
+      DRT::SingletonDestruction * sd = *j;
       sd->Done();
     }
     p->sds_.clear();
@@ -95,6 +95,11 @@ void DRT::Problem::Done()
   // discretizations as well and everything inside those.
   //
   // There is a whole lot going on here...
+  for ( vector<Problem* >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
+  {
+    delete *i;
+    *i = 0;
+  }
   instances_.clear();
 }
 
@@ -1423,7 +1428,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   Teuchos::RCP<Epetra_Comm> lcomm = npgroup_->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = npgroup_->GlobalComm();
 
-  RCP<DRT::Problem> macro_problem = DRT::Problem::Instance();
+  DRT::Problem* macro_problem = DRT::Problem::Instance();
   RCP<DRT::Discretization> macro_dis = macro_problem->Dis(genprob.numsf,0);
 
   std::set<int> my_multimat_IDs;
@@ -1519,7 +1524,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         // broadcast microdis number
         subgroupcomm->Broadcast(&microdisnum, 1, 0);
 
-        Teuchos::RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+        DRT::Problem* micro_problem = DRT::Problem::Instance(microdisnum);
 
         std::string micro_inputfile_name = micromat->MicroInputFileName();
 
@@ -1594,7 +1599,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadMicrofields_NPsupport()
 {
-  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
 
@@ -1644,7 +1649,7 @@ void DRT::Problem::ReadMicrofields_NPsupport()
     int microdisnum = -1;
     subgroupcomm->Broadcast(&microdisnum, 1, 0);
 
-    RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+    DRT::Problem* micro_problem = DRT::Problem::Instance(microdisnum);
 
     // broadcast micro input file name
     int length = -1;
@@ -1714,7 +1719,7 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
   {
     string second_input_file = mlmcp.get<std::string>("DISCRETIZATION_FOR_PROLONGATION");
 
-    RCP<DRT::Problem> multilevel_problem = DRT::Problem::Instance(1);
+    DRT::Problem* multilevel_problem = DRT::Problem::Instance(1);
 
 
     if(reader.Comm()->NumProc() != 1)

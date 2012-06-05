@@ -5,7 +5,6 @@
 BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
 BUILD_TYPE="RELEASE"
-Trilinos_BT="RELEASE"
 
 ##############################################################
 # detect operating system
@@ -41,14 +40,10 @@ fi
 
 ############################################################
 # use LNM Trilinos Q1/2012 (d)
-if [[ "$OS_VERSION" == "FC16" ]] && [[ "$Trilinos_BT" == "DEBUG" ]]; then
+if [ "$OS_VERSION" == "FC16" ]; then
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/lib"
 	Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc16_openmpi_dbg/"
-elif [[ "$OS_VERSION" == "FC16" ]] && [[ "$Trilinos_BT" == "RELEASE" ]]; then
-	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/include"
-	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/lib"
-	Trilinos_PREFIX="/home/hammerl/libs_local/Trilinos_Q1_2012/fc16_openmpi_release"
 else
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/lib"
@@ -65,9 +60,9 @@ $CMAKE_COMMAND \
     -D CMAKE_CXX_COMPILER:FILEPATH="$MPIDIR/bin/mpic++" \
     -D CMAKE_C_COMPILER:FILEPATH="$MPIDIR/bin/mpicc" \
     -D CMAKE_Fortran_COMPILER:FILEPATH="$MPIDIR/bin/mpif90" \
-    -D CMAKE_CXX_FLAGS:STRING="-Wall -fopenmp" \
+    -D CMAKE_CXX_FLAGS:STRING="-Wall" \
     -D CMAKE_CXX_FLAGS_RELEASE:STRING="-O3" \
-    -D CMAKE_C_FLAGS:STRING="-Wall -fopenmp" \
+    -D CMAKE_C_FLAGS:STRING="-Wall" \
     -D CMAKE_C_FLAGS_RELEASE:STRING="-O3" \
     -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl" \
     -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING="-O2" \

@@ -131,7 +131,7 @@ void fluid_xfem2_drt()
   Epetra_SerialComm comm;
 #endif
 
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> soliddis = problem->Dis(genprob.numsf,0);
   soliddis->FillComplete();
@@ -210,7 +210,7 @@ void fluid_fluid_ale_drt()
     Epetra_SerialComm comm;
   #endif
 
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+    DRT::Problem* problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
   bgfluiddis->FillComplete();
@@ -469,7 +469,7 @@ void fluid_fluid_fsi_drt()
 
   /* |--str dofs--|--bgfluid dofs--|--embfluid dofs--|--ale dofs--|-> */
 
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> structdis = problem->Dis(genprob.numsf,0);
   structdis->FillComplete();
@@ -773,7 +773,7 @@ void fluid_freesurf_drt()
 #endif
 
 
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -859,7 +859,7 @@ void fsi_ale_drt()
   Epetra_SerialComm comm;
 #endif
 
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -1039,7 +1039,7 @@ void xfsi_drt()
     cout <<  endl << endl;
   }
 
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
   RCP<DRT::Discretization> soliddis = problem->Dis(genprob.numsf,0);

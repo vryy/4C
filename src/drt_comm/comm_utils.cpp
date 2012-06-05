@@ -320,7 +320,7 @@ void COMM_UTILS::NestedParGroup::SetSubComm(Teuchos::RCP<Epetra_Comm> subcomm)
  *----------------------------------------------------------------------*/
 void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
 {
-  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();

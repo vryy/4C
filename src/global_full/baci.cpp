@@ -66,9 +66,9 @@ int main(int argc, char *argv[])
 
   COMM_UTILS::CreateComm(argc,argv);
 
-  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<Epetra_Comm> lcomm = Teuchos::rcp(problem->GetNPGroup()->LocalComm().get(), false);
+  Teuchos::RCP<Epetra_Comm> gcomm = Teuchos::rcp(problem->GetNPGroup()->GlobalComm().get(), false);
   int ngroups = problem->GetNPGroup()->NumGroups();
 
   if ((gcomm->MyPID() == 0) && (strcmp(argv[argc-1], "--interactive") == 0))
@@ -237,6 +237,10 @@ int main(int argc, char *argv[])
 
       DRT::Problem::Done();
 
+      MPI_Buffer_detach(&dbuff,&buffsize);
+      if (dbuff!=buff || buffsize != MPIBUFFSIZE)
+        dserror("Illegal modification of mpi buffer adress or size appeared");
+      free(dbuff);
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
     }
 #endif

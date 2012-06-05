@@ -57,7 +57,7 @@ void fluid_topopt_dyn()
   int disnumff = genprob.numff; // discretization number fluid; typically 0
   int disnumof = genprob.numof; // discretization number optimization field; typically 1
 
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   // access fluid discretization
   RCP<DRT::Discretization> fluiddis = problem->Dis(disnumff,0);

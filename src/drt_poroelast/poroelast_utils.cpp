@@ -125,7 +125,7 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
  *----------------------------------------------------------------------*/
 void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
 {
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;

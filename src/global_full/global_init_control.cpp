@@ -32,7 +32,7 @@ void ntaini_ccadiscret(
   std::string& restartfile_kenner
   )
 {
-  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
   int group = problem->GetNPGroup()->GroupId();
   int ngroups = problem->GetNPGroup()->NumGroups();

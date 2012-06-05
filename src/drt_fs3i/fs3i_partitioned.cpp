@@ -62,7 +62,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   : FS3I_Base(),
     comm_(comm)
 {
-  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   //---------------------------------------------------------------------
   // read input parameters for FS3I problem

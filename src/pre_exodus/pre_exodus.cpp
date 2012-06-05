@@ -133,7 +133,7 @@ int main(
   My_CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
 
   // create a problem instance
-  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
   try
   {

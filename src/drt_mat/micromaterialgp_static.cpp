@@ -38,7 +38,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
     ele_ID_(ele_ID),
     microdisnum_(microdisnum)
 {
-  Teuchos::RCP<DRT::Problem> microproblem = DRT::Problem::Instance(microdisnum_);
+  DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->Dis(0, 0);
   dism_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   disn_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
@@ -135,7 +135,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   std::string microprefix = macrocontrol->RestartName();
   std::string micronewprefix = macrocontrol->NewOutputFileName();
 
-  Teuchos::RCP<DRT::Problem> microproblem = DRT::Problem::Instance(microdisnum_);
+  DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->Dis(0, 0);
 
   if(microdis->Comm().MyPID() == 0)
