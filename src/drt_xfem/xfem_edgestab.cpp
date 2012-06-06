@@ -462,3 +462,74 @@ GEO::CUT::Side* XFEM::XFEM_EdgeStab::GetCutSide(DRT::Element* faceele)
 
   return wizard_->GetSide(nodeids);
 }
+
+
+
+/*----------------------------------------------------------------------*
+ |  prepares edge based stabilization for standard fluid   schott 05/12 |
+ *----------------------------------------------------------------------*/
+void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
+    Teuchos::ParameterList &               eleparams,        ///< element parameter list
+    Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
+    DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
+    Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector>            systemvector,     ///< systemvector
+    bool                                   gmsh_discret_out  ///< stabilization gmsh output
+)
+{
+  RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret);
+  if (xdiscret == Teuchos::null)
+    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+
+
+  // get the parent fluid elements
+  DRT::ELEMENTS::Fluid* p_master = faceele->ParentMasterElement();
+  DRT::ELEMENTS::Fluid* p_slave  = faceele->ParentSlaveElement();
+
+  size_t p_master_numnode = p_master->NumNode();
+  size_t p_slave_numnode  = p_slave->NumNode();
+
+
+  std::vector<int> nds_master;
+  nds_master.reserve(p_master_numnode);
+
+  std::vector<int> nds_slave;
+  nds_slave.reserve(p_slave_numnode);
+
+  bool edge_based_stab = false;
+  bool ghost_penalty   = false;
+
+  //------------------------------------------------------------------------------
+  // simplest case: no element handles for both parent elements
+  // two uncut elements / standard fluid case
+  //------------------------------------------------------------------------------
+
+  edge_based_stab = true;
+  ghost_penalty   = false;
+
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
+
+    for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
+
+    for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
+  }
+
+    //--------------------------------------------------------------------------------------------
+
+    // call evaluate and assemble routine
+    if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
+                                                                       edge_based_stab,
+                                                                       ghost_penalty,
+                                                                       faceele,
+                                                                       nds_master,
+                                                                       nds_slave,
+                                                                       *xdiscret,
+                                                                       systemmatrix,
+                                                                       systemvector);
+
+    //--------------------------------------------------------------------------------------------
+
+
+  return;
+}

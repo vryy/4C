@@ -74,7 +74,7 @@ public:
 
 
   //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate routine
-  void EvaluateEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
+  void EvaluateEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,              ///< element parameter list
                                      Teuchos::RCP<DRT::Discretization>      discret,                ///< discretization
                                      DRT::ELEMENTS::FluidIntFace *          faceele,                ///< face element
                                      Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,           ///< systemmatrix
@@ -92,6 +92,15 @@ public:
                                      DRT::DiscretizationXFEM &              xdiscret,         ///< XFEM discretization
                                      Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
                                      Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
+                                     );
+
+  //! prepares edge based stabilization for standard fluid
+  void EvaluateEdgeStabStd         ( Teuchos::ParameterList &               eleparams,              ///< element parameter list
+                                     Teuchos::RCP<DRT::Discretization>      discret,                ///< discretization
+                                     DRT::ELEMENTS::FluidIntFace *          faceele,                ///< face element
+                                     Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,           ///< systemmatrix
+                                     Teuchos::RCP<Epetra_Vector>            systemvector,           ///< systemvector
+                                     bool                                   gmsh_discret_out = true ///< stabilization gmsh output
                                      );
 
   //! returns a map containing the ghost penalty stabilized internal face elements

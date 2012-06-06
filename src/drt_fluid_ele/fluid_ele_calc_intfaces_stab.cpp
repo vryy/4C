@@ -437,8 +437,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     bool use2ndderiv = false;
 
-    if(ghost_penalty and
-        (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4)) use2ndderiv=true;
+    //TODO: switched off at the moment (no 2nd order derivatives in ghost penalty!)
+//    if(ghost_penalty and
+//        (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4)) use2ndderiv=true;
 
     if( use2ndderiv )
     {
@@ -2622,7 +2623,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 //    gamma_p = 1.0 / 100.0;
     // each face has to be evaluated only once -> doubled stabfac, either unstable for multibody test case!
     gamma_p = 5.0 / 100.0;
-
+    gamma_u = 5.0 / 100.0;
 
     //scaling with h^2 (non-viscous case)
     tau_p = gamma_p * p_hk_*p_hk_;
@@ -2630,11 +2631,11 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
     //-----------------------------------------------
     // streamline
-    tau_u = tau_p;
+    tau_u = gamma_u * p_hk_*p_hk_;
 
     //-----------------------------------------------
     // divergence
-    tau_div= 0.05*tau_p;
+    tau_div= 0.05*tau_u;
 
     // nu-weighting
     if(nu_weighting) // viscous -> non-viscous case
