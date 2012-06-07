@@ -216,7 +216,7 @@ public:
   bool DBCStart(Teuchos::ParameterList& params);
 
   //! brief computes the internal energy of the network
-  void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename);
+  void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename, bool fillzeros=true);
 
   //! \brief return number of initial elements
   const int& NumBasisElements() const {return basiselements_;}
@@ -288,9 +288,8 @@ protected:
 
   /*!\brief check whether element is "broken" due to periodic boundary conditions
     \param coord  (in)  set of nodal coordinates
-    \param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
-    \param broken (in/out)  continuous==false, broken==true*/
-  void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
+    \param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element*/
+  bool CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut);
 
   /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
      \param element (in)      an element
@@ -387,9 +386,6 @@ protected:
 
   //! \brief output the coverage of crosslinker binding sites (nodes) and the distribution of bound crosslinkers
   void CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, bool coverageonly=false);
-
-  //! \brief measure the force between two loom filaments and output it
-  void LoomOutputAttraction(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
   //! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
   void CrosslinkCount(const std::ostringstream& filename);

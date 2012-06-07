@@ -1230,7 +1230,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const 
                   // distinguish between a real nodeLID and the entry '-1', which indicates a passive crosslink molecule
                   if(nodeLID>=0)
                     LID(1,0) = nodeLID;
-                  else // choose the neighbours node on the same filament as nodeLID as second entry and take basisnodes_ into account
+                  else // choose the neighbor node on the same filament as nodeLID as second entry and take basisnodes_ into account
                   {
                     int currfilament = (int)(*filamentnumber_)[(int)LID(0,0)];
                     if((int)LID(0,0)<basisnodes_-1)
@@ -1535,19 +1535,16 @@ bool STATMECH::StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID
     {
       // 2) consider direction of the crosslinker
       LINALG::Matrix<3,1> crossdir;
+      std::map<int, LINALG::Matrix<3, 1> >::const_iterator pos0 = currentpositions.find((int)LID(0,0));
+      std::map<int, LINALG::Matrix<3, 1> >::const_iterator pos1 = currentpositions.find((int)LID(1,0));
+      for(int j=0; j<(int)crossdir.M(); j++)
+        crossdir(j) = (pos1->second)(j) - (pos0->second)(j);
+      crossdir.Scale(1.0/crossdir.Norm2());
+
       // retrieve tangential vector from binding spot quaternions
       std::vector<double> alpha((int)LID.M(),0.0);
       for(int i=0; i<LID.M(); i++)
       {
-        if(i==0)
-        {
-          map<int, LINALG::Matrix<3, 1> >::const_iterator pos0 = currentpositions.find((int)LID(0,0));
-          map<int, LINALG::Matrix<3, 1> >::const_iterator pos1 = currentpositions.find((int)LID(1,0));
-          for(int j=0; j<(int)crossdir.M(); j++)
-            crossdir(j) = (pos1->second)(j) - (pos0->second)(j);
-          crossdir.Scale(1.0/crossdir.Norm2());
-        }
-
         LINALG::Matrix<3,1> firstdir;
         LINALG::Matrix<3,3> bspottriad;
         // auxiliary variable for storing a triad in quaternion form
@@ -2452,11 +2449,11 @@ void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<LINALG::SparseOperator>
 /*----------------------------------------------------------------------*
  | check for broken element                        (public) mueller 3/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken)
+bool STATMECH::StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut)
 {
   // empty cut just in case it was handed over non-empty
   cut.Zero();
-  *broken = false;
+  bool broken = false;
   int ndim = coord.M();
   // flag "broken" signals a broken element, flag "cut" hints at location of nodes 0 and 1 (of the two-noded beam)
   for (int dof = 0; dof < ndim; dof++)
@@ -2466,17 +2463,17 @@ void STATMECH::StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix&
       // broken element with node_n close to "0.0"-boundary
       if (fabs(coord(dof, n + 1) - periodlength_->at(dof) - coord(dof, n)) < fabs(coord(dof, n + 1) - coord(dof, n)))
       {
-        *broken = true;
+        broken = true;
         // set value for the spatial component in question at n-th cut
         cut(dof, n) = 1.0;
       }
       else if (fabs(coord(dof, n + 1) + periodlength_->at(dof) - coord(dof, n)) < fabs(coord(dof, n + 1) - coord(dof, n)))
       {
-        *broken = true;
+        broken = true;
         cut(dof, n) = 2.0;
       }
     }
-  return;
+  return broken;
 }// StatMechManager::CheckForBrokenElement
 
 /*----------------------------------------------------------------------*
@@ -2597,7 +2594,7 @@ std::vector<int> STATMECH::StatMechManager::Permutation(const int& N)
 /*----------------------------------------------------------------------*
  | Computes current internal energy of discret_ (public)     cyron 12/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename)
+void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename, bool fillzeros)
 {
   ParameterList p;
   p.set("action", "calc_struct_energy");
@@ -2626,15 +2623,14 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream writetofile;
     writetofile<<energy;
-    for(int i=0; i<16; i++)
-    	writetofile<<"    "<<0;
+    if(fillzeros)
+      for(int i=0; i<16; i++)
+        writetofile<<"    "<<0;
     writetofile<<endl;
     fprintf(fp, writetofile.str().c_str());
     fclose(fp);
   }
-
   return;
-
 } // StatMechManager::ComputeInternalEnergy
 
 /*----------------------------------------------------------------------*
@@ -3758,7 +3754,7 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
         GetElementNodeCoords(element, dis, coord, &doflids);
 //-----------------------detect broken/fixed/free elements and fill position vector
         // determine existence and location of broken element
-        CheckForBrokenElement(coord, cut, &broken);
+        broken = CheckForBrokenElement(coord, cut);
 
         // loop over number of cuts (columns)
         for(int n=0; n<cut.N(); n++)
