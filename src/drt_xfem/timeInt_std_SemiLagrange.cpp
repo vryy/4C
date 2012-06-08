@@ -1130,6 +1130,7 @@ void XFEM::SemiLagrange::reinitializeData()
         (interfaceSideCompare((*phinp_)[lnodeid],(*phinpi_)[lnodeid])==false))
     {
       if (interfaceSideCompare((*phinp_)[lnodeid],(*phin_)[lnodeid]) == false) // real new side
+      {
         timeIntData_->push_back(TimeIntData(
             *currnode,
             LINALG::Matrix<nsd,1>(true),
@@ -1143,48 +1144,50 @@ void XFEM::SemiLagrange::reinitializeData()
             vector<int>(1,-1),
             INFINITY,
             TimeIntData::predictor_));
+      }
       else // other side than last FSI, but same side as old solution at last time step
       {
-        for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-            data!=timeIntData_->end(); data++)
-        {
-          const int nodeid = currnode->Id();
+        const int nodeid = currnode->Id();
 
-          // 1) delete data
+          // 1) delete data, loop backward so that deleting an vector-entry does not disturbe the iterator procedure
+        for (vector<TimeIntData>::iterator data=timeIntData_->end()-1;
+            data>=timeIntData_->begin(); data--)
+        {
           if (data->node_.Id()==nodeid)
             timeIntData_->erase(data);
+        }
 
-          // 2) reset value of old solution
-          // get nodal velocities and pressures with help of the field set of node
-          const std::set<XFEM::FieldEnr>& fieldEnrSet(newdofman_->getNodeDofSet(nodeid));
-          for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
-              fieldenr != fieldEnrSet.end();++fieldenr)
+        // 2) reset value of old solution
+        // get nodal velocities and pressures with help of the field set of node
+        const std::set<XFEM::FieldEnr>& fieldEnrSet(newdofman_->getNodeDofSet(nodeid));
+        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+            fieldenr != fieldEnrSet.end();++fieldenr)
+        {
+          const DofKey dofkey(nodeid, *fieldenr);
+          const int newdofpos = newNodalDofRowDistrib_.find(dofkey)->second;
+          const int olddofpos = oldNodalDofColDistrib_.find(dofkey)->second;
+
+          switch (fieldenr->getEnrichment().Type())
           {
-            const DofKey dofkey(nodeid, *fieldenr);
-            const int newdofpos = newNodalDofRowDistrib_.find(dofkey)->second;
-            const int olddofpos = oldNodalDofColDistrib_.find(dofkey)->second;
-            switch (fieldenr->getEnrichment().Type())
-            {
-            case XFEM::Enrichment::typeJump :
-            case XFEM::Enrichment::typeKink : break; // just standard dofs
-            case XFEM::Enrichment::typeStandard :
-            case XFEM::Enrichment::typeVoid :
-            {
-              for (size_t index=0;index<newVectors_.size();index++) // reset standard dofs due to old solution
-                (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] =
-                    (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
-              break;
-            }
-            case XFEM::Enrichment::typeUndefined : break;
-            default :
-            {
-              cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
-              dserror("unknown enrichment type");
-              break;
-            }
-            } // end switch enrichment
-          } // end loop over fieldenr
-        } // end loop over nodes
+          case XFEM::Enrichment::typeJump :
+          case XFEM::Enrichment::typeKink : break; // just standard dofs
+          case XFEM::Enrichment::typeStandard :
+          case XFEM::Enrichment::typeVoid :
+          {
+            for (size_t index=0;index<newVectors_.size();index++) // reset standard dofs due to old solution
+              (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] =
+                  (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
+            break;
+          }
+          case XFEM::Enrichment::typeUndefined : break;
+          default :
+          {
+            cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+            dserror("unknown enrichment type");
+            break;
+          }
+          } // end switch enrichment
+        } // end loop over fieldenr
       }
     }
   } // end loop over processor nodes
