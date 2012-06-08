@@ -484,7 +484,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
     break;
     case INPAR::STATMECH::statout_avgdistloom:
     {
-      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0)
+      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
       {
         std::ostringstream filename;
         filename << "./DoubleBondDistances.dat";
@@ -494,33 +494,25 @@ void STATMECH::StatMechManager::Output(const int ndim,
     break;
     case INPAR::STATMECH::statout_coverageloom:
     {
-      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0)
+      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
       {
         std::ostringstream filename;
-        filename << "./CrosslinkerDistribution_"<<std::setw(6) << setfill('0') << istep <<".dat";
-        CrosslinkCoverageOutput(dis, filename);
-
-        std::ostringstream filename2;
-        filename2 << "./CrosslinkerCoverage.dat";
-        CrosslinkCoverageOutput(dis, filename2, true);
+        filename << "./CrosslinkerCoverage.dat";
+        CrosslinkCoverageOutput(dis, filename, true);
       }
     }
     break;
     case INPAR::STATMECH::statout_distandcoverloom:
     {
-      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0)
+      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
       {
         std::ostringstream filename;
         filename << "./DoubleBondDistances.dat";
         LoomOutput(dis,filename);
 
-//        std::ostringstream filename2;
-//        filename2 << "./CrosslinkerDistribution_"<<std::setw(6) << setfill('0') << istep <<".dat";
-//        CrosslinkCoverageOutput(dis, filename2);
-
-        std::ostringstream filename3;
-        filename3 << "./CrosslinkerCoverage.dat";
-        CrosslinkCoverageOutput(dis, filename3,true);
+        std::ostringstream filename2;
+        filename2 << "./CrosslinkerCoverage.dat";
+        CrosslinkCoverageOutput(dis, filename2,true);
       }
     }
     break;
@@ -1074,7 +1066,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
   if (discret_->Comm().MyPID() == 0)
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
-    /*/ visualization of crosslink molecule positions by spheres on Proc 0
+    // visualization of crosslink molecule positions by spheres on Proc 0
     std::stringstream gmshfilecross;
     for(int i=0; i<visualizepositions_->MyLength(); i++)
     {
@@ -1088,7 +1080,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
       }
     }
     fprintf(fp,gmshfilecross.str().c_str());
-    fclose(fp);*/
+    fclose(fp);
 
     //special visualization for crosslink molecules with one/two bond(s); going through the Procs
 
