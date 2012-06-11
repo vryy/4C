@@ -660,9 +660,10 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
 
         // highlight contacting elements
         if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT") && beamcmanager!=Teuchos::null)
-          for(int j=0; j<(int)(*(beamcmanager->Pairs())).size(); j++)
-            if(element->Id()==(*(beamcmanager->Pairs()))[j]->Element1()->Id() || element->Id()==(*(beamcmanager->Pairs()))[j]->Element2()->Id())
-              color = 1.0;//0.375;
+          for(int j=0; j<(int)(beamcmanager->Pairs()).size(); j++)
+            if(beamcmanager->Pairs()[j]->GetContactFlag() &&
+              (element->Id()==(beamcmanager->Pairs())[j]->Element1()->Id() || element->Id()==(beamcmanager->Pairs())[j]->Element2()->Id()))
+              color = 1.0; //0.375;
 
         //if no periodic boundary conditions are to be applied, we just plot the current element
         if (periodlength_->at(0) == 0.0)

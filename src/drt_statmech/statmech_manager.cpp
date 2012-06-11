@@ -3627,16 +3627,18 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
     case INPAR::STATMECH::dbctype_shearfixed:
     {
       // if point in time is reached at which the application of Dirichlet values starts
-      if(DBCStart(params))
+      if(!DBCStart(params))
         return;
       DBCOscillatoryMotion(params,dis,deltadbc);
       useinitdbcset_ = true;
+      for(int i=0; i<(int)dbcnodesets_[0].size(); i++)
+        cout<<dbcnodesets_[0][i]<<endl;
     }
     break;
     // shear with an updated Dirichlet node set (only DOF in direction of oscillation is subject to BC, others free)
     case INPAR::STATMECH::dbctype_sheartrans:
     {
-      if(DBCStart(params))
+      if(!DBCStart(params))
         return;
       DBCOscillatoryMotion(params,dis,deltadbc);
     }

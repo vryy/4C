@@ -97,19 +97,33 @@ void STR::TimIntStatMech::StatMechPrintDBCType()
     dserror("Set PERIODLENGTH  > 0.0 for all three components if periodic DBCs are to be applied");
   if(!discret_->Comm().MyPID())
   {
-    if((DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"PERIODICDBC")))
+    INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechman_->GetStatMechParams(),"DBCTYPE");
+    switch(dbctype)
     {
-      if((statmechman_->GetPeriodLength())->at(0) > 0.0)
-        cout<<"-Special DBCs for shear experiments applied!"<<endl;
-      else
-        dserror("Set PERIODLENGTH  > 0.0 for all three components if periodic DBCs are to be applied");
-    }
-    else
-    {
-      if((statmechman_->GetPeriodLength())->at(0) > 0.0)
-        cout<<"-Conventional DBCs with periodic boundary conditions applied!"<<endl;
-      else
-        cout<<"-Conventional DBCs without periodic boundary conditions applied"<<endl;
+      // standard DBC application
+      case INPAR::STATMECH::dbctyp_std:
+        cout<<"- Conventional Input file based application of DBCs"<<endl;
+      break;
+      // shear with a fixed Dirichlet node set
+      case INPAR::STATMECH::dbctype_shearfixed:
+        cout<<"- DBCs for rheological measurements applied: fixed node set"<<endl;
+      break;
+      // shear with an updated Dirichlet node set (only DOF in direction of oscillation is subject to BC, others free)
+      case INPAR::STATMECH::dbctype_sheartrans:
+        cout<<"- DBCs for rheological measurements applied: transient node set"<<endl;
+      break;
+      // pin down and release individual nodes
+      case INPAR::STATMECH::dbctype_pinnodes:
+        cout<<"- Special DBCs pinning down selected nodes"<<endl;
+      break;
+      // no DBCs at all
+      case INPAR::STATMECH::dbctype_none:
+        cout<<"- No application of DBCs (i.e. also no DBCs by Input file)"<<endl;
+      break;
+      // default: everything involving periodic boundary conditions
+      default:
+        dserror("Check your DBC type! %i", dbctype);
+      break;
     }
     cout<<"================================================================"<<endl;
   }

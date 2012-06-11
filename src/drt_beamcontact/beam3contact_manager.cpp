@@ -844,10 +844,13 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   
   // print some data to screen
   ConsoleOutput();
+
+  // backup the pairs for output
+  outputpairs_.clear();
+  outputpairs_.resize(0);
+  outputpairs_ = pairs_;
     
   // clear potential contact pairs
-  
-
   bool newgapfunction = DRT::INPUT::IntegralValue<int>(InputParameters(),"BEAMS_NEWGAP");
   if (!newgapfunction)
   {

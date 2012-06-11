@@ -113,14 +113,14 @@ public:
   \brief Get different node or element maps
 
   */
-  inline const RCP<Epetra_Map> RowNodes() const { return noderowmap_; }
-  inline const RCP<Epetra_Map> ColNodes() const { return nodecolmap_; }
-  inline const RCP<Epetra_Map> FullNodes() const { return nodefullmap_; }
-  inline const RCP<Epetra_Map> RowElements() const { return elerowmap_; }
-  inline const RCP<Epetra_Map> ColElements() const { return elecolmap_; }
-  inline const RCP<Epetra_Map> FullElements() const { return elefullmap_; }
-  inline const vector<RCP<Beam3contact> >* Pairs() const { return &pairs_; }
-  inline const RCP<Beam3ContactOctTree> OcTree() const {return tree_; }
+  inline const Teuchos::RCP<Epetra_Map> RowNodes() const { return noderowmap_; }
+  inline const Teuchos::RCP<Epetra_Map> ColNodes() const { return nodecolmap_; }
+  inline const Teuchos::RCP<Epetra_Map> FullNodes() const { return nodefullmap_; }
+  inline const Teuchos::RCP<Epetra_Map> RowElements() const { return elerowmap_; }
+  inline const Teuchos::RCP<Epetra_Map> ColElements() const { return elecolmap_; }
+  inline const Teuchos::RCP<Epetra_Map> FullElements() const { return elefullmap_; }
+  inline const std::vector<Teuchos::RCP<Beam3contact> >& Pairs() const { return outputpairs_; }
+  inline const Teuchos::RCP<Beam3ContactOctTree> OcTree() const {return tree_; }
 
   /*!
   \brief Get list of contact input parameters
@@ -301,7 +301,7 @@ private:
   DRT::Discretization& pdiscret_;
 
   //! contact discretization (basically a copy)
-  RCP<DRT::Discretization> cdiscret_;
+  Teuchos::RCP<DRT::Discretization> cdiscret_;
 
   //! the Comm interface of the problem discretization
   const Epetra_Comm& pdiscomm_;
@@ -310,18 +310,20 @@ private:
   int dofoffset_;
 
   //! node and element maps
-  RCP<Epetra_Map> noderowmap_;
-  RCP<Epetra_Map> nodecolmap_;
-  RCP<Epetra_Map> nodefullmap_;
-  RCP<Epetra_Map> elerowmap_;
-  RCP<Epetra_Map> elecolmap_;
-  RCP<Epetra_Map> elefullmap_;
+  Teuchos::RCP<Epetra_Map> noderowmap_;
+  Teuchos::RCP<Epetra_Map> nodecolmap_;
+  Teuchos::RCP<Epetra_Map> nodefullmap_;
+  Teuchos::RCP<Epetra_Map> elerowmap_;
+  Teuchos::RCP<Epetra_Map> elecolmap_;
+  Teuchos::RCP<Epetra_Map> elefullmap_;
   
   //! occtree for contact search
-  RCP<Beam3ContactOctTree> tree_;
+  Teuchos::RCP<Beam3ContactOctTree> tree_;
 
   //! vector of contact pairs (pairs of elements, which might get in contact)
-  vector<RCP<Beam3contact> > pairs_;
+  std::vector<Teuchos::RCP<Beam3contact> > pairs_;
+  //! vector of contact pairs stored for output (output is called after Update() which erases all pairs!)
+  std::vector<Teuchos::RCP<Beam3contact> > outputpairs_;
 
   //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair directly by the two element-iD's of the pair.
   // It is not needed at the moment due to the direct neigbour determination in the constructor but may be useful for future operations

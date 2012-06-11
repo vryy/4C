@@ -1611,7 +1611,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::frictionmodel_anisotropicconsistent),
                                             &statmech);
   //Reading which kind of friction model should be applied
-  setStringToIntegralParameter<int>("DBCTYPE","none","Dirichlet BC type applied",
+  setStringToIntegralParameter<int>("DBCTYPE","std","Dirichlet BC type applied",
                                  //listing possible strings in input file in category FRICTION_MODEL
                                  tuple<std::string>("none",
                                                     "std",
