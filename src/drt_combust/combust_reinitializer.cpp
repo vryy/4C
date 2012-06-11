@@ -343,10 +343,10 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
           // a facing patch was found
           if (facenode == true)
           {
-            // overwrite smallest distance if computed patch distance is smaller
-            if (fabs(patchdist) < fabs(mindist))
-            {
-              //cout << "distance to flame front patch: " << mindist << " is overwritten by: " << patchdist << endl;
+            // if G-value at the node is negative, the minimal distance has to be negative
+            if ((*phivector)[doflid] < 0.0 )
+              mindist = -patchdist;
+            else
               mindist = patchdist;
 
               if (pbcnode)
@@ -871,11 +871,11 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
             // a facing patch was found
             if (facenode == true)
             {
-              // overwrite smallest distance if computed patch distance is smaller
-              if (fabs(patchdist) < fabs(mindist))
-              {
+              // if G-value at the node is negative, the minimal distance has to be negative
+              if ((*phivector)[doflid] < 0.0 )
+                mindist = -patchdist;
+              else
                 mindist = patchdist;
-              }
             }
 
             //-------------------------------------------------------------
@@ -1058,7 +1058,7 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
         converged)
     {
       facenode = true;
-      patchdist = alpha;
+      patchdist = fabs(alpha);
 //      cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << endl;
     }
     break;
@@ -1071,7 +1071,7 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
         converged)
     {
       facenode = true;
-      patchdist = alpha;
+      patchdist = fabs(alpha);
 //      cout << "facing patch found (quad4 patch)!" << endl;
     }
     break;
