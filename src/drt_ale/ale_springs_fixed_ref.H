@@ -19,6 +19,21 @@ Maintainer: Ulrich Kuettler
 
 #include "ale.H"
 
+/// forward declarations
+namespace LINALG
+{
+  class Solver;
+  class Preconditioner;
+  class SparseMatrix;
+  class BlockSparseMatrixBase;
+  class SparseOperator;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
 namespace ALE {
 
 
@@ -45,7 +60,7 @@ public:
 
   AleSpringsFixedRef(Teuchos::RCP<DRT::Discretization> actdis,
              Teuchos::RCP<LINALG::Solver> solver,
-             Teuchos::RCP<ParameterList> params,
+             Teuchos::RCP<Teuchos::ParameterList> params,
              Teuchos::RCP<IO::DiscretizationWriter> output,
              bool incremental,
              bool dirichletcond=true);
@@ -86,12 +101,9 @@ public:
     { return residual_; }
   virtual Teuchos::RCP<Epetra_Vector> Disp()
     { return dispnp_; }
-  virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
-    { return Teuchos::rcp(discret_->DofRowMap(),false); }
-  virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
-  { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
-  virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
-  { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
+  virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+  virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+  virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const;
 
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
@@ -105,7 +117,7 @@ public:
   virtual void ReadRestart(int step);
 
   /// communication object at the interface
-  const ALE::UTILS::MapExtractor& Interface() const { return interface_; }
+  virtual Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const { return interface_; }
 
   /// create result test
   virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -113,12 +125,12 @@ public:
 private:
 
   /// the interface map setup for interface <-> full translation
-  ALE::UTILS::MapExtractor interface_;
+  Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
 
   //! @name local copies of input parameters
   Teuchos::RCP<DRT::Discretization> discret_;
   Teuchos::RCP<LINALG::Solver> solver_;
-  Teuchos::RCP<ParameterList> params_;
+  Teuchos::RCP<Teuchos::ParameterList> params_;
   Teuchos::RCP<IO::DiscretizationWriter> output_;
   //@}
 

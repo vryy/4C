@@ -15,11 +15,14 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "../drt_constraint/constraint_manager.H"
 
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
 /*----------------------------------------------------------------------*/
@@ -74,7 +77,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                       FluidField().Interface()->FSICondMap(),
                                      *AleField().Discretization(),
-                                      AleField().Interface().FSICondMap(),
+                                      AleField().Interface()->FSICondMap(),
                                      "FSICoupling",
                                       ndim);
 
@@ -84,7 +87,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
       fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                          FluidField().Interface()->FSCondMap(),
                                         *AleField().Discretization(),
-                                         AleField().Interface().FSCondMap(),
+                                         AleField().Interface()->FSCondMap(),
                                         "FREESURFCoupling",
                                          ndim);
     }
@@ -108,7 +111,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
     vecSpaces.push_back(StructureField()->Interface()->OtherMap());
     vecSpaces.push_back(FluidField()    .DofRowMap());
-    vecSpaces.push_back(AleField()      .Interface().OtherMap());
+    vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
     if (vecSpaces[0]->NumGlobalElements()==0)
       dserror("No inner structural equations. Splitting not possible. Panic.");
@@ -125,7 +128,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     // build ale system matrix in splitted system
     AleField().BuildSystemMatrix(false);
 
-    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
     // get the PCITER from inputfile
     vector<int> pciter;
@@ -550,7 +553,7 @@ void FSI::MortarMonolithicStructureSplit::Update()
   {
     iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofRowMap(),true));
     Teuchos::RCP<Epetra_Vector> idispale =
-        icoupfa_->SlaveToMaster(AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement()));
+        icoupfa_->SlaveToMaster(AleField().Interface()->ExtractFSICondVector(AleField().ExtractDisplacement()));
 
     slideale_->Remeshing(*StructureField(),
                         FluidField().Discretization(),
@@ -755,7 +758,7 @@ void FSI::MortarMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   // extract the inner and boundary dofs of all three fields
 
   Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface()->ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
@@ -995,8 +998,8 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcx);
 
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertFSICondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+  AleField().Interface()->InsertFSICondVector(acx, a);
 
   // if there is a free surface
   if (FluidField().Interface()->FSCondRelevant())
@@ -1005,7 +1008,7 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
     FluidField().FreeSurfVelocityToDisplacement(fcx);
 
     Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->MasterToSlave(fcx);
-    AleField().Interface().InsertFSCondVector(acx, a);
+    AleField().Interface()->InsertFSCondVector(acx, a);
   }
 
   ax = a;

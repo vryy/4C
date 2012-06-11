@@ -43,6 +43,7 @@
 #include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_coupling.H"
 
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
 /*----------------------------------------------------------------------*/

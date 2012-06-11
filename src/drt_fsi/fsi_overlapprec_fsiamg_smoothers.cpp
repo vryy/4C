@@ -982,8 +982,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(
   else                r = f - A * x;
   
   // a view to these vectors (MUST be AFTER the above statement!)
-  RCP<Epetra_Vector> er = rcp(new Epetra_Vector(View,matrix.RangeMap(),r.GetValues(0)));
-  RCP<Epetra_Vector> etmpx = rcp(new Epetra_Vector(View,matrix.DomainMap(),tmpx.GetValues(0)));
+  Teuchos::RCP<Epetra_Vector> er = Teuchos::rcp(new Epetra_Vector(View,matrix.RangeMap(),r.GetValues(0)));
+  Teuchos::RCP<Epetra_Vector> etmpx = Teuchos::rcp(new Epetra_Vector(View,matrix.DomainMap(),tmpx.GetValues(0)));
 
   double initrinf = 0.0;
   double initrl2 = 0.0;
@@ -1008,7 +1008,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(
     {
       r = f - A * x;
       // r is recreated here, so we need a fresh view (took me a while to find this one :-( )
-      er = rcp(new Epetra_Vector(View,matrix.RangeMap(),r.GetValues(0)));
+      er = Teuchos::rcp(new Epetra_Vector(View,matrix.RangeMap(),r.GetValues(0)));
     }
     run++;
   }

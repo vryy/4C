@@ -12,6 +12,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "fsi_monolithicinterface.H"
+#include "../linalg/linalg_mapextractor.H"
 
 namespace LINALG
 {
@@ -260,7 +261,7 @@ namespace UTILS
 
     /// setup solver for global block system
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(ParameterList& nlParams,
+    CreateLinearSystem(Teuchos::ParameterList& nlParams,
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils) = 0;
 

@@ -8,6 +8,7 @@
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "../drt_fsi/fs_monolithic.H"
 
@@ -30,15 +31,8 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
 
-#ifdef PARALLEL
 #include <mpi.h>
-#endif
-
-#ifdef PARALLEL
-#include <Epetra_MpiComm.h>
-#else
 #include <Epetra_SerialComm.h>
-#endif
 
 #include "biofilm_fsi.H"
 #include "../drt_adapter/ad_str_bio.H"
@@ -102,7 +96,7 @@ FS3I::BiofilmFSI::BiofilmFSI(
 	  icoupfa_->SetupConditionCoupling(*(fsi_->FluidField().Discretization()),
                                            (fsi_->FluidField().Interface()->FSICondMap()),
                                            *(fsi_->AleField().Discretization()),
-                                           (fsi_->AleField().Interface().FSICondMap()),
+                                           (fsi_->AleField().Interface()->FSICondMap()),
                                            condname,
                                            ndim);
 

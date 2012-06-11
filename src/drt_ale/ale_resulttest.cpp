@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "ale_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_discret.H"
 #include "ale_lin.H"
 #include "ale_springs.H"
 #include "ale_laplace.H"

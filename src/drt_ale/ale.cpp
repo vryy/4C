@@ -23,6 +23,9 @@ Maintainer: Ulrich Kuettler
 
 // further includes for AleBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_solver.H"
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>

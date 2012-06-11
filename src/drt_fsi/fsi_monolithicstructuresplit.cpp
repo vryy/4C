@@ -12,6 +12,8 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "fsi_nox_group.H"
 
@@ -81,7 +83,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
                                 *AleField().Discretization(),
-                                 AleField().Interface().FSICondMap(),
+                                 AleField().Interface()->FSICondMap(),
                                 "FSICoupling",
                                  ndim);
 
@@ -90,7 +92,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
+                                   AleField().Interface()->FSICondMap(),
                                    "FSICoupling",
                                    ndim);
 
@@ -100,7 +102,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
     fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                        FluidField().Interface()->FSCondMap(),
                                       *AleField().Discretization(),
-                                       AleField().Interface().FSCondMap(),
+                                       AleField().Interface()->FSCondMap(),
                                       "FREESURFCoupling",
                                        ndim);
   }
@@ -132,7 +134,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface().OtherMap());
+  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements()==0)
     dserror("No inner structural equations. Splitting not possible. Panic.");
@@ -149,7 +151,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
   // get the PCITER from inputfile
   vector<int> pciter;
@@ -732,7 +734,7 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   // extract the inner and boundary dofs of all three fields
 
   Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface()->ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
@@ -964,8 +966,8 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertFSICondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+  AleField().Interface()->InsertFSICondVector(acx, a);
 
   // if there is a free surface
   if (FluidField().Interface()->FSCondRelevant())
@@ -974,7 +976,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
     FluidField().FreeSurfVelocityToDisplacement(fcx);
 
     Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->MasterToSlave(fcx);
-    AleField().Interface().InsertFSCondVector(acx, a);
+    AleField().Interface()->InsertFSCondVector(acx, a);
   }
   ax = a;
 

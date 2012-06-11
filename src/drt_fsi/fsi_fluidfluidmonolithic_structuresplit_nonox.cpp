@@ -7,12 +7,15 @@
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_io/io_control.H"
@@ -85,7 +88,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
                                 *AleField().Discretization(),
-                                 AleField().Interface().FSICondMap(),
+                                 AleField().Interface()->FSICondMap(),
                                 "FSICoupling",
                                  ndim);
 
@@ -93,7 +96,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                     FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
-                                    AleField().Interface().FSICondMap(),
+                                    AleField().Interface()->FSICondMap(),
                                    "FSICoupling",
                                     ndim);
 
@@ -123,7 +126,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface().OtherMap());
+  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements()==0)
     dserror("No inner structural equations. Splitting not possible. Panic.");
@@ -140,7 +143,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
   /*----------------------------------------------------------------------*/
   // initialize systemmatrix_
@@ -558,7 +561,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
   Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
 
   // ale inner
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface()->ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
@@ -628,8 +631,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(Teuchos::
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertFSICondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+  AleField().Interface()->InsertFSICondVector(acx, a);
 
   ax = a;
 
@@ -701,7 +704,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
     // update the vectors then we set the fluid-fluid dirichlet values
     // in buildsystemmatrix
     AleField().BuildSystemMatrix(false);
-    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
   }
 }
 
@@ -714,7 +717,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupNewSystem()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface().OtherMap());
+  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements()==0)
     dserror("No inner structural equations. Splitting not possible. Panic.");

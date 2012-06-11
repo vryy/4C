@@ -21,6 +21,7 @@ Maintainer: Mirella Coroneo
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -62,7 +63,7 @@ ADAPTER::StructureBio::StructureBio(
 	 icoupsa_->SetupConditionCoupling(*structure_->Discretization(),
 									 structure_->Interface()->FSICondMap(),
 									 *ale->AleField().Discretization(),
-									 ale->AleField().Interface().FSICondMap(),
+									 ale->AleField().Interface()->FSICondMap(),
 									 condname,
 		               ndim);
 

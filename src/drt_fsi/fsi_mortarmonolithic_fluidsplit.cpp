@@ -19,9 +19,12 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "../drt_constraint/constraint_manager.H"
 
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
 #define FLUIDSPLITAMG
@@ -75,7 +78,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                      FluidField().Interface()->FSICondMap(),
                                      *AleField().Discretization(),
-                                     AleField().Interface().FSICondMap(),
+                                     AleField().Interface()->FSICondMap(),
                                      "FSICoupling",
                                      ndim);
 
@@ -85,7 +88,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
       fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                         FluidField().Interface()->FSCondMap(),
                                         *AleField().Discretization(),
-                                        AleField().Interface().FSCondMap(),
+                                        AleField().Interface()->FSCondMap(),
                                         "FREESURFCoupling",
                                         ndim);
     }
@@ -113,7 +116,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
   #else
     vecSpaces.push_back(FluidField()    .Interface().OtherMap());
   #endif
-    vecSpaces.push_back(AleField()      .Interface().OtherMap());
+    vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
     if (vecSpaces[1]->NumGlobalElements()==0)
       dserror("No inner fluid equations. Splitting not possible.");
@@ -127,7 +130,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     // build ale system matrix in splitted system
     AleField().BuildSystemMatrix(false);
 
-    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
     vector<int> pciter;
     vector<double> pcomega;
@@ -777,7 +780,7 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 #ifdef FLUIDSPLITAMG
   fov = FluidField().Interface()->InsertOtherVector(fov);
 #endif
-  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface()->ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
@@ -997,8 +1000,8 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
 
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertFSICondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+  AleField().Interface()->InsertFSICondVector(acx, a);
   ax = a;
 
   // process fluid unknowns
@@ -1019,7 +1022,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
   {
     iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->SlaveDofRowMap(),true));
     Teuchos::RCP<Epetra_Vector> idispale =
-        icoupfa_->SlaveToMaster(AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement()));
+        icoupfa_->SlaveToMaster(AleField().Interface()->ExtractFSICondVector(AleField().ExtractDisplacement()));
 
     slideale_->Remeshing(*StructureField(),
                         FluidField().Discretization(),

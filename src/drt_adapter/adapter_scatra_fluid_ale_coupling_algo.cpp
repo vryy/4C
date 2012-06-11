@@ -17,7 +17,9 @@ Maintainer: Georg Bauer
 #include "adapter_scatra_fluid_ale_coupling_algo.H"
 #include "adapter_coupling.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -37,7 +39,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
+                                   AleField().Interface()->FSICondMap(),
                                    condname,
                                    ndim);
 
@@ -45,7 +47,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
   fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                     FluidField().Interface()->FSCondMap(),
                                     *AleField().Discretization(),
-                                    AleField().Interface().FSCondMap(),
+                                    AleField().Interface()->FSCondMap(),
                                     "FREESURFCoupling",
                                     ndim);
 

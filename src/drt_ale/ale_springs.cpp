@@ -13,8 +13,14 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 #include "ale_springs.H"
+#include "ale_resulttest.H"
+#include "ale_utils_mapextractor.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_io/io.H"
 
 
 /*----------------------------------------------------------------------*
@@ -44,7 +50,8 @@ ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
   residual_       = LINALG::CreateVector(*dofrowmap,true);
   incr_           = LINALG::CreateVector(*dofrowmap,true);
 
-  interface_.Setup(*actdis);
+  interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
+  interface_->Setup(*actdis);
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;
@@ -60,18 +67,18 @@ ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
     // followed by an Eulerian step to take wear into account, the interface
     // becomes a dirichlet
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_.FSICondMap());
-    condmaps.push_back(interface_.AleWearCondMap());
+    condmaps.push_back(interface_->FSICondMap());
+    condmaps.push_back(interface_->AleWearCondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 
-  if (dirichletcond and interface_.FSCondRelevant())
+  if (dirichletcond and interface_->FSCondRelevant())
   {
     // for partitioned solves the free surface becomes a Dirichlet boundary
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_.FSCondMap());
+    condmaps.push_back(interface_->FSCondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
@@ -90,8 +97,32 @@ void ALE::AleSprings::BuildSystemMatrix(bool full)
   }
   else
   {
-    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
+    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*interface_,*interface_,81,false,true));
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> ALE::AleSprings::SystemMatrix()
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ALE::AleSprings::BlockSystemMatrix() const
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> ALE::AleSprings::DofRowMap() const
+{
+  return Teuchos::rcp(discret_->DofRowMap(),false);
 }
 
 
@@ -198,7 +229,7 @@ void ALE::AleSprings::EvaluateElements()
 
   //find out if we have free surface nodes with heightfunction coupling
   std::vector<DRT::Condition*> hfconds;
-  if (interface_.FSCondRelevant())
+  if (interface_->FSCondRelevant())
   {
     // select free surface nodes
     std::string condname = "FREESURFCoupling";
@@ -216,7 +247,7 @@ void ALE::AleSprings::EvaluateElements()
   }
 
   // Are there free surface conditions with heightfunction coupling?
-  if (interface_.FSCondRelevant() and hfconds.size()>0)
+  if (interface_->FSCondRelevant() and hfconds.size()>0)
   {
     // ====================================================================================
     // ====================================================================================
@@ -468,7 +499,7 @@ void ALE::AleSprings::EvaluateElements()
     // This is the multiplier that projects the delta_u_gamma of the fluid on
     // the free direction (here: z) in a mass-consistent way acc. to heightfunction.
     Teuchos::RCP<LINALG::SparseMatrix> H  =
-      Teuchos::rcp(new LINALG::SparseMatrix(*(interface_.FSCondMap()),3,false,false,LINALG::SparseMatrix::CRS_MATRIX));
+      Teuchos::rcp(new LINALG::SparseMatrix(*(interface_->FSCondMap()),3,false,false,LINALG::SparseMatrix::CRS_MATRIX));
     Teuchos::RCP<Epetra_CrsMatrix> ep_H = H->EpetraMatrix();
 
     for (unsigned int node=0; node<(myGIDnodes.size()); node++)
@@ -564,9 +595,9 @@ void ALE::AleSprings::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> id
 {
   // applying interface displacements
   if(DRT::Problem::Instance()->ProblemName()!="structure_ale")
-    interface_.InsertFSICondVector(idisp,dispnp_);
+    interface_->InsertFSICondVector(idisp,dispnp_);
   else
-    interface_.InsertAleWearCondVector(idisp,dispnp_);
+    interface_->InsertAleWearCondVector(idisp,dispnp_);
 }
 
 
@@ -574,7 +605,7 @@ void ALE::AleSprings::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> id
  *----------------------------------------------------------------------*/
 void ALE::AleSprings::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 {
-  interface_.InsertFSCondVector(fsdisp,dispnp_);
+  interface_->InsertFSCondVector(fsdisp,dispnp_);
 }
 
 

@@ -114,7 +114,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
                             vector<MLAPI::Operator>& R,
                             AnalyzeBest& best)
 {
-  RCP<MLAPI::InverseOperator> S;
+  Teuchos::RCP<MLAPI::InverseOperator> S;
   //RCP<MLAPI::LoadBalanceInverseOperator> lbS;
 
   // measure r_l2 decrease per time in bestrate
@@ -147,7 +147,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
     string localtype = "";
     double localdamp = 1.0;
     int    localpoly = 1;
-    RCP<MLAPI::InverseOperator> localS;
+    Teuchos::RCP<MLAPI::InverseOperator> localS;
 
     //----------------------------------------------------------- test SGS
     if (!myrank)
@@ -170,7 +170,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       subp.set("smoother: damping factor",damp);
       Teuchos::ParameterList p;
       SelectMLAPISmoother(type,level,subp,p,pushlist);
-      S = rcp(new MLAPI::InverseOperator());
+      S = Teuchos::rcp(new MLAPI::InverseOperator());
       S->Reshape(A[level],type,p,&pushlist);
       MLAPI::MultiVector x(dspace,1,false);
       x.Update(1.0,xref,0.0);
@@ -229,7 +229,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       subp.set("smoother: MLS polynomial order",poly);
       Teuchos::ParameterList p;
       SelectMLAPISmoother(type,level,subp,p,pushlist);
-      S = rcp(new MLAPI::InverseOperator());
+      S = Teuchos::rcp(new MLAPI::InverseOperator());
       S->Reshape(A[level],type,p,&pushlist);
       MLAPI::MultiVector x(dspace,1,false);
       x.Update(1.0,xref,0.0);
@@ -288,7 +288,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
       subp.set("smoother: damping factor",1.0);
       Teuchos::ParameterList p; 
       SelectMLAPISmoother(type,level,subp,p,pushlist);
-      S = rcp(new MLAPI::InverseOperator());
+      S = Teuchos::rcp(new MLAPI::InverseOperator());
       S->Reshape(A[level],type,p,NULL);
       for (int i=0; i<99; ++i)
       {
@@ -341,7 +341,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
     fflush(stdout);
   }
   // create coarse level solve
-  best.S()[nlevel-1] = rcp(new MLAPI::InverseOperator());
+  best.S()[nlevel-1] = Teuchos::rcp(new MLAPI::InverseOperator());
   best.S()[nlevel-1]->Reshape(A[nlevel-1],"Amesos-KLU");
 
   MLAPI::Space rspace(A[0].GetOperatorRangeSpace());

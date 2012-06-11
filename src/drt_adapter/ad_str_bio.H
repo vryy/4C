@@ -89,7 +89,7 @@ namespace ADAPTER
     Teuchos::RCP<ADAPTER::Coupling> coupsa_;
 
     ///  displacement at time t^{n+1} ???
-    RCP<Epetra_Vector> dispnp_;
+    Teuchos::RCP<Epetra_Vector> dispnp_;
 
     Teuchos::RCP<Epetra_Vector> structdisp;
 

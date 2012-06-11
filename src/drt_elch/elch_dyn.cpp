@@ -21,6 +21,7 @@ Maintainer: Georg Bauer
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"

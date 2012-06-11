@@ -24,7 +24,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonV(
                     vector<int>& levelsweeps,
                     vector<double>& leveldamps,
                     vector<MLAPI::Operator>& A,
-                    vector<RCP<MLAPI::InverseOperator> >& S,
+                    vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
                     vector<MLAPI::Operator>& P, 
                     vector<MLAPI::Operator>& R,
                     const int level,
@@ -96,7 +96,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(
                 MLAPI::MultiVector& z,
                 const MLAPI::MultiVector& b,
                 const vector<MLAPI::Operator>& A,
-                const vector<RCP<MLAPI::InverseOperator> >& S,
+                const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
                 const vector<MLAPI::Operator>& P,
                 const vector<MLAPI::Operator>& R) const
 {

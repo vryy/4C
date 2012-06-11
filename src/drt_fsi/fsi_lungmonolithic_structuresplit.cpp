@@ -17,11 +17,13 @@ Maintainer: Lena Yoshihara
 #include "fsi_matrixtransform.H"
 #include "fsi_lung_overlapprec.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/ad_str_lung.H"
 #include "../drt_adapter/ad_fld_lung.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_io/io_control.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -69,7 +71,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
   vecSpaces.push_back(structfield->FSIInterface()->OtherMap());
   vecSpaces.push_back(FluidField().DofRowMap());
   // remaining (not coupled) dofs of ale field
-  vecSpaces.push_back(AleField().Interface().Map(0));
+  vecSpaces.push_back(AleField().Interface()->Map(0));
   // additional volume constraints
   vecSpaces.push_back(ConstrMap_);
 
@@ -613,7 +615,7 @@ void FSI::LungMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 
   Teuchos::RCP<Epetra_Vector> sov = structfield->FSIInterface()->ExtractOtherVector(sv);
 
-  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface().ExtractVector(av, 0);
+  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface()->ExtractVector(av, 0);
 
   if (fluidscale!=0)
   {
@@ -661,12 +663,12 @@ void FSI::LungMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const E
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertVector(aox,0);
-  AleField().Interface().InsertVector(acx, 1, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertVector(aox,0);
+  AleField().Interface()->InsertVector(acx, 1, a);
 
   Teuchos::RCP<Epetra_Vector> scox = StructureField()->Interface()->ExtractLungASICondVector(sx);
   Teuchos::RCP<Epetra_Vector> acox = StructToAleOutflow(scox);
-  AleField().Interface().InsertVector(acox, 3, a);
+  AleField().Interface()->InsertVector(acox, 3, a);
 
   ax = a;
 }

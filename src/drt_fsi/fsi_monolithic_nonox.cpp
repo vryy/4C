@@ -13,7 +13,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
-
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"

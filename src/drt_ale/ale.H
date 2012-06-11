@@ -22,28 +22,32 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
-#include <Epetra_RowMatrix.h>
 #include <Epetra_Map.h>
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../drt_io/io.H"
+/// forward declarations
+namespace LINALG
+{
+  class Solver;
+  class Preconditioner;
+  class SparseMatrix;
+  class BlockSparseMatrixBase;
+  class MapExtractor;
+}
 
-#include <NOX_Epetra_Interface_Jacobian.H>
-#include <NOX_Epetra_Interface_Required.H>
-
-#include <set>
-
-#include "ale_utils_mapextractor.H"
-#include "ale_resulttest.H"
+namespace DRT
+{
+  class ResultTest;
+  class Discretization;
+}
 
 
 namespace ALE {
+
+/// forward declaration
+namespace UTILS
+{
+  class MapExtractor;
+}
 
 
 /// General ALE interface
@@ -146,7 +150,8 @@ public:
   //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
   /// communication object at the interface
-  virtual const ALE::UTILS::MapExtractor& Interface() const = 0;
+//  virtual const ALE::UTILS::MapExtractor& Interface() const = 0;
+  virtual Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const = 0;
 
   /// build system matrix
   virtual void BuildSystemMatrix(bool full=true) = 0;

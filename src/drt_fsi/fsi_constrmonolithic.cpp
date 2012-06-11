@@ -4,10 +4,12 @@
 #include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_inpar/inpar_fsi.H"
 
@@ -17,12 +19,6 @@
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/adapter_coupling.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -75,7 +71,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
                                 *AleField().Discretization(),
-                                 AleField().Interface().FSICondMap(),
+                                 AleField().Interface()->FSICondMap(),
                                 "FSICoupling",
                                 ndim);
 
@@ -84,7 +80,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface()->FSICondMap(),
                                   *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
+                                   AleField().Interface()->FSICondMap(),
                                   "FSICoupling",
                                   ndim);
 
@@ -110,7 +106,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().Map(0)));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(0)));
 
   return;
 }

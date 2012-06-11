@@ -15,8 +15,15 @@ Maintainer: Ulrich Kuettler
 
 
 #include "ale_laplace.H"
+#include "ale_resulttest.H"
+#include "ale_utils_mapextractor.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_io/io.H"
 
 #define scaling_infnorm true
 
@@ -48,7 +55,8 @@ ALE::AleLaplace::AleLaplace(RCP<DRT::Discretization> actdis,
   dispnp_         = LINALG::CreateVector(*dofrowmap,true);
   residual_       = LINALG::CreateVector(*dofrowmap,true);
 
-  interface_.Setup(*actdis);
+  interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
+  interface_->Setup(*actdis);
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;
@@ -64,18 +72,18 @@ ALE::AleLaplace::AleLaplace(RCP<DRT::Discretization> actdis,
     // followed by an Eulerian step to take wear into account, the interface
     // becomes a dirichlet
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_.FSICondMap());
-    condmaps.push_back(interface_.AleWearCondMap());
+    condmaps.push_back(interface_->FSICondMap());
+    condmaps.push_back(interface_->AleWearCondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   }
 
-  if (dirichletcond and interface_.FSCondRelevant())
+  if (dirichletcond and interface_->FSCondRelevant())
   {
     // for partitioned solves the free surface becomes a Dirichlet boundary
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_.FSCondMap());
+    condmaps.push_back(interface_->FSCondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
@@ -95,7 +103,7 @@ void ALE::AleLaplace::BuildSystemMatrix(bool full)
   }
   else
   {
-    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
+    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*interface_,*interface_,81,false,true));
   }
 
   if (not incremental_)
@@ -142,6 +150,30 @@ void ALE::AleLaplace::BuildSystemMatrix(bool full)
       }
     }
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> ALE::AleLaplace::SystemMatrix()
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ALE::AleLaplace::BlockSystemMatrix() const
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> ALE::AleLaplace::DofRowMap() const
+{
+  return Teuchos::rcp(discret_->DofRowMap(),false);
 }
 
 
@@ -274,9 +306,9 @@ void ALE::AleLaplace::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> id
 {
   // applying interface displacements
   if(DRT::Problem::Instance()->ProblemName()!="structure_ale")
-    interface_.InsertFSICondVector(idisp,dispnp_);
+    interface_->InsertFSICondVector(idisp,dispnp_);
   else
-    interface_.InsertAleWearCondVector(idisp,dispnp_);
+    interface_->InsertAleWearCondVector(idisp,dispnp_);
 }
 
 
@@ -284,7 +316,7 @@ void ALE::AleLaplace::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> id
  *----------------------------------------------------------------------*/
 void ALE::AleLaplace::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 {
-  interface_.InsertFSCondVector(fsdisp,dispnp_);
+  interface_->InsertFSCondVector(fsdisp,dispnp_);
 }
 
 

@@ -6,6 +6,7 @@
 #include "fsi_matrixtransform.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -57,7 +58,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystem()
 #else
   vecSpaces.push_back(FluidField().Interface()->OtherMap());
 #endif
-  vecSpaces.push_back(AleField().Interface().OtherMap());
+  vecSpaces.push_back(AleField().Interface()->OtherMap());
   vecSpaces.push_back(conman_->GetConstraintMap());
 
   if (vecSpaces[0]->NumGlobalElements()==0)
@@ -401,7 +402,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 #ifdef FLUIDSPLITAMG
   fov = FluidField().Interface()->InsertOtherVector(fov);
 #endif
-  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface()->ExtractOtherVector(av);
 
   if (fabs(fluidscale)>=1.0E-10)
   {
@@ -459,8 +460,8 @@ void FSI::ConstrMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertVector(acx, 1, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+  AleField().Interface()->InsertVector(acx, 1, a);
 
   ax = a;
 }

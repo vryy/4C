@@ -79,7 +79,7 @@ namespace FSI
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
                      const vector<MLAPI::Operator>& A,
-                     const vector<RCP<MLAPI::InverseOperator> >& S,
+                     const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
                      const vector<MLAPI::Operator>& P,
                      const vector<MLAPI::Operator>& R,
                      const bool trigger = false) const;
@@ -118,7 +118,7 @@ namespace FSI
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
                      const vector<MLAPI::Operator>& A,
-                     const vector<RCP<MLAPI::InverseOperator> >& S,
+                     const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
                      const vector<MLAPI::Operator>& P,
                      const vector<MLAPI::Operator>& R
                      ) const;
@@ -173,14 +173,14 @@ namespace FSI
        inline vector<double>& Damp()   { return bestdamp_; }
        inline vector<int>&    Poly()   { return bestpoly_; }
        inline vector<int>&    Sweeps() { return bestsweeps_; }
-       inline vector<RCP<MLAPI::InverseOperator> >& S() { return S_; }
+       inline vector<Teuchos::RCP<MLAPI::InverseOperator> >& S() { return S_; }
      private:
        int                                  nlevel_;
        vector<string>                       besttype_;
        vector<double>                       bestdamp_;
        vector<int>                          bestpoly_;
        vector<int>                          bestsweeps_;
-       vector<RCP<MLAPI::InverseOperator> > S_;
+       vector<Teuchos::RCP<MLAPI::InverseOperator> > S_;
     };
     
     // main routine analysis of FSIAMG
@@ -313,7 +313,7 @@ namespace FSI
                     vector<int>& levelsweeps,
                     vector<double>& leveldamps,
                     vector<MLAPI::Operator>& A,
-                    vector<RCP<MLAPI::InverseOperator> >& S,
+                    vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
                     vector<MLAPI::Operator>& P, 
                     vector<MLAPI::Operator>& R,
                     const int level,
@@ -335,7 +335,7 @@ namespace FSI
                 MLAPI::MultiVector& z,
                 const MLAPI::MultiVector& b,
                 const vector<MLAPI::Operator>& A,
-                const vector<RCP<MLAPI::InverseOperator> >& S,
+                const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
                 const vector<MLAPI::Operator>& P,
                 const vector<MLAPI::Operator>& R) const;
 
@@ -605,14 +605,14 @@ namespace FSI
     int                                  snlevel_;   /// num level in structure AMG
     Teuchos::ParameterList               sparams_;
     mutable vector<MLAPI::Operator>      Ass_;
-    vector<RCP<MLAPI::InverseOperator> > Sss_;
+    vector<Teuchos::RCP<MLAPI::InverseOperator> > Sss_;
     vector<MLAPI::Operator>              Pss_;
     vector<MLAPI::Operator>              Rss_;
 
     int                                  fnlevel_;   /// num level in fluid AMG
     Teuchos::ParameterList               fparams_;
     mutable vector<MLAPI::Operator>      Aff_;
-    vector<RCP<MLAPI::InverseOperator> > Sff_;
+    vector<Teuchos::RCP<MLAPI::InverseOperator> > Sff_;
     mutable vector<MLAPI::Operator>      Schurff_;
     vector<MLAPI::Operator>              Pff_;
     vector<MLAPI::Operator>              Rff_;
@@ -620,7 +620,7 @@ namespace FSI
     int                                  anlevel_;   /// num level in ale AMG
     Teuchos::ParameterList               aparams_;
     mutable vector<MLAPI::Operator>      Aaa_;
-    vector<RCP<MLAPI::InverseOperator> > Saa_;
+    vector<Teuchos::RCP<MLAPI::InverseOperator> > Saa_;
     vector<MLAPI::Operator>              Paa_;
     vector<MLAPI::Operator>              Raa_;
 

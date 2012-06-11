@@ -5,6 +5,7 @@
 #include "fsi_matrixtransform.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/ad_str_structure.H"
@@ -13,6 +14,7 @@
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #define FLUIDSPLITAMG
 
@@ -49,7 +51,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface().OtherMap());
+  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
   vecSpaces.push_back(conman_->GetConstraintMap());
 
@@ -436,7 +438,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   // extract the inner and boundary dofs of all three fields
 
   Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface()->ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
@@ -488,8 +490,8 @@ void FSI::ConstrMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
     Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
     Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
-    Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-    AleField().Interface().InsertFSICondVector(acx, a);
+    Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+    AleField().Interface()->InsertFSICondVector(acx, a);
 
     ax = a;
 }

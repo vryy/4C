@@ -8,8 +8,10 @@
 #include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 #include "../drt_io/io_control.H"
@@ -470,7 +472,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface()->FSCondMap(),
                                    *AleField().Discretization(),
-                                   AleField().Interface().FSCondMap(),
+                                   AleField().Interface()->FSCondMap(),
                                    "FREESURFCoupling",
                                    ndim);
 
@@ -490,7 +492,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface().OtherMap());
+  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
   SetDofRowMaps(vecSpaces);
 
@@ -817,7 +819,7 @@ void FSI::MonolithicFS::SetupVector(Epetra_Vector &f,
 {
 
   // extract the inner dofs of the ale field
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface()->ExtractOtherVector(av);
 
   Extractor().InsertVector(*fv,0,f);
 
@@ -997,8 +999,8 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,1);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcx);
 
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertFSCondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+  AleField().Interface()->InsertFSCondVector(acx, a);
   ax = a;
 }
 

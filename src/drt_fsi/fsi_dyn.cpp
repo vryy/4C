@@ -37,16 +37,10 @@
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../linalg/linalg_utils.H"
 
-#ifdef PARALLEL
 #include <mpi.h>
-#endif
-
-#ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 
 #include "../drt_lib/drt_globalproblem.H"
 

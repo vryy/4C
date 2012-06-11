@@ -95,8 +95,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
 
-  RCP<LINALG::MapExtractor> fsidofmapex = null;
-  RCP<Epetra_Map>           irownodes = null;
+  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<Epetra_Map>           irownodes = Teuchos::null;
 
   // build AMG hierarchies
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
@@ -109,9 +109,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     alesolver_->Setup(aleInnerOp.EpetraMatrix());
 
   // get the ml_MultiLevelPreconditioner class from within struct/fluid solver
-  RCP<Epetra_Operator> sprec = structuresolver_->EpetraOperator();
-  RCP<Epetra_Operator> fprec = fluidsolver_->EpetraOperator();
-  RCP<Epetra_Operator> aprec = alesolver_->EpetraOperator();
+  Teuchos::RCP<Epetra_Operator> sprec = structuresolver_->EpetraOperator();
+  Teuchos::RCP<Epetra_Operator> fprec = fluidsolver_->EpetraOperator();
+  Teuchos::RCP<Epetra_Operator> aprec = alesolver_->EpetraOperator();
 
   // get ML preconditioner class
   ML_Epetra::MultiLevelPreconditioner* smlclass =
@@ -457,8 +457,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (strategy_==INPAR::FSI::FSIAMG) RAPoffdiagonals();
 
   //================set up MLAPI smoothers for structure, fluid, ale on each level
-  RCP<MLAPI::InverseOperator> S;
-  RCP<MLAPI::LoadBalanceInverseOperator> lbS;
+  Teuchos::RCP<MLAPI::InverseOperator> S;
+  Teuchos::RCP<MLAPI::LoadBalanceInverseOperator> lbS;
   if (SisAMG())
   {
     // structure
@@ -473,20 +473,20 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       SelectMLAPISmoother(type,i,subp,p,pushlist);
       if (type=="ILU")
       {
-        lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+        lbS = Teuchos::rcp(new MLAPI::LoadBalanceInverseOperator());
         WrapILUSmoother(sml,Ass_[i],*lbS,i);
         Sss_[i] = lbS;
       }
       else
       {
-        S = rcp(new MLAPI::InverseOperator());
+        S = Teuchos::rcp(new MLAPI::InverseOperator());
         S->Reshape(Ass_[i],type,p,&pushlist);
         Sss_[i] = S;
       }
     }
 
     // structure coarse grid:
-    S = rcp(new MLAPI::InverseOperator());
+    S = Teuchos::rcp(new MLAPI::InverseOperator());
     S->Reshape(Ass_[snlevel_-1],"Amesos-KLU");
     Sss_[snlevel_-1] = S;
 
@@ -500,8 +500,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
     structuresolver_->Setup(Matrix(0,0).EpetraMatrix());
-    Teuchos::RCP<Epetra_Vector> b = rcp(new Epetra_Vector(Matrix(0,0).RangeMap(),true));
-    Teuchos::RCP<Epetra_Vector> x = rcp(new Epetra_Vector(Matrix(0,0).DomainMap(),true));
+    Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix(0,0).RangeMap(),true));
+    Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix(0,0).DomainMap(),true));
     structuresolver_->Solve(Matrix(0,0).EpetraMatrix(),x,b,true,true);
     srun_ = 1; // a first solve has been performed
   }
@@ -523,7 +523,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
         SchurComplementOperator(Schurff_[i],
                                 Ass_[i],Aff_[i],Aaa_[i],ASF_[i],AFS_[i],AFA_[i],AAF_[i],
                                 schuromega_[i],structuresplit_);
-        S = rcp(new MLAPI::InverseOperator());
+        S = Teuchos::rcp(new MLAPI::InverseOperator());
         S->Reshape(Schurff_[i],type,p,&pushlist);
         Sff_[i] = S;
       }
@@ -531,20 +531,20 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       {
         if (type=="ILU") // wrap existing ILU decomp from ML hierarchy
         {
-          lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+          lbS = Teuchos::rcp(new MLAPI::LoadBalanceInverseOperator());
           WrapILUSmoother(fml,Aff_[i],*lbS,i);
           Sff_[i] = lbS;
         }
         else // build new smoother
         {
-          S = rcp(new MLAPI::InverseOperator());
+          S = Teuchos::rcp(new MLAPI::InverseOperator());
           S->Reshape(Aff_[i],type,p,&pushlist);
           Sff_[i] = S;
         }
       }
     }
     // fluid coarse grid:
-    S = rcp(new MLAPI::InverseOperator());
+    S = Teuchos::rcp(new MLAPI::InverseOperator());
     if (blocksmoother_[fnlevel_-1] == "Schur")
     {
       const int i = fnlevel_-1;
@@ -567,12 +567,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   else
   {
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
-    RCP<LINALG::MapExtractor> fsidofmapex = null;
-    RCP<Epetra_Map>           irownodes = null;
+    Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+    Teuchos::RCP<Epetra_Map>           irownodes = Teuchos::null;
     fluidsolver_->Setup(Matrix(1,1).EpetraMatrix(),fsidofmapex,
                         fluid_.Discretization(),irownodes,structuresplit_);
-    Teuchos::RCP<Epetra_Vector> b = rcp(new Epetra_Vector(Matrix(1,1).RangeMap(),true));
-    Teuchos::RCP<Epetra_Vector> x = rcp(new Epetra_Vector(Matrix(1,1).DomainMap(),true));
+    Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix(1,1).RangeMap(),true));
+    Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix(1,1).DomainMap(),true));
     fluidsolver_->Solve(Matrix(1,1).EpetraMatrix(),x,b,true,true);
     frun_ = 1; // a first solve has been performed
   }
@@ -591,19 +591,19 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       SelectMLAPISmoother(type,i,subp,p,pushlist);
       if (type=="ILU")
       {
-        lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+        lbS = Teuchos::rcp(new MLAPI::LoadBalanceInverseOperator());
         WrapILUSmoother(aml,Aaa_[i],*lbS,i);
         Saa_[i] = lbS;
       }
       else
       {
-        S = rcp(new MLAPI::InverseOperator());
+        S = Teuchos::rcp(new MLAPI::InverseOperator());
         S->Reshape(Aaa_[i],type,p,&pushlist);
         Saa_[i] = S;
       }
     }
     // ale coarse grid:
-    S = rcp(new MLAPI::InverseOperator());
+    S = Teuchos::rcp(new MLAPI::InverseOperator());
     S->Reshape(Aaa_[anlevel_-1],"Amesos-KLU");
     Saa_[anlevel_-1] = S;
     // dummy coarser then coarse grids
@@ -616,8 +616,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
     alesolver_->Setup(Matrix(2,2).EpetraMatrix());
-    Teuchos::RCP<Epetra_Vector> b = rcp(new Epetra_Vector(Matrix(2,2).RangeMap(),true));
-    Teuchos::RCP<Epetra_Vector> x = rcp(new Epetra_Vector(Matrix(2,2).DomainMap(),true));
+    Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix(2,2).RangeMap(),true));
+    Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(Matrix(2,2).DomainMap(),true));
     alesolver_->Solve(Matrix(2,2).EpetraMatrix(),x,b,true,true);
     arun_ = 1; // a first solve has been performed
   }
@@ -1111,7 +1111,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
                      const vector<MLAPI::Operator>& A,
-                     const vector<RCP<MLAPI::InverseOperator> >& S,
+                     const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
                      const vector<MLAPI::Operator>& P,
                      const vector<MLAPI::Operator>& R
                      ) const
@@ -1379,7 +1379,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
                                                MLAPI::MultiVector& z,
                                                const MLAPI::MultiVector& b,
                                                const vector<MLAPI::Operator>& A,
-                                               const vector<RCP<MLAPI::InverseOperator> >& S,
+                                               const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
                                                const vector<MLAPI::Operator>& P,
                                                const vector<MLAPI::Operator>& R,
                                                const bool trigger) const

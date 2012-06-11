@@ -12,6 +12,8 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #define FLUIDSPLITAMG
 
@@ -74,7 +76,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
                                 *AleField().Discretization(),
-                                 AleField().Interface().FSICondMap(),
+                                 AleField().Interface()->FSICondMap(),
                                  "FSICoupling",
                                 ndim);
 
@@ -83,7 +85,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface()->FSICondMap(),
                                    *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
+                                   AleField().Interface()->FSICondMap(),
                                    "FSICoupling",
                                    ndim);
 
@@ -118,7 +120,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
 #else
   vecSpaces.push_back(FluidField()    .Interface().OtherMap());
 #endif
-  vecSpaces.push_back(AleField()      .Interface().OtherMap());
+  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
 
   if (vecSpaces[1]->NumGlobalElements()==0)
     dserror("No inner fluid equations. Splitting not possible. Panic.");
@@ -132,7 +134,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
   vector<int> pciter;
   vector<double> pcomega;
@@ -298,7 +300,7 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     // Reset quantities for previous iteration step since they still store values from the last time step
     duiinc_ = LINALG::CreateVector(*FluidField().Interface()->OtherMap(),true);
     solipre_ = Teuchos::null;
-    ddgaleinc_ = LINALG::CreateVector(*AleField().Interface().FSICondMap(),true);
+    ddgaleinc_ = LINALG::CreateVector(*AleField().Interface()->FSICondMap(),true);
     solgpre_ = Teuchos::null;
     fgcur_ = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
     fgicur_ = Teuchos::null;
@@ -804,7 +806,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 #ifdef FLUIDSPLITAMG
   fov = FluidField().Interface()->InsertOtherVector(fov);
 #endif
-  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface().ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface()->ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
@@ -1024,8 +1026,8 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
-  AleField().Interface().InsertFSICondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+  AleField().Interface()->InsertFSICondVector(acx, a);
   ax = a;
 
   // Store field vectors to know them later on as previous quantities
@@ -1079,7 +1081,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   double ftiparam = FluidField().TimIntParam();
 
   // store the prodcut F_{\Gamma I}^{G,n+1} \Delta d_I^{G,n+1} in here
-  Teuchos::RCP<Epetra_Vector> fgialeddi = LINALG::CreateVector(*AleField().Interface().FSICondMap(),true);
+  Teuchos::RCP<Epetra_Vector> fgialeddi = LINALG::CreateVector(*AleField().Interface()->FSICondMap(),true);
   // compute the above mentioned product
   if (fmgipre_ != Teuchos::null)
     (fmgipre_->EpetraMatrix())->Multiply(false, *ddialeinc_, *fgialeddi);
@@ -1096,7 +1098,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   (fggpre_->EpetraMatrix())->Multiply(false, *ddgaleinc_, *fggddg);
 
   // store the prodcut F_{\Gamma\Gamma}^{G,n+1} \Delta d_Gamma^{n+1} in here
-  Teuchos::RCP<Epetra_Vector> fggaleddg = LINALG::CreateVector(*AleField().Interface().FSICondMap(),true);
+  Teuchos::RCP<Epetra_Vector> fggaleddg = LINALG::CreateVector(*AleField().Interface()->FSICondMap(),true);
   // compute the above mentioned product
   if (fmggpre_ != Teuchos::null)
     (fmggpre_->EpetraMatrix())->Multiply(false, *ddgaleinc_, *fggaleddg);

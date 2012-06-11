@@ -310,7 +310,7 @@ namespace FSI
 
     /// setup solver for global block system
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(ParameterList& nlParams,
+    CreateLinearSystem(Teuchos::ParameterList& nlParams,
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils) = 0;
 
@@ -485,7 +485,7 @@ namespace FSI
 
     /// setup solver for global block system
     Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(ParameterList& nlParams,
+    CreateLinearSystem(Teuchos::ParameterList& nlParams,
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils);
 

@@ -36,15 +36,8 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 
 #include "../drt_lib/drt_condition_utils.H"
 
-#ifdef PARALLEL
 #include <mpi.h>
-#endif
-
-#ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 
 #include "fs3i_partitioned.H"
 
