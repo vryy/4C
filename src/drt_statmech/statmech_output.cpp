@@ -1066,7 +1066,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
   if (discret_->Comm().MyPID() == 0)
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
-    // visualization of crosslink molecule positions by spheres on Proc 0
+    /*/ visualization of crosslink molecule positions by spheres on Proc 0
     std::stringstream gmshfilecross;
     for(int i=0; i<visualizepositions_->MyLength(); i++)
     {
@@ -1080,7 +1080,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
       }
     }
     fprintf(fp,gmshfilecross.str().c_str());
-    fclose(fp);
+    fclose(fp);*/
 
     //special visualization for crosslink molecules with one/two bond(s); going through the Procs
 
