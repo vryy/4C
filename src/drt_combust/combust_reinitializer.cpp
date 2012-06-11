@@ -343,11 +343,14 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
           // a facing patch was found
           if (facenode == true)
           {
-            // if G-value at the node is negative, the minimal distance has to be negative
-            if ((*phivector)[doflid] < 0.0 )
-              mindist = -patchdist;
-            else
-              mindist = patchdist;
+            // overwrite smallest distance if computed patch distance is smaller
+            if (fabs(patchdist) < fabs(mindist))
+            {
+              // if G-value at the node is negative, the minimal distance has to be negative
+              if ((*phivector)[doflid] < 0.0 )
+                mindist = -patchdist;
+              else
+                mindist = patchdist;
 
               if (pbcnode)
               {
@@ -871,11 +874,15 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
             // a facing patch was found
             if (facenode == true)
             {
-              // if G-value at the node is negative, the minimal distance has to be negative
-              if ((*phivector)[doflid] < 0.0 )
-                mindist = -patchdist;
-              else
-                mindist = patchdist;
+              // overwrite smallest distance if computed patch distance is smaller
+              if (fabs(patchdist) < fabs(mindist))
+              {
+                // if G-value at the node is negative, the minimal distance has to be negative
+                if ((*phivector)[doflid] < 0.0 )
+                  mindist = -patchdist;
+                else
+                  mindist = patchdist;
+              }
             }
 
             //-------------------------------------------------------------
