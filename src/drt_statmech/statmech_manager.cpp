@@ -3631,8 +3631,6 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
         return;
       DBCOscillatoryMotion(params,dis,deltadbc);
       useinitdbcset_ = true;
-      for(int i=0; i<(int)dbcnodesets_[0].size(); i++)
-        cout<<dbcnodesets_[0][i]<<endl;
     }
     break;
     // shear with an updated Dirichlet node set (only DOF in direction of oscillation is subject to BC, others free)
