@@ -410,6 +410,7 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
   // needed parameters
   ParameterList p;
   p.set("total time", time);  // target time
+  p.set("delta time", (*dt_)[0]);
 
   // set vector values needed by elements
   discret_->ClearState();
