@@ -680,6 +680,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       }
       if (pstype_==INPAR::STR::prestress_id)
         dserror("Reset of Inverse Design not yet implemented");
+
+      //reset EAS parameters:
+      if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easnone)
+      {
+        soh8_easinit();
+      }
     }
     break;
 
