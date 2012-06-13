@@ -1671,7 +1671,7 @@ FLD::XFluidFluid::XFluidFluid(
   monolithic_approach_= DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(params_->sublist("XFLUID DYNAMIC/GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
   xfem_timeintapproach_= DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidFluidTimeInt>(params_->sublist("XFLUID DYNAMIC/GENERAL"),"XFLUIDFLUID_TIMEINT");
   relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_gen,"RELAXING_ALE");
-  relaxing_ale_every_ = params_xf_gen.get<int>("RELAXING_ALE_EVERY", 0.0);
+  relaxing_ale_every_ = params_xf_gen.get<int>("RELAXING_ALE_EVERY", 0);
 
   gmsh_count_ = 0;
 
@@ -2487,7 +2487,8 @@ void FLD::XFluidFluid::PrepareMonolithicFixedAle()
   // cut and do xfluidfluid time integration.
   PrepareNonlinearSolve();
 
-  UpdateMonolithicFluidSolution();
+  if(monotype_ == "fixedale_partitioned")
+    UpdateMonolithicFluidSolution();
 }
 
 // ----------------------------------------------------------------
