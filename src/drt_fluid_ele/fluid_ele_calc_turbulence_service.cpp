@@ -1172,7 +1172,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
               |                                           |
                \                                         /
       */
-      if (fldpara_->IsConservative())
+      if (fldpara_->MfsIsConservative())
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * vdiv_
@@ -1233,7 +1233,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
           }
 
           // additional terms conservative part
-          if (fldpara_->IsConservative())
+          if (fldpara_->MfsIsConservative())
           {
             /*
                    /                                     \
@@ -1313,7 +1313,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesReynolds(
               |                         |
                \                       /
       */
-      if (fldpara_->IsConservative())
+      if (fldpara_->MfsIsConservative())
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * mffsvdiv_);

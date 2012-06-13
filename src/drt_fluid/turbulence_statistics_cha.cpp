@@ -4182,7 +4182,10 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".loma_statistics");
+    if (inflowchannel_)
+      s.append(".inflow.loma_statistics");
+    else
+      s.append(".loma_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
     (*log) << "# Statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)";
@@ -4466,7 +4469,10 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(int step)
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistics");
+    if (inflowchannel_)
+      s.append(".inflow.flow_statistics");
+    else
+      s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
     (*log) << "# Statistics for turbulent passiv scalar transport in channel (first- and second-order moments)";
@@ -4519,7 +4525,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(int step)
 
     // ------------------------------------------------------------------
     // additional output for multifractal subgrid-scale modeling
-    if (multifractal_)
+    if ((not inflowchannel_) and multifractal_)
     {
       // get the outfile
       Teuchos::RefCountPtr<std::ofstream> log_mf;

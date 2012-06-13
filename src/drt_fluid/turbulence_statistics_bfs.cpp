@@ -523,14 +523,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   x2sumrhou_ =  rcp(new Epetra_SerialDenseMatrix);
   x2sumrhou_->Reshape(numx1statlocations_,numx2coor_);
 
-  x2sumrhouT_ =  rcp(new Epetra_SerialDenseMatrix);
-  x2sumrhouT_->Reshape(numx1statlocations_,numx2coor_);
+  x2sumuT_ =  rcp(new Epetra_SerialDenseMatrix);
+  x2sumuT_->Reshape(numx1statlocations_,numx2coor_);
 
   x2sumrhov_ =  rcp(new Epetra_SerialDenseMatrix);
   x2sumrhov_->Reshape(numx1statlocations_,numx2coor_);
 
-  x2sumrhovT_ =  rcp(new Epetra_SerialDenseMatrix);
-  x2sumrhovT_->Reshape(numx1statlocations_,numx2coor_);
+  x2sumvT_ =  rcp(new Epetra_SerialDenseMatrix);
+  x2sumvT_->Reshape(numx1statlocations_,numx2coor_);
 
   // set number of samples to zero
   numsamp_ = 0;
@@ -1120,15 +1120,284 @@ const double                        eosfac)
         (*x2sumvw_)(x1nodnum,x2nodnum)+=vw/countnodesonallprocs;
 
         (*x2sumrhou_)(x1nodnum,x2nodnum)+=rhou/countnodesonallprocs;
-        (*x2sumrhouT_)(x1nodnum,x2nodnum)+=uT/countnodesonallprocs;
+        (*x2sumuT_)(x1nodnum,x2nodnum)+=uT/countnodesonallprocs;
         (*x2sumrhov_)(x1nodnum,x2nodnum)+=rhov/countnodesonallprocs;
-        (*x2sumrhovT_)(x1nodnum,x2nodnum)+=vT/countnodesonallprocs;
+        (*x2sumvT_)(x1nodnum,x2nodnum)+=vT/countnodesonallprocs;
       }
     }
   }
 
   return;
 }// TurbulenceStatisticsBfc::DoLomaTimeSample
+
+
+//----------------------------------------------------------------------
+// sampling of velocity, pressure and scalar values
+//----------------------------------------------------------------------
+void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
+Teuchos::RefCountPtr<Epetra_Vector> velnp,
+Teuchos::RefCountPtr<Epetra_Vector> scanp)
+{
+  // compute squared values of velocity
+  squaredvelnp_->Multiply(1.0,*velnp,*velnp,0.0);
+  squaredscanp_->Multiply(1.0,*scanp,*scanp,0.0);
+
+  //----------------------------------------------------------------------
+  // increase sample counter
+  //----------------------------------------------------------------------
+  numsamp_++;
+
+  int x1nodnum = -1;
+  //----------------------------------------------------------------------
+  // values at lower and upper wall
+  //----------------------------------------------------------------------
+  for (vector<double>::iterator x1line=x1coordinates_->begin();
+       x1line!=x1coordinates_->end();
+       ++x1line)
+  {
+    x1nodnum++;
+
+    for (int x2nodnum=0;x2nodnum<numx2statlocations_;++x2nodnum)
+    {
+      // current x2-coordinate of respective wall
+      double x2cwall = x2statlocations_(x2nodnum);
+
+      // current x2-coordinate of supplementary location to respective wall
+      double x2csupp = x2supplocations_(x2nodnum);
+
+      // toggle vectors are one in the position of a dof of this node,
+      // else 0
+      toggleu_->PutScalar(0.0);
+      togglep_->PutScalar(0.0);
+
+      // count the number of nodes in x3-direction contributing to this nodal value
+      int countnodes=0;
+
+      for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+      {
+        DRT::Node* node = discret_->lRowNode(nn);
+
+        // this is the wall node
+        if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
+            (node->X()[1]<(x2cwall+2e-5) and node->X()[1]>(x2cwall-2e-5)))
+        {
+          vector<int> dof = discret_->Dof(node);
+          double      one = 1.0;
+
+          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+
+          countnodes++;
+        }
+        // this is the supplementary node
+        else if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
+                 (node->X()[1]<(x2csupp+2e-5) and node->X()[1]>(x2csupp-2e-5)))
+        {
+          vector<int> dof = discret_->Dof(node);
+          double      one = 1.0;
+
+          toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+        }
+      }
+
+      int countnodesonallprocs=0;
+
+      discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
+
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+
+      if (countnodesonallprocs)
+      {
+        //----------------------------------------------------------------------
+        // get values for velocity derivative, pressure and temperature
+        //----------------------------------------------------------------------
+        double u;
+        velnp->Dot(*toggleu_,&u);
+        double p;
+        velnp->Dot(*togglep_,&p);
+        double T;
+        scanp->Dot(*togglep_,&T);
+
+        //----------------------------------------------------------------------
+        // calculate spatial means
+        //----------------------------------------------------------------------
+        double usm=u/countnodesonallprocs;
+        double psm=p/countnodesonallprocs;
+        double Tsm=T/countnodesonallprocs;
+
+        //----------------------------------------------------------------------
+        // add spatial mean values to statistical sample
+        //----------------------------------------------------------------------
+        (*x1sumu_)(x2nodnum,x1nodnum)  +=usm;
+        (*x1sump_)(x2nodnum,x1nodnum)  +=psm;
+        (*x1sumT_)(x2nodnum,x1nodnum)  +=Tsm;
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------
+  // loop locations for statistical evaluation in x1-direction
+  //----------------------------------------------------------------------
+  for (int x1nodnum=0;x1nodnum<numx1statlocations_;++x1nodnum)
+  {
+    // current x1-coordinate
+    // caution: if there are supplementary locations in x1-direction, we loop
+    //          them first (only DNS geometry)
+    double x1c = 1.0e20;
+    if (x1nodnum < numx1supplocations_)
+    {
+      x1c = x1supplocations_(x1nodnum);
+    }
+    else
+    {
+      x1c = x1statlocations_(x1nodnum - numx1supplocations_);
+    }
+
+    int x2nodnum = -1;
+    //----------------------------------------------------------------------
+    // loop nodes in x2-direction and calculate pointwise means
+    //----------------------------------------------------------------------
+    for (vector<double>::iterator x2line=x2coordinates_->begin();
+         x2line!=x2coordinates_->end();
+         ++x2line)
+    {
+      x2nodnum++;
+
+      // toggle vectors are one in the position of a dof of this node,
+      // else 0
+      toggleu_->PutScalar(0.0);
+      togglev_->PutScalar(0.0);
+      togglew_->PutScalar(0.0);
+      togglep_->PutScalar(0.0);
+
+      // count the number of nodes in x3-direction contributing to this nodal value
+      int countnodes=0;
+
+      for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+      {
+        DRT::Node* node = discret_->lRowNode(nn);
+
+        // this is the node
+        if ((node->X()[0]<(x1c+2e-5)     and node->X()[0]>(x1c-2e-5)) and
+            (node->X()[1]<(*x2line+2e-9) and node->X()[1]>(*x2line-2e-9)))
+        {
+          vector<int> dof = discret_->Dof(node);
+          double      one = 1.0;
+
+          toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+          togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+          togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+
+          countnodes++;
+        }
+      }
+
+      int countnodesonallprocs=0;
+
+      discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
+
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+
+      if (countnodesonallprocs)
+      {
+        //----------------------------------------------------------------------
+        // get values for velocity, pressure, density, temperature, and
+        // subgrid viscosity on this line
+        //----------------------------------------------------------------------
+        double u;
+        double v;
+        double w;
+        double p;
+        velnp->Dot(*toggleu_,&u);
+        velnp->Dot(*togglev_,&v);
+        velnp->Dot(*togglew_,&w);
+        velnp->Dot(*togglep_,&p);
+
+        double T;
+        scanp->Dot(*togglep_,&T);
+
+        double uu;
+        double vv;
+        double ww;
+        double pp;
+        squaredvelnp_->Dot(*toggleu_,&uu);
+        squaredvelnp_->Dot(*togglev_,&vv);
+        squaredvelnp_->Dot(*togglew_,&ww);
+        squaredvelnp_->Dot(*togglep_,&pp);
+
+        double uv;
+        double uw;
+        double vw;
+        double locuv = 0.0;
+        double locuw = 0.0;
+        double locvw = 0.0;
+        for (int rr=1;rr<velnp->MyLength();++rr)
+        {
+          locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+        }
+        discret_->Comm().SumAll(&locuv,&uv,1);
+        for (int rr=2;rr<velnp->MyLength();++rr)
+        {
+          locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+        }
+        discret_->Comm().SumAll(&locuw,&uw,1);
+        for (int rr=2;rr<velnp->MyLength();++rr)
+        {
+          locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+        }
+        discret_->Comm().SumAll(&locvw,&vw,1);
+
+        double TT;
+        squaredscanp_->Dot(*togglep_,&TT);
+
+        double uT;
+        double vT;
+        double locuT = 0.0;
+        double locvT = 0.0;
+        for (int rr=3;rr<velnp->MyLength();++rr)
+        {
+          locuT += ((*velnp)[rr-3]*(*toggleu_)[rr-3]) * ((*scanp)[rr]*(*togglep_)[rr]);
+        }
+        discret_->Comm().SumAll(&locuT,&uT,1);
+        for (int rr=3;rr<velnp->MyLength();++rr)
+        {
+          locvT += ((*velnp)[rr-2]*(*togglev_)[rr-2]) * ((*scanp)[rr]*(*togglep_)[rr]);
+        }
+        discret_->Comm().SumAll(&locvT,&vT,1);
+
+        //----------------------------------------------------------------------
+        // calculate spatial means on this line
+        // add spatial mean values to statistical sample
+        //----------------------------------------------------------------------
+        (*x2sumu_)(x1nodnum,x2nodnum)+=u/countnodesonallprocs;
+        (*x2sumv_)(x1nodnum,x2nodnum)+=v/countnodesonallprocs;
+        (*x2sumw_)(x1nodnum,x2nodnum)+=w/countnodesonallprocs;
+        (*x2sump_)(x1nodnum,x2nodnum)+=p/countnodesonallprocs;
+
+        (*x2sumT_)(x1nodnum,x2nodnum)+=T/countnodesonallprocs;
+
+        (*x2sumsqu_)(x1nodnum,x2nodnum)+=uu/countnodesonallprocs;
+        (*x2sumsqv_)(x1nodnum,x2nodnum)+=vv/countnodesonallprocs;
+        (*x2sumsqw_)(x1nodnum,x2nodnum)+=ww/countnodesonallprocs;
+        (*x2sumsqp_)(x1nodnum,x2nodnum)+=pp/countnodesonallprocs;
+
+        (*x2sumsqT_)(x1nodnum,x2nodnum)+=TT/countnodesonallprocs;
+
+        (*x2sumuv_)(x1nodnum,x2nodnum)+=uv/countnodesonallprocs;
+        (*x2sumuw_)(x1nodnum,x2nodnum)+=uw/countnodesonallprocs;
+        (*x2sumvw_)(x1nodnum,x2nodnum)+=vw/countnodesonallprocs;
+
+        (*x2sumuT_)(x1nodnum,x2nodnum)+=uT/countnodesonallprocs;
+        (*x2sumvT_)(x1nodnum,x2nodnum)+=vT/countnodesonallprocs;
+      }
+    }
+  }
+
+  return;
+}// TurbulenceStatisticsBfc::DoScatraTimeSample
+
 
 /*----------------------------------------------------------------------*
  *
@@ -1257,6 +1526,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
 
 }// TurbulenceStatisticsBfs::DumpStatistics
 
+
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
@@ -1355,7 +1625,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
       (*log) << "\n\n\n";
       (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(10) << x1 << "\n";
       (*log) << "#        x2";
-      (*log) << "                 umean               vmean               wmean               pmean             rhomean               Tmean            rhoumean           uTmean            rhovmean           vTmean";
+      (*log) << "                 umean               vmean               wmean               pmean             rhomean               Tmean            rhoumean        rhouTmean            rhovmean        rhovTmean";
       (*log) << "               urms                vrms                wrms                prms               rhorms                Trms";
       (*log) << "                u'v'                u'w'                v'w'             rhou'T'             rhov'T'\n";
 
@@ -1369,9 +1639,9 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         double x2rho   = (*x2sumrho_)(i,j)/numsamp_;
         double x2T     = (*x2sumT_)(i,j)/numsamp_;
         double x2rhou  = (*x2sumrhou_)(i,j)/numsamp_;
-        double x2uT = (*x2sumrhouT_)(i,j)/numsamp_;
+        double x2uT = (*x2sumuT_)(i,j)/numsamp_;
         double x2rhov  = (*x2sumrhov_)(i,j)/numsamp_;
-        double x2vT = (*x2sumrhovT_)(i,j)/numsamp_;
+        double x2vT = (*x2sumvT_)(i,j)/numsamp_;
 
         double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
         double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
@@ -1388,7 +1658,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         double x2Trms   = 0.0;
         if (abs((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho)>1e-12)
             x2rhorms = sqrt((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho);
-        if (abs((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho)>1e-12)
+        if (abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-12)
             x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
 
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
@@ -1429,6 +1699,157 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
   return;
 
 }// TurbulenceStatisticsBfs::DumpLomaStatistics
+
+
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
+{
+  //----------------------------------------------------------------------
+  // output to log-file
+  Teuchos::RefCountPtr<std::ofstream> log;
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s.append(".flow_statistics");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    (*log) << "# Statistics for turbulent flow with passive scalar over a backward-facing step (first- and second-order moments)";
+    (*log) << "\n\n";
+    (*log) << "# Statistics record ";
+    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n\n\n";
+    (*log) << scientific;
+
+    (*log) << "\n\n\n";
+    (*log) << "# lower wall behind step\n";
+    (*log) << "#        x1";
+    (*log) << "                 duxdy               pmean              phimean\n";
+
+    // distance from wall to first node off wall
+    double dist = x2supplocations_(0) - x2statlocations_(0);
+
+    for (unsigned i=0; i<x1coordinates_->size(); ++i)
+    {
+      if ((*x1coordinates_)[i] > -2e-9)
+      {
+        double lwx1u     = (*x1sumu_)(0,i)/numsamp_;
+        double lwx1duxdy = lwx1u/dist;
+        double lwx1p     = (*x1sump_)(0,i)/numsamp_;
+
+        double lwx1T    = (*x1sumT_)(0,i)/numsamp_;
+
+        (*log) <<  " "  << setw(17) << setprecision(10) << (*x1coordinates_)[i];
+        (*log) << "   " << setw(17) << setprecision(10) << lwx1duxdy;
+        (*log) << "   " << setw(17) << setprecision(10) << lwx1p;
+        (*log) << "   " << setw(17) << setprecision(10) << lwx1T;
+        (*log) << "\n";
+      }
+    }
+
+    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+    {
+      (*log) << "\n\n\n";
+      (*log) << "# upper wall\n";
+      (*log) << "#        x1";
+      (*log) << "                 duxdy               pmean              phimean\n";
+
+      // distance from wall to first node off wall
+      dist = x2statlocations_(1) - x2supplocations_(1);
+
+      for (unsigned i=0; i<x1coordinates_->size(); ++i)
+      {
+        double uwx1u     = (*x1sumu_)(1,i)/numsamp_;
+        double uwx1duxdy = uwx1u/dist;
+        double uwx1p     = (*x1sump_)(1,i)/numsamp_;
+
+        double uwx1T    = (*x1sumT_)(1,i)/numsamp_;
+
+        (*log) <<  " "  << setw(17) << setprecision(10) << (*x1coordinates_)[i];
+        (*log) << "   " << setw(17) << setprecision(10) << uwx1duxdy;
+        (*log) << "   " << setw(17) << setprecision(10) << uwx1p;
+        (*log) << "   " << setw(17) << setprecision(10) << uwx1T;
+        (*log) << "\n";
+      }
+    }
+
+    for (int i=0; i<numx1statlocations_; ++i)
+    {
+      // current x1-coordinate
+      // caution: if there are supplementary locations in x1-direction, we loop
+      //          them first
+      double x1 = 1.0e20;
+      if (i < numx1supplocations_)
+      {
+        x1 = x1supplocations_(i);
+      }
+      else
+      {
+        x1 = x1statlocations_(i - numx1supplocations_);
+      }
+
+      (*log) << "\n\n\n";
+      (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(10) << x1 << "\n";
+      (*log) << "#        x2";
+      (*log) << "                 umean               vmean               wmean               pmean               phimean           uphimean           vphimean";
+      (*log) << "               urms                vrms                wrms                prms                phirms";
+      (*log) << "                u'v'                u'w'                v'w'\n";
+
+      for (unsigned j=0; j<x2coordinates_->size(); ++j)
+      {
+        double x2u  = (*x2sumu_)(i,j)/numsamp_;
+        double x2v  = (*x2sumv_)(i,j)/numsamp_;
+        double x2w  = (*x2sumw_)(i,j)/numsamp_;
+        double x2p  = (*x2sump_)(i,j)/numsamp_;
+
+        double x2T  = (*x2sumT_)(i,j)/numsamp_;
+        double x2uT = (*x2sumuT_)(i,j)/numsamp_;
+        double x2vT = (*x2sumvT_)(i,j)/numsamp_;
+
+        double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
+        double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
+        double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
+        double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
+
+        // as T is constant in the inflow section
+        // <T^2>-<T>*<T> should be zero
+        // however, due to small errors, <T^2>-<T>*<T>
+        // is only approximately equal zero
+        // hence, zero negative values should be excluded
+        // as they produce nans
+        double x2Trms   = 0.0;
+        if (abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-9)
+            x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
+
+        double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
+        double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
+        double x2vw   = (*x2sumvw_)(i,j)/numsamp_-x2v*x2w;
+
+        (*log) <<  " "  << setw(17) << setprecision(10) << (*x2coordinates_)[j];
+        (*log) << "   " << setw(17) << setprecision(10) << x2u;
+        (*log) << "   " << setw(17) << setprecision(10) << x2v;
+        (*log) << "   " << setw(17) << setprecision(10) << x2w;
+        (*log) << "   " << setw(17) << setprecision(10) << x2p;
+        (*log) << "   " << setw(17) << setprecision(10) << x2T;
+        (*log) << "   " << setw(17) << setprecision(10) << x2uT;
+        (*log) << "   " << setw(17) << setprecision(10) << x2vT;
+        (*log) << "   " << setw(17) << setprecision(10) << x2urms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2vrms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2wrms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2prms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2Trms;
+        (*log) << "   " << setw(17) << setprecision(10) << x2uv;
+        (*log) << "   " << setw(17) << setprecision(10) << x2uw;
+        (*log) << "   " << setw(17) << setprecision(10) << x2vw;
+        (*log) << "\n";
+      }
+    }
+    log->flush();
+  }
+
+  return;
+
+}// TurbulenceStatisticsBfs::DumpScatraStatistics
 
 
 /*----------------------------------------------------------------------*

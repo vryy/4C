@@ -1450,8 +1450,8 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
 
     */
     // get Euclidean norm of velocity at element center
-    double vel_norm;
-    vel_norm = convelint_.Norm2();
+//    double vel_norm;
+//    vel_norm = convelint_.Norm2();
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -3231,10 +3231,13 @@ void DRT::ELEMENTS::ReInitImpl<distype>::Sysmat_Reinit_OST(
       double smoothedSign = EvaluateSmoothedSign(phi_0, grad_norm_phi_0, epsilon_bandwidth,meshsize, smoothedSignType);
 
 
+      if(do_evaluate==false)
+      {
 #ifdef DONT_EVALUATE_SMALL_GRADIENTS
       // do not advect in elements with small gradients, but assemble the mass matrix
-      if(do_evaluate==false) smoothedSign = 0.0;
+      smoothedSign = 0.0;
 #endif
+      }
 
 
       // evaluate signum function and scale the normalized direction stored in velint_;

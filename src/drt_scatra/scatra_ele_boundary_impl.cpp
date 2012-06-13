@@ -1112,6 +1112,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           }
           else dserror("type of material found in material list is not supported");
         }
+        else if (material->MaterialType() == INPAR::MAT::m_scatra)
+        {
+          // set density
+          dens = 1.0;
+        }
         else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
         {
           const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());

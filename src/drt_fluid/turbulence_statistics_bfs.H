@@ -107,6 +107,14 @@ public:
                         const double                eosfac);
 
   /*!
+  \brief The values of velocity, pressure, phi and its squared
+  values are added to global vectors. This method allows to do the time
+  average of the nodal values after a certain amount of timesteps.
+  */
+  void DoScatraTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
+                        Teuchos::RCP<Epetra_Vector> scanp);
+
+  /*!
   \brief Dump the result to file.
 
   step on input is used to print the timesteps which belong to the
@@ -123,6 +131,15 @@ public:
   */
 
   void DumpLomaStatistics(int step);
+
+  /*!
+  \brief Dump the result to file for turbulent flow with passive scalar.
+
+  step on input is used to print the timesteps which belong to the
+  statistic to the file
+  */
+
+  void DumpScatraStatistics(int step);
 
 
 protected:
@@ -248,9 +265,9 @@ private:
   RCP<Epetra_SerialDenseMatrix>     x2sumvw_;
 
   RCP<Epetra_SerialDenseMatrix>     x2sumrhou_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumrhouT_;
+  RCP<Epetra_SerialDenseMatrix>     x2sumuT_;
   RCP<Epetra_SerialDenseMatrix>     x2sumrhov_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumrhovT_;
+  RCP<Epetra_SerialDenseMatrix>     x2sumvT_;
 
   void convertStringToGeoType(const string& geotype);
 };

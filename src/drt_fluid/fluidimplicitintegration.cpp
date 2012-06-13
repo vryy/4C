@@ -4182,14 +4182,16 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   discret_->ClearState();
   discret_->SetState("hist" ,hist_ );
   discret_->SetState("accam",accam_);
-  discret_->SetState("scaaf",scaaf_);
   // this vector contains only zeros unless SetIterLomaFields is called
   // as this function has not been called yet
   // we have to replace the zeros by ones
   // otherwise nans are occur
+  scaaf_->PutScalar(1.0);
+  discret_->SetState("scaaf",scaaf_);
   scaam_->PutScalar(1.0);
   discret_->SetState("scaam",scaam_);
   // reset the vector
+  scaaf_->PutScalar(0.0);
   scaam_->PutScalar(0.0);
 
   // set fine-scale vector
@@ -6338,6 +6340,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           cout << "- near-wall limit:   " << DRT::INPUT::IntegralValue<int>(*modelparams,"NEAR_WALL_LIMIT") << "\n";
           cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
           cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
+          cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
           cout << &endl;
         }
       }

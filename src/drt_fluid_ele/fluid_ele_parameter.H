@@ -162,6 +162,7 @@ public:
   bool NearWallLimit(){return near_wall_limit_;};
   bool BGp(){return B_gp_;};
   double Beta(){return beta_;};
+  double MfsIsConservative(){return mfs_is_conservative_;};
 
   //! some loma specific parameters
   //! flag for material update
@@ -279,6 +280,7 @@ private:
   bool near_wall_limit_;
   bool B_gp_;
   double beta_;
+  bool mfs_is_conservative_;
 
   //! some loma specific parameters
   //! flag for material update

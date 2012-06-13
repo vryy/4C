@@ -172,7 +172,7 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
  /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Fluid::Evaluate(ParameterList&            params,
+int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -861,7 +861,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(ParameterList&            params,
  |  integration of volume Neumann conditions (body forces) takes place  |
  |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Fluid::EvaluateNeumann(ParameterList&            params,
+int DRT::ELEMENTS::Fluid::EvaluateNeumann(Teuchos::ParameterList&    params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -875,10 +875,10 @@ int DRT::ELEMENTS::Fluid::EvaluateNeumann(ParameterList&            params,
  | Calculate spatial mean values for channel flow          gammi 07/07 |
  *---------------------------------------------------------------------*/
 template<int iel>
-void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
-                                          vector<double>&       solution,
-                                          vector<double>&       displacement,
-                                          ParameterList& 	    params)
+void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&     discretization,
+                                          vector<double>&         solution,
+                                          vector<double>&         displacement,
+                                          Teuchos::ParameterList& params)
 {
   // get view of solution and subgrid-viscosity vector
   LINALG::Matrix<4*iel,1> sol(&(solution[0]),true);
@@ -951,11 +951,11 @@ void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
     {
       if(min > xyze(normdirect,inode))
       {
-	min=xyze(normdirect,inode);
+        min=xyze(normdirect,inode);
       }
       if(max < xyze(normdirect,inode))
       {
-	max=xyze(normdirect,inode);
+         max=xyze(normdirect,inode);
       }
     }
 
@@ -966,10 +966,10 @@ void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
     // get all available wall normal coordinates
       for(int nn=0;nn<iel;++nn)
       {
-	if (min-2e-9 < (*planes)[nplane] && max+2e-9 > (*planes)[nplane])
-	{
-	  planesinele.insert(nplane);
-	}
+        if (min-2e-9 < (*planes)[nplane] && max+2e-9 > (*planes)[nplane])
+        {
+          planesinele.insert(nplane);
+         }
       }
     }
 
@@ -1048,13 +1048,13 @@ void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
       set <int> inplanedirectset;
       for(int i=0;i<3;++i)
       {
-	inplanedirectset.insert(i);
+         inplanedirectset.insert(i);
       }
       inplanedirectset.erase(elenormdirect);
 
       for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
       {
-	inplanedirect.push_back(*id);
+        inplanedirect.push_back(*id);
       }
     }
 
@@ -1097,20 +1097,20 @@ void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
       e[elenormdirect]=-1.0+shift+layershift;
       if(upsidedown)
       {
-	e[elenormdirect]*=-1;
+        e[elenormdirect]*=-1;
       }
 
       // start loop over integration points in layer
       for (int iquad=0;iquad<intpoints.nquad;iquad++)
       {
-	// get the other gauss point coordinates
-	for(int i=0;i<2;++i)
-	{
-	  e[inplanedirect[i]]=intpoints.qxg[iquad][i];
-	}
+        // get the other gauss point coordinates
+        for(int i=0;i<2;++i)
+        {
+          e[inplanedirect[i]]=intpoints.qxg[iquad][i];
+        }
 
-	// compute the shape function values
-	shape_function_3D(funct,e[0],e[1],e[2],distype);
+        // compute the shape function values
+        shape_function_3D(funct,e[0],e[1],e[2],distype);
 
         shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
 
@@ -1199,49 +1199,49 @@ void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
 	}
 #endif
 
-	//interpolated values at gausspoints
-	double ugp=0;
-	double vgp=0;
-	double wgp=0;
-	double pgp=0;
+        //interpolated values at gausspoints
+        double ugp=0;
+        double vgp=0;
+        double wgp=0;
+        double pgp=0;
 
         // the computation of this jacobian determinant from the 3d
         // mapping is based on the assumption that we do not deform
         // our elements in wall normal direction!
-	const double fac=det*intpoints.qwgt[iquad];
+        const double fac=det*intpoints.qwgt[iquad];
 
         // increase area of cutting plane in element
         area += fac;
 
-	for(int inode=0;inode<iel;inode++)
-	{
+        for(int inode=0;inode<iel;inode++)
+        {
           int finode=inode*4;
 
-	  ugp  += funct(inode)*sol(finode++);
+          ugp  += funct(inode)*sol(finode++);
           vgp  += funct(inode)*sol(finode++);
-	  wgp  += funct(inode)*sol(finode++);
-	  pgp  += funct(inode)*sol(finode  );
-	}
+          wgp  += funct(inode)*sol(finode++);
+          pgp  += funct(inode)*sol(finode  );
+        }
 
-	// add contribution to integral
+        // add contribution to integral
 
-	double dubar  = ugp*fac;
-	double dvbar  = vgp*fac;
-	double dwbar  = wgp*fac;
-	double dpbar  = pgp*fac;
+        double dubar  = ugp*fac;
+        double dvbar  = vgp*fac;
+        double dwbar  = wgp*fac;
+        double dpbar  = pgp*fac;
 
-	ubar   += dubar;
-	vbar   += dvbar;
-	wbar   += dwbar;
-	pbar   += dpbar;
+        ubar   += dubar;
+        vbar   += dvbar;
+        wbar   += dwbar;
+        pbar   += dpbar;
 
-	usqbar += ugp*dubar;
-	vsqbar += vgp*dvbar;
-	wsqbar += wgp*dwbar;
-	uvbar  += ugp*dvbar;
-	uwbar  += ugp*dwbar;
-	vwbar  += vgp*dwbar;
-	psqbar += pgp*dpbar;
+        usqbar += ugp*dubar;
+        vsqbar += vgp*dvbar;
+        wsqbar += wgp*dwbar;
+        uvbar  += ugp*dvbar;
+        uwbar  += ugp*dwbar;
+        vwbar  += vgp*dwbar;
+        psqbar += pgp*dpbar;
       } // end loop integration points
 
       // add increments from this layer to processor local vectors
@@ -1380,18 +1380,18 @@ void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
       for (int iquad=0;iquad<intpoints.nquad;iquad++)
       {
 
-	// get the other gauss point coordinates
-	gp(0)=intpoints.qxg[iquad][0];
-	gp(2)=intpoints.qxg[iquad][1];
+        // get the other gauss point coordinates
+        gp(0)=intpoints.qxg[iquad][0];
+        gp(2)=intpoints.qxg[iquad][1];
 
-	// compute the shape function values
-	DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-	  (nurbs_shape_funct,
+        // compute the shape function values
+        DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+          (nurbs_shape_funct,
            nurbs_shape_deriv,
-	   gp               ,
-	   eleknots         ,
-	   weights          ,
-	   distype          );
+           gp               ,
+           eleknots         ,
+           weights          ,
+           distype          );
 
         // get transposed Jacobian matrix and determinant
         //
@@ -1457,41 +1457,41 @@ void DRT::ELEMENTS::Fluid::f3_calc_means(DRT::Discretization&  discretization,
           dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
         }
 
-	//interpolated values at gausspoints
-	double ugp=0;
-	double vgp=0;
-	double wgp=0;
-	double pgp=0;
+        //interpolated values at gausspoints
+        double ugp=0;
+        double vgp=0;
+        double wgp=0;
+        double pgp=0;
 
         // the computation of this jacobian determinant from the 3d
         // mapping is based on the assumption that we do not deform
         // our elements in wall normal direction!
-	const double fac=det*intpoints.qwgt[iquad];
+        const double fac=det*intpoints.qwgt[iquad];
 
         // increase area of cutting plane in element
         area += fac;
 
-	for(int inode=0;inode<iel;inode++)
-	{
-	  ugp += nurbs_shape_funct(inode)*sol(inode*4  );
+        for(int inode=0;inode<iel;inode++)
+        {
+          ugp += nurbs_shape_funct(inode)*sol(inode*4  );
           vgp += nurbs_shape_funct(inode)*sol(inode*4+1);
-	  wgp += nurbs_shape_funct(inode)*sol(inode*4+2);
-	  pgp += nurbs_shape_funct(inode)*sol(inode*4+3);
-	}
+          wgp += nurbs_shape_funct(inode)*sol(inode*4+2);
+          pgp += nurbs_shape_funct(inode)*sol(inode*4+3);
+        }
 
-	// add contribution to integral
-	ubar   += ugp*fac;
-	vbar   += vgp*fac;
-	wbar   += wgp*fac;
-	pbar   += pgp*fac;
+        // add contribution to integral
+        ubar   += ugp*fac;
+        vbar   += vgp*fac;
+        wbar   += wgp*fac;
+        pbar   += pgp*fac;
 
-	usqbar += ugp*ugp*fac;
-	vsqbar += vgp*vgp*fac;
-	wsqbar += wgp*wgp*fac;
-	uvbar  += ugp*vgp*fac;
-	uwbar  += ugp*wgp*fac;
-	vwbar  += vgp*wgp*fac;
-	psqbar += pgp*pgp*fac;
+        usqbar += ugp*ugp*fac;
+        vsqbar += vgp*vgp*fac;
+        wsqbar += wgp*wgp*fac;
+        uvbar  += ugp*vgp*fac;
+        uwbar  += ugp*wgp*fac;
+        vwbar  += vgp*wgp*fac;
+        psqbar += pgp*pgp*fac;
       } // end loop integration points
 
 
@@ -1528,7 +1528,7 @@ template<int iel>
 void DRT::ELEMENTS::Fluid::f3_calc_loma_means(DRT::Discretization&  discretization,
                                                vector<double>&       velocitypressure,
                                                vector<double>&       temperature,
-                                               ParameterList&        params,
+                                               Teuchos::ParameterList&        params,
                                                const double          eosfac
   )
 {
@@ -1822,7 +1822,6 @@ void DRT::ELEMENTS::Fluid::f3_calc_loma_means(DRT::Discretization&  discretizati
         double Tgp=0;
         double rhougp=0;
         double rhouTgp=0;
-        double usave=0;
 
         // the computation of this jacobian determinant from the 3d
         // mapping is based on the assumption that we do not deform
@@ -1836,7 +1835,6 @@ void DRT::ELEMENTS::Fluid::f3_calc_loma_means(DRT::Discretization&  discretizati
         {
           int finode=inode*4;
 
-          usave  = velpre(finode);
           ugp   += funct(inode)*velpre(finode++);
           vgp   += funct(inode)*velpre(finode++);
           wgp   += funct(inode)*velpre(finode++);
@@ -1929,7 +1927,7 @@ template<int iel>
 void DRT::ELEMENTS::Fluid::f3_calc_scatra_means(DRT::Discretization&  discretization,
                                                  vector<double>&       velocitypressure,
                                                  vector<double>&       scalar,
-                                                 ParameterList&        params)
+                                                 Teuchos::ParameterList&        params)
 {
   // get view of solution vector
   LINALG::Matrix<4*iel,1> velpre(&(velocitypressure[0]),true);
@@ -2210,7 +2208,6 @@ void DRT::ELEMENTS::Fluid::f3_calc_scatra_means(DRT::Discretization&  discretiza
         double wgp=0;
         double pgp=0;
         double phigp=0;
-        double usave=0;
 
         // the computation of this jacobian determinant from the 3d
         // mapping is based on the assumption that we do not deform
@@ -2224,7 +2221,6 @@ void DRT::ELEMENTS::Fluid::f3_calc_scatra_means(DRT::Discretization&  discretiza
         {
           int finode=inode*4;
 
-          usave  = velpre(finode);
           ugp   += funct(inode)*velpre(finode++);
           vgp   += funct(inode)*velpre(finode++);
           wgp   += funct(inode)*velpre(finode++);
@@ -2937,13 +2933,13 @@ void DRT::ELEMENTS::Fluid::f3_calc_smag_const_LijMij_and_MijMij(
 //----------------------------------------------------------------------
 template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
 void DRT::ELEMENTS::Fluid::f3_get_mf_params(
-  ParameterList&      params,
+  Teuchos::ParameterList&      params,
   RCP<MAT::Material>  mat,
   vector<double>&     vel,
   vector<double>&     fsvel)
 {
   // get mfs parameter
-  ParameterList *  turbmodelparamsmfs = &(params.sublist("MULTIFRACTAL SUBGRID SCALES"));
+	Teuchos::ParameterList * turbmodelparamsmfs = &(params.sublist("MULTIFRACTAL SUBGRID SCALES"));
   bool withscatra = params.get<bool>("scalar");
 
   // allocate a fixed size array for nodal velocities
@@ -3662,7 +3658,7 @@ void DRT::ELEMENTS::Fluid::f3_get_mf_params(
   }
 
   // set parameter in sublist turbulence
-  ParameterList *  modelparams =&(params.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList * modelparams =&(params.sublist("TURBULENCE MODEL"));
   RCP<vector<double> > sum_N_stream      = modelparams->get<RCP<vector<double> > >("local_N_stream_sum");
   RCP<vector<double> > sum_N_normal      = modelparams->get<RCP<vector<double> > >("local_N_normal_sum");
   RCP<vector<double> > sum_N_span        = modelparams->get<RCP<vector<double> > >("local_N_span_sum");
@@ -3725,7 +3721,7 @@ void DRT::ELEMENTS::Fluid::f3_get_mf_params(
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 template<DRT::Element::DiscretizationType DISTYPE>
-void DRT::ELEMENTS::Fluid::ElementNodeNormal(ParameterList& 		     params,
+void DRT::ELEMENTS::Fluid::ElementNodeNormal(Teuchos::ParameterList&     params,
                                               DRT::Discretization&       discretization,
                                               vector<int>&               lm,
                                               Epetra_SerialDenseVector&  elevec1)

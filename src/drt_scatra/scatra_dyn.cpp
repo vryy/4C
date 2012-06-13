@@ -130,11 +130,20 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       // create an one-way coupling algorithm instance
       Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,prbdyn,0,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
+      // read restart information
+      // in case a inflow generation in the inflow section has been performed, there are not any
+      // scatra results available and the initial field is used
       if (restart)
       {
-        // read the restart information, set vectors and variables
-        algo->ReadRestart(restart);
+        if ((DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true) and
+           (restart==fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
+          algo->ReadInflowRestart(restart);
+        else
+          algo->ReadRestart(restart);
       }
+      else
+        if(DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          dserror("Turbulent inflow generation for passive scalar transport should be performed as fluid problem!");
 
       // solve the whole (one-way-coupled) problem
       algo->TimeLoop();

@@ -97,6 +97,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   near_wall_limit_(false),
   B_gp_(false),
   beta_(0.0),
+  mfs_is_conservative_(false),
   update_mat_(false),
   conti_supg_(INPAR::FLUID::convective_stab_none),
   conti_cross_(INPAR::FLUID::cross_stress_stab_none),
@@ -559,6 +560,11 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
         dserror("Unknown evaluation point!");
 
       beta_ = turbmodelparamsmfs.get<double>("BETA");
+
+      if (turbmodelparamsmfs.get<string>("CONVFORM") == "conservative")
+       mfs_is_conservative_ = true;
+      else
+       mfs_is_conservative_ = false;
     }
     else
     {

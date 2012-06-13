@@ -248,6 +248,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     conv_(true),        // initialized to zero
     sgconv_(true),      // initialized to zero
     vdiv_(0.0),         // set double
+    mfsvdiv_(0.0),      // set double
     eprenp_(true),      // initialized to zero
     thermpressnp_(0.0), // set double
     thermpressam_(0.0), // set double
@@ -513,7 +514,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (sgvel_)
     {
       // check for matching flags
-      if (not mat_gp_ or not tau_gp_) dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
+      if (not mat_gp_ or not tau_gp_)
+       dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
 
       const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field");
       LINALG::Matrix<nsd_+1,nen_> eaccprenp;
@@ -1487,6 +1489,22 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
           for (int idim=0; idim<nsd_; idim++)
             mfsgvelint_(idim,0) = fsvelint_(idim,0) * B_mfs(idim,0);
+
+// required for conservative formulation in the context of passive scalar transport
+// has to be tested
+//#if 0
+//          //if (conservative_)
+//          {
+//            // get divergence of subgrid-scale velocity
+//            LINALG::Matrix<nsd_,nsd_> mfsvderxy;
+//            mfsvderxy.MultiplyNT(efsvel_,derxy_);
+//            mfsvdiv_ = 0.0;
+//            for (int idim = 0; idim<nsd_; ++idim)
+//              mfsvdiv_ += mfsvderxy(idim,idim) * B_mfs(idim,0);
+//          }
+//          else
+//            mfsvdiv_ = 0.0;
+//#endif
 
           // calculate fine-scale scalar and its derivative for multifractal subgrid-scale modeling
           mfssgphi_[k] = D_mfs * funct_.Dot(ephinp_[k]);
@@ -2810,10 +2828,25 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
      double cross = convelint_.Dot(mfsggradphi_) + mfsgvelint_.Dot(gradphi_);
      double reynolds = mfsgvelint_.Dot(mfsggradphi_);
 
+     // conservative formulation in the context of passive scalar transport
+     // has to be tested
+     double conserv = 0.0;
+//#if 0
+//     //if (conservative_)
+//     {
+//       double convdiv = 0.0;
+//       GetDivergence(convdiv,econvelnp_,derxy_);
+//       const double phi = funct_.Dot(ephinp_[dofindex]);
+//
+//       conserv = mfssgphi_[k] * convdiv + phi * mfsvdiv_ + mfssgphi_[dofindex] * mfsvdiv_;
+//     }
+//#endif
+
      for (int vi=0; vi<nen_; ++vi)
      {
        const int fvi = vi*numdofpernode_+k;
-       erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds);
+       //erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds);
+       erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds+conserv);
      }
    }
   }
@@ -4877,8 +4910,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
     */
     // get Euclidean norm of velocity at element center
-    double vel_norm;
-    vel_norm = convelint_.Norm2();
+//    double vel_norm = 0.0;
+//    vel_norm = convelint_.Norm2();
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient

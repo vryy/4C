@@ -1507,7 +1507,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
         }
         else functionfac = 1.0;
 
-        // get usual body foce
+        // get usual body force
         if (*condtype == "neum_dead" or *condtype == "neum_live")
           ebofoaf(isd,jnode) = num*functionfac;
         // get prescribed pressure gradient

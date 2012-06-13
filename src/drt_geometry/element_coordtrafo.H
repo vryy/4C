@@ -700,7 +700,6 @@ static void currentToSurfaceElementCoordinatesT(
     LINALG::Matrix<2,1>&        eleCoord
     )
 {
-  bool nodeWithinElement = true;
 
   startingValueCurrentToElementCoords<DISTYPE>(eleCoord);
 
@@ -737,7 +736,6 @@ static void currentToSurfaceElementCoordinatesT(
 
     if(!GEO::gaussElimination<true,2>(A, b, dx, GEO::TOL14))
     {
-      nodeWithinElement = false;
       break;
     }
 

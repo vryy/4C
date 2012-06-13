@@ -75,6 +75,15 @@ namespace ADAPTER {
                           const Teuchos::RCP<DRT::Discretization> discret,
                           const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave);
 
+    //! set parameters in list required for all schemes
+    void SetGeneralParameters(const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
+                              const Teuchos::ParameterList& prbdyn,
+                              const Teuchos::ParameterList& fdyn);
+
+    //! create a second solver
+    void CreateSecondSolver(const Teuchos::RCP<LINALG::Solver> solver,
+                            const Teuchos::ParameterList& fdyn);
+
     /// fluid field solver
     Teuchos::RCP<Fluid> fluid_;
   };

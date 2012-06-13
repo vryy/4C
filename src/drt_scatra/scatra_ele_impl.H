@@ -563,6 +563,8 @@ private:
 
   //! velocity divergence
   double vdiv_;
+  //! multifractal subgrid-scale velocity divergence
+  double mfsvdiv_;
 
   //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<nen_,1> eprenp_;

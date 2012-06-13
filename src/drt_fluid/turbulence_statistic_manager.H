@@ -257,7 +257,7 @@ private:
   { no_special_flow                 ,
     channel_flow_of_height_2        ,
     loma_channel_flow_of_height_2   ,
-    scatra_channel_flow_of_height_2   ,
+    scatra_channel_flow_of_height_2 ,
     lid_driven_cavity               ,
     loma_lid_driven_cavity          ,
     backward_facing_step            ,
@@ -269,6 +269,9 @@ private:
     rotating_circular_cylinder_nurbs,
     rotating_circular_cylinder_nurbs_scatra,
     time_averaging                           }    flow_;
+
+  //! flag to include scatra field
+  bool withscatra_;
 
   //! toggle additional evaluations for turbulence models
   enum INPAR::FLUID::TurbModelAction turbmodel_;

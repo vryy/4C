@@ -59,6 +59,9 @@ namespace SCATRA{
 
     /// write output
     void Output();
+    
+    /// read restart for preceding turbulent inflow simulation
+    void ReadInflowRestart(int restart);
 
   private:
 

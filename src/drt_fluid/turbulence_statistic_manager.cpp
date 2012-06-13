@@ -61,6 +61,8 @@ namespace FLD
   {
 
     subgrid_dissipation_=true;
+    // initialize
+    withscatra_ = false;
 
     // toogle statistics output for turbulent inflow
     inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
@@ -145,19 +147,9 @@ namespace FLD
       // the flow under consideration
       statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
 
-      // build statistics manager for inflow channel flow
+      // statistics manager for turbulent boundary layer not available
       if (inflow_)
-      {
-        if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-        {
-          // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
-                                                              alefluid_,
-                                                              mydispnp_,
-                                                              *params_,
-                                                              subgrid_dissipation_));
-        }
-      }
+       dserror("The backward-facing step based on the geometry the DNS requires a turbulent boundary layer inflow profile which is not supported, yet!");
     }
     else if(fluid.special_flow_=="loma_backward_facing_step")
     {
@@ -174,7 +166,8 @@ namespace FLD
       if (inflow_)
       {
         if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2"
-         or params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+         or params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2"
+         or params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
         {
           // allocate one instance of the averaging procedure for the flow under consideration
           statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
@@ -342,7 +335,7 @@ namespace FLD
     // subgrid dissipation
     subgrid_dissipation_ = false;
     // boolean for statistics of transported scalar
-    bool withscatra = false;
+    withscatra_ = false;
     // toogle statistics output for turbulent inflow
     inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
 
@@ -363,7 +356,7 @@ namespace FLD
     {
       flow_=combust_oracles;
       // statistics for transported scalar (G-function)
-      withscatra = true;
+      withscatra_ = true;
 
       if(discret_->Comm().MyPID()==0)
         std::cout << "---  setting up turbulence statistics manager for ORACLES ..." << std::flush;
@@ -373,7 +366,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",withscatra));
+      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",withscatra_));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -413,7 +406,7 @@ namespace FLD
           timeint.standarddofset_,
           homdir,
           *timeint.velpressplitterForOutput_,
-          withscatra // statistics for transported scalar
+          withscatra_ // statistics for transported scalar
       ));
     }
 
@@ -695,16 +688,6 @@ namespace FLD
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
 
         statistics_bfs_->DoTimeSample(myvelnp_);
-
-        // do time sample for inflow channel flow
-        if (inflow_)
-        {
-          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-          {
-            statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
-          }
-        }
-
         break;
       }
       case loma_backward_facing_step:
@@ -714,14 +697,31 @@ namespace FLD
 
         if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") == INPAR::FLUID::incompressible)
         {
-          statistics_bfs_->DoTimeSample(myvelnp_);
 
-          // do time sample for inflow channel flow
-          if (inflow_)
+          if (not withscatra_)
           {
-            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+            statistics_bfs_->DoTimeSample(myvelnp_);
+
+            // do time sample for inflow channel flow
+            if (inflow_)
             {
-              statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
+              if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+                statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
+              else
+               dserror("channel_flow_of_height_2 expected!");
+            }
+          }
+          else
+          {
+            statistics_bfs_->DoScatraTimeSample(myvelnp_,myscaaf_);
+
+            // do time sample for inflow channel flow
+            if (inflow_)
+            {
+              if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
+                statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,*myforce_);
+              else
+                dserror("scatra_channel_flow_of_height_2 expected!");
             }
           }
         }
@@ -753,9 +753,9 @@ namespace FLD
         if (inflow_)
         {
           if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-          {
             statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
-          }
+          else
+            dserror("loma_channel_flow_of_height_2 expected!");
         }
         break;
       }
@@ -1155,34 +1155,37 @@ namespace FLD
 
         if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") == INPAR::FLUID::incompressible)
         {
-          if(outputformat == write_single_record)
-            statistics_bfs_->DumpStatistics(step);
-
-          // write statistics of inflow channel flow
-          if (inflow_)
+          if (not withscatra_)
           {
-            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+            if(outputformat == write_single_record)
+              statistics_bfs_->DumpStatistics(step);
+
+            // write statistics of inflow channel flow
+            if (inflow_)
             {
-              if(output_inflow)
+              if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
               {
-                statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
-                statistics_channel_->ClearStatistics();
+                if(output_inflow)
+                {
+                  statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+                  statistics_channel_->ClearStatistics();
+                }
               }
             }
           }
-        }
-        else
-        {
-          if(outputformat == write_single_record)
-            statistics_bfs_->DumpLomaStatistics(step);
+          else
+           {
+            if(outputformat == write_single_record)
+              statistics_bfs_->DumpScatraStatistics(step);
 
-          // write statistics of inflow channel flow
-          if (inflow_)
-          {
-            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
-            {
-              if(outputformat == write_single_record)
-                statistics_channel_->DumpLomaStatistics(step);
+            // write statistics of inflow channel flow
+            if (inflow_)
+             {
+              if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
+               {
+                if(outputformat == write_single_record)
+                  statistics_channel_->DumpScatraStatistics(step);
+               }
             }
           }
         }
@@ -1307,6 +1310,8 @@ namespace FLD
       if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
         statistics_channel_->StoreScatraDiscret(scatradis_);
     }
+
+    withscatra_ = true;
 
     return;
   }

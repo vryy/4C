@@ -1114,7 +1114,6 @@ bool GEO::getDistanceToSurface(
     double&                                     distance)
 {
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
   LINALG::Matrix<3,1> distance_vector(true);
   LINALG::Matrix<2,1> elecoord(true); // starting value at element center
 
@@ -1133,7 +1132,6 @@ bool GEO::getDistanceToSurface(
     // normal pointing away from the surface towards point
     distance_vector.Update(1.0, point, -1.0, x_surface_phys);
     distance = distance_vector.Norm2();
-    min_distance = distance;
     pointFound = true;
   }
 
@@ -1218,7 +1216,6 @@ bool GEO::getDistanceToLine(
     double&                                     distance)
 {
   bool pointFound = false;
-  double min_distance = GEO::LARGENUMBER;
   LINALG::Matrix<3,1> distance_vector(true);
   LINALG::Matrix<1,1> elecoord(true); // starting value at element center
 
@@ -1237,7 +1234,6 @@ bool GEO::getDistanceToLine(
     // normal pointing away from the line towards point
     distance_vector.Update(1.0, point, -1.0, x_line_phys);
     distance = distance_vector.Norm2();
-    min_distance = distance;
     pointFound = true;
   }
 

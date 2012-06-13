@@ -2977,6 +2977,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Cross- and Reynolds-stress terms only on right-hand-side.",
     &fdyn_turbmfs);
 
+  setStringToIntegralParameter<int>("CONVFORM","convective","form of convective term",
+                               tuple<std::string>(
+                                 "convective",
+                                 "conservative"
+                                 ),
+                               tuple<int>(0,1),
+                               &fdyn_turbmfs);
+
   DoubleParameter("C_SCALE_SIMILARITY",1.0,"Constant for the scale similarity model. Something between 0.45 +- 0.15 or 1.0.", &fdyn_turbmfs);
 
   DoubleParameter(
@@ -3029,13 +3037,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
        "no",
        "time_averaging",
        "channel_flow_of_height_2",
-       "loma_channel_flow_of_height_2"),
+       "loma_channel_flow_of_height_2",
+       "scatra_channel_flow_of_height_2"),
        tuple<std::string>(
        "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
        "The flow is not further specified, but time averaging of velocity and pressure field is performed",
        "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-       "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
-       tuple<int>(0,1,2,3),
+       "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
+       "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
+       tuple<int>(0,1,2,3,4),
        &fdyn_turbinf);
 
    DoubleParameter(
