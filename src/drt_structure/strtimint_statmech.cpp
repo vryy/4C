@@ -101,7 +101,7 @@ void STR::TimIntStatMech::StatMechPrintDBCType()
     switch(dbctype)
     {
       // standard DBC application
-      case INPAR::STATMECH::dbctyp_std:
+      case INPAR::STATMECH::dbctype_std:
         cout<<"- Conventional Input file based application of DBCs"<<endl;
       break;
       // shear with a fixed Dirichlet node set
@@ -1273,7 +1273,7 @@ void STR::TimIntStatMech::PTC()
     ++iter_;
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
-    if(normfres_>1.0e4 && iter_>10)
+    if(normfres_>1.0e4 && iter_>4)
     {
       fresnormdivergent = true;
       break;
@@ -1663,8 +1663,8 @@ void STR::TimIntStatMech::StatMechPrepareStep()
 
     // statmechman_ has its own clock, so we hand over the integrator time in order to keep it up to date.
     // Also, switch time step size at given point in time and update time variable in statmechmanager
-    // note: point in time should be the time of the last converged time step (have to check, if maybe timen_)
-    statmechman_->UpdateTimeAndStepSize((*dt_)[0],(*time_)[0]);
+    // note: point in time should be timen_
+    statmechman_->UpdateTimeAndStepSize((*dt_)[0],timen_);
 
     //save relevant class variables at the beginning of this time step
     statmechman_->WriteConv();

@@ -1620,7 +1620,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "pinnodes"),
                                  //translating input strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::dbctype_none,
-                                            INPAR::STATMECH::dbctyp_std,
+                                            INPAR::STATMECH::dbctype_std,
                                             INPAR::STATMECH::dbctype_shearfixed,
                                             INPAR::STATMECH::dbctype_sheartrans,
                                             INPAR::STATMECH::dbctype_pinnodes),

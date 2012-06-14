@@ -16,6 +16,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/spring.H"
+#include "../drt_inpar/inpar_statmech.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 08/08|
@@ -537,6 +538,10 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
   double dt = params.get<double>("delta time");
   Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
   Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
+  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
+  bool shearflow = false;
+  if(dbctype==INPAR::STATMECH::dbctype_shearfixed || dbctype==INPAR::STATMECH::dbctype_sheartrans)
+    shearflow = true;
 
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
    * method has to change the displacement variables*/
@@ -557,7 +562,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && time>starttime && fabs(time-starttime)>dt/1e4 )
+          if(shearflow && dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && time>starttime && fabs(time-starttime)>dt/1e4 )
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
 
@@ -568,7 +573,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && time>starttime && fabs(time-starttime)>dt/1e4 )
+          if(shearflow && dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && time>starttime && fabs(time-starttime)>dt/1e4 )
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
       }

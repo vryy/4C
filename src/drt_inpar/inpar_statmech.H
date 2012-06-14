@@ -64,7 +64,7 @@ namespace INPAR
     enum DBCType
     {
       dbctype_none,        ///< no Dirichlet Boundary conditions
-      dbctyp_std,          ///< standard Dirichlet Boundary conditions
+      dbctype_std,          ///< standard Dirichlet Boundary conditions
       dbctype_shearfixed,  ///< special DBC application in case of rheological measurements with fixed set of nodes
       dbctype_sheartrans,  ///< special DBC application in case of rheological measurements with transient set of nodes
       dbctype_pinnodes,  ///< pin down individual nodes when a linker is attached
