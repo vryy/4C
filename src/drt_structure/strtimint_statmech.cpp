@@ -1273,7 +1273,7 @@ void STR::TimIntStatMech::PTC()
     ++iter_;
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
-    if(normfres_>1.0e4 && iter_>3)
+    if(normfres_>1.0e4 && iter_>10)
     {
       fresnormdivergent = true;
       break;
