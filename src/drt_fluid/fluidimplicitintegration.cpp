@@ -4190,9 +4190,6 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   discret_->SetState("scaaf",scaaf_);
   scaam_->PutScalar(1.0);
   discret_->SetState("scaam",scaam_);
-  // reset the vector
-  scaaf_->PutScalar(0.0);
-  scaam_->PutScalar(0.0);
 
   // set fine-scale vector
   // dummy vector initialized with zeros
@@ -4228,6 +4225,9 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // -> we merely need matrix "structure" below, not the actual contents
   discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
   discret_->ClearState();
+  // reset the vector modified above
+  scaaf_->PutScalar(0.0);
+  scaam_->PutScalar(0.0);
 
   // complete system matrix
   sysmat_->Complete();

@@ -137,7 +137,7 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
   if (action == "set_general_fluid_parameter")
   {
     DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
-    fldpara->SetElementGeneralFluidParameter(p);
+    fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
   }
   else if (action == "set_time_parameter")
   {

@@ -39,7 +39,8 @@ public:
   static FluidEleParameter* Instance();
 
   //! general fluid parameter are set
-  void SetElementGeneralFluidParameter(Teuchos::ParameterList& params    //> parameter list
+  void SetElementGeneralFluidParameter(Teuchos::ParameterList& params,   //> parameter list
+                                       int myrank                        //> proc id
       );
 
   //! time parameter are set

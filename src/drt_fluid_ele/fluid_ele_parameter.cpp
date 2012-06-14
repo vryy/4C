@@ -111,13 +111,22 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
 //----------------------------------------------------------------------*
 //  set general parameters                                   ehrl 04/10 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos::ParameterList& params )
+void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos::ParameterList& params,
+                                                                        int myrank )
 {
   if(set_general_fluid_parameter_ == false)
     set_general_fluid_parameter_ = true;
+  // For turbulent inflow generation,
+  // this function is indeed two times called.
+  // In this sepcial case, calling this function twice
+  // is ok!
   else
-    cout << endl << (" Warning: general fluid parameter should be set only once!! "
-        "Check, why do you enter this function a second time!!!") << endl << endl;
+  {
+    if (myrank == 0)
+      cout << endl << (" Warning: general fluid parameters should be set only once!!\n "
+        "If you run a turbulent inflow generation, calling this function twice is ok!\n "
+        "Otherwise: Check, why you enter this function a second time!!!") << endl << endl;
+  }
 
 //----------------------------------------------------------------------
 // get flags to switch on/off different fluid formulations
