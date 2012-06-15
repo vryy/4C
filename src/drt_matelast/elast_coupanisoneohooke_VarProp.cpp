@@ -71,7 +71,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::PackSummand(DRT::PackBuffer& data)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::UnpackSummand(const std::vector<char>& data,
-                                                  vector<char>::size_type& position)
+																														std::vector<char>::size_type& position)
 {
   ExtractfromPack(position,data,a_);
   ExtractfromPack(position,data,A_);
@@ -99,9 +99,9 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(DRT::INPUT::LineDefinition* 
     {
       // read local (cylindrical) cosy-directions at current element
       // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-      vector<double> rad;
-      vector<double> axi;
-      vector<double> cir;
+    	std::vector<double> rad;
+    	std::vector<double> axi;
+    	std::vector<double> cir;
       LINALG::Matrix<3,3> locsys(true);
       linedef->ExtractDoubleVector("RAD",rad);
       linedef->ExtractDoubleVector("AXI",axi);

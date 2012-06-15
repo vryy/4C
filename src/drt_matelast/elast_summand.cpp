@@ -280,7 +280,7 @@ void MAT::ELASTIC::Summand::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::Summand::Unpack(const vector<char>& data)
+void MAT::ELASTIC::Summand::Unpack(const std::vector<char>& data)
 {
   return;
 };

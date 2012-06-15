@@ -75,7 +75,7 @@ void MAT::ELASTIC::CoupAnisoExpo::PackSummand(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpo::UnpackSummand(const std::vector<char>& data,
-                                                  vector<char>::size_type& position)
+                                                  std::vector<char>::size_type& position)
 {
   ExtractfromPack(position,data,a_);
   ExtractfromPack(position,data,A_);
@@ -101,9 +101,9 @@ void MAT::ELASTIC::CoupAnisoExpo::Setup(DRT::INPUT::LineDefinition* linedef)
         linedef->HaveNamed("AXI") and
         linedef->HaveNamed("CIR"))
     {
-      vector<double> rad;
-      vector<double> axi;
-      vector<double> cir;
+      std::vector<double> rad;
+      std::vector<double> axi;
+      std::vector<double> cir;
       // read local (cylindrical) cosy-directions at current element
       // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
       LINALG::Matrix<3,3> locsys(true);

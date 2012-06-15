@@ -74,7 +74,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::PackSummand(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::UnpackSummand(const std::vector<char>& data,
-                                                  vector<char>::size_type& position)
+																									std::vector<char>::size_type& position)
 {
   ExtractfromPack(position,data,normdist_);
   ExtractfromPack(position,data,cele_);
