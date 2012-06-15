@@ -119,6 +119,7 @@ namespace INPAR
       mes_coupanisoexpo,   ///< anisotropic exponential single fiber summand
       mes_coupanisoexpotwocoup,  ///< anisotropic two fiber summand with coupling between the fibers
       mes_coupanisoneohooke,  ///< anisotropic Neo-Hooke single fiber summand
+      mes_coupanisoneohooke_varprop,  ///< anisotropic Neo-Hooke single fiber summand with space-time variable coefficient
       mes_isoanisoexpo,   ///< isochoric anisotropic single fiber material
       mes_coupvarga,  ///< isotropic Varga material
       mes_isovarga,  ///< isotropic isochoric Varga material

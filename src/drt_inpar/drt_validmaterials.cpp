@@ -1484,6 +1484,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // coupled anisotropic material with two exponential fiber families and variable coefficient
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke_VarProp",
+                                            "anisotropic part with one neo Hookean fiber with variable coefficient",
+                                            INPAR::MAT::mes_coupanisoneohooke_varprop));
+
+    AddNamedReal(m,"C","linear constant");
+    AddNamedReal(m,"GAMMA","angle");
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment");
+    AddNamedInt(m,"ADAPT_ANGLE","adapt angle during remodeling");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
+  /*--------------------------------------------------------------------*/
   // isochoric anisotropic material with one exponential fiber family
   {
     Teuchos::RCP<MaterialDefinition> m

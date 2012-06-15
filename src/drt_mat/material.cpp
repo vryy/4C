@@ -423,6 +423,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupanisoexpo:
   case INPAR::MAT::mes_coupanisoexpotwocoup:
   case INPAR::MAT::mes_coupanisoneohooke:
+  case INPAR::MAT::mes_coupanisoneohooke_varprop:    
   case INPAR::MAT::mes_isoanisoexpo:
   case INPAR::MAT::mes_coupvarga:
   case INPAR::MAT::mes_isovarga:
