@@ -278,9 +278,6 @@ void STR::TimIntStatMech::Integrate()
 
     // update all that is relevant
     UpdateAndOutput();
-
-    //special output for statistical mechanics
-    StatMechOutput();
   }
 
   return;
@@ -294,6 +291,9 @@ void STR::TimIntStatMech::UpdateAndOutput()
 {
   //periodic shift of configuration at the end of the time step in order to avoid improper output
   statmechman_->PeriodicBoundaryShift(*disn_, ndim_, (*dt_)[0]);
+
+  //special output for statistical mechanics
+  StatMechOutput();
 
   // calculate stresses, strains and energies
   // note: this has to be done before the update since otherwise a potential
@@ -331,8 +331,8 @@ void STR::TimIntStatMech::UpdateStepTime()
 {
   // statmechman_ has its own clock, so we hand over the integrator time in order to keep it up to date.
   // Also, switch time step size at given point in time and update time variable in statmechmanager
-  // note: point in time should is converged time
-  statmechman_->UpdateTimeAndStepSize((*dt_)[0],timen_);
+  // note: point in time should is converged time (which at this point is timen_)
+  statmechman_->UpdateTimeStepSize((*dt_)[0],timen_);
   // update time and step
   time_->UpdateSteps(timen_);  // t_{n} := t_{n+1}, etc
   step_ = stepn_;  // n := n+1
@@ -1688,7 +1688,9 @@ void STR::TimIntStatMech::StatMechPrepareStep()
     statmechman_->SeedRandomGenerators(step_);
 
     if(!discret_->Comm().MyPID() && printscreen_)
-      std::cout<<"\nbegin time step "<<step_+1<<":";
+      std::cout<<"\nbegin time step "<<stepn_<<":";
+
+    statmechman_->UpdateStatMechManagerTimeAndStepSize((*dt_)[0]);
   }
 
   return;
@@ -1749,11 +1751,10 @@ void STR::TimIntStatMech::StatMechOutput()
 {
   if(HaveStatMech())
   {
-    // note: "step_-1
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
-      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
+      statmechman_->Output(ndim_,timen_,step_,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
     else
-      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);
+      statmechman_->Output(ndim_,timen_,step_,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);
   }
   return;
 }// StatMechOutput()

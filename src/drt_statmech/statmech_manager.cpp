@@ -457,27 +457,30 @@ void STATMECH::StatMechManager::Update(const int& istep,
 } // StatMechManager::Update()
 
 /*----------------------------------------------------------------------*
- | Update time step size and total time         (public)   mueller 03/12|
+ | Update time time and step size in the manager  (public) mueller 06/12|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt, double& time)
+void STATMECH::StatMechManager::UpdateStatMechManagerTimeAndStepSize(double& dt)
 {
   dt_ = dt;
-  if(time + statmechparams_.get<double>("DELTA_T_NEW",dt_) > statmechparams_.get<double>("STARTTIMEACT", 0.0))
-  {
-    if(statmechparams_.get<double>("DELTA_T_NEW",dt_)>0.0)
-    {
-      dt_ = statmechparams_.get<double>("DELTA_T_NEW",0.01);
-      dt = dt_;
-    }
-  }
-
   time_ += dt_;
-
   return;
 }
 
 /*----------------------------------------------------------------------*
- | Retrieve nodal positions                     (public)   mueller 09/08|
+ | Update time step size in time integration       (public)mueller 06/12|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::UpdateTimeStepSize(double& dt, double& time)
+{
+  double eps = 1e-12;
+  if(time + statmechparams_.get<double>("DELTA_T_NEW",dt_) > statmechparams_.get<double>("STARTTIMEACT", 0.0) &&
+      fabs(time + statmechparams_.get<double>("DELTA_T_NEW",dt_) - statmechparams_.get<double>("STARTTIMEACT", 0.0))>eps)
+    if(statmechparams_.get<double>("DELTA_T_NEW",dt_)>0.0)
+      dt = statmechparams_.get<double>("DELTA_T_NEW",0.01);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Retrieve nodal positions                     (public)   mueller 09/11|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::GetNodePositions(Epetra_Vector& discol,
                                        std::map<int,LINALG::Matrix<3,1> >& currentpositions,

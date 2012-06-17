@@ -132,7 +132,10 @@ public:
               bool printscreen=true);
 
   //! \brief update time and time step size of statmechmanager
-  void UpdateTimeAndStepSize(double& dt, double& time);
+  void UpdateStatMechManagerTimeAndStepSize(double& dt);
+
+  //! \brief update time step size in time integration scheme
+  void UpdateTimeStepSize(double& dt, double& time);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void InitOutput(const int& ndim, const double& dt);
