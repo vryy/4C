@@ -325,6 +325,26 @@ void STR::TimIntStatMech::UpdateAndOutput()
 }//UpdateAndOutput()
 
 /*----------------------------------------------------------------------*
+ |update step and time                            (public) mueller 06/12|
+ *----------------------------------------------------------------------*/
+void STR::TimIntStatMech::UpdateStepTime()
+{
+  // statmechman_ has its own clock, so we hand over the integrator time in order to keep it up to date.
+  // Also, switch time step size at given point in time and update time variable in statmechmanager
+  // note: point in time should is converged time
+  statmechman_->UpdateTimeAndStepSize((*dt_)[0],timen_);
+  // update time and step
+  time_->UpdateSteps(timen_);  // t_{n} := t_{n+1}, etc
+  step_ = stepn_;  // n := n+1
+  //
+  timen_ += (*dt_)[0];
+  stepn_ += 1;
+
+  // new deal
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |do consistent predictor step for Brownian dynamics (public)cyron 10/09|
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::Predict()
@@ -1660,11 +1680,6 @@ void STR::TimIntStatMech::StatMechPrepareStep()
         statmechman_->GmshOutput(*((*dis_)(0)),filename,step_);
       }
     }
-
-    // statmechman_ has its own clock, so we hand over the integrator time in order to keep it up to date.
-    // Also, switch time step size at given point in time and update time variable in statmechmanager
-    // note: point in time should be timen_
-    statmechman_->UpdateTimeAndStepSize((*dt_)[0],timen_);
 
     //save relevant class variables at the beginning of this time step
     statmechman_->WriteConv();

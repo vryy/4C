@@ -448,7 +448,6 @@ void STATMECH::StatMechManager::Output(const int ndim,
           fclose(fp);
         }
       }
-
     }
     break;
     case INPAR::STATMECH::statout_densitydensitycorr:
