@@ -29,6 +29,7 @@ namespace LINALG
 {
   class Solver;
   class Preconditioner;
+  class SparseOperator;
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
@@ -40,6 +41,10 @@ namespace DRT
   class Discretization;
 }
 
+namespace IO
+{
+  class DiscretizationWriter;
+}
 
 namespace ALE {
 
@@ -67,22 +72,32 @@ namespace UTILS
 class Ale
 {
 public:
+
+  Ale(Teuchos::RCP<DRT::Discretization> actdis,
+      Teuchos::RCP<LINALG::Solver> solver,
+      Teuchos::RCP<Teuchos::ParameterList> params,
+      Teuchos::RCP<IO::DiscretizationWriter> output,
+      bool dirichletcond);
+
   virtual ~Ale() {}
 
   //! @name Apply interface displacements
 
   /// displacements at the interface are prescribed
-  virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp) = 0;
+  void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
 
   /// displacements at the free surface are prescribed
-  virtual void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp) = 0;
+  void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);
 
   //@}
 
   //! @name Time step helpers
 
+  /// a very simple time loop to be used for standalone ALE problems
+  void Integrate();
+
   /// start a new time step
-  virtual void PrepareTimeStep() = 0;
+  void PrepareTimeStep();
 
   /// calculate linear system
   virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) = 0;
@@ -94,7 +109,7 @@ public:
   virtual void Output() = 0;
 
   /// read restart for given step
-  virtual void ReadRestart(int step) = 0;
+  void ReadRestart(int step);
 
   //@}
 
@@ -104,7 +119,7 @@ public:
   virtual void Solve() = 0;
 
   /// get the linear solver object used for this field
-  virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+  Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
   /// get the linear solver object used for this field
   virtual Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() = 0;
@@ -114,54 +129,92 @@ public:
   //! @name Extract displacement
 
   /// the whole displacement field is extracted here
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const = 0;
+  Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const;
 
   //@}
 
   //! @name Vector access
 
   /// initial guess of Newton's method
-  virtual Teuchos::RCP<Epetra_Vector> InitialGuess() = 0;
+  Teuchos::RCP<Epetra_Vector> InitialGuess() { return residual_; }
 
   /// rhs of Newton's method
-  virtual Teuchos::RCP<Epetra_Vector> RHS() const = 0;
+  Teuchos::RCP<Epetra_Vector> RHS() const { return residual_; }
 
   /// unknown velocities (and pressures) at t(n+1)
-  virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
+  Teuchos::RCP<Epetra_Vector> Disp() { return dispnp_; }
 
   //@}
 
-  virtual void SolveAleXFluidFluidFSI() = 0;
+  virtual void SolveAleXFluidFluidFSI() { };
 
   //! @name Misc
 
   /// dof map of vector of unknowns
-  virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+  Teuchos::RCP<const Epetra_Map> DofRowMap();
 
   /// direct access to system matrix
-  virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
   /// direct access to system matrix
-  virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
   /// direct access to discretization
-  virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
-
-  //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
+  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
   /// communication object at the interface
-//  virtual const ALE::UTILS::MapExtractor& Interface() const = 0;
-  virtual Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const = 0;
+  Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const { return interface_; }
 
   /// build system matrix
   virtual void BuildSystemMatrix(bool full=true) = 0;
 
-  /// create result test for encapsulated algorithm
-  virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+  /// setup Dirichlet boundary condition map extractor
+  void SetupDBCMapEx(bool dirichletcond);
 
-  virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+  /// create result test for encapsulated algorithm
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+  Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
   //@}
+
+protected:
+
+  //! @name Misc
+
+  Teuchos::RCP<DRT::Discretization> discret_;
+  Teuchos::RCP<LINALG::Solver> solver_;
+  Teuchos::RCP<Teuchos::ParameterList> params_;
+  Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+  //@}
+
+  //! @name Algorithm core variables
+  int step_;
+  int numstep_;
+  double time_;
+  double maxtime_;
+  double dt_;
+  int uprestart_;
+  bool incremental_;
+  //@}
+
+  //! @name matrices, vectors, map extractors
+
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+  Teuchos::RCP<Epetra_Vector>    residual_;
+
+  Teuchos::RCP<Epetra_Vector>    dispnp_;
+  Teuchos::RCP<Epetra_Vector>    dispn_;
+
+  //! maps for extracting Dirichlet and free DOF sets
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+
+  //! the interface map setup for interface <-> full translation
+  Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
+
+  //@}
+
 };
 
 

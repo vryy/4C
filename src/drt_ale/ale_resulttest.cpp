@@ -17,35 +17,14 @@ Maintainer: Ulrich Kuettler
 #include "ale_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
-#include "ale_lin.H"
-#include "ale_springs.H"
-#include "ale_laplace.H"
-#include "ale_springs_fixed_ref.H"
+#include "ale.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
 
 
-ALE::AleResultTest::AleResultTest(ALE::AleLinear& ale)
-: aledis_(ale.Discretization()),
-    dispnp_(ale.Disp())
-{
-}
-
-ALE::AleResultTest::AleResultTest(ALE::AleSprings& ale)
-: aledis_(ale.Discretization()),
-    dispnp_(ale.Disp())
-{
-}
-
-ALE::AleResultTest::AleResultTest(ALE::AleLaplace& ale)
-: aledis_(ale.Discretization()),
-    dispnp_(ale.Disp())
-{
-}
-
-ALE::AleResultTest::AleResultTest(ALE::AleSpringsFixedRef& ale)
+ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
 : aledis_(ale.Discretization()),
     dispnp_(ale.Disp())
 {

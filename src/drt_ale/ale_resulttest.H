@@ -28,22 +28,13 @@ namespace DRT
 namespace ALE {
 
 // forward declarations
-class AleLinear;
-class AleSprings;
-class AleLaplace;
-class AleSpringsFixedRef;
+class Ale;
 
 /// Result test subclass for linear ale algorithm
 class AleResultTest : public DRT::ResultTest
 {
 public:
-  AleResultTest(ALE::AleLinear& ale);
-
-  AleResultTest(ALE::AleSprings& ale);
-
-  AleResultTest(ALE::AleLaplace& ale);
-
-  AleResultTest(ALE::AleSpringsFixedRef& ale);
+  AleResultTest(ALE::Ale& ale);
 
   /// our version of nodal value tests
   /*!

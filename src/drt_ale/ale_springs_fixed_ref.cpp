@@ -15,7 +15,6 @@ Maintainer: Ulrich Kuettler
 
 
 #include "ale_springs_fixed_ref.H"
-#include "ale_resulttest.H"
 #include "ale_utils_mapextractor.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -36,59 +35,9 @@ ALE::AleSpringsFixedRef::AleSpringsFixedRef(RCP<DRT::Discretization> actdis,
                                 Teuchos::RCP<IO::DiscretizationWriter> output,
                                 bool incremental,
                                 bool dirichletcond)
-  : discret_(actdis),
-    solver_ (solver),
-    params_ (params),
-    output_ (output),
-    step_(0),
-    time_(0.0),
-    incremental_(incremental),
-    sysmat_(null),
-    uprestart_(params->get("write restart every", -1))
+  : Ale(actdis,solver,params,output,dirichletcond),
+    incremental_(incremental)
 {
-  numstep_ = params_->get<int>("numstep");
-  maxtime_ = params_->get<double>("maxtime");
-  dt_      = params_->get<double>("dt");
-
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  dispn_          = LINALG::CreateVector(*dofrowmap,true);
-  dispnp_         = LINALG::CreateVector(*dofrowmap,true);
-  residual_       = LINALG::CreateVector(*dofrowmap,true);
-
-  interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
-  interface_->Setup(*actdis);
-
-  // set fixed nodes (conditions != 0 are not supported right now)
-  ParameterList eleparams;
-  eleparams.set("total time", time_);
-  eleparams.set("delta time", dt_);
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
-  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,null,dbcmaps_);
-
-  if (dirichletcond)
-  {
-    // for partitioned FSI the interface becomes a Dirichlet boundary
-    // also for structural Lagrangian simulations with contact and wear
-    // followed by an Eulerian step to take wear into account, the interface
-    // becomes a dirichlet
-    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_->FSICondMap());
-    condmaps.push_back(interface_->AleWearCondMap());
-    condmaps.push_back(dbcmaps_->CondMap());
-    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
-  }
-
-  if (dirichletcond and interface_->FSCondRelevant())
-  {
-    // for partitioned solves the free surface becomes a Dirichlet boundary
-    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_->FSCondMap());
-    condmaps.push_back(dbcmaps_->CondMap());
-    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
-  }
 }
 
 
@@ -156,39 +105,6 @@ void ALE::AleSpringsFixedRef::BuildSystemMatrix(bool full)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ALE::AleSpringsFixedRef::SystemMatrix()
-{
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> ALE::AleSpringsFixedRef::BlockSystemMatrix() const
-{
-  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ALE::AleSpringsFixedRef::DofRowMap() const
-{
-  return Teuchos::rcp(discret_->DofRowMap(),false);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ALE::AleSpringsFixedRef::PrepareTimeStep()
-{
-  step_ += 1;
-  time_ += dt_;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void ALE::AleSpringsFixedRef::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 {
   // We save the current solution here. This will not change the
@@ -219,7 +135,7 @@ void ALE::AleSpringsFixedRef::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 void ALE::AleSpringsFixedRef::Solve()
 {
   EvaluateElements();
-  
+
   // set fixed nodes
   ParameterList eleparams;
   eleparams.set("total time", time_);
@@ -261,20 +177,6 @@ void ALE::AleSpringsFixedRef::Output()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ALE::AleSpringsFixedRef::Integrate()
-{
-  while (step_ < numstep_-1 and time_ <= maxtime_)
-  {
-    PrepareTimeStep();
-    Solve();
-    Update();
-    Output();
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void ALE::AleSpringsFixedRef::EvaluateElements()
 {
   sysmat_->Zero();
@@ -300,51 +202,10 @@ void ALE::AleSpringsFixedRef::EvaluateElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ALE::AleSpringsFixedRef::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
-{
-  // applying interface displacements
-  if(DRT::Problem::Instance()->ProblemName()!="structure_ale")
-    interface_->InsertFSICondVector(idisp,dispnp_);
-  else
-    interface_->InsertAleWearCondVector(idisp,dispnp_);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ALE::AleSpringsFixedRef::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
-{
-  interface_->InsertFSCondVector(fsdisp,dispnp_);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ALE::AleSpringsFixedRef::ExtractDisplacement() const
 {
   // We know that the ale dofs are coupled with their original map. So
   // we just return them here.
   return dispnp_;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ALE::AleSpringsFixedRef::ReadRestart(int step)
-{
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
-
-  reader.ReadVector(dispnp_, "dispnp");
-  reader.ReadVector(dispn_,  "dispn");
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ALE::AleSpringsFixedRef::CreateFieldTest()
-{
-  return Teuchos::rcp(new ALE::AleResultTest(*this));
 }
 
