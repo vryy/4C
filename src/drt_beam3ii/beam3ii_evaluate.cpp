@@ -380,8 +380,10 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     break;
     case calc_struct_stress:
       dserror("No stress output implemented for beam3ii elements");
+    break;
     default:
       dserror("Unknown type of action for Beam3ii %d", act);
+    break;
   }
   return 0;
 
@@ -504,7 +506,8 @@ inline void DRT::ELEMENTS::Beam3ii::strainstress(const LINALG::Matrix<3,1>& gamm
     }
     break;
     default:
-    dserror("unknown or improper type of material law");
+      dserror("unknown or improper type of material law");
+    break;
   }
 
   //defining convected constitutive matrix CN between gamma and N according to Jelenic 1999, section 2.4
@@ -1065,6 +1068,10 @@ void DRT::ELEMENTS::Beam3ii::MyBackgroundVelocity(Teuchos::ParameterList& params
   double time = params.get<double>("total time",0.0);
   double starttime = params.get<double>("STARTTIMEACT",0.0);
   double dt = params.get<double>("delta time");
+  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
+  int curvenumber = params.get<int> ("CURVENUMBER", -1);
+  int oscilldir = params.get<int> ("OSCILLDIR", -1);
+
   Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
   Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
   INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
@@ -1074,15 +1081,15 @@ void DRT::ELEMENTS::Beam3ii::MyBackgroundVelocity(Teuchos::ParameterList& params
 
   //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
   if(periodlength->at(0) > 0.0)
-    if(shearflow && time>starttime && fabs(time-starttime)>dt/1e4 && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<int>("OSCILLDIR",-1) >= 0 )
+    if(shearflow && time>starttime && fabs(time-starttime)>dt/1e4 && curvenumber >=  1 && oscilldir >= 0 )
     {
-      uppervel = (params.get<double>("SHEARAMPLITUDE",0.0)) * (DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).FctDer(params.get<double>("total time",0.0),1))[1];
+      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber-1).FctDer(time,1))[1];
 
       //compute background velocity
-      velbackground(params.get<int>("OSCILLDIR",-1)) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
+      velbackground(oscilldir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
 
       //compute gradient of background velocity
-      velbackgroundgrad(params.get<int>("OSCILLDIR",-1),ndim-1) = uppervel / periodlength->at(ndim-1);
+      velbackgroundgrad(oscilldir,ndim-1) = uppervel / periodlength->at(ndim-1);
     }
 
 }
@@ -1600,6 +1607,10 @@ inline void DRT::ELEMENTS::Beam3ii::NodeShift(Teuchos::ParameterList& params,  /
   double time = params.get<double>("total time",0.0);
   double starttime = params.get<double>("STARTTIMEACT",0.0);
   double dt = params.get<double>("delta time");
+  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
+  int curvenumber = params.get<int> ("CURVENUMBER", -1);
+  int oscilldir = params.get<int> ("OSCILLDIR", -1);
+
   Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
   Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
   INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
@@ -1626,8 +1637,8 @@ inline void DRT::ELEMENTS::Beam3ii::NodeShift(Teuchos::ParameterList& params,  /
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(shearflow && dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && time>starttime && fabs(time-starttime)>dt/1e4 )
-            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
+          if(shearflow && dof == 2 && curvenumber >=  1 && time>starttime && fabs(time-starttime)>dt/1e4)
+            disp[numdof*i+oscilldir] += shearamplitude*DRT::Problem::Instance()->Curve(curvenumber-1).f(time);
         }
 
         if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
@@ -1637,8 +1648,8 @@ inline void DRT::ELEMENTS::Beam3ii::NodeShift(Teuchos::ParameterList& params,  /
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(shearflow && dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && time > starttime && fabs(time-starttime)>dt/1e4 )
-            disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
+          if(shearflow && dof == 2 && curvenumber >=  1 && time>starttime && fabs(time-starttime)>dt/1e4 )
+            disp[numdof*i+oscilldir] -= shearamplitude*DRT::Problem::Instance()->Curve(curvenumber-1).f(time);
         }
       }
     }

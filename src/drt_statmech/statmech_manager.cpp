@@ -49,7 +49,6 @@ Maintainer: Kei Müller
 STATMECH::StatMechManager::StatMechManager(Teuchos::RCP<DRT::Discretization> discret):
 statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
 unconvergedsteps_(0),
-time_(0.0),
 dt_(-1e9),
 starttimeoutput_(-1.0),
 endtoendref_(0.0),
@@ -355,6 +354,7 @@ void STATMECH::StatMechManager::InitializePLengthAndSearchRes()
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::Update(const int& istep,
+                                       const double& timen,
                                        const double& dt,
                                        Epetra_Vector& disrow,
                                        Teuchos::RCP<LINALG::SparseOperator>& stiff,
@@ -395,25 +395,25 @@ void STATMECH::StatMechManager::Update(const int& istep,
     GetNodePositions(discol, currentpositions, currentrotations);
 
     // set crosslinkers, i.e. considering crosslink molecule diffusion after filaments had time to equilibrate
-    if(time_>=statmechparams_.get<double>("EQUILIBTIME",0.0) || fabs(time_-statmechparams_.get<double>("EQUILIBTIME",0.0))<(dt/1e3))
+    if(timen>=statmechparams_.get<double>("EQUILIBTIME",0.0) || fabs(timen-statmechparams_.get<double>("EQUILIBTIME",0.0))<(dt/1e3))
     {
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->OcTree()->OctTreeSearch(currentpositions);
 
-      SearchAndSetCrosslinkers(istep, dt, noderowmap, nodecolmap, currentpositions,currentrotations,beamcmanager,printscreen);
+      SearchAndSetCrosslinkers(istep, timen, dt, noderowmap, nodecolmap, currentpositions,currentrotations,beamcmanager,printscreen);
 
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->ResetPairs();
 
-      SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions, discol,beamcmanager,printscreen);
+      SearchAndDeleteCrosslinkers(timen, dt, noderowmap, nodecolmap, currentpositions, discol,beamcmanager,printscreen);
     }
 
     // reset thermal energy to new value (simple value change for now, maybe Load Curve later on)
-    if(fabs(time_-statmechparams_.get<double>("KTSWITCHTIME",0.0))<(dt/1e3))
+    if(fabs(timen-statmechparams_.get<double>("KTSWITCHTIME",0.0))<(dt/1e3))
       statmechparams_.set("KT",statmechparams_.get<double>("KTACT",statmechparams_.get<double>("KT",0.0)));
 
     // actions taken when reaching STARTTIMEACT
-    if(fabs(time_-statmechparams_.get<double>("STARTTIMEACT",0.0))<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
+    if(fabs(timen-statmechparams_.get<double>("STARTTIMEACT",0.0))<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
     {
       if(!discret_->Comm().MyPID())
       {
@@ -457,25 +457,16 @@ void STATMECH::StatMechManager::Update(const int& istep,
 } // StatMechManager::Update()
 
 /*----------------------------------------------------------------------*
- | Update time time and step size in the manager  (public) mueller 06/12|
- *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::UpdateStatMechManagerTimeAndStepSize(double& dt)
-{
-  dt_ = dt;
-  time_ += dt_;
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | Update time step size in time integration       (public)mueller 06/12|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::UpdateTimeStepSize(double& dt, double& time)
+void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt, double& timeconverged)
 {
-  double eps = 1e-12;
-  if(time + statmechparams_.get<double>("DELTA_T_NEW",dt_) > statmechparams_.get<double>("STARTTIMEACT", 0.0) &&
-      fabs(time + statmechparams_.get<double>("DELTA_T_NEW",dt_) - statmechparams_.get<double>("STARTTIMEACT", 0.0))>eps)
-    if(statmechparams_.get<double>("DELTA_T_NEW",dt_)>0.0)
-      dt = statmechparams_.get<double>("DELTA_T_NEW",0.01);
+  // update time step
+  // note: default value sufficiently large to crash the simulation in the event of maldefinition
+  double dtnew = statmechparams_.get<double>("DELTA_T_NEW",1.0);
+  double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
+  if(timeconverged + dtnew > starttime && dtnew>0.0)
+    dt = dtnew;
   return;
 }
 
@@ -600,9 +591,13 @@ void STATMECH::StatMechManager::UpdateBindingSpots(const Epetra_Vector& discol,s
  | Shifts current position of nodes so that they comply with periodic   |
  | boundary conditions                                       cyron 04/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt)
+void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &timen, const double &dt)
 {
   double starttime = statmechparams_.get<double>("STARTTIMEACT",0.0);
+  double shearamplitude = statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0);
+  int curvenumber = statmechparams_.get<int> ("CURVENUMBER", -1);
+  int oscilldir = statmechparams_.get<int> ("OSCILLDIR", -1);
+
 
   //only if period length >0 has been defined periodic boundary conditions are swithced on
   if (periodlength_->at(0) > 0.0)
@@ -629,8 +624,8 @@ void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may fixed by DBC. To avoid problems when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > starttime && fabs(time_-starttime)>dt/1e4)
-            disrow[discret_->DofRowMap()->LID(dofnode[statmechparams_.get<int> ("OSCILLDIR", -1)])] -= statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0) * DRT::Problem::Instance()->Curve(statmechparams_.get<int> ("CURVENUMBER", -1) - 1).f(time_);
+          if (j == 2 && curvenumber >= 1 && timen > starttime && fabs(timen-starttime)>dt/1e4)
+            disrow[discret_->DofRowMap()->LID(dofnode[oscilldir])] -= shearamplitude * DRT::Problem::Instance()->Curve(curvenumber - 1).f(timen);
         }
         /*if node currently has coordinate value smaller than zero, it is shifted by periodlength sufficiently often
          *to lie again in the domain*/
@@ -641,8 +636,8 @@ void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problems when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > starttime && fabs(time_-starttime)>dt/1e4)
-            disrow[discret_->DofRowMap()->LID(dofnode[statmechparams_.get<int> ("OSCILLDIR", -1)])] += statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0) * DRT::Problem::Instance()->Curve(statmechparams_.get<int> ("CURVENUMBER", -1) - 1).f(time_);
+          if (j == 2 && curvenumber >= 1 && timen > starttime && fabs(timen-starttime)>dt/1e4)
+            disrow[discret_->DofRowMap()->LID(dofnode[oscilldir])] += shearamplitude * DRT::Problem::Instance()->Curve(curvenumber - 1).f(timen);
         }
       }
     }
@@ -1094,7 +1089,7 @@ void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axi
  | crosslinker elements once linking conditions are met.       					|
  | (private)                                              mueller (7/10)|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep, const double& timen, const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
                                                const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
                                                const std::map<int,LINALG::Matrix<3, 1> >& currentrotations,
                                                Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
@@ -1111,7 +1106,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep,const 
   double kon = 0;
   double starttime = statmechparams_.get<double>("KTSWITCHTIME", 0.0);
 
-  if(time_ <= starttime || (time_>starttime && fabs(time_-starttime) < dt/1e4))
+  if(timen <= starttime || (timen>starttime && fabs(timen-starttime) < dt/1e4))
     kon = statmechparams_.get<double>("K_ON_start",0.0);
   else
     kon = statmechparams_.get<double>("K_ON_end",0.0);
@@ -1607,7 +1602,8 @@ bool STATMECH::StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID
  | searches crosslinkers and deletes them if probability check is passed|
  | (public) 																							mueller (7/10)|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt,
+void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& timen,
+                                                            const double& dt,
                                                             const Epetra_Map& noderowmap,
                                                             const Epetra_Map& nodecolmap,
                                                             const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
@@ -1619,7 +1615,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& dt,
   double koff = 0;
   double starttime = statmechparams_.get<double>("KTSWITCHTIME", 0.0);
 
-  if (time_ <= starttime || (time_>starttime && fabs(starttime)<dt/1e4))
+  if (timen <= starttime || (timen>starttime && fabs(starttime)<dt/1e4))
     koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
   else
     koff = statmechparams_.get<double> ("K_OFF_end", 0.0);
@@ -3679,7 +3675,7 @@ bool STATMECH::StatMechManager::DBCStart(Teuchos::ParameterList& params)
   double dt = params.get<double>("delta time", 0.01);
   if (time<0.0) dserror("t = %f ! Something is utterly wrong here. The total time should be positive!", time);
 
-  if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4))
+  if(time < starttime && fabs(starttime-time)>dt/1e4)
     return false;
   else
     return true;
@@ -3694,7 +3690,7 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
                                                      Teuchos::RCP<Epetra_Vector> deltadbc)
 {
   // get the absolute time, time step size, time curve number and oscillation direction
-  const double time = params.get<double>("total time", 0.0);
+  const double time = params.get<double>("total time", 0.0); // target time (i.e. timen_)
   double dt = params.get<double>("delta time", 0.01);
   int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
   int oscdir = statmechparams_.get<int>("OSCILLDIR",-1);
@@ -3805,6 +3801,19 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
 //-----------------------------------------update node sets
     dbcnodesets_.push_back(oscillnodes);
     dbcnodesets_.push_back(fixednodes);
+
+//---------check/set force sensors anew for each time step
+    // add DOF LID where a force sensor is to be set
+    UpdateForceSensors(dbcnodesets_[0], oscdir);
+    //if(!discret_->Comm().MyPID())
+    //  cout<<"\n=========================================="<<endl;
+    //for(int pid=0; pid<discret_->Comm().NumProc();pid++)
+    //{
+    //  if(pid==discret_->Comm().MyPID())
+    //    cout<<"UpdateForceSensors_"<<pid<<": "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
+    //  discret_->Comm().Barrier();
+    //}
+    //cout<<"==========================================\n"<<endl;
   }
   else // only ever use the fixed set of nodes after the first time dirichlet values were imposed
   {
@@ -3823,20 +3832,6 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
     }
     // dofs of fixednodes_ remain untouched since fixednodes_ dofs are 0.0
   }
-
-//---------check/set force sensors anew for each time step
-  // add DOF LID where a force sensor is to be set
-  if(!useinitdbcset_)
-    UpdateForceSensors(dbcnodesets_[0], oscdir);
-  //if(!discret_->Comm().MyPID())
-  //  cout<<"\n=========================================="<<endl;
-  //for(int pid=0; pid<discret_->Comm().NumProc();pid++)
-  //{
-  //  if(pid==discret_->Comm().MyPID())
-  //    cout<<"UpdateForceSensors_"<<pid<<": "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
-  //  discret_->Comm().Barrier();
-  //}
-  //cout<<"==========================================\n"<<endl;
   return;
 }
 

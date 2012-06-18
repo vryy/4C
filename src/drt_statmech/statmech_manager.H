@@ -117,12 +117,15 @@ public:
   void RestoreConv(Teuchos::RCP<LINALG::SparseOperator>& stiff, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager);
 
   /*! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
+   *  \param istep    (in)  i-th time step
+   *  \param timen    (in)  target time
    *  \param dt       (in)	current time step size
    *  \param disrow   (in)	current displacement vector
    *  \param stiff    (in)
    *  \param ndim     (in)
    */
   void Update(const int& istep,
+              const double& timen,
               const double& dt,
               Epetra_Vector& disrow,
               Teuchos::RCP<LINALG::SparseOperator>& stiff,
@@ -131,11 +134,10 @@ public:
               bool rebuildoctree=false,
               bool printscreen=true);
 
-  //! \brief update time and time step size of statmechmanager
-  void UpdateStatMechManagerTimeAndStepSize(double& dt);
-
-  //! \brief update time step size in time integration scheme
-  void UpdateTimeStepSize(double& dt, double& time);
+  /*! \brief update time step size in time integration scheme
+   *  \param dt            (in) time step size
+   *  \param timeconverged (in) time of last converged timestep   */
+  void UpdateTimeAndStepSize(double& dt, double& timeconverged);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void InitOutput(const int& ndim, const double& dt);
@@ -176,8 +178,13 @@ public:
   //! \brief Initializes truss3 elements in case of periodic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
-  //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
-  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt);
+  /*! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
+   * \param disrow  (in)  row map displacement vector
+   * \param ndim    (in)  number of spatial dimensions
+   * \param timen   (in)  target time
+   * \param dt      (in)  time step size
+   */
+  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &timen, const double &dt);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, Teuchos::RCP<double> phifil = Teuchos::null);
@@ -250,6 +257,7 @@ protected:
 
   /*! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
    *  \param istep            (in) time step
+   *  \param timen            (in) target time
    *  \param dt               (in) step size
    *  \param noderowmap       (in) Row Map
    *  \param nodecolmap       (in) Column Map
@@ -258,6 +266,7 @@ protected:
    *  \param beamcmanager     (in) beam contact manager
    */
   void SearchAndSetCrosslinkers(const int&                                istep,
+                                const double&                             timen,
                                 const double&                             dt,
                                 const Epetra_Map&                         noderowmap,
                                 const Epetra_Map&                         nodecolmap,
@@ -267,6 +276,7 @@ protected:
                                 bool                                      printscreen=true);
 
   /*! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
+   *  \param timen            (in) target time
    *  \param dt               (in) step size
    *  \param noderowmap       (in) Row Map
    *  \param nodecolmap       (in) Column Map
@@ -274,7 +284,8 @@ protected:
    *  \param discol           (in) node discplacement in column map format (fully overlapping)
    *  \param beamcmanager     (in) beam contact manager
    */
-  void SearchAndDeleteCrosslinkers(const double&                             dt,
+  void SearchAndDeleteCrosslinkers(const double&                             timen,
+                                   const double&                             dt,
                                    const Epetra_Map&                         noderowmap,
                                    const Epetra_Map&                         nodecolmap,
                                    const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
@@ -543,9 +554,6 @@ protected:
 
   //! \brief how often a time step had to be restarted with new random numbers due to unconverged solution of nonlinear system of equations since simulation start
   int unconvergedsteps_;
-
-  //! \brief time within Statistical Mechanics Manager
-  double time_;
 
   //! \brief time step size
   double dt_;

@@ -262,6 +262,8 @@ void STR::TimIntStatMech::Integrate()
       {
         //pay attention: for a constant predictor an incremental velocity update is necessary, which has
         //been deleted out of the code in order to simplify it
+        if(!discret_->Comm().MyPID())
+          cout<<"target time = "<<timen_<<", time step = "<<(*dt_)[0]<<endl;
         Predict();
 
         if(ndim_ ==3)
@@ -276,8 +278,14 @@ void STR::TimIntStatMech::Integrate()
     }
     while(!isconverged_);
 
+    //periodic shift of configuration at the end of the time step in order to avoid improper output
+    statmechman_->PeriodicBoundaryShift(*disn_, ndim_, timen_, (*dt_)[0]);
+
     // update all that is relevant
     UpdateAndOutput();
+
+    //special output for statistical mechanics
+    StatMechOutput();
   }
 
   return;
@@ -289,12 +297,6 @@ void STR::TimIntStatMech::Integrate()
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::UpdateAndOutput()
 {
-  //periodic shift of configuration at the end of the time step in order to avoid improper output
-  statmechman_->PeriodicBoundaryShift(*disn_, ndim_, (*dt_)[0]);
-
-  //special output for statistical mechanics
-  StatMechOutput();
-
   // calculate stresses, strains and energies
   // note: this has to be done before the update since otherwise a potential
   // material history is overwritten
@@ -306,9 +308,7 @@ void STR::TimIntStatMech::UpdateAndOutput()
 
   // update beam contact
   if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
-  {
     UpdateStepBeamContact();
-  }
 
   // update time and step
   UpdateStepTime();
@@ -321,28 +321,9 @@ void STR::TimIntStatMech::UpdateAndOutput()
 
   // print info about finished time step
   PrintStep();
+
   return;
 }//UpdateAndOutput()
-
-/*----------------------------------------------------------------------*
- |update step and time                            (public) mueller 06/12|
- *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::UpdateStepTime()
-{
-  // statmechman_ has its own clock, so we hand over the integrator time in order to keep it up to date.
-  // Also, switch time step size at given point in time and update time variable in statmechmanager
-  // note: point in time should is converged time (which at this point is timen_)
-  statmechman_->UpdateTimeStepSize((*dt_)[0],timen_);
-  // update time and step
-  time_->UpdateSteps(timen_);  // t_{n} := t_{n+1}, etc
-  step_ = stepn_;  // n := n+1
-  //
-  timen_ += (*dt_)[0];
-  stepn_ += 1;
-
-  // new deal
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |do consistent predictor step for Brownian dynamics (public)cyron 10/09|
@@ -429,7 +410,7 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
 {
   // needed parameters
   ParameterList p;
-  p.set("total time", time);  // target time
+  p.set("total time", time);  // target time (i.e. timen_)
   p.set("delta time", (*dt_)[0]);
 
   // set vector values needed by elements
@@ -1690,7 +1671,8 @@ void STR::TimIntStatMech::StatMechPrepareStep()
     if(!discret_->Comm().MyPID() && printscreen_)
       std::cout<<"\nbegin time step "<<stepn_<<":";
 
-    statmechman_->UpdateStatMechManagerTimeAndStepSize((*dt_)[0]);
+    // hand over time step size and time of the latest converged time step
+    statmechman_->UpdateTimeAndStepSize((*dt_)[0], (*time_)[0]);
   }
 
   return;
@@ -1710,9 +1692,9 @@ void STR::TimIntStatMech::StatMechUpdate()
 
     const double t_admin = Teuchos::Time::wallTime();
     if(DRT::INPUT::IntegralValue<int>(statmechparams,"BEAMCONTACT"))
-      statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
+      statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
     else
-      statmechman_->Update(step_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
+      statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
 
     // print to screen
     StatMechPrintUpdate(t_admin);
@@ -1720,7 +1702,7 @@ void STR::TimIntStatMech::StatMechUpdate()
     /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
      *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
      *for synchrinisation of these random numbers in parallel computing*/
-    randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_) );
+    randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_,true) );
     /*pay attention: for a constant predictor an incremental velocity update is necessary, which has been deleted out of the code in oder to simplify it*/
     //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
     statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / (*dt_)[0],0.5));
@@ -1749,12 +1731,13 @@ void STR::TimIntStatMech::StatMechPrintUpdate(const double& t_admin)
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::StatMechOutput()
 {
+  // note: "step_ - 1" in order to make the modulo operations within Output() work properly.
   if(HaveStatMech())
   {
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
-      statmechman_->Output(ndim_,timen_,step_,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
+      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
     else
-      statmechman_->Output(ndim_,timen_,step_,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);
+      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);
   }
   return;
 }// StatMechOutput()

@@ -131,9 +131,6 @@ namespace STR
     //!\brief does what it says
     void UpdateAndOutput();
 
-    //!\brief update time and step size
-    void UpdateStepTime();
-
     //!\brief writing output including restart information
     //virtual void Output();
 
