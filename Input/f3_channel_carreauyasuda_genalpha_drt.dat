@@ -260,61 +260,61 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // fluid vertex left bottom back
-E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid vertex left bottom front
-E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid vertex left top back
-E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid vertex left top front
-E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid vertex right bottom back
-E 5 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid vertex right bottom front
-E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid vertex right top back
-E 7 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 7 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid vertex right top front
-E 8 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 8 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           12
 // fluid edge left bottom
-E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge left top
-E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge left back
-E 3 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+E 3 - 4 1 1 1 0 1.0 0.0 0.0 0.0 1    none none none 1 0 0 0
 // fluid edge left front
-E 4 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+E 4 - 4 1 1 1 0 1.0 0.0 0.0 0.0 1    none none none 1 0 0 0
 // fluid edge right bottom
-E 5 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge right top
-E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge right back
-E 7 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 7 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge right front
-E 8 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 8 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge bottom back
-E 9 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 9 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge bottom front
-E 10 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 10 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge top back
-E 11 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 11 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid edge top front
-E 12 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 12 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // fluid surface left
-E 1 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 1 0 0 0 0 0
+E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 1 none none none 1 0 0 0
 // fluid surface right
-E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid surface bottom
-E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid surface top
-E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // fluid surface back
-E 5 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
 // fluid surface front
-E 6 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

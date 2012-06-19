@@ -292,14 +292,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // Dirichlet
 
-  std::vector<Teuchos::RCP<ConditionComponent> > dirichletcomponents;
+  std::vector<Teuchos::RCP<IntVectorConditionComponent> > dirichletintveccomponents;
+  std::vector<Teuchos::RCP<RealVectorConditionComponent> > dirichletrealveccomponents;
+  std::vector<Teuchos::RCP<ConditionComponent> > dirichletbundcomponents;
 
-  dirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",6)));
-  dirichletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",6)));
-  dirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",6,true,true)));
+  dirichletintveccomponents.push_back(
+    Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
+  dirichletrealveccomponents.push_back(
+    Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+  dirichletintveccomponents.push_back(
+    Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
+  dirichletintveccomponents.push_back(
+    Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
 
-  // optional
-  dirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",6,false,false,true)));
+  dirichletbundcomponents.push_back(
+      Teuchos::rcp(
+        new DirichletNeumannBundle(
+            "dirichbund",
+            Teuchos::rcp(new IntConditionComponent("numdof")),
+            dirichletintveccomponents,
+            dirichletrealveccomponents)));
 
   Teuchos::RCP<ConditionDefinition> pointdirichlet =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT DIRICH CONDITIONS",
@@ -450,32 +462,32 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Volume));
 
 
-  for (unsigned i=0; i<dirichletcomponents.size(); ++i)
+  for (unsigned i=0; i<dirichletbundcomponents.size(); ++i)
   {
-    pointdirichlet->AddComponent(dirichletcomponents[i]);
-    linedirichlet->AddComponent(dirichletcomponents[i]);
-    surfdirichlet->AddComponent(dirichletcomponents[i]);
-    voldirichlet->AddComponent(dirichletcomponents[i]);
+    pointdirichlet->AddComponent(dirichletbundcomponents[i]);
+    linedirichlet->AddComponent(dirichletbundcomponents[i]);
+    surfdirichlet->AddComponent(dirichletbundcomponents[i]);
+    voldirichlet->AddComponent(dirichletbundcomponents[i]);
 
-    pointaledirichlet->AddComponent(dirichletcomponents[i]);
-    linealedirichlet ->AddComponent(dirichletcomponents[i]);
-    surfaledirichlet ->AddComponent(dirichletcomponents[i]);
-    volaledirichlet  ->AddComponent(dirichletcomponents[i]);
+    pointaledirichlet->AddComponent(dirichletbundcomponents[i]);
+    linealedirichlet ->AddComponent(dirichletbundcomponents[i]);
+    surfaledirichlet ->AddComponent(dirichletbundcomponents[i]);
+    volaledirichlet  ->AddComponent(dirichletbundcomponents[i]);
 
-    pointtransportdirichlet->AddComponent(dirichletcomponents[i]);
-    linetransportdirichlet->AddComponent(dirichletcomponents[i]);
-    surftransportdirichlet->AddComponent(dirichletcomponents[i]);
-    voltransportdirichlet->AddComponent(dirichletcomponents[i]);
+    pointtransportdirichlet->AddComponent(dirichletbundcomponents[i]);
+    linetransportdirichlet->AddComponent(dirichletbundcomponents[i]);
+    surftransportdirichlet->AddComponent(dirichletbundcomponents[i]);
+    voltransportdirichlet->AddComponent(dirichletbundcomponents[i]);
 
-    pointthermodirichlet->AddComponent(dirichletcomponents[i]);
-    linethermodirichlet->AddComponent(dirichletcomponents[i]);
-    surfthermodirichlet->AddComponent(dirichletcomponents[i]);
-    volthermodirichlet->AddComponent(dirichletcomponents[i]);
+    pointthermodirichlet->AddComponent(dirichletbundcomponents[i]);
+    linethermodirichlet->AddComponent(dirichletbundcomponents[i]);
+    surfthermodirichlet->AddComponent(dirichletbundcomponents[i]);
+    volthermodirichlet->AddComponent(dirichletbundcomponents[i]);
 
-    pointporodirichlet->AddComponent(dirichletcomponents[i]);
-    lineporodirichlet->AddComponent(dirichletcomponents[i]);
-    surfporodirichlet->AddComponent(dirichletcomponents[i]);
-    volporodirichlet->AddComponent(dirichletcomponents[i]);
+    pointporodirichlet->AddComponent(dirichletbundcomponents[i]);
+    lineporodirichlet->AddComponent(dirichletbundcomponents[i]);
+    surfporodirichlet->AddComponent(dirichletbundcomponents[i]);
+    volporodirichlet->AddComponent(dirichletbundcomponents[i]);
   }
 
   condlist.push_back(pointdirichlet);

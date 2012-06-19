@@ -124,11 +124,11 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              dbx_xy
-E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 2 1 1 0.0 0.0 none none 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              dbc_y
-E 1 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 2 0 1 0 0 0.0 0.0 none none 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS

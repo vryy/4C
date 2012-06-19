@@ -290,13 +290,13 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 //                              inring
-E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              outring
-E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              moveplatedown
-E 8 - 0 1 0 0 0 0 0.0 -1.0 0.0 0.0 0.0 0.0 none 2 none none none none 0 0 0 0 0 0
+E 8 - 6 0 1 0 0 0 0 0.0 -1.0 0.0 0.0 0.0 0.0 none 2 none none none none 0 0 0 0 0 0
 //                              moveplateup
-E 9 - 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 3 none none none none 0 0 0 0 0 0
+E 9 - 6 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 none 3 none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -306,9 +306,9 @@ DLINE                           0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           2
 //                              inflow
-E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              outflow
-E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS

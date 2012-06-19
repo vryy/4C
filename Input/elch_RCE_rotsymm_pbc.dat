@@ -288,27 +288,27 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              innermasterpoints
-E 1 - 1 1 1 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 1 1 none none none none 1 4 0 0 0 0
+E 1 - 6 1 1 1 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 1 1 none none none none 1 4 0 0 0 0
 //                              outermasterpoints
-//E 2 - 1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//E 2 - 6 1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              horizontalmasterline
-E 1 - 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           5
 //                              top
-E 1 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              bottom_outer
-E 2 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 6 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              master
-E 3 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 6 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              outer_wall
-E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-//E 4 - 1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//E 4 - 6 1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              inner_wall
-E 6 - 1 1 1 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 1 1 none none none none 1 4 0 0 0 0
+E 6 - 6 1 1 1 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 1 1 none none none none 1 4 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -326,7 +326,7 @@ DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
 //                              outer_wall
-E 4 - 1 1 1 1 0 0 0.003 0.103 0.2 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 6 1 1 1 1 0 0 0.003 0.103 0.2 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D

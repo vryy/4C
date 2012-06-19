@@ -203,23 +203,23 @@ NDVOL   4
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // bgFluid  inflow
-E 1 - 1 1 1 0 0 0 0.1 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 6 1 1 1 0 0 0 0.1 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // str dirichlet
-E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   3
 // bgfluid volume
-E 1 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // embedded volume
-E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // embedded volume
-E 3 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 ----------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL   1
 // embedded volume
-E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF  1
 E 1 - 1

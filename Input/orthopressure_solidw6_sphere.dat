@@ -240,7 +240,7 @@ DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 814 DNODE 1
 NODE 1 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DLINE-NODE TOPOLOGY 
 NODE 814 DLINE 1
 NODE 810 DLINE 1
 NODE 805 DLINE 1

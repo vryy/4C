@@ -146,9 +146,9 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              inflow
-E 1 - 1 1 1 1 1 0 1.0 2.0 2.0 1.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 1 1 1 1 1 0 1.0 2.0 2.0 1.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              outflow
-E 2 - 1 0 0 1 0 0 0.1 0.0 0.0 0.1 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 6 1 0 0 1 0 0 0.1 0.0 0.0 0.1 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS

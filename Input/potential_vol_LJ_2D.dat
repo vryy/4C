@@ -216,23 +216,23 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           9
 // cylinder_up bottom1
-E 1 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 3 none none none none none 2 0 0 0 0 0
+E 1 - 2 1 1 1.0 0.0 3 none 2 0
 // cylinder_up bottom2
-E 2 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 3 none none none none none 2 0 0 0 0 0
+E 2 - 2 1 1 1.0 0.0 3 none 2 0
 // cylinder_down bottom1
-E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 2 1 1 0.0 0.0 none none 0 0
 // cylinder_down bottom2
-E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 2 1 1 0.0 0.0 none none 0 0
 // cylinder_up inner curve
-E 5 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - 2 0 0 0.0 0.0 none none 0 0
 // cylinder_up outer curve
-E 6 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - 2 0 0 0.0 0.0 none none 0 0
 // cylinder_down outer curve
-E 7 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 7 - 2 0 0 0.0 0.0 none none 0 0
 // cylinder_down inner curve
-E 8 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 8 - 2 0 0 0.0 0.0 none none 0 0
 // Node cylinder_up
-E 9 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 3 none none none none none 2 0 0 0 0 0
+E 9 - 2 1 1 1.0 0.0 3 none 2 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

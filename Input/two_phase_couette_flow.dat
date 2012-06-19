@@ -168,57 +168,53 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // vertex inflow bottom back
-E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // vertex inflow bottom front
-E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // vertex inflow top front
-E 3 - 1 1 1 0 0 0 5.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 4 1 1 1 0 5.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // vertex inflow top back
-E 4 - 1 1 1 0 0 0 5.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 4 1 1 1 0 5.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // vertex outflow bottom front
-E 5 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // vertex outflow bottom back
-E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // vertex outflow top back
-E 7 - 1 1 1 0 0 0 5.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 7 - 4 1 1 1 0 5.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // vertex outflow top front
-E 8 - 1 1 1 0 0 0 5.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 8 - 4 1 1 1 0 5.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           8
 // line inflow front
-E 1 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line inflow back
-E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line top front
-E 3 - 1 1 1 0 0 0 5.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 4 1 1 1 0 5.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line top back
-E 4 - 1 1 1 0 0 0 5.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 4 1 1 1 0 5.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line bottom front
-E 5 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line bottom back
-E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line outflow front
-E 7 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 7 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line outflow back
-E 8 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 8 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 // surface front
-E 1 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// surface inflow
-//E 2 - 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// surface outflow
-//E 3 - 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // surface bottom
-E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // surface top
-E 5 - 1 1 1 0 0 0 5.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - 4 1 1 1 0 5.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // surface back
-E 6 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 //                              volume
-//E 1 - 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//E 1 - 4 0 0 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT                          0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
@@ -232,9 +228,9 @@ DPOINT                          0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE                           2
 // line inflow front
-E 1 - 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+E 1 - 6 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
 // line inflow back
-E 2 - 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+E 2 - 6 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D

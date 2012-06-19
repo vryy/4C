@@ -334,10 +334,10 @@ DPOINT                          0
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 1 - 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
-E 1 - 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // no velocity in x and z-direction at all nodes!!!
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT                          0
@@ -345,10 +345,10 @@ DPOINT                          0
 DLINE                           0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
-E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
-E 1 - 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // no ALE-displacement in x and z-direction at all nodes!!!
 ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
 DPOINT                          0
@@ -357,7 +357,7 @@ DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
 //                              anode
-E 1 - 1 1 1 1 0 0 0.348 2.408 4.12 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 1 1 1 1 0 0 0.348 2.408 4.12 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D

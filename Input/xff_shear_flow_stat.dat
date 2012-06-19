@@ -150,15 +150,15 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // XFluid upper surface
-E 1 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // XFluid lower surface
-E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // XFluid volume
-E 1 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
 // Fluid volume
-E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
 // Fluid surfaces

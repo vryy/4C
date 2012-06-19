@@ -212,9 +212,9 @@ DLINE                           0
 DSURF                           1
 //                              inflow
 // was replaced by Krylov space projection ensuring that integral of c_2 in domain equals 1
-E 1 - 0 1 0 0 0 0 0.0 1.0299788 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 0 1 0 0 0 0 0.0 1.0299788 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              outflow
-//E 2 - 0 1 0 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//E 2 - 6 0 1 0 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -226,7 +226,7 @@ DSURF                           0
 ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
 DPOINT                          0
 //                              origin
-//E 1 - 1 0 0 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//E 1 - 6 1 0 0 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS

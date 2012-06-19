@@ -207,27 +207,27 @@ NDVOL   5
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 5
 // oben
-E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // unten
-E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // bgFluid  inflow
-E 3 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  3 0 0 0 0 0
+E 3 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  3 0 0 0 0 0
 // oben emb
-E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // unten emb
-E 5 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 5 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   3
 // structure volume
-E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none  0 0 0 0 0 0
+E 2 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none  0 0 0 0 0 0
 // bgfluid volume
-E 3 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 6 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // embedded volume
-E 1 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 6 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 ----------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL   1
 // embedded volume
-E 1 - 1 1 1  0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 6 1 1 1  0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF  2
 // fluid surfaces fsi

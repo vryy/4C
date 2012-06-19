@@ -136,9 +136,9 @@ E 3 - none 1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  Live Mid 6 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // inflow
-E 1 - 1 1 0 0 0 0  1.0 1.0 0.0 0.0 0.0 0.0  none none none none none none  4 5 0 0 0 0
+E 1 - 3 1 1 0 1.0 1.0 0.0 none none none 4 5 0 
 // sides
-E 2 - 1 1 0 0 0 0  1.0 1.0 0.0 0.0 0.0 0.0  none none none none none none  4 5 0 0 0 0
+E 2 - 3 1 1 0 1.0 1.0 0.0 none none none 4 5 0 
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 4 POSITION velx NAME velx VALUE 0.0 TOLERANCE 1.0e-13
 FLUID DIS 1 NODE 4 POSITION vely NAME vely VALUE -0.1 TOLERANCE 1.0e-13

@@ -239,13 +239,13 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // support bottom
-E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // support inclined plane up
-E 3 - 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0 // 1=fix n-direction
+E 3 - 6 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0 // 1=fix n-direction
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 // support total z
-E 1 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT                          0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS

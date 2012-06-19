@@ -161,7 +161,7 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // Cube surface
-E 2 - 1 1 1 1 0 0 1.0 1.0 1.0 1.0 0.0 0.0 1 1 1 2 none none 1 1 1 1 0 0
+E 2 - 4 1 1 1 1 1.0 1.0 1.0 1.0 1 1 1 2 1 1 1 1
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

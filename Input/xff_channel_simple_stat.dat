@@ -143,9 +143,9 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 // Fluid 1 inflow
-E 1 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // Fluid 1 outflow
-E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -153,9 +153,9 @@ DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // fluid volume
-E 1 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
 // embd fluid volume
-E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT                          0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS

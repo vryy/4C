@@ -9,7 +9,7 @@ PROBLEMTYP                      ReducedDimensionalAirWays
 NUMFIELD                        1
 RESTART 0 //599
 --------------------------------------------------------------------------IO
------------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
+-----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC 
 LINEAR_SOLVER                   1
 DYNAMICTYP                      CrankNicolson
 NUMSTEP                         600

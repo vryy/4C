@@ -100,12 +100,12 @@ NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 2                      // Anzahl der DPOINTs mit DBC
-E 3 - 1 1 1 1 0 1 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 4 - 1 1 1 1 0 1 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0 */ 
+E 3 - 6 1 1 1 1 0 1 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 6 1 1 1 1 0 1 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0 */ 
 ------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 1                      // Anzahl der DLINEs mit DBC
-E 1 - 1 1 1 0 0 0 0.0 0.0 -0.4 0.0 0.0 0.0 none 1 1 none none none 0 0 0 0 0 0
+E 1 - 6 1 1 1 0 0 0 0.0 0.0 -0.4 0.0 0.0 0.0 none 1 1 none none none 0 0 0 0 0 0
 ------------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DPOINT 0

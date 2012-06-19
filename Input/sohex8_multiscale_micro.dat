@@ -176,7 +176,7 @@ DSURF                           0
 ------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DVOL                            0
----------------------------------------------------------DNODE-NODE TOPOLOGY
+---------------------------------------------------------DNODE-NODE TOPOLOGY 
 NODE 1 DNODE 1
 NODE 24 DNODE 2
 NODE 55 DNODE 3
