@@ -1396,45 +1396,34 @@ Refer to the experienced and friendly Eclipse community at LNM or the help in Ec
 \subsection{Checkout student version of BACI (version controlled: git)}
 Incorporating the work of students into the current version of BACI or updating the students version of the code can be painful. Using git version control alleviates the pain
 to some extend and offers a more convenient way to provide students with BACI updates or to merge their work with the current revision.
-However, because svn and git do not really go great together, it takes some effort to set it up. First you will have to create two additional instances of BACI on your Machine. The first instance is as usual
-checked out using svn into e.g /Baci. The second one is created by cloning the first with git and is in the following referred to as /Baci\_stud. From this git instance
+However, because svn and git do not really go great together, it takes some effort to set it up. First you will have to create an additional instances of BACI on your Machine. It is as usual
+checked out using svn into e.g /Baci\_stud. Afterwards you can initialize a new git repository in /Baci\_stud. From this git instance
 of BACI you can now push a version into the student's home directory which is from now on referred to as /Baci\_bare. The students can now pull a version of Baci\_bare onto their local 
 drive i.e /scratch to work with/compile BACI. Also they can commit changes to their /Baci\_bare instance, from which you can pull it back up onto your machine.
-Allright, here's what you need to do:
+Allright, here's what you need to do:\\
 %\subsubsection{git}
+
+{\bf {If you find any errors or inaccuracies, please inform me (A. Ehrl) or update it on your own!}}
 
 \paragraph{In your home directory}
 
 \begin{enumerate}
-  \item check out a svn version with git (in a new folder): \\
-  \texttt{git svn clone -r (Revision number) svn://gauss/trunk/ccarat Baci} \\
-  Revision number:  Baci reversion number (default is 0, thus entire Baci starting from revision 0 is checked out without this number)
-  \item clone the git version which you have just checked out into a new folder e.g. Baci\_stud/ (execute the command in the new folder): \\
-  \texttt{git clone path/Baci Baci\_stud}
-  \item generate a new branch (in Baci\_stud, you can have as many branches as students): \\
+  \item check out a new svn version of BACI (in a new folder: e.g. Baci\_stud)
+  \item initialize a new git repository in the folder Baci\_stud/  \\
+  \texttt{git init}
+  \item add all files in the folder Baci\_stud to the repository: \\
+  \texttt{git add .}
+  \item commit the changes: \\
+  \texttt{git commit -a}
+  \item generate a new branch \\
   \texttt{git branch student\_name}
   \item change to new branch: \\
  \texttt{git checkout student\_name}
 \end{enumerate}
 
-\paragraph{Important}
-
-\begin{itemize}
-  \item show connections: \\
- \texttt{git config -$\,$-list }
-  \item git pull cannot be executed in branch student\_name. Thus, \\
-  \texttt{git config branch.student\_name.merge refs/heads/master} \\
-  \texttt{git config  branch.student\_name.remote origin} 
-\end{itemize}
-
-
 \paragraph{In students home directory}
 
 \begin{enumerate}
-  \item open $\sim$/.bashrc: \\
-  add \texttt{module load openmpi-i386} to the end of the file \\
-  add \texttt{alias eclipse="/lnm/programs/eclipse\_cdt6/eclipse"} so that  eclipse can be executed by using the shortcut \texttt{eclipse} in the shell
-  \item \texttt{source ~/.bashrc} restart shellwith new .bashrc file
   \item clone the repository Baci\_stud: \\
   \texttt{git clone $ ~$ -$\,$-bare -b student\_name myname@mycomputer.lnm.mw.tum.de:/myDirectory/Baci\_stud Baci\_bare}
   \item delete master branch (if there is one): \\
@@ -1455,7 +1444,7 @@ Allright, here's what you need to do:
   \item clone baci\_bare to this folder (it will be your future workspace): \\
   \texttt{git clone -b student\_name $\sim$/Baci\_bare baci}
   \item {After the student made some changes to the code he can commit their work to the \/Baci\_bare in their
-home directory. This way they can acces their code from another machine next time and the code is backed up by the lrz }	
+home directory. This way they can access their code from another machine next time and the code is backed up by the lrz }	
 \end{enumerate}
 
 
@@ -1463,22 +1452,54 @@ home directory. This way they can acces their code from another machine next tim
 \paragraph{Update baci version of the student}
 In order to update the student's code you have to update the svn and the git instances of BACI on your machine by:
   \begin{enumerate}
-    \item \texttt{git svn rebase} (in folder Baci)\\
-    get latest version from the svn repository
-    \item \texttt{git pull $\sim$/Baci */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud) \\
-    pull the updated version to Baci\_stud (git instance, only the active branch is updated)\\
-    \texttt{*/refs/heads/*:ref/remotes/origin/*} has to be included. Otherwise, you will get an error message. 
-    \texttt{git pull} also serves this purpose.
-    \item \texttt{git pull student@red??.stud:$\sim$/Baci\_bare */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud)\\
-    this command is necessary to get the latest version of the student's Baci\_bare, which is merged before with the working copy from the student's scratch) \\
-    possible conflicts need to be resolved
+    \item update BACI in Baci\_stud:\\
+    \texttt{svn update}
+    \item commit the new version of BACI to the repository (branch master; only the active branch is updated) \\
+    Where are you? Which branch is active?: \texttt{git branch}\\
+    Switch between branches: \texttt{git checkout master} \\
+    Check actual status: \texttt{git status} \\
+    add and commit files and modifications into your repository: \texttt{git add .} and \texttt{git commit -a}
+    \item this command is necessary to get the latest version of the student's Baci\_bare, which is merged before with the working copy from the student's scratch) \\ 
+    \texttt{git checkout baci\_stud} \\
+    \texttt{git pull student@red??.stud:$\sim$/Baci\_bare */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud on branch student\_name)\\
+    $\rightarrow$ possible conflicts need to be resolved (see 'Merge baci version of the student with baci version (svn)' \ref{resolveConflict})
+    \item merge branch master (actual BACI version from the svn repository) into the branch student\_name (actual version of your student):\\
+    check if you are on branch baci\_stud \\
+    \texttt{git merge master} \\
+    $\rightarrow$ possible conflicts need to be resolved (see 'Merge baci version of the student with baci version (svn)' \ref{resolveConflict})
     \item \texttt{git push student@red??.stud:$\sim$/Baci\_bare } (in folder Baci\_stud)
     push down the latest revision of Baci (now merged with the students changes) down into his home directory.	
   \end{enumerate}
 
+\paragraph{Merge baci version of the student with baci version (svn)}
+
+I am not completely sure about these steps. I will test it with my next student.
+
+\begin{enumerate}
+ \item Merge Baci\_bare with the working copy from the student's scratch
+ \item Merge Baci\_bare with Baci\_stud \\
+ $ \rightarrow $ \texttt{git fetch student@red??.stud:$\sim$/Baci\_bare */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud) \\
+ $ \rightarrow $ \texttt{git merge ref/remotes/origin/*:*/refs/heads/*} ?????
+ \item no conficts $ \rightarrow $ be happy
+ \item conflicts: \label{resolveConflict}
+ \begin{itemize}
+  \item resolve conflicts with, e.g., kdiff3 \\
+  $ \rightarrow $ \texttt{git mergetool -t kdiff3} (maybe you must install kdiff3)
+  \item add and commit the files with resolved conflicts \\
+  $ \rightarrow $ \texttt{git add 'files with conflicts'} \\
+  $ \rightarrow $ \texttt{git commit -a}
+  \item congratulation, you merged two versions
+ \end{itemize}
+ \item update BACI on branch master
+ \item merge branch master into branch baci\_stud
+ \item commit the actual version into the svn repository
+\end{enumerate}
+
 \paragraph{Usefull commands}
 
 \begin{itemize}
+  \item \texttt{git status} \\
+  overview over the actual status of your repository: untracked files (can be added to the repository) and tracked files with modifications (can be commited)
   \item \texttt{git branch} \\ 
   list all branches in the current clone
   \item  \texttt{git diff \$*$\mid$ kompare -} \\
@@ -1487,11 +1508,10 @@ In order to update the student's code you have to update the svn and the git ins
   compare current branch to branch\_name in kompare
   \item Before you can update your version in your home directory, you need to commit your modifications on the branch student\_name (scratch). Commands are executed in /scratch/student\_name/workspace/Baci:
   \begin{itemize}
-    \item \texttt{git commit -a }\\
+    \item \texttt{git commit -a }, \item \texttt{git commit 'file'}\\
     After commiting the modifications the command 'git diff' does not show anymore any differences in the files. Now, the git version in the branch student\_name on scratch matches the version on your computer 
-    \item \texttt{git add 'file' }\\
-   \texttt{ git commit}\\
-    a new file is added to the version control
+    \item \texttt{git add .}, \texttt{git add 'file' }\\
+    all files or a particular file is added to the version control
   \end{itemize}
   \item At different computers the student has always access to the latest baci version stored in his home directory (Baci\_bare). Therefore, Baci\_bare need to be updated regularly.
   \begin{itemize}
@@ -1530,10 +1550,7 @@ In order to update the student's code you have to update the svn and the git ins
 \begin{itemize}
   \item \texttt{mkdir baci\_debug}
   \item \texttt{cd baci\_debug}
-  \item \texttt{kate ../do-configure-f12}
-  \item change line \texttt{BUILD\_TYPE="Release"} to \texttt{BUILD\_TYPE="Debug"} (case sensitive!)
-  \item change line \texttt{-D DEBUG:BOOL=OFF} to \texttt{-D DEBUG:BOOL=ON}
-  \item \texttt{../do-configure-f12}
+  \item \texttt{../do-configure-debug}
   \item it will take some seconds
 \end{itemize}
 
@@ -1572,6 +1589,21 @@ In order to update the student's code you have to update the svn and the git ins
 \item Restart eclipse!
 
 \item compile project by \texttt{Project} $\rightarrow$ \texttt{Build all}
+
+\item configure tab size:
+\begin{itemize}
+ \item window $\rightarrow$ {\it{preferences}}
+ \item {\it{C/C++ General}} $\rightarrow$  {\it{Code Style}}
+ \item tick {\it{enable project specific settings}}
+ \item chose {\it{myprofile}} (until now there is no institute style file) or
+ \item generate a new profile including 
+  \begin{itemize}
+    \item Tab policy: spaces only
+    \item indendation size: 2 white spaces 
+    \item tab size: 2 white spaces
+  \end{itemize}
+\end{itemize}
+
 \end{enumerate}
 
 \subsubsection{Debugging in eclipse}
