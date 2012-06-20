@@ -1389,10 +1389,18 @@ void CONTACT::CoAbstractStrategy::OutputStresses ()
 *-----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::OutputWear()
 {
+  
+  // only for dual Lagrange multiplier so far
+  // diagonality of mortar matrix D is assumed  
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  if (shapefcn == INPAR::MORTAR::shape_standard)
+    dserror("ERROR: Evaluation of wear only for dual shape functions so far.");
+    
   // vectors
   Teuchos::RCP<Epetra_Vector> wear_vector = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> real_weara = Teuchos::rcp(new Epetra_Vector(*gactivedofs_,true));
   Teuchos::RCP<Epetra_Vector> real_wear = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
-
+  
   // solver  
   Teuchos::RCP<Teuchos::ParameterList> solver_params = Teuchos::rcp(new Teuchos::ParameterList());
   solver_params->set("solver","umfpack");
@@ -1436,12 +1444,33 @@ void CONTACT::CoAbstractStrategy::OutputWear()
       }
     }
   }
- 
+  
+  // extract active parts of D matrix 
+  // matrices, maps
+  Teuchos::RCP<LINALG::SparseMatrix> daa,dai,dia,dii;
+  Teuchos::RCP<Epetra_Map> gidofs;
+  
+  // split the matrix
+  LINALG::SplitMatrix2x2(dmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,daa,dai,dia,dii);
+
+  
+  // extract active parts of wear vector
+  Teuchos::RCP<Epetra_Vector> wear_vectora = Teuchos::rcp(new Epetra_Vector(*gactivedofs_,true));
+  Teuchos::RCP<Epetra_Vector> wear_vectori = Teuchos::rcp(new Epetra_Vector(*gidofs));
+
+  // split the vector
+  LINALG::SplitVector(*gsdofrowmap_,*wear_vector,gactivedofs_,wear_vectora,gidofs,wear_vectori);
+  
   // approx. undo the weighting of the wear by solving
   // D * w = w~
   // dmatrix_ * real_wear = wear_
-  solver.Solve(dmatrix_->EpetraMatrix(), real_wear, wear_vector, true);
+  if(gactivedofs_->NumGlobalElements())
+    solver.Solve(daa->EpetraMatrix(), real_weara, wear_vectora, true);
 
+  Teuchos::RCP<Epetra_Vector> real_wearexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  LINALG::Export(*real_weara,*real_wearexp);
+  real_wear->Update(1.0,*real_wearexp,0.0);
+  
   // copy the local part of real_wear into wearoutput_
   for (int i=0; i<(int)gsdofrowmap_->NumMyElements(); ++i)
   {
