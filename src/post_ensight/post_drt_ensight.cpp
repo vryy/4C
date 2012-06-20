@@ -12,11 +12,11 @@
 
  */
 
-
-
 #include "post_drt_ensight_single_field_writers.H"
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
+
 /*!
  \brief filter main routine
 
@@ -435,6 +435,7 @@ int main(
     }
     default:
         dserror("problem type %d not yet supported", problem.Problemtype());
+        break;
     }
 
     }
@@ -457,6 +458,8 @@ int main(
       exit(1);
 #endif
     }
+
+    DRT::Problem::Done();
 
     return 0;
 }

@@ -265,6 +265,46 @@ private:
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+class CombustMonWriter : public FieldMonWriter
+{
+public:
+  //! constructor
+  CombustMonWriter(
+    PostProblem& problem,
+    string& infieldtype,
+    int node)
+    : FieldMonWriter(problem,infieldtype,node)
+  {}
+
+  //! destructor
+  virtual ~CombustMonWriter()
+  {}
+
+protected:
+
+  virtual void CheckInfieldType(string& infieldtype);
+
+  void FieldError(int node);
+
+  virtual void WriteHeader(ofstream& outfile);
+
+  void WriteTableHead(ofstream& outfile, int dim);
+
+  virtual void WriteResult(
+    ofstream& outfile,
+    PostResult& result,
+    std::vector<int>& gdof,
+    int dim
+    );
+
+private:
+}; // end of class CombustMonWriter
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class StructMonWriter : public FieldMonWriter
 {
 public:

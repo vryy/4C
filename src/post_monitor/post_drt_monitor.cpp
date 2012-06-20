@@ -24,6 +24,7 @@ Maintainer: Christiane FÃ¶rster
 
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "post_drt_monitor.H"
 
@@ -543,10 +544,11 @@ void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
     outfile << "# step   time     u_x      u_y      p\n";
     break;
   case 3:
-   outfile << "# step   time     u_x      u_y      u_z      p\n";
-   break;
+    outfile << "# step   time     u_x      u_y      u_z      p\n";
+    break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
   }
 }
 
@@ -560,6 +562,72 @@ void FluidMonWriter::WriteResult(
 {
   // get actual result vector
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("velnp");
+  const Epetra_BlockMap& velmap = resvec->Map();
+  // do output of general time step data
+  outfile << right << std::setw(20) << result.step();
+  outfile << right << std::setw(20) << scientific << result.time();
+
+  //compute second part of offset
+  int offset2 = velmap.MinAllGID();
+
+  // do output for velocity and pressure
+  for(unsigned i=0; i < gdof.size(); ++i)
+  {
+    const int lid = velmap.LID(gdof[i]+offset2);
+    outfile << right << std::setw(20) << std::setprecision(10) << scientific << (*resvec)[lid];
+  }
+  outfile << "\n";
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void CombustMonWriter::CheckInfieldType(string& infieldtype)
+{
+  if (infieldtype != "fluid")
+    cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
+}
+
+/*----------------------------------------------------------------------*/
+void CombustMonWriter::FieldError(int node)
+{
+  dserror("Node %i does not belong to fluid field!",node);
+}
+
+/*----------------------------------------------------------------------*/
+void CombustMonWriter::WriteHeader(ofstream& outfile)
+{
+  outfile << "# fluid problem, writing nodal data of node ";
+}
+
+/*----------------------------------------------------------------------*/
+void CombustMonWriter::WriteTableHead(ofstream& outfile, int dim)
+{
+  switch (dim)
+  {
+  case 2:
+    outfile << "# step   time     u_x      u_y      p\n";
+    break;
+  case 3:
+    outfile << "# step   time     u_x      u_y      u_z      p\n";
+    break;
+  default:
+    dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+void CombustMonWriter::WriteResult(
+  ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
+{
+  // get actual result vector
+  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("velocity_smoothed");
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(20) << result.step();
@@ -1598,11 +1666,23 @@ int main(int argc, char** argv)
       dserror("not implemented yet");
       break;
     }
+    case prb_combust:
+    {
+      if(infieldtype == "fluid")
+      {
+        CombustMonWriter mymonwriter(problem,infieldtype,node);
+        mymonwriter.WriteMonFile(problem,infieldtype,node);
+      }
+      break;
+    }
     default:
     {
       dserror("problem type %d not yet supported", problem.Problemtype());
     }
+    break;
   }
+
+  DRT::Problem::Done();
 
   return 0;
 }

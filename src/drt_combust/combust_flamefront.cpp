@@ -986,7 +986,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     //--------------------------------------
     // boolean indicating whether this node is a pbc node
     bool pbcnode = false;
-    vector<int> coupnodegid;
+    std::set<int> coupnodegid;
     // loop all nodes with periodic boundary conditions (master nodes)
     for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
     {
@@ -995,7 +995,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         pbcnode = true;
         // coupled node is the slave node; there can be more than one per master node
         for (unsigned int i = 0; i < pbciter->second.size(); i++)
-          coupnodegid.push_back(pbciter->second[i]);
+          coupnodegid.insert(pbciter->second[i]);
       }
       else
       {
@@ -1006,7 +1006,14 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
           {
             pbcnode = true;
             // coupled node is the master node
-            coupnodegid.push_back(pbciter->first);
+            coupnodegid.insert(pbciter->first);
+
+            // there can be multiple slaves -> add all other slaves
+            for (size_t i = 0; i < pbciter->second.size(); ++i)
+            {
+              if (pbciter->second[islave] != pbciter->second[i])
+                coupnodegid.insert(pbciter->second[i]);
+            }
           }
         }
       }
@@ -1015,10 +1022,10 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     // add elements located around the coupled pbc node
     if (pbcnode)
     {
-      for (unsigned int i = 0; i < coupnodegid.size(); i++)
+      for (std::set<int>::const_iterator icnode = coupnodegid.begin(); icnode != coupnodegid.end(); ++icnode)
       {
         // get coupled pbc node (master or slave)
-        const DRT::Node* ptToCoupNode = gfuncdis_->gNode(coupnodegid[i]);
+        const DRT::Node* ptToCoupNode = gfuncdis_->gNode(*icnode);
         // get adjacent elements of this node
         const DRT::Element*const* pbcelements = ptToCoupNode->Elements();
         // add elements to list
@@ -1102,8 +1109,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
           {
             nodeID_adj[inode] = ptToNodeIds_adj[inode];
             // get local number of node actnode in ele_adj
-            for (size_t icng = 0; icng < coupnodegid.size(); ++icng)
-              if(coupnodegid[icng] == ptToNodeIds_adj[inode]) ID_param_space = inode;
+            if (coupnodegid.find(ptToNodeIds_adj[inode]) != coupnodegid.end())
+              ID_param_space = inode;
           }
         }
         if (ID_param_space < 0) dserror("node not found in element");
@@ -1257,8 +1264,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
           {
             nodeID_adj[inode] = ptToNodeIds_adj[inode];
             // get local number of node actnode in ele_adj
-            for (size_t icng = 0; icng < coupnodegid.size(); ++icng)
-              if(coupnodegid[icng] == ptToNodeIds_adj[inode]) ID_param_space = inode;
+            if (coupnodegid.find(ptToNodeIds_adj[inode]) != coupnodegid.end())
+              ID_param_space = inode;
           }
         }
         if (ID_param_space < 0) dserror ("node in current adjacent not found!!!");
@@ -1903,6 +1910,46 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
       const size_t numele = lnode->NumElement();
       // get list of adjacent elements of this node
       DRT::Element** adjeles = lnode->Elements();
+      const int gid = lnode->Id();
+
+      bool isPBCMaster = false;
+      bool isPBCSlave  = false;
+
+      /********************************************************************
+       * Determine if the current node is a master, slave or regular node *
+       * regular: average over adjacent elements                          *
+       * master:  also consider slave nodes' elements                     *
+       * slave:   skip                                                    *
+       ********************************************************************/
+
+      for (std::map<int,std::vector<int> >::const_iterator ipbcmap = pbcmap_->begin(); ipbcmap != pbcmap_->end(); ++ipbcmap)
+      {
+        if (ipbcmap->first == gid)
+        {
+          isPBCMaster = true;
+          break;
+        }
+        else
+        {
+          for (std::vector<int>::const_iterator islave = ipbcmap->second.begin(); islave != ipbcmap->second.end(); ++islave)
+          {
+            if (*islave == gid)
+            {
+              isPBCSlave = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // slave nodes will get their curvature from the master, so we will skip them
+      if (isPBCSlave)
+        continue;
+
+      /**********************************************************************
+       * Determine if any of the adjacent elements (incl. slave's elements) *
+       * is cut. If none of them are cut we do not need the curvature       *
+       **********************************************************************/
 
       // the curvature is only needed in cut elements
       bool iscut = false;
@@ -1914,11 +1961,37 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
           break;
         }
       }
+      // now the PBC slave nodes
+      if (!iscut and isPBCMaster)
+      {
+        std::vector<int> slaveids = pbcmap_->find(gid)->second;
+        for (std::vector<int>::const_iterator islave = slaveids.begin(); islave != slaveids.end(); ++islave)
+        {
+          size_t slavenumele = fluiddis_->gNode(*islave)->NumElement();
+          DRT::Element** slaveadjeles = fluiddis_->gNode(*islave)->Elements();
+          for (size_t i=0; i < slavenumele; ++i)
+          {
+            if (InterfaceHandle()->ElementCutStatus(slaveadjeles[i]->Id()) != COMBUST::InterfaceHandleCombust::uncut)
+            {
+              iscut = true;
+              break;
+            }
+          }
+          if (iscut)
+            break;
+        }
+      }
       if (not iscut)
         continue;
 
+      /*********************************************************************
+       * Calculate the average curvature over all adjacent elements (incl. *
+       * slave node's elements)                                            *
+       *********************************************************************/
+
       // do the actual curvature evaluation
-      double avcurv = 0.0;
+      double sumcurv = 0.0;
+      int    sumele  = 0;
 
       for (size_t iele=0; iele<numele;iele++)
       {
@@ -1929,19 +2002,20 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
 
         LINALG::Matrix<3,1> posXiDomain(true);
         {
-        bool nodefound = false;
-        // find out which node in the element is my local node lnode
-        for (size_t inode=0; inode<numnode; ++inode)
-        {
-          if (adjele->NodeIds()[inode] == lnode->Id())
+          bool nodefound = false;
+          // find out which node in the element is my local node lnode
+          for (size_t inode=0; inode<numnode; ++inode)
           {
-            // get local (element) coordinates of this node
-            posXiDomain = DRT::UTILS::getNodeCoordinates(inode,DRT::Element::hex8);
-            nodefound = true;
+            if (adjele->NodeIds()[inode] == gid)
+            {
+              // get local (element) coordinates of this node
+              posXiDomain = DRT::UTILS::getNodeCoordinates(inode,DRT::Element::hex8);
+              nodefound = true;
+              break;
+            }
           }
-        }
-        if (nodefound==false)
-          dserror("node was not found in list of elements");
+          if (nodefound==false)
+            dserror("node was not found in list of elements");
         }
 
         // smoothed normal vector at this node
@@ -1957,26 +2031,88 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
         double curvature=0.0;
         COMBUST::CalcCurvature<DRT::Element::hex8>(posXiDomain,xyze,mygradphi,curvature);
 
-        // cut off too small curvatures
-        // TODO define cut off
-        if (fabs(curvature) < 0.0 )
-        {
-          curvature = 0.0;
-        }
-
-        avcurv += curvature;
+        sumcurv += curvature;
+        sumele++;
       }
-      avcurv /= numele;
-      avcurv *= -1.0;
+      // now the PBC slave nodes
+      if (isPBCMaster)
+      {
+        std::vector<int> slaveids = pbcmap_->find(gid)->second;
+        for (std::vector<int>::const_iterator islave = slaveids.begin(); islave != slaveids.end(); ++islave)
+        {
+          size_t slavenumele = fluiddis_->gNode(*islave)->NumElement();
+          DRT::Element** slaveadjeles = fluiddis_->gNode(*islave)->Elements();
+          for (size_t iele=0; iele < slavenumele; ++iele)
+          {
+            DRT::Element* adjele = slaveadjeles[iele];
 
-      const int gid = lnode->Id();
+            // number of nodes of this element
+            const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+
+            LINALG::Matrix<3,1> posXiDomain(true);
+            {
+            bool nodefound = false;
+            // find out which node in the element is my local node lnode
+            for (size_t inode=0; inode<numnode; ++inode)
+            {
+              if (adjele->NodeIds()[inode] == *islave)
+              {
+                // get local (element) coordinates of this node
+                posXiDomain = DRT::UTILS::getNodeCoordinates(inode,DRT::Element::hex8);
+                nodefound = true;
+                break;
+              }
+            }
+            if (nodefound==false)
+              dserror("PBC slave node was not found in list of its elements");
+            }
+
+            // smoothed normal vector at this node
+            LINALG::Matrix<3,numnode> mygradphi(true);
+
+            // extract local (element level) G-function values from global vector
+            DRT::UTILS::ExtractMyNodeBasedValues(adjele, mygradphi, gradphi_,3);
+
+            // get node coordinates of the current element
+            LINALG::Matrix<3,numnode> xyze;
+            GEO::fillInitialPositionArray<DRT::Element::hex8>(adjele, xyze);
+
+            double curvature=0.0;
+            COMBUST::CalcCurvature<DRT::Element::hex8>(posXiDomain,xyze,mygradphi,curvature);
+
+            sumcurv += curvature;
+            sumele++;
+          }
+        }
+      }
+
+      /*********************************************************************
+       * Write average curvature to the epetra vector. If this is a master *
+       * node we also write the curvature to all its slave nodes (, which  *
+       * we previously skipped)                                            *
+       ********************************************************************/
+
+      double avcurv = -sumcurv / sumele;
+
       int nodelid = fluiddis_->NodeRowMap()->LID(gid);
       // insert velocity value into node-based vector
       const int err = rowcurv->ReplaceMyValues(1, &avcurv, &nodelid);
       if (err)
         dserror("could not insert values for curvature");
 
-    } // loop adjacent elements
+      // now the PBC slave nodes
+      if (isPBCMaster)
+      {
+        std::vector<int> slaveids = pbcmap_->find(gid)->second;
+        for (std::vector<int>::const_iterator islave = slaveids.begin(); islave != slaveids.end(); ++islave)
+        {
+          const int serr = rowcurv->ReplaceMyValues(1, &avcurv, &(*islave));
+          if (serr != 0)
+            dserror("PBC slave nodes could not be found on the master proc.");
+        }
+      }
+
+    } // loop nodes on this proc
   } // if surftensapprox is surface_tension_approx_nodal_curvature
 
   // export NodeRowMap to NodeColMap gradphi_
