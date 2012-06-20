@@ -343,7 +343,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   Teuchos::RCP<MAT::PAR::Material> material
   )
 {
-  if (length_ == -1)
+	// Additional query of NUMMAT necessary, when multiple materials of the same type but different size
+	// of the intVector are implemented.
+  if (length_ == -1 or lengthname_ == "NUMMAT")
   {
     if (lengthname_ != "*UNDEFINED*")
       length_ = material->GetInt(lengthname_);
@@ -684,7 +686,7 @@ void DRT::INPUT::MaterialDefinition::Read(
 
         // what was read
         //std::cout << "PE=" << reader.Comm()->MyPID()
-        //          << " MAT=" << matid
+        //         << " MAT=" << matid
         //          << " MaterialType=" << mattype_
         //          << " Name=" << materialname_
         //          << std::endl;
@@ -696,6 +698,7 @@ void DRT::INPUT::MaterialDefinition::Read(
         // the read-in material line
         Teuchos::RCP<MAT::PAR::Material> material = Teuchos::rcp(new MAT::PAR::Material(matid,mattype_,materialname_));
         // fill the latter
+
         for (unsigned j=0; j<inputline_.size(); ++j)
         {
           condline = inputline_[j]->Read(this,condline,material);
