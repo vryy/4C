@@ -493,12 +493,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
                                                                             dim == 3)
     dserror("3D frictional contact only implemented with Semi-smooth Newton");
 
-#ifndef CONTACTCOMPHUEBER
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
-                                                                            dim == 3)
-    dserror("3D frictional contact without flag CONTACTCOMPHUEBER not yet implemented");
-#endif
-
   if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 

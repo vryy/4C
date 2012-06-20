@@ -3457,12 +3457,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
             if(frinode->FriData().Slip() == false)
             {
               // check (euclidean)-frbound <= 0
-#ifdef CONTACTCOMPHUEBER
-            if(euclidean-frcoeff*(nz-cn*wgap) <= 1e-10) {}
-#else
-            if(euclidean-frcoeff*nz <= 0) {}
-#endif
-                // do nothing (stick was correct)
+              if(euclidean-frcoeff*(nz-cn*wgap) <= 1e-10) {}
+              // do nothing (stick was correct)
               else
               {
                  frinode->FriData().Slip() = true;
@@ -3472,11 +3468,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
             else
             {
               // check (euclidean)-frbound > 0
-#ifdef CONTACTCOMPHUEBER
               if(euclidean-frcoeff*(nz-cn*wgap) > -1e-10) {}
-#else
-              if(euclidean-frcoeff*nz > 0) {}
-#endif
               // do nothing (slip was correct)
               else
               {
