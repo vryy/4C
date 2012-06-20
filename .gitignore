@@ -21,9 +21,9 @@ post_drt_gid
 post_drt_monitor
 post_drt_s8convert
 pre_curve
-!pre_curve/
+!src/pre_curve
 pre_exodus
-!pre_exodus/
+!src/pre_exodus
 
 # Eclipse
 .cproject
