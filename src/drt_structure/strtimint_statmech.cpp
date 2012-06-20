@@ -262,8 +262,6 @@ void STR::TimIntStatMech::Integrate()
       {
         //pay attention: for a constant predictor an incremental velocity update is necessary, which has
         //been deleted out of the code in order to simplify it
-        if(!discret_->Comm().MyPID())
-          cout<<"target time = "<<timen_<<", time step = "<<(*dt_)[0]<<endl;
         Predict();
 
         if(ndim_ ==3)
@@ -309,6 +307,9 @@ void STR::TimIntStatMech::UpdateAndOutput()
   // update beam contact
   if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
     UpdateStepBeamContact();
+
+  // hand over time step size and time of the latest converged time step
+  statmechman_->UpdateTimeAndStepSize((*dt_)[0], timen_);
 
   // update time and step
   UpdateStepTime();
@@ -1670,9 +1671,6 @@ void STR::TimIntStatMech::StatMechPrepareStep()
 
     if(!discret_->Comm().MyPID() && printscreen_)
       std::cout<<"\nbegin time step "<<stepn_<<":";
-
-    // hand over time step size and time of the latest converged time step
-    statmechman_->UpdateTimeAndStepSize((*dt_)[0], (*time_)[0]);
   }
 
   return;
