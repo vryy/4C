@@ -103,11 +103,9 @@ DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           1
-E 1 - none 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            1
-E 1 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+DVOL                            0
 ----------------------------------------DESIGN XFEM POINT NEUMANN CONDITIONS
 DPOINT                          0
 -----------------------------------------DESIGN XFEM LINE NEUMANN CONDITIONS
@@ -118,17 +116,17 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
-E 2 - 3 1 1 1 1.0 0.0 0.0 none none none 0 0 0
-E 1 - 3 1 1 1 1.0 0.0 0.0 none none none 0 0 0
+E 2 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
-E 2 - 3 1 1 1 1.0 0.0 0.0 none none none 0 0 0 
-E 1 - 3 1 1 1 1.0 0.0 0.0 none none none 0 0 0 
-E 3 - 3 1 1 1 1.0 0.0 0.0 none none none 0 0 0 
+E 2 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 3 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
-E 2 - 3 1 1 1 1.0 0.0 0.0 none none none 0 0 0 
-E 3 - 3 1 1 1 1.0 0.0 0.0 none none none 0 0 0 
+E 2 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 3 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 3 POSITION pressure NAME pressure VALUE 1315.789473684210 TOLERANCE 1.0e-12
 FLUID DIS 1 NODE 41 POSITION pressure NAME pressure VALUE 1052.631578947368 TOLERANCE 1.0e-12
