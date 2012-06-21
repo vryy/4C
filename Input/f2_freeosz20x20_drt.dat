@@ -92,11 +92,9 @@ RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Freesurface_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            ALE_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8

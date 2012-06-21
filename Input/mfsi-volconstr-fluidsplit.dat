@@ -24,7 +24,6 @@ LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 1
 NAME                            ALE_Solver
 SOLVER                          Aztec_MSR
-PARTITION                       Cut_Elements
 -------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
@@ -71,11 +70,9 @@ VSTAB                           no_vstab
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Pressure_Solver
 SOLVER                          Aztec_MSR
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR
-PARTITION                       Cut_Elements
 -----------------------------------------------------------------FSI DYNAMIC
 BASETOL                         1e-8
 CONVTOL                         1e-8
@@ -114,7 +111,6 @@ SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 4
 NAME                            Struct_Solver
 SOLVER                          Aztec_MSR
-PARTITION                       Cut_Elements
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   4
 ADAPTCONV                       yes

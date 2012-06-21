@@ -191,7 +191,6 @@ ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1 1
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Pressure_Solver
@@ -227,7 +226,6 @@ ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1 1
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_modpowerlaw MCONS 0.42 DELTA 0.001 AEXP 0.39 DENSITY 1.0

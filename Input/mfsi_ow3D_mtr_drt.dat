@@ -233,15 +233,12 @@ STEPSIZEMIN                     0
 ----------------------------------------------------------------XFEM GENERAL
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 4 DENS 500

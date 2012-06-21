@@ -129,7 +129,6 @@ ML_SMOTIMES 2 0 1 // no. smoothing steps or polynomial order on each level (at l
 ML_DAMPFINE                     0.45                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Meshtying_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -150,7 +149,6 @@ AZGRAPH                         1                               // unused
 AZPOLY                          1                               // polynomial order for Neumann
 AZSCAL                          none                            // none sym infnorm scaling of the system
 DWINDTAU                        2.5                             // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Pressure_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -185,7 +183,6 @@ ML_SMOTIMES 2 0 1 // no. smoothing steps or polynomial order on each level (at l
 ML_DAMPFINE                     0.45                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 ----------------------------------------------------------------------CURVE1

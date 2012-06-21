@@ -144,7 +144,6 @@ ML_SMOTIMES                     3 12 1                          // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -179,7 +178,6 @@ ML_SMOTIMES                     3 12 1                          // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -214,7 +212,6 @@ ML_SMOTIMES                     1 4 1                           // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          22

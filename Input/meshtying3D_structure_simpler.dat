@@ -102,7 +102,6 @@ ML_SMOTIMES 0 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Simpler_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -136,7 +135,6 @@ ML_SMOTIMES 0 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Meshtying_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -156,7 +154,6 @@ AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
 IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                            // none sym infnorm scaling of the system
-PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 7.8e-6
 MAT 2   ELAST_CoupNeoHooke YOUNG 10 NUE 0.3

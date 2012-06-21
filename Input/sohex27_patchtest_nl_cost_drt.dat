@@ -62,7 +62,6 @@ MAXITER                         50
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         16
 NDLINE                          32

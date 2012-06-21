@@ -164,7 +164,6 @@ ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 ML_DAMPFINE                     0.67                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -199,7 +198,6 @@ ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 ML_DAMPFINE                     0.67                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Sca_Tra_Electrical_Potential
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -234,7 +232,6 @@ ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 ML_DAMPFINE                     0.67                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.001 VALENCE 1.0

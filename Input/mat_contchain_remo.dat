@@ -93,7 +93,6 @@ ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1 1
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_CONTCHAINNETW LAMBDA 27.293 MUE 3.103 DENS 1.0E-6 NCHAIN 2.0E21 ABSTEMP 310 CONTL_L 1.594 PERSL_A 1.365 R0 1.0 RELAX 0.025 REMBEGT 1.0 INITRAN 0 UPDRATE 3 DIFFTOL 1.0E-1

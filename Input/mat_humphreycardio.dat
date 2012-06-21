@@ -128,7 +128,6 @@ STEPSIZEMIN                     0
 ----------------------------------------------------------------XFEM GENERAL
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_HUMPHREYCARDIO KAPPA 1000. MUE 70.0 DENS 1.0 K1C 28.0 K2C 13.2 K1M 16.0 K2M 7.0 PHIE 0.5 PHIC 0.25 PHIM 0.25 INIT 1

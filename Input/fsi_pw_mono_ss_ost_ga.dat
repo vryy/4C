@@ -131,7 +131,6 @@ ML_SMOTIMES                     3 3 1                           // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR
@@ -165,7 +164,6 @@ ML_SMOTIMES                     3 3 1                           // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR
@@ -199,7 +197,6 @@ ML_SMOTIMES                     1 1 1                           // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          22

@@ -79,7 +79,6 @@ AZSUB                           50
 AZOMEGA                         1.0
 AZGRAPH                         1
 AZPOLY                          5
-PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         125
 NDLINE                          540

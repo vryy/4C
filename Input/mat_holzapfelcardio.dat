@@ -95,7 +95,6 @@ UZAWAPARAM                      1
 UZAWATOL                        1e-08
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_HOLZAPFELCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1 1.0 K2 1.0 GAMMA 35.0 MINSTRETCH 1.0 INIT 1

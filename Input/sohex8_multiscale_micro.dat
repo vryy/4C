@@ -52,7 +52,6 @@ MAXITER                         50
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 9
 NAME                            Micro_Struct_Solver
 SOLVER                          Belos //Aztec_MSR // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -86,7 +85,6 @@ ML_SMOTIMES                     2 3 1                           // no. smoothing
 ML_DAMPFINE                     0.89                            // damping fine grid 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid 
-PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12

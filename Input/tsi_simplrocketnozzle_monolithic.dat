@@ -219,7 +219,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
-PARTITION                       Cut_Elements
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR                       // UMFPACK,undefined
 STRATIMIKOS_XMLFILE
@@ -266,7 +265,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
-PARTITION                       Cut_Elements
 SIMPLE_DAMPING                  1
 SOLVER Aztec_MSR //UMFPACK
 STRATIMIKOS_XMLFILE
@@ -314,7 +312,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
-PARTITION                       Cut_Elements
 SIMPLE_DAMPING                  1
 SOLVER Aztec_MSR //UMFPACK,undefined
 -------------------------------------------------------------------MATERIALS

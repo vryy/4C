@@ -23,7 +23,6 @@ TIMESTEP                        0.1
 LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 -------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
@@ -70,11 +69,9 @@ VSTAB                           no_vstab
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Pressure_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 -----------------------------------------------------------------FSI DYNAMIC
 BASETOL                         1e-8
 CONVTOL                         1e-8
@@ -113,7 +110,6 @@ SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 4
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1

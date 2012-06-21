@@ -60,7 +60,6 @@ DIVERCONT                       Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1

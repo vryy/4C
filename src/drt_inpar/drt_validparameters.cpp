@@ -4895,11 +4895,6 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   // damping parameter for SIMPLE
   DoubleParameter("SIMPLE_DAMPING",1.,"damping parameter for SIMPLE preconditioner",&list);
 
-  // unused
-  setStringToIntegralParameter<int>("PARTITION","Cut_Elements","unused",
-                              tuple<std::string>("Cut_Elements"),
-                              tuple<int>(0),
-                              &list);
 }
 
 

@@ -119,7 +119,6 @@ PARTITION                       Cut_Elements                    // The solver to
 --------------------------------------------------------------------SOLVER 2
 NAME                            Ale_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION

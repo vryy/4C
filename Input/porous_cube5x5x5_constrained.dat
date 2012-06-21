@@ -116,7 +116,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 --------------------------------------------------------------------------IO
 ALE_DISP                        Yes
@@ -194,7 +193,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        1
@@ -243,7 +241,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No

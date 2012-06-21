@@ -173,7 +173,6 @@ ML_SMOTIMES                     0 0 0                           // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -208,7 +207,6 @@ ML_SMOTIMES                     12 12 0                         // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -243,7 +241,6 @@ ML_SMOTIMES                     0 0 0                           // no. smoothing
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 30.25 DENSITY 1.1E-3
 MAT 2 MAT_fluid DYNVISCOSITY 200.2 DENSITY 1.1E-3

@@ -72,7 +72,6 @@ THETA                           0.7
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.02
 MAT 2   ELAST_CoupNeoHooke YOUNG 3.0E2 NUE 0.49

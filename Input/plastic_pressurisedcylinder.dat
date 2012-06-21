@@ -177,7 +177,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
-PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 //MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 2.1e8 NUE 0.3 DENS 0.0 THEXPANS 0.0 INITTEMP 273.15 YIELD 2.4e5 KINHARD 0.0 TOL 1.0e-6

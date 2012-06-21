@@ -141,7 +141,6 @@ AMGBS_BS_PCMEDIUM symmetric Gauss-Seidel
 AMGBS_BS_PCCOARSE               ILU
 AMGBS_BS_PCDAMPING 0.9 0.9 1.0
 AMGBS_BS_PCSWEEPS 10 5 1
-PARTITION                       Cut_Elements
 SOLVER                          Aztec_MSR
 
 -------------------------------------------------------------------MATERIALS

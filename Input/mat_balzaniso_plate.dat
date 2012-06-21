@@ -65,7 +65,6 @@ MAXITER                         50
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ANISOTROPIC_BALZANI C1 100.0 EPS1 10.0 EPS2 5.0 ALPHA1 9800.0 ALPHA2 3.0 DENS 1.0E-3 ALOC 0 A1X 1.0 A1Y 0.0 A1Z 0.0 ALPHA1_2 14000.0 ALPHA2_2 2.3 A2X 0.0 A2Y 1.0 A2Z 0.0
 ----------------------------------------------------------------------CURVE1

@@ -96,15 +96,12 @@ CONVTOL                         1.0E-10
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
-PARTITION                       Cut_Elements
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         14
 NDLINE                          14
