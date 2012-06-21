@@ -465,7 +465,8 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt, double& timeco
   // note: default value sufficiently large to crash the simulation in the event of maldefinition
   double dtnew = statmechparams_.get<double>("DELTA_T_NEW",1.0);
   double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
-  if(timeconverged>=starttime && dtnew>0.0)
+  double eps = 1.0e-12;
+  if((timeconverged>=starttime || fabs(timeconverged-starttime)<eps) && dtnew>0.0)
     dt = dtnew;
   return;
 }
@@ -2164,7 +2165,7 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
 /*----------------------------------------------------------------------*
  | (public) writing restart information for manager objects   cyron 12/08|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output)
+void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output, double& dt)
 {
   output->WriteInt("istart", istart_);
   output->WriteInt("unconvergedsteps", unconvergedsteps_);
@@ -2179,6 +2180,7 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
   output->WriteDouble("sumrotmiddle", sumrotmiddle_);
   output->WriteDouble("sumsquareincmid", sumsquareincmid_);
   output->WriteDouble("sumsquareincrot", sumsquareincrot_);
+  output->WriteDouble("timestepsize", dt);
   /*note: crosslinkermap_, transfermap_, ddcorrrowmap_, ddcorrcolmap_,
    * filamentnumber_, forcesensor_, not considered, because generated in constructor*/
 
@@ -2227,7 +2229,7 @@ void STATMECH::StatMechManager::WriteRestartRedundantMultivector(Teuchos::RCP<IO
 /*----------------------------------------------------------------------*
  |read restart information for statistical mechanics (public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
+void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader, double& dt)
 {
 
   // read restart information for statistical mechanics
@@ -2244,6 +2246,7 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
   sumrotmiddle_ = reader.ReadDouble("sumrotmiddle");
   sumsquareincmid_ = reader.ReadDouble("sumsquareincmid");
   sumsquareincrot_ = reader.ReadDouble("sumsquareincrot");
+  dt = reader.ReadDouble("timestepsize");
   /*note: crosslinkermap_, transfermap_, ddcorrrowmap_, ddcorrcolmap_,
    * filamentnumber_, forcesensor_, not considered, because generated in constructor*/
 
@@ -3768,6 +3771,8 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
                   tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
                                 DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
                 (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
+//                cout<<"t="<<time<<", dt="<<dt<<", (*deltadbc)["<<doflids.at(numdof*(n+1)+oscdir)<<"] = "<<amp*tcincrement<<endl;
+//                cout<<"      amp="<<amp<<", f(t) = "<<DRT::Problem::Instance()->Curve(curvenumber).f(time)<<", f(t-dt) = "<<DRT::Problem::Instance()->Curve(curvenumber).f(time-dt)<<endl;
               }// end of case 1
               // case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
               if(cut(2,n)==2.0)
@@ -3823,12 +3828,13 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
       DRT::Node* oscnode = discret_->lRowNode(nodelid);
       std::vector<int> dofnode = discret_->Dof(oscnode);
       // oscillating node
-      double dt = params.get<double>("delta time" ,-1.0);
       double tcincrement = 0.0;
       if(curvenumber>-1)
         tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
                       DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
       (*deltadbc)[discret_->DofRowMap()->LID(dofnode[oscdir])] = amp*tcincrement;
+//      cout<<"t="<<time<<", dt="<<dt<<", (*deltadbc)["<<dofnode[oscdir]<<"] = "<<amp*tcincrement<<endl;
+//      cout<<"      amp="<<amp<<", f("<<time<<") = "<<DRT::Problem::Instance()->Curve(curvenumber).f(time)<<", f("<<time-dt<<") = "<<DRT::Problem::Instance()->Curve(curvenumber).f(time-dt)<<endl;
     }
     // dofs of fixednodes_ remain untouched since fixednodes_ dofs are 0.0
   }

@@ -99,7 +99,7 @@ public:
               bool                                 printscreen=true);
 
   //! \brief saving all necessary class variables for restart
-  void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output);
+  void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output, double& dt);
 
   //! \brief write restart information for fully overlapping Epetra_Multivector with name "name"
   void WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output,const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector);
@@ -108,7 +108,7 @@ public:
   void ReadRestartRedundantMultivector(IO::DiscretizationReader& reader,const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector);
 
   //! \brief reading all necessary information after a restart
-  void ReadRestart(IO::DiscretizationReader& reader);
+  void ReadRestart(IO::DiscretizationReader& reader, double& dt);
 
   //! \brief saves all relevant variables *_ as *conv_ to allow for returning to the beginning of a time step
   void WriteConv();

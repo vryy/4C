@@ -944,7 +944,7 @@ void STR::TimInt::ReadRestartStatMech()
   if (HaveStatMech())
   {
     IO::DiscretizationReader reader(discret_,step_);
-    statmechman_->ReadRestart(reader);
+    statmechman_->ReadRestart(reader, (*dt_)[0]);
   }
 
   return;
@@ -1115,7 +1115,7 @@ void STR::TimInt::OutputRestart
   // statistical mechanics
   if (HaveStatMech())
   {
-    statmechman_->WriteRestart(output_);
+    statmechman_->WriteRestart(output_, (*dt_)[0]);
   }
 
   // info dedicated to user's eyes staring at standard out

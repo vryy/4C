@@ -262,6 +262,8 @@ void STR::TimIntStatMech::Integrate()
       {
         //pay attention: for a constant predictor an incremental velocity update is necessary, which has
         //been deleted out of the code in order to simplify it
+//        if(!discret_->Comm().MyPID())
+//          cout<<"target time = "<<timen_<<", time step = "<<(*dt_)[0]<<endl;
         Predict();
 
         if(ndim_ ==3)
@@ -308,12 +310,18 @@ void STR::TimIntStatMech::UpdateAndOutput()
   if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
     UpdateStepBeamContact();
 
+//  if(!discret_->Comm().MyPID())
+//    cout<<"\n\npre UpdateTimeAndStepSize: time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<endl;
   // hand over time step size and time of the latest converged time step
   statmechman_->UpdateTimeAndStepSize((*dt_)[0], timen_);
 
   // update time and step
+//  if(!discret_->Comm().MyPID())
+//    cout<<"pre UpdateStepTime           : time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<endl;
   UpdateStepTime();
-
+  // update time and step
+//  if(!discret_->Comm().MyPID())
+//    cout<<"pre UpdateStepElement        : time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<"\n\n"<<endl;
   // update everything on the element level
   UpdateStepElement();
 
@@ -1670,7 +1678,9 @@ void STR::TimIntStatMech::StatMechPrepareStep()
     statmechman_->SeedRandomGenerators(step_);
 
     if(!discret_->Comm().MyPID() && printscreen_)
+    {
       std::cout<<"\nbegin time step "<<stepn_<<":";
+    }
   }
 
   return;
