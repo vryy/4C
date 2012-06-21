@@ -8,10 +8,10 @@ BUILD_TYPE="RELEASE"
 
 ##############################################################
 # detect operating system
-if [ "`uname -r | grep 2.6.29.6`" ]; then
-	echo "Detected Fedora 8"
-	OS_VERSION="FC8"
-	CMAKE_COMMAND=/lnm/programs/cmake-2.8.2/bin/cmake
+if [[ "`uname -r | grep 2.6.29.6`" ]] || [[ "`uname -r | grep fc8`" ]]; then
+        echo "Detected Fedora 8"
+        OS_VERSION="FC8"
+        CMAKE_COMMAND=/lnm/programs/cmake-2.8.2/bin/cmake
 elif [ "`uname -r | grep fc12`" ]; then
 	echo "Detected Fedora 12"
 	OS_VERSION="FC12"
@@ -43,7 +43,7 @@ fi
 if [ "$OS_VERSION" == "FC16" ]; then
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/lib"
-	Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc16_openmpi_dbg/"
+	Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc16_openmpi_release/"
 else
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/lib"
