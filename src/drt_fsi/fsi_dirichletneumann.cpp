@@ -22,7 +22,7 @@ FSI::DirichletNeumann::DirichletNeumann(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
-  if (displacementcoupling_)
+  if (displacementcoupling_) // coupling variable: interface displacements
   {
     const Teuchos::RCP<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
     if (MyDebugWriter()!=Teuchos::null)
@@ -38,7 +38,7 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, cons
 
     F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
   }
-  else
+  else // coupling variable: interface forces
   {
     const Teuchos::RCP<Epetra_Vector> iforcen = rcp(new Epetra_Vector(x));
     if (MyDebugWriter()!=Teuchos::null)

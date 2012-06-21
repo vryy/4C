@@ -398,12 +398,23 @@ namespace LINALG
 
     MapExtractor();
 
-    MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap, Teuchos::RCP<const Epetra_Map> othermap);
+    MapExtractor
+    (
+      const Epetra_Map& fullmap,
+      Teuchos::RCP<const Epetra_Map> condmap,
+      Teuchos::RCP<const Epetra_Map> othermap
+    );
 
-    /// constructor builds non-overlapping othermap which is complementary to condmap with respect to fullmap
+    /// constructor builds non-overlapping othermap/condmap which is complementary to condmap/othermap
+    /// with respect to fullmap depending on boolean 'iscondmap'
     /// \author bborn
     /// \date 10/08
-    MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap);
+    MapExtractor
+    (
+      const Epetra_Map& fullmap,                  //< full map
+      Teuchos::RCP<const Epetra_Map> partialmap,  //< partial map, ie condition or other map
+      bool iscondmap = true                       //< true, if partialmap is condition map
+    );
 
     /** \name Setup */
     //@{

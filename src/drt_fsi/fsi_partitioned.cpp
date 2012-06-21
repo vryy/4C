@@ -776,8 +776,9 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(Teuchos::RCP<Epetra_Vecto
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Calculate interface velocity based on given interface displacement   |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
 FSI::Partitioned::InterfaceVelocity(Teuchos::RCP<const Epetra_Vector> idispnp) const
 {

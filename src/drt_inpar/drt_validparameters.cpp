@@ -4342,6 +4342,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FSI::ALEprojection_rot_zsphere),
                                  &fsidyn);
 
+  setStringToIntegralParameter<int> ("DIVPROJECTION", "no", "Project velocity into divergence-free subspace",
+                                     yesnotuple,yesnovalue,&fsidyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& constrfsi = fsidyn.sublist("CONSTRAINT",false,"");
 

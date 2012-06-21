@@ -89,7 +89,7 @@ namespace ADAPTER {
 
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc){dserror("not implemented!");};
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc){dserror("not implemented!");}
 
     virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel);
 
@@ -98,6 +98,9 @@ namespace ADAPTER {
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
 
     virtual void UseBlockMatrix(bool splitmatrix);
+
+    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+      { dserror("Not implemented for XFEM stuff."); }
 
   protected:
     /// type cast pointer to XFluidFluid

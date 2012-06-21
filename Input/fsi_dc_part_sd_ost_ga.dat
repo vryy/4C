@@ -4,8 +4,6 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15262
 //
-// necessary defines: D_FLUID2 CCADISCRET BINIO D_ALE
-//
 -----------------------------------------------------------------------TITLE
 Partitioned FSI: 2D Driven cavity with flexible bottom
 FSI:        iter_stagg_steep_desc
@@ -21,7 +19,6 @@ NUMDF                           3
 PROBLEMTYP                      Fluid_Structure_Interaction
 NUMFIELD                        3
 RESTART                         0
-//!RESTART                      1
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
@@ -96,6 +93,7 @@ TOLENCHECK                      1.0
 RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-7
+DIVPROJECTION                   yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          UMFPACK
@@ -104,6 +102,9 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
+SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 4
+NAME                            Projection_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         14

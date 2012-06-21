@@ -98,6 +98,8 @@ DRT::ELEMENTS::Fluid::ActionType DRT::ELEMENTS::Fluid::convertStringToActionType
     act = Fluid::calc_node_normal;
   else if (action == "integrate_shape")
     act = Fluid::integrate_shape;
+  else if (action == "calc_divop")
+    act = Fluid::calc_divop;
   else if (action == "calc_fluid_elementvolume")
     act = Fluid::calc_fluid_elementvolume;
   else if (action == "set_general_fluid_parameter")
@@ -820,6 +822,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
       // integrate shape function for this element
       // (results assembled into element vector)
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->IntegrateShapeFunction(this, discretization, lm, elevec1);
+    }
+    case calc_divop:
+    {
+      // calculate the integrated divergence oprator
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcDivOp(this, discretization, lm, elevec1);
     }
     case set_general_fluid_parameter:
     case set_time_parameter:

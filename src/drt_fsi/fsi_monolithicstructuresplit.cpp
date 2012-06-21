@@ -25,6 +25,30 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
                                                         const Teuchos::ParameterList& timeparams)
   : BlockMonolithic(comm,timeparams)
 {
+  // Throw an error if there are DBCs on structural interface DOFs.
+  std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+  intersectionmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
+  intersectionmaps.push_back(StructureField()->Interface()->FSICondMap());
+  Teuchos::RefCountPtr<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+
+  if (intersectionmap->NumGlobalElements() != 0)
+  {
+    // remove interface DOFs from structural DBC map
+    StructureField()->RemoveDirichCond(intersectionmap);
+
+    // give a warning to the user that Dirichlet boundary conditions might not be correct
+    if (comm.MyPID() == 0)
+    {
+      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
+      cout << "  |                                        PLEASE NOTE:                                         |" << endl;
+      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
+      cout << "  | You run a monolithic structure split scheme. Hence, there are no structural interface DOFs. |" << endl;
+      cout << "  | Fluid Dirichlet boundary conditions on the interface will be neglected.                     |" << endl;
+      cout << "  | Check wheter you have prescribed appropriate DBCs on structural interface DOFs.             |" << endl;
+      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
+    }
+  }
+
   sggtransform_  = Teuchos::rcp(new UTILS::MatrixRowColTransform);
   sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
   sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
@@ -314,6 +338,10 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     veln->Scale((1.0-ftiparam)/((1.0-stiparam)*scale));
 
+    // blank fluid DBCs
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(veln->Map(),true));
+    LINALG::ApplyDirichlettoSystem(veln,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
+
     Extractor().AddVector(*veln,1,f); // add fluid contribution to 'f'
 
     // shape derivatives
@@ -332,6 +360,10 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
       FluidField().Interface()->InsertFSICondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
+
+      // blank fluid DBCs
+      Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(veln->Map(),true));
+      LINALG::ApplyDirichlettoSystem(veln,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
 
       Extractor().AddVector(*veln,1,f);
     }
@@ -459,12 +491,17 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    *f,
                    true,
                    true);
+
+  RCP<LINALG::SparseMatrix> lsgi = rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
   (*sgitransform_)(s->Matrix(1,0),
                    (1.0-ftiparam)/((1.0-stiparam)*scale),
                    ADAPTER::CouplingMasterConverter(coupsf),
-                   mat.Matrix(1,0));
+                   *lsgi);
 
-  mat.Assign(1,1,View,*f);
+  lsgi->Complete(s->Matrix(1,0).DomainMap(),f->RangeMap());
+  lsgi->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
+
+  mat.Assign(1,0,View,*lsgi);
 
   (*aigtransform_)(a->FullRowMap(),
                    a->FullColMap(),
@@ -485,17 +522,18 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
     LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
-    mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
-    mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
+    f->Add(fmgg,false,1./timescale,1.0);
+    f->Add(fmig,false,1./timescale,1.0);
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
+    RCP<LINALG::SparseMatrix> lfmgi = rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
     (*fmgitransform_)(mmm->FullRowMap(),
                       mmm->FullColMap(),
                       fmgi,
                       1.,
                       ADAPTER::CouplingMasterConverter(coupfa),
-                      mat.Matrix(1,2),
+                      *lfmgi,
                       false,
                       false);
 
@@ -504,9 +542,14 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                       fmii,
                       1.,
                       ADAPTER::CouplingMasterConverter(coupfa),
-                      mat.Matrix(1,2),
+                      *lfmgi,
                       false,
                       true);
+
+    lfmgi->Complete(aii.DomainMap(),f->RangeMap());
+    lfmgi->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
+
+    mat.Assign(1,2,View,*lfmgi);
   }
 
   // if there is a free surface
@@ -548,6 +591,13 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                          false);
     }
   }
+
+
+
+  f->Complete();
+  f->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),true);
+
+  mat.Assign(1,1,View,*f);
 
   // done. make sure all blocks are filled.
   mat.Complete();
@@ -746,6 +796,9 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
       modfv->Update(-ftiparam+stiparam*(1.0-ftiparam)/(1.0-stiparam), *StructToFluid(lambda_), 1.0);
+
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modfv->Map(),true));
+    LINALG::ApplyDirichlettoSystem(modfv,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
 
     Extractor().InsertVector(*modfv,1,f);
   }

@@ -397,6 +397,14 @@ public:
   /// interface are prescribed by the other fields.
   void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
+  /// Shorten the Dirichlet DOF set
+  ///
+  /// The method shortens the DOF set (map) which contains the DOFs
+  /// subjected to Dirichlet boundary conditions. For instance, the method is
+  /// called by the monolithic FSI where fluid boundary conditions on the
+  /// FSI interface have to be removed if it is a fluid split.
+  virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
   /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
   ///
   /// This method provides backward compatability only. Formerly, the Dirichlet conditions
@@ -563,6 +571,28 @@ public:
 
   Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
 
+  /*! \brief Calculate a integrated divergence operator in vector form
+   *
+   *   The vector valued operator \f$B\f$ is constructed such that
+   *   \f$\int_\Omega div (u) \,\mathrm{d}\Omega = B^T u = 0\f$
+   */
+  Teuchos::RCP<Epetra_Vector> CalcDivOp();
+
+  /*! \brief Apply projection operator based on vector valued projectors
+   *
+   *  Apply a projection to the vector \f$v\f$ based on two projection vectors \f$a\f$ and \f$b\f$
+   *  \f[ v = a ( a^T b )^{-1} b^T v \f]
+   *
+   *  \param a  - (in) first projection vector
+   *  \param b  - (in) second projection vector
+   *  \param v  - (in) vector that is subjected to the projection
+   *
+   *  \author mayr.mt
+   *  \date 04/12
+   */
+  void ApplyVecProjOp(Teuchos::RCP<Epetra_Vector> op1,
+                      Teuchos::RCP<Epetra_Vector> op2,
+                      Teuchos::RCP<Epetra_Vector> vec);
 
 protected:
 

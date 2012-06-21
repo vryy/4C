@@ -21,7 +21,6 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 </pre>
 
 *----------------------------------------------------------------------*/
-
 #undef WRITEOUTSTATISTICS
 
 #include "fluidimplicitintegration.H"
@@ -887,7 +886,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
         dta_,
         dtp_,
         velnp_,
-        discret_->Comm());
+        discret_->Comm()
+        );
     }
   }
 
@@ -5856,6 +5856,18 @@ void FLD::FluidImplicitTimeInt::AddDirichCond(const Teuchos::RCP<const Epetra_Ma
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
+  othermaps.push_back(maptoremove);
+  othermaps.push_back(dbcmaps_->OtherMap());
+  Teuchos::RCP<Epetra_Map> othermerged = LINALG::MultiMapExtractor::MergeMaps(othermaps);
+  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 {
   if (dbcmaps_ == Teuchos::null)
@@ -6395,4 +6407,33 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ConvectiveVel()
   }
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ | Calculate an integrated divergence operator                                    (mayr.mt 04/12) |
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
+{
+  // set action in order to calculate the integrated divergence operator
+  ParameterList params;
+  params.set("action","calc_divop");
+
+  // integrated divergence operator B in vector form
+  Teuchos::RCP<Epetra_Vector> divop = rcp(new Epetra_Vector(velnp_->Map(),true));
+
+  // copy row map of mesh displacement to column map (only if ALE is used)
+  discret_->ClearState();
+  if (alefluid_)
+    discret_->SetState("dispnp", dispnp_);
+
+  // construct the operator on element level as a column vector
+  discret_->Evaluate(params, null, null, divop, null, null);
+
+  // clear column maps after the evaluate call
+  discret_->ClearState();
+
+//  // blank DOFs which are on Dirichlet BC, since they may not be modified
+//  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), divop);
+
+  return divop;
+}
 

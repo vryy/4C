@@ -6,6 +6,12 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/solver_cheapsimplepreconditioner.H"
+
+#include "../drt_io/io_control.H"
+
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -23,7 +29,6 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
     bool dirichletcond)
 : FluidWrapper(fluid),
   dis_(dis),
-  solver_(solver),
   params_(params),
   output_(output),
   interface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
@@ -156,7 +161,16 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractFreeSurfaceVeln()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
+  // apply the interface velocities
   interface_->InsertFSICondVector(ivel,fluidimpl_->ViewOfVelnp());
+
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"DIVPROJECTION"))
+  {
+    // project the velocity field into a divergence free subspace
+    // (might enhance the linear solver, but we are still not sure.)
+    ProjVelToDivZero();
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -263,4 +277,144 @@ void ADAPTER::FluidFSI::UseBlockMatrix(bool splitmatrix)
 {
   Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
   fluidimpl_->UseBlockMatrix(condelements,*Interface(),*Interface(),splitmatrix);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::Solver> ADAPTER::FluidFSI::LinearSolver()
+{
+  return fluidimpl_->LinearSolver();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::ProjVelToDivZero()
+{
+  // This projection affects also the inner DOFs. Unfortunately, the matrix does not look nice.
+  // Hence, the inversion of B^T*B is quite costly and we are not sure yet whether it is worth the effort.
+
+  //   get maps with Dirichlet DOFs and fsi interface DOFs
+  std::vector<Teuchos::RCP<const Epetra_Map> > dbcfsimaps;
+  dbcfsimaps.push_back(fluid_->GetDBCMapExtractor()->CondMap());
+  dbcfsimaps.push_back(interface_->FSICondMap());
+
+  // create a map with all DOFs that have either a Dirichlet boundary condition
+  // or are located on the fsi interface
+  Teuchos::RefCountPtr<Epetra_Map> dbcfsimap = LINALG::MultiMapExtractor::MergeMaps(dbcfsimaps);
+
+  // create an element map with offset
+  const int numallele = fluidimpl_->Discretization()->NumGlobalElements();
+  const int mapoffset = dbcfsimap->MaxAllGID()+fluidimpl_->Discretization()->ElementRowMap()->MinAllGID() + 1;
+  Teuchos::RCP<Epetra_Map> elemap = rcp(new Epetra_Map(numallele,mapoffset,fluidimpl_->Discretization()->Comm()));
+
+  // create the combination of dbcfsimap and elemap
+  std::vector<Teuchos::RCP<const Epetra_Map> > domainmaps;
+  domainmaps.push_back(dbcfsimap);
+  domainmaps.push_back(elemap);
+  Teuchos::RefCountPtr<Epetra_Map> domainmap = LINALG::MultiMapExtractor::MergeMaps(domainmaps);
+
+  Teuchos::RCP<LINALG::MapExtractor> domainmapex = rcp(new LINALG::MapExtractor(*domainmap, dbcfsimap));
+
+  const int numofrowentries = 82;
+  Teuchos::RCP<LINALG::SparseMatrix> B = rcp(new LINALG::SparseMatrix(*DofRowMap(),numofrowentries,false));
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  fluid_->Discretization()->ClearState();
+  fluid_->Discretization()->SetState("dispnp",fluid_->Dispnp());
+
+  // loop over all fluid elements
+  for (int lid = 0; lid < fluid_->Discretization()->NumMyColElements(); lid++)
+  {
+    // get pointer to current element
+    DRT::Element * actele = fluid_->Discretization()->lColElement(lid);
+
+    // get element location vector and ownerships
+    vector<int> lm;
+    vector<int> lmowner;
+    vector<int> lmstride;
+    actele->LocationVector(*fluid_->Discretization(),lm,lmowner,lmstride);
+
+
+    // get dimension of element matrices and vectors
+    // Reshape element matrices and vectors and initialize to zero
+    const int eledim = (int)lm.size();
+    elevector1.Size(eledim);
+
+    // set action in order to calculate the integrated divergence operator via an Evaluate()-call
+    ParameterList params;
+    params.set("action","calc_divop");
+
+    // call the element specific evaluate method
+    actele->Evaluate(params,*fluid_->Discretization(),lm,elematrix1,elematrix2,
+            elevector1,elevector2,elevector3);
+
+    // assembly
+    std::vector<int> lmcol(1);
+    lmcol[0] = actele->Id() + dbcfsimap->MaxAllGID() + 1;
+    B->Assemble(actele->Id(),lmstride,elevector1,lm,lmowner,lmcol);
+  } // end of loop over all fluid elements
+
+  fluid_->Discretization()->ClearState();
+
+  // insert '1's for all DBC and interface DOFs
+  for (int i = 0; i < dbcfsimap->NumMyElements(); i++)
+  {
+    int rowid = dbcfsimap->GID(i);
+    int colid = dbcfsimap->GID(i);
+    B->Assemble(1.0,rowid,colid);
+  }
+
+  B->Complete(*domainmap,*DofRowMap());
+
+  // Compute the projection operator
+  Teuchos::RCP<LINALG::SparseMatrix> BTB = LINALG::Multiply(*B,true,*B,false,true);
+
+  Teuchos::RCP<Epetra_Vector> BTvR = rcp(new Epetra_Vector(*domainmap));
+  B->Multiply(true,*fluidimpl_->ViewOfVelnp(),*BTvR);
+  Teuchos::RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(*dbcfsimap, true));
+
+  domainmapex->InsertCondVector(zeros,BTvR);
+
+  Teuchos::RCP<Epetra_Vector> x = rcp(new Epetra_Vector(*domainmap));
+
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const int simplersolvernumber = fdyn.get<int>("SIMPLER_SOLVER");
+  if (simplersolvernumber == (-1))
+    dserror("no simpler solver, that is used to solve this system, defined for fluid pressure problem. \nPlease set SIMPLER_SOLVER in FLUID DYNAMIC to a valid number!");
+
+  Teuchos::RCP<LINALG::Solver> solver =
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(simplersolvernumber),
+                           fluidimpl_->Discretization()->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  if(solver->Params().isSublist("ML Parameters"))
+  {
+    solver->Params().sublist("ML Parameters").set("PDE equations",1);
+    solver->Params().sublist("ML Parameters").set("null space: dimension",1);
+    const int plength = BTB->RowMap().NumMyElements();
+    Teuchos::RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
+    solver->Params().sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
+    solver->Params().sublist("ML Parameters").remove("nullspace",false); // necessary?
+    solver->Params().sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",pnewns);
+  }
+
+  solver->Solve(BTB->EpetraOperator(),x,BTvR,true,true);
+
+  Teuchos::RCP<Epetra_Vector> vmod = rcp(new Epetra_Vector(fluidimpl_->ViewOfVelnp()->Map(),true));
+  B->Multiply(false,*x,*vmod);
+  fluidimpl_->ViewOfVelnp()->Update(-1.0, *vmod, 1.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+  fluidimpl_->RemoveDirichCond(maptoremove);
 }

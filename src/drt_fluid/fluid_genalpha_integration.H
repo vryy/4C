@@ -502,6 +502,17 @@ public:
   void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
   /*!
+  /brief Shorten the Dirichlet DOF set
+
+  The method shortens the DOF set (map) which contains the DOFs
+  subjected to Dirichlet boundary conditions. For instance, the method is
+  called by the monolithic FSI where fluid boundary conditions on the
+  FSI interface have to be removed if it is a fluid split.
+
+  */
+  virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
+  /*!
   \brief Extract the Dirichlet toggle vector based on Dirichlet BC maps
 
   This method provides backward compatability only. Formerly, the Dirichlet conditions

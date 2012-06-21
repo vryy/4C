@@ -352,7 +352,9 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap)
+LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap,
+                                   Teuchos::RCP<const Epetra_Map> partialmap,
+                                   bool iscondmap)
 {
   // initialise other DOFs by inserting all DOFs of full map
   std::set<int> othergids;
@@ -361,10 +363,10 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const
        inserter(othergids,othergids.begin()));
 
   // throw away all DOFs which are in condmap
-  if (condmap->NumMyElements() > 0)
+  if (partialmap->NumMyElements() > 0)
   {
-    const int* condgids = condmap->MyGlobalElements();
-    for (int lid=0; lid<condmap->NumMyElements(); ++lid)
+    const int* condgids = partialmap->MyGlobalElements();
+    for (int lid=0; lid<partialmap->NumMyElements(); ++lid)
       othergids.erase(condgids[lid]);
   }
 
@@ -372,8 +374,11 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const
   Teuchos::RCP<Epetra_Map> othermap
     = LINALG::CreateMap(othergids, fullmap.Comm());
 
-  // create the extractor
-  Setup(fullmap, condmap, othermap);
+  // create the extractor based on choice 'iscondmap'
+  if (iscondmap)
+    Setup(fullmap, partialmap, othermap);
+  else
+    Setup(fullmap, othermap, partialmap);
 }
 
 

@@ -23,6 +23,30 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
                                                 const Teuchos::ParameterList& timeparams)
   : BlockMonolithic(comm,timeparams)
 {
+  // Remove all interface DOFs holding a DBC from the fluid DBC map and give a 'warning'
+  std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+  intersectionmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
+  intersectionmaps.push_back(FluidField().Interface()->FSICondMap());
+  Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+
+  if (intersectionmap->NumGlobalElements() != 0)
+  {
+    // remove interface DOFs from fluid DBC map
+    FluidField().RemoveDirichCond(intersectionmap);
+
+    // give a warning to the user that Dirichlet boundary conditions might not be correct
+    if (comm.MyPID() == 0)
+    {
+      cout << "    +------------------------------------------------------------------------------------+" << endl;
+      cout << "    |                                    PLEASE NOTE:                                    |" << endl;
+      cout << "    +------------------------------------------------------------------------------------+" << endl;
+      cout << "    | You run a monolithic fluid split scheme. Hence, there are no fluid interface DOFs. |" << endl;
+      cout << "    | Fluid Dirichlet boundary conditions on the interface will be neglected.            |" << endl;
+      cout << "    | Check wheter you have prescribed appropriate DBCs on structural interface DOFs.    |" << endl;
+      cout << "    +------------------------------------------------------------------------------------+" << endl;
+    }
+  }
+
   fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
   fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
   figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
@@ -815,19 +839,18 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
     Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
 
+    // add contribution of Lagrange multiplier from previous time step
+    if (lambda_ != Teuchos::null)
+      modsv->Update(stiparam-(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStruct(lambda_), 1.0);
+
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
     LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
-
 
     if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
     {
       Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
       stcmat->Multiply(true,*modsv,*modsv);
     }
-
-    // add contribution of Lagrange multiplier from previous time step
-    if (lambda_ != Teuchos::null)
-      modsv->Update(stiparam-(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStruct(lambda_), 1.0);
 
     Extractor().InsertVector(*modsv,0,f); // add structural contributions to 'f'
   }

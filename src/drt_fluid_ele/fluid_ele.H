@@ -472,6 +472,7 @@ private:
     calc_smagorinsky_const,
     get_gas_constant,
     integrate_shape,
+    calc_divop,
     calc_node_normal,
     calc_fluid_elementvolume,
     set_general_fluid_parameter,

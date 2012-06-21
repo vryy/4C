@@ -97,12 +97,53 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
 }
 
 
+/*---------------------------------------------------------------------*
+ | Action type: calc_divop                                             |
+ | calculate integrated divergence operator              mayr.mt 04/12 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
+    DRT::ELEMENTS::Fluid*     ele,
+    DRT::Discretization&      discretization,
+    vector<int>&              lm            ,
+    Epetra_SerialDenseVector& elevec1       )
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  if (ele->IsAle()) // Do ALE specific updates if necessary
+  {
+    LINALG::Matrix<nsd_,nen_> edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+    // get new node positions of ALE mesh
+     xyze_ += edispnp;
+  }
+
+  // integration loop
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+
+    for (int nodes = 0; nodes < nen_; nodes++) // loop over nodes
+    {
+      for (int dim = 0; dim < nsd_; dim++) // loop over spatial dimensions
+      {
+        elevec1((nsd_+1) * nodes + dim) +=  derxy_(dim,nodes) * fac_;
+      }
+    }
+  } // end of integration loop
+
+  return 0;
+}
+
 /*----------------------------------------------------------------------*
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
-    DRT::ELEMENTS::Fluid*          ele,
+    DRT::ELEMENTS::Fluid*           ele,
     ParameterList&                  params,
     Teuchos::RCP<MAT::Material>&    mat,
     DRT::Discretization&            discretization,
@@ -123,7 +164,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
-    DRT::ELEMENTS::Fluid*          ele,
+    DRT::ELEMENTS::Fluid*           ele,
     ParameterList&                  params,
     Teuchos::RCP<MAT::Material>&    mat,
     DRT::Discretization&            discretization,
@@ -407,7 +448,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ExtractValuesFromGlobalVector( const 
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
-  Fluid*                    ele,
+  Fluid*                     ele,
   ParameterList&             params,
   DRT::Discretization&       discretization,
   vector<int>&               lm,

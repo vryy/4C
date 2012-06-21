@@ -81,6 +81,8 @@ namespace ADAPTER
     { return fluid_->DofSet(); }
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return fluid_->GetDBCMapExtractor(); }
+    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+    { return fluid_->RemoveDirichCond(maptoremove); }
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialFlowField(initfield, startfuncno); }
     /// clear time integration data for XFEM problems

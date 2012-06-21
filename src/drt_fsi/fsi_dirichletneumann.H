@@ -57,7 +57,7 @@ namespace FSI {
   field, solves the field and returns the interface displacements.
 
   This coupling process build on the available field solvers. However,
-  the independant parallel distribution of the fields complicates the
+  the independent parallel distribution of the fields complicates the
   exchange of coupling information. Therefore three instances of the
   Coupling class are used that couple those fields. On top of these
   there are helper methods StructToAle(), StructToFluid(),
@@ -68,7 +68,7 @@ namespace FSI {
   residual via computeF(). So the field solvers themselves must be
   clean, subsequent calls with the same interface input must yield the
   same results. The time stepping therefore needs the further methods
-  PrepareTimeStep() to start a new time step as wellas Update() and
+  PrepareTimeStep() to start a new time step as well as Update() and
   Output() to finish the current step, save the result and write the
   files.
 

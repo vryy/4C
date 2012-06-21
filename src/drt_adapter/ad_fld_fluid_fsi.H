@@ -72,7 +72,7 @@ namespace ADAPTER {
     virtual void Update();
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver();
 
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
 
@@ -111,13 +111,30 @@ namespace ADAPTER {
 
     virtual void UseBlockMatrix(bool splitmatrix);
 
+    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
+    /* \brief Project the velocity field into a divergence free subspace
+     *
+     * Project the velocity field into a divergence free subspace
+     * while interface and Dirichlet DOFS are not affected.
+     * The projection is done by the following operation:
+     *
+     * \$f v_{divfree} = \left(I - B(B^TB)^{-1}B^T)\right) v + B(B^TB)^{-1} R\$f
+     *
+     * The vector \$f R \$f ensures that interface and Dirichlet DOFs are not modified.
+     *
+     * \autor: mayr.mt
+     * \date:  06/2012
+     *
+     */
+    void ProjVelToDivZero();
+
   protected:
     /// A castet pointer to the fluid itself
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      dis_;
-    Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}

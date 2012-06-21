@@ -121,6 +121,17 @@ namespace ELEMENTS
                                        std::vector<int>&         lm,
                                        Epetra_SerialDenseVector& elevec1) = 0;
 
+
+    /*! \brief Calculate a integrated divergence operator in vector form
+     *
+     *   The vector valued operator \f$B\f$ is constructed such that
+     *   \f$\int_\Omega div (u) \,\mathrm{d}\Omega = B^T u = 0\f$
+     */
+    virtual int CalcDivOp(DRT::ELEMENTS::Fluid*     ele,
+                          DRT::Discretization&      discretization,
+                          std::vector<int>&         lm,
+                          Epetra_SerialDenseVector& elevec1) = 0;
+
     /// error computation
     virtual int ComputeError(DRT::ELEMENTS::Fluid*        ele,
                              Teuchos::ParameterList&       params,
