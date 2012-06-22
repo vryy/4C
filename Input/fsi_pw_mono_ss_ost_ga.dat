@@ -202,76 +202,48 @@ NDPOINT                         12
 NDLINE                          22
 NDSURF                          14
 NDVOL                           3
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-E 3 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 4 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 5 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 6 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 5 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 6 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
-E 9 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 10 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 11 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 12 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
+E 9 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 10 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 11 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 12 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           2
-E 3 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 4 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
+E 3 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 3 - 1 1 0 0 0 0 0 1.3332e4 0.0 0.0 0.0 0.0 0.0 Live Mid
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
+E 3 - 1  1 0 0 0 0 0  1.3332e4 0.0 0.0 0.0 0.0 0.0 Live Mid
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           4
 E 1 - 1
 E 2 - 1
 E 5 - 1
 E 6 - 1
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 726 DNODE 1
+NODE 726  DNODE 1
 NODE 5513 DNODE 2
-NODE 101 DNODE 3
+NODE 101  DNODE 3
 NODE 5362 DNODE 4
-NODE 725 DNODE 5
+NODE 725  DNODE 5
 NODE 5514 DNODE 6
-NODE 100 DNODE 7
+NODE 100  DNODE 7
 NODE 5361 DNODE 8
-NODE 911 DNODE 9
+NODE 911  DNODE 9
 NODE 5548 DNODE 10
-NODE 123 DNODE 11
+NODE 123  DNODE 11
 NODE 5369 DNODE 12
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
-NODE 726 DLINE 1
-NODE 793 DLINE 1
-NODE 961 DLINE 1
+NODE 726  DLINE 1
+NODE 793  DLINE 1
+NODE 961  DLINE 1
 NODE 1154 DLINE 1
 NODE 1391 DLINE 1
 NODE 1635 DLINE 1
@@ -290,11 +262,11 @@ NODE 4718 DLINE 1
 NODE 4980 DLINE 1
 NODE 5251 DLINE 1
 NODE 5513 DLINE 1
-NODE 101 DLINE 2
-NODE 136 DLINE 2
-NODE 275 DLINE 2
-NODE 510 DLINE 2
-NODE 870 DLINE 2
+NODE 101  DLINE 2
+NODE 136  DLINE 2
+NODE 275  DLINE 2
+NODE 510  DLINE 2
+NODE 870  DLINE 2
 NODE 1264 DLINE 2
 NODE 1573 DLINE 2
 NODE 1860 DLINE 2
@@ -311,27 +283,27 @@ NODE 4565 DLINE 2
 NODE 4825 DLINE 2
 NODE 5101 DLINE 2
 NODE 5362 DLINE 2
-NODE 726 DLINE 3
-NODE 669 DLINE 3
-NODE 605 DLINE 3
-NODE 546 DLINE 3
-NODE 478 DLINE 3
-NODE 399 DLINE 3
-NODE 324 DLINE 3
-NODE 266 DLINE 3
-NODE 215 DLINE 3
-NODE 145 DLINE 3
-NODE 103 DLINE 3
-NODE 74 DLINE 3
-NODE 41 DLINE 3
-NODE 22 DLINE 3
-NODE 12 DLINE 3
-NODE 6 DLINE 3
-NODE 9 DLINE 3
-NODE 19 DLINE 3
-NODE 38 DLINE 3
-NODE 71 DLINE 3
-NODE 101 DLINE 3
+NODE 726  DLINE 3
+NODE 669  DLINE 3
+NODE 605  DLINE 3
+NODE 546  DLINE 3
+NODE 478  DLINE 3
+NODE 399  DLINE 3
+NODE 324  DLINE 3
+NODE 266  DLINE 3
+NODE 215  DLINE 3
+NODE 145  DLINE 3
+NODE 103  DLINE 3
+NODE 74   DLINE 3
+NODE 41   DLINE 3
+NODE 22   DLINE 3
+NODE 12   DLINE 3
+NODE 6    DLINE 3
+NODE 9    DLINE 3
+NODE 19   DLINE 3
+NODE 38   DLINE 3
+NODE 71   DLINE 3
+NODE 101  DLINE 3
 NODE 5513 DLINE 4
 NODE 5506 DLINE 4
 NODE 5490 DLINE 4

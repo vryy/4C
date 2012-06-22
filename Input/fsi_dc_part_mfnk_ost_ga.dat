@@ -105,73 +105,50 @@ NDLINE                          14
 NDSURF                          3
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE TYPE TYPE TYPE TYPE TYPE TYPE
 DPOINT                          14
-E 1 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 2 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 3 - 6 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 4 - 6 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none
-E 5 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 6 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 7 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 8 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 9 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 10 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 11 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 12 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 13 - 6 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 14 - 6 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
+E 1 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 2 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 3 - 6  0 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 4 - 6  1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none
+E 5 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 6 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 7 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 8 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 9 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 10 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 11 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 12 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 13 - 6  0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 14 - 6  0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE TYPE TYPE TYPE TYPE TYPE TYPE
 DLINE                           6
-E 2 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 3 - 6 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none
-E 6 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 7 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 8 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
-E 13 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE TYPE TYPE TYPE TYPE TYPE TYPE
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE TYPE TYPE TYPE TYPE TYPE TYPE
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
-DVOL                            0
+E 2 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 3 - 6  1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none
+E 6 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 7 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 8 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 13 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DLINE                           3
 E 1 - 1
 E 5 - 1
 E 9 - 1
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2242 DNODE 1
 NODE 1671 DNODE 2
-NODE 2 DNODE 3
+NODE 2    DNODE 3
 NODE 1670 DNODE 4
 NODE 2243 DNODE 5
 NODE 1669 DNODE 6
-NODE 1 DNODE 7
+NODE 1    DNODE 7
 NODE 1668 DNODE 8
 NODE 2241 DNODE 9
 NODE 1667 DNODE 10
 NODE 1690 DNODE 11
 NODE 2244 DNODE 12
 NODE 1688 DNODE 13
-NODE 12 DNODE 14
+NODE 12   DNODE 14
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 2242 DLINE 1
 NODE 2238 DLINE 1
