@@ -87,7 +87,7 @@ namespace GEO
         /*!
         \brief Generate boundary cells for the considered facet. May need to perform triangulatio
         */
-        void GenerateIntegrationRuleDivergence(bool divergenceRule,Mesh &mesh,plain_boundarycell_set & divCells);
+        void GenerateDivergenceCells(bool divergenceRule,Mesh &mesh,plain_boundarycell_set & divCells);
 
         /*!
         \brief Temporarily create Tri3 cell. This is not stored in Mesh
@@ -102,7 +102,7 @@ namespace GEO
         /*!
         \brief Check whether the facet area calculated by splitting and triangulation are the same
          */
-        void DebugAreaCheck( const plain_boundarycell_set & divCells,
+        void DebugAreaCheck( plain_boundarycell_set & divCells,
                              std::string alreadyDone,
                              Mesh &mesh );
 

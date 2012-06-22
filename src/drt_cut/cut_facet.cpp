@@ -6,6 +6,7 @@
 #include "cut_volumecell.H"
 #include "cut_kernel.H"
 #include "cut_options.H"
+#include "cut_triangulateFacet.H"
 
 GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface )
   : points_( points ),
@@ -1083,3 +1084,13 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Eleme
   }
   return cornersLocal;
 }
+
+/*-----------------------------------------------------------------------*
+          Split the facet into a number of tri and quad cells
+*------------------------------------------------------------------------*/
+ void GEO::CUT::Facet::SplitFacet( Mesh & mesh, const std::vector<Point*> & points )
+ {
+   TriangulateFacet tf( this, points );
+   tf.SplitFacet();
+   splitCells_ = tf.GetSplitCells();
+ }

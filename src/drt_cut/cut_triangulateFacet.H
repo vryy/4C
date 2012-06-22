@@ -19,9 +19,8 @@ public:
   /*!
   \brief Constructor
    */
-  TriangulateFacet( Facet* face, Mesh& mesh, std::vector<Point*> ptlist )
+  TriangulateFacet( Facet* face, std::vector<Point*> ptlist )
     :facet1_(face),
-     mesh_(mesh),
      ptlist_(ptlist)
     {
     }
@@ -46,19 +45,12 @@ public:
 
   std::vector<std::vector<Point*> > GetSplitCells(){return split_;}
 
-  std::vector<std::vector<Point*> > split_;
-
 private:
-
-  /*!
-  \brief Check whether more than two points fall on a line, and delete all points other than the end points
-   */
-  void DeleteInlinePts( std::vector<Point*>& poly );
 
   /*!
   \brief Split a concave 4 noded facet into a 2 tri
   */
-  void Split4nodeFacet( std::vector<Point*> &poly );
+  void Split4nodeFacet( std::vector<Point*> &poly, bool callFromSplitAnyFacet=false );
 
   /*!
   \brief Split a 5 noded facet into a tri and a quad
@@ -102,8 +94,8 @@ private:
   bool HasTwoContinuousConcavePts( std::vector<int> ptConcavity );
 
   Facet* facet1_;
-  Mesh& mesh_;
   std::vector<Point*> ptlist_;
+  std::vector<std::vector<Point*> > split_;
 };
 }
 }

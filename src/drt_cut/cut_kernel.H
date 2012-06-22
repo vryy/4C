@@ -154,10 +154,14 @@ namespace GEO
       /*!
       \brief Check whether the polygon defined by the set of points is convex
        */
-      std::vector<int> CheckConvexity( const std::vector<Point*>& ptlist, std::string& geoType );
+      std::vector<int> CheckConvexity( const std::vector<Point*>& ptlist,
+                                       std::string& geoType,
+                                       bool InSplit = true );
 
       /*!
       \brief Find the equation of plane that contains these non-collinear points
+      It must be noted while using this function to find equation of facets,
+             none of these 3 points must be a reflex (concave) point
        */
       std::vector<double> EqnPlane( Point* & pt1, Point* & pt2, Point* & pt3 );
 
@@ -170,6 +174,11 @@ namespace GEO
       \brief Return true if the points of the polygon are ordered clockwise
        */
       bool IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projType );
+
+      /*!
+      \brief If more than two points are on a line, all points except the end points are deleted
+      */
+      void DeleteInlinePts( std::vector<Point*>& poly );
 
 
       /// generic Newton algorithm

@@ -566,52 +566,24 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
 {
     const plain_facet_set & facete = Facets();
 
-    static int pointno=1,point_begin,point_end,lineno=1,line_begin,line_end,surf=1,surf_begin, surf_end;
-    surf_begin = surf;
-    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+    file<<"View \"Volume Cell \" {\n";
+    for( unsigned j=0;j<facete.size();j++ )
     {
-       point_begin = pointno;
-       Facet *fe = *i;
-       const std::vector<std::vector<double> > corners = fe->CornerPointsLocal(ParentElement());
-       for(std::vector<std::vector<double> >::const_iterator k=corners.begin();k!=corners.end();k++)
-       {
-           const std::vector<double> coords = *k;
-           file<<"Point("<<pointno<<")={"<<coords[0]<<","<<coords[1]<<","<<coords[2]<<","<<"1"<<"};"<<std::endl;
-           pointno++;
-       }
-       point_end = pointno;
-       line_begin = lineno;
-       for(int i=point_begin;i!=point_end;i++)
-       {
-         if(i!=point_end-1)
-             file<<"Line("<<lineno<<")={"<<i<<","<<i+1<<"};"<<std::endl;
-           else
-               file<<"Line("<<lineno<<")={"<<i<<","<<point_begin<<"};"<<std::endl;
-           lineno++;
-       }
-       line_end = lineno;
-       file<<"Line Loop("<<surf<<")={";
-       for(int i=line_begin;i!=line_end;i++)
-       {
-         file<<i;
-         if(i!=line_end-1)
-           file<<",";
-       }
-       file<<"};\n";
-       file<<"Plane Surface("<<surf<<")={"<<surf<<"};"<<std::endl;
-
-       surf++;
+      Facet * ref = facete[j];
+      const std::vector<std::vector<double> > corners = ref->CornerPointsLocal(ParentElement());
+      for( unsigned i=0;i<corners.size();i++ )
+      {
+        const std::vector<double> coords1 = corners[i];
+        const std::vector<double> coords2 = corners[(i+1)%corners.size()];
+        file<<"SL("<<coords1[0]<<","<<coords1[1]<<","<<coords1[2]<<","<<
+            coords2[0]<<","<<coords2[1]<<","<<coords2[2]<<")"<<"{0,0};\n";
+      }
     }
-    surf_end = surf;
-    file<<"Surface Loop("<<surf<<")={";
-    for(int i=surf_begin;i<surf;i++)
-    {
-		 file<<i;
-		 if(i!=(surf-1))
-			 file<<",";
-	 }
-	 file<<"};\n";
-	 file<<"Volume("<<surf<<")={"<<surf<<"};"<<std::endl;
+    file<<"};\n";
+    file<<"View[PostProcessing.NbViews-1].ColorTable = { {0,0,255} };\n"; // Changing color to red
+    file<<"View[PostProcessing.NbViews-1].Light=0;\n";    // Disable the lighting
+    file<<"View[PostProcessing.NbViews-1].ShowScale=0;\n";  // Disable legend
+    file<<"View[PostProcessing.NbViews-1].LineWidth = 3.0;"; // increase line width
 }
 
 /*--------------------------------------------------------------------------------------------------------*
@@ -621,49 +593,24 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
 *---------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::DumpGmshGaussPoints(const std::vector<std::vector<double> >&gauspts)
 {
-    const plain_facet_set & facete = Facets();
-    std::string filename="side";
-    std::ofstream file;
 
-    int pointno=1,point_begin,point_end,lineno=1;
-    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-    {
-       point_begin = pointno;
-       Facet *fe = *i;
-//the side id of the first facet is used as the file name for every volumecell
-       if(i==facete.begin())
-       {
-         static int sideno = 0;
-         sideno++;
-         std::stringstream out;
-         out <<"side"<<sideno<<".pos";
-         filename = out.str();
-         file.open(filename.c_str());
-       }
-       const std::vector<std::vector<double> > corners = fe->CornerPointsLocal(ParentElement());
-       for(std::vector<std::vector<double> >::const_iterator k=corners.begin();k!=corners.end();k++)
-       {
-         const std::vector<double> coords = *k;
-         file<<"Point("<<pointno<<")={"<<coords[0]<<","<<coords[1]<<","<<coords[2]<<","<<"1"<<"};"<<std::endl;
-         pointno++;
-       }
-       point_end = pointno;
-       for(int i=point_begin;i!=point_end;i++)
-       {
-         if(i!=point_end-1)
-           file<<"Line("<<lineno<<")={"<<i<<","<<i+1<<"};"<<std::endl;
-         else
-           file<<"Line("<<lineno<<")={"<<i<<","<<point_begin<<"};"<<std::endl;
-         lineno++;
-       }
-    }
+  static int sideno = 0;
+  sideno++;
 
-    for(unsigned i=0;i<gauspts.size();i++)
-    {
-       file<<"Point("<<pointno<<")={"<<gauspts[i][0]<<","<<gauspts[i][1]<<","<<gauspts[i][2]<<","<<"1"<<"};"<<std::endl;
-       pointno++;
-    }
-    file.close();
+  std::stringstream str;
+  str << "side" << sideno << ".pos";
+  std::ofstream file( str.str().c_str() );
+
+  DumpGmsh(file);
+
+  file<<"Geometry.PointSize=6.0;\n";      // Increase the point size
+  int pointno=1;
+  for(unsigned i=0;i<gauspts.size();i++)
+  {
+     file<<"Point("<<pointno<<")={"<<gauspts[i][0]<<","<<gauspts[i][1]<<","<<gauspts[i][2]<<","<<"1"<<"};"<<std::endl;
+     pointno++;
+  }
+  file.close();
 }
 
 /*------------------------------------------------------------------------------------------------------*
@@ -721,16 +668,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
 		{
 			std::vector<Point*> corners = fac->CornerPoints();
 
-/*			std::cout<<"facet under consideration\n";
-			for( unsigned mm=0;mm<corners.size();mm++ )
-			{
-			  Point* p11 = corners[mm];
-			  double coord[3];
-			  p11->Coordinates(coord);
-			  std::cout<<coord[0]<<"\t"<<coord[1]<<"\t"<<coord[2]<<"\n";
-			}*/
-
-//if no of corners are 3 or 4, just add them as boundary integrationcells directly
+			//if no of corners are 3 or 4, just add them as boundary integrationcells directly
 			if(corners.size()==3)
 			{
 				OrientationFacet(corners,sideOri);
@@ -763,24 +701,16 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
 #endif
 
 #if 1 // creates both tri and quad. less no of Gauss points
-          TriangulateFacet tf( fac, mesh, corners );
-          tf.SplitFacet();
-          const std::vector<std::vector<Point*> > triangulation = tf.GetSplitCells();
+
+          if( !fac->IsFacetSplit() )
+            fac->SplitFacet( mesh, corners );
+          const std::vector<std::vector<Point*> > triangulation = fac->GetSplitCells();
 #endif
 
           for ( std::vector<std::vector<Point*> >::const_iterator j=triangulation.begin();
                             j!=triangulation.end(); ++j )
           {
             std::vector<Point*> tri = *j;
-
-            /*std::cout<<"triangulated cell\n";
-            for( unsigned maa=0;maa<tri.size();maa++ )
-            {
-              Point* pt11 = tri[maa];
-              double ptco[3];
-              pt11->Coordinates(ptco);
-              std::cout<<ptco[0]<<"\t"<<ptco[1]<<"\t"<<ptco[2]<<"\n";
-            }*/
 
             OrientationFacet(tri,sideOri);
             bool rever = ToReverse(posi,parOri,sideOri);
@@ -983,56 +913,11 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
 	if( posi==0 )
 	  dserror( "undefined position for the volumecell" );
 
-//if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
-//as this vc will never be computed in xfem algorithm
+	//if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
+	//as this vc will never be computed in xfem algorithm
 	if(posi==-2 && include_inner==false)
 		return;
 
-#if 0
-	if(1)//elem->Id()==645
-  {
-    std::cout<<"the corner coordinates of the element\n";
-    const std::vector<Side*> &ele_sides = elem->Sides();
-    for(std::vector<Side*>::const_iterator i=ele_sides.begin();i!=ele_sides.end();i++)
-    {
-      std::cout<<"side\n";
-      Side*sss = *i;
-      const std::vector<Node*> &nnn = sss->Nodes();
-      for(std::vector<Node*>::const_iterator j=nnn.begin();j!=nnn.end();j++)
-      {
-        Node *nn = *j;
-        double chh[3];
-        nn->Coordinates( chh );
-        LINALG::Matrix<3,1> glo,loc;
-        glo(0,0) = chh[0];
-        glo(1,0) = chh[1];
-        glo(2,0) = chh[2];
-        elem->LocalCoordinates(glo,loc);
-    //          std::cout<<glo(0,0)<<"\t"<<glo(1,0)<<"\t"<<glo(2,0)<<"\t";
-        std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
-  //                       std::cout<<chh[0]<<"\t"<<chh[1]<<"\t"<<chh[2]<<std::endl;
-      }
-    }
-    dserror("done");
-  }
-#endif
-
-#if 0
-  const plain_facet_set & facete = Facets();
-  std::cout<<"the volumecell = "<<this->ParentElement()->Id()<<"\n";
-  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-  {
-    Facet *fe = *i;
-    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem);
-    std::cout<<"face\n";
-    for( std::vector<std::vector<double> >::iterator m=cornersLocal.begin();m!=cornersLocal.end();m++ )
-    {
-      std::vector<double> coo = *m;
-      std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
-    }
-  }
- // dserror("done");
-#endif
 	int BaseNos=84;                                     // number of base functions to be used in the integration
   VolumeIntegration vc_inte(this,elem,posi,BaseNos);  // change the number of equations
 
@@ -1041,28 +926,9 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
 
   gp_ = GaussPointsFitting();                        // convert the weight and the location to Gauss rule
 
-//generate boundary cells. if Tessellation option is used instead of MomentFitting,
-//this happens inside "createintegrationcells"
+  //generate boundary cells. if Tessellation option is used instead of MomentFitting,
+  //this happens inside "createintegrationcells"
   GenerateBoundaryCells( mesh, posi, elem, BaseNos, BCellgausstype );
-
-/*  std::cout<<"vol id = "<<this->ParentElement()->Id()<<"\n";
-  const plain_boundarycell_set & vbcells = BoundaryCells();
-  for ( plain_boundarycell_set::const_iterator i=vbcells.begin();
-        i!=vbcells.end();
-        ++i )
-  {
-    BoundaryCell * bc = *i;
-    std::cout<<"boundary cell\n";
-    const std::vector<Point*> pts = bc->Points();
-    for( unsigned j=0;j<pts.size();j++ )
-    {
-      Point* p1 = pts[j];
-      double x[3];
-      p1->Coordinates(x);
-      std::cout<<x[0]<<"\t"<<x[1]<<"\t"<<x[2]<<"\n";
-    }
-  }*/
-
 }
 
 /*---------------------------------------------------------------------------------------------------------------*
@@ -1130,17 +996,15 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
   }
-  //dserror("done");
+  dserror("over");
 #endif
-
-  //dserror("over");
 
   DirectDivergence dd(this,elem,posi,mesh);
 
   RefEqnPlane_.reserve(4); //it has to store a,b,c,d in ax+by+cz=d
-  gp_ = dd.VCIntegrationRule( RefEqnPlane_ );
+  gp_ = dd.VCIntegrationRule( RefEqnPlane_ ); // compute main gauss points
 
-  GenerateInternalGaussRule();
+  GenerateInternalGaussRule();  // compute internal gauss points for every main gauss point
 
 #if 1
   DRT::UTILS::GaussIntegration gpi(gp_);
@@ -1149,10 +1013,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 
 //  std::cout<<"reference plane equation = "<<RefEqnPlane_[0]<<"\t"<<RefEqnPlane_[1]<<"\t"<<"\t"<<RefEqnPlane_[2]<<"\t"<<RefEqnPlane_[3]<<"\n";
 
-//  dserror("one volumecell done");
-
-  //generate boundary cells. if Tessellation option is used instead of MomentFitting,
-  //this happens inside "createintegrationcells"
+  // generate boundary cells. if Tessellation option is used this happens inside "createintegrationcells"
   GenerateBoundaryCells( mesh, posi, elem, 0, "Tessellation" );
 
 /*  std::cout<<"vol id = "<<this->ParentElement()->Id()<<"\n";

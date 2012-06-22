@@ -202,6 +202,22 @@ public:
    */
   void DoTriangulation(Mesh & mesh, const std::vector<Point*> & points ){CreateTriangulation(mesh,points );}
 
+  /*!
+  \brief check whether facet is already split
+   */
+  bool IsFacetSplit() const {return splitCells_.size()>0;}
+
+  /*!
+  \brief split the facet into a number of tri and quad. Reduced number of Gauss points when facet is split
+  instead of triangulated
+   */
+  void SplitFacet( Mesh & mesh, const std::vector<Point*> & points );
+
+  /*!
+  \brief Get the triangulated sides of this facet
+   */
+  const std::vector<std::vector<Point*> > & GetSplitCells() const { return splitCells_; }
+
 private:
 
   Facet( const Facet & );
@@ -239,6 +255,8 @@ private:
   plain_facet_set holes_;
 
   std::vector<std::vector<Point*> > triangulation_;
+
+  std::vector<std::vector<Point*> > splitCells_;
 
   Side* parentside_;
 

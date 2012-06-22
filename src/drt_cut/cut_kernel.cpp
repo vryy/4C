@@ -164,21 +164,15 @@ bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3 )
       If any 3 points fall along the line, this will delete the middle point and return new pt
       Intially the polygon is projected into the given plane
 *----------------------------------------------------------------------------------------------------------*/
-std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& ptlist, std::string& geomType )
+std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& ptlist,
+                                                   std::string& geomType,
+                                                   bool InSplit )
 {
-  if( ptlist.size()<4 )
-    dserror( "The number of points < 4. Is it called for appropriate facet?" );
-
-  /**************************************************************/
-  /*std::cout<<"points inside the kernel\n";
-  for( unsigned i=0;i<ptlist.size();i++ )
+  if( InSplit ) // if this function is called while performing facet splitting
   {
-    Point* ptt = ptlist[i];
-    double z[3];
-    ptt->Coordinates(z);
-    std::cout<<z[0]<<"\t"<<z[1]<<"\t"<<z[2]<<"\n";
-  }*/
-  /**************************************************************/
+    if( ptlist.size()<4 )
+      dserror( "The number of points < 4. Is it called for appropriate facet?" );
+  }
 
   std::string projPlane;
 
@@ -235,11 +229,6 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
 
     xtemp.Update(1.0,x2,-1.0,x1);
 
-    /*x1.Print(std::cout);
-    x2.Print(std::cout);
-    x3.Print(std::cout);
-    xtemp.Print(std::cout);*/
-
     double res = x3(ind1,0)*xtemp(ind2,0)-x3(ind2,0)*xtemp(ind1,0)+
                  xtemp(ind1,0)*x1(ind2,0)-xtemp(ind2,0)*x1(ind1,0);
 
@@ -271,10 +260,17 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
 
 /*-----------------------------------------------------------------------------------------------------*
             Find the equation of plane that contains these non-collinear points
+            It must be noted while using this function to find equation of facets,
+             none of these 3 points must be a reflex (concave) point
                                                                                           Sudhakar 04/12
 *------------------------------------------------------------------------------------------------------*/
 std::vector<double> GEO::CUT::KERNEL::EqnPlane( Point* & pt1, Point* & pt2, Point* & pt3 )
 {
+
+  bool collinear = IsOnLine( pt1,pt2,pt3 );
+  if( collinear )
+    dserror(" 3 points lie on a line. Eqn of plane cannot be computed");
+
   std::vector<double> eqn_plane(4);
   double x1[3],x2[3],x3[3];
 
@@ -380,4 +376,36 @@ bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints,
   if( crossProd>0.0 )
     return true;
   return false;
+}
+
+/*--------------------------------------------------------------------------------------*
+    If more than two points are on a line, all points except the end points
+    are deleted. This is checked for all the lines for a facet. So once this is
+    called the facet is free of more than 2 inline points                   Sudhakar 06/12
+*---------------------------------------------------------------------------------------*/
+void GEO::CUT::KERNEL::DeleteInlinePts( std::vector<Point*>& poly )
+{
+  bool anyInLine = false;
+  unsigned num = poly.size();
+
+  for( unsigned i=0;i<num;i++ )
+  {
+    Point* pt1 = poly[i];
+    Point* pt2 = poly[(i+1)%num];  // next point
+    unsigned ind = i-1;
+    if(i==0)
+      ind = num-1;
+    Point* pt3 = poly[ind];       // previous point
+
+    std::vector<Point*>::iterator delPt = poly.begin()+i;
+    anyInLine = IsOnLine( pt3, pt1, pt2 );
+
+    if( anyInLine )
+    {
+      poly.erase(delPt);
+      break;
+    }
+  }
+  if( anyInLine )   // this makes sure the procedure is repeated until all the inline points of the facet are deleted
+    DeleteInlinePts( poly );
 }
