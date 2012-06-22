@@ -724,7 +724,7 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
 #if 1 // split facet
 
       if( !face1_->IsFacetSplit() )
-        face1_->SplitFacet( mesh, corners );
+        face1_->SplitFacet( corners );
       const std::vector<std::vector<GEO::CUT::Point*> > split = face1_->GetSplitCells();
       splitMethod = "split";
 #endif

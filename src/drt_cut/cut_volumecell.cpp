@@ -703,7 +703,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
 #if 1 // creates both tri and quad. less no of Gauss points
 
           if( !fac->IsFacetSplit() )
-            fac->SplitFacet( mesh, corners );
+            fac->SplitFacet( corners );
           const std::vector<std::vector<Point*> > triangulation = fac->GetSplitCells();
 #endif
 

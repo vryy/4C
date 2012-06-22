@@ -1088,7 +1088,7 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Eleme
 /*-----------------------------------------------------------------------*
           Split the facet into a number of tri and quad cells
 *------------------------------------------------------------------------*/
- void GEO::CUT::Facet::SplitFacet( Mesh & mesh, const std::vector<Point*> & points )
+ void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & points )
  {
    TriangulateFacet tf( this, points );
    tf.SplitFacet();
