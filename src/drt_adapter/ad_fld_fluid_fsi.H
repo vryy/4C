@@ -129,6 +129,9 @@ namespace ADAPTER {
      */
     void ProjVelToDivZero();
 
+    /// reset state vectors
+    virtual void Reset();
+
   protected:
     /// A castet pointer to the fluid itself
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;

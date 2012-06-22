@@ -316,6 +316,9 @@ public:
       RCP<TOPOPT::Optimizer>& optimizer
   );
 
+  /// Reset state vectors
+  void Reset();
+
   /*!
   \brief calculate error between a analytical solution and the
          numerical solution of a test problems
@@ -546,7 +549,7 @@ public:
 
   void PrintTurbulenceModel();
   //@}
-  
+
   /// set the initial porosity field
   void SetInitialPorosityField(
     const INPAR::POROELAST::InitialField,  ///< type of initial field
@@ -557,7 +560,7 @@ public:
   void UpdateIterIncrementally(
     Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
     );
- 
+
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
   Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
@@ -793,7 +796,7 @@ protected:
   //@}
 
   //! @name optimization data
-  
+
   /// density in topology optimization
   RCP<const Epetra_Vector>    topopt_porosity_;
 

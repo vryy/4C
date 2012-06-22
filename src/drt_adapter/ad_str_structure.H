@@ -24,6 +24,7 @@ Maintainer: Georg Hammerl
 #include <Epetra_Operator.h>
 
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 // forward declarations:
@@ -354,6 +355,9 @@ namespace ADAPTER {
 
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+
+    /// reset time and state vectors
+    virtual void Reset() { dserror("reset not implemented for this structure adapter"); }
 
   };
 

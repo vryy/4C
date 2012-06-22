@@ -6437,3 +6437,42 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
   return divop;
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::Reset()
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // Vectors passed to the element
+  // -----------------------------
+  // velocity/pressure at time n+1, n and n-1
+  velnp_ = LINALG::CreateVector(*dofrowmap,true);
+  veln_  = LINALG::CreateVector(*dofrowmap,true);
+  velnm_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // acceleration/(scalar time derivative) at time n+1 and n
+  accnp_ = LINALG::CreateVector(*dofrowmap,true);
+  accn_  = LINALG::CreateVector(*dofrowmap,true);
+
+  // velocity/pressure at time n+alpha_F
+  velaf_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
+  accam_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // history vector
+  hist_ = LINALG::CreateVector(*dofrowmap,true);
+
+  if (alefluid_)
+  {
+    dispnp_ = LINALG::CreateVector(*dofrowmap,true);
+    dispn_  = LINALG::CreateVector(*dofrowmap,true);
+    dispnm_ = LINALG::CreateVector(*dofrowmap,true);
+    gridv_  = LINALG::CreateVector(*dofrowmap,true);
+
+  }
+
+  return;
+}

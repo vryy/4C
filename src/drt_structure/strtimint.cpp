@@ -2081,3 +2081,27 @@ void STR::TimInt::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptorem
 }
 
 /*----------------------------------------------------------------------*/
+/* reset everything (needed for biofilm simulations)                    */
+void STR::TimInt::Reset()
+{
+  // displacements D_{n}
+  dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  // velocities V_{n}
+  vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  // accelerations A_{n}
+  acc_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+
+  // displacements D_{n+1} at t_{n+1}
+  disn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // velocities V_{n+1} at t_{n+1}
+  veln_ = LINALG::CreateVector(*dofrowmap_, true);
+  // accelerations A_{n+1} at t_{n+1}
+  accn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // create empty interface force vector
+  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
+
+  // set initial fields
+  SetInitialFields();
+
+  return;
+}

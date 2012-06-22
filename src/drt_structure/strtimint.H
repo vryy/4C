@@ -834,6 +834,11 @@ namespace STR
 
     //@}
 
+    //! @name Biofilm methods
+    //@{
+    void Reset();
+    //@}
+
   protected:
 
     //! @name General purpose algorithm members

@@ -115,6 +115,10 @@ namespace ADAPTER
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return structure_->GetDBCMapExtractor(); }
 
+    /// reset step and state vectors
+    virtual void Reset()
+    { structure_->Reset(); }
+
     /*
     \brief Shorten the Dirichlet DOF set
 

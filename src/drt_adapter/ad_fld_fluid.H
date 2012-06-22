@@ -25,6 +25,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_lib/drt_dserror.H"
+
 
 namespace LINALG
 {
@@ -238,6 +240,9 @@ namespace ADAPTER {
 
     /// provide access to the turbulence statistic manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() = 0;
+
+    /// reset state vectors (needed for biofilm simulations)
+    virtual void Reset() { dserror("reset function not implemented for this fluid adapter"); };
 
     //@}
 
