@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 
 #include <Epetra_Time.h>
 #include <iterator>
+#include <sstream>
 
 
 /*----------------------------------------------------------------------*/
@@ -736,28 +737,36 @@ Teuchos::ParameterList& DatFileReader::FindSublist(string name, Teuchos::Paramet
 /*----------------------------------------------------------------------*/
 void DatFileReader::AddEntry(string key, string value, Teuchos::ParameterList& list)
 {
-  const char* v = value.c_str();
-  char* endptr = NULL;
+  { // try to find an int
+    std::stringstream ssi;
+    int iv;
 
-  // Try converging to int first. If the end pointer points to
-  // the trailing zero, we are done.
-  long int iv = strtol(v, &endptr, 10);
-  if (*endptr=='\0')
-  {
-    list.set(key,static_cast<int>(iv));
+    ssi << value;
+    ssi >> iv;
+
+    if (ssi.eof())
+    {
+      list.set(key,iv);
+      return;
+    }
   }
-  else
-  {
-    double dv = strtod(v, &endptr);
-    if (*endptr=='\0')
+
+  { // try to find a double
+    std::stringstream ssd;
+    double dv;
+
+    ssd << value;
+    ssd >> dv;
+
+    if (ssd.eof())
     {
       list.set(key,dv);
-    }
-    else
-    {
-      list.set(key,value);
+      return;
     }
   }
+
+  // if it is not an int or a double it must be a string
+  list.set(key,value);
 }
 
 
