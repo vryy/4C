@@ -105,26 +105,25 @@ namespace FSI
     /*!
       We are dealing with NOX here, so we get absolute values. x is the sum of
       all increments up to this point.
-
-      \param x  (i) composed vector that contains all field vectors
-      \param sx (o) structural displacements
-      \param fx (o) fluid velocities and pressure
-      \param ax (o) ale displacements
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                     Teuchos::RCP<const Epetra_Vector>& sx,
-                                     Teuchos::RCP<const Epetra_Vector>& fx,
-                                     Teuchos::RCP<const Epetra_Vector>& ax);
+    virtual void ExtractFieldVectors(
+        Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
+        Teuchos::RCP<const Epetra_Vector>& fx,  ///< fluid velocities and pressure
+        Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
+    );
 
 
   private:
 
     /// build block vector from field vectors
-    void SetupVector(Epetra_Vector &f,
-                     Teuchos::RCP<const Epetra_Vector> sv,
-                     Teuchos::RCP<const Epetra_Vector> fv,
-                     Teuchos::RCP<const Epetra_Vector> av,
-                     double fluidscale);
+    void SetupVector(
+        Epetra_Vector &f,                       ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural displacements
+        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocities and pressure
+        Teuchos::RCP<const Epetra_Vector> av,   ///< ale displacements
+        double fluidscale                       ///< residual scaling for fluid
+    );
 
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
