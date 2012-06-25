@@ -163,7 +163,7 @@ int DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // start with "none"
-  So_tet4_volcoupl::ActionType act = So_tet4_volcoupl::none;
+  typename So_tet4_volcoupl::ActionType act = So_tet4_volcoupl::none;
 
   // get the required action
   string action = params.get<string>("action","none");

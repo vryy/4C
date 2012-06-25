@@ -170,7 +170,7 @@ int DRT::ELEMENTS::So_hex8_volcoupl<coupltype>::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // start with "none"
-  So_hex8_volcoupl::ActionType act = So_hex8_volcoupl::none;
+  typename So_hex8_volcoupl::ActionType act = So_hex8_volcoupl::none;
 
   // get the required action
   string action = params.get<string>("action","none");
