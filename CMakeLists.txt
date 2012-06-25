@@ -581,7 +581,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_hex8_evaluate.cpp
   src/drt_so3/so_hex8_input.cpp
   src/drt_so3/so_hex8_multiscale.cpp
-  src/drt_so3/so_hex8_scatra.cpp
   src/drt_so3/so_hex8_volcoupl.cpp
   src/drt_so3/so_hex8_service.cpp
   src/drt_so3/so_hex8_thermo_lin_evaluate.cpp
