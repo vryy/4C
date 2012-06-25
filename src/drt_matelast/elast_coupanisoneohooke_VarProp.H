@@ -146,6 +146,9 @@ namespace ELASTIC
         std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
     );
 
+    /// Setup of patient-specific materials
+    virtual void SetupAAA(Teuchos::ParameterList& params);
+
     /// Indicator for formulation
     virtual void SpecifyFormulation(
         bool& isoprinc, ///< global indicator for isotropic principal formulation
@@ -167,6 +170,8 @@ namespace ELASTIC
     LINALG::Matrix<3,1>  a_;
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A_;
+    // material coefficient depending on the position
+    double stress_coeff_;
 
   };
 

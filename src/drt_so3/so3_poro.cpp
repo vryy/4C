@@ -110,6 +110,8 @@ void DRT::ELEMENTS::So3_Poro<distype>::Unpack(const vector<char>& data)
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<distype>::Print(ostream& os) const
 {
+  os << "So3_poro ";
+  return;
 }
 
 /*----------------------------------------------------------------------*/

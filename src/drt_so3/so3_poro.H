@@ -38,10 +38,8 @@ and (near)-incompressibility.
 template<DRT::Element::DiscretizationType distype>
 class So3_Poro : virtual public DRT::Element
 {
-
+//public
 protected:
-  //So3_Poro();
-public:
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -65,6 +63,7 @@ public:
   //@}
 
   //static const DRT::UTILS::GaussIntegration intpoints_ = DRT::UTILS::GaussIntegration(distype);
+
 
   //! number of element nodes (
   static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -175,10 +174,18 @@ public:
 
   //! @name Evaluation
 
+  void PreEvaluate
+    (
+      ParameterList& params,  ///< ParameterList for communication between control routine and elements
+      DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
+      DRT::Element::LocationArray& la ///< location array for de-assembly
+    );
+
   /*!
   \brief Evaluate an element
 
-  Evaluate So_hex8fbar element stiffness, mass, internal forces, etc.
+  Evaluate So3_poro element stiffness, mass, internal forces, etc.
+  Templated evaluate routine of element matrixes
 
   If NULL on input, the controlling method does not expect the element
   to fill these matrices or vectors.
@@ -226,7 +233,7 @@ public:
 
   //@}
 
-protected:
+//protected:
 
   //! don't want = operator
   So3_Poro& operator = (const So3_Poro& old);

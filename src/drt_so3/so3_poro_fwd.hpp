@@ -7,3 +7,4 @@
 
 // template classes
 template class DRT::ELEMENTS::So3_Poro<DRT::Element::hex8>;
+template class DRT::ELEMENTS::So3_Poro<DRT::Element::tet4>;

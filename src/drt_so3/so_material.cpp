@@ -1237,6 +1237,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
   // interface go to the material law here
   // the old interface does not exist anymore
   RCP<MAT::Material> mat = Material();
+  
+  
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+	  const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
+	  mat = actmat->GetMaterial();
+  }
+  
   switch (mat->MaterialType())
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */

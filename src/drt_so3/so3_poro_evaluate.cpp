@@ -32,7 +32,16 @@
 
 //#include "Sacado.hpp"
 
-
+/*----------------------------------------------------------------------*
+ |  preevaluate the element (public)                                       |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<distype>::PreEvaluate(ParameterList& params,
+                                        DRT::Discretization&      discretization,
+                                        DRT::Element::LocationArray& la)
+{
+    return;
+}
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -603,7 +612,7 @@ void DRT::ELEMENTS::So3_Poro<distype>::nlnstiff_poroelast(
     xjm0.MultiplyNT(deriv,xrefe);
 
     // get the second derivatives of standard element at current GP w.r.t. XYZ
-    DRT::UTILS::gder2<DRT::Element::hex8>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
+    DRT::UTILS::gder2<distype>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     //! transposed jacobian "dx/ds"
@@ -1532,7 +1541,7 @@ void DRT::ELEMENTS::So3_Poro<distype>::coupling_poroelast(vector<int>& lm, // lo
     xjm0.MultiplyNT(deriv,xrefe);
 
     // get the second derivatives of standard element at current GP w.r.t. xyz
-    DRT::UTILS::gder2<DRT::Element::hex8>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
+    DRT::UTILS::gder2<distype>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     //! transposed jacobian "dx/ds"
