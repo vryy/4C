@@ -56,7 +56,6 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
 
   int microdisnum = MicroDisNum();
   double V0 = InitVol();
-  DRT::Problem* micro_problem = DRT::Problem::Instance(microdisnum);
   DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   // avoid writing output also for ghosted elements
@@ -118,7 +117,6 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
                                   double V0,
                                   bool eleowner)
 {
-  DRT::Problem* micro_problem = DRT::Problem::Instance(microdisnum);
   DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   if (matgp_.find(gp) == matgp_.end())
