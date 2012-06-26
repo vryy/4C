@@ -1743,9 +1743,9 @@ void STR::TimIntStatMech::StatMechOutput()
   if(HaveStatMech())
   {
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
-      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
+      statmechman_->Output(ndim_,(*time_)[0],step_,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
     else
-      statmechman_->Output(ndim_,(*time_)[0],step_-1,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);
+      statmechman_->Output(ndim_,(*time_)[0],step_,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);
   }
   return;
 }// StatMechOutput()
