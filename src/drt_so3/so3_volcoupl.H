@@ -1,16 +1,21 @@
-/*
- * so_test4_volcoupl.H
- *
- *  Created on: Jun 22, 2012
- *      Author: bertoglio
- */
+/*!----------------------------------------------------------------------
+\file So3_volcoupl.H
 
-#ifndef SO_TEST4_VOLCOUPL_H_
-#define SO_TEST4_VOLCOUPL_H_
+<pre>
+   Maintainer: Cristobal Bertoglio
+               bertoglio@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+</pre>
 
-#include "so_tet4.H"
+*----------------------------------------------------------------------*/
+
+
+#ifndef SO3_VOLCOUPL_H_
+#define SO3_VOLCOUPL_H_
+
 #include "so3_poro.H"
-#include "so3_poro_eletypes.H"
+#include "so3_scatra.H"
 
 namespace DRT
 {
@@ -21,22 +26,16 @@ namespace ELEMENTS
 {
 
 /*!
-\brief A C++ version of a 4-node tet solid element with modifications for porous media
-
-A structural 4-node hexahedral solid displacement element for large deformations
-and (near)-incompressibility.
+\brief A C++ version of a general solid element with volumetric coupling
 
 */
 
 template <DRT::Element::DiscretizationType distype> class coupltype;
-template< class coupltype>
-class So_tet4_volcoupl : public So_tet4,
+template<class so3_ele, class coupltype>
+class So3_volcoupl : public so3_ele,
                      public coupltype
 {
 public:
-
-  //! @name Friends
-  friend class So_tet4PoroType;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -48,7 +47,7 @@ public:
   \param owner : elements owner
   */
 
-  So_tet4_volcoupl(int id, int owner);
+  So3_volcoupl(int id, int owner);
 
   /*!
   \brief Copy Constructor
@@ -56,7 +55,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  So_tet4_volcoupl(const So_tet4_volcoupl<coupltype> & old);
+  So3_volcoupl(const So3_volcoupl<so3_ele,coupltype> & old);
 
   /*!
   \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -73,7 +72,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return So_tet4PoroType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const;
 
   /*!
   \brief Pack this class so it can be communicated
@@ -95,7 +94,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~So_tet4_volcoupl();
+  virtual ~So3_volcoupl();
 
   /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple
@@ -118,8 +117,7 @@ public:
   void Print(ostream& os) const;
 
 
-  virtual DRT::ElementType & ElementType() const
-  { return So_tet4PoroType::Instance(); }
+  virtual DRT::ElementType & ElementType() const;
 
   //@}
 
@@ -162,7 +160,7 @@ public:
 protected:
 
   //! don't want = operator
-  So_tet4_volcoupl& operator = (const So_tet4_volcoupl& old);
+  So3_volcoupl& operator = (const So3_volcoupl& old);
 
   //! special action parameters for volume coupled solid elements
   enum ActionType
@@ -171,7 +169,7 @@ protected:
     calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for other dofset (structural part)
   };
 
-}; // class So_tet4_volcoupl
+}; // class So3_volcoupl
 
 //=======================================================================
 //=======================================================================
@@ -182,4 +180,4 @@ protected:
 } // namespace DRT
 
 
-#endif /* SO_TEST4_VOLCOUPL_H_ */
+#endif /* SO3_VOLCOUPL_H_ */

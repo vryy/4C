@@ -1,0 +1,87 @@
+/*!----------------------------------------------------------------------
+\file So3_scatra_eletypes.H
+
+<pre>
+   Maintainer: Cristobal Bertoglio
+               bertoglio@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifndef SO3_SCATRA_ELETYPES_H_
+#define SO3_SCATRA_ELETYPES_H_
+
+#include "so_hex8.H"
+#include "so_tet4.H"
+
+namespace DRT
+{
+// forward declarations
+class Discretization;
+
+namespace ELEMENTS
+{
+/*----------------------------------------------------------------------*
+ |  HEX 8 Element                                       |
+ *----------------------------------------------------------------------*/
+class So_hex8ScatraType : public So_hex8Type
+{
+public:
+
+  std::string Name() const { return "So_hex8ScatraType"; }
+
+  static So_hex8ScatraType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_hex8ScatraType instance_;
+};
+
+/*----------------------------------------------------------------------*
+ |  TET 4 Element                                       |
+ *----------------------------------------------------------------------*/
+class So_tet4ScatraType : public So_tet4Type
+{
+public:
+
+  std::string Name() const { return "So_tet4ScatraType"; }
+
+  static So_tet4ScatraType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_tet4ScatraType instance_;
+};
+
+
+}
+}
+
+#endif /* SO3_SCATRA_ELETYPES_H_ */

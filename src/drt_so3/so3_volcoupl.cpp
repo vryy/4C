@@ -1,21 +1,24 @@
-/*
- * so_tet4_volcoupl.cpp
- *
- *  Created on: Jun 22, 2012
- *      Author: bertoglio
- */
+/*!----------------------------------------------------------------------
+\file So3_volcoupl.cpp
 
-#include "so_tet4_volcoupl.H"
+<pre>
+   Maintainer: Cristobal Bertoglio
+               bertoglio@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+</pre>
+
+*----------------------------------------------------------------------*/
+
+#include "so3_volcoupl.H"
 
 #include "../drt_lib/drt_linedefinition.H"
 
-//template<class coupltype>
-template<class coupltype>
-DRT::ELEMENTS::So_tet4_volcoupl< coupltype>::So_tet4_volcoupl(int id, int owner) :
+template<class so3_ele, class coupltype>
+DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::So3_volcoupl(int id, int owner) :
 DRT::Element(id,owner),
-DRT::ELEMENTS::So_tet4(id,owner),
+so3_ele(id,owner),
 coupltype (id,owner)
-//DRT::ELEMENTS::So3_Poro<DRT::Element::tet4>(id,owner)
 {
   return;
 }
@@ -27,11 +30,10 @@ Makes a deep copy of a Element
 
 */
 
-//template<class coupltype>
-template< class coupltype>
-DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::So_tet4_volcoupl(const DRT::ELEMENTS::So_tet4_volcoupl<coupltype>& old) :
+template<class so3_ele, class coupltype>
+DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::So3_volcoupl(const DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>& old) :
     DRT::Element(old),
-    DRT::ELEMENTS::So_tet4(old),
+    so3_ele(old),
     coupltype (old)
 {
   return;
@@ -41,12 +43,11 @@ DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::So_tet4_volcoupl(const DRT::ELEMENTS
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-//template<class coupltype>
-template<class coupltype>
-DRT::Element* DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Clone() const
+template<class so3_ele, class coupltype>
+DRT::Element* DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::Clone() const
 {
-  DRT::ELEMENTS::So_tet4_volcoupl<coupltype >* newelement =
-      new DRT::ELEMENTS::So_tet4_volcoupl<coupltype >(*this);
+  DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>* newelement =
+      new DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>(*this);
   return newelement;
 }
 
@@ -54,19 +55,18 @@ DRT::Element* DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Clone() const
  |  Pack data                                                  (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-//template<class coupltype>
-template< class coupltype>
-void DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Pack(DRT::PackBuffer& data) const
+template<class so3_ele, class coupltype>
+void DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class So_tet4 Element
-  DRT::ELEMENTS::So_tet4::Pack(data);
-  // add base class So3_poro Element
+  so3_ele::AddtoPack(data,type);
+  // add base class so3_ele Element
+  so3_ele::Pack(data);
+  // add base class coupling Element
   coupltype::Pack(data);
 
   return;
@@ -76,22 +76,21 @@ void DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Pack(DRT::PackBuffer& data) con
  |  Unpack data                                                (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-//template<class coupltype>
-template< class coupltype>
-void DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Unpack(const vector<char>& data)
+template<class so3_ele, class coupltype>
+void DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::Unpack(const vector<char>& data)
 {
   vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  so3_ele::ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // extract base class So_tet4 Element
+  // extract base class so3_ele Element
   vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  DRT::ELEMENTS::So_tet4::Unpack(basedata);
-  // extract base class So3_poro Element
+  so3_ele::ExtractfromPack(position,data,basedata);
+  so3_ele::Unpack(basedata);
+  // extract base class coupling Element
   basedata.clear();
-  ExtractfromPack(position,data,basedata);
+  so3_ele::ExtractfromPack(position,data,basedata);
   coupltype::Unpack(basedata);
 
   if (position != data.size())
@@ -102,9 +101,8 @@ void DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Unpack(const vector<char>& data
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            vuong 03/12|
  *----------------------------------------------------------------------*/
-//template<class coupltype>
-template<class coupltype>
-DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::~So_tet4_volcoupl()
+template<class so3_ele, class coupltype>
+DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::~So3_volcoupl()
 {
   return;
 }
@@ -112,11 +110,10 @@ DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::~So_tet4_volcoupl()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              vuong 03/12|
  *----------------------------------------------------------------------*/
-//template<class coupltype>
-template<class coupltype>
-void DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Print(ostream& os) const
+template<class so3_ele, class coupltype>
+void DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::Print(ostream& os) const
 {
-  os << "So_tet4_volcoupl ";
+  os << "So3_volcoupl ";
   coupltype::Print(os);
   Element::Print(os);
   return;
@@ -125,35 +122,47 @@ void DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Print(ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-//template<class coupltype>
-template<class coupltype>
-bool DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::ReadElement(const std::string& eletype,
+template<class so3_ele, class coupltype>
+bool DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::ReadElement(const std::string& eletype,
                                              const std::string& eledistype,
                                              DRT::INPUT::LineDefinition* linedef)
 {
-  return So_tet4::ReadElement(eletype, eledistype, linedef);
+  return so3_ele::ReadElement(eletype, eledistype, linedef);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-//template<class coupltype>
-template<class coupltype>
-int DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::NumDofPerNode(const unsigned nds,
+template<class so3_ele, class coupltype>
+int DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::NumDofPerNode(const unsigned nds,
                                               const DRT::Node& node) const
 {
   if (nds==1)
     return coupltype::NumDofPerNode(nds, node);
 
-  return So_tet4::NumDofPerNode(node);
+  return so3_ele::NumDofPerNode(node);
+};
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, class coupltype>
+DRT::ElementType & DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::ElementType() const
+{
+   return coupltype::ElementType();
+};
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, class coupltype>
+int DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::UniqueParObjectId() const
+{
+   return coupltype::UniqueParObjectId();
 };
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-//template<class coupltype>
-//template< template <DRT::Element::DiscretizationType distype> class coupltype>
-template<class coupltype>
-int DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Evaluate(ParameterList& params,
+template<class so3_ele, class coupltype>
+int DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     DRT::Element::LocationArray& la,
                                     Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -163,24 +172,18 @@ int DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // start with "none"
-  typename So_tet4_volcoupl::ActionType act = So_tet4_volcoupl::none;
+  typename So3_volcoupl::ActionType act = So3_volcoupl::none;
 
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  //else if (action=="calc_struct_update_istep")          act = So_tet4::calc_struct_update_istep;
-  //else if (action=="calc_struct_internalforce")         act = So_tet4::calc_struct_internalforce;
-  //else if (action=="calc_struct_nlnstiff")              act = So_tet4::calc_struct_nlnstiff;
-  //else if (action=="calc_struct_nlnstiffmass")          act = So_tet4::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_multidofsetcoupling")   act = So_tet4_volcoupl::calc_struct_multidofsetcoupling;
-  //else if (action=="postprocess_stress")                act = So_tet4::postprocess_stress;
-  //else dserror("Unknown type of action for So_tet4_volcoupl: %s",action.c_str());
+  else if (action=="calc_struct_multidofsetcoupling")   act = So3_volcoupl::calc_struct_multidofsetcoupling;
   // what should the element do
   switch(act)
   {
   //==================================================================================
   // coupling terms in force-vector and stiffness matrix
-  case So_tet4_volcoupl::calc_struct_multidofsetcoupling:
+  case So3_volcoupl::calc_struct_multidofsetcoupling:
   {
     coupltype::Evaluate(params,
                       discretization,
@@ -200,7 +203,7 @@ int DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Evaluate(ParameterList& params,
                       discretization,
                       la);
 
-    So_tet4::Evaluate(params,
+    so3_ele::Evaluate(params,
                       discretization,
                       la[0].lm_,
                       elemat1_epetra,
@@ -223,4 +226,10 @@ int DRT::ELEMENTS::So_tet4_volcoupl<coupltype>::Evaluate(ParameterList& params,
   return 0;
 }
 
-template class DRT::ELEMENTS::So_tet4_volcoupl<DRT::ELEMENTS::So3_Poro<DRT::Element::tet4> >;
+// TET4
+template class DRT::ELEMENTS::So3_volcoupl<DRT::ELEMENTS::So_tet4,DRT::ELEMENTS::So3_Poro<DRT::Element::tet4> >;
+template class DRT::ELEMENTS::So3_volcoupl<DRT::ELEMENTS::So_tet4,DRT::ELEMENTS::So3_Scatra<DRT::Element::tet4> >;
+// HEX8
+template class DRT::ELEMENTS::So3_volcoupl<DRT::ELEMENTS::So_hex8,DRT::ELEMENTS::So3_Poro<DRT::Element::hex8> >;
+template class DRT::ELEMENTS::So3_volcoupl<DRT::ELEMENTS::So_hex8,DRT::ELEMENTS::So3_Scatra<DRT::Element::hex8> >;
+

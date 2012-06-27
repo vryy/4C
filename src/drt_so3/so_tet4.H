@@ -83,6 +83,8 @@ public:
 
   //! @name Friends
   friend class So_tet4Type;
+  friend class So_tet4PoroType;
+  friend class So_tet4ScatraType;
 
   //@}
   //! @name Constructors and destructors and related methods

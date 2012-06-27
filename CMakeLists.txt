@@ -581,7 +581,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_hex8_evaluate.cpp
   src/drt_so3/so_hex8_input.cpp
   src/drt_so3/so_hex8_multiscale.cpp
-  src/drt_so3/so_hex8_volcoupl.cpp
   src/drt_so3/so_hex8_service.cpp
   src/drt_so3/so_hex8_thermo_lin_evaluate.cpp
   src/drt_so3/so_hex8_thermo_evaluate.cpp
@@ -628,13 +627,16 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_tet4_evaluate.cpp
   src/drt_so3/so_tet4_multiscale.cpp
   src/drt_so3/so_tet4_input.cpp
-  src/drt_so3/so_tet4_volcoupl.cpp
   src/drt_so3/so_weg6.cpp
   src/drt_so3/so_weg6_evaluate.cpp
   src/drt_so3/so_weg6_input.cpp
   src/drt_so3/so3_poro.cpp
   src/drt_so3/so3_poro_evaluate.cpp
   src/drt_so3/so3_poro_eletypes.cpp
+  src/drt_so3/so3_scatra.cpp
+  src/drt_so3/so3_scatra_evaluate.cpp
+  src/drt_so3/so3_scatra_eletypes.cpp
+  src/drt_so3/so3_volcoupl.cpp
 )
 set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight.cpp

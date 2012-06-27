@@ -1,23 +1,25 @@
 /*!----------------------------------------------------------------------
-\file so3_poro.H
+\file So3_scatra.H
 
 <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+   Maintainer: Cristobal Bertoglio
+               bertoglio@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15264
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef SO3_PORO_H
-#define SO3_PORO_H
+#ifndef SO3_SCATRA_H
+#define SO3_SCATRA_H
+
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_elementtype.H"
 
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
-#include "so3_poro_eletypes.H"
-
+#include "so3_scatra_eletypes.H"
 
 namespace DRT
 {
@@ -28,19 +30,19 @@ namespace ELEMENTS
 {
 
 /*!
-\brief A C++ version of a 3 dimensional solid element with modifications for porous media
+\brief A C++ version of a 3 dimensional solid element with modifications for volume coupling with scatra
 
 A structural 3 dimensional solid displacement element for large deformations
 and (near)-incompressibility.
 
 */
 template<DRT::Element::DiscretizationType distype>
-class So3_Poro : virtual public DRT::Element
+class So3_Scatra : virtual public DRT::Element
 {
 
   //! @name Friends
-  friend class So_tet4PoroType;
-  friend class So_hex8PoroType;
+  friend class So_tet4ScatraType;
+  friend class So_hex8ScatraType;
 
 protected:
 
@@ -53,7 +55,7 @@ protected:
   \param id : A unique global id
   \param owner : elements owner
   */
-  So3_Poro(int id, int owner);
+  So3_Scatra(int id, int owner);
 
   /*!
   \brief Copy Constructor
@@ -61,7 +63,7 @@ protected:
   Makes a deep copy of a Element
 
   */
-  So3_Poro(const So3_Poro& old);
+  So3_Scatra(const So3_Scatra& old);
 
   //@}
 
@@ -109,9 +111,9 @@ protected:
     switch(distype)
     {
     case DRT::Element::tet4:
-      return So_tet4PoroType::Instance().UniqueParObjectId();
+      return So_tet4ScatraType::Instance().UniqueParObjectId();
     case DRT::Element::hex8:
-      return So_hex8PoroType::Instance().UniqueParObjectId();
+      return So_hex8ScatraType::Instance().UniqueParObjectId();
     default: dserror("unknown element type!");
     }
   };
@@ -136,7 +138,7 @@ protected:
   \brief Destructor
 
   */
-  virtual ~So3_Poro(){};
+  virtual ~So3_Scatra(){};
 
   /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple
@@ -151,8 +153,8 @@ protected:
   {
     if (nds==1)
     {
-      // in case of Poroelasticity: nds=1 (second discretization) fluid: 4Dof/Node
-      return 4;
+      // in case of Scatra coupling: nds=1 (second discretization): 1Dof/Node
+      return 1; // TO CHECK (from Cristobal)
     }
     // structure, 3D: 3 Dofs per node
     //    return 3;
@@ -168,18 +170,18 @@ protected:
   */
   void Print(ostream& os) const = 0 ;
 
-  //virtual DRT::ElementType & ElementType() const = 0 ;
   virtual DRT::ElementType & ElementType() const
   {
     switch(distype)
     {
     case DRT::Element::tet4:
-      return So_tet4PoroType::Instance();
+      return So_tet4ScatraType::Instance();
     case DRT::Element::hex8:
-      return So_hex8PoroType::Instance();
+      return So_hex8ScatraType::Instance();
     default: dserror("unknown element type!");
     }
   };
+
 
   //@}
 
@@ -226,39 +228,16 @@ protected:
     Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
   );
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
-
-  this method evaluates a surface Neumann condition on the solid3 element
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  \return 0 if successful, negative otherwise
-
-  virtual int EvaluateNeumann
-  (
-    ParameterList& params,
-    DRT::Discretization&      discretization,
-    DRT::Condition&           condition,
-    vector<int>&              lm,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseMatrix* elemat1 = NULL
-  )=0;*/
-
   //! init the inverse of the jacobian and its determinant in the material configuration
-  virtual void InitJacobianMapping();
+    virtual void InitJacobianMapping();
+
 
   //@}
 
 //protected:
 
   //! don't want = operator
-  So3_Poro& operator = (const So3_Poro& old);
+  So3_Scatra& operator = (const So3_Scatra& old);
 
   //! action parameters recognized by so_hex8
   enum ActionType
@@ -292,36 +271,6 @@ protected:
   //! vector of coordinates of current integration point in reference coordinates
   vector<LINALG::Matrix<numdim_,1> > xsi_;
 
-  //! Calculate nonlinear stiffness and internal force for poroelasticity problems
-  virtual void nlnstiff_poroelast(
-      vector<int>& lm, ///< location matrix
-      vector<double>& disp, ///< current displacements
-      vector<double>& vel, ///< current velocities
-      //    vector<double>&           residual,       ///< current residual displ
-      LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
-      LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
-      LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
-      LINALG::Matrix<numdof_,numdof_>* reamatrix, // element reactive matrix
-      LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      //LINALG::Matrix<numdof_,1>* forcerea, // element reactive force vector
-      //LINALG::Matrix<numgpt_,numstr_>* elestress, ///< stresses at GP
-      //LINALG::Matrix<numgpt_,numstr_>* elestrain, ///< strains at GP
-      ParameterList& params, ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType iostress, ///< stress output option
-      const INPAR::STR::StrainType iostrain); ///< strain output option
-
-  //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
-  virtual void coupling_poroelast(
-      vector<int>& lm, ///< location matrix
-      vector<double>& disp, ///< current displacements
-      vector<double>& vel, ///< current velocities
-      LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
-      LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
-      LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
-      LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* reamatrix, //< element reactive matrix
-      LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      //LINALG::Matrix<numdof_,1>* forcerea, //< element reactive force vector
-      ParameterList& params); ///< algorithmic parameters e.g. time
 
 private:
 
@@ -337,4 +286,4 @@ private:
 } // namespace ELEMENTS
 } // namespace DRT
 
-#endif /* SO3_PORO_H */
+#endif /* SO3_SCATRA_H */
