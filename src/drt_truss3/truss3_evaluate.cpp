@@ -232,7 +232,8 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
     }
     break;
     default:
-    dserror("Unknown type of action for Truss3 %d", act);
+      dserror("Unknown type of action for Truss3 %d", act);
+    break;
   }
   return 0;
 
@@ -402,7 +403,8 @@ void DRT::ELEMENTS::Truss3::t3_energy(Teuchos::ParameterList&   params,
     }
     break;
     default:
-    dserror("unknown or improper type of material law");
+      dserror("unknown or improper type of material law");
+    break;
   }
 
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
@@ -454,6 +456,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(Teuchos::ParameterList&   params,
     break;
     default:
       dserror("Unknown type kintype_ for Truss3");
+    break;
   }
 
    return;
@@ -479,6 +482,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList&   params,
     break;
     default:
       dserror("Unknown type kintype_ for Truss3");
+    break;
   }
 
   // internal force vector stored by class variable before application of stochastic excitations
@@ -574,7 +578,8 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(std::vector<double>&      dis
     }
     break;
     default:
-    dserror("unknown or improper type of material law");
+      dserror("unknown or improper type of material law");
+    break;
   }
 
 
@@ -680,7 +685,8 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(std::vector<double>&      dis
     }
     break;
     default:
-    dserror("unknown or improper type of material law");
+      dserror("unknown or improper type of material law");
+    break;
   }
 
   // resulting force scaled by current length

@@ -303,8 +303,12 @@ public:
   //!\brief return cross section of the truss
   const double& CSec() const { return crosssec_;}
 
+  //! \brief return reference length
+  const double& L0() const { return lrefe_;}
+
   //! \brief internal force vector
   const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
+
   //@}
 
 private:

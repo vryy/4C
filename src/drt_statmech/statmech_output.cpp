@@ -488,6 +488,10 @@ void STATMECH::StatMechManager::Output(const int ndim,
         std::ostringstream filename;
         filename << "./DoubleBondDistances.dat";
         LoomOutput(dis,filename);
+
+        std::ostringstream filename2;
+        filename2 << "./ForceMeasurement.dat";
+        LoomOutputAttraction(dis, filename2, istep);
       }
     }
     break;
@@ -4085,6 +4089,77 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
     // print to file and close
     fprintf(fp, coverage.str().c_str());
     fclose(fp);
+  }
+  return;
+}
+
+/*------------------------------------------------------------------------------*                                                 |
+ | Measure the force between two vertical filaments by using a truss element    |
+ |                                                        (public) mueller 5/12 |
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
+{
+  for(int i=0; i<discret_->NumMyRowElements(); i++)
+  {
+    DRT::Element* element = discret_->lRowElement(i);
+    const DRT::ElementType & eot = element->ElementType();
+
+    // assumption: the Truss3 element has one explicit owner and therefore occurs only once in the row map
+    if(eot == DRT::ELEMENTS::Truss3Type::Instance())
+    {
+      // Get information on Boundary Conditions, i.e. the number of spatial dimensions (2D,3D)
+      vector<DRT::Condition*> dirichlet;
+      discret_->GetCondition("Dirichlet",dirichlet);
+      if (!dirichlet.size())
+        dserror("No Dirichlet boundary conditions in discretization");
+      // choose the first node which is not the (first) end node of the horizontal filament
+      const std::vector<int>* onoff = NULL;
+      for(int j=0; j<(int)dirichlet.size(); j++)
+        if(dirichlet.at(j)->Type() == DRT::Condition::PointDirichlet && dirichlet.at(j)->ContainsNode(0))
+        {
+          onoff = dirichlet.at(j)->Get<std::vector<int> >("onoff");
+          break;
+        }
+
+      // retrieve the internal force vector of the element
+      Teuchos::RCP<Epetra_SerialDenseVector> force = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->InternalForces();
+      LINALG::Matrix<3,1> fint;
+      for(int j=0; j<(int)fint.M(); j++)
+        fint(j) = (double)onoff->at(j)*(*force)[j];
+      // retrieve the current positions of the element's nodes
+      //get pointer at a node
+      const DRT::Node* node0 = element->Nodes()[0];
+      const DRT::Node* node1 = element->Nodes()[1];
+
+      // calculate the current length of the truss element (should be close to the x-difference in the 2D-case)
+      std::vector<int> dofnode0 = discret_->Dof(node0);
+      std::vector<int> dofnode1 = discret_->Dof(node1);
+      LINALG::Matrix<3, 1> distance;
+
+      for(int j=0; j<(int)distance.M(); j++)
+      {
+        distance(j) = node0->X()[j] + disrow[discret_->DofRowMap()->LID(dofnode0[j])];
+        distance(j) -= node1->X()[j] + disrow[discret_->DofRowMap()->LID(dofnode1[j])];
+      }
+
+      // retrieve reference length of the truss
+      double l0 = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->L0();
+
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "a");
+      std::stringstream internalforce;
+      internalforce << scientific << setprecision(15) << distance.Norm2()-l0<<"  "<< fint.Norm2() <<endl;
+
+      fprintf(fp, internalforce.str().c_str());
+      fclose(fp);
+
+      // every 20000 steps (in the 2 vertical filament case only), change the stiffness of the truss
+      if(step % 20000 == 0 && (*filamentnumber_)[filamentnumber_->MyLength()-1]==2)
+      {
+        double csecnp = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->CSec()/1.1;
+        dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->SetCrossSec(csecnp);
+      }
+    }
   }
   return;
 }
