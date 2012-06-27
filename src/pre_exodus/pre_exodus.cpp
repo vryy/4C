@@ -368,8 +368,9 @@ int main(
                 << line
                 << "\n" << std::endl;
 
-      // free the global problem instance
+      // free the global problem instance and the communicator
       problem->Done();
+      comm = Teuchos::null;
 
 #ifdef DSERROR_DUMP
       abort();
