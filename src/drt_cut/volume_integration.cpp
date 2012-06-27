@@ -329,7 +329,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     inter2.push_back(pt[1]);
     inter2.push_back(pt[2]);
 
-#if 0 //old way of point distribution method in intersection lines
+#if 1 //old way of point distribution method in intersection lines
     if(fabs(inter2[0]-inter1[0])<0.025*(maxi[0]-mini[0]))
     {
       vector<double> middle(3);
@@ -357,7 +357,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     else
       OnLine(inter1,inter2,linePts,numeach);
 #endif
-#if 1 //scaled point distribution method in intersection lines
+#if 0 //scaled point distribution method in intersection lines (produced more error than old method)
     int numX = (int)((fabs(inter2[0]-inter1[0])/(maxi[0]-mini[0]))*numeach+1);
     if(numX==1)
     {

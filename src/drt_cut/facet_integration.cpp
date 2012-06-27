@@ -756,20 +756,6 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
         }
       }
 
-      /************************************************************************************************///blockkk
-      /*for( std::vector<std::vector<GEO::CUT::Point*> >::const_iterator i=split.begin();i!=split.end();i++ )
-      {
-        std::cout<<"cell\n";
-        std::vector<GEO::CUT::Point*> cell = *i;;
-        for( std::vector<GEO::CUT::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
-        {
-          GEO::CUT::Point* pt = *j;
-          double coo[3];
-          pt->Coordinates(coo);
-          std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
-        }
-      }*/
-      /************************************************************************************************/
 #ifdef DEBUGCUTLIBRARY // check the area of facet computed from splitting and triangulation
   DebugAreaCheck( divCells, splitMethod, mesh ); 
 #endif
@@ -867,7 +853,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
   }
 
   //std::cout.precision(15);
-  if( fabs(area1-area2)>1e-8 ) //blockkk change the condition to if( fabs((area1-area2)/area1)>1e-10 )
+  if( fabs(area1-area2)>1e-8 )
   {
     std::cout<<"The coordinates of the facet\n";
     for( unsigned i=0;i<corners.size();i++ )
@@ -910,10 +896,10 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
 
     std::cout<<"Area1 = "<<area1<<"\t"<<"Area2 = "<<area2<<"\n";
     std::cout<<"!!!WARNING!!! area predicted by splitting and triangulation are not the same\n";
-    //dserror( "error: area predicted by splitting and triangulation are not the same" );//unblockkkk???
+    //dserror( "error: area predicted by splitting and triangulation are not the same" );
 
 
-    /***************************************************************************************///blockkk
+    /***************************************************************************************/
     divCells.clear();
 
     for ( std::vector<std::vector<Point*> >::const_iterator j=split1.begin();

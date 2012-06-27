@@ -792,7 +792,7 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
           my::EvalShapeFuncAndDerivsAtIntPoint( iquad, eid );
           bK_ss.MultiplyNT( my::funct_, my::funct_ );
 
-          invbK_ss.Update( my::fac_, invbK_ssTemp, 1.0 );
+          invbK_ss.Update( iquad.Weight(), invbK_ssTemp, 1.0 );
 
           const unsigned Velx = 0;
           const unsigned Vely = 1;
@@ -809,26 +809,26 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
           const unsigned Sigmazy = 4;
           const unsigned Sigmazz = 5;
 
-          K_su( Sigmaxx, Velx )->Update( my::fac_, *K_suTemp( Sigmaxx, Velx ), 1.0 );
-          K_su( Sigmaxy, Velx )->Update( my::fac_, *K_suTemp( Sigmaxy, Velx ), 1.0 );
-          K_su( Sigmayx, Vely )->Update( my::fac_, *K_suTemp( Sigmayx, Vely ), 1.0 );
-          K_su( Sigmaxz, Velx )->Update( my::fac_, *K_suTemp( Sigmaxz, Velx ), 1.0 );
-          K_su( Sigmazx, Velz )->Update( my::fac_, *K_suTemp( Sigmazx, Velz ), 1.0 );
-          K_su( Sigmayy, Vely )->Update( my::fac_, *K_suTemp( Sigmayy, Vely ), 1.0 );
-          K_su( Sigmayz, Vely )->Update( my::fac_, *K_suTemp( Sigmayz, Vely ), 1.0 );
-          K_su( Sigmazy, Velz )->Update( my::fac_, *K_suTemp( Sigmazy, Velz ), 1.0 );
-          K_su( Sigmazz, Velz )->Update( my::fac_, *K_suTemp( Sigmazz, Velz ), 1.0 );
+          K_su( Sigmaxx, Velx )->Update( iquad.Weight(), *K_suTemp( Sigmaxx, Velx ), 1.0 );
+          K_su( Sigmaxy, Velx )->Update( iquad.Weight(), *K_suTemp( Sigmaxy, Velx ), 1.0 );
+          K_su( Sigmayx, Vely )->Update( iquad.Weight(), *K_suTemp( Sigmayx, Vely ), 1.0 );
+          K_su( Sigmaxz, Velx )->Update( iquad.Weight(), *K_suTemp( Sigmaxz, Velx ), 1.0 );
+          K_su( Sigmazx, Velz )->Update( iquad.Weight(), *K_suTemp( Sigmazx, Velz ), 1.0 );
+          K_su( Sigmayy, Vely )->Update( iquad.Weight(), *K_suTemp( Sigmayy, Vely ), 1.0 );
+          K_su( Sigmayz, Vely )->Update( iquad.Weight(), *K_suTemp( Sigmayz, Vely ), 1.0 );
+          K_su( Sigmazy, Velz )->Update( iquad.Weight(), *K_suTemp( Sigmazy, Velz ), 1.0 );
+          K_su( Sigmazz, Velz )->Update( iquad.Weight(), *K_suTemp( Sigmazz, Velz ), 1.0 );
 
-          rhs( Sigmaxx, 0 )->Update( my::fac_, *rhsTemp( Sigmaxx, 0 ), 1.0 );
-          rhs( Sigmaxy, 0 )->Update( my::fac_, *rhsTemp( Sigmaxy, 0 ), 1.0 );
-          rhs( Sigmaxz, 0 )->Update( my::fac_, *rhsTemp( Sigmaxz, 0 ), 1.0 );
-          rhs( Sigmayy, 0 )->Update( my::fac_, *rhsTemp( Sigmayy, 0 ), 1.0 );
-          rhs( Sigmayz, 0 )->Update( my::fac_, *rhsTemp( Sigmayz, 0 ), 1.0 );
-          rhs( Sigmazz, 0 )->Update( my::fac_, *rhsTemp( Sigmazz, 0 ), 1.0 );
+          rhs( Sigmaxx, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmaxx, 0 ), 1.0 );
+          rhs( Sigmaxy, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmaxy, 0 ), 1.0 );
+          rhs( Sigmaxz, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmaxz, 0 ), 1.0 );
+          rhs( Sigmayy, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmayy, 0 ), 1.0 );
+          rhs( Sigmayz, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmayz, 0 ), 1.0 );
+          rhs( Sigmazz, 0 )->Update( iquad.Weight(), *rhsTemp( Sigmazz, 0 ), 1.0 );
 
-          K_su( Sigmaxx, Pres )->Update( my::fac_, *K_suTemp( Sigmaxx, Pres ), 1.0 );
-          K_su( Sigmayy, Pres )->Update( my::fac_, *K_suTemp( Sigmayy, Pres ), 1.0 );
-          K_su( Sigmazz, Pres )->Update( my::fac_, *K_suTemp( Sigmazz, Pres ), 1.0 );
+          K_su( Sigmaxx, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmaxx, Pres ), 1.0 );
+          K_su( Sigmayy, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmayy, Pres ), 1.0 );
+          K_su( Sigmazz, Pres )->Update( iquad.Weight(), *K_suTemp( Sigmazz, Pres ), 1.0 );
         }
       }
     }
