@@ -1120,15 +1120,13 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
      beloslist.set("Num Blocks",inparams.get<int>("AZSUB"));
      beloslist.set("Maximum Iterations",inparams.get<int>("AZITER"));
      beloslist.set("Adaptive Block Size",true);
-     beloslist.set("Output Frequency", inparams.get<int>("AZOUTPUT"));
-      //     if (verbosity > 0)
-      //       beloslist.set("Verbosity", Belos::Errors);
-      //     else if (verbosity > 1)
-      //       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
-      //     else if (verbosity > 3)
-      //       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails);
-      //     else if (verbosity > 6)
-     beloslist.set("Verbosity", Belos::Errors + Belos::Warnings/*+ Belos::StatusTestDetails + Belos::TimingDetails*/);
+     int verbosity = inparams.get<int>("AZOUTPUT");
+     beloslist.set("Output Frequency", verbosity);
+     if (verbosity > 0) {
+       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails + Belos::TimingDetails);
+     } else {
+       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
+     }
      beloslist.set("Convergence Tolerance",inparams.get<double>("AZTOL"));
      //-------------------------------- set parameters for Ifpack if used
      if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
