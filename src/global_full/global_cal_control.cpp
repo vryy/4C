@@ -45,7 +45,6 @@ void ntacal()
     case prb_structure:
       caldyn_drt();
       break;
-    case prb_fluid_pm:
     case prb_fluid:
       dyn_fluid_drt(restart);
       break;
@@ -72,7 +71,6 @@ void ntacal()
       break;
 
     case prb_fsi:
-    case prb_pfsi:
     case prb_fsi_lung:
       fsi_ale_drt();
       break;

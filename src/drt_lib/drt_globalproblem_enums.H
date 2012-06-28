@@ -14,6 +14,9 @@ Maintainer: Georg Bauer
 #ifndef DRT_GLOBALPROBLEM_ENUMS_H
 #define DRT_GLOBALPROBLEM_ENUMS_H
 
+#include <string>
+#include <map>
+
 /*----------------------------------------------------------------------*
  | PROBLEM TYPES                                          m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -41,23 +44,21 @@ typedef enum _PROBLEM_TYP
                        prb_ale,          /*  pure ale problem */
                        prb_tsi,          /*  thermal structure interaction */
                        prb_thermo,       /*  thermal problem */
-                       prb_fluid_pm,     /*  fluid with (any) projection method */
                        prb_scatra,       /*  scalar transport problem (e.g. convection-diffusion) */
-                       prb_pfsi,         /*  projection fsi */
                        prb_loma,         /*  low-Mach-number flow problem */
                        prb_elch,         /*  electrochemical problem */
                        prb_combust,      /*  combustion problem */
                        prb_art_net,      /*  arterial network problem */ /*_1D_ARTERY_*/
                        prb_red_airways,  /*  reduced dimensional airways */
-                       prb_poroelast,     /*  poroelasticity */
-                       prb_fluid_topopt,  /*  fluid topology optimization */
+                       prb_poroelast,    /*  poroelasticity */
+                       prb_fluid_topopt, /*  fluid topology optimization */
                        prb_np_support    /* supporting procs for nested parallelism */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","biofilm_fsi","thermo_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways","poroelast","fluid_topopt","np_support",NULL }
+#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","biofilm_fsi","thermo_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","scatra","loma","elch","combustion","art_net","red_airways","poroelast","fluid_topopt","np_support",NULL }
 
 
 /*----------------------------------------------------------------------*/
