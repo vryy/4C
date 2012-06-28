@@ -1169,11 +1169,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-  case prb_fluid_pm:
-  {
-    dserror("prb_fluid_pm not supported by BACI. just use projection method as fluid-solver for fluid problems!");
-    break;
-  }
   case prb_tsi:
   case prb_tfsi_aero:
   {
