@@ -4233,77 +4233,16 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
 
     // current node positions (column map)
     std::map<int, LINALG::Matrix<3, 1> > currentpositions;
-    currentpositions.clear();
+    std::map<int, LINALG::Matrix<3, 1> > currentrotations;
 
     Epetra_Vector discol(*discret_->DofColMap(), true);
-
     LINALG::Export(disrow, discol);
 
-    for (int i=0; i<discret_->NumMyColNodes(); ++i)
-    {
-      //get pointer at a node
-      const DRT::Node* node = discret_->lColNode(i);
-
-      //get GIDs of this node's degrees of freedom
-      std::vector<int> dofnode = discret_->Dof(node);
-
-      LINALG::Matrix<3, 1> currpos;
-
-      for(int j=0; j<(int)currpos.M(); j++)
-        currpos(j) = node->X()[j] + discol[discret_->DofColMap()->LID(dofnode[j])];
-
-      currentpositions[node->LID()] = currpos;
-    }
+    GetNodePositions(discol,currentpositions, currentrotations, true);
 
     // NODAL TRIAD UPDATE
-    //first get triads at all row nodes
-    Epetra_MultiVector nodaltriadsrow(*(discret_->NodeRowMap()), 4, true);
     Epetra_MultiVector nodaltriadscol(*(discret_->NodeColMap()),4,true);
-    Epetra_Import importer(*(discret_->NodeColMap()),*(discret_->NodeRowMap()));
-
-    for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); i++)
-    {
-      //lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
-      int lowestid(((discret_->lRowNode(i)->Elements())[0])->Id());
-      int lowestidele(0);
-      for (int j=0; j<discret_->lRowNode(i)->NumElement(); j++)
-        if (((discret_->lRowNode(i)->Elements())[j])->Id() < lowestid)
-        {
-          lowestid = ((discret_->lRowNode(i)->Elements())[j])->Id();
-          lowestidele = j;
-        }
-
-      //check type of element (orientation triads are not for all elements available in the same way
-      DRT::ElementType & eot = ((discret_->lRowNode(i)->Elements())[lowestidele])->ElementType();
-      //if element is of type beam3ii get nodal triad
-      if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
-      {
-        DRT::ELEMENTS::Beam3ii* filele = NULL;
-        filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_->lRowNode(i)->Elements()[lowestidele]);
-
-        //check whether crosslinker is connected to first or second node of that element
-        int nodenumber = 0;
-        if(discret_->lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
-          nodenumber = 1;
-
-        //save nodal triad of this node in nodaltriadrow
-        for(int j=0; j<4; j++)
-          nodaltriadsrow[j][i] = ((filele->Qnew())[nodenumber])(j);
-      }
-      else if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-      {
-        DRT::ELEMENTS::Beam3* filele = NULL;
-        filele = dynamic_cast<DRT::ELEMENTS::Beam3*> (discret_->lRowNode(i)->Elements()[lowestidele]);
-
-        //approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
-        for(int j=0; j<4; j++)
-          nodaltriadsrow[j][i] = ((filele->Qnew())[0])(j);
-      }
-      else
-        dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
-    }
-    //export nodaltriadsrow to col map variable
-    nodaltriadscol.Import(nodaltriadsrow,importer,Insert);
+    GetBindingSpotTriads(&nodaltriadscol);
 
     // distance and orientation checks
     int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
@@ -4354,39 +4293,43 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
                 LID(0,0) = i;
                 LID(1,0) = j;
 
-                LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0,0)))->second);
-                distance -= (currentpositions.find((int)LID(1,0)))->second;
-
-                // current distance bin
-                int currdistbin = (int)floor(distance.Norm2()/maxdist*numbins);
-                // reduce bin if distance == maxdist
-                if(currdistbin==numbins)
-                  currdistbin--;
-
-                // direction between currently considered two nodes
-                LINALG::Matrix<3,1> direction(distance);
-                direction.Scale(1.0/direction.Norm2());
-                RCP<double> phifil = rcp(new double(0.0));
-                bool orientation = CheckOrientation(direction,nodaltriadscol,LID,phifil);
-
-                // increment count for that bin
-                orderparameterbinsrow[0][currdistbin] += 1.0;
-                // order parameter
-                orderparameterbinsrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
-
-                // proximity check
-                if(distance.Norm2()>rmin && distance.Norm2()<rmax)
+                // neglect correlation of binding site on the same filament
+                if((*filamentnumber_)[i]!=(*filamentnumber_)[j])
                 {
-                  // if angular constraints are met, increase binding spot count
-                  if(orientation)
-                    bindingspots++;
+                  LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0,0)))->second);
+                  distance -= (currentpositions.find((int)LID(1,0)))->second;
 
-                  // determine the bin
-                  int	curranglebin = (int)floor((*phifil)/maxangle*numbins);
-                  // in case the distance is exactly periodlength*sqrt(3)
-                  if(curranglebin==numbins)
-                    curranglebin--;
-                  anglesrow[curranglebin] += 1.0;
+                  // current distance bin
+                  int currdistbin = (int)floor(distance.Norm2()/maxdist*numbins);
+                  // reduce bin if distance == maxdist
+                  if(currdistbin==numbins)
+                    currdistbin--;
+
+                  // direction between currently considered two nodes
+                  LINALG::Matrix<3,1> direction(distance);
+                  direction.Scale(1.0/direction.Norm2());
+                  RCP<double> phifil = rcp(new double(0.0));
+                  bool orientation = CheckOrientation(direction,nodaltriadscol,LID,phifil);
+
+                  // increment count for that bin
+                  orderparameterbinsrow[0][currdistbin] += 1.0;
+                  // order parameter
+                  orderparameterbinsrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
+
+                  // proximity check
+                  if(distance.Norm2()>rmin && distance.Norm2()<rmax)
+                  {
+                    // if angular constraints are met, increase binding spot count
+                    if(orientation)
+                      bindingspots++;
+
+                    // determine the bin
+                    int	curranglebin = (int)floor((*phifil)/maxangle*numbins);
+                    // in case the distance is exactly periodlength*sqrt(3)
+                    if(curranglebin==numbins)
+                      curranglebin--;
+                    anglesrow[curranglebin] += 1.0;
+                  }
                 }
               }
               else
