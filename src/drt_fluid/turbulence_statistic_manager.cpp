@@ -57,10 +57,22 @@ namespace FLD
     myforce_         (fluid.trueresidual_  ),
     myfilteredvel_   (fluid.filteredvel_   ),
     myfilteredreystr_(fluid.filteredreystr_),
-    myfsvelaf_       (fluid.fsvelaf_       )
+    myfsvelaf_       (fluid.fsvelaf_       ),
+    flow_            (no_special_flow      ),
+    withscatra_      (false                ),
+    turbmodel_      (INPAR::FLUID::no_model),
+    subgrid_dissipation_(false             ),
+    inflow_(false                          ),
+    statistics_general_mean_(Teuchos::null ),
+    statistics_channel_(Teuchos::null      ),
+    statistics_channel_multiphase_(Teuchos::null),
+    statistics_ccy_(Teuchos::null          ),
+    statistics_ldc_(Teuchos::null          ),
+    statistics_bfs_(Teuchos::null          ),
+    statistics_oracles_(Teuchos::null      ),
+    statistics_sqc_(Teuchos::null          )
   {
-
-    subgrid_dissipation_=true;
+    subgrid_dissipation_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"),"SUBGRID_DISSIPATION");
     // initialize
     withscatra_ = false;
 
@@ -169,6 +181,8 @@ namespace FLD
          or params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2"
          or params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
         {
+          // do not write any dissipation rates for inflow channels
+          subgrid_dissipation_ = false;
           // allocate one instance of the averaging procedure for the flow under consideration
           statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
@@ -197,6 +211,8 @@ namespace FLD
       {
         if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
+          // do not write any dissipation rates for inflow channels
+          subgrid_dissipation_ = false;
           // allocate one instance of the averaging procedure for the flow under consideration
           statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
@@ -329,7 +345,20 @@ namespace FLD
     mygridvelaf_     (null                 ),
     myfilteredvel_   (null                 ),
     myfilteredreystr_(null                 ),
-    myfsvelaf_       (null                 )
+    myfsvelaf_       (null                 ),
+    flow_            (no_special_flow      ),
+    withscatra_      (false                ),
+    turbmodel_      (INPAR::FLUID::no_model),
+    subgrid_dissipation_(false             ),
+    inflow_(false                          ),
+    statistics_general_mean_(Teuchos::null ),
+    statistics_channel_(Teuchos::null      ),
+    statistics_channel_multiphase_(Teuchos::null),
+    statistics_ccy_(Teuchos::null          ),
+    statistics_ldc_(Teuchos::null          ),
+    statistics_bfs_(Teuchos::null          ),
+    statistics_oracles_(Teuchos::null      ),
+    statistics_sqc_(Teuchos::null          )
   {
 
     // subgrid dissipation
@@ -373,6 +402,8 @@ namespace FLD
       {
         if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
+          // do not write any dissipation rates for inflow channels
+          subgrid_dissipation_ = false;
           // allocate one instance of the averaging procedure for the flow under consideration
           statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
@@ -472,6 +503,8 @@ namespace FLD
         turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
       }
     }
+    else
+      turbmodel_ = INPAR::FLUID::no_model;
 
     // parameters for sampling/dumping period
     if (flow_ != no_special_flow)
@@ -647,7 +680,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
 
-        statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
+        statistics_channel_->DoTimeSample(myvelnp_,myforce_);
         break;
       }
       case loma_channel_flow_of_height_2:
@@ -655,7 +688,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
 
-        statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,*myforce_,eosfac);
+        statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,myforce_,eosfac);
         break;
       }
       case scatra_channel_flow_of_height_2:
@@ -663,7 +696,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent passive scalar transport in channel");
 
-        statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,*myforce_);
+        statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,myforce_);
         break;
       }
       case lid_driven_cavity:
@@ -706,7 +739,7 @@ namespace FLD
             if (inflow_)
             {
               if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-                statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
+                statistics_channel_->DoTimeSample(myvelnp_,myforce_);
               else
                dserror("channel_flow_of_height_2 expected!");
             }
@@ -719,7 +752,7 @@ namespace FLD
             if (inflow_)
             {
               if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
-                statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,*myforce_);
+                statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,myforce_);
               else
                 dserror("scatra_channel_flow_of_height_2 expected!");
             }
@@ -734,7 +767,7 @@ namespace FLD
           {
             if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
-              statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,*myforce_,eosfac);
+              statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,myforce_,eosfac);
             }
           }
         }
@@ -753,7 +786,7 @@ namespace FLD
         if (inflow_)
         {
           if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-            statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
+            statistics_channel_->DoTimeSample(myvelnp_,myforce_);
           else
             dserror("loma_channel_flow_of_height_2 expected!");
         }
@@ -824,11 +857,14 @@ namespace FLD
         switch(flow_)
         {
         case channel_flow_of_height_2:
+        case loma_channel_flow_of_height_2:
+        case scatra_channel_flow_of_height_2:
         {
           if(statistics_channel_==null)
           {
             dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
           }
+          //dserror("no subgrid dissipation");
 
           // set vector values needed by elements
           map<string,RCP<Epetra_Vector> > statevecs;
@@ -975,7 +1011,7 @@ namespace FLD
         {
           if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
-            statistics_channel_->DoTimeSample(velnp,*force);
+            statistics_channel_->DoTimeSample(velnp,force);
           }
         }
         break;

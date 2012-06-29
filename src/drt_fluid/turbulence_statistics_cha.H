@@ -133,8 +133,8 @@ public:
   moments for velocities, pressure and Cs are added to global
   'sum' vectors.
   */
-  void DoTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                    Epetra_Vector & force);
+  void DoTimeSample(const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
+                    const Teuchos::RefCountPtr<const Epetra_Vector> force);
 
 
   /*!
@@ -142,9 +142,9 @@ public:
   values are added to global vectors. This method allows to do the time
   average of the nodal values after a certain amount of timesteps.
   */
-  void DoLomaTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                        Teuchos::RefCountPtr<Epetra_Vector> scanp,
-                        Epetra_Vector &                     force,
+  void DoLomaTimeSample(const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
+                        const Teuchos::RefCountPtr<const Epetra_Vector> scanp,
+                        const Teuchos::RefCountPtr<const Epetra_Vector> force,
                         const double                        eosfac);
 
 
@@ -153,9 +153,9 @@ public:
   values are added to global vectors. This method allows to do the time
   average of the nodal values after a certain amount of timesteps.
   */
-  void DoScatraTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                          Teuchos::RefCountPtr<Epetra_Vector> scanp,
-                          Epetra_Vector &                     force);
+  void DoScatraTimeSample(const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
+                          const Teuchos::RefCountPtr<const Epetra_Vector> scanp,
+                          const Teuchos::RefCountPtr<const Epetra_Vector> force);
 
 
   /*!
@@ -226,16 +226,16 @@ public:
            similarity model
   */
 
-  void AddSubfilterStresses(const RCP<Epetra_Vector>   stress12);
+  void AddSubfilterStresses(const RCP<const Epetra_Vector>   stress12);
 
   /*!
     \brief Add parameters of multifractal
            subgrid-scales model
   */
 
-  void AddModelParamsMultifractal(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-                                  Teuchos::RefCountPtr<Epetra_Vector> fsvelnp,
-                                  bool                                withscatra);
+  void AddModelParamsMultifractal(const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
+                                  const Teuchos::RefCountPtr<const Epetra_Vector> fsvelnp,
+                                  const bool                                withscatra);
 
   /*!
     \brief do averaging of residuals, dissipation rates etc
@@ -263,7 +263,7 @@ public:
 
   */
 
-  void TimeAverageMeansAndOutputOfStatistics(int step);
+  void TimeAverageMeansAndOutputOfStatistics(const int step);
 
   /*!
   \brief Compute a time average of the mean values over all steps
@@ -271,7 +271,7 @@ public:
 
   */
 
-  void DumpStatistics(int step);
+  void DumpStatistics(const int step);
 
   /*!
   \brief Compute a time average of the mean values for low-Mach-number
@@ -280,7 +280,7 @@ public:
 
   */
 
-  void DumpLomaStatistics(int step);
+  void DumpLomaStatistics(const int step);
 
   /*!
   \brief Compute a time average of the mean values for turbulent
@@ -289,7 +289,7 @@ public:
 
   */
 
-  void DumpScatraStatistics(int step);
+  void DumpScatraStatistics(const int step);
 
   /*!
   \brief Reset sums and number of samples to 0

@@ -241,8 +241,8 @@ private:
 
   //! compare operator for doubles up to a precision of 1e-8
   struct doublecomp {
-    bool operator() (const double& lhs, const double& rhs) const
-      {return lhs<rhs-1e-8;}
+    bool operator() (const double lhs, const double rhs) const
+      {return lhs<(rhs-1e-8);}
   };
 }; // end class TurbulenceStatisticsGeneralMean
 

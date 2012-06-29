@@ -257,7 +257,7 @@ public:
   /*
   \brief provide access to turbulence statistics manager
   */
-  Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() const { return turbstatisticsmanager_; }
+  Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() { return turbstatisticsmanager_; }
 
   /*!
   \brief update configuration and output to file/screen

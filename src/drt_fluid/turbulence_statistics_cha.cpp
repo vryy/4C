@@ -60,6 +60,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       std::cout << "Current coordinate is: " << inflowmax_ << std::endl;
       std::cout << "---------------------------------------------------------------------------\n" << std::endl;
     }
+
+    // do not write any dissipation rates for inflow channels
+    subgrid_dissipation_ = false;
   }
 
   //----------------------------------------------------------------------
@@ -1170,19 +1173,19 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         log_MF = Teuchos::rcp(new std::ofstream(s_mf.c_str(),ios::out));
         (*log_MF) << "# Statistics for turbulent incompressible channel flow (parameter multifractal subgrid scales)\n\n";
       }
-
-      // additional output of residuals and subscale quantities
-      if (subgrid_dissipation_)
-      {
-        std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-        s_res.append(".res_statistics");
-
-        log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
-        (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
-        (*log_res) << "# All values are first averaged over the integration points in an element \n";
-        (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
-      }
     }
+  }
+
+  // additional output of residuals and subscale quantities
+  if (subgrid_dissipation_)
+  {
+    std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s_res.append(".res_statistics");
+
+    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+    (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
+    (*log_res) << "# All values are first averaged over the integration points in an element \n";
+    (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
   }
 
   // clear statistics
@@ -1209,8 +1212,8 @@ FLD::TurbulenceStatisticsCha::~TurbulenceStatisticsCha()
 
  -----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::DoTimeSample(
-  Teuchos::RefCountPtr<Epetra_Vector> velnp,
-  Epetra_Vector & force
+  const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
+  const Teuchos::RefCountPtr<const Epetra_Vector> force
   )
 {
   // we have an additional sample
@@ -1307,26 +1310,26 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
         }
 
         local_inc=0.0;
-        for(int rr=0;rr<force.MyLength();++rr)
+        for(int rr=0;rr<force->MyLength();++rr)
         {
-          local_inc+=force[rr]*(*toggleu_)[rr];
+          local_inc+=(*force)[rr]*(*toggleu_)[rr];
         }
         discret_->Comm().SumAll(&local_inc,&inc,1);
         sumforceu_+=inc;
 
         local_inc=0.0;
-        for(int rr=0;rr<force.MyLength();++rr)
+        for(int rr=0;rr<force->MyLength();++rr)
         {
-          local_inc+=force[rr]*(*togglev_)[rr];
+          local_inc+=(*force)[rr]*(*togglev_)[rr];
         }
         discret_->Comm().SumAll(&local_inc,&inc,1);
         sumforcev_+=inc;
 
 
         local_inc=0.0;
-        for(int rr=0;rr<force.MyLength();++rr)
+        for(int rr=0;rr<force->MyLength();++rr)
         {
-          local_inc+=force[rr]*(*togglew_)[rr];
+          local_inc+=(*force)[rr]*(*togglew_)[rr];
         }
         discret_->Comm().SumAll(&local_inc,&inc,1);
         sumforcew_+=inc;
@@ -1371,9 +1374,9 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
-  Teuchos::RefCountPtr<Epetra_Vector> velnp,
-  Teuchos::RefCountPtr<Epetra_Vector> scanp,
-  Epetra_Vector &                     force,
+  const Teuchos::RefCountPtr< const Epetra_Vector> velnp,
+  const Teuchos::RefCountPtr< const Epetra_Vector> scanp,
+  const Teuchos::RefCountPtr< const Epetra_Vector> force,
   const double                        eosfac
   )
 {
@@ -1437,16 +1440,16 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
       }
 
       double inc=0.0;
-      force.Dot(*toggleu_,&inc);
+      force->Dot(*toggleu_,&inc);
       sumforcebu_+=inc;
       inc=0.0;
-      force.Dot(*togglev_,&inc);
+      force->Dot(*togglev_,&inc);
       sumforcebv_+=inc;
       inc=0.0;
-      force.Dot(*togglew_,&inc);
+      force->Dot(*togglew_,&inc);
       sumforcebw_+=inc;
       inc=0.0;
-      force.Dot(*togglep_,&inc);
+      force->Dot(*togglep_,&inc);
       sumqwb_+=inc;
     }
 
@@ -1491,16 +1494,16 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
       }
 
       double inc=0.0;
-      force.Dot(*toggleu_,&inc);
+      force->Dot(*toggleu_,&inc);
       sumforcetu_+=inc;
       inc=0.0;
-      force.Dot(*togglev_,&inc);
+      force->Dot(*togglev_,&inc);
       sumforcetv_+=inc;
       inc=0.0;
-      force.Dot(*togglew_,&inc);
+      force->Dot(*togglew_,&inc);
       sumforcetw_+=inc;
       inc=0.0;
-      force.Dot(*togglep_,&inc);
+      force->Dot(*togglep_,&inc);
       sumqwt_+=inc;
     }
   }
@@ -1517,9 +1520,9 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(
-  Teuchos::RefCountPtr<Epetra_Vector> velnp,
-  Teuchos::RefCountPtr<Epetra_Vector> scanp,
-  Epetra_Vector &                     force)
+  const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
+  const Teuchos::RefCountPtr<const Epetra_Vector> scanp,
+  const Teuchos::RefCountPtr<const Epetra_Vector> force)
 {
   // we have an additional sample
 
@@ -1581,16 +1584,16 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(
       }
 
       double inc=0.0;
-      force.Dot(*toggleu_,&inc);
+      force->Dot(*toggleu_,&inc);
       sumforcebu_+=inc;
       inc=0.0;
-      force.Dot(*togglev_,&inc);
+      force->Dot(*togglev_,&inc);
       sumforcebv_+=inc;
       inc=0.0;
-      force.Dot(*togglew_,&inc);
+      force->Dot(*togglew_,&inc);
       sumforcebw_+=inc;
       inc=0.0;
-      force.Dot(*togglep_,&inc);
+      force->Dot(*togglep_,&inc);
       sumqwb_+=inc;
     }
 
@@ -1635,16 +1638,16 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(
       }
 
       double inc=0.0;
-      force.Dot(*toggleu_,&inc);
+      force->Dot(*toggleu_,&inc);
       sumforcetu_+=inc;
       inc=0.0;
-      force.Dot(*togglev_,&inc);
+      force->Dot(*togglev_,&inc);
       sumforcetv_+=inc;
       inc=0.0;
-      force.Dot(*togglew_,&inc);
+      force->Dot(*togglew_,&inc);
       sumforcetw_+=inc;
       inc=0.0;
-      force.Dot(*togglep_,&inc);
+      force->Dot(*togglep_,&inc);
       sumqwt_+=inc;
     }
   }
@@ -2563,7 +2566,7 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
                         similarity model
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<Epetra_Vector>   stress12)
+void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<const Epetra_Vector>   stress12)
 {
   RefCountPtr<vector<double> > global_incr_stress12_sum;
   RefCountPtr<vector<double> > local_stress12_sum;
@@ -2637,9 +2640,9 @@ void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<Epetra_Vector>
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
-     Teuchos::RefCountPtr<Epetra_Vector> velnp,
-     Teuchos::RefCountPtr<Epetra_Vector> fsvelnp,
-     bool                                withscatra)
+  const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
+  const Teuchos::RefCountPtr<const Epetra_Vector> fsvelnp,
+  const bool                                withscatra)
 {
   // action for elements
   ParameterList paramsele;
@@ -3371,7 +3374,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
           since the last output. Dump the result to file.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int step)
+void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const int step)
 {
   if (numsamp_ == 0)
   {
@@ -3822,7 +3825,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
        of the sampling period so far. Dump the result to file.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
+void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
 {
   if (numsamp_ == 0)
   {
@@ -4119,7 +4122,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
                       Dump the result to file.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
+void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
 {
   if (numsamp_ == 0) dserror("No samples to do time average");
 
@@ -4409,7 +4412,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(int step)
                       Dump the result to file.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(int step)
+void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
 {
   if (numsamp_ == 0) dserror("No samples to do time average");
 

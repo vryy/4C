@@ -249,9 +249,7 @@ public:
   virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   /// provide access to the turbulence statistic manager
-  Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
-    {return statisticsmanager_;};
-
+  virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null;};
 
   /// update velocity increment after Newton step
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
@@ -278,8 +276,6 @@ protected:
   INPAR::FLUID::PhysicalType          physicaltype_; ///< flag for physical type of fluid flow (standard: incompressible)
 
   int     myrank_;      ///< the processor ID from the communicator
-
-  Teuchos::RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;        /// manager for turbulence statistics
 
 }; // class TimInt
 
