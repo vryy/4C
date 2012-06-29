@@ -2235,7 +2235,6 @@ void Nitsche_SysmatBoundaryCell(
     //--------------------------------------------------------------------------------------------
 
     const double halftimefacfac  = 0.5*timefacfac;
-    const double pentimefacfac   = fac_pen*timefacfac;
     const double alphatimefacfac = alphau*timefacfac;
 
 #ifdef COMBUST_NITSCHE_VISCCONSISTMEAN
@@ -2494,6 +2493,7 @@ void Nitsche_SysmatBoundaryCell(
 #endif
 
 #ifdef COMBUST_NITSCHE_PENALTY
+    const double pentimefacfac   = fac_pen*timefacfac;
     //--------------------     |                             |
     // normal penalty term   + |  1/h || v ||*n, || Du ||*n  |
     //--------------------     |                             |
