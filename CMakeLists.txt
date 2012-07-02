@@ -636,7 +636,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_scatra.cpp
   src/drt_so3/so3_scatra_evaluate.cpp
   src/drt_so3/so3_scatra_eletypes.cpp
-  src/drt_so3/so3_volcoupl.cpp
 )
 set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight.cpp
@@ -1325,6 +1324,7 @@ set(OBJS_DRT_STRU_ALE
 )  
 set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_dyn.cpp
+  src/drt_poroelast/poro_base.cpp
   src/drt_poroelast/poroelast_monolithic.cpp
   src/drt_poroelast/poroelast_utils.cpp
   src/drt_poroelast/poro_monolithicstructuresplit.cpp

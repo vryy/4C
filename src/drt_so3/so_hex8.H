@@ -86,7 +86,7 @@ There are 2 sets of EAS enhancements for GL-strains to alleviate locking
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
-class So_hex8 : virtual public DRT::Element
+class So_hex8 : public DRT::Element
 {
 public:
 

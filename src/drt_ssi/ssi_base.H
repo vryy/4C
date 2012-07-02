@@ -1,9 +1,15 @@
-/*
- * ssi_algo.H
- *
- *  Created on: Jun 28, 2012
- *      Author: vuong
- */
+/*!------------------------------------------------------------------------------------------------*
+ \file ssi_base.H
+
+ \brief base class for all scalar structure algorithms
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_ALGO_H_
 #define SSI_ALGO_H_

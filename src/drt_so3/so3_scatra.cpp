@@ -21,9 +21,9 @@
  |  ctor (public)                                            vuong 03/12|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::So3_Scatra<distype>::So3_Scatra(int id, int owner):
-DRT::Element(id,owner),
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::So3_Scatra(int id, int owner):
+so3_ele(id,owner),
 intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
@@ -35,9 +35,9 @@ intpoints_(distype)
  |  copy-ctor (public)                                       vuong 03/12|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::So3_Scatra<distype>::So3_Scatra(const DRT::ELEMENTS::So3_Scatra<distype>& old):
-DRT::Element(old),
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::So3_Scatra(const DRT::ELEMENTS::So3_Scatra<so3_ele,distype>& old):
+so3_ele(old),
 intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
@@ -48,26 +48,29 @@ intpoints_(distype)
  |  Pack data                                                  (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<distype>::Pack(DRT::PackBuffer& data) const
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  so3_ele::AddtoPack(data,type);
   // data_
-  AddtoPack(data,data_);
+  //so3_ele::AddtoPack(data,data_);
 
   // detJ_
-  AddtoPack(data,detJ_);
+  //so3_ele::AddtoPack(data,detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
-  AddtoPack(data,size);
-  for (int i=0; i<size; ++i)
-    AddtoPack(data,invJ_[i]);
+  //const int size = (int)invJ_.size();
+  //so3_ele::AddtoPack(data,size);
+  //for (int i=0; i<size; ++i)
+  //  so3_ele::AddtoPack(data,invJ_[i]);
+
+  // add base class Element
+  so3_ele::Pack(data);
 
   return;
 }
@@ -76,27 +79,32 @@ void DRT::ELEMENTS::So3_Scatra<distype>::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<distype>::Unpack(const vector<char>& data)
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Unpack(const vector<char>& data)
 {
   vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  so3_ele::ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // data_
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
+  //vector<char> tmp(0);
+  //so3_ele::ExtractfromPack(position,data,tmp);
+  //data_.Unpack(tmp);
 
   // detJ_
-  ExtractfromPack(position,data,detJ_);
+  //so3_ele::ExtractfromPack(position,data,detJ_);
   // invJ_
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  invJ_.resize(size, LINALG::Matrix<numdim_,numdim_>(true));
-  for (int i=0; i<size; ++i)
-    ExtractfromPack(position,data,invJ_[i]);
+  //int size = 0;
+  //so3_ele::ExtractfromPack(position,data,size);
+  //invJ_.resize(size, LINALG::Matrix<numdim_,numdim_>(true));
+  //for (int i=0; i<size; ++i)
+  //  so3_ele::ExtractfromPack(position,data,invJ_[i]);
+
+  // extract base class Element
+  vector<char> basedata(0);
+  so3_ele::ExtractfromPack(position,data,basedata);
+  so3_ele::Unpack(basedata);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -106,8 +114,8 @@ void DRT::ELEMENTS::So3_Scatra<distype>::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              vuong 03/12|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<distype>::Print(ostream& os) const
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Print(ostream& os) const
 {
   os << "So3_scatra ";
   return;
@@ -115,12 +123,38 @@ void DRT::ELEMENTS::So3_Scatra<distype>::Print(ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-  template<DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::So3_Scatra<distype>::ReadElement(const std::string& eletype,
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::ReadElement(const std::string& eletype,
                                              const std::string& eledistype,
                                              DRT::INPUT::LineDefinition* linedef)
 {
+  so3_ele::ReadElement(eletype,eledistype,linedef );
+
   return true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+inline DRT::Node** DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Nodes()
+{
+  return so3_ele::Nodes();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+inline RCP<MAT::Material>  DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Material() const
+{
+  return so3_ele::Material();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+inline int DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Id() const
+{
+  return so3_ele::Id();
 }
 
 #include "so3_scatra_fwd.hpp"

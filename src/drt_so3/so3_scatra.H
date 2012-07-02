@@ -36,15 +36,15 @@ A structural 3 dimensional solid displacement element for large deformations
 and (near)-incompressibility.
 
 */
-template<DRT::Element::DiscretizationType distype>
-class So3_Scatra : virtual public DRT::Element
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+class So3_Scatra : public so3_ele
 {
 
   //! @name Friends
   friend class So_tet4ScatraType;
   friend class So_hex8ScatraType;
 
-protected:
+public:
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -64,6 +64,12 @@ protected:
 
   */
   So3_Scatra(const So3_Scatra& old);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~So3_Scatra(){};
 
   //@}
 
@@ -97,7 +103,7 @@ protected:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Element* Clone() const = 0 ;
+  DRT::Element* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -135,12 +141,6 @@ protected:
   virtual void Unpack(const vector<char>& data);
 
   /*!
-  \brief Destructor
-
-  */
-  virtual ~So3_Scatra(){};
-
-  /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple
          dofsets (implements pure virtual DRT::Element)
 
@@ -168,7 +168,7 @@ protected:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const = 0 ;
+  void Print(ostream& os) const ;
 
   virtual DRT::ElementType & ElementType() const
   {
@@ -192,7 +192,7 @@ protected:
   */
   bool ReadElement(const std::string& eletype,
                    const std::string& eledistype,
-                   DRT::INPUT::LineDefinition* linedef) = 0 ;
+                   DRT::INPUT::LineDefinition* linedef)  ;
 
   //@}
 
@@ -229,15 +229,27 @@ protected:
   );
 
   //! init the inverse of the jacobian and its determinant in the material configuration
-    virtual void InitJacobianMapping();
+   // virtual void InitJacobianMapping();
 
 
   //@}
 
-//protected:
+protected:
 
   //! don't want = operator
   So3_Scatra& operator = (const So3_Scatra& old);
+
+  int MyEvaluate
+  (
+    ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
+    DRT::Element::LocationArray& la, ///< location array for de-assembly
+    Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
+    Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+    Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
+    Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
+    Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
+  );
 
   //! action parameters recognized by so_hex8
   enum ActionType
@@ -263,18 +275,24 @@ protected:
   };
 
   //! vector of inverses of the jacobian in material frame
-  vector<LINALG::Matrix<numdim_,numdim_> >                      invJ_;
+  //vector<LINALG::Matrix<numdim_,numdim_> >                      invJ_;
   //! determinant of Jacobian in material frame
-  vector<double>                                                        detJ_;
+  //vector<double>                                                        detJ_;
   //! container containing all kind of solid3 thisandthat
-  DRT::Container                                                        data_;
+  //DRT::Container                                                        data_;
   //! vector of coordinates of current integration point in reference coordinates
-  vector<LINALG::Matrix<numdim_,1> > xsi_;
+  //vector<LINALG::Matrix<numdim_,1> > xsi_;
 
 
 private:
 
   DRT::UTILS::GaussIntegration intpoints_;
+
+  DRT::Node** Nodes();
+
+  RCP<MAT::Material> Material() const;
+
+  int Id() const;
 }; // class So3_Poro
 
 

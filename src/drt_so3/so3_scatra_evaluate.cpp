@@ -22,8 +22,6 @@
 #include "../drt_mat/micromaterial.H"
 #include <iterator>
 
-//#include "../drt_mat/fluidporo.H"
-//#include "../drt_mat/structporo.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
@@ -34,12 +32,11 @@
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<distype>::PreEvaluate(ParameterList& params,
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(ParameterList& params,
                                         DRT::Discretization&      discretization,
                                         DRT::Element::LocationArray& la)
 {
-  // TODO: read
   if(la.Size()>1)
   {
     //  dofs per node of second dofset
@@ -70,8 +67,8 @@ void DRT::ELEMENTS::So3_Scatra<distype>::PreEvaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::So3_Scatra<distype>::Evaluate(ParameterList& params,
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::MyEvaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     DRT::Element::LocationArray& la,
                                     Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -84,41 +81,73 @@ int DRT::ELEMENTS::So3_Scatra<distype>::Evaluate(ParameterList& params,
   return 0;
 }
 
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<distype>::InitJacobianMapping()
+/*----------------------------------------------------------------------*
+ |  evaluate the element (public)                                       |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(ParameterList& params,
+                                    DRT::Discretization&      discretization,
+                                    DRT::Element::LocationArray& la,
+                                    Epetra_SerialDenseMatrix& elemat1_epetra,
+                                    Epetra_SerialDenseMatrix& elemat2_epetra,
+                                    Epetra_SerialDenseVector& elevec1_epetra,
+                                    Epetra_SerialDenseVector& elevec2_epetra,
+                                    Epetra_SerialDenseVector& elevec3_epetra)
 {
-  //const static vector<LINALG::Matrix<numdim_,numnod_> > derivs;// = soh8_derivs();
-  LINALG::Matrix<numdim_,numnod_> deriv ;
-  LINALG::Matrix<numnod_,numdim_> xrefe;
-  for (int i=0; i<numnod_; ++i)
+  // start with "none"
+  typename So3_Scatra::ActionType act = So3_Scatra::none;
+
+  // get the required action
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action=="calc_struct_multidofsetcoupling")   act = So3_Scatra::calc_struct_multidofsetcoupling;
+  // what should the element do
+  switch(act)
   {
-    Node** nodes=Nodes();
-    if(!nodes) dserror("Nodes() returned null pointer");
-    xrefe(i,0) = Nodes()[i]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2];
-  }
-  invJ_.resize(numgpt_);
-  detJ_.resize(numgpt_);
-  xsi_.resize(numgpt_);
-
-  for (int gp=0; gp<numgpt_; ++gp)
+  //==================================================================================
+  // coupling terms in force-vector and stiffness matrix
+  case So3_Scatra::calc_struct_multidofsetcoupling:
   {
-    const double* gpcoord = intpoints_.Point(gp);
-    for (int idim=0;idim<numdim_;idim++)
-    {
-       xsi_[gp](idim) = gpcoord[idim];
-    }
-
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
-
-    //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
-    invJ_[gp].Multiply(deriv,xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
+    MyEvaluate(params,
+                      discretization,
+                      la,
+                      elemat1_epetra,
+                      elemat2_epetra,
+                      elevec1_epetra,
+                      elevec2_epetra,
+                      elevec3_epetra);
   }
+  break;
+  //==================================================================================
+  default:
+  {
+    //in some cases we need to write/change some data before evaluating
+    PreEvaluate(params,
+                      discretization,
+                      la);
 
-  return;
+    so3_ele::Evaluate(params,
+                      discretization,
+                      la[0].lm_,
+                      elemat1_epetra,
+                      elemat2_epetra,
+                      elevec1_epetra,
+                      elevec2_epetra,
+                      elevec3_epetra);
+
+    MyEvaluate(params,
+                      discretization,
+                      la,
+                      elemat1_epetra,
+                      elemat2_epetra,
+                      elevec1_epetra,
+                      elevec2_epetra,
+                      elevec3_epetra);
+    break;
+  }
+  } // action
+
+  return 0;
 }
 
 #include "so3_scatra_fwd.hpp"

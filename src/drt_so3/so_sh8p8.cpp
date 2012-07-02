@@ -125,7 +125,6 @@ const int DRT::ELEMENTS::So_sh8p8::PRESTODISPPRES_[NUMPRES_]
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8p8::So_sh8p8(int id, int owner) :
-DRT::Element(id,owner),
 DRT::ELEMENTS::So_sh8(id,owner)
 {
   return;
@@ -136,7 +135,6 @@ DRT::ELEMENTS::So_sh8(id,owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8p8::So_sh8p8(const DRT::ELEMENTS::So_sh8p8& old) :
-DRT::Element(old),
 DRT::ELEMENTS::So_sh8(old)
 {
   return;

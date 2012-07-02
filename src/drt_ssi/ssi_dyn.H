@@ -1,9 +1,15 @@
-/*
- * ssi_dyn.H
- *
- *  Created on: Jun 28, 2012
- *      Author: vuong
- */
+/*!------------------------------------------------------------------------------------------------*
+ \file ssi_dyn.H
+
+ \brief control routine for scalar structure interaction
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_DYN_H_
 #define SSI_DYN_H_

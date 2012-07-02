@@ -68,7 +68,6 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition( std::map<std::strin
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(int id, int owner) :
-DRT::Element(id,owner),
 DRT::ELEMENTS::So_hex8(id,owner)
 {
   K_pu_.PutScalar(0.0);
@@ -120,7 +119,6 @@ DRT::ELEMENTS::So_hex8(id,owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(const DRT::ELEMENTS::So_Hex8P1J1& old) :
-DRT::Element(old),
 DRT::ELEMENTS::So_hex8(old)
 {
   return;

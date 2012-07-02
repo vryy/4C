@@ -1,9 +1,15 @@
-/*
- * ssi_partitioned.H
- *
- *  Created on: Jun 28, 2012
- *      Author: vuong
- */
+/*!------------------------------------------------------------------------------------------------*
+ \file ssi_partitioned.H
+
+ \brief base class for partitioned scalar structure interaction
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_PARTITIONED_H_
 #define SSI_PARTITIONED_H_

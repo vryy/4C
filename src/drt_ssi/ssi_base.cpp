@@ -1,9 +1,15 @@
-/*
- * ssi_algo.cpp
- *
- *  Created on: Jun 28, 2012
- *      Author: vuong
- */
+/*!------------------------------------------------------------------------------------------------*
+ \file ssi_base.cpp
+
+ \brief base class for all scalar structure algorithms
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "ssi_base.H"

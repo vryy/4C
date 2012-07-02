@@ -1,9 +1,15 @@
-/*
- * ssi_partitioned_1wc.cpp
- *
- *  Created on: Jun 29, 2012
- *      Author: vuong
- */
+/*!------------------------------------------------------------------------------------------------*
+ \file ssi_partitioned_2wc.cpp
+
+ \brief two way coupled partitioned scalar structure interaction
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_partitioned_2wc.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -138,7 +144,7 @@ void SSI::SSI_Part2WC::OuterLoop()
   {
     itnum++;
 
-    // store temperature from first solution for convergence check (like in
+    // store scalar from first solution for convergence check (like in
     // elch_algorithm: use current values)
     scaincnp_->Update(1.0,*scatra_->ScaTraField().Phinp(),0.0);
     dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);

@@ -1,9 +1,15 @@
-/*
- * ssi_partitioned_1wc.H
- *
- *  Created on: Jun 29, 2012
- *      Author: vuong
- */
+/*!------------------------------------------------------------------------------------------------*
+ \file ssi_partitioned_1wc.H
+
+ \brief one way coupled partitioned scalar structure interaction
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_PARTITIONED_1WC_H_
 #define SSI_PARTITIONED_1WC_H_

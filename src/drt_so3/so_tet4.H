@@ -77,7 +77,7 @@ private:
 
 */
 
-class So_tet4 : virtual public DRT::Element
+class So_tet4 : public DRT::Element
 {
 public:
 

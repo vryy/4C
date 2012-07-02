@@ -1,9 +1,15 @@
-/*
- * ssi_partitioned.cpp
- *
- *  Created on: Jun 28, 2012
- *      Author: vuong
- */
+/*!------------------------------------------------------------------------------------------------*
+ \file ssi_partitioned.cpp
+
+ \brief base class for partitioned scalar structure interaction
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_partitioned.H"
 #include "../linalg/linalg_utils.H"
@@ -53,25 +59,3 @@ void SSI::SSI_Part::SetMeshDisp()
       structure_->Discretization());
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-/*
-void SSI::SSI_Part::TimeUpdateAndOutput()
-{
-  structure_->PrepareOutput();
-
-  scatra_->ScaTraField().Update();
-
-  structure_->Update();
-
-  // Note: The order is important here! Herein, control file entries are
-  // written, defining the order in which the filters handle the
-  // discretizations, which in turn defines the dof number ordering of the
-  // discretizations.
-  structure_->Output();
-
-  // output of fluid- and structure-based scalar transport
-  scatra_->ScaTraField().Output();
-
-  return;
-}*/
