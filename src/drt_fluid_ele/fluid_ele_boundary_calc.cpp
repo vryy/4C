@@ -4108,7 +4108,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   }
   else if (coupling == "fluid structure")
   {
-    double timescale = params.get<double>("timescale",-1.0);
+   // double timescale = params.get<double>("timescale",-1.0);
 
     // extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
