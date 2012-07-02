@@ -45,6 +45,18 @@ intpoints_(distype)
 }
 
 /*----------------------------------------------------------------------*
+ |  Deep copy this instance of Solid3 and return pointer to it (public) |
+ |                                                            vuong 03/12|
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+DRT::Element* DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Clone() const
+{
+  DRT::ELEMENTS::So3_Scatra< so3_ele, distype>* newelement =
+      new DRT::ELEMENTS::So3_Scatra< so3_ele, distype>(*this);
+  return newelement;
+}
+
+/*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/

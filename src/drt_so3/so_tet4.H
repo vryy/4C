@@ -152,6 +152,8 @@ public:
   */
   virtual vector<RCP<DRT::Element> > Volumes();
 
+  virtual vector<double> ElementCenterRefeCoords();
+
   /*!
   \brief Return unique ParObject id
 
