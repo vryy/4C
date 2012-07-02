@@ -1,0 +1,71 @@
+/*
+ * ssi_algo.H
+ *
+ *  Created on: Jun 28, 2012
+ *      Author: vuong
+ */
+
+#ifndef SSI_ALGO_H_
+#define SSI_ALGO_H_
+
+#include "../drt_adapter/adapter_algorithmbase.H"
+
+#include <Epetra_Vector.h>
+
+namespace ADAPTER
+{
+  class ScaTraBaseAlgorithm;
+  class Structure;
+  class ScaTraTimIntImpl;
+}
+
+namespace SSI
+{
+
+  class SSI_Base : public ADAPTER::AlgorithmBase
+  {
+  public:
+
+    /// create using a Epetra_Comm
+    explicit SSI_Base(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& timeparams);// Problem builder
+
+    /// virtual destructor
+    virtual ~SSI_Base(){};
+
+    /// setup
+    virtual void SetupSystem() = 0;
+
+    /// timeloop of coupled problem
+    virtual void Timeloop() = 0;
+
+    /// test results (if necessary)
+    virtual void TestResults(const Epetra_Comm& comm);
+
+    /// read restart
+    virtual void ReadRestart(int step);
+
+    //! access to structural field
+    //const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
+
+    //! access to scatra field
+    //const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;}
+
+  protected:
+
+    /// underlying structure of the SSI problem
+    Teuchos::RCP< ::ADAPTER::Structure>    structure_;
+
+    /// underlying scatra problem of the SSI problem
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+
+    // a zero vector of full length
+    Teuchos::RCP<Epetra_Vector> zeros_;
+
+  private:
+    /// clone scatra discretization form structure discretization
+    virtual void SetupDiscretizations(const Epetra_Comm& comm);
+  };
+}
+
+#endif /* SSI_ALGO_H_ */
