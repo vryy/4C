@@ -416,6 +416,38 @@ int main(
       fluidwriter.WriteFiles();
       break;
     }
+    case prb_poroscatra:
+    {
+      string basename = problem.outname();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(1);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      PostField* scatrafield = problem.get_discretization(2);
+      ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+      scatrawriter.WriteFiles();
+
+      break;
+    }
+    case prb_ssi:
+    {
+      string basename = problem.outname();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* scatrafield = problem.get_discretization(1);
+      ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+      scatrawriter.WriteFiles();
+
+      break;
+    }
     case prb_fluid_topopt:
     {
       string basename = problem.outname();

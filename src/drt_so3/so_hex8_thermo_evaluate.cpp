@@ -86,9 +86,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_internalforce")         act = So_hex8::calc_struct_internalforce;
   else if (action=="calc_struct_nlnstiff")              act = So_hex8::calc_struct_nlnstiff;
   else if (action=="calc_struct_nlnstiffmass")          act = So_hex8::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_internalforce")         act = So_hex8::calc_struct_internalforce;
   else if (action=="calc_struct_stress")                act = So_hex8::calc_struct_stress;
   else if (action=="calc_struct_update_istep")          act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")           act = So_hex8::calc_struct_reset_istep;  // needed for TangDis predictor
@@ -227,6 +227,32 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
 
     }
+  }
+  break;
+
+  //==================================================================================
+  // internal force vector only
+  case calc_struct_internalforce:
+  {
+    // internal force vector
+    LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
+
+    // need current displacement and residual forces
+    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+    if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+    // build the location vector only for the structure field
+    vector<int> lm = la[0].lm_;
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    vector<double> myres(lm.size());
+    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+    // create a dummy element matrix to apply linearised EAS-stuff onto
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
+
+    // default: geometrically non-linear analysis with Total Lagrangean approach
+      soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
   }
   break;
 

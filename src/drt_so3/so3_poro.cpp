@@ -17,6 +17,11 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+//for ReadElement()
+#include "../drt_mat/structporo.H"
+//for secondDerivativesZero
+#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/12|
@@ -28,6 +33,7 @@ DRT::Element(id,owner),
 intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
+  ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
   return;
 }
 
@@ -39,7 +45,8 @@ intpoints_(distype)
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro<distype>::So3_Poro(const DRT::ELEMENTS::So3_Poro<distype>& old):
 DRT::Element(old),
-intpoints_(distype)
+intpoints_(distype),
+ishigherorder_(old.ishigherorder_)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -116,11 +123,21 @@ void DRT::ELEMENTS::So3_Poro<distype>::Print(ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-  template<DRT::Element::DiscretizationType distype>
+template<DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Poro<distype>::ReadElement(const std::string& eletype,
-                                             const std::string& eledistype,
-                                             DRT::INPUT::LineDefinition* linedef)
+                                         const std::string& eledistype,
+                                         DRT::INPUT::LineDefinition* linedef)
 {
+
+  RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
+    if(actmat == NULL)
+      dserror("StructPoro Material Type expected for porous media!");
+    actmat->Setup(numgpt_);
+  }
   return true;
 }
 

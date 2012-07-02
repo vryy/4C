@@ -179,6 +179,14 @@ namespace MAT
       /// return permeability
       //  double BulkModulus() const { return params_->bulkmodulus_; }
 
+      /// evaluate material law
+      void EvaluateViscStress(LINALG::Matrix<6,1>* stress,
+                              LINALG::Matrix<6,6>* cmat,
+                             const LINALG::Matrix<6,1>* glstrain,
+                             const int gp,
+                             Teuchos::ParameterList& params
+                    );
+
       /// Return quick accessible material parameter data
       virtual MAT::PAR::Parameter* Parameter() const
       {

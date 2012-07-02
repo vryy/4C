@@ -127,7 +127,9 @@ bool DRT::ELEMENTS::So3_volcoupl< so3_ele, coupltype>::ReadElement(const std::st
                                              const std::string& eledistype,
                                              DRT::INPUT::LineDefinition* linedef)
 {
-  return so3_ele::ReadElement(eletype, eledistype, linedef);
+  return (so3_ele::ReadElement(eletype, eledistype, linedef) and
+          coupltype::ReadElement(eletype, eledistype, linedef)
+          );
 }
 
 /*----------------------------------------------------------------------*/

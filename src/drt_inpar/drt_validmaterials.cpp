@@ -1736,14 +1736,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/
-  // fluid flow in a poroelastic material (darcy-flow)
+  // fluid flow in a poroelastic material
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoro",
-                                            "darcy-flow in poroelastic media",
+                                            "flow in deformable porous media",
                                             INPAR::MAT::m_fluidporo));
 
-    AddNamedReal(m,"VISCOSITY","kinematic viscosity");
+    AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
     AddNamedReal(m,"DENSITY","density");
     AddNamedReal(m,"PERMEABILITY","permeability of medium");
     AddNamedString(m,"TYPE","Problem type: Darcy or Darcy-Brinkman","Darcy");

@@ -1,9 +1,14 @@
-/*
- * so3_porotypes.cpp
- *
- *  Created on: Jun 22, 2012
- *      Author: bertoglio
- */
+/*!----------------------------------------------------------------------
+\file So3_poro_eletypes.cpp
+
+<pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+</pre>
+
+*----------------------------------------------------------------------*/
 
 #include "so3_poro_eletypes.H"
 #include "so3_volcoupl.H"

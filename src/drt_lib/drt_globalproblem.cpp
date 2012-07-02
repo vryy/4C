@@ -196,6 +196,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--THERMAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadGidSection("--TSI DYNAMIC", *list);
   reader.ReadGidSection("--POROELASTICITY DYNAMIC", *list);
+  reader.ReadGidSection("--POROSCATRA CONTROL", *list);
+  reader.ReadGidSection("--SSI CONTROL", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
@@ -465,6 +467,19 @@ void DRT::Problem::InputControl()
     genprob.numff=1;  /* fluid field index */
     break;
   }
+  case prb_poroscatra:
+   {
+     genprob.numsf=0;  /* structural field index */
+     genprob.numff=1;  /* fluid field index */
+     genprob.numscatra=2;  /* scatra field index */
+     break;
+   }
+  case prb_ssi:
+   {
+     genprob.numsf=0;  /* structural field index */
+     genprob.numscatra=1;  /* scatra field index */
+     break;
+   }
   case prb_np_support:
   {
     genprob.numsf=0;  /* structural field index */
@@ -1325,8 +1340,35 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
-	  break;
-  }// end of else if (genprob.probtyp==prb_poroelast)
+    break;
+  }
+  case prb_poroscatra:
+  {
+    // create empty discretizations
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"   ,reader.Comm()));
+    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+
+    AddDis(genprob.numsf, structdis);
+    AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numscatra, scatradis);
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    break;
+  }
+  case prb_ssi:
+  {
+    // create empty discretizations
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+
+    AddDis(genprob.numsf, structdis);
+    AddDis(genprob.numscatra, scatradis);
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
+    break;
+  }
   case prb_np_support:
   {
     // no discretizations and nodes needed for supporting procs

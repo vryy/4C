@@ -4108,22 +4108,31 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   }
   else if (coupling == "fluid structure")
   {
+    double timescale = params.get<double>("timescale",-1.0);
+
     // extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+    Teuchos::RCP<const Epetra_Vector> dispn = discretization.GetState("dispn");
     Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
     if (velnp==null)
       dserror("Cannot get state vector 'velnp'");
+    if (dispn==null)
+      dserror("Cannot get state vector 'dispn'");
     if (gridvel==null)
       dserror("Cannot get state vector 'gridv'");
 
     std::vector<double> myvelnp(lm.size());
     DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+    std::vector<double> mydispn(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispn,mydispn,lm);
     std::vector<double> mygridvel(lm.size());
     DRT::UTILS::ExtractMyValues(*gridvel,mygridvel,lm);
 
     // allocate velocity vectors
     LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
+    LINALG::Matrix<nsd_,bdrynen_> edispn(true);
+    LINALG::Matrix<nsd_,bdrynen_> edispnp(true);
     LINALG::Matrix<nsd_,bdrynen_> egridvel(true);
 
     // split velocity and pressure, insert into element arrays
@@ -4132,7 +4141,10 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
       for (int idim=0; idim< nsd_; idim++)
       {
         evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
+        edispn(idim,inode) = mydispn[idim+(inode*numdofpernode_)];
+        edispnp(idim,inode) = mydispnp[idim+(inode*numdofpernode_)];
         egridvel(idim,inode) = mygridvel[idim+(inode*numdofpernode_)];
+        //egridvel(idim,inode) = timescale*(edispnp(idim,inode)-edispn(idim,inode));
       }
     }
 

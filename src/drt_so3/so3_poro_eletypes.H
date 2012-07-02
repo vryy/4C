@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file So_hex8_volcoupl.H
+\file So3_poro_eletypes.H
 
 <pre>
    Maintainer: Anh-Tu Vuong

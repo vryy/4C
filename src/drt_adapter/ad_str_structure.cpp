@@ -32,6 +32,7 @@ Maintainer: Georg Hammerl
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -380,12 +381,23 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     }
     break;
     case prb_poroelast:
+    case prb_poroscatra:
     {
+      const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+      const INPAR::POROELAST::SolutionSchemeOverFields coupling =
+            DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(porodyn, "COUPALGO");
       Teuchos::RCP<StructureTimIntImplPoro> tmpporostr = Teuchos::rcp(new StructureTimIntImplPoro(tmpstr));
       if (tmpporostr->HaveConstraint())
-        structure_ = Teuchos::rcp(new StructureConstrMerged(tmpporostr));
+      {
+        if (coupling == INPAR::POROELAST::Monolithic_structuresplit or coupling == INPAR::POROELAST::Monolithic_fluidsplit)
+          structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpporostr));
+        else
+          structure_ = Teuchos::rcp(new StructureConstrMerged(tmpporostr));
+      }
       else
-        structure_ = tmpporostr;
+      {
+          structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpporostr));
+      }
     }
     break;
     default:

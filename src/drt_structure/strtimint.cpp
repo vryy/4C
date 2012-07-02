@@ -680,10 +680,8 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     {
       discret_->SetState(1,"temperature",tempn_);
     }
-    if(fluidveln_!=Teuchos::null)
-    {
-      //p.set("initporosity", initporosity_);
-    }
+    if(fluidveln_!=Teuchos::null)    //porelasticity specific (coupling with fluid field)
+      discret_->SetState(1,"fluidvel",fluidveln_);
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1821,16 +1819,13 @@ void STR::TimInt::ApplyForceInternal
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
-  if(fluidveln_!=Teuchos::null) //porelasticity specific parameters
-  {
-      discret_->SetState(1,"fluidvel",fluidveln_);
-  }
-
   discret_->SetState("residual displacement", disi);  // these are incremental
   discret_->SetState("displacement", dis);
   // set the temperature for the coupled problem
   if(tempn_!=Teuchos::null)
     discret_->SetState(1,"temperature",tempn_);
+  if(fluidveln_!=Teuchos::null) //porelasticity specific parameters
+    discret_->SetState(1,"fluidvel",fluidveln_);
   if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,

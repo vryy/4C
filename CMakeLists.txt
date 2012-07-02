@@ -1324,9 +1324,20 @@ set(OBJS_DRT_STRU_ALE
   src/drt_stru_ale/stru_ale_utils.cpp
 )  
 set(OBJS_DRT_POROELAST
-  src/drt_poroelast/poroelast.cpp
+  src/drt_poroelast/poro_dyn.cpp
   src/drt_poroelast/poroelast_monolithic.cpp
   src/drt_poroelast/poroelast_utils.cpp
+  src/drt_poroelast/poro_monolithicstructuresplit.cpp
+  src/drt_poroelast/poro_monolithicfluidsplit.cpp
+  src/drt_poroelast/poro_scatra.cpp
+)
+
+set(OBJS_DRT_SSI
+src/drt_ssi/ssi_dyn.cpp
+src/drt_ssi/ssi_base.cpp
+src/drt_ssi/ssi_partitioned.cpp
+src/drt_ssi/ssi_partitioned_1wc.cpp
+src/drt_ssi/ssi_partitioned_2wc.cpp
 )
 ###------------------------------------------------------------------ Element flags
 
@@ -1438,6 +1449,7 @@ add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
+add_library(alg_ssi ${OBJS_DRT_SSI})
 
 set(MULTIFIELD_LIBRARIES
   alg_elch
@@ -1448,6 +1460,7 @@ set(MULTIFIELD_LIBRARIES
   alg_poroelast
   alg_fs3i
   alg_topopt
+  alg_ssi
   )
 
 # the adapter layer
@@ -2101,6 +2114,18 @@ baci_test(porous_cube5x5x5_compressed 1 "")
 baci_test(porous_cube5x5x5_compressed 2 "")
 baci_test(porous_cube5x5x5_constrained 1 "")
 baci_test(porous_cube5x5x5_constrained 2 "")
+baci_test(porous_cube5x5x5_comp_tet4 1 "")
+baci_test(porous_cube5x5x5_comp_tet4 2 "")
+baci_test(poro_fl_split_dbc 1 "")
+baci_test(poro_fl_split_dbc 2 "")
+baci_test(poro_fl_split_nbc 1 "")
+baci_test(poro_fl_split_nbc 2 "")
+baci_test(poro_scatra_normalflux 1 "")
+baci_test(poro_scatra_normalflux 2 "")
+baci_test(poro_st_split_dbc 1 "")
+baci_test(poro_st_split_dbc 2 "")
+baci_test(poro_st_split_nbc 1 "")
+baci_test(poro_st_split_nbc 2 "")
 baci_test(prestress_fsi 1 "")
 baci_test(prestress_fsi 2 "")
 baci_test(prestress_fsi_id 1 "")

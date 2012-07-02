@@ -98,8 +98,8 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poroelast_monolithic
-INCTOL                          1e-04
+COUPALGO                        poroelast_monolithicstructuresplit //poroelast_monolithicstructuresplit poroelast_monolithic
+INCTOL                          1e-06
 ITEMAX                          20
 ITEMIN                          1
 MAXTIME                         0.1
@@ -145,7 +145,7 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1000
+ML_MAXCOARSESIZE                5000
 ML_MAXLEVEL                     5
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
@@ -188,7 +188,7 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1000
+ML_MAXCOARSESIZE                5000
 ML_MAXLEVEL                     5
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
@@ -263,7 +263,7 @@ MAXITER                         50
 MAXTIME                         5
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL fullnewton //fullnewton newtonlinuzawa
+NLNSOL                          fullnewton 
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -272,7 +272,7 @@ NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
-PREDICT                         ConstDis
+PREDICT                         ConstDisVelAcc
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTDT                        0
@@ -326,25 +326,26 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 5
 MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.2 BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001 
 MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 4 DENS 2.0
 MAT 4   ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
-MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
+MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy-Brinkman
 MAT 5   MAT_matlist NUMMAT 1 MATIDS 3
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0e4*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 4.0
+CURVE1 on EXPR FUNC -10.0e4*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 4.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on EXPR FUNC -4.0*0.5*pi/1.0*(sin((t*pi/1.0))) t1 0.0 t2 2.0
 ----------------------------------------------------------------------CURVE3
+CURVE3 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 4.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 183 POSITION velx NAME velx VALUE -4.48093356956938676e-03 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 183 POSITION velx NAME velx VALUE -4.48093326736220647e-03 TOLERANCE 1e-8
-FLUID DIS 1 NODE 74 POSITION vely NAME vely VALUE -8.34882193494357328e-03 TOLERANCE 1e-8
-//STRUCTURE DIS 1 NODE 74 POSITION vely NAME vely VALUE -1.83261264340649948e-03 TOLERANCE 1e-8
-//FLUID DIS 1 NODE 36 POSITION velz NAME velz VALUE -1.83181215062742150e-03 TOLERANCE 1e-8
-//STRUCTURE DIS 1 NODE 36 POSITION velz NAME velz VALUE -1.83282126655001328e-03 TOLERANCE 1e-8
+FLUID DIS 1 NODE 124 POSITION velx NAME velx VALUE -1.26662899218361102e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 124 POSITION pressure NAME pressure VALUE -5.18471314199349997e+00 TOLERANCE 1e-4
+STRUCTURE DIS 1 NODE 62 POSITION dispx NAME ux VALUE 0 TOLERANCE 1e-14
+STRUCTURE DIS 1 NODE 71 POSITION dispy NAME uy VALUE 0 TOLERANCE 1e-14
+STRUCTURE DIS 1 NODE 212 POSITION dispx NAME ux VALUE -1.90162784213791531e-03 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 124 POSITION dispx NAME ux VALUE -1.32891745696980508e-03 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          12
@@ -391,7 +392,7 @@ E 8 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           12
 // Line x+z+
-E 1 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Line y+z+
 E 2 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Line x-z+
@@ -399,7 +400,7 @@ E 3 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 
 // Line y-z+
 E 4 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Line x+z-
-E 5 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Line y-z-
 E 6 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Line x-z-
@@ -409,17 +410,17 @@ E 8 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 
 // Line x-y-
 E 9 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Line x+y-
-E 10 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 10 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Line x-y+
 E 11 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Line x+y+
-E 12 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 12 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           5
+DSURF                           6
 // Surface x-
 E 4 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Surface x+
-//E 6 - 6 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
+E 6 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Surface y+
 E 5 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // Surface y-
@@ -432,76 +433,21 @@ E 2 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 
 DVOL                            0
 -----------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
 DPOINT                          0
-// Node x+y+z+
-//E 1 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Node x-y+z+
-//E 2 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Node x-y+z-
-//E 3 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Node x+y+z-
-//E 4 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Node x+y-z-
-//E 5 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Node x+y-z+
-//E 6 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Node x-y-z+
-//E 7 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Node x-y-z-
-//E 8 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           0
-// Line x+z+
-//E 1 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line y+z+
-//E 2 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line x-z+
-//E 3 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line y-z+
-//E 4 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line x+z-
-//E 5 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line y-z-
-//E 6 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line x-z-
-//E 7 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line y+z-
-//E 8 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line x-y-
-//E 9 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line x+y-
-//E 10 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line x-y+
-//E 11 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Line x+y+
-//E 12 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
-DSURF                           2
-// Surface z+
-E 1 - 6 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Surface z-
-E 2 - 6 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Surface y-
-//E 3 - 6 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Surface x-
-//E 4 - 6 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Surface y+
-//E 5 - 6 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-// Surface x+
-//E 6 - 6 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+DSURF                           0
 ------------------------------DESIGN SURFACE NORMAL NO PENETRATION CONDITION
-DSURF                           1
-// Surface z-
-//E 2 - 
-// Surface y-
-//E 3 - 
-// Surface z+
-//E 1 - 
-// Surface y+
-//E 5 - 
-// Surface x-
-//E 4 - 
-// Surface x+
-E 6 - 
+DSURF                           0
+-----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+DSURF                           5
+E 1 - 1 fluid conforming fsi_real
+E 2 - 2 fluid conforming fsi_real
+E 3 - 3 fluid conforming fsi_real
+E 5 - 4 fluid conforming fsi_real
+E 6 - 5 fluid conforming fsi_real
+-------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 212 DNODE 1
 NODE 62 DNODE 2

@@ -21,7 +21,9 @@ extern "C"
 #endif
   /* headers and prototypes of functions also accessible from c */
 
-  void poroelast_drt();
+  void poroelast_drt();  // global control routine for standard porous media problem
+
+  void poro_scatra_drt(); // global control routine for Poro + ScaTra problem.
 
   #ifdef __cplusplus
 }

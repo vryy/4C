@@ -18,7 +18,7 @@
 /*----------------------------------------------------------------------*/
 MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
   Parameter(matdata),
-  viscosity_(matdata->GetDouble("VISCOSITY")),
+  viscosity_(matdata->GetDouble("DYNVISCOSITY")),
   density_(matdata->GetDouble("DENSITY")),
   permeability_(matdata->GetDouble("PERMEABILITY")),
   type_(matdata->Get<string>("TYPE"))
@@ -89,27 +89,27 @@ void MAT::FluidPoro::Unpack(const vector<char>& data)
   if (type != UniqueParObjectId())
     dserror("wrong instance type data");
 
-    // matid
-    int matid;
-    ExtractfromPack(position,data,matid);
-    params_ = NULL;
-    if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
-    {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
-      params_ = static_cast<MAT::PAR::FluidPoro*>(mat);
-      else
-      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
-    }
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  params_ = NULL;
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  if (DRT::Problem::Instance()->Materials()->Num() != 0)
+  {
+    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+    MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+    if (mat->Type() == MaterialType())
+    params_ = static_cast<MAT::PAR::FluidPoro*>(mat);
+    else
+    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+  }
 
-    if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+  if (position != data.size())
+  dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-    /*----------------------------------------------------------------------*/
-    /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double MAT::FluidPoro::ComputeReactionCoeff() const
 {
   // check for zero or negative viscosity
@@ -131,7 +131,23 @@ double MAT::FluidPoro::EffectiveViscosity() const
 {
   // set zero viscosity and only modify it for Darcy-Stokes problems
   double viscosity = 0.0;
-   if (Type() == "Darcy-Brinkman") viscosity = Viscosity();
+  if(Type() == "Darcy") ;
+  else if (Type() == "Darcy-Brinkman") viscosity = Viscosity();
+  else dserror("Unknown problem type for porous flow");
 
   return viscosity;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Material                             (public)         05/12|
+ *----------------------------------------------------------------------*/
+void MAT::FluidPoro::EvaluateViscStress(LINALG::Matrix<6,1>* stress,
+                                        LINALG::Matrix<6,6>* cmat,
+                                        const LINALG::Matrix<6,1>* glstrain,
+                                        const int gp,
+                                        Teuchos::ParameterList& params)
+
+{
+  dserror("macroscopic viscous stress not yet implemented for poroelasticity");
+  return;
 }

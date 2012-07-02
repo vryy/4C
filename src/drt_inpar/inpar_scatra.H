@@ -167,7 +167,8 @@ namespace INPAR
       scatratype_elch_poisson,
       scatratype_elch_laplace,
       scatratype_levelset,
-      scatratype_turbpassivesca
+      scatratype_turbpassivesca,
+      scatratype_poro
     };
 
     /// type of reinitialization strategy for level set function

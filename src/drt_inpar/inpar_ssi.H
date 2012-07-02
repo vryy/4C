@@ -1,0 +1,38 @@
+/*
+ * inpar_ssi.H
+ *
+ *  Created on: Jun 29, 2012
+ *      Author: vuong
+ */
+
+#ifndef INPAR_SSI_H_
+#define INPAR_SSI_H_
+
+#include "inpar_parameterlist_utils.H"
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+namespace INPAR
+{
+
+/// Input parameters for poroelasticity
+namespace SSI
+{
+
+  /// Type of coupling strategy for SSI problems
+  enum SolutionSchemeOverFields
+  {
+    Part_OneWay,
+    Part_TwoWay
+ //   SequStagg,
+ //   IterStagg,
+ //   Monolithic,
+  };
+
+
+}  // namespace SSI
+
+}  // namespace INPAR
+
+#endif /* INPAR_SSI_H_ */

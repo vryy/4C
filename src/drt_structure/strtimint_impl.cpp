@@ -2272,7 +2272,7 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
   // (re)allocate system matrix
   stiff_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
   mass_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ != INPAR::STR::damp_none)
     damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
 
   // recalculate mass and damping matrices
@@ -2297,6 +2297,8 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
     discret_->SetState("residual displacement", zeros_);
     discret_->SetState("displacement", (*dis_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
+    if(fluidveln_!=Teuchos::null)    //porelasticity specific (coupling with fluid field)
+      discret_->SetState(1,"fluidvel",fluidveln_);
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }

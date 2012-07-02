@@ -28,7 +28,8 @@ Maintainer: Michael Gee
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
 #include "../drt_stru_ale/stru_ale_dyn.H"
-#include "../drt_poroelast/poroelast.H"
+#include "../drt_poroelast/poro_dyn.H"
+#include "../drt_ssi/ssi_dyn.H"
 #include "../drt_stru_multi/microstatic_npsupport.H"
 
 
@@ -130,6 +131,12 @@ void ntacal()
       
     case prb_poroelast:
       poroelast_drt();
+      break;
+    case prb_poroscatra:
+      poro_scatra_drt();
+      break;
+    case prb_ssi:
+      ssi_drt();
       break;
 
     case prb_np_support:

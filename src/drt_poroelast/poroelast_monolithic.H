@@ -19,11 +19,12 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include <Epetra_Time.h>
+#include <Epetra_Vector.h>
 
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_inpar/inpar_structure.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -36,6 +37,7 @@ namespace DRT
 namespace LINALG
 {
   class SparseMatrix;
+  class SparseOperator;
   class MapExtractor;
 
   class BlockSparseMatrixBase;
@@ -44,28 +46,33 @@ namespace LINALG
 
 namespace ADAPTER
 {
+  class Fluid;
   class Coupling;
+  class FSIStructureWrapper;
 }
 
 namespace POROELAST
 {
   /// monolithic Poroelasticity algorithm base
 
-  class MonolithicBase: public ADAPTER::AlgorithmBase//,
-//      public ADAPTER::StructureBaseAlgorithm,
-//      public ADAPTER::FluidBaseAlgorithm
+  class MonolithicBase: public ADAPTER::AlgorithmBase
   {
     public:
 
       //! create using a Epetra_Comm
-      explicit MonolithicBase(const Epetra_Comm& comm);
+      explicit MonolithicBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
       //! virtual destructor to support polymorph destruction
       virtual ~MonolithicBase();
 
       /// read restart data
-      virtual void ReadRestart(int step ///< step number where the calculation is continued
-          );
+      virtual void ReadRestart(int restart);
+
+      //! outer level time loop (to be implemented by deriving classes)
+      virtual void TimeLoop() = 0;
+
+      /// initialise system
+      virtual void SetupSystem() = 0;
 
       //! @name Time loop building blocks
 
@@ -76,13 +83,13 @@ namespace POROELAST
       virtual void Update();
 
       //! calculate stresses, strains, energies
-      virtual void PrepareOutput()
-      {
-        StructureField()->PrepareOutput();
-      }
+      virtual void PrepareOutput();
+
+      //! perform result tests
+      virtual void TestResults(const Epetra_Comm& comm);
 
       //! access to structural field
-      const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
+      const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
       //! access to fluid field
       ::ADAPTER::Fluid& FluidField(){return *fluid_;}
@@ -92,7 +99,8 @@ namespace POROELAST
       //! @name Underlying fields
 
       //! underlying structure of the FSI problem
-      Teuchos::RCP< ::ADAPTER::Structure>    structure_;
+      //Teuchos::RCP< ::ADAPTER::Structure>    structure_;
+      Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
 
       //! underlying fluid of the FSI problem
       Teuchos::RCP< ::ADAPTER::Fluid>        fluid_;
@@ -109,7 +117,15 @@ namespace POROELAST
       virtual Teuchos::RCP<Epetra_Vector> FluidToStructureField(Teuchos::RCP<
           const Epetra_Vector> iv) const;
 
+      virtual Teuchos::RCP<Epetra_Vector> StructureToFluidAtInterface(Teuchos::RCP<
+          const Epetra_Vector> iv) const;
+
+      virtual Teuchos::RCP<Epetra_Vector> FluidToStructureAtInterface(Teuchos::RCP<
+          const Epetra_Vector> iv) const;
+
       void BuidNoPenetrationMap();
+
+      ADAPTER::Coupling& FluidStructureCoupling() { return *coupfs_; }
 
       //! Extractor used for constraint structure
       LINALG::MapExtractor consplitter_;
@@ -126,9 +142,12 @@ namespace POROELAST
       //! vector containing globla IDs of dofs with no penetration condition
       Teuchos::RCP<std::set<int> >condIDs_;
 
+      /// coupling of fluid and structure (interface only)
+      Teuchos::RCP<ADAPTER::Coupling> icoupfs_;
+
     private:
       //! coupling of fluid and structure (whole field)
-    Teuchos::RCP<ADAPTER::Coupling> coupfa_;
+      Teuchos::RCP<ADAPTER::Coupling> coupfs_;
 
       //@}
 
@@ -142,7 +161,8 @@ namespace POROELAST
     public:
       //! create using a Epetra_Comm
       explicit Monolithic(const Epetra_Comm& comm,
-          const Teuchos::ParameterList& sdynparams);
+          const Teuchos::ParameterList& timeparams
+          );
 
       /*! do the setup for the monolithic system
 
@@ -163,15 +183,19 @@ namespace POROELAST
       virtual void SetupSystem();
 
       /// outer level Poroelasticity time loop
-      void TimeLoop(const Teuchos::ParameterList& sdynparams //!< structural dynamic input parameters
-          );
+      void TimeLoop();
 
       //! setup composed right hand side from field solvers
-      // implemented in FSI in the "split level"
-      void SetupRHS();
+      virtual void SetupRHS(bool firstcall=false) ;
 
       //! setup composed system matrix from field solvers
-      void SetupSystemMatrix(const Teuchos::ParameterList& sdynparams);
+      //void SetupSystemMatrix();
+
+      /// setup composed system matrix from field solvers
+      virtual void SetupSystemMatrix() { SetupSystemMatrix(*systemmatrix_); }
+
+      /// setup composed system matrix from field solvers
+      virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
 
       //! composed system matrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const
@@ -182,15 +206,18 @@ namespace POROELAST
       //! solve linear Poroelasticity system
       void LinearSolve();
 
+      //! create linear solver (setup of parameter lists, etc...)
+      void CreateLinearSolver();
+
       //! @name Apply current field state to system
 
       //! Evaluate mechanical-fluid system matrix
-      void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseMatrix> k_sf, //!< mechanical-fluid stiffness matrix
-          const Teuchos::ParameterList& sdynparams);
+      void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
+          );
 
       //! Evaluate fluid-mechanical system matrix
-      void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseMatrix> k_fs, //!< fluid-mechanical tangent matrix
-          const Teuchos::ParameterList& sdynparams);
+      void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
+            );
 
       //@}
 
@@ -208,7 +235,7 @@ namespace POROELAST
       bool Converged();
 
       //! outer iteration loop
-      void NewtonFull(const Teuchos::ParameterList& sdyn);
+      void NewtonFull();
 
       //! @name Output
 
@@ -238,9 +265,13 @@ namespace POROELAST
       void PoroFDCheck();
 
       /// Evaluate no penetration condition
-      void EvaluateCondition(Teuchos::RCP<LINALG::SparseMatrix> Sysmat,
+      void EvaluateCondition(Teuchos::RCP<LINALG::SparseOperator> Sysmat,
                              Teuchos::RCP<Epetra_Vector> Cond_RHS,
                              int coupltype=0);
+
+      /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
+      /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+      virtual void RecoverLagrangeMultiplier(){return;};
 
     protected:
 
@@ -252,27 +283,31 @@ namespace POROELAST
 
       //@}
 
+      //! setup newton solver
+      void SetupNewton();
+
+      //! convergence check for Newton solver
+      virtual void BuildCovergenceNorms();
+
       //! convergence check for Newton solver
       bool ConvergenceCheck(int itnum, int itmax, double ittol);
 
-      //! extract the three field vectors from a given composed vector
+      //! extract the field vectors from a given composed vector
       /*!
        x is the sum of all increments up to this point.
        \param x  (i) composed vector that contains all field vectors
        \param sx (o) structural vector (e.g. displacements)
-       \param tx (o) thermal vector (e.g. temperatures)
+       \param fx (o) fluid vector (e.g. velocities and pressure)
        */
       virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
           Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<
-              const Epetra_Vector>& fx);
+              const Epetra_Vector>& fx,
+              bool firstcall=false);
 
       //! @name Access methods for subclasses
 
       //! full monolithic dof row map
-      Teuchos::RCP<const Epetra_Map> DofRowMap() const
-      {
-        return blockrowdofmap_.FullMap();
-      }
+      Teuchos::RCP<const Epetra_Map> DofRowMap() const {return blockrowdofmap_.FullMap();}
 
       //! set full monolithic dof row map
       /*!
@@ -285,7 +320,7 @@ namespace POROELAST
 
       //! combined DBC map
       //! unique map of all dofs that should be constrained with DBC
-      Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+      virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
       //! extractor to communicate between full monolithic map and block maps
       const LINALG::MultiMapExtractor& Extractor() const
@@ -320,10 +355,37 @@ namespace POROELAST
 
       enum INPAR::STR::DynamicType strmethodname_; //!< enum for STR time integartion
 
-    private:
+      //! block systemmatrix
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+
+      Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of Poroelasticity system
+
+      //! dof row map (not splitted)
+      Teuchos::RCP<Epetra_Map> fullmap_;
 
       //! dof row map splitted in (field) blocks
       LINALG::MultiMapExtractor blockrowdofmap_;
+
+      Teuchos::RCP<LINALG::SparseMatrix> StructFluidCouplingMatrix();
+
+      Teuchos::RCP<LINALG::SparseMatrix> FluidStructCouplingMatrix();
+
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> StructFluidCouplingBlockMatrix();
+
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> FluidStructCouplingBlockMatrix();
+
+      virtual Teuchos::RCP<Epetra_Map> FSIDBCMap();
+
+      //void UseBlockCoulpingMatrix();
+
+      //coupling matrixes
+      Teuchos::RCP<LINALG::SparseOperator> k_sf_;
+      Teuchos::RCP<LINALG::SparseOperator> k_fs_;
+
+      //! Extractor used for fsi boundary with dirichlet bc
+      LINALG::MapExtractor fsibcsplitter_;
+
+    private:
 
       //! build block vector from field vectors, e.g. rhs, increment vector
       void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs
@@ -331,18 +393,15 @@ namespace POROELAST
           Teuchos::RCP<const Epetra_Vector> fv //!< vector containing only fluid dofs
           );
 
-      //! block systemmatrix
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
-
       //! @name Iterative solution technique
 
       enum INPAR::POROELAST::ConvNorm normtypeinc_; //!< convergence check for residual temperatures
       enum INPAR::POROELAST::ConvNorm normtypefres_; //!< convergence check for residual forces
       enum INPAR::POROELAST::BinaryOp combincfres_; //!< binary operator to combine temperatures and forces
 
-      double tolinc_; //!< tolerance residual temperatures
+      double tolinc_; //!< tolerance residual increment
       double tolfres_; //!< tolerance force residual
-      int iter_; //!< iteration step
+
       int itermax_; //!< maximally permitted iterations
       int itermin_; //!< minimally requested iteration
       double normrhs_; //!< norm of residual forces
@@ -356,11 +415,13 @@ namespace POROELAST
 
       Epetra_Time timer_; //!<timer for solution technique
 
+      int iter_; //!< iteration step
+
       //@}
 
       //! @name Various global forces
 
-      Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of Poroelasticity system
+
       // Teuchos::RCP<Epetra_Vector> rhs_fs_;//!< rhs of fluid-structure coupling
       // Teuchos::RCP<Epetra_Vector> rhs_sf_;//!< rhs of structure-fluid coupling
       Teuchos::RCP<Epetra_Vector> cond_rhs_; //!< additional rhs-Terms for no penetration condition

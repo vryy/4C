@@ -20,6 +20,7 @@ writen by : Alexander Volf
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/structporo.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -32,20 +33,29 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
-    MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+  RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
+    //actmat->Setup(NUMGPT_SOTET4);
+    mat = actmat->GetMaterial();
+  }
+
+  if (mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+    MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
     holzcard->Setup(NUMGPT_SOTET4, linedef);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
-    MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());
+  } else if (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
+    MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
     humcard->Setup(NUMGPT_SOTET4, linedef);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_growth){
-    MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
+  } else if (mat->MaterialType() == INPAR::MAT::m_growth){
+    MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
     grow->Setup(NUMGPT_SOTET4, linedef);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture){
-    MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(Material().get());
+  } else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture){
+    MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
     comix->Setup(NUMGPT_SOTET4, linedef);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+  } else if (mat->MaterialType() == INPAR::MAT::m_elasthyper){
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(mat.get());
     elahy->Setup(linedef);
   }
 

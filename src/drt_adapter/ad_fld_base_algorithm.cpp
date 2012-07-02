@@ -322,7 +322,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
       != INPAR::FLUID::loma)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
-  if (probtype == prb_poroelast and
+  if ( (probtype == prb_poroelast or probtype == prb_poroscatra ) and
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
       != INPAR::FLUID::poro)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Poro' for poro-elasticity!");
@@ -480,10 +480,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
   }
 
-  if (probtype == prb_poroelast)
+  if (probtype == prb_poroelast or
+      probtype == prb_poroscatra)
   {
+    const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
     fluidtimeparams->set<bool>("poroelast",true);
+    fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(porodyn,"SECONDORDER"));
+    fluidtimeparams->set<bool>("shape derivatives",false);
+    fluidtimeparams->set<bool>("do explicit predictor",false);
   }
+
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
@@ -531,6 +537,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
+      {
+        dirichletcond = false;
+      }
+    }
+
+    if (probtype == prb_poroelast or probtype == prb_poroscatra)
+    {
+      //const INPAR::POROELAST::SolutionSchemeOverFields coupling =
+      //    DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(prbdyn,"COUPALGO");
+      //if (coupling != INPAR::POROELAST::Monolithic_fluidsplit )
       {
         dirichletcond = false;
       }
@@ -599,6 +615,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     break;
     case prb_poroelast:
+    case prb_poroscatra:
     {
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
       fluid_ = Teuchos::rcp(new FluidPoro(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));

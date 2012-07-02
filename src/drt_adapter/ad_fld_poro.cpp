@@ -19,6 +19,7 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_io/io.H"
 #include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid/fluidimplicitintegration.H"
 
 /*======================================================================*/
 /* constructor */
@@ -51,6 +52,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
   if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   Discretization()->ClearState();
+  Discretization()->SetState("dispn", Dispn());
   Discretization()->SetState("dispnp", Dispnp());
   Discretization()->SetState(0,"velnp",Velnp());
   Discretization()->SetState(0,"gridv",GridVel());
@@ -66,12 +68,13 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
   else if(coupltype==1)
   {
     params.set("coupling","fluid structure");
-
     StructVelConstraintMatrix->Zero();
   }
   else
     dserror("unknown coupling type for no penetration BC");
 
+  //ADAPTER::FluidFSI& fluidfield = dynamic_cast<ADAPTER::FluidFSI&>(fluid_);
+  params.set("timescale",TimeScaling());
   //std::set<int> condIDs;
   condIDs->clear();
 
@@ -112,7 +115,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
 
       int eid = curr->second->Id();
 
-      if(coupltype==0)
+      if(coupltype==0)//fluid fluid
       {
         elematrix1.Shape(eledim,eledim);
         //---------------------------------------------------------------------
@@ -135,7 +138,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
               condIDs->insert(condID);
           }
       }
-      else
+      else //fluid structure
       {
         elematrix1.Shape(eledim,eledim2);
         elematrix2.Shape(eledim,eledim2);
@@ -146,13 +149,20 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
         if (err) dserror("error while evaluating elements");
 
         ConstraintMatrix->Assemble( eid, la[1].stride_, elematrix1, la[0].lm_, la[0].lmowner_, la[1].lm_ );
-        StructVelConstraintMatrix->Assemble( eid, la[1].stride_, elematrix1, la[0].lm_, la[0].lmowner_, la[1].lm_ );
+        StructVelConstraintMatrix->Assemble( eid, la[1].stride_, elematrix2, la[0].lm_, la[0].lmowner_, la[1].lm_ );
         LINALG::Assemble(*Cond_RHS,elevector1,la[0].lm_,la[0].lmowner_);
       }
     }
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidPoro::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+{
+  fluidimpl_->AddDirichCond(maptoadd);
 }
 
 /*----------------------------------------------------------------------*/

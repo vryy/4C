@@ -43,6 +43,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_mlmc.H"
 #include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_inpar/inpar_poroscatra.H"
+#include "../drt_inpar/inpar_ssi.H"
 
 #include <AztecOO.h>
 
@@ -660,6 +662,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("Thermo_Fluid_Structure_Interaction");          label.push_back(prb_thermo_fsi);
     name.push_back("Fluid_Top_Opt");                               label.push_back(prb_fluid_topopt);
     name.push_back("Poroelasticity");                              label.push_back(prb_poroelast);
+    name.push_back("Poroelastic_scalar_transport");                label.push_back(prb_poroscatra);
+    name.push_back("Structure_Scalar_Interaction");                label.push_back(prb_ssi);
     name.push_back("NP_Supporting_Procs");                         label.push_back(prb_np_support);
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
@@ -2008,15 +2012,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    "Poroelasticity"
    );
 
-  // Coupling strategy for (partitioned and monolithic) TSI solvers
+  // Coupling strategy for (monolithic) porous media solvers
   setStringToIntegralParameter<int>(
                               "COUPALGO","poroelast_monolithic",
                               "Coupling strategies for poroelasticity solvers",
                               tuple<std::string>(
-                                "poroelast_monolithic"
+                                 "poroelast_monolithic",
+                                 "poroelast_monolithicstructuresplit",
+                                 "poroelast_monolithicfluidsplit"
                                 ),
                               tuple<int>(
-                                INPAR::POROELAST::Monolithic
+                                INPAR::POROELAST::Monolithic,
+                                INPAR::POROELAST::Monolithic_structuresplit,
+                                INPAR::POROELAST::Monolithic_fluidsplit
                                 ),
                               &poroelastdyn);
 
@@ -2029,7 +2037,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&poroelastdyn);
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&poroelastdyn);
   IntParameter("UPRES",1,"increment for writing solution",&poroelastdyn);
-  //DoubleParameter("INITPOROSITY",0.5,"initial porosity",&poroelastdyn);
 
   // Iterationparameters
   DoubleParameter("RESTOL",1e-8,"tolerance in the residual norm for the Newton iteration",&poroelastdyn);
@@ -2055,32 +2062,63 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
                                tuple<std::string>(
-                            		   "And",
-                                       "Or"),
+                                     "And",
+                                     "Or"),
                                      tuple<int>(
                                        INPAR::POROELAST::bop_and,
                                        INPAR::POROELAST::bop_or),
                                &poroelastdyn);
 
-  /*
-  setStringToIntegralParameter<int>("INITIALFIELD","field_by_function",
-                               "Initial Field for thermal problem",
-                               tuple<std::string>(
-                               // "zero_field",
-                                 "field_by_function"
-                               //  "field_by_condition"
-                                 ),
-                               tuple<int>(
-                                 //  INPAR::POROELAST::initfield_zero_field,
-                                   INPAR::POROELAST::initfield_field_by_function
-                               //    INPAR::POROELAST::initfield_field_by_condition
-                                   ),
-                               &poroelastdyn);
-  IntParameter("INITFUNCNO",-1,"function number for porosity initial field",&poroelastdyn);
-  */
+  setStringToIntegralParameter<int>("SECONDORDER","No",
+                               "Second order coupling at the interface.",
+                               yesnotuple,yesnovalue,&poroelastdyn);
 
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poroelastdyn);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& poroscatradyn = list->sublist(
+   "POROSCATRA CONTROL",false,
+   "Control paramters for scatra porous media coupling"
+   );
+
+  // Output type
+  IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&poroscatradyn);
+  // Time loop control
+  IntParameter("NUMSTEP",200,"maximum number of Timesteps",&poroscatradyn);
+  DoubleParameter("MAXTIME",1000.0,"total simulation time",&poroscatradyn);
+  DoubleParameter("TIMESTEP",0.05,"time step size dt",&poroscatradyn);
+  IntParameter("UPRES",1,"increment for writing solution",&poroscatradyn);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& ssidyn = list->sublist(
+   "SSI CONTROL",false,
+   "Control paramters for scatra structure interaction"
+   );
+
+  // Output type
+  IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&ssidyn);
+  // Time loop control
+  IntParameter("NUMSTEP",200,"maximum number of Timesteps",&ssidyn);
+  DoubleParameter("MAXTIME",1000.0,"total simulation time",&ssidyn);
+  DoubleParameter("TIMESTEP",0.05,"time step size dt",&ssidyn);
+  IntParameter("UPRES",1,"increment for writing solution",&ssidyn);
+  IntParameter("ITEMAX",10,"maximum number of iterations over fields",&ssidyn);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&ssidyn);
+
+  // Coupling strategy for SSI solvers
+  setStringToIntegralParameter<int>(
+                              "COUPALGO","one_way",
+                              "Coupling strategies for SSI solvers",
+                              tuple<std::string>(
+                                "one_way",
+                                "two_way"
+                                ),
+                              tuple<int>(
+                                INPAR::SSI::Part_OneWay,
+                                INPAR::SSI::Part_TwoWay
+                                ),
+                              &ssidyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,"");
@@ -3300,7 +3338,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Elch_Poisson",
                                  "Elch_Laplace",
                                  "LevelSet",
-                                 "TurbulentPassiveScalar"),
+                                 "TurbulentPassiveScalar",
+                                 "Poroscatra"),
                                tuple<int>(
                                  INPAR::SCATRA::scatratype_undefined,
                                  INPAR::SCATRA::scatratype_condif,
@@ -3311,7 +3350,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_elch_poisson,
                                  INPAR::SCATRA::scatratype_elch_laplace,
                                  INPAR::SCATRA::scatratype_levelset,
-                                 INPAR::SCATRA::scatratype_turbpassivesca),
+                                 INPAR::SCATRA::scatratype_turbpassivesca,
+                                 INPAR::SCATRA::scatratype_poro),
                                  &scatradyn);
 
   setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",

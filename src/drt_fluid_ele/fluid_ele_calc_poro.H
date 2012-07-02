@@ -189,13 +189,18 @@ private:
       const double & timefac, const double & timefacfac
       );
 
+  //! Compute element matrix entries: PSPG
+  void PSPG(
+      LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &  estif_q_u,      ///< block (weighting function q x u)
+      LINALG::Matrix<my::nen_,my::nen_> &            ppmat,          ///< block (weighting function q x p)
+      LINALG::Matrix<my::nen_,1> &                   preforce,       ///< rhs forces pressure
+      LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,    ///< linearisation of the stabilization residual
+      const double &                                 fac3,           ///< factor for residual in current subgrid velocities
+      const double &                                 timefacfac,     ///< = timefac x fac
+      const double &                                 timefacfacpre,
+      const double &                                 rhsfac       ///< right-hand-side factor for residuals
+      );
 
-
-
-
-  double bulkmodulus_;
-  double penalty_;
-  double initporosity_;
   double visceff_;
 
 

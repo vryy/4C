@@ -312,6 +312,8 @@ public:
   const Teuchos::ParameterList& ArterialDynamicParams() const { return getParameterList()->sublist("ARTERIAL DYNAMIC"); }
   const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC"); }
   const Teuchos::ParameterList& PoroelastDynamicParams() const { return getParameterList()->sublist("POROELASTICITY DYNAMIC"); }
+  const Teuchos::ParameterList& PoroScatraControlParams() const { return getParameterList()->sublist("POROSCATRA CONTROL"); }
+  const Teuchos::ParameterList& SSIControlParams() const { return getParameterList()->sublist("SSI CONTROL"); }
   const Teuchos::ParameterList& OptimizationControlParams() const { return getParameterList()->sublist("TOPOLOGY OPTIMIZATION CONTROL"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
   const Teuchos::ParameterList& StructuralNoxParams() const { return getParameterList()->sublist("STRUCT NOX"); }

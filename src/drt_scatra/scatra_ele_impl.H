@@ -415,6 +415,31 @@ private:
   );
 
   /*========================================================================*/
+  //! @name Poro-Scatra ?
+  /*========================================================================*/
+
+  //! modify residual of scalar transport equation for poroelastic problem
+  virtual void CalcResidual_PoroScatraMod(
+      const double        dt,
+      const double        timefac,
+      const int           k,
+      const double        porosity,
+      const double            dporodt,
+      LINALG::Matrix<3,1>&   gradporosity
+  );
+
+  //! modify element matrix and rhs vector for Poroelastic+Scatra problem (One-Step-Theta, BDF2, Gen.-alpha)
+  virtual void CalMatAndRHS_PoroScatraMod(
+      Epetra_SerialDenseMatrix&             emat,     //!< element matrix to calculate
+      Epetra_SerialDenseVector&             erhs,     //!< element rhs to calculate
+      const double                          fac,      //!< integration factor
+      const double                          timefac,  //!< time discretization factor
+      const int                             k,        //!< index of current scalar
+      const int                             iquad,    //!< id of current Gauss point
+      const int                             eleid     //!< the element id
+  );
+
+  /*========================================================================*/
   //! @name dofs and nodes
   /*========================================================================*/
 

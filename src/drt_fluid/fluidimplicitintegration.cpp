@@ -3258,14 +3258,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
-  //set parameters for poroelasticity
-  if(poroelast_)
-  {
-	  eleparams.set("bulkmodulus",params_->get<double>("bulkmodulus",1.0));
-	  eleparams.set("penaltyparameter",params_->get<double>("penaltyparameter",0.0));
-	  eleparams.set("initporosity",params_->get<double>("initporosity",0.5));
-  }
-
   // set general vector values needed by elements
   discret_->ClearState();
   discret_->SetState("hist" ,hist_ );
@@ -6222,11 +6214,6 @@ double FLD::FluidImplicitTimeInt::TimIntParam() const
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  // Yes, this is complicated. But we have to be very careful
-  // here. The field solver always expects an increment only. And
-  // there are Dirichlet conditions that need to be preserved. So take
-  // the sum of increments we get from NOX and apply the latest
-  // increment only.
   UpdateIterIncrementally(vel);
 }
 
@@ -6237,11 +6224,12 @@ void FLD::FluidImplicitTimeInt::UpdateNewton(Teuchos::RCP<const Epetra_Vector> v
 Teuchos::RCP<FLD::TurbulenceStatisticManager> FLD::FluidImplicitTimeInt::TurbulenceStatisticManager()
   {return statisticsmanager_;};
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
   Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
   )
 {
-
   // set the new solution we just got
   if (vel != Teuchos::null)
   {
@@ -6263,7 +6251,6 @@ void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
     if (poroelast_)
     {
       //only one step theta
-
       // new end-point accelerations
       aux->Update(1.0 / (theta_ * dta_), *velnp_, -1.0 / (theta_ * dta_),
           *(*veln_)(0), 0.0);

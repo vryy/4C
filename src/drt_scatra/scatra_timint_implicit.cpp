@@ -141,12 +141,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
      ((prbtype != prb_elch) and (scatratype_ != INPAR::SCATRA::scatratype_turbpassivesca)))
   {
     if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
-    else if (prbtype == prb_combust)   scatratype_ = INPAR::SCATRA::scatratype_levelset;
+    else if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
     else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
     else if (prbtype == prb_scatra)       scatratype_ = INPAR::SCATRA::scatratype_condif;
     else if (prbtype == prb_gas_fsi)      scatratype_ = INPAR::SCATRA::scatratype_condif;
     else if (prbtype == prb_biofilm_fsi)  scatratype_ = INPAR::SCATRA::scatratype_condif;
     else if (prbtype == prb_thermo_fsi)   scatratype_ = INPAR::SCATRA::scatratype_loma;
+    else if (prbtype == prb_poroscatra)   scatratype_ = INPAR::SCATRA::scatratype_poro;
+    else if (prbtype == prb_ssi)          scatratype_ = INPAR::SCATRA::scatratype_condif;
     else
       dserror("Problemtype %s not supported", DRT::Problem::Instance()->ProblemName().c_str());
   }

@@ -161,12 +161,12 @@ namespace MAT
       }
 
       /// return porosity at gausspoints
-      vector<double> Porosity() const
+      RCP< vector<double> > Porosity() const
       {
         return porosity_;
       }
 
-      void SetPorosityAtGP(std::vector<double> porosity_gp);
+      //void SetPorosityAtGP(std::vector<double> porosity_gp);
 
       /// return porosity average
       double PorosityAv() const;
@@ -190,8 +190,8 @@ namespace MAT
       }
 
       /// compute current porosity (not used)
-      double ComputePorosity(double press, double J, const double initporosity,
-          int gp) const;
+      void ComputePorosity(double press, double J,int gp,
+          double& porosity,double& dphi_dp,double& dphi_dJ,double& dphi_dJdp,double& dphi_dJJ,double& dphi_dpp) const;
 
       /// return copy of this material object
       virtual Teuchos::RCP<Material> Clone() const
@@ -199,10 +199,38 @@ namespace MAT
         return Teuchos::rcp(new StructPoro(*this));
       }
 
+      /// Initialize internal variables
+      void Setup
+      (
+        const int numgp  ///< number of Gauss points
+      );
+
       /// Return quick accessible material parameter data
       virtual MAT::PAR::Parameter* Parameter() const
       {
         return params_;
+      }
+
+      /// Return porosity evaluated at some gauss point.           %urrecha 04/12
+      double GetPorosityAtGP(int gp)
+      {
+        return porosity_->at(gp);
+      }
+
+      void   SetDPoroDtAtGP(std::vector<double> dporodt_gp);
+
+      /// Return derivative of porosity wrt time evaluated at some gauss point.           %urrecha 04/12
+      double GetDPoroDtAtGP(int gp)
+      {
+        return dporodt_->at(gp);
+      }
+
+      void   SetGradPorosityAtGP(std::vector< LINALG::Matrix<3,1> > gradporosity_gp);
+
+      /// Return porosity gradient evaluated at some gauss point.  %urrecha 04/12
+      LINALG::Matrix<3,1> GetGradPorosityAtGP(int gp)
+      {
+        return gradporosity_->at(gp);
       }
 
     private:
@@ -210,9 +238,11 @@ namespace MAT
       /// my material parameters
       MAT::PAR::StructPoro* params_;
 
-      vector<double> porosity_;
+      RCP<vector<double> > porosity_;
+      RCP<vector<double> > dporodt_;
+      Teuchos::RCP<vector<LINALG::Matrix<3,1> > > gradporosity_;
 
-      void SetupPorosity(int numgp);
+      //void SetupPorosity(int numgp);
   };
 
 }

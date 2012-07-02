@@ -40,8 +40,32 @@ void DRT::ELEMENTS::So3_Scatra<distype>::PreEvaluate(ParameterList& params,
                                         DRT::Element::LocationArray& la)
 {
   // TODO: read
+  if(la.Size()>1)
+  {
+    //  dofs per node of second dofset
+    const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]));
 
-    return;
+    if (la[1].Size() != numnod_*numdofpernode)
+      dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
+
+    if (discretization.HasState(1,"temperature"))
+    {
+      // check if you can get the scalar state
+      Teuchos::RCP<const Epetra_Vector> tempnp
+        = discretization.GetState(1,"temperature");
+
+      if (tempnp==Teuchos::null)
+        dserror("calc_struct_nlnstiff: Cannot get state vector 'fluidvel' ");
+
+      // extract local values of the global vectors
+      Teuchos::RCP<std::vector<double> >mytemp = rcp(new std::vector<double>(la[1].lm_.size()) );
+      DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[1].lm_);
+
+      params.set<Teuchos::RCP<vector<double> > >("scalar",mytemp);
+    }
+  }
+
+  return;
 }
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |

@@ -699,6 +699,7 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
     switch (probtype)
     {
       case prb_poroelast:
+      case prb_poroscatra:
       {
         return DRT::Problem::Instance()->NDim();
         break;

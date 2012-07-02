@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "so3_poro_eletypes.H"
 
 
@@ -64,8 +65,6 @@ protected:
   So3_Poro(const So3_Poro& old);
 
   //@}
-
-  //static const DRT::UTILS::GaussIntegration intpoints_ = DRT::UTILS::GaussIntegration(distype);
 
 
   //! number of element nodes (
@@ -155,7 +154,6 @@ protected:
       return 4;
     }
     // structure, 3D: 3 Dofs per node
-    //    return 3;
     return 3;
   };
 
@@ -181,16 +179,9 @@ protected:
     }
   };
 
-  //@}
-
-  //! @name Input and Creation
-
-  /*!
-  \brief Read input for this element
-  */
   bool ReadElement(const std::string& eletype,
                    const std::string& eledistype,
-                   DRT::INPUT::LineDefinition* linedef) = 0 ;
+                   DRT::INPUT::LineDefinition* linedef) ;
 
   //@}
 
@@ -323,9 +314,12 @@ protected:
       //LINALG::Matrix<numdof_,1>* forcerea, //< element reactive force vector
       ParameterList& params); ///< algorithmic parameters e.g. time
 
-private:
-
+//private:
+  //Gauss integration rule
   DRT::UTILS::GaussIntegration intpoints_;
+
+  //!flag indicating higher order element
+  bool ishigherorder_;
 }; // class So3_Poro
 
 
@@ -334,7 +328,9 @@ private:
 //=======================================================================
 //=======================================================================
 
+
 } // namespace ELEMENTS
 } // namespace DRT
+
 
 #endif /* SO3_PORO_H */

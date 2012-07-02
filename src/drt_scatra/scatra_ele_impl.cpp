@@ -44,6 +44,7 @@
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_mat/structporo.H"
 
 // include define flags for turbulence models under development
 #include "../drt_fluid/fluid_turbulence_defines.H"
@@ -772,6 +773,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       BD_gp,
       frt,
       scatratype);
+
 #if 0
     // for debugging of matrix entries
     if(ele->Id()==2) // and (time < 3 or time > 99.0))
@@ -1541,6 +1543,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // compute matrix and rhs
         CalMatAndRHS(emat,erhs,fac,fssgd,timefac,dt,alphaF,k);
 
+        if (scatratype == INPAR::SCATRA::scatratype_poro)
+        {
+          //modify the elment matrix and rhs for scalar transport through porous media
+          //NOTE: no stabilization terms implemented
+          CalMatAndRHS_PoroScatraMod(emat,erhs,fac,timefac,k,ele->Id(),iquad);
+        }
       } // loop over each scalar
     }
   } // integration loop
@@ -6626,4 +6634,114 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
 
 } //ScaTraImpl<distype>::CalculateElectricPotentialField
 
+/*------------------------------------------------------------------------*
+  |  calculate residual of scalar transport equation for the homogenized  |
+  |  transport equation in poroelastic problem. (depending on respective  |
+  |  stationary or time-integration scheme)                vuong 04/12  |
+  *-----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidual_PoroScatraMod(
+  const double   dt,
+  const double   timefac,
+  const int      k,
+  const double   porosity,
+  const double   dporodt,
+  LINALG::Matrix<3,1>& gradporosity
+  )
+{
+  dserror("CalcResidual_PoroScatraMod not implemented");
+
+  return;
+} //end of CalcResidual_Poroscatra
+
+
+/*---------------------------------------------------------------------------*
+ |  mofidy element matrix and rhs for scatra in porous media (private)  vuong 06/12|
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
+  Epetra_SerialDenseMatrix&             emat,
+  Epetra_SerialDenseVector&             erhs,
+  const double                          fac,      ///< integration factor
+  const double                          timefac,  ///< time discretization factor
+  const int                             k,
+  const int                             eleid,
+  const int                             iquad
+  )
+{
+  //access structure discretization
+  RCP<DRT::Discretization> structdis = null;
+  structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+  //get corresponding structure element (it has the same global ID as the scatra element)
+  DRT::Element* structele = structdis->gElement(eleid);
+  if (structele == NULL)
+    dserror("Structure element %i not on local processor", eleid);
+
+  MAT::StructPoro* structmat = static_cast<const MAT::StructPoro* >((structele->Material()).get());
+  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+    dserror("invalid structure material for poroelasticity");
+
+  const double           porosity   = structmat->GetPorosityAtGP(iquad);
+  const double           dporodt    = structmat ->GetDPoroDtAtGP(iquad);
+  LINALG::Matrix<3,1>  gradporosity = structmat->GetGradPorosityAtGP(iquad);
+
+  const double timefacfac = timefac * fac;
+  //----------------------------------------------------------------
+  // 1) Modification of emat due to the homogenized equation employed for
+  //    the poro-scatra problem.The standard equation is multiplied by the
+  //    porosity, and some other terms must be added.
+  //----------------------------------------------------------------
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+   const int fvi = vi*numdofpernode_+k;
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+      emat(fvi,fui) *= porosity;
+    }
+  }
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    const double v = timefacfac*funct_(vi);
+    const int fvi = vi*numdofpernode_+k;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui = ui*numdofpernode_+k;
+      emat(fvi,fui) += v*dporodt*funct_(ui);
+
+      double tmp=0.0;
+      for(int i = 0; i<nsd_; i++)
+      {
+        tmp += v*funct_(ui)*convelint_(i,0)*gradporosity(i);
+        tmp -= v*diffus_[k]*(derxy_(i,ui)*gradporosity(i));
+      }
+      emat(fvi,fui) += tmp;
+    }
+  }
+
+  //----------------------------------------------------------------
+  // 2) Modification of the residual due to the homogenized equation employed for
+  //    the poro-scatra problem.The standard equation is multiplied by the
+  //    porosity, and some other terms must be added.
+  //----------------------------------------------------------------
+
+  // compute scalar at integration point
+  const double phi = funct_.Dot(ephinp_[k]);
+
+  double tmp = 0.0;
+  for (int i=0; i<nsd_; i++)  // Loop needed to do the dot product, as gradporosity is a pointer to double, not a vector...
+  {
+  tmp += phi*convelint_(i,0)*(gradporosity(i)) - diffus_[k]*gradphi_(i,0)*gradporosity(i);
+   }
+  for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+      erhs[fvi] *= porosity;
+      erhs[fvi] -= funct_(vi)* timefacfac*( phi*dporodt + tmp);
+    }
+  return;
+} //ScaTraImpl::CalMatAndRHS_Poroscatra
 
