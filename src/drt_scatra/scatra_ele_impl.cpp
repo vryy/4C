@@ -6677,7 +6677,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
   if (structele == NULL)
     dserror("Structure element %i not on local processor", eleid);
 
-  MAT::StructPoro* structmat = static_cast<const MAT::StructPoro* >((structele->Material()).get());
+  MAT::StructPoro* structmat = static_cast<MAT::StructPoro* >((structele->Material()).get());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
     dserror("invalid structure material for poroelasticity");
 
