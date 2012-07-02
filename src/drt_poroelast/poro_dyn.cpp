@@ -67,7 +67,7 @@ void poroelast_drt()
     dserror("Material damping has to be used for poroelasticity! Set DAMPING to Material in the STRUCTURAL DYNAMIC section.");
 
   // create an empty Poroelast::Algorithm instance
-  Teuchos::RCP<POROELAST::MonolithicBase> poroelast = Teuchos::null;
+  Teuchos::RCP<POROELAST::PoroBase> poroelast = Teuchos::null;
 
   // choose algorithm depending on solution type (only monolithic type implemented)
   switch (coupling)
