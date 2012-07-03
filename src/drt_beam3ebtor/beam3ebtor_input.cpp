@@ -1,24 +1,25 @@
 /*!----------------------------------------------------------------------
-\file beam3eb_input.cpp
-\brief
+\file beam3ebtor.H
+
+\brief three dimensional nonlinear rod based on a C1 curve
 
 <pre>
 Maintainer: Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15262
+            089 - 289-15301
 </pre>
 
-*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------------------------------------------*/
 
-#include "beam3eb.H"
+#include "beam3ebtor.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/largerotations.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam3eb::ReadElement(const std::string& eletype,
+bool DRT::ELEMENTS::Beam3ebtor::ReadElement(const std::string& eletype,
                                        const std::string& distype,
                                        DRT::INPUT::LineDefinition* linedef)
 {
@@ -30,7 +31,7 @@ bool DRT::ELEMENTS::Beam3eb::ReadElement(const std::string& eletype,
 
   linedef->ExtractDouble("CROSS",crosssec_);
 
-  /*read beam moments of inertia of area; currently the beam3eb element works only with rotationally symmetric
+  /*read beam moments of inertia of area; currently the beam3ebtor element works only with rotationally symmetric
    * crosssection so that the moment of inertia of area around both principal axes can be expressed by one input
    * number I_; however, the implementation itself is a general one and works also for other cases;*/
 

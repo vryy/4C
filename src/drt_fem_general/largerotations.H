@@ -35,6 +35,25 @@ namespace LARGEROTATIONS
   //!computing spin matrix S from rotation angle vector theta, Crisfield, Vol. 2, equation (16.8)
   void computespin(LINALG::Matrix<3,3>& S, const LINALG::Matrix<3,1>& theta);
   
+  //!this is a templated version of the method computespin as declared above in order to also handle
+  //!the datatype FAD which is needed for automatic differentiation
+  template<typename T>
+  void computespin(LINALG::TMatrix<T,3,3>& S, const LINALG::TMatrix<T,3,1>& theta)
+  {
+    //function based on Crisfield Vol. 2, Section 16 (16.8)
+    S(0,0) = 0;
+    S(0,1) = -theta(2);
+    S(0,2) = theta(1);
+    S(1,0) = theta(2);
+    S(1,1) = 0;
+    S(1,2) = -theta(0);
+    S(2,0) = -theta(1);
+    S(2,1) = theta(0);
+    S(2,2) = 0;
+
+    return;
+  }
+
   //!computing rotation matrix R from quaternion q, Crisfield, Vol. 2, equation (16.70)
   void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
   

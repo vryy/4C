@@ -179,7 +179,7 @@ void UTILS::ConstraintSolver::SolveUzawa
     const int sign_digits = (int)floor(tmp);
     if (!myrank)
       cout << " cond est: " << scientific << cond_number << ", max.sign.digits: " << sign_digits;
-#endif
+    #endif
 
     // solve for disi
     // Solve K . IncD = -R  ===>  IncD_{n+1}

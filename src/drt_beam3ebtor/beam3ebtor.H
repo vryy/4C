@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file beam3eb.H
+\file beam3ebtor.H
 
-\brief three dimensional nonlinear torsionless rod based on a C1 curve
+\brief three dimensional nonlinear rod based on a C1 curve
 
 <pre>
 Maintainer: Christoph Meier
@@ -10,11 +10,10 @@ Maintainer: Christoph Meier
             089 - 289-15301
 </pre>
 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
-nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
-tension and bending curvature based on the curve describing the centerline of an initially (i.e. stress free) straight beam.
-There is no shear deformation and no torsion. The expansion of the model to a full Euler Bernoulli beam (inclusive torsion) is
-possible and implemented in beam3ebtor.
-To be able to use this element correctly so far structural dynamic parameters need to be set to:
+nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. In contrary to the beam3eb element this element can
+also display torsion and is therefore a complete, geometrically exact Euler-Bernoulli beam element for initially (i.e. in the stress-free
+configuration) straight beams. Due to the Euler-Bernoulli theory there is no shear deformation.
+To be able to use this element correctly structural dynamic parameters need to be set to:
 
 	LOADLIN	     Yes
 
@@ -23,23 +22,20 @@ type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed
 
 As the beam curve has to be C1 it is interpolated with hermitien polynomials of order 3. Therefore each node has 6 dofs: the position
 vector of the node (3 dofs) and the tangent vector to the curve at the node (3 dofs). If Dirichlet BC are applied one has to make sure that
-the last three flags refer to the tangent at the node (rotational defree of freedom). The flag of the tangent in beam centerline direction must
-be set to 0, otherwise the axial tension at the boundary would be prescribed.
+the flags 3 -6 refer to the tangent at the node (rotational defree of freedom). The flag of the tangent in beam centerline direction must
+be set to 0, otherwise the axial tension at the boundary would be prescribed. The 7th flag is related to the twist angle.
 *----------------------------------------------------------------------*/
 
 
-
 //header file only included if not yet included!
-#ifndef BEAM3EB_H
-#define BEAM3EB_H
-
+#ifndef BEAM3EBTOR_H
+#define BEAM3EBTOR_H
 
 #include "Teuchos_RefCountPtr.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-
 #include "../drt_lib/drt_elementtype.H"
 
 //! \brief DRT: namespace of the ccarat discretization module
@@ -49,13 +45,13 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class Beam3ebType : public DRT::ElementType
+class Beam3ebtorType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "Beam3ebType"; }
+  std::string Name() const { return "Beam3ebtorType"; }
 
-  static Beam3ebType & Instance() { return instance_; };
+  static Beam3ebtorType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const vector<char> & data );
 
@@ -76,7 +72,7 @@ public:
 
 private:
 
-  static Beam3ebType instance_;
+  static Beam3ebtorType instance_;
 };
 
 /*!
@@ -87,12 +83,12 @@ There is no shear deformation and no torsion. The expansion of the model to a fu
 
 author meier (meier@lnm.mw.tum.de)
 */
-class Beam3eb : public DRT::Element
+class Beam3ebtor : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Beam3ebType;
+  friend class Beam3ebtorType;
 
 
   //! @name Constructors and destructors and related methods
@@ -104,22 +100,22 @@ public:
   \param etype (in): Type of element
   \param owner (in): owner processor of the element
   */
-  Beam3eb(int id, int owner);
+  Beam3ebtor(int id, int owner);
 
   /*!
   \brief Copy Constructor
 
   Makes a deep copy of a Element
   */
-  Beam3eb(const Beam3eb& old);
+  Beam3ebtor(const Beam3ebtor& old);
 
   /*!
   \brief Destructor
   */
-  virtual ~Beam3eb();
+  virtual ~Beam3ebtor();
 
   /*!
-  \brief Deep copy this instance of Beam3eb and return pointer to the copy
+  \brief Deep copy this instance of Beam3ebtor and return pointer to the copy
 
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -139,7 +135,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return Beam3ebType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return Beam3ebtorType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -158,7 +154,7 @@ public:
   virtual void Unpack(const vector<char>& data);
 
   virtual DRT::ElementType & ElementType() const
-  { return Beam3ebType::Instance(); }
+  { return Beam3ebtorType::Instance(); }
 
   //@}
 
@@ -182,7 +178,7 @@ public:
     /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
     *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
     *number of DOF to this node requested by any element connected to this node*/
-      return 6;
+    return 7;
   }
 
   /*!
@@ -291,7 +287,7 @@ public:
 
 private:
 
-  //! action parameters recognized by Beam3eb
+  //! action parameters recognized by Beam3ebtor
   enum ActionType
   {
     calc_none,
@@ -326,7 +322,7 @@ private:
   //!polar moment of inertia of area
   double Irr_;
 
-  //! Vector holding value of Jacobi determinant jacobi for each Gauss point for underintegration
+  //! Variable holding the constant Jacobi determinant jacobi of the element
   double jacobi_;
 
   //! Matrix holding tangents at each node in reference configuration
@@ -374,10 +370,10 @@ private:
 
 
   // don't want = operator
-  Beam3eb& operator = (const Beam3eb& old);
+  Beam3ebtor& operator = (const Beam3ebtor& old);
 
 
-}; // class Beam3eb
+}; // class Beam3ebtor
 
 
 
@@ -389,4 +385,4 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 } // namespace DRT
 
 
-#endif  // #ifndef BEAM3EB_H
+#endif  // #ifndef BEAM3EBTOR_H

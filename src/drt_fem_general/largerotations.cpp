@@ -102,7 +102,6 @@ void LARGEROTATIONS::computespin(LINALG::Matrix<3,3>& S, const LINALG::Matrix<3,
   return;
 } //LARGEROTATIONS::computespin
 
-
 /*----------------------------------------------------------------------*
  |computes a rotation matrix R from a quaternion q            |
  |cf. Crisfield, Vol. 2, equation (16.70)         (public)cyron10/08|

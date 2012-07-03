@@ -62,6 +62,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_beam3eb:
       nv = 6;
+    case DRT::Element::element_beam3ebtor:
+      nv = 7;
     break;
     case DRT::Element::element_smoothrod:
       nv = 4;
@@ -228,6 +230,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_beam3ii:
     case DRT::Element::element_beam3eb:
       numdf = 6;
+      dimns = 6;
+    break;
+    case DRT::Element::element_beam3ebtor:
+      numdf = 7;
       dimns = 6;
     break;
     case DRT::Element::element_wall1:

@@ -308,15 +308,17 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     const int numnode1 = Element1()->NumNode();
     const int numnode2 = Element2()->NumNode();
 
-    // determine boundary node of element1
+    // Uncomment theses lines if needed
+    /*// determine boundary node of element1
     int n_right1=0;
     if (numnode1==2) {n_right1=1;}
-    else {n_right1=numnode1-2;}
+    else {n_right1=numnode1-2;}*/
 
-    // determine boundary node of element2
+    // Uncomment theses lines if needed
+    /*// determine boundary node of element2
     int n_right2=0;
     if (numnode2==2) {n_right2=1;}
-    else {n_right2=numnode2-2;}
+    else {n_right2=numnode2-2;}*/
 
     // vectors for shape functions and their derivatives
     Epetra_SerialDenseVector funct1(numnode1);          // = N1
@@ -2404,7 +2406,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
      const vector<double>& XiContact, int beams_smoothing)
 {
   // local boolean to detect whether two elements are colinear
-  bool FD_elementscolinear = false;
+  //bool FD_elementscolinear = false;
   
   // local vectors for FD-approximations of delta_xi and delta_eta
   vector<double> FD_delta_xi(NDIM*(numnode1+numnode2));
@@ -2433,7 +2435,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
-      FD_elementscolinear=elementscolinear_;
+      //FD_elementscolinear=elementscolinear_;
       
       // FD-approximation
       FD_delta_xi[NDIM*i+j] = (FD_XiContact[0]-XiContact[0])/eps;
@@ -2460,7 +2462,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
-      FD_elementscolinear=elementscolinear_;
+      //FD_elementscolinear=elementscolinear_;
       
       // FD-approximation
       FD_delta_xi[NDIM*numnode1+NDIM*i+j] = (FD_XiContact[0]-XiContact[0])/eps;
@@ -2537,7 +2539,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
   vector<double> FD_normal(3);
   double FD_norm = 0.0;
   vector<double> FD_XiContact(2);
-  bool FD_elementscolinear = false;
+  //bool FD_elementscolinear = false;
   
   // step width and tolerances for FD-check
   double eps = 1e-10;
@@ -2573,7 +2575,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
-      FD_elementscolinear=elementscolinear_;
+      //FD_elementscolinear=elementscolinear_;
   
       // Call function to fill variables for shape functions and their derivatives
       GetShapeFunctions(FD_funct1,FD_funct2,FD_deriv1,FD_deriv2,FD_secondderiv1,FD_secondderiv2,FD_XiContact);
@@ -2606,7 +2608,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
-      FD_elementscolinear=elementscolinear_;
+      //FD_elementscolinear=elementscolinear_;
     
       // Call function to fill variables for shape functions and their derivatives
       GetShapeFunctions(FD_funct1,FD_funct2,FD_deriv1,FD_deriv2,FD_secondderiv1,FD_secondderiv2,FD_XiContact);
@@ -2707,7 +2709,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
       double FD_norm = 0.0;
       double FD_gap = 0.0;
       vector<double> FD_XiContact(2);
-      bool FD_elementscolinear = false;
+      //bool FD_elementscolinear = false;
       
       // step forward
       ele1pos_(i,j) += eps;
@@ -2717,7 +2719,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
-      FD_elementscolinear=elementscolinear_;
+      //FD_elementscolinear=elementscolinear_;
 //      cout<<"FD_XiContact:  "<<FD_XiContact[0]<<"  "<<FD_XiContact[1]<<endl;
       
       // Call function to fill variables for shape functions and their derivatives
@@ -2760,7 +2762,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
       double FD_norm = 0.0;
       double FD_gap = 0.0;
       vector<double> FD_XiContact(2);
-      bool FD_elementscolinear = false;
+      //bool FD_elementscolinear = false;
     
       // step forward
       ele2pos_(i,j) += eps; 
@@ -2770,7 +2772,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
-      FD_elementscolinear=elementscolinear_;
+      //FD_elementscolinear=elementscolinear_;
 //      cout<<"FD_XiContact:  "<<FD_XiContact[0]<<"  "<<FD_XiContact[1]<<endl;
       
       // Call function to fill variables for shape functions and their derivatives
@@ -2871,7 +2873,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
   vector<double> FD_normal(3);
   double FD_norm = 0.0;
   vector<double> FD_XiContact(2);
-  bool FD_elementscolinear = false;
+  //bool FD_elementscolinear = false;
   
   // local matrices for FD-approximations of stiffc1 and stiffc2
   Epetra_SerialDenseMatrix FD_stiffc1(NDIM*numnode1,NDIM*(numnode1+numnode2));
@@ -2965,7 +2967,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
-      FD_elementscolinear=elementscolinear_;
+      //FD_elementscolinear=elementscolinear_;
       
       // Call function to fill variables for shape functions and their derivatives
       GetShapeFunctions(FD_funct1,FD_funct2,FD_deriv1,FD_deriv2,FD_secondderiv1,FD_secondderiv2,FD_XiContact);
@@ -3025,7 +3027,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
-      FD_elementscolinear=elementscolinear_;
+      //FD_elementscolinear=elementscolinear_;
       
       // Call function to fill variables for shape functions and their derivatives
       GetShapeFunctions(FD_funct1,FD_funct2,FD_deriv1,FD_deriv2,FD_secondderiv1,FD_secondderiv2,FD_XiContact);

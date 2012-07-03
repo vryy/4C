@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file beam3eb.H
+\file beam3ebtor.H
 
-\brief three dimensional nonlinear torsionless rod based on a C1 curve
+\brief three dimensional nonlinear rod based on a C1 curve
 
 <pre>
 Maintainer: Christoph Meier
@@ -10,9 +10,9 @@ Maintainer: Christoph Meier
             089 - 289-15301
 </pre>
 
-*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------------------------------------------*/
 
-#include "beam3eb.H"
+#include "beam3ebtor.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -25,53 +25,53 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
-DRT::ELEMENTS::Beam3ebType DRT::ELEMENTS::Beam3ebType::instance_;
+DRT::ELEMENTS::Beam3ebtorType DRT::ELEMENTS::Beam3ebtorType::instance_;
 
 
-DRT::ParObject* DRT::ELEMENTS::Beam3ebType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::Beam3ebtorType::Create( const std::vector<char> & data )
 {
-  DRT::ELEMENTS::Beam3eb* object = new DRT::ELEMENTS::Beam3eb(-1,-1);
+  DRT::ELEMENTS::Beam3ebtor* object = new DRT::ELEMENTS::Beam3ebtor(-1,-1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(const string eletype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebtorType::Create(const string eletype,
 																 															const string eledistype,
 																 															const int id,
 																 															const int owner )
 {
-  if ( eletype=="BEAM3EB" )
+  if ( eletype=="BEAM3EBTOR" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3eb(id,owner));
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3ebtor(id,owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebtorType::Create( const int id, const int owner )
 
 {
-  return Teuchos::rcp( new Beam3eb( id, owner ) );
+  return Teuchos::rcp( new Beam3ebtor( id, owner ) );
 }
 
 
-void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::Beam3ebtorType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
-  numdf = 6;
-  nv = 6;
+  numdf = 7;
+  nv = 7;
   dimns = 3;
 }
 
 // TODO: the function ComputeNullSpace has still to be implemented
-void DRT::ELEMENTS::Beam3ebType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::Beam3ebtorType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   dserror("Function not implemented yet.");
   //DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::Beam3ebtorType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3EB"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3EBTOR"];
 
   defs["LINE2"]
     .AddIntVector("LINE2",2)
@@ -96,7 +96,7 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            meier 05/12|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner) :
+DRT::ELEMENTS::Beam3ebtor::Beam3ebtor(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
 crosssec_(0),
@@ -110,7 +110,7 @@ jacobi_(0)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       meier 05/12|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
+DRT::ELEMENTS::Beam3ebtor::Beam3ebtor(const DRT::ELEMENTS::Beam3ebtor& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
  crosssec_(old.crosssec_),
@@ -123,19 +123,19 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
   return;
 }
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Beam3eb and return pointer to it (public) |
+ |  Deep copy this instance of Beam3ebtor and return pointer to it (public) |
  |                                                            meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Beam3eb::Clone() const
+DRT::Element* DRT::ELEMENTS::Beam3ebtor::Clone() const
 {
-  DRT::ELEMENTS::Beam3eb* newelement = new DRT::ELEMENTS::Beam3eb(*this);
+  DRT::ELEMENTS::Beam3ebtor* newelement = new DRT::ELEMENTS::Beam3ebtor(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3eb::~Beam3eb()
+DRT::ELEMENTS::Beam3ebtor::~Beam3ebtor()
 {
   return;
 }
@@ -144,7 +144,7 @@ DRT::ELEMENTS::Beam3eb::~Beam3eb()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              meier 05/12
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Print(ostream& os) const
+void DRT::ELEMENTS::Beam3ebtor::Print(ostream& os) const
 {
   return;
 }
@@ -154,7 +154,7 @@ void DRT::ELEMENTS::Beam3eb::Print(ostream& os) const
  |                                                             (public) |
  |                                                          meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ebtor::Shape() const
 {
 			return line2;
 }
@@ -164,7 +164,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const
  |  Pack data                                                  (public) |
  |                                                           meier 05/12/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Beam3ebtor::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -191,7 +191,7 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           meier 05/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Beam3ebtor::Unpack(const vector<char>& data)
 {
   vector<char>::size_type position = 0;
   // extract type
@@ -221,13 +221,12 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          meier 05/12|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3eb::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3ebtor::Lines()
 {
   vector<RCP<Element> > lines(1);
   lines[0]= rcp(this, false);
   return lines;
 }
-
 
 /*----------------------------------------------------------------------*
  | sets up geometric data from current nodal position as reference
@@ -237,7 +236,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3eb::Lines()
  | element nodes are already known (public)                   meier 05/12|
  *----------------------------------------------------------------------*/
 
-void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const vector<double>& xrefe, const bool secondinit)
+void DRT::ELEMENTS::Beam3ebtor::SetUpReferenceGeometry(const vector<double>& xrefe, const bool secondinit)
 {
   /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
@@ -248,6 +247,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const vector<double>& xrefe,
 
   const int nnode = 2;
 
+  //TODO: Tref_ and jacobi are constant over the whole element and must therefore not be calculate on each gauss point and each node!!!
   if(!isinit_ || secondinit)
   {
 	  isinit_ = true;
@@ -287,6 +287,8 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const vector<double>& xrefe,
 
 			//Store length factor for every GP
 			//note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
+			//for this element type considering initially straight beams the factor jacobi_ is constant over the whole elment
+			//with a value of l/2
 			jacobi_= Tref_[numgp].Norm2();
 
 			Tref_[numgp].Scale(1/jacobi_);
@@ -316,46 +318,46 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const vector<double>& xrefe,
 
   }//if(!isinit_)
 
-}//DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry()
+}//DRT::ELEMENTS::Beam3ebtor::SetUpReferenceGeometry()
 
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      meier 05/12|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Beam3ebtorType::Initialize(DRT::Discretization& dis)
 {
-	  //setting up geometric variables for beam3eb elements
-	  for (int num=0; num<  dis.NumMyColElements(); ++num)
-	  {
-	    //in case that current element is not a beam3eb element there is nothing to do and we go back
-	    //to the head of the loop
-	    if (dis.lColElement(num)->ElementType() != *this) continue;
+  //setting up geometric variables for beam3ebtor elements
+  for (int num=0; num<  dis.NumMyColElements(); ++num)
+  {
+    //in case that current element is not a beam3ebtor element there is nothing to do and we go back
+    //to the head of the loop
+    if (dis.lColElement(num)->ElementType() != *this) continue;
 
-	    //if we get so far current element is a beam3eb element and  we get a pointer at it
-	    DRT::ELEMENTS::Beam3eb* currele = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(dis.lColElement(num));
-	    if (!currele) dserror("cast to Beam3eb* failed");
+    //if we get so far current element is a beam3ebtor element and  we get a pointer at it
+    DRT::ELEMENTS::Beam3ebtor* currele = dynamic_cast<DRT::ELEMENTS::Beam3ebtor*>(dis.lColElement(num));
+    if (!currele) dserror("cast to Beam3ebtor* failed");
 
-	    //reference node position
-	    vector<double> xrefe;
+    //reference node position
+    vector<double> xrefe;
 
-	    const int nnode= currele->NumNode();
+    const int nnode= currele->NumNode();
 
-	    //resize xrefe for the number of coordinates we need to store
-	    xrefe.resize(3*nnode);
+    //resize xrefe for the number of coordinates we need to store
+    xrefe.resize(3*nnode);
 
-	    //getting element's nodal coordinates and treating them as reference configuration
-	    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
-	      dserror("Cannot get nodes in order to compute reference configuration'");
-	    else
-	    {
-	      for (int node=0; node<nnode; node++) //element has k nodes
-	        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
-	        {
-	        	xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
-	        }
-	    }
+    //getting element's nodal coordinates and treating them as reference configuration
+    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+      dserror("Cannot get nodes in order to compute reference configuration'");
+    else
+    {
+      for (int node=0; node<nnode; node++) //element has k nodes
+        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
+        {
+          xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
+        }
+    }
 
-	    currele->SetUpReferenceGeometry(xrefe);
+    currele->SetUpReferenceGeometry(xrefe);
 
-	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
-	  return 0;
+  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
+  return 0;
 }
