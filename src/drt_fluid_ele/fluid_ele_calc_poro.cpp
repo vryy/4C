@@ -540,7 +540,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
   //access structure discretization
   RCP<DRT::Discretization> structdis = null;
-  structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  structdis = DRT::Problem::Instance()->GetDis("structure");
   //get corresponding structure element (it has the same global ID as the fluid element)
   DRT::Element* structele = structdis->gElement(eid);
   if(structele == NULL)
@@ -1640,7 +1640,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
   /// just for poro_scatra purposes, the dporodt is stored.  //urrecha
   //RCP<DRT::Discretization> structdis = null;
-  //   structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  //   structdis = DRT::Problem::Instance()->GetDis("structure");
   //MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>(((structdis->gElement(eid))->Material()).get());
   structmat->SetDPoroDtAtGP(dporodt_gp);
 
@@ -1803,7 +1803,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
 
     //access structure discretization
     RCP<DRT::Discretization> structdis = null;
-    structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+    structdis = DRT::Problem::Instance()->GetDis("structure");
     //get corresponding structure element (it has the same global ID as the fluid element)
     DRT::Element* structele = structdis->gElement(eid);
     if (structele == NULL)
@@ -2156,7 +2156,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(int eid,
 
       //access structure discretization
       RCP<DRT::Discretization> structdis = null;
-      structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+      structdis = DRT::Problem::Instance()->GetDis("structure");
       //get corresponding structure element (it has the same global ID as the fluid element)
       DRT::Element* structele = structdis->gElement(eid);
       if(structele == NULL)

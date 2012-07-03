@@ -47,12 +47,6 @@ Maintainer: Ulrich Kuettler
 // TODO remove
 #include "../drt_fluid/fluid_genalpha_integration.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -95,10 +89,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   Teuchos::RCP<DRT::Discretization> actdis = null;
   if (probtype == prb_fluid_fluid_fsi)
-    actdis = DRT::Problem::Instance()->Dis(genprob.numff,1);
+    actdis = DRT::Problem::Instance()->GetDis("xfluid");
   else
-    actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-
+    actdis = DRT::Problem::Instance()->GetDis("fluid");
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -563,7 +556,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case prb_fsi_xfem:
     case prb_fluid_xfem2:
     {
-      RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+      RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
       fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid,actdis, soliddis, solver, fluidtimeparams, output));
     }
@@ -576,7 +569,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case prb_fluid_fluid_ale:
     case prb_fluid_fluid:
     {
-      RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
+      RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
       bool monolithicfluidfluidfsi = false;
       Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(actdis,embfluiddis,solver,fluidtimeparams,output,isale,monolithicfluidfluidfsi));
       fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,embfluiddis,actdis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
@@ -584,7 +577,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     break;
     case prb_fluid_fluid_fsi:
     {
-      RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,0);
+      RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->GetDis("fluid");
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
       bool monolithicfluidfluidfsi;

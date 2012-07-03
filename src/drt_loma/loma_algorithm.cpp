@@ -31,7 +31,7 @@ LOMA::Algorithm::Algorithm(
     const Teuchos::ParameterList& prbdyn,
     const Teuchos::ParameterList& solverparams
     )
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,0,solverparams)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams)
 {
   // flag for monolithic solver
   monolithic_ = (DRT::INPUT::IntegralValue<int>(prbdyn,"MONOLITHIC"));

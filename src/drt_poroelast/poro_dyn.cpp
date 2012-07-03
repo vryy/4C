@@ -44,7 +44,7 @@ void poroelast_drt()
   // create a communicator
 #ifdef PARALLEL
   const Epetra_Comm& comm =
-      problem->Dis(genprob.numsf, 0)->Comm();
+      problem->GetDis("structure")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -121,7 +121,7 @@ void poro_scatra_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   //1.- Initialization
-  const Epetra_Comm& comm = problem->Dis(genprob.numsf, 0)->Comm();
+  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   //2.- Parameter reading
   const Teuchos::ParameterList& poroscatradynparams = problem->PoroScatraControlParams();

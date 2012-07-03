@@ -37,11 +37,11 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 // entry point for LOMA in DRT
 /*----------------------------------------------------------------------*/
-void loma_dyn(int disnumff, int disnumscatra, int restart)
+void loma_dyn(int restart)
 {
   // create a communicator
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -54,8 +54,8 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // access fluid and (typically empty) scatra discretization
-  RefCountPtr<DRT::Discretization> fluiddis  = problem->Dis(disnumff,0);
-  RefCountPtr<DRT::Discretization> scatradis = problem->Dis(disnumscatra,0);
+  RefCountPtr<DRT::Discretization> fluiddis  = problem->GetDis("fluid");
+  RefCountPtr<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order such that
   // dof numbers are created with fluid dof < scatra/elch dof
@@ -90,7 +90,7 @@ void loma_dyn(int disnumff, int disnumscatra, int restart)
       dserror("no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
     // create instance of scalar transport basis algorithm (no fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,false,0,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
     // read restart information
     if (restart) scatraonly->ScaTraField().ReadRestart(restart);

@@ -54,7 +54,7 @@ namespace ADAPTER {
     /// constructor
     explicit TopOptBaseAlgorithm(
         const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
-        const int disnum                   ///< scatra discretization number (default: 0)
+        const std::string disname             ///< scatra discretization name (default: "scatra")
       );
 
     /// virtual destructor to support polymorph destruction

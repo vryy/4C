@@ -20,7 +20,6 @@ Maintainer: Ulrich Kuettler
 #include "drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem_enums.H"
-//#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_ale.H"
 #include "../drt_inpar/inpar_artnet.H"
 #include "../drt_inpar/inpar_solver.H"
@@ -34,6 +33,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_potential.H"
+#include "../drt_inpar/inpar_problemtype.H"
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_inpar/inpar_turbulence.H"
@@ -635,36 +635,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   {
     Teuchos::Array<std::string> name;
     Teuchos::Array<int> label;
-    name.push_back("Structure");                                   label.push_back(prb_structure);
-    name.push_back("Structure_Ale");                               label.push_back(prb_struct_ale);
-    name.push_back("Fluid");                                       label.push_back(prb_fluid);
-    name.push_back("Fluid_XFEM2");                                 label.push_back(prb_fluid_xfem2);
-    name.push_back("Fluid_Fluid_Ale");                             label.push_back(prb_fluid_fluid_ale);
-    name.push_back("Fluid_Fluid");                                 label.push_back(prb_fluid_fluid);
-    name.push_back("Fluid_Fluid_FSI");                             label.push_back(prb_fluid_fluid_fsi);
-    name.push_back("Fluid_Ale");                                   label.push_back(prb_fluid_ale);
-    name.push_back("Fluid_Freesurface");                           label.push_back(prb_freesurf);
-    name.push_back("Scalar_Transport");                            label.push_back(prb_scatra);
-    name.push_back("Fluid_Structure_Interaction");                 label.push_back(prb_fsi);
-    name.push_back("Fluid_Structure_Interaction_XFEM");            label.push_back(prb_fsi_xfem);
-    name.push_back("Ale");                                         label.push_back(prb_ale);
-    name.push_back("Thermo_Structure_Interaction");                label.push_back(prb_tsi);
-    name.push_back("Thermo");                                      label.push_back(prb_thermo);
-    name.push_back("Low_Mach_Number_Flow");                        label.push_back(prb_loma);
-    name.push_back("Electrochemistry");                            label.push_back(prb_elch);
-    name.push_back("Combustion");                                  label.push_back(prb_combust);
-    name.push_back("ArterialNetwork");                             label.push_back(prb_art_net);
-    name.push_back("Fluid_Structure_Interaction_Lung");            label.push_back(prb_fsi_lung);
-    name.push_back("AeroCode_Thermo_Fluid_Structure_Interaction"); label.push_back(prb_tfsi_aero);
-    name.push_back("ReducedDimensionalAirWays");                   label.push_back(prb_red_airways);
-    name.push_back("Gas_Fluid_Structure_Interaction");             label.push_back(prb_gas_fsi);
-    name.push_back("Biofilm_Fluid_Structure_Interaction");         label.push_back(prb_biofilm_fsi);
-    name.push_back("Thermo_Fluid_Structure_Interaction");          label.push_back(prb_thermo_fsi);
-    name.push_back("Fluid_Top_Opt");                               label.push_back(prb_fluid_topopt);
-    name.push_back("Poroelasticity");                              label.push_back(prb_poroelast);
-    name.push_back("Poroelastic_scalar_transport");                label.push_back(prb_poroscatra);
-    name.push_back("Structure_Scalar_Interaction");                label.push_back(prb_ssi);
-    name.push_back("NP_Supporting_Procs");                         label.push_back(prb_np_support);
+
+    // fill the arrays
+    {
+      std::map<std::string,PROBLEM_TYP> map = DRT::StringToProblemTypeMap();
+      std::map<std::string,PROBLEM_TYP>::const_iterator i;
+      for (i = map.begin(); i != map.end();++i)
+      {
+        name. push_back(i->first);
+        label.push_back(i->second);
+      }
+    }
+
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
       "Fluid_Structure_Interaction",

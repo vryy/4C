@@ -24,13 +24,6 @@ Maintainer: Martin Winklmaier
 
 
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -40,7 +33,7 @@ void fluid_topopt_dyn()
 {
   // create a communicator
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -54,19 +47,17 @@ void fluid_topopt_dyn()
   // create optimization discretization by copying the fluid discretization (fill with opti elements)
   //------------------------------------------------------------------------------------------------
   // get discretization ids
-  int disnumff = genprob.numff; // discretization number fluid; typically 0
-  int disnumof = genprob.numof; // discretization number optimization field; typically 1
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // access fluid discretization
-  RCP<DRT::Discretization> fluiddis = problem->Dis(disnumff,0);
+  RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
   if (!fluiddis->Filled()) fluiddis->FillComplete(false,false,false);
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
 
   // access optimization discretization (it should be empty if it will be cloned)
-  RCP<DRT::Discretization> optidis = problem->Dis(disnumof,0);
+  RCP<DRT::Discretization> optidis = problem->GetDis("scatra");
   if (!optidis->Filled()) optidis->FillComplete(false,false,false);
 
   if (optidis->NumGlobalNodes()==0)

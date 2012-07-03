@@ -334,19 +334,21 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
   {
     sbcaster = group->GPID(0);
     numfield = problem->NumFields();
-    numdis.resize(numfield);
-    for (int i=0; i<numfield; ++i) 
-      numdis[i] = problem->NumDis(i);
+//    numdis.resize(numfield);
+//    for (int i=0; i<numfield; ++i)
+//      numdis[i] = 1; //obsolete! problem->NumDis(i);
   }
   gcomm->MaxAll(&sbcaster,&bcaster,1);
   gcomm->Broadcast(&numfield,1,bcaster);
-  numdis.resize(numfield);
-  gcomm->Broadcast(&numdis[0],numfield,bcaster);
+//  numdis.resize(numfield);
+//  gcomm->Broadcast(&numdis[0],numfield,bcaster);
+
+  const std::vector<std::string> disnames = DRT::Problem::Instance()->GetDisNames();
 
   for (int i=0; i<numfield; ++i)
   {
-    for (int j=0; j<numdis[i]; ++j)
-    {
+//    for (int j=0; j<numdis[i]; ++j)
+//    {
       RCP<DRT::Discretization> dis = Teuchos::null;
       string name;
       string distype;
@@ -354,7 +356,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
       if (gcomm->MyPID()==bcaster) 
       {
         DRT::Container cont;
-        dis = problem->Dis(i,j);
+        dis = problem->GetDis(disnames[i]);
         name = dis->Name();
         distype = problem->SpatialApproximation();
         cont.Add("disname",name);
@@ -389,7 +391,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
       const string* rdistype = cont.Get<string>("distype");
       distype = *rdistype;
       // allocate or get the discretization
-      if (group->GroupId()==bgroup) dis = problem->Dis(i,j);
+      if (group->GroupId()==bgroup) dis = problem->GetDis(disnames[i]); //problem->Dis(i,j);
       else
       {
         if (distype=="Nurbs")
@@ -416,10 +418,14 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
           icomm = Teuchos::null;
           MPI_Comm_free(&intercomm);
         }
-        if (group->GroupId()==k) problem->SetDis(i,j,dis);
+        if (group->GroupId()==k)
+        {
+          const string disname = dis->Name();
+          problem->AddDis(disname,dis);
+        }
         gcomm->Barrier();
       } // for (int k=0; k<group->NumGroups(); ++k)
-    } // for (int j=0; j<numdis[i]; ++j)
+//    } // for (int j=0; j<numdis[i]; ++j)
   } // for (int i=0; i<numfield; ++i)
   return;
 }

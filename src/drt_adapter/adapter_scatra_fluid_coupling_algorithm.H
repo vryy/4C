@@ -49,7 +49,7 @@ namespace ADAPTER
         const Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn, ///< problem-specific parameters
         bool isale,  ///< do we need an ALE formulation of the fields?
-        const int disnum, ///< scatra discretization number
+        const std::string disname, ///< scatra discretization name
         const Teuchos::ParameterList& solverparams
         );
 

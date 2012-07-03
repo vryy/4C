@@ -50,7 +50,7 @@ void ntacal()
       dyn_fluid_drt(restart);
       break;
     case prb_scatra:
-      scatra_dyn(genprob.numff,genprob.numscatra,restart);
+      scatra_dyn(restart);
       break;
     case prb_fluid_xfem2:
       fluid_xfem2_drt();
@@ -98,11 +98,11 @@ void ntacal()
       break;
 
     case prb_loma:
-      loma_dyn(genprob.numff,genprob.numscatra,restart);
+      loma_dyn(restart);
       break;
 
     case prb_elch:
-      elch_dyn(genprob.numff,genprob.numscatra,genprob.numaf,restart);
+      elch_dyn(restart);
       break;
 
     case prb_combust:
@@ -126,7 +126,7 @@ void ntacal()
 #endif /* D_RED_AIRWAYS */
 
     case prb_struct_ale:
-      stru_ale_dyn_drt(genprob.numsf,genprob.numaf,restart);
+      stru_ale_dyn_drt(restart);
       break;
       
     case prb_poroelast:

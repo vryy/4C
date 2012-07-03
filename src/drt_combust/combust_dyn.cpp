@@ -27,12 +27,6 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_globalproblem.H"
 
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*------------------------------------------------------------------------------------------------*
  | main  control routine for dynamic combustion analysis                              henke 06/08 |
@@ -41,7 +35,7 @@ void combust_dyn()
 {
   // create a communicator
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -54,20 +48,17 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // create G-function discretization by copying the fluid discretization (fill with scatra elements)
   //------------------------------------------------------------------------------------------------
-  // get discretization ids
-  int disnumff = genprob.numff; // discretization number fluid; typically 0
-  int disnumgff = genprob.numscatra; // discretization number G-function; typically 1
-  /* remark: here the ScaTra discretization (genprob.numscatra) is renamed according to its physical
-   * meaning in the combustion context, namely the G-function (disnumgff).*/
 
   // access fluid discretization
-  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
+  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   if (!fluiddis->Filled()) fluiddis->FillComplete(false,false,false);
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
 
   // access G-function discretization (it should be empty)
-  RCP<DRT::Discretization> gfuncdis = DRT::Problem::Instance()->Dis(disnumgff,0);
+  RCP<DRT::Discretization> gfuncdis = DRT::Problem::Instance()->GetDis("scatra");
+  /* remark: here the ScaTra discretization is renamed according to its physical
+   * meaning in the combustion context, namely the G-function.*/
   if (!gfuncdis->Filled()) gfuncdis->FillComplete(false,false,false);
 
   if (gfuncdis->NumGlobalNodes()==0)

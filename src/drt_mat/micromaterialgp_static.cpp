@@ -39,7 +39,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
     microdisnum_(microdisnum)
 {
   DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
-  Teuchos::RCP<DRT::Discretization> microdis = microproblem->Dis(0, 0);
+  Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
   dism_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   disn_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   dis_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
@@ -136,7 +136,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   std::string micronewprefix = macrocontrol->NewOutputFileName();
 
   DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
-  Teuchos::RCP<DRT::Discretization> microdis = microproblem->Dis(0, 0);
+  Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
 
   if(microdis->Comm().MyPID() == 0)
   {
@@ -243,7 +243,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
 void MAT::MicroMaterialGP::EasInit()
 {
-  Teuchos::RCP<DRT::Discretization> discret = (DRT::Problem::Instance(microdisnum_))->Dis(0, 0);
+  Teuchos::RCP<DRT::Discretization> discret = (DRT::Problem::Instance(microdisnum_))->GetDis("structure");
 
   for (int lid=0; lid<discret->ElementRowMap()->NumMyElements(); ++lid)
   {

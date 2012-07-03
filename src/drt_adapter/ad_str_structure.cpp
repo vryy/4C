@@ -43,12 +43,6 @@ Maintainer: Georg Hammerl
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -113,7 +107,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
 
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+  actdis = DRT::Problem::Instance()->GetDis("structure");
 
   // set degrees of freedom in the discretization
   if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
@@ -359,7 +353,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
-      Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+      Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
       if ((actdis->Comm()).MyPID()==0) cout << "Using StructureNOXCorrectionWrapper()..." << endl;
 
       if (tmpstr->HaveConstraint())

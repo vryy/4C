@@ -52,7 +52,7 @@ COMBUST::ReinitializationPDE::ReinitializationPDE()
   reinit_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
       *combustdynreinit_,
       false, // is_ale
-      0,     // use first scatra discretization
+      "scatra",
       DRT::Problem::Instance()->SolverParams(linsolvernumber),
       true   // reinitswitch
       )

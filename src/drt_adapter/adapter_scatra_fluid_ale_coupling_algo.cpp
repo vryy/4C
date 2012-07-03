@@ -29,7 +29,7 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
     const std::string condname,
     const Teuchos::ParameterList& solverparams
 )
-:  ScaTraFluidCouplingAlgorithm(comm, prbdyn, true, 0, solverparams), // yes, we need the ALE formulation
+:  ScaTraFluidCouplingAlgorithm(comm, prbdyn, true, "scatra", solverparams), // yes, we need the ALE formulation
    AleBaseAlgorithm(prbdyn) // construct ale base algorithm as well
 {
   const int ndim = DRT::Problem::Instance()->NDim();

@@ -33,18 +33,18 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 // entry point for ELCH in DRT
 /*----------------------------------------------------------------------*/
-void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
+void elch_dyn(int restart)
 {
   // access the communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(disnumff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 
   // print ELCH-Logo to screen
   if (comm.MyPID()==0) printlogo();
 
   // access the fluid discretization
-  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
+  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   // access the scatra discretization
-  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
+  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra/elch dof
@@ -85,7 +85,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
     // create instance of scalar transport basis algorithm (empty fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false,0,DRT::Problem::Instance()->SolverParams(linsolvernumber),false));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber),false));
 
     // read the restart information, set vectors and variables
     if (restart) scatraonly->ScaTraField().ReadRestart(restart);
@@ -136,7 +136,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
     prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
-    RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(disnumale,0);
+    RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
     if (!aledis->Filled()) aledis->FillComplete();
     // is ALE needed or not?
     const INPAR::ELCH::ElchMovingBoundary withale

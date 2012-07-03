@@ -29,7 +29,7 @@ void ssi_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   //1.- Initialization
-  const Epetra_Comm& comm = problem->Dis(genprob.numsf, 0)->Comm();
+  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   //2.- Parameter reading
   const Teuchos::ParameterList& ssiparams = problem->SSIControlParams();

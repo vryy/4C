@@ -29,7 +29,7 @@ ADAPTER::StructureBio::StructureBio(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
     bool isale,
-    const int disnum,
+    const std::string disname,
     const std::string condname
     )
 :  AlgorithmBase(comm,prbdyn),

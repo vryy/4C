@@ -32,20 +32,14 @@ Maintainer: Caroline Danowski
 
 #include <Teuchos_TimeMonitor.hpp>
 
-/*----------------------------------------------------------------------*
- | general problem data                                     m.gee 06/01 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  | entry point for TSI in DRT                                dano 12/09 |
  *----------------------------------------------------------------------*/
-//void tsi_dyn(int disnumsf,int disnumtf,int restart)
 void tsi_dyn_drt()
 {
   // create a communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
 
   // print TSI-Logo to screen
   if (comm.MyPID()==0) TSI::printlogo();

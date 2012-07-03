@@ -52,7 +52,6 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 
 #include "fs3i_partitioned.H"
 
-extern struct _GENPROB     genprob;
 
 //#define SCATRABLOCKMATRIXMERGE
 
@@ -85,36 +84,35 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // such that structure dof < fluid dof < ale dofs
   // (ordering required at certain non-intuitive points)
   //---------------------------------------------------------------------
-  problem->Dis(genprob.numsf,0)->FillComplete();
-  problem->Dis(genprob.numff,0)->FillComplete();
-  problem->Dis(genprob.numaf,0)->FillComplete();
-  problem->Dis(genprob.numscatra,0)->FillComplete();
-  problem->Dis(genprob.numscatra,1)->FillComplete();
+  problem->GetDis("structure")->FillComplete();
+  problem->GetDis("fluid")->FillComplete();
+  problem->GetDis("ale")->FillComplete();
+  problem->GetDis("scatra1")->FillComplete();
+  problem->GetDis("scatra2")->FillComplete();
 
   //---------------------------------------------------------------------
   // create ale elements if not yet existing
   //---------------------------------------------------------------------
-  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  RCP<DRT::Discretization> aledis = problem->GetDis("ale");
   if (aledis->NumGlobalNodes()==0)
   {
-    RCP<DRT::Discretization> fluiddis = problem->Dis(genprob.numff,0);
+    RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
 
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
     alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
   }
-  //FSI::UTILS::CreateAleDiscretization();
 
   //---------------------------------------------------------------------
   // access discretizations for structure, fluid as well as fluid- and
   // structure-based scalar transport and get material map for scalar
   // transport elements
   //---------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> fluiddis = problem->Dis(1,0);
-  RefCountPtr<DRT::Discretization> structdis = problem->Dis(0,0);
-  RefCountPtr<DRT::Discretization> fluidscatradis = problem->Dis(3,0);
-  RefCountPtr<DRT::Discretization> structscatradis = problem->Dis(3,1);
+  RefCountPtr<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  RefCountPtr<DRT::Discretization> structdis = problem->GetDis("structure");
+  RefCountPtr<DRT::Discretization> fluidscatradis = problem->GetDis("scatra1");
+  RefCountPtr<DRT::Discretization> structscatradis = problem->GetDis("scatra2");
 
   std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
   if (clonefieldmatmap.size() < 2)
@@ -208,9 +206,9 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
 
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,0,problem->SolverParams(linsolver1number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,"scatra1",problem->SolverParams(linsolver1number)));
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,1,DRT::Problem::Instance()->SolverParams(linsolver2number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,"scatra2",DRT::Problem::Instance()->SolverParams(linsolver2number)));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);

@@ -39,11 +39,11 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  | entry point for structure ale in DRT                      mgit 04/11 |
  *----------------------------------------------------------------------*/
-void stru_ale_dyn_drt(int disnumsf,int disnumaf,int restart)
+void stru_ale_dyn_drt(int restart)
 {
   // create a communicator
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -55,13 +55,13 @@ void stru_ale_dyn_drt(int disnumsf,int disnumaf,int restart)
   
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->Dis(disnumsf,0);
+  structdis = DRT::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
 
   // access the ale discretization
   Teuchos::RCP<DRT::Discretization> aledis = Teuchos::null;
-  aledis = DRT::Problem::Instance()->Dis(disnumaf,0);
+  aledis = DRT::Problem::Instance()->GetDis("ale");
   if (!aledis->Filled()) aledis->FillComplete();
 
   // we use the structure discretization as layout for the ale discretization

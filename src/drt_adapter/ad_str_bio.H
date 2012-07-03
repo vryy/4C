@@ -38,7 +38,7 @@ namespace ADAPTER
         const Epetra_Comm& comm,              			///< communicator
         const Teuchos::ParameterList& prbdyn, 		///< problem-specific parameters
         bool isale,  								///< do we need an ALE formulation of the structure?
-        const int disnum=0, 						///< scatra discretization number (default: 0)
+        const std::string disname="scatra", 						///< scatra discretization name (default: "scatra")
         const std::string condname = "FSICoupling"	///< name of condition that defines structure-ale coupling
         );
 

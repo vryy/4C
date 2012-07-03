@@ -57,20 +57,13 @@
 
 #include "../drt_lib/drt_discret_xfem.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
 
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
 /*----------------------------------------------------------------------*/
 void fluid_ale_drt()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -79,8 +72,8 @@ void fluid_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-  RCP<DRT::Discretization> aledis   = DRT::Problem::Instance()->Dis(genprob.numaf,0);
+  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  RCP<DRT::Discretization> aledis   = DRT::Problem::Instance()->GetDis("ale");
   fluiddis->FillComplete();
   aledis->FillComplete();
 
@@ -120,17 +113,17 @@ void fluid_ale_drt()
 void fluid_xfem2_drt()
 {
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  RCP<DRT::Discretization> soliddis = problem->Dis(genprob.numsf,0);
+  RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  RCP<DRT::Discretization> actdis = problem->Dis(genprob.numff,0);
+  RCP<DRT::Discretization> actdis = problem->GetDis("fluid");
   actdis->FillComplete();
 
 
@@ -199,20 +192,20 @@ void fluid_fluid_ale_drt()
 {
   // create a communicator
   #ifdef PARALLEL
-   RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm().Clone());
+   RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
   #else
     Epetra_SerialComm comm;
   #endif
 
     DRT::Problem* problem = DRT::Problem::Instance();
 
-  RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+  RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
   bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
 
-  RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
+  RCP<DRT::Discretization> embfluiddis = problem->GetDis("xfluid");
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------
@@ -422,7 +415,7 @@ void fluid_fluid_ale_drt()
 #endif
   //------------------------------------------------------------------------------
 
-  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  RCP<DRT::Discretization> aledis = problem->GetDis("ale");
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
@@ -456,7 +449,7 @@ void fluid_fluid_fsi_drt()
 {
  // create a communicator
   #ifdef PARALLEL
-   RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm().Clone());
+   RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
   #else
     Epetra_SerialComm comm;
   #endif
@@ -465,16 +458,16 @@ void fluid_fluid_fsi_drt()
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  RCP<DRT::Discretization> structdis = problem->Dis(genprob.numsf,0);
+  RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   structdis->FillComplete();
 
-  RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+  RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
   bgfluiddis->FillComplete();
 
   // reserve max size of dofs for the background fluid
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
-  RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
+  RCP<DRT::Discretization> embfluiddis = problem->GetDis("xfluid");
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------
@@ -689,7 +682,7 @@ void fluid_fluid_fsi_drt()
   //------------------------------------------------------------------------------
 
   // create ale elements if the ale discretization is empty
-  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  RCP<DRT::Discretization> aledis = problem->GetDis("ale");
   if (aledis->NumGlobalNodes()==0)
   {
     {
@@ -761,7 +754,7 @@ void fluid_fluid_fsi_drt()
 void fluid_freesurf_drt()
 {
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -776,21 +769,20 @@ void fluid_freesurf_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  problem->Dis(genprob.numff,0)->FillComplete();
-  problem->Dis(genprob.numaf,0)->FillComplete();
+  problem->GetDis("fluid")->FillComplete();
+  problem->GetDis("ale")->FillComplete();
 
   // create ale elements if the ale discretization is empty
-  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  RCP<DRT::Discretization> aledis = problem->GetDis("ale");
   if (aledis->NumGlobalNodes()==0)
   {
-    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
 
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
     alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
   }
-    //FSI::UTILS::CreateAleDiscretization();
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
@@ -848,7 +840,7 @@ void fluid_freesurf_drt()
 void fsi_ale_drt()
 {
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -862,22 +854,21 @@ void fsi_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  problem->Dis(genprob.numsf,0)->FillComplete();
-  problem->Dis(genprob.numff,0)->FillComplete();
-  problem->Dis(genprob.numaf,0)->FillComplete();
+  problem->GetDis("structure")->FillComplete();
+  problem->GetDis("fluid")->FillComplete();
+  problem->GetDis("ale")->FillComplete();
 
   // create ale elements if the ale discretization is empty
-  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  RCP<DRT::Discretization> aledis = problem->GetDis("ale");
   if (aledis->NumGlobalNodes()==0)
   {
-    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
 
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
     alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
   }
-  //FSI::UTILS::CreateAleDiscretization();
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
@@ -1015,7 +1006,7 @@ void fsi_ale_drt()
 void xfsi_drt()
 {
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -1036,10 +1027,10 @@ void xfsi_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
-  RCP<DRT::Discretization> soliddis = problem->Dis(genprob.numsf,0);
+  RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  RCP<DRT::Discretization> actdis = problem->Dis(genprob.numff,0);
+  RCP<DRT::Discretization> actdis = problem->GetDis("fluid");
   actdis->FillComplete();
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();

@@ -22,7 +22,7 @@ extern "C"
 /* headers and prototypes of functions also accessible from c */
 
 /* entry point for the solution of structural ale problems */
-void stru_ale_dyn_drt(int disnumsf,int disnumaf,int restart);
+void stru_ale_dyn_drt(int restart);
 
 #ifdef __cplusplus
 }

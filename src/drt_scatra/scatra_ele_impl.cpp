@@ -3395,8 +3395,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     //   A 3D finite element approach for the coupled numerical simulation of
     //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
 
-    if (numscal_ != 2)
-      dserror("Numscal_ != 2 for desired error calculation.");
+    //if (numscal_ != 2)
+    //  dserror("Numscal_ != 2 for desired error calculation.");
 
     // working arrays
     double                  potint(0.0);
@@ -6656,7 +6656,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidual_PoroScatraMod(
 
 
 /*---------------------------------------------------------------------------*
- |  mofidy element matrix and rhs for scatra in porous media (private)  vuong 06/12|
+ |  modidy element matrix and rhs for scatra in porous media (private)  vuong 06/12|
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
@@ -6671,7 +6671,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
 {
   //access structure discretization
   RCP<DRT::Discretization> structdis = null;
-  structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+  structdis = DRT::Problem::Instance()->GetDis("structure");
   //get corresponding structure element (it has the same global ID as the scatra element)
   DRT::Element* structele = structdis->gElement(eleid);
   if (structele == NULL)

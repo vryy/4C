@@ -35,7 +35,7 @@ Maintainer: Georg Bauer
 ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn,
     bool isale,
-    const int disnum,
+    const std::string disname,
     const Teuchos::ParameterList& solverparams,
     const bool reinitswitch
 )
@@ -47,7 +47,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numscatra,disnum);
+  actdis = DRT::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -117,9 +117,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // in fluid-based scalar transport, while conservative formulation
   // and no stabilization is mandatorily used in solid-based scalar
   // transport, for the time being
-  // (assumed disnum = 1 for solid-based scalar transport)
+  // (assumed disname = "scatra2" for solid-based scalar transport)
   // -------------------------------------------------------------------
-  if (disnum == 1)
+  if (disname == "scatra2")
   {
     scatratimeparams->set<string>("CONVFORM","conservative");
     scatratimeparams->sublist("STABILIZATION").set<string>("STABTYPE","no_stabilization");

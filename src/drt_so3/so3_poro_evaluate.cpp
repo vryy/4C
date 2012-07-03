@@ -552,7 +552,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
   int id = Id();
   //access fluid discretization
   RCP<DRT::Discretization> fluiddis = null;
-  fluiddis = DRT::Problem::Instance()->Dis(genprob.numff, 0);
+  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   //get corresponding fluid element (it has the same global ID as the structure element)
   DRT::Element* fluidele = fluiddis->gElement(id);
   if (fluidele == NULL)
@@ -1763,7 +1763,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(vector<int>& l
   int id = Id();
   //access fluid discretization
   RCP<DRT::Discretization> fluiddis = null;
-  fluiddis = DRT::Problem::Instance()->Dis(genprob.numff, 0);
+  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   //get corresponding fluid element
   DRT::Element* fluidele = fluiddis->gElement(id);
   if (fluidele == NULL)

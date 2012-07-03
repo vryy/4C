@@ -35,18 +35,18 @@ Maintainer: Volker Gravemeier
  *          (one-way coupling)
  *
  *----------------------------------------------------------------------*/
-void scatra_dyn(int disnumff, int disnumscatra, int restart)
+void scatra_dyn(int restart)
 {
   // access the communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(disnumff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
   // access the fluid discretization
-  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
+  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   // access the scatra discretization
-  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
+  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra dof
@@ -71,7 +71,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
         dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false,0,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField().ReadRestart(restart);
@@ -128,7 +128,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
         dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
       // create an one-way coupling algorithm instance
-      Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,prbdyn,0,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+      Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,prbdyn,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any

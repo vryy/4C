@@ -23,8 +23,6 @@ extern "C"
 
 /*! entry point for the solution of low-Mach-number flow problems */
 void loma_dyn(
-    int disnumff,      /* fluid discretization number, typically 0 */
-    int disnumscatra,  /* scatra discretization number, typically 1 */
     int restart        /* do we have to perform a restart?  */
     );
 

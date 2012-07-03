@@ -52,7 +52,7 @@ void dyn_fluid_drt(const int restart)
 {
   // create a communicator
 #ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
@@ -123,19 +123,19 @@ void fluid_fluid_drt()
 {
    // create a communicator
   #ifdef PARALLEL
-    RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->Dis(genprob.numff,0)->Comm().Clone());
+    RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
   #else
     Epetra_SerialComm comm;
   #endif
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+  RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
   bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
-  RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
+  RCP<DRT::Discretization> embfluiddis = problem->GetDis("xfluid");
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------

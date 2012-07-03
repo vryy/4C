@@ -42,11 +42,6 @@ Maintainer: Caroline Danowski
 
 #include "../drt_tsi/tsi_defines.H"
 
-/*----------------------------------------------------------------------*
- | general problem data                                     m.gee 06/01 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -299,7 +294,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // access the structure discretization, needed later for calling the solid
         // material and getting its tangent
         Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-        structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+        structdis = DRT::Problem::Instance()->GetDis("structure");
 
         // get GID of the first solid element (by using an homogenous material this
         // is enough)
@@ -400,7 +395,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // access the structure discretization, needed later for calling the solid
         // material and getting its tangent
         Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-        structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+        structdis = DRT::Problem::Instance()->GetDis("structure");
 
         // get GID of the first solid element (by using an homogenous material this
         // is enough)
@@ -500,7 +495,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // access the structure discretization, needed later for calling the solid
         // material and getting its tangent
         Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-        structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+        structdis = DRT::Problem::Instance()->GetDis("structure");
 
         // get GID of the first solid element (by using an homogenous material this
         // is enough)
@@ -636,7 +631,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // access the structure discretization, needed later for calling the solid
         // material and getting its tangent
         Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-        structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+        structdis = DRT::Problem::Instance()->GetDis("structure");
 
         // get GID of the first solid element (by using an homogenous material this
         // is enough)
@@ -1212,7 +1207,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
   // access the structure discretization, needed later for calling the solid
   // material and getting its tangent
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+  structdis = DRT::Problem::Instance()->GetDis("structure");
 
   // get GID of the first solid element (by using an homogenous material this
   // is enough)
@@ -1484,7 +1479,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     // access the structure discretization, needed later for calling the solid
     // material and getting its tangent
     Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-    structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+    structdis = DRT::Problem::Instance()->GetDis("structure");
 
     // get GID of the first solid element (by using an homogenous material this
     // is enough)
@@ -1681,7 +1676,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
   // access the structure discretization, needed later for calling the solid
   // material and getting its tangent
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+  structdis = DRT::Problem::Instance()->GetDis("structure");
 
   // get GID of the first solid element (by using an homogenous material this
   // is enough)

@@ -39,14 +39,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_io/io.H"
 
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
 
 using namespace std;
 using namespace Teuchos;
@@ -59,7 +51,7 @@ void dyn_ale_drt()
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
+  actdis = DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

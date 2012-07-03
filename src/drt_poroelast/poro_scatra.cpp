@@ -57,8 +57,7 @@ PORO_SCATRA::PartPORO_SCATRA::PartPORO_SCATRA(const Epetra_Comm& comm,
 
   //3.- Create the two uncoupled subproblems.
   poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, timeparams));
-  scatra_subproblem_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,
-      true, 0, problem->SolverParams(linsolvernumber)));
+  scatra_subproblem_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,true,"scatra",problem->SolverParams(linsolvernumber)));
 }
 
 /*----------------------------------------------------------------------*/
@@ -99,7 +98,7 @@ void PORO_SCATRA::PartPORO_SCATRA::DoPoroStep()
 void PORO_SCATRA::PartPORO_SCATRA::DoScatraStep()
 {
   const Epetra_Comm& comm =
-      DRT::Problem::Instance()->Dis(genprob.numsf, 0)->Comm();
+      DRT::Problem::Instance()->GetDis("structure")->Comm();
 
   if (comm.MyPID() == 0)
   {
@@ -181,9 +180,9 @@ void PORO_SCATRA::PartPORO_SCATRA::SetupDiscretizations(const Epetra_Comm& comm)
   DRT::Problem* problem = DRT::Problem::Instance();
 
   //1.-Initialization.
-  Teuchos::RCP<DRT::Discretization> structdis = problem->Dis(genprob.numsf, 0); // Dis(0,0)
-  Teuchos::RCP<DRT::Discretization> fluiddis = problem->Dis(genprob.numff, 0); // Dis(1,0)
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->Dis(genprob.numscatra,0); // Dis(2,0)
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
   //1.2.-Set degrees of freedom in the str. discretization
   if (!structdis->Filled() or !structdis->HaveDofs())

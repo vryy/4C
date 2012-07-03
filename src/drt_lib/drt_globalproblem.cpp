@@ -46,14 +46,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_io/io_control.H"
 
 
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
 /*----------------------------------------------------------------------*/
 // the instances
 /*----------------------------------------------------------------------*/
@@ -328,199 +320,6 @@ void DRT::Problem::NPGroup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::InputControl()
-{
-  // Play it save and fill the old C structure genprob here.
-  // We have to get rid of it soon!
-
-  // set field numbers depending on the problem type
-  switch (ProblemType())
-  {
-  case prb_fsi:
-  case prb_fsi_lung:
-  {
-    genprob.numsf=0;
-    genprob.numff=1;
-    genprob.numaf=2;
-    break;
-  }
-  case prb_gas_fsi:
-  case prb_biofilm_fsi:
-  case prb_thermo_fsi:
-  {
-    genprob.numsf=0;
-    genprob.numff=1;
-    genprob.numaf=2;
-    genprob.numscatra=3;
-    break;
-  }
-  case prb_fsi_xfem:
-  case prb_fluid_xfem2:
-  {
-    genprob.numsf=0;
-    genprob.numff=1;
-    genprob.numaf=2;
-    break;
-  }
-  case prb_fluid_fluid_ale:
-  {
-    genprob.numff=0;
-    genprob.numaf=1;
-    break;
-  }
-  case prb_fluid_fluid_fsi:
-  {
-    genprob.numff=0;
-    genprob.numaf=1;
-    genprob.numsf=2;
-    break;
-  }
-  case prb_fluid_fluid:
-  {
-    genprob.numff=0;
-    break;
-  }
-  case prb_fluid:
-  {
-    genprob.numff=0;
-    genprob.numaf=1;
-    break;
-  }
-  case prb_fluid_ale:
-  {
-    genprob.numff=0;
-    genprob.numaf=1;
-    break;
-  }
-  case prb_freesurf:
-  {
-    genprob.numff=0;
-    genprob.numaf=1;
-    break;
-  }
-  case prb_scatra:
-    genprob.numff = 0;  /* fluid field index */
-    genprob.numscatra = 1; /* scalar transport field index */
-    break;
-  case prb_ale:
-    genprob.numaf=0;
-    break;
-  case prb_structure:
-    genprob.numsf=0;
-    break;
-  case prb_tsi:
-  case prb_tfsi_aero:
-  {
-    genprob.numsf = 0;  /* structural field index */
-    genprob.numtf = 1;  /* thermal field index */
-    break;
-  }
-  case prb_thermo:
-  {
-    genprob.numtf = 0;  /* thermal field index */
-    break;
-  }
-  case prb_loma:
-  {
-    genprob.numff = 0;  /* fluid field index */
-    genprob.numscatra = 1; /* scalar transport field index */
-    break;
-  }
-  case prb_elch:
-  {
-    genprob.numff = 0;  /* fluid field index */
-    genprob.numscatra = 1; /* scalar transport field index */
-    genprob.numaf=2; /* ALE field index */
-    break;
-  }
-  case prb_combust:
-  {
-    genprob.numff = 0;  /* fluid field index */
-    genprob.numscatra = 1; /* scalar transport field (=G-function) index */
-    break;
-  }
-  case prb_art_net:
-  {
-    genprob.numartf = 0;  /* arterial network field index */
-    break;
-  }
-  case prb_red_airways:
-  {
-    genprob.numawf = 5;  /* reduced airway network field index */
-    break;
-  }
-  case prb_struct_ale:
-  {
-    genprob.numsf = 0;  /* structural field index */
-    genprob.numaf = 1;  /* ale field index */
-    break;
-  }
-  case prb_fluid_topopt:
-  {
-    genprob.numff = 0; /* fluid field index */
-    genprob.numof = 1; /* optimization field index */
-    break;
-  }
-  case prb_poroelast:
-  {
-    genprob.numsf=0;  /* structural field index */
-    genprob.numff=1;  /* fluid field index */
-    break;
-  }
-  case prb_poroscatra:
-   {
-     genprob.numsf=0;  /* structural field index */
-     genprob.numff=1;  /* fluid field index */
-     genprob.numscatra=2;  /* scatra field index */
-     break;
-   }
-  case prb_ssi:
-   {
-     genprob.numsf=0;  /* structural field index */
-     genprob.numscatra=1;  /* scatra field index */
-     break;
-   }
-  case prb_np_support:
-  {
-    genprob.numsf=0;  /* structural field index */
-    break;
-  }
-  default:
-    dserror("problem type %d unknown", ProblemType());
-    break;
-  }
-
-  // set field ARTNET and RED_AIRWAY numbers
-  // this is the numbering used for such fields coupled to higher dimensional fields
-  switch (ProblemType())
-  {
-  case prb_fsi:
-  case prb_fsi_lung:
-  case prb_fluid_ale:
-  case prb_fluid:
-  case prb_scatra:
-  case prb_loma:
-  case prb_elch:
-  {
-#ifdef D_ARTNET
-    //    genprob.numartf = 3;
-    genprob.numartf = 5;
-#endif
-#ifdef D_RED_AIRWAYS
-    //    genprob.numawf  = 4;
-    genprob.numawf  = 6;
-#endif
-    break;
-  }
-  default:
-    break;
-  }
-
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
 {
   // create list of known materials
@@ -750,34 +549,33 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
         break;
       }
 
-      // Iterate through all discretizations and sort the appropiate condition
+      // Iterate through all discretizations and sort the appropriate condition
       // into the correct discretization it applies to
-      for (unsigned i=0; i<NumFields(); ++i)
-      {
-        for (unsigned j=0; j<NumDis(i); ++j)
-        {
-          Teuchos::RCP<DRT::Discretization> actdis = Dis(i,j);
-          const vector<int>* nodes = curr->second->Nodes();
-          if (nodes->size()==0)
-            dserror("%s condition %d has no nodal cloud",
-                    condlist[c]->Description().c_str(),
-                    curr->second->Id());
 
-          int foundit = 0;
-          for (unsigned i=0; i<nodes->size(); ++i)
-          {
-            const int node = (*nodes)[i];
-            foundit = actdis->HaveGlobalNode(node);
-            if (foundit)
-              break;
-          }
-          int found=0;
-          actdis->Comm().SumAll(&foundit,&found,1);
-          if (found)
-          {
-            // Insert a copy since we might insert the same condition in many discretizations.
-            actdis->SetCondition(condlist[c]->Name(),Teuchos::rcp(new Condition(*curr->second)));
-          }
+      map<std::string,RCP<Discretization> >::iterator iter;
+      for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
+      {
+        Teuchos::RCP<DRT::Discretization> actdis = iter->second;
+        const vector<int>* nodes = curr->second->Nodes();
+        if (nodes->size()==0)
+          dserror("%s condition %d has no nodal cloud",
+              condlist[c]->Description().c_str(),
+              curr->second->Id());
+
+        int foundit = 0;
+        for (unsigned i=0; i<nodes->size(); ++i)
+        {
+          const int node = (*nodes)[i];
+          foundit = actdis->HaveGlobalNode(node);
+          if (foundit)
+            break;
+        }
+        int found=0;
+        actdis->Comm().SumAll(&foundit,&found,1);
+        if (found)
+        {
+          // Insert a copy since we might insert the same condition in many discretizations.
+          actdis->SetCondition(condlist[c]->Name(),Teuchos::rcp(new Condition(*curr->second)));
         }
       }
     }
@@ -819,11 +617,10 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
   // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to
 
-  for (unsigned i=0; i<NumFields(); ++i)
+  map<std::string,RCP<Discretization> >::iterator iter;
+  for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
-    for (unsigned j=0; j<NumDis(i); ++j)
-    {
-      Teuchos::RCP<DRT::Discretization> actdis = Dis(i,j);
+      Teuchos::RCP<DRT::Discretization> actdis = iter->second;
 
       if(distype == "Nurbs")
       {
@@ -866,7 +663,6 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
         // add knots to discretisation
         nurbsdis->SetKnotVector(disknots);
       }
-    } //loop discretisations of field
   } //loop fields
 
   return;
@@ -956,11 +752,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numff, fluiddis);
+    AddDis("structure", structdis);
+    AddDis("fluid", fluiddis);
     if (xfluiddis!=Teuchos::null)
-      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
-    AddDis(genprob.numaf, aledis);
+      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
+    AddDis("ale", aledis);
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -981,10 +777,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
     aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
-    AddDis(genprob.numff, fluiddis);
+    AddDis("fluid", fluiddis);
     if (xfluiddis!=Teuchos::null)
-      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
-    AddDis(genprob.numaf, aledis);
+      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
@@ -999,11 +795,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
 
-    AddDis(genprob.numff, fluiddis);
+    AddDis("fluid", fluiddis);
     if (xfluiddis!=Teuchos::null)
-      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
-    AddDis(genprob.numaf, aledis);
-    AddDis(genprob.numsf, structdis);
+      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
+    AddDis("ale", aledis);
+    AddDis("structure", structdis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
@@ -1017,9 +813,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
     xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
 
-    AddDis(genprob.numff, fluiddis);
+    AddDis("fluid", fluiddis);
     if (xfluiddis!=Teuchos::null)
-      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
+      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
@@ -1041,9 +837,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numff, fluiddis);
-    AddDis(genprob.numaf, aledis);
+    AddDis("structure", structdis);
+    AddDis("fluid", fluiddis);
+    AddDis("ale", aledis);
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -1060,11 +856,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     // fluid scatra field
     fluidscatradis = rcp(new DRT::Discretization("scatra1",reader.Comm()));
-    AddDis(genprob.numscatra, fluidscatradis);
+    AddDis("scatra1", fluidscatradis);
 
     // structure scatra field
     structscatradis = rcp(new DRT::Discretization("scatra2",reader.Comm()));
-    AddDis(genprob.numscatra, structscatradis);
+    AddDis("scatra2", structscatradis);
 
     break;
   }
@@ -1075,9 +871,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
     aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numff, fluiddis);
-    AddDis(genprob.numaf, aledis);
+    AddDis("structure", structdis);
+    AddDis("fluid", fluiddis);
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
@@ -1096,7 +892,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
     }
 
-    AddDis(genprob.numaf, aledis);
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
@@ -1111,12 +907,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     else
     {
       fluiddis  = rcp(new DRT::Discretization("fluid",reader.Comm()));
-      xfluiddis = rcp(new DRT::Discretization("xfluid",reader.Comm()));
+      //xfluiddis = rcp(new DRT::Discretization("xfluid",reader.Comm()));
     }
 
-    AddDis(genprob.numff, fluiddis);
-    if ( xfluiddis!=Teuchos::null )
-      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
+    AddDis("fluid", fluiddis);
+  //  if ( xfluiddis!=Teuchos::null )
+  //    AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -1125,8 +921,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
 
-    if (xfluiddis!=Teuchos::null)
-      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
+ //   if (xfluiddis!=Teuchos::null)
+ //     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
 
     break;
   }
@@ -1144,8 +940,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     }
 
-    AddDis(genprob.numff, fluiddis);
-    AddDis(genprob.numscatra, scatradis);
+    AddDis("fluid", fluiddis);
+    AddDis("scatra", scatradis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
@@ -1167,10 +963,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
-    AddDis(genprob.numff, fluiddis);
+    AddDis("fluid", fluiddis);
     if (xfluiddis!=Teuchos::null)
-      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
-    AddDis(genprob.numaf, aledis);
+      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
+    AddDis("ale", aledis);
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -1190,8 +986,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     thermdis  = Teuchos::rcp(new DRT::Discretization("thermo"   ,reader.Comm()));
 
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numtf, thermdis);
+    AddDis("structure", structdis);
+    AddDis("thermo", thermdis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 //    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
@@ -1202,7 +998,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     {
       thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
-      AddDis(genprob.numtf, thermdis);
+      AddDis("thermo", thermdis);
 
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
 
@@ -1221,7 +1017,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
     }
 
-    AddDis(genprob.numsf, structdis);
+    AddDis("structure", structdis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
@@ -1232,10 +1028,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-    AddDis(genprob.numff, fluiddis);
+    AddDis("fluid", fluiddis);
 
     scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
-    AddDis(genprob.numscatra, scatradis);
+    AddDis("scatra", scatradis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
@@ -1259,9 +1055,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       aledis    = rcp(new DRT::Discretization("ale",reader.Comm()));
     }
 
-    AddDis(genprob.numff, fluiddis);
-    AddDis(genprob.numscatra, scatradis);
-    AddDis(genprob.numaf, aledis);
+    AddDis("fluid", fluiddis);
+    AddDis("scatra", scatradis);
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis,reader, "--TRANSPORT ELEMENTS")));
@@ -1274,10 +1070,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // create empty discretizations
     fluiddis = rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
-    AddDis(genprob.numff, fluiddis);
+    AddDis("fluid", fluiddis);
 
     scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
-    AddDis(genprob.numscatra, scatradis);
+    AddDis("scatra", scatradis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
@@ -1288,7 +1084,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // create empty discretizations
     arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
-    AddDis(genprob.numartf, arterydis);
+    AddDis("artery", arterydis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
 
@@ -1298,7 +1094,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // create empty discretizations
     airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
-    AddDis(genprob.numawf, airwaydis);
+    AddDis("red_airway", airwaydis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
 
@@ -1309,8 +1105,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     aledis  = Teuchos::rcp(new DRT::Discretization("ale"   ,reader.Comm()));
 
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numaf, aledis);
+    AddDis("structure", structdis);
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
@@ -1322,8 +1118,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     optidis = rcp(new DRT::Discretization("scatra",reader.Comm()));
 
-    AddDis(genprob.numff, fluiddis);
-    AddDis(genprob.numof, optidis);
+    AddDis("fluid", fluiddis);
+    AddDis("scatra", optidis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
@@ -1335,13 +1131,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"   ,reader.Comm()));
 
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numff, fluiddis);
+    AddDis("structure", structdis);
+    AddDis("fluid", fluiddis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     break;
   }
+
   case prb_poroscatra:
   {
     // create empty discretizations
@@ -1349,9 +1146,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"   ,reader.Comm()));
     scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
 
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numff, fluiddis);
-    AddDis(genprob.numscatra, scatradis);
+    AddDis("structure", structdis);
+    AddDis("fluid", fluiddis);
+    AddDis("scatra", scatradis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     break;
@@ -1362,8 +1159,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
 
-    AddDis(genprob.numsf, structdis);
-    AddDis(genprob.numscatra, scatradis);
+    AddDis("structure", structdis);
+    AddDis("scatra", scatradis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
@@ -1387,16 +1184,16 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fsi_lung:
   case prb_fluid_ale:
   case prb_fluid:
-  case prb_scatra:
-  case prb_loma:
-  case prb_elch:
+//  case prb_scatra:
+//  case prb_loma:
+//  case prb_elch:
   {
 #ifdef D_ARTNET
     if(distype != "Nurbs")
     {
       // create empty discretizations
       arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
-      AddDis(genprob.numartf, arterydis);
+      AddDis("artery", arterydis);
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
     }
 #endif
@@ -1404,7 +1201,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     if(distype != "Nurbs")
     {
       airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
-      AddDis(genprob.numawf, airwaydis);
+      AddDis("airway", airwaydis);
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
     }
 #endif
@@ -1466,7 +1263,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   Teuchos::RCP<Epetra_Comm> gcomm = npgroup_->GlobalComm();
 
   DRT::Problem* macro_problem = DRT::Problem::Instance();
-  RCP<DRT::Discretization> macro_dis = macro_problem->Dis(genprob.numsf,0);
+  RCP<DRT::Discretization> macro_dis = macro_problem->GetDis("structure");
 
   std::set<int> my_multimat_IDs;
 
@@ -1585,12 +1382,9 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
         RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
-        micro_problem->AddDis(genprob.numsf, structdis_micro);
+        micro_problem->AddDis("structure", structdis_micro);
 
         micro_problem->ReadParameter(micro_reader);
-
-        /* input of not mesh or time based problem data  */
-        micro_problem->InputControl();
 
         // read materials of microscale
         // CAUTION: materials for microscale cannot be read until
@@ -1699,12 +1493,9 @@ void DRT::Problem::ReadMicrofields_NPsupport()
     DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
     RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
-    micro_problem->AddDis(genprob.numsf, structdis_micro);
+    micro_problem->AddDis("structure", structdis_micro);
 
     micro_problem->ReadParameter(micro_reader);
-
-    /* input of not mesh or time based problem data  */
-    micro_problem->InputControl();
 
     // read materials of microscale
     // CAUTION: materials for microscale cannot be read until
@@ -1766,7 +1557,7 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
 
     RCP<DRT::Discretization> structdis_multilevel = rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
 
-    multilevel_problem->AddDis(genprob.numsf, structdis_multilevel);
+    multilevel_problem->AddDis("structure", structdis_multilevel);
     multilevel_problem->ReadParameter(multilevel_reader);
     /* input of not mesh or time based problem data  */
     //multilevel_problem->InputControl();
@@ -1828,39 +1619,77 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RCP<DRT::Discretization> DRT::Problem::Dis(int fieldnum, int disnum) const
+void DRT::Problem::AddDis(const std::string name, RCP<Discretization> dis)
 {
-  return discretizations_[fieldnum][disnum];
+  // safety checks
+  if (dis == Teuchos::null) dserror ("Received Teuchos::null.");
+  if (dis->Name().empty())  dserror ("Discretization has empty name string.");
+
+  if (discretizationmap_.insert(make_pair(name, dis)).second == false)
+  {
+    // if the same key already exists we have to inform the user since
+    // the insert statement did not work in this case
+    dserror("Could not insert discretization '%s' under (duplicate) key '%s'.",dis->Name().c_str(),name.c_str());
+  }
+  // For debug: what's currently in the map:
+  /*
+  map<std::string,RCP<Discretization> >::iterator iter;
+  for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
+  {
+    cout<<"key : "<<iter->first<<"    "<<"discret.name = "<<iter->second->Name()<<endl<<endl;
+  }
+  */
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::AddDis(int fieldnum, RCP<Discretization> dis)
+RCP<DRT::Discretization> DRT::Problem::GetDis(const std::string name) const
 {
-  if (fieldnum > static_cast<int>(discretizations_.size())-1)
+  map<std::string,RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
+
+  if (iter != discretizationmap_.end())
   {
-    discretizations_.resize(fieldnum+1);
+    return iter->second;
   }
-  discretizations_[fieldnum].push_back(dis);
+  else
+  {
+    dserror("Could not find discretization '%s'.",name.c_str());
+    return Teuchos::null;
+  }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::SetDis(int fieldnum, int disnum, RCP<Discretization> dis)
-{
-  if (fieldnum > static_cast<int>(discretizations_.size())-1)
+std::vector<std::string> DRT::Problem::GetDisNames() const {
+
+  unsigned mysize = NumFields();
+  std::vector<std::string> vec;
+  vec.reserve(mysize);
+
+  map<std::string,RCP<Discretization> >::const_iterator iter;
+  for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
-    discretizations_.resize(fieldnum+1);
+    vec.push_back(iter->first);
   }
-  if (disnum > static_cast<int>(discretizations_[fieldnum].size()-1))
-  {
-    discretizations_[fieldnum].resize(disnum+1);
-  }
-  discretizations_[fieldnum][disnum] = dis;
+
+  return vec;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::Problem::DoesExistDis(const std::string name) const {
+
+  map<std::string,RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
+  if (iter != discretizationmap_.end())
+  {
+    return true;
+  }
+
+  return false;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

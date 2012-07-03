@@ -27,7 +27,6 @@ Maintainer: Ulrich Kuettler
 #include "drt_function.H"
 #include "drt_timecurve.H"
 #include "drt_resulttest.H"
-#include "standardtypes_cpp.H" // for genprob struct
 
 
 using namespace std;
@@ -178,9 +177,6 @@ public:
   /// read global parameters
   void ReadParameter(DRT::INPUT::DatFileReader& reader);
 
-  /// fill old CCARAT struct genprob
-  void InputControl();
-
   /// setup the discretizations
   void ReadFields(DRT::INPUT::DatFileReader& reader, const bool readmesh = true);
 
@@ -286,7 +282,7 @@ public:
   /// direct access to parameters from input file sections
 
   const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
-  const Teuchos::ParameterList& DiscretisationParams() const { return getParameterList()->sublist("DISCRETISATION"); }
+//  const Teuchos::ParameterList& DiscretisationParams() const { return getParameterList()->sublist("DISCRETISATION"); }
   const Teuchos::ParameterList& DesignDescriptionParams() const { return getParameterList()->sublist("DESIGN DESCRIPTION"); }
   const Teuchos::ParameterList& PatSpecParams() const { return getParameterList()->sublist("PATIENT SPECIFIC"); }
   const Teuchos::ParameterList& StructuralDynamicParams() const { return getParameterList()->sublist("STRUCTURAL DYNAMIC"); }
@@ -327,25 +323,21 @@ public:
 
   /// @name Discretizations
 
-  /// find a particular discretization
-  RCP<Discretization> Dis(int fieldnum, int disnum) const;
+  /// get access to a particular discretization
+  RCP<DRT::Discretization> GetDis(const std::string name) const;
 
   /// tell number of known fields
-  unsigned NumFields() const { return discretizations_.size(); }
+  unsigned NumFields() const { return discretizationmap_.size(); }
 
-  /// tell number of discretizations in a field
-  unsigned NumDis(int fieldnum) const
-  { if (NumFields() < (unsigned) fieldnum)
-    return 0; // no entry for position fieldnum allocated!
+  /// tell names of known fields
+  std::vector<std::string> GetDisNames() const;
 
-    return discretizations_[fieldnum].size();
-  }
+  /// check whether a certain discretization exists or not
+  bool DoesExistDis(const std::string name) const;
 
-  /// add a discretization to a specific field
-  void AddDis(int fieldnum, RCP<Discretization> dis);
+  /// add a discretization to the global problem
+  void AddDis(const std::string name, RCP<Discretization> dis);
 
-  /// set given discretization to specific field at specific position
-  void SetDis(int fieldnum, int disnum, RCP<Discretization> dis);
 
   //@}
 
@@ -412,7 +404,7 @@ private:
   int restartstep_;
 
   /// discretizations of this problem
-  vector<vector<RCP<Discretization> > > discretizations_;
+  map<std::string,RCP<Discretization> > discretizationmap_;
 
   /// keep a list of all active element implementations
   vector<DRT::SingletonDestruction *> sds_;

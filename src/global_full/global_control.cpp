@@ -8,12 +8,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- *----------------------------------------------------------------------*/
-struct _GENPROB       genprob;
-
 
 static double cputime()
 {

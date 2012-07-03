@@ -35,7 +35,7 @@ namespace SCATRA{
     explicit PassiveScaTraAlgorithm(
         const Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn, ///< problem-specific parameter list
-        const int disnum,                     ///< scatra discretization number (default: 0)
+        const std::string disname,            ///< scatra discretization name
         const Teuchos::ParameterList& solverparams
         );
 

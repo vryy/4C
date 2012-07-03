@@ -54,7 +54,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 
   // get coarse and fine discretizations
 
-    actdis_coarse_ = DRT::Problem::Instance(0)->Dis(genprob.numsf, 0);
+    actdis_coarse_ = DRT::Problem::Instance(0)->GetDis("fluid");
     // set degrees of freedom in the discretization
     if (not actdis_coarse_->Filled()) actdis_coarse_->FillComplete();
   //int myrank = dis->Comm().MyPID();
@@ -146,7 +146,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   {
     // Get finest Grid problem instance
 
-    actdis_fine_ = DRT::Problem::Instance(1)->Dis(genprob.numsf, 0);
+    actdis_fine_ = DRT::Problem::Instance(1)->GetDis("structure");
     // set degrees of freedom in the discretization
     if (not actdis_fine_->Filled()) actdis_fine_->FillComplete();
     // Get coarse Grid problem instance

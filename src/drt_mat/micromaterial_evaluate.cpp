@@ -23,12 +23,6 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_container.H"
 #include "../drt_lib/drt_exporter.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 
 // This function has to be separated from the remainder of the
@@ -59,7 +53,7 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   // avoid writing output also for ghosted elements
-  const bool eleowner = DRT::Problem::Instance(0)->Dis(genprob.numsf,0)->ElementRowMap()->MyGID(ele_ID);
+  const bool eleowner = DRT::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(ele_ID);
 
   // get sub communicator including the supporting procs
   Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();

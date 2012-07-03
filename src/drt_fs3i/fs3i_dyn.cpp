@@ -27,14 +27,13 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 
 #include <Teuchos_TimeMonitor.hpp>
 
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 // entry point for all kinds of FS3I
 /*----------------------------------------------------------------------*/
 void fs3i_dyn()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
 
   Teuchos::RCP<FS3I::FS3I_Base> fs3i;
 

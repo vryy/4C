@@ -60,7 +60,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+  RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("fluid");
 
 
   // -------------------------------------------------------------------

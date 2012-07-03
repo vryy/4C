@@ -29,11 +29,7 @@ Maintainer: Jonas Biehler
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
-/*----------------------------------------------------------------------*/
-//! General problem data
-//!
-//! global variable GENPROB genprob is defined in global_control.c
-extern GENPROB genprob;
+
 
 /*======================================================================*/
 /* Multi Level Monte Carlo analysis of structures */
@@ -44,7 +40,7 @@ void STR::mlmc()
 
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+  actdis = DRT::Problem::Instance()->GetDis("structure");
 
   // set degrees of freedom in the discretization
   if (not actdis->Filled()) actdis->FillComplete();

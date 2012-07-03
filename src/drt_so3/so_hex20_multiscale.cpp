@@ -18,7 +18,7 @@ Maintainer: Lena Yoshihara
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_discret.H"
 
-extern struct _GENPROB     genprob;
+
 
 /*----------------------------------------------------------------------*
  |  homogenize material density (public)                                |
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::So_hex20::soh20_read_restart_multi()
     MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
     int eleID = Id();
     bool eleowner = false;
-    if (DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm().MyPID()==Owner()) eleowner = true;
+    if (DRT::Problem::Instance()->GetDis("structure")->Comm().MyPID()==Owner()) eleowner = true;
 
     for (int gp=0; gp<NUMGPT_SOH20; ++gp)
       micro->ReadRestart(gp, eleID, eleowner);

@@ -23,7 +23,7 @@ ADAPTER::FluidTopOptCouplingAlgorithm::FluidTopOptCouplingAlgorithm(
     const Teuchos::ParameterList& prbdyn
     )
 :  FluidBaseAlgorithm(prbdyn,false),
-   TopOptBaseAlgorithm(prbdyn,0),
+   TopOptBaseAlgorithm(prbdyn,"scatra"),
    TopOptFluidAdjointAlgorithm(prbdyn),
    params_(prbdyn)
 {

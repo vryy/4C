@@ -28,19 +28,13 @@ Maintainer: Burkhard Bornemann
 #include "thr_resulttest.H"
 
 /*----------------------------------------------------------------------*
- | general problem data                                     m.gee 06/01 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-/*----------------------------------------------------------------------*
  | Main control routine for (in)stationary heat conduction              |
  *----------------------------------------------------------------------*/
 void thr_dyn_drt()
 {
   // access the discretization
   Teuchos::RCP<DRT::Discretization> thermodis = Teuchos::null;
-  thermodis = DRT::Problem::Instance()->Dis(genprob.numtf, 0);
+  thermodis = DRT::Problem::Instance()->GetDis("thermo");
 
   // set degrees of freedom in the discretization
   if (not thermodis->Filled()) thermodis->FillComplete();

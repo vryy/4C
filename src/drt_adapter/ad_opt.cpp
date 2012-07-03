@@ -21,7 +21,7 @@ Maintainer: Martin Winklmaier
 /// constructor
 ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
-    const int disnum                   ///< optimization field discretization number (default: 0)
+    const std::string disname             ///< optimization field discretization name(default: "scatra")
 )
 {
   // setup topology optimization algorithm
@@ -30,9 +30,9 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // access the fluid and the optimization discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> optidis = null;
-  optidis = DRT::Problem::Instance()->Dis(genprob.numof,disnum);
+  optidis = DRT::Problem::Instance()->GetDis(disname);
   RCP<DRT::Discretization> fluiddis = null;
-  fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
 
   // -------------------------------------------------------------------
   // check degrees of freedom in the discretization

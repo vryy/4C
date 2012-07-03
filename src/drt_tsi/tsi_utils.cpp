@@ -133,13 +133,13 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 {
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  structdis = DRT::Problem::Instance()->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
 
   // access the thermo discretization
   Teuchos::RCP<DRT::Discretization> thermdis = Teuchos::null;
-  thermdis = DRT::Problem::Instance()->Dis(genprob.numtf,0);
+  thermdis = DRT::Problem::Instance()->GetDis("thermo");
   if (!thermdis->Filled()) thermdis->FillComplete();
 
    // we use the structure discretization as layout for the temperature discretization

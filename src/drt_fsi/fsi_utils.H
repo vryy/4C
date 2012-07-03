@@ -54,10 +54,6 @@ namespace FSI
     Teuchos::RCP<const Epetra_Map> ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
                                             const std::vector<Teuchos::RCP<const Epetra_Map> >& vecSpaces);
 
-    /// create ale discretization parallel to the fluid one
-    //void CreateAleDiscretization();
-
-
 
     /*!
     \brief implementation of special clone strategy for automatic generation

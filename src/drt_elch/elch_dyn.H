@@ -17,9 +17,6 @@ Maintainer: Georg Bauer
 
 /*! entry point for the solution of electrochemistry problems */
 void elch_dyn(
-    int disnumff,      /* fluid  discretization number, typically 0 */
-    int disnumscatra,  /* scatra discretization number, typically 1 */
-    int disnumale,     /* ale    discretization number, typically 2 */
     int restart        /* do we have to perform a restart?  */
     );
 

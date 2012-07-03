@@ -26,7 +26,7 @@ Maintainer: Ulrich Kuettler
 // further includes for AleBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -44,13 +44,6 @@ Maintainer: Ulrich Kuettler
 using namespace std;
 using namespace Teuchos;
 
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -246,7 +239,8 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,disnum);
+  if (disnum > 0) dserror("Disnum > 0");
+  actdis = DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

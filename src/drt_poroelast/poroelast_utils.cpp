@@ -131,14 +131,14 @@ void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
 
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = problem->Dis(genprob.numsf, 0);
+  structdis = problem->GetDis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs())
     structdis->FillComplete();
 
   // access the fluid discretization
   Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = problem->Dis(genprob.numff, 0);
+  fluiddis = problem->GetDis("fluid");
   if (!fluiddis->Filled())
     fluiddis->FillComplete();
 

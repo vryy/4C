@@ -56,12 +56,6 @@ Maintainer: Sophie Rausch
 #include "strtimada_create.H"
 
 
-/*----------------------------------------------------------------------*/
-//! General problem data
-//!
-//! global variable GENPROB genprob is defined in global_control.c
-//! \author m.gee \date 06/01
-extern GENPROB genprob;
 
 /*======================================================================*/
 /* Inverse analysis of structures */
@@ -72,7 +66,7 @@ void STR::invanalysis()
 
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
+  actdis = DRT::Problem::Instance()->GetDis("structure");
 
   // set degrees of freedom in the discretization
   if (not actdis->Filled()) actdis->FillComplete();

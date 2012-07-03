@@ -35,12 +35,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
 
-/*----------------------------------------------------------------------*
-  |                                                       ismail 01/09   |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 
 /*----------------------------------------------------------------------*
@@ -56,15 +50,7 @@ void dyn_art_net_drt()
 
 Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
 {
-  // -------------------------------------------------------------------
-  // check if descretization exits
-  // -------------------------------------------------------------------
-  if((DRT::Problem::Instance()->NumFields() >= (unsigned) genprob.numartf)  && CoupledTo3D)
-  {
-    return Teuchos::null;
-  }
-
-  if(DRT::Problem::Instance()->NumDis(genprob.numartf)<1)
+  if(DRT::Problem::Instance()->DoesExistDis("artery")==false)
   {
 #if 0
     if (actdis->Comm().MyPID()==0)
@@ -85,7 +71,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
 
-  actdis = DRT::Problem::Instance()->Dis(genprob.numartf,0);
+  actdis = DRT::Problem::Instance()->GetDis("artery");
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

@@ -95,7 +95,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
 
   // access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numtf, 0);
+  actdis = DRT::Problem::Instance()->GetDis("thermo");
 
   // set degrees of freedom in the discretization
   if (not actdis->Filled()) actdis->FillComplete();

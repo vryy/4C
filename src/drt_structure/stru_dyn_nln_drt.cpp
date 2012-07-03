@@ -120,7 +120,7 @@ void dyn_nlnstructural_drt()
   // write output at beginnning of calc
   else
   {
-    //RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+    //RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
     //RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(actdis));
     //output->NewStep(0, 0.0);
     //RCP<Epetra_Vector> zeros = rcp (new Epetra_Vector(*(actdis->DofRowMap())));

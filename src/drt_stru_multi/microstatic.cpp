@@ -37,11 +37,6 @@ Maintainer: Lena Yoshihara
 #include "../drt_io/io.H"
 #include "../drt_structure/strtimint_impl.H"
 
-/*----------------------------------------------------------------------*
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)|
@@ -54,7 +49,7 @@ V0_(V0)
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  discret_ = DRT::Problem::Instance(microdisnum_)->Dis(genprob.numsf,0);
+  discret_ = DRT::Problem::Instance(microdisnum_)->GetDis("structure");
 
   // set degrees of freedom in the discretization
   if (!discret_->Filled()) discret_->FillComplete();

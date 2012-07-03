@@ -32,12 +32,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
 
-/*----------------------------------------------------------------------*
-  |                                                       ismail 01/10   |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  * Main control routine for reduced dimensional airway network including
@@ -55,14 +49,8 @@ void dyn_red_airways_drt()
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D)
 {
 #ifdef D_RED_AIRWAYS
-  // -------------------------------------------------------------------
-  // check if descretization exits
-  // -------------------------------------------------------------------
-  if((DRT::Problem::Instance()->NumFields() >= (unsigned) genprob.numartf) && CoupledTo3D)
-  {
-    return Teuchos::null;
-  }
-  if(DRT::Problem::Instance()->NumDis(genprob.numawf)<1)
+
+  if(DRT::Problem::Instance()->DoesExistDis("red_airway")==false)
   {
 #if 0
     if (actdis->Comm().MyPID()==0)
@@ -82,7 +70,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numawf,0);
+  actdis = DRT::Problem::Instance()->GetDis("red_airway");
+
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
