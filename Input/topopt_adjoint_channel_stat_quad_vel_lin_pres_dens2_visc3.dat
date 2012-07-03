@@ -69,7 +69,6 @@ TESTCASE                        test_stat_all_terms_all_constants
 INITFUNCNO                      3
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-2DFLOW                          no
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVCHECK                       L_2_norm

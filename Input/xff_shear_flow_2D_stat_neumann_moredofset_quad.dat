@@ -64,7 +64,6 @@ STEADYTOL                       1e-06
 THETA                           1.00
 TIMEINTEGR Stationary //One_Step_Theta
 UPRES                           1
-2DFLOW                          yes
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
@@ -103,6 +102,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
+2DFLOW                          yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 CONV_STAB_FAC                   0.0

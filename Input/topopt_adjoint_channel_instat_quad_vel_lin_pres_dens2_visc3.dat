@@ -72,7 +72,6 @@ THETA_DIV                       0.5
 THETA_PRES                      0.5
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-2DFLOW                          no
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVCHECK                       L_2_norm

@@ -39,7 +39,6 @@ INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-2DFLOW                          no
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.0                             // 0.666666
