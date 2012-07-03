@@ -4417,7 +4417,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "No 2D-Simulation",
                                  "2D-Simulation"),
                                tuple<int>(0,1),
-                               &fdyn);
+                               &xfem_general);
 
 
   /*----------------------------------------------------------------------*/
