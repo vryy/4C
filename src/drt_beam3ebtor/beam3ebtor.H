@@ -20,8 +20,8 @@ To be able to use this element correctly structural dynamic parameters need to b
 since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
 type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed for this element.
 
-As the beam curve has to be C1 it is interpolated with hermitien polynomials of order 3. Therefore each node has 6 dofs: the position
-vector of the node (3 dofs) and the tangent vector to the curve at the node (3 dofs). If Dirichlet BC are applied one has to make sure that
+As the beam curve has to be C1 it is interpolated with hermitien polynomials of order 3. Therefore each node has 7 dofs: the position
+vector of the node (3 dofs), the tangent vector to the curve at the node (3 dofs) and the nodal twist angle (1 dof). If Dirichlet BC are applied one has to make sure that
 the flags 3 -6 refer to the tangent at the node (rotational defree of freedom). The flag of the tangent in beam centerline direction must
 be set to 0, otherwise the axial tension at the boundary would be prescribed. The 7th flag is related to the twist angle.
 *----------------------------------------------------------------------*/

@@ -232,7 +232,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(ParameterList& params,
     if (insert == -1)
       dserror("\nNode could not be found on nodemap!\n");
 
-    //add forces to Res_external according to (5.56)
+    //add forces to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 0; i < 3 ; i++)
     {
       elevec1(insert*dofpn + i) += (*onoff)[i]*(*val)[i]*curvefac;
@@ -275,7 +275,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(ParameterList& params,
       }
     }
 
-    //add moments to Res_external according to (5.56)
+    //add moments to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 3; i < 6 ; i++)
     {
       elevec1(insert*dofpn + i) -= crossproduct(i-3) / pow(abs_tangent,2.0);
@@ -302,6 +302,8 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(ParameterList& params,
 
     //add R_external to stiffness matrix
     //all parts have been evaluated at the boundaries which helps simplifying the matrices
+    //In contrast to the Neumann part of the residual force here is NOT a factor of (-1) needed, as elemat1 is directly added to the stiffness matrix
+    //without sign change.
     for(int i = 3; i < 6 ; i++)
     {
       for(int j = 3; j < 6 ; j++)
