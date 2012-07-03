@@ -203,16 +203,6 @@ void ALE::Ale::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ALE::Ale::ExtractDisplacement() const
-{
-  // We know that the ale dofs are coupled with their original map. So
-  // we just return them here.
-  return dispnp_;
-}
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ALE::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn, int disnum)

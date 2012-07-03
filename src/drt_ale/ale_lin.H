@@ -19,21 +19,6 @@ Maintainer: Ulrich Kuettler
 
 #include "ale.H"
 
-/// forward declarations
-namespace LINALG
-{
-  class Solver;
-  class Preconditioner;
-  class SparseMatrix;
-  class BlockSparseMatrixBase;
-  class SparseOperator;
-}
-
-namespace IO
-{
-  class DiscretizationWriter;
-}
-
 namespace ALE {
 
 /// forward declaration
@@ -68,6 +53,8 @@ public:
   virtual void Update();
   virtual void Output();
   //@}
+
+  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const;
 
   Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return precond_; }
 

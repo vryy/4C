@@ -19,21 +19,6 @@ Maintainer: Ulrich Kuettler
 
 #include "ale.H"
 
-/// forward declarations
-namespace LINALG
-{
-  class Solver;
-  class Preconditioner;
-  class SparseMatrix;
-  class BlockSparseMatrixBase;
-  class SparseOperator;
-}
-
-namespace IO
-{
-  class DiscretizationWriter;
-}
-
 namespace ALE {
 
 

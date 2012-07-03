@@ -129,7 +129,7 @@ public:
   //! @name Extract displacement
 
   /// the whole displacement field is extracted here
-  Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const;
+  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const = 0;
 
   //@}
 
