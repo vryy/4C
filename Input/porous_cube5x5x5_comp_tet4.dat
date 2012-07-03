@@ -23,7 +23,6 @@ NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 ------------------------------------------------------FLUID DYNAMIC
-2DFLOW                          no
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
