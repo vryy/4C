@@ -459,10 +459,12 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
     // factor given by spatial function
     double functfac = 1.0;
     // determine global coordinates of current Gauss point
-    double coordgp[nsd_];
+    double coordgp[3]; // coordinate has always to be given in 3D!
+    for (int i = 0; i< 3; i++)
+      coordgp[i] = 0.0;
+
     for (int i = 0; i< nsd_; i++)
     {
-      coordgp[i] = 0.0;
       for (int j = 0; j < nen_; j++)
       {
         // node coordinate * shape function

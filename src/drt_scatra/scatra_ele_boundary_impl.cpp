@@ -948,7 +948,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     // factor given by spatial function
     double functfac = 1.0;
     // determine global coordinates of current Gauss point
-    double coordgp[nsd_];
+    double coordgp[3]; // we always need three coordinates for function evaluation!
+    for (int i = 0; i< 3; i++)
+      coordgp[i] = 0.0;
+
     for (int i = 0; i< nsd_; i++)
     {
       coordgp[i] = 0.0;
@@ -971,7 +974,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
         {
           if (functnum>0)
           {
-            // evaluate function at current gauss point
+            // evaluate function at current gauss point (provide always 3D coordinates!)
             functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
           }
           else
@@ -2758,8 +2761,15 @@ template <DRT::Element::DiscretizationType bdistype,
     double functfac = 1.0;
     if (funcnum > 0)
     {
-      // evaluate function at current integration point
-      functfac = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(0,coordgp.A(),time,NULL);
+      // evaluate function at current integration point (important: a 3D position vector is required)
+      double coordgp3D[3];
+      coordgp3D[0]=0.0;
+      coordgp3D[1]=0.0;
+      coordgp3D[2]=0.0;
+      for (int i=0; i<pnsd;i++)
+        coordgp3D[i]=coordgp(i);
+
+      functfac = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(0,&(coordgp3D[0]),time,NULL);
     }
     else functfac = 1.0;
     dirichval *= functfac;

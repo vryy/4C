@@ -266,8 +266,16 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
     // determine coordinates of current Gauss point
     coordgp.Multiply(xyze_,funct_);
 
+    // we need a 3D position vector for function evaluation!
+    double coordgp3D[3];
+    coordgp3D[0]=0.0;
+    coordgp3D[1]=0.0;
+    coordgp3D[2]=0.0;
+    for (int i=0;i<nsd_;i++)
+      coordgp3D[i]=coordgp(i);
+
     int functnum = -1;
-    const double* coordgpref = &coordgp(0); // needed for function evaluation
+    const double* coordgpref = &coordgp3D[0]; // needed for function evaluation
 
     for(int idim=0; idim<(nsd_); ++idim)
     {
@@ -2920,7 +2928,7 @@ template <DRT::Element::DiscretizationType bndydistype,
             functnum = (*functions)[dim];
             if (functnum>0)
             {
-              // evaluate function at current gauss point
+              // evaluate function at current gauss point (important: requires 3D position vector)
               functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),time,NULL);
             }
             else
@@ -3275,7 +3283,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           functnum = (*functions)[dim];
           if (functnum>0)
           {
-            // evaluate function at current gauss point
+            // evaluate function at current gauss point (important: requires 3D position vector)
             functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),time,NULL);
           }
           else

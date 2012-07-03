@@ -354,9 +354,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
       //LINALG::Matrix<3,1> physpos(true);
       //GEO::elementToCurrentCoordinates(distype, xyzint, xsi_, physpos);
 
-      double position[2];
+      // function evaluation requires a 3D position vector!!
+      double position[3];
       position[0] = xyzint(0);
       position[1] = xyzint(1);
+      position[2] = 0.0;
 
       if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
       {

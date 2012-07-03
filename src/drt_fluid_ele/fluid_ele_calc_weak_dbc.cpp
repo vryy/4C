@@ -790,7 +790,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 	  functnum = (*functions)[dim];
 	  if (functnum>0)
 	  {
-	    // evaluate function at current gauss point
+	    // evaluate function at current gauss point (important: requires 3D position vector)
 	    functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),time,NULL);
 	  }
 	  else
@@ -2663,7 +2663,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     functnum = (*functions)[dim];
     if (functnum>0)
     {
-      // evaluate function at current gauss point
+      // evaluate function at current gauss point (important: requires 3D position vector)
       functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),time,NULL);
     }
     else

@@ -260,7 +260,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
         Epetra_SerialDenseMatrix  xjm  (spacedim,spacedim);
         Epetra_SerialDenseMatrix  deriv(spacedim,iel);
         Epetra_SerialDenseVector  gp(spacedim);
-        Epetra_SerialDenseVector  position(spacedim);
+        Epetra_SerialDenseVector  position(3); // always three-dimensional coordinates for function evaluation!
         Epetra_SerialDenseVector  initialval(dofblock);
 
         // depending on the spatial dimension, we need a different
@@ -350,9 +350,13 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
                 position(rr)+=funct(mm)*xyze(rr,mm);
               }
             }
+            // if spacedim < 3, ensure we define a valid z-coordinate!
+            for (int rr=spacedim;rr<3;++rr)
+              position(rr)=0.0;
 
             for(int rr=0;rr<dofblock;++rr)
             {
+              // important: position has to have always three components!!
               initialval(rr)=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
             }
 
@@ -476,9 +480,13 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
                 position(rr)+=funct(mm)*xyze(rr,mm);
               }
             }
+            // if spacedim < 3, ensure we define a valid z-coordinate!
+            for (int rr=spacedim;rr<3;++rr)
+              position(rr)=0.0;
 
             for(int rr=0;rr<dofblock;++rr)
             {
+              // important: position has to have always three components!!
               initialval(rr)=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
             }
 

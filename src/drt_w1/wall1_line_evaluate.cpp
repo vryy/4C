@@ -134,10 +134,12 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
                gp_coord.Multiply('T','T',1.0,funct,xye,0.0);
 
                // write coordinates in another datatype
+               double gp_coord2[3]; // the position vector has to be given in 3D!!!
                const int numdim = 2;
-               double gp_coord2[numdim];
                for(int k=0;k<numdim;k++)
                  gp_coord2[k]=gp_coord(0,k);
+               for(int k=numdim;k<3;k++) // set a zero value for the remaining spatial directions
+                 gp_coord2[k]=0.0;
                const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
                //evaluate function at current gauss point

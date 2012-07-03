@@ -158,9 +158,10 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
     // factor given by spatial function
     double functionfac = 1.0;
     // determine coordinates of current Gauss point
-    double coordgp[2];
+    double coordgp[3];
     coordgp[0]=0.0;
-    coordgp[0]=0.0;
+    coordgp[1]=0.0;
+    coordgp[2]=0.0;
     for (size_t i = 0; i< iel; i++)
       {
        coordgp[0]+=xye(0,i)*funct[i];
@@ -178,7 +179,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
          if (functions) functnum = (*functions)[dim];
          {
             if (functnum>0)
-              // evaluate function at current gauss point
+              // evaluate function at current gauss point (3D position vector required!)
               functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
             else
               functionfac = 1.0;
