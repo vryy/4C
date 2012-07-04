@@ -186,6 +186,23 @@ public:
   */
   template<typename T> void Export(map<int,set<T> >& data);
 
+  // 																														nagler 07/2012
+  /*!
+  \brief Communicate a map of sets of some basic data type T and U
+
+  This method takes a map of sets and redistributes them according to
+  the send and receive plans. It is implicitly assumed, that the key in
+  the map of sets pointwise matches SourceMap().
+
+  \note T and U can have arbitrarily types
+
+  \param data (in/out): A map of maps<T,U>. On input, the map
+                        has a distribution matching SourceMap().
+                        On output, the map has a distribution of
+                        TargetMap().
+  */
+  template<typename T, typename U> void Export(map<int,map<T,U> >& data);
+
   /*!
   \brief Communicate a map of int values
 
@@ -775,6 +792,52 @@ private:
     map<int,set<T> >& objects_;
   };
 
+/// Concrete helper class that handles maps of plain old data (POD) objects
+/// 																												 nagler 07/2012
+  template<typename T, typename U>
+  class PODMapExporterHelper : public ExporterHelper
+  {
+  public:
+
+    explicit PODMapExporterHelper(map<int,std::map<T,U> >& objects)
+      : objects_(objects) {}
+
+    virtual void PreExportTest(Exporter* exporter)
+    {
+      // Nothing to do. We do not check for T to be POD.
+    }
+
+    virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
+    {
+      typename map<int,std::map<T,U> >::const_iterator curr = objects_.find(gid);
+      if (curr!=objects_.end())
+      {
+      	ParObject::AddtoPack(sendblock,curr->second);
+        return true;
+      }
+      return false;
+    }
+
+    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
+    {
+      ParObject::ExtractfromPack(index,recvblock,objects_[gid]);
+    }
+
+    virtual void PostExportCleanup(Exporter* exporter)
+    {
+      // loop map and kick out everything that's not in TargetMap()
+      map<int,std::map<T,U> > newmap;
+      typename map<int,std::map<T,U> >::iterator fool;
+      for (fool=objects_.begin(); fool != objects_.end(); ++fool)
+        if (exporter->TargetMap().MyGID(fool->first))
+         swap(newmap[fool->first], fool->second);
+      swap(newmap,objects_);
+    }
+
+  private:
+    map<int,std::map<T,U> >& objects_;
+  };
+
 }; // class Exporter
 } // namespace DRT
 
@@ -806,5 +869,13 @@ template<typename T> void DRT::Exporter::Export(map<int,set<T> >& data)
   GenericExport(helper);
 }
 
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                           nagler  07/12|
+ *----------------------------------------------------------------------*/
+template<typename T, typename U> void DRT::Exporter::Export(map<int,map<T,U> >& data)
+{
+	PODMapExporterHelper<T,U> helper(data);
+  GenericExport(helper);
+}
 
 #endif  // #ifndef EXPORTER_H

@@ -1073,6 +1073,11 @@ void IO::DiscretizationWriter::WriteElementData()
     // get names and dimensions from every element
     dis_->lRowElement(i)->VisNames(names);
   }
+  
+  // By applying GatherAll we get the combined map including all elemental values
+  // which where found by VisNames
+  const Epetra_Comm& comm = dis_->Comm();
+  LINALG::GatherAll(names, comm);
 
   // make sure there's no name with a dimension of less than 1
   for (fool = names.begin(); fool!= names.end(); ++fool)

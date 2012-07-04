@@ -1088,6 +1088,82 @@ namespace LINALG
     return;
   }
 
+  // 																														nagler 07/2012
+  /*!
+  \brief Gather information of type map<T,U> on a subset of processors                        
+
+  This template gathers information provided in sdata on a subset of
+  processors tprocs, where the length of the array tprocs is ntargetprocs.
+  The redistributed data is returned in rdata which has appropiate size
+  on output (size of rdata on input is arbitrary). ntargetprocs can be
+  one to reduce data to one proc, it also can be equal to the total number
+  of processors to make sdata redundant on all procs.
+
+  \param sdata (in) : Information to be gathered on tprocs.
+		      Length of sdata can be different on every proc.
+  \param rdata (out): Information from sdata gathered on a subset of procs.
+		      size of rdata on input is arbitrary, it is exact on output.
+  \param ntargetprocs (in): length of tprocs
+  \param tprocs (in): vector of procs ids the information in sdata shall be
+		      gathered on.
+  \param comm (in):   communicator to be used.
+
+  */
+
+  template<typename T, typename U> void Gather(std::map<T,U>&      sdata,
+  																	           std::map<T,U>&      rdata,
+                                               const int    ntargetprocs,
+                                               const int*   tprocs,
+                                               const        Epetra_Comm& comm)
+    {
+  			const int myrank  = comm.MyPID();
+  	    const int numproc = comm.NumProc();
+  	    if (numproc==1)
+  	        {
+  	          rdata = sdata;
+  	          return; // nothing to do in serial
+  	        }
+
+  	    // build a map of data
+  	    std::map<int,std::map<T,U> > datamap;
+  	    datamap[myrank] = sdata;
+
+  	    // build a source map
+  	    Epetra_Map source(numproc,1,&myrank,0,comm);
+  	    // build a target map which is redundant on all target procs and zero everywhere else
+  	    bool iamtarget = false;
+  	    for (int i=0; i<ntargetprocs; ++i)
+  	      if (tprocs[i]==myrank)
+  	      {
+  	        iamtarget = true;
+  	        break;
+  	      }
+  	    vector<int> targetvec(0);
+  	    if (iamtarget)
+  	    {
+  	      targetvec.resize(numproc);
+  	      for (int i=0; i<numproc; ++i) targetvec[i] = i;
+  	    }
+  	    const int tnummyelements = (int)targetvec.size();
+  	    Epetra_Map target(-1,tnummyelements,&targetvec[0],0,comm);
+  	    // build an exporter and export data
+  	    DRT::Exporter exporter(source,target,comm);
+  	    exporter.Export(datamap);
+  	    // put data from map in rdata
+  	    rdata.clear();
+  	    typename map<int,map<T,U> >::const_iterator curr;
+  	    for (curr=datamap.begin(); curr != datamap.end(); ++curr)
+  	    {
+  	      const map<T,U>& current = curr->second;
+  	      typename map<T,U>::const_iterator mapiter;
+  	      for (mapiter = current.begin(); mapiter != current.end(); ++mapiter)
+  	      {
+  	        rdata.insert(std::make_pair(mapiter->first, mapiter->second));
+  	      }
+  	    }
+  	    return;
+    }
+
   /*!
   \brief Gather information of type set<T> from all processors
 
@@ -1103,7 +1179,6 @@ namespace LINALG
           Length of data can be different on every proc.
   \param comm (in):   communicator to be used.
 
-
   */
   template<typename T> void GatherAll(set<T>&      data,
                                       const        Epetra_Comm& comm)
@@ -1117,6 +1192,34 @@ namespace LINALG
     Gather<T>(data, data, numprocs, allproc, comm);
     return;
   }
+
+  // 																															nagler 07/2012
+  /*!
+  \brief Gather information of type map<T,U> from all processors
+
+  This template gathers information provided in data on all processors.
+  The redistributed data is returned in data which has appropiate size
+  on output.
+
+  \param data (in/out) : Information to be gathered.
+          Length of data can be different on every proc.
+  \param comm (in):   communicator to be used.
+
+  */
+
+  template<typename T, typename U> void GatherAll(std::map<T,U>&      data,
+                                       const        Epetra_Comm& comm)
+  {
+  	const int numprocs  = comm.NumProc();
+  	int allproc[numprocs];
+  	for (int i = 0; i < numprocs; ++i)
+  		allproc[i] = i;
+
+  	Gather<T,U>(data, data, numprocs, allproc, comm);
+
+  	return;
+  }
+
 
   /// Create an allreduced vector of gids from the given Epetra_Map
   /*!
