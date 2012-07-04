@@ -617,6 +617,8 @@ private:
   vector<double> diffus_;
   //! all-scale or fine-scale subgrid diffusivities (one per transported scalar)
   vector<double> sgdiff_;
+  //! general reaction term R(phi) (without density)
+  vector<double> reacterm_;
   //! reaction coefficient
   vector<double> reacoeff_;
   //! reaction coefficent derivative (needed for matrix contribution)

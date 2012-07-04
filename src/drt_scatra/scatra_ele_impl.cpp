@@ -260,6 +260,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     densgradfac_(numscal_,0.0),  // size of vector + initialized to zero
     diffus_(numscal_,0.0),       // size of vector + initialized to zero
     sgdiff_(numscal_,0.0),       // size of vector + initialized to zero
+    reacterm_(numscal_,0.0),     // size of vector + initialized to zero
     reacoeff_(numscal_,0.0),     // size of vector + initialized to zero
     reacoeffderiv_(numscal_,0.0),// size of vector + initialized to zero
     valence_(numscal_,0.0),      // size of vector + initialized to zero
@@ -1400,9 +1401,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         if (is_reactive_)
         {
           // scalar at integration point
-          const double phi = funct_.Dot(ephinp_[k]);
+          // const double phi = funct_.Dot(ephinp_[k]);
 
-          rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
+          rea_phi_[k] = densnp_[k]*reacterm_[k]; //reacoeff_[k]*phi;
         }
 
         // velocity divergence required for conservative form
@@ -1705,6 +1706,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     {
       // set reaction coeff. and temperature rhs for reactive equation system to zero
       reacoeff_[k]   = 0.0;
+      reacoeffderiv_[k]   = 0.0;
+      reacterm_[k]   = 0.0;
       reatemprhs_[k] = 0.0;
 
       // set specific heat capacity at constant pressure to 1.0
@@ -1771,6 +1774,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         // compute reaction coefficient for species equation
         reacoeff_[k] = actsinglemat->ComputeReactionCoeff(tempnp);
         reacoeffderiv_[k] = reacoeff_[k];
+
+        // scalar at integration point
+        const double phi = funct_.Dot(ephinp_[k]);
+        reacterm_[k]=reacoeff_[k]*phi;
+
         // set reaction flag to true
         is_reactive_ = true;
       }
@@ -1831,6 +1839,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         if (reacoeff_[k] < -EPS14)
           dserror("Reaction coefficient for species %d is not positive: %f",k, reacoeff_[k]);
         reacoeffderiv_[k] = reacoeff_[k];
+
+        // scalar at integration point
+        const double phi = funct_.Dot(ephinp_[k]);
+        reacterm_[k]=reacoeff_[k]*phi;
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_biofilm)
       {
@@ -1849,6 +1861,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         // compute reaction coefficient for species equation
         reacoeff_[k] = actsinglemat->ComputeReactionCoeff(csnp);
         reacoeffderiv_[k] = actsinglemat->ComputeReactionCoeffDeriv(csnp);
+
+        // scalar at integration point
+        const double phi = funct_.Dot(ephinp_[k]);
+        reacterm_[k]=reacoeff_[k]*phi;
       }
       else dserror("material type not allowed");
 
@@ -1873,6 +1889,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       dserror("Reaction coefficient is not positive: %f",0, reacoeff_[0]);
 
     reacoeffderiv_[0] = reacoeff_[0];
+
+    // scalar at integration point
+    const double phi = funct_.Dot(ephinp_[0]);
+    reacterm_[0]=reacoeff_[0]*phi;
 
     // set specific heat capacity at constant pressure to 1.0
     shc_ = 1.0;
@@ -1901,6 +1921,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
     // set reaction coeff. and temperature rhs for reactive equation system to zero
     reacoeff_[0]   = 0.0;
+    reacoeffderiv_[0]   = 0.0;
+    reacterm_[0]   = 0.0;
     reatemprhs_[0] = 0.0;
     // set specific heat capacity at constant pressure to 1.0
     shc_ = 1.0;
@@ -1954,7 +1976,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
     // set reaction coeff. and temperature rhs for reactive equation system to zero
     reacoeff_[0] = 0.0;
-    reacoeffderiv_[0] = 0.0;
+    reacoeffderiv_[0]   = 0.0;
+    reacterm_[0]   = 0.0;
     reatemprhs_[0] = 0.0;
 
     // get also fluid viscosity if subgrid-scale velocity is to be included
@@ -2005,6 +2028,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     // set reaction coeff. and temperature rhs for reactive equation system to zero
     reacoeff_[0] = 0.0;
     reacoeffderiv_[0] = 0.0;
+    reacterm_[0] = 0.0;
     reatemprhs_[0] = 0.0;
 
     // get also fluid viscosity if subgrid-scale velocity is to be included
@@ -2058,6 +2082,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     // -> equal to reaction coefficient
     reatemprhs_[0] = reacoeff_[0];
 
+    // scalar at integration point
+    const double phi = funct_.Dot(ephinp_[0]);
+    reacterm_[0]=reacoeff_[0]*phi;
+
     // set reaction flag to true
     is_reactive_ = true;
 
@@ -2108,6 +2136,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     // compute reaction coefficient for progress variable
     reacoeff_[0] = actmat->ComputeReactionCoeff(provarnp);
     reacoeffderiv_[0] = reacoeff_[0];
+
+    // scalar at integration point
+    const double phi = funct_.Dot(ephinp_[0]);
+    reacterm_[0]=reacoeff_[0]*phi;
+
     // compute right-hand side contribution for progress variable
     // -> equal to reaction coefficient
     reatemprhs_[0] = reacoeff_[0];
@@ -2139,6 +2172,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     // compute reaction coefficient for species equation
     reacoeff_[0] = actmat->ComputeReactionCoeff(csnp);
     reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp);
+
+    // scalar at integration point
+    const double phi = funct_.Dot(ephinp_[0]);
+    reacterm_[0]=reacoeff_[0]*phi;
 
     // set specific heat capacity at constant pressure to 1.0
     shc_ = 1.0;
@@ -2172,6 +2209,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     shc_ = actmat->Capacity()/densnp_[0];
 
     // set reaction coeff. and temperature rhs for reactive equation system to zero
+    reacterm_[0]      = 0.0;
     reacoeff_[0]      = 0.0;
     reacoeffderiv_[0] = 0.0;
     reatemprhs_[0]    = 0.0;
@@ -2232,6 +2270,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     // set reaction coeff. and temperature rhs for reactive equation system to zero
     reacoeff_[0] = 0.0;
     reacoeffderiv_[0] = 0.0;
+    reacterm_[0] = 0.0;
     reatemprhs_[0] = 0.0;
 
     // get also fluid viscosity if subgrid-scale velocity is to be included
@@ -2526,6 +2565,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     // reactive stabilization
     //----------------------------------------------------------------
     densreataufac = diffreastafac_*timetaufac_reac*densnp_[k];
+
+    if (abs(diffreastafac_)>1e-5) // i.e., GLS or USFEM is used
+    {
+      if (reacoeff_[k]!=reacoeffderiv_[k])
+      {
+        //additional term for USFEM and GLS are not properly implemented in the case of non-linear reaction term
+        dserror("Only SUPG stabilization is implemented for the case of non-linear reaction term");
+      }
+    }
+
     // reactive stabilization of convective (in convective form) and reactive term
     for (int vi=0; vi<nen_; ++vi)
     {
@@ -2537,14 +2586,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
         const int fui = ui*numdofpernode_+k;
 
         emat(fvi,fui) += v*(conv_(ui)+reacoeff_[k]*funct_(ui));
-
-        /*  if (abs(diffreastafac_)>1e-5)
-            {
-            if (reacoeff_[k]!=reacoeffderiv_[k])
-            dserror("Only SUPG stabilization is implemented for the case of non-linear reaction term");
-            cout<<"additional term for USFEM and GLS are not properly implemented in the case of non-linear reaction term"<<endl;
-            }*/
-
       }
     }
 
@@ -2635,9 +2676,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     if (is_reactive_)
     {
       // scalar at integration point
-      const double phi = funct_.Dot(ephin_[k]);
+      //const double phi = funct_.Dot(ephin_[k]);
 
-      rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
+      rea_phi_[k] = densnp_[k]*reacterm_[k]; //reacoeff_[k]*phi;
     }
 
     rhsint   += densam_[k]*hist_[k]*(alphaF/timefac);
