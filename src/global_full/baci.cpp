@@ -73,6 +73,9 @@ int main(int argc, char *argv[])
 
   if ((gcomm->MyPID() == 0) && (strcmp(argv[argc-1], "--interactive") == 0))
   {
+  	char hostname[256];
+  	gethostname(hostname, sizeof(hostname));
+  	printf("PID %d on %s ready for attach\n", getpid(), hostname);
     printf( "\n** Enter a character to continue > \n"); fflush(stdout);
     char go = ' ';
     scanf("%c",&go);
