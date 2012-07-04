@@ -136,7 +136,7 @@ int main(
           xfluidwriter.WriteFiles();
         }
       }
-      break;
+      // don't add break here !!!!
     }
     case prb_fluid_ale:
     case prb_freesurf:
