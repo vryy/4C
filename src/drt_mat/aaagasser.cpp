@@ -133,9 +133,9 @@ void MAT::AAAgasser::Evaluate(
   // material parameters for isochoric part:
   // calculate element stiffness parameter, in dependence of 'normdist':
   double Cele = 0.0;
-  if (0.0 <= normdist <= 0.5)
+  if (0.0 <= normdist and normdist <= 0.5)
     Cele = ((normdist-0.5)/(-0.5))*params_->Clum_ + (normdist/0.5)*params_->Cmed_;
-  else if(0.5 < normdist <= 1.0)
+  else if(0.5 < normdist and normdist <= 1.0)
     Cele = ((normdist-1.0)/(-0.5))*params_->Cmed_ + ((normdist-0.5)/0.5)*params_->Cablum_;
   else
     dserror("Unable to calculate valid stiffness parameter in material AAAGasser");
