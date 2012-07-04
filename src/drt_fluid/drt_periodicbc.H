@@ -16,7 +16,7 @@ Maintainer: Peter Gamnitzer
 #define PERIODICBC_H
 
 #include <Epetra_IntVector.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -32,9 +32,6 @@ extern "C"
 			   idxtype *, int *, int *, int *, int *, int *,
 			   idxtype *);
 }
-
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -87,7 +84,7 @@ public:
   \return void
 
   */
-  PeriodicBoundaryConditions(RefCountPtr<DRT::Discretization> dis, bool verbose=true);
+  PeriodicBoundaryConditions(Teuchos::RCP<DRT::Discretization> dis, bool verbose=true);
 
   /*!
   \brief Destructor
@@ -115,14 +112,14 @@ public:
   //@}
 
   //! @name methods to provide constructed node to node coupling
-  RefCountPtr<map<int,vector<int> > > ReturnAllCoupledColNodes()
+  Teuchos::RCP<std::map<int,std::vector<int> > > ReturnAllCoupledColNodes()
   {
     return (allcoupledcolnodes_);
   }
   //@}
 
   //! @name methods to provide constructed node to node coupling
-  RefCountPtr<map<int,vector<int> > > ReturnAllCoupledRowNodes()
+  Teuchos::RCP<std::map<int,std::vector<int> > > ReturnAllCoupledRowNodes()
   {
     return (allcoupledrownodes_);
   }
@@ -143,7 +140,7 @@ public:
 
 
   //! @name method that returns a pointer to the vector of the conditions
-  vector<DRT::Condition*>* ReturnSurfacePBCs()
+  std::vector<DRT::Condition*>* ReturnSurfacePBCs()
   {
     return &mysurfpbcs_;
   }
@@ -235,10 +232,10 @@ protected:
 
   */
   void CreateNodeCouplingForSinglePBC(
-    map<int,vector<int> > &midtosid,
-    const vector <int>     masternodeids,
-    const vector <int>     slavenodeids,
-    const vector <int>     dofsforpbcplane,
+    std::map<int,std::vector<int> > &midtosid,
+    const std::vector <int>     masternodeids,
+    const std::vector <int>     slavenodeids,
+    const std::vector <int>     dofsforpbcplane,
     const double           rotangle,
     const double           abstol);
 
@@ -276,7 +273,7 @@ protected:
 
   */
   void AddConnectivity(
-    map<int,vector<int> > &midtosid,const int pbcid);
+    std::map<int,std::vector<int> > &midtosid,const int pbcid);
 
   //@}
 
@@ -338,67 +335,67 @@ protected:
   //@}
 
   //!\brief the discretisation
-  RefCountPtr<DRT::Discretization> discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //!\brief a flag controlling the verbosity, i.e. the amount of output
   // displayed on the screen
   bool verbose_;
 
   //!\brief the pbc-dofset created by this object
-  RefCountPtr<DRT::PBCDofSet> pbcdofset_;
+  Teuchos::RCP<DRT::PBCDofSet> pbcdofset_;
 
   //!\brief number of pairs of periodic boundary conditions
   int                     numpbcpairs_;
 
   //!\brief vector of periodic surface boundary conditions
-  vector<DRT::Condition*> mysurfpbcs_;
+  std::vector<DRT::Condition*> mysurfpbcs_;
 
   //!\brief map connecting master to slave nodes owned by this proc
   //       master node -> list of his slave node(s)
-  RefCountPtr<map<int,vector<int> > > allcoupledrownodes_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledrownodes_;
 
   //!\brief map connecting master to slave nodes owned or ghosted by this proc
   //       master node -> list of his slave node(s)
-  RefCountPtr<map<int,vector<int> > > allcoupledcolnodes_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes_;
 
   //!\brief time measurement (total)
-  RefCountPtr<Time> timepbctot_     ;
+  Teuchos::RCP<Teuchos::Time> timepbctot_     ;
   //!\brief time measurement (create master slave matching for pairs)
-  RefCountPtr<Time> timepbcmidtosid_;
+  Teuchos::RCP<Teuchos::Time> timepbcmidtosid_;
   //!\brief time measurement (create octree)
-  RefCountPtr<Time> timepbcmidoct_  ;
+  Teuchos::RCP<Teuchos::Time> timepbcmidoct_  ;
   //!\brief time measurement (search in octree)
-  RefCountPtr<Time> timepbcmidmatch_;
+  Teuchos::RCP<Teuchos::Time> timepbcmidmatch_;
   //!\brief time measurement (redistribute nodes)
-  RefCountPtr<Time> timepbcreddis_  ;
+  Teuchos::RCP<Teuchos::Time> timepbcreddis_  ;
   //!\brief time measurement (add connectivity to previous pbcs)
-  RefCountPtr<Time> timepbcaddcon_  ;
+  Teuchos::RCP<Teuchos::Time> timepbcaddcon_  ;
   //!\brief time measurement (repair ghosting)
-  RefCountPtr<Time> timepbcghost_   ;
+  Teuchos::RCP<Teuchos::Time> timepbcghost_   ;
   //!\brief time measurement (make colmap for ghosting)
-  RefCountPtr<Time> timepbcmakeghostmap_   ;
+  Teuchos::RCP<Teuchos::Time> timepbcmakeghostmap_   ;
   //!\brief time measurement (discret->Redistribute)
-  RefCountPtr<Time> timepbcrenumdofs_   ;
+  Teuchos::RCP<Teuchos::Time> timepbcrenumdofs_   ;
 
 
   //!\brief time measurement (total)
-  RefCountPtr<TimeMonitor> tm0_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm0_ref_ ;
   //!\brief time measurement (create master slave matching for pairs)
-  RefCountPtr<TimeMonitor> tm1_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm1_ref_ ;
   //!\brief time measurement (create octree)
-  RefCountPtr<TimeMonitor> tm2_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm2_ref_ ;
   //!\brief time measurement (search in octree)
-  RefCountPtr<TimeMonitor> tm3_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm3_ref_ ;
   //!\brief time measurement (add connectivity to previous pbcs)
-  RefCountPtr<TimeMonitor> tm4_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm4_ref_ ;
   //!\brief time measurement (redistribute nodes)
-  RefCountPtr<TimeMonitor> tm5_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm5_ref_ ;
   //!\brief time measurement (make row and colmap for ghosting)
-  RefCountPtr<TimeMonitor> tm6_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm6_ref_ ;
   //!\brief time measurement (repair ghosting)
-  RefCountPtr<TimeMonitor> tm7_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm7_ref_ ;
   //!\brief time measurement (discret->Redistribute)
-  RefCountPtr<TimeMonitor> tm8_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_ ;
 
 };
 

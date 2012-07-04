@@ -36,7 +36,7 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 PeriodicBoundaryConditions::PeriodicBoundaryConditions
-(RefCountPtr<DRT::Discretization> actdis,
+(Teuchos::RCP<DRT::Discretization> actdis,
  bool                             verbose)
   : discret_(actdis),
     verbose_(verbose),
@@ -56,12 +56,12 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
   // create map that will be connecting master to slave nodes owned by
   // this proc
   //       master node -> list of his slave node(s)
-  allcoupledrownodes_=rcp(new map<int,vector<int> >);
+  allcoupledrownodes_=Teuchos::rcp(new std::map<int,std::vector<int> >);
 
   // create map that will be connecting master to slave nodes owned or
   // ghosted by this proc
   //       master node -> list of his slave node(s)
-  allcoupledcolnodes_=rcp(new map<int,vector<int> >);
+  allcoupledcolnodes_=Teuchos::rcp(new std::map<int,std::vector<int> >);
 
 
   if(numpbcpairs_>0)
@@ -69,20 +69,20 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
     // -------------------------------------------------------------------
     // create timers and time monitor
     // -------------------------------------------------------------------
-    timepbctot_         = TimeMonitor::getNewTimer("0) pbc routine total"                                 );
-    timepbcmidtosid_    = TimeMonitor::getNewTimer("1)   +create midtosid maps"                           );
-    timepbcmidoct_      = TimeMonitor::getNewTimer("2)      +build local octrees"                         );
-    timepbcmidmatch_    = TimeMonitor::getNewTimer("3)      +search closest nodes in octrees on all procs");
-    timepbcaddcon_      = TimeMonitor::getNewTimer("4)   +add connectivity to previous conditions"        );
-    timepbcreddis_      = TimeMonitor::getNewTimer("5)   +Redistribute the nodes"                         );
-    timepbcmakeghostmap_= TimeMonitor::getNewTimer("6)      +build rowmap and temporary colmap"           );
-    timepbcghost_       = TimeMonitor::getNewTimer("7)      +repair ghosting"                             );
-    timepbcrenumdofs_   = TimeMonitor::getNewTimer("8)      +call discret->Redistribute"                  );
+    timepbctot_         = Teuchos::TimeMonitor::getNewTimer("0) pbc routine total"                                 );
+    timepbcmidtosid_    = Teuchos::TimeMonitor::getNewTimer("1)   +create midtosid maps"                           );
+    timepbcmidoct_      = Teuchos::TimeMonitor::getNewTimer("2)      +build local octrees"                         );
+    timepbcmidmatch_    = Teuchos::TimeMonitor::getNewTimer("3)      +search closest nodes in octrees on all procs");
+    timepbcaddcon_      = Teuchos::TimeMonitor::getNewTimer("4)   +add connectivity to previous conditions"        );
+    timepbcreddis_      = Teuchos::TimeMonitor::getNewTimer("5)   +Redistribute the nodes"                         );
+    timepbcmakeghostmap_= Teuchos::TimeMonitor::getNewTimer("6)      +build rowmap and temporary colmap"           );
+    timepbcghost_       = Teuchos::TimeMonitor::getNewTimer("7)      +repair ghosting"                             );
+    timepbcrenumdofs_   = Teuchos::TimeMonitor::getNewTimer("8)      +call discret->Redistribute"                  );
   }
 
   return;
 
-}// PeriodicBoundaryConditions(RefCountPtr<DRT::Discretization> actdis)
+}// PeriodicBoundaryConditions(Teuchos::RCP<DRT::Discretization> actdis)
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -100,7 +100,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
   if(numpbcpairs_>0)
   {
     // time measurement --- start TimeMonitor tm0
-    tm0_ref_        = rcp(new TimeMonitor(*timepbctot_ ));
+    tm0_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbctot_ ));
 
     if(discret_->Comm().MyPID()==0 && verbose_)
     {
@@ -137,7 +137,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     if(verbose_)
     {
-      TimeMonitor::summarize();
+      Teuchos::TimeMonitor::summarize();
     }
 
     if(discret_->Comm().MyPID()==0 && verbose_)
@@ -153,28 +153,28 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       int numprocs=discret_->Comm().NumProc();
 
       int countslave=0;
-      for(map<int,vector<int> >::iterator iter=allcoupledcolnodes_->begin();
+      for(std::map<int,std::vector<int> >::iterator iter=allcoupledcolnodes_->begin();
           iter!=allcoupledcolnodes_->end();++iter)
       {
-        for(vector<int>::iterator viter=iter->second.begin();
+        for(std::vector<int>::iterator viter=iter->second.begin();
             viter!=iter->second.end();++viter)
         {
           ++countslave;
         }
       }
 
-      vector<int> my_n_nodes   (numprocs,0);
-      vector<int>    n_nodes   (numprocs,0);
-      vector<int> my_n_master  (numprocs,0);
-      vector<int>    n_master  (numprocs,0);
-      vector<int> my_n_slave   (numprocs,0);
-      vector<int>    n_slave   (numprocs,0);
-      vector<int> my_n_elements(numprocs,0);
-      vector<int>    n_elements(numprocs,0);
-      vector<int> my_n_ghostele(numprocs,0);
-      vector<int>    n_ghostele(numprocs,0);
-      vector<int> my_n_dof     (numprocs,0);
-      vector<int>    n_dof     (numprocs,0);
+      std::vector<int> my_n_nodes   (numprocs,0);
+      std::vector<int>    n_nodes   (numprocs,0);
+      std::vector<int> my_n_master  (numprocs,0);
+      std::vector<int>    n_master  (numprocs,0);
+      std::vector<int> my_n_slave   (numprocs,0);
+      std::vector<int>    n_slave   (numprocs,0);
+      std::vector<int> my_n_elements(numprocs,0);
+      std::vector<int>    n_elements(numprocs,0);
+      std::vector<int> my_n_ghostele(numprocs,0);
+      std::vector<int>    n_ghostele(numprocs,0);
+      std::vector<int> my_n_dof     (numprocs,0);
+      std::vector<int>    n_dof     (numprocs,0);
 
       my_n_nodes   [mypid]=noderowmap->NumMyElements ();
       my_n_master  [mypid]=allcoupledcolnodes_->size();
@@ -247,26 +247,26 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
   if(numpbcpairs_>0)
   {
     // clear old data
-    allcoupledrownodes_=rcp(new map<int,vector<int> >);
-    allcoupledcolnodes_=rcp(new map<int,vector<int> >);
+    allcoupledrownodes_=Teuchos::rcp(new std::map<int,std::vector<int> >);
+    allcoupledcolnodes_=Teuchos::rcp(new std::map<int,std::vector<int> >);
 
     // map from global masternodeids (on this proc) to global slavenodeids
     // for a single condition
-    map<int,vector<int> > midtosid;
+    std::map<int,std::vector<int> > midtosid;
 
     // pointers to master and slave condition
     DRT::Condition* mastercond=NULL;
     DRT::Condition* slavecond =NULL;
 
     // global master node Ids and global slave node Ids
-    vector <int> masternodeids;
-    vector <int> slavenodeids;
+    std::vector <int> masternodeids;
+    std::vector <int> slavenodeids;
 
     //----------------------------------------------------------------------
     //                     LOOP PERIODIC DIRECTIONS
     //----------------------------------------------------------------------
 
-    vector<string> planes;
+    std::vector<string> planes;
     planes.push_back("xy");
     planes.push_back("xz");
     planes.push_back("yz");
@@ -276,7 +276,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
     int num=0;
 
     // loop over periodic directions/planes
-    for(vector<string>::iterator thisplane=planes.begin();
+    for(std::vector<string>::iterator thisplane=planes.begin();
         thisplane!=planes.end();
         ++thisplane)
     {
@@ -289,7 +289,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         std::set<int> masterset;
         std::set<int> slaveset;
         // possible angles of rotation for slave plane for each pbc pair
-        vector<double> rotangles(numpbcpairs_);
+        std::vector<double> rotangles(numpbcpairs_);
 
         // absolute node matching tolerance for octree
         double abs_tol=0.0;
@@ -316,10 +316,10 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
           for (unsigned numcond=0;numcond<mysurfpbcs_.size();++numcond)
           {
-            const vector<int>* myid
-              = mysurfpbcs_[numcond]->Get<vector<int> >("Id of periodic boundary condition");
-            const vector<int>* mylayer
-              = mysurfpbcs_[numcond]->Get<vector<int> >("Layer of periodic boundary condition");
+            const std::vector<int>* myid
+              = mysurfpbcs_[numcond]->Get<std::vector<int> >("Id of periodic boundary condition");
+            const std::vector<int>* mylayer
+              = mysurfpbcs_[numcond]->Get<std::vector<int> >("Layer of periodic boundary condition");
             // yes, I am the condition with id pbcid and in the desired layer
             if (myid[0][0] == pbcid && (mylayer[0][0]+1) == nlayer)
             {
@@ -344,11 +344,11 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
                   //--------------------------------------------------
                   // get global master node Ids
-                  const vector <int>* masteridstoadd;
+                  const std::vector <int>* masteridstoadd;
 
                   masteridstoadd = mastercond->Nodes();
 
-                  for(vector<int>::const_iterator idtoadd =(*masteridstoadd).begin();
+                  for(std::vector<int>::const_iterator idtoadd =(*masteridstoadd).begin();
                       idtoadd!=(*masteridstoadd).end();
                       ++idtoadd)
                   {
@@ -376,11 +376,11 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
                   //--------------------------------------------------
                   // get global slave node Ids
-                  const vector <int>* slaveidstoadd;
+                  const std::vector <int>* slaveidstoadd;
 
                   slaveidstoadd = slavecond->Nodes();
 
-                  for(vector<int>::const_iterator idtoadd =(*slaveidstoadd).begin();
+                  for(std::vector<int>::const_iterator idtoadd =(*slaveidstoadd).begin();
                       idtoadd!=(*slaveidstoadd).end();
                       ++idtoadd)
                   {
@@ -447,7 +447,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
         // we transform the three strings "xy", "xz", "yz" into integer
         // values dofsforpbcplanename
-        vector<int> dofsforpbcplane(2);
+        std::vector<int> dofsforpbcplane(2);
 
         // this is a char-operation:
         //
@@ -523,7 +523,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
             {
               int mid = masternodeids[i];
               bool found = false;
-              map<int, vector<int> >::iterator curr;
+              std::map<int, std::vector<int> >::iterator curr;
               for (curr=midtosid.begin(); curr!=midtosid.end(); ++curr)
               {
                 if (curr->first == mid)
@@ -553,7 +553,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         }
 
         // time measurement --- start TimeMonitor tm4
-        tm4_ref_        = rcp(new TimeMonitor(*timepbcaddcon_ ));
+        tm4_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcaddcon_ ));
 
         //----------------------------------------------------------------------
         //      ADD CONNECTIVITY TO CONNECTIVITY OF ALL PREVIOUS PBCS
@@ -582,7 +582,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       //----------------------------------------------------------------------
 
       // time measurement --- start TimeMonitor tm5
-    tm5_ref_        = rcp(new TimeMonitor(*timepbcreddis_ ));
+    tm5_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcreddis_ ));
 
 
     if (discret_->Comm().MyPID() == 0 && verbose_)
@@ -616,10 +616,10 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
-  map<int,vector<int> > &midtosid,
-  const vector <int>     masternodeids,
-  const vector <int>     slavenodeids,
-  const vector <int>     dofsforpbcplane,
+  std::map<int,std::vector<int> > &midtosid,
+  const std::vector <int>     masternodeids,
+  const std::vector <int>     slavenodeids,
+  const std::vector <int>     dofsforpbcplane,
   const double           rotangle,
   const double           abstol
   )
@@ -634,7 +634,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   //                   BUILD PROCESSOR LOCAL OCTREE
   //----------------------------------------------------------------------
   // time measurement --- start TimeMonitor tm2
-  tm2_ref_        = rcp(new TimeMonitor(*timepbcmidoct_ ));
+  tm2_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidoct_ ));
 
   // build processor local octree
   DRT::UTILS::NodeMatchingOctree nodematchingoctree(
@@ -651,7 +651,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   //----------------------------------------------------------------------
 
   // time measurement --- start TimeMonitor tm3
-  tm3_ref_        = rcp(new TimeMonitor(*timepbcmidmatch_ ));
+  tm3_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidmatch_ ));
   // create connectivity for this condition in this direction
   {
 
@@ -684,25 +684,25 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 void PeriodicBoundaryConditions::AddConnectivity(
-  map<int,vector<int> > &midtosid,
+  std::map<int,std::vector<int> > &midtosid,
   const int              pbcid
   )
 {
 
   // the "inverse" mapping of allcoupled(row/col)nodes
   //       slave node -> his master node (list of size 1)
-  RefCountPtr<map<int,vector<int> > > inversenodecoupling;
-  inversenodecoupling=rcp(new map<int,vector<int> >);
+  Teuchos::RCP<std::map<int,std::vector<int> > > inversenodecoupling;
+  inversenodecoupling=Teuchos::rcp(new std::map<int,std::vector<int> >);
 
   // rcp to the constructed rowmap
-  RefCountPtr<Epetra_Map> newrownodemap;
+  Teuchos::RCP<Epetra_Map> newrownodemap;
 
   //----------------------------------------------------------------------
   //  ADD THE CONNECTIVITY FROM THIS CONDITION TO THE CONNECTIVITY OF
   //                           ALL CONDITIONS
   //----------------------------------------------------------------------
   {
-    map<int,vector<int> >::iterator iter;
+    std::map<int,std::vector<int> >::iterator iter;
     int  masterid;
     int  slaveid;
     bool alreadyinlist;
@@ -712,7 +712,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
       // get id of masternode and slavenode
       masterid  = iter->first;
 
-      vector<int>::iterator i;
+      std::vector<int>::iterator i;
       for(i=(iter->second).begin();i!=(iter->second).end();++i)
       {
         slaveid = *i;
@@ -723,7 +723,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
         {
           alreadyinlist=false;
 
-          map<int,vector<int> >::iterator found;
+          std::map<int,std::vector<int> >::iterator found;
 
           found = allcoupledrownodes_->find(masterid);
           if(found != allcoupledrownodes_->end())
@@ -762,7 +762,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
         //--------------------------------------------------------------------
         // -> 1) create a list of multiple master
         // Communicate multiple couplings for completion...
-        vector < vector <int> > multiplecouplings;
+        std::map<int, std::vector<int> > multiplecouplings;
         for( iter = midtosid.begin(); iter != midtosid.end(); ++iter )
         {
           // get id of masternode and the node itself
@@ -770,7 +770,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
           DRT::Node* actnode = discret_->gNode(masterid);
 
           // get all periodic boundary conditions on this node
-          vector<DRT::Condition*> thiscond;
+          std::vector<DRT::Condition*> thiscond;
           actnode->GetCondition("SurfacePeriodic",thiscond);
 
           if(thiscond.empty())
@@ -795,9 +795,8 @@ void PeriodicBoundaryConditions::AddConnectivity(
           if(ntimesmaster==thiscond.size())
           {
             // yes, we have such a pure master node
-            vector <int> thiscoupling;
-            thiscoupling.push_back(masterid);
-            for(vector<int>::iterator rr=(*allcoupledrownodes_)[masterid].begin();
+            std::vector <int> thiscoupling;
+            for(std::vector<int>::iterator rr=(*allcoupledrownodes_)[masterid].begin();
                 rr!=(*allcoupledrownodes_)[masterid].end();
                 ++rr)
             {
@@ -805,121 +804,104 @@ void PeriodicBoundaryConditions::AddConnectivity(
             }
 
             // add it to the list of multiple coupled masters on this proc
-            multiplecouplings.push_back(thiscoupling);
+            multiplecouplings[masterid] = thiscoupling;
           }
         }
 
         //--------------------------------------------------------------------
         // -> 2) round robin loop
 
-#ifdef PARALLEL
-        int myrank  =discret_->Comm().MyPID();
-#endif
-        int numprocs=discret_->Comm().NumProc();
+        const int numproc = discret_->Comm().NumProc();
+        const int myrank = discret_->Comm().MyPID();           // me
+        const int torank = (myrank + 1) % numproc;             // to
+        const int fromrank = (myrank + numproc - 1) % numproc; // from
 
-        vector<char> sblock;
-        vector<char> rblock;
-
-
-#ifdef PARALLEL
-        // create an exporter for point to point comunication
         DRT::Exporter exporter(discret_->Comm());
-#endif
 
-        for (int np=0;np<numprocs;np++)
+
+        for (int irobin = 0; irobin < numproc; ++irobin)
         {
-          // pack multiple couplings
-          DRT::PackBuffer data;
+          std::vector<char> sdata;
+          std::vector<char> rdata;
 
-          for(unsigned rr=0;rr<multiplecouplings.size();++rr)
+          // ---- pack data for sending -----
           {
-            DRT::ParObject::AddtoPack(data,multiplecouplings[rr]);
-          }
-          data.StartPacking();
-          for(unsigned rr=0;rr<multiplecouplings.size();++rr)
-          {
-            DRT::ParObject::AddtoPack(data,multiplecouplings[rr]);
-          }
-          swap( sblock, data() );
+            DRT::PackBuffer data;
 
-#ifdef PARALLEL
+            std::vector<int> mids;
+            int i = 0;
+            for (std::map<int, std::vector<int> >::const_iterator iter = multiplecouplings.begin(); iter != multiplecouplings.end(); ++iter)
+              mids.push_back(iter->first);
+
+            DRT::ParObject::AddtoPack(data, mids);
+            for (std::map<int, std::vector<int> >::const_iterator iter = multiplecouplings.begin(); iter != multiplecouplings.end(); ++iter)
+              DRT::ParObject::AddtoPack(data, iter->second);
+
+            data.StartPacking();
+
+            DRT::ParObject::AddtoPack(data, mids);
+            for (std::map<int, std::vector<int> >::const_iterator iter = multiplecouplings.begin(); iter != multiplecouplings.end(); ++iter)
+              DRT::ParObject::AddtoPack(data, iter->second);
+
+            std::swap(sdata, data());
+          }
+
+          // ---- send ----
           MPI_Request request;
-          int         tag    =myrank;
+          exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1337, request);
 
-          int         frompid=myrank;
-          int         topid  =(myrank+1)%numprocs;
+          // ---- receive ----
+          int length = rdata.size();
+          int tag = -1;
+          int from = -1;
+          exporter.ReceiveAny(from, tag,rdata,length);
+          if (tag != 1337 or from != fromrank)
+            dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
 
-          int         length=sblock.size();
-
-          exporter.ISend(frompid,topid,
-                         &(sblock[0]),sblock.size(),
-                         tag,request);
-
-          rblock.clear();
-
-          // receive from predecessor
-          frompid=(myrank+numprocs-1)%numprocs;
-          exporter.ReceiveAny(frompid,tag,rblock,length);
-
-          if(tag!=(myrank+numprocs-1)%numprocs)
+          // ---- unpack ----
           {
-            dserror("received wrong message (ReceiveAny)");
+            multiplecouplings.clear();
+            size_t pos = 0;
+            std::vector<int> mids;
+            DRT::ParObject::ExtractfromPack(pos, rdata, mids);
+
+            for(std::vector<int>::const_iterator iter = mids.begin(); iter != mids.end(); ++iter)
+            {
+              std::vector<int> slvs;
+              DRT::ParObject::ExtractfromPack(pos, rdata, slvs);
+              multiplecouplings[*iter] = slvs;
+            }
           }
 
+          // wait for all communication to finish
           exporter.Wait(request);
-
-          {
-            // for safety
-            exporter.Comm().Barrier();
-          }
-#else
-          // dummy communication
-          rblock.clear();
-          rblock=sblock;
-#endif
-
-          //--------------------------------------------------
-          // Unpack received block.
-          multiplecouplings.clear();
-
-          vector<char>::size_type index = 0;
-          while (index < rblock.size())
-          {
-            vector<int> onecoup;
-            DRT::ParObject::ExtractfromPack(index,rblock,onecoup);
-            multiplecouplings.push_back(onecoup);
-          }
+          discret_->Comm().Barrier(); // I feel better this way ;-)
 
           //--------------------------------------------------
           // -> 3) Try to complete the matchings
 
-          for(unsigned rr=0;rr<multiplecouplings.size();++rr)
+          for(std::map<int, std::vector<int> >::iterator mciter = multiplecouplings.begin(); mciter != multiplecouplings.end(); ++mciter)
           {
-            for(unsigned mm=1;mm<multiplecouplings[rr].size();++mm)
+            size_t len = mciter->second.size();
+            for(size_t mm = 0; mm < len; ++mm) // this cannot be done through an iterator since we append to the vector while looping over it.
             {
-              int possiblemaster=(multiplecouplings[rr])[mm];
+              int possiblemaster=(mciter->second)[mm];
 
-              map<int,vector<int> >::iterator found
-                = allcoupledrownodes_->find(possiblemaster);
+              std::map<int,std::vector<int> >::iterator found = allcoupledrownodes_->find(possiblemaster);
 
               if(found != allcoupledrownodes_->end())
               {
                 // close the connectivity using the slave node which was the
                 // masternode of the previous condition
-                for (unsigned mm = 0;mm<found->second.size();++mm)
+                for (std::vector<int>::iterator fsiter = found->second.begin(); fsiter != found->second.end(); ++fsiter)
                 {
-                  bool dontdoit=false;
-                  for(unsigned i = 1 ;i<multiplecouplings[rr].size();++i)
-                  {
-                    if(found->second[mm]==(multiplecouplings[rr])[i])
-                    {
-                      dontdoit=true;
-                    }
-                  }
-                  if(!dontdoit)
-                  {
-                    multiplecouplings[rr].push_back(found->second[mm]);
-                  }
+                  bool doit=true;
+                  for(std::vector<int>::const_iterator innersiter = mciter->second.begin(); innersiter != mciter->second.end(); ++innersiter)
+                    if(*fsiter == *innersiter)
+                      doit=false;
+
+                  if(doit)
+                    mciter->second.push_back(*fsiter);
                 }
                 allcoupledrownodes_->erase(found);
               } // end if we have a further connectivity information...
@@ -928,18 +910,17 @@ void PeriodicBoundaryConditions::AddConnectivity(
         }
 
         // add this information to the map of all coupled nodes
-        for(unsigned rr=0;rr<multiplecouplings.size();++rr)
+        for(std::map<int, std::vector<int> >::iterator mciter = multiplecouplings.begin(); mciter != multiplecouplings.end(); ++mciter)
         {
-          int multimaster=(multiplecouplings[rr])[0];
+          std::map<int, std::vector<int> >::iterator found = allcoupledrownodes_->find(mciter->first);
 
-          for(unsigned mm=((*allcoupledrownodes_)[multimaster].size()+1);
-              mm<multiplecouplings[rr].size();
-              ++mm)
+          if (found != allcoupledrownodes_->end())
           {
-            int thisslave = (multiplecouplings[rr])[mm];
-            (*allcoupledrownodes_)[multimaster].push_back(thisslave);
+            for (size_t i = found->second.size(); i < mciter->second.size(); ++i)
+              found->second.push_back(mciter->second[i]);
           }
         }
+
       }
     } // end complete matching
   }
@@ -964,15 +945,15 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 {
   // the "inverse" mapping of allcoupled(row/col)nodes
   //       slave node -> his master node (list of size 1)
-  RefCountPtr<map<int,vector<int> > > inversenodecoupling;
-  inversenodecoupling=rcp(new map<int,vector<int> >);
+  Teuchos::RCP<std::map<int,std::vector<int> > > inversenodecoupling;
+  inversenodecoupling=Teuchos::rcp(new std::map<int,std::vector<int> >);
 
   // rcp to the constructed rowmap
-  RefCountPtr<Epetra_Map> newrownodemap;
+  Teuchos::RCP<Epetra_Map> newrownodemap;
 
   {
     // time measurement --- start TimeMonitor tm6
-    tm6_ref_        = rcp(new TimeMonitor(*timepbcmakeghostmap_ ));
+    tm6_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmakeghostmap_ ));
 
     // make sure we have a filled discretisation at this place
     // dofs are not required yet, they are assigned after redistribution
@@ -983,14 +964,14 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     }
 
     // a list of all nodes on this proc
-    vector<int> nodesonthisproc(discret_->NodeRowMap()->NumMyElements());
+    std::vector<int> nodesonthisproc(discret_->NodeRowMap()->NumMyElements());
 
     // get all node gids of nodes on this proc
     discret_->NodeRowMap()->MyGlobalElements(&nodesonthisproc[0]);
 
     set<int>    nodeset;
 
-    for(vector<int>::const_iterator rr=nodesonthisproc.begin();
+    for(std::vector<int>::const_iterator rr=nodesonthisproc.begin();
         rr!=nodesonthisproc.end();
         ++rr)
     {
@@ -1001,18 +982,18 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     // remove all node gids of slave nodes on this proc
 
     // get all periodic boundary conditions on this node
-    vector<DRT::Condition*> thiscond;
+    std::vector<DRT::Condition*> thiscond;
 
-    vector<DRT::Condition*> linecond;
+    std::vector<DRT::Condition*> linecond;
     discret_->GetCondition("LinePeriodic",linecond);
 
-    for(vector<DRT::Condition*>::iterator cond=linecond.begin();cond!=linecond.end();++cond)
+    for(std::vector<DRT::Condition*>::iterator cond=linecond.begin();cond!=linecond.end();++cond)
     {
       thiscond.push_back(*cond);
     }
-    vector<DRT::Condition*> surfcond;
+    std::vector<DRT::Condition*> surfcond;
     discret_->GetCondition("SurfacePeriodic",surfcond);
-    for(vector<DRT::Condition*>::iterator cond=surfcond.begin();cond!=surfcond.end();++cond)
+    for(std::vector<DRT::Condition*>::iterator cond=surfcond.begin();cond!=surfcond.end();++cond)
     {
       thiscond.push_back(*cond);
     }
@@ -1031,11 +1012,11 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
       if(*mymasterslavetoggle=="Slave")
       {
-        const vector <int>* slaveidstodel;
+        const std::vector <int>* slaveidstodel;
 
         slaveidstodel = thiscond[numcond]->Nodes();
 
-        for(vector<int>::const_iterator idtodel =(*slaveidstodel).begin();
+        for(std::vector<int>::const_iterator idtodel =(*slaveidstodel).begin();
             idtodel!=(*slaveidstodel).end();
             ++idtodel)
         {
@@ -1091,11 +1072,11 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
     // append slavenodes to this list of nodes on this proc
     {
-      for(map<int,vector<int> >::iterator curr = allcoupledrownodes_->begin();
+      for(map<int,std::vector<int> >::iterator curr = allcoupledrownodes_->begin();
           curr != allcoupledrownodes_->end();
           ++curr )
       {
-        for (vector<int>::iterator iter=curr->second.begin();iter!=curr->second.end();++iter)
+        for (std::vector<int>::iterator iter=curr->second.begin();iter!=curr->second.end();++iter)
         {
           int slaveid  = *iter;
 
@@ -1127,7 +1108,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       int myallcouplednodes=allcoupledrownodes_->size();
       int allcouplednodes=0;
 
-      for(map<int,vector<int> >::iterator curr = allcoupledrownodes_->begin();
+      for(std::map<int,std::vector<int> >::iterator curr = allcoupledrownodes_->begin();
           curr != allcoupledrownodes_->end();
           ++curr )
 	{
@@ -1169,14 +1150,14 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
     //--------------------------------------------------
     // build noderowmap for new distribution of nodes
-    newrownodemap = rcp(new Epetra_Map(discret_->NumGlobalNodes(),
+    newrownodemap = Teuchos::rcp(new Epetra_Map(discret_->NumGlobalNodes(),
                                        nodesonthisproc.size(),
                                        &nodesonthisproc[0],
                                        0,
                                        discret_->Comm()));
 
     // create nodal graph of problem, according to old RowNodeMap
-    RefCountPtr<Epetra_CrsGraph> oldnodegraph = discret_->BuildNodeGraph();
+    Teuchos::RCP<Epetra_CrsGraph> oldnodegraph = discret_->BuildNodeGraph();
 
     // export the graph to newrownodemap
     Epetra_CrsGraph nodegraph(Copy,*newrownodemap,108,false);
@@ -1192,9 +1173,9 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     // build nodecolmap for new distribution of nodes
     const Epetra_BlockMap cntmp = nodegraph.ColMap();
 
-    RefCountPtr<Epetra_Map> newcolnodemap;
+    Teuchos::RCP<Epetra_Map> newcolnodemap;
 
-    newcolnodemap = rcp(new Epetra_Map(-1,
+    newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
                                        cntmp.NumMyElements(),
                                        cntmp.MyGlobalElements(),
                                        0,
@@ -1205,7 +1186,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
 
     // time measurement --- start TimeMonitor tm7
-    tm7_ref_        = rcp(new TimeMonitor(*timepbcghost_ ));
+    tm7_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcghost_ ));
 
     //----------------------------------------------------------------------
     //       GHOSTED NODES NEED INFORMATION ON THEIR COUPLED NODES
@@ -1214,7 +1195,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     // create the inverse map --- slavenode -> masternode
     inversenodecoupling->clear();
 
-    for(map<int,vector<int> >::iterator curr = allcoupledrownodes_->begin();
+    for(std::map<int,std::vector<int> >::iterator curr = allcoupledrownodes_->begin();
         curr != allcoupledrownodes_->end();
         ++curr )
     {
@@ -1246,13 +1227,13 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     {
       // mycolnodes contains all nodes which will be stored on this proc
       // according to the colmap constructed
-      vector<int> mycolnodes(newcolnodemap->NumMyElements());
+      std::vector<int> mycolnodes(newcolnodemap->NumMyElements());
       newcolnodemap->MyGlobalElements(&(mycolnodes[0]));
 
       // determine all ghosted slave nodes in this vector which do not have
       // a ghosted master on this proc --- we have to fetch it to be able
       // to assign the dofs
-      for (map<int,vector<int> >::iterator curr=inversenodecoupling->begin();
+      for (std::map<int,std::vector<int> >::iterator curr=inversenodecoupling->begin();
            curr!=inversenodecoupling->end();
            ++curr)
       {
@@ -1264,7 +1245,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
         if(newcolnodemap->LID(mymaster)<0)
         {
           // was master already added to the list of (ghosted) nodes?
-          vector<int>::iterator found;
+          std::vector<int>::iterator found;
           found=find(mycolnodes.begin(),mycolnodes.end(),mymaster);
           // no, it's not inside
           if(found==mycolnodes.end())
@@ -1279,7 +1260,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 #ifdef PARALLEL
       {
         // now reconstruct the extended colmap
-        newcolnodemap = rcp(new Epetra_Map(-1,
+        newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
             mycolnodes.size(),
             &mycolnodes[0],
             0,
@@ -1301,7 +1282,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       // determine all ghosted master nodes in this vector which do not have
       // all their slaves ghosted on this proc --- we have to fetch them to be able
       // to assign the dofs
-      for (map<int,vector<int> >::iterator curr=allcoupledcolnodes_->begin();
+      for (std::map<int,std::vector<int> >::iterator curr=allcoupledcolnodes_->begin();
           curr!=allcoupledcolnodes_->end();
           ++curr)
       {
@@ -1314,7 +1295,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
           if(newcolnodemap->LID(curr->second[i])<0)
           {
             // was slave already added to the list of (ghosted) nodes?
-            vector<int>::iterator found;
+            std::vector<int>::iterator found;
             found=find(mycolnodes.begin(),mycolnodes.end(),curr->second[i]);
             // no, it's not inside
             if(found==mycolnodes.end())
@@ -1326,7 +1307,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       }
 
       // now reconstruct the extended colmap
-      newcolnodemap = rcp(new Epetra_Map(-1,
+      newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
           mycolnodes.size(),
           &mycolnodes[0],
                                          0,
@@ -1353,7 +1334,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
 
     // time measurement --- start TimeMonitor tm8
-    tm8_ref_        = rcp(new TimeMonitor(*timepbcrenumdofs_ ));
+    tm8_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcrenumdofs_ ));
 
     // check whether we have already passed a PBCDofSet to the discretization
     // If we did not the regular DofSet is replaced with a PBCDofSet. This will
@@ -1366,7 +1347,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       // create a new dofset specialisation for periodic boundary conditions
       // the 'true' flag makes sure that the pbc dofset replaces the old
       // dofset also in the static_dofsets_.
-      pbcdofset_ = rcp(new DRT::PBCDofSet(allcoupledcolnodes_));
+      pbcdofset_ = Teuchos::rcp(new DRT::PBCDofSet(allcoupledcolnodes_));
       discret_->ReplaceDofSet(pbcdofset_,true);
     }
     else
@@ -1437,7 +1418,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
     // they need a small weight since they do not contribute any dofs
     // to the linear system
     {
-      map<int,vector<int> >::iterator masterslavepair;
+      std::map<int,std::vector<int> >::iterator masterslavepair;
 
       for(masterslavepair =allcoupledcolnodes_->begin();
           masterslavepair!=allcoupledcolnodes_->end()  ;
@@ -1452,7 +1433,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
         }
 
         // loop slavenodes associated with master
-        for(vector<int>::iterator iter=masterslavepair->second.begin();
+        for(std::vector<int>::iterator iter=masterslavepair->second.begin();
             iter!=masterslavepair->second.end();++iter)
         {
           double initval=1.0;
@@ -1464,7 +1445,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
     }
 
     // allocate graph
-    RefCountPtr<Epetra_CrsGraph> nodegraph = rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
+    Teuchos::RCP<Epetra_CrsGraph> nodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
 
     // -------------------------------------------------------------
     // iterate all elements on this proc including ghosted ones
@@ -1524,7 +1505,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
         // insert into line of graph only when this proc owns the node
         if (!noderowmap->MyGID(rownode)) continue;
 
-        map<int,vector<int> >::iterator masterslavepair = allcoupledcolnodes_->find(rownode);
+        std::map<int,std::vector<int> >::iterator masterslavepair = allcoupledcolnodes_->find(rownode);
         if(masterslavepair!=allcoupledcolnodes_->end())
         {
           // get all masternodes of this element
@@ -1532,12 +1513,12 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
           {
             int colnode = nodeids[col];
 
-            map<int,vector<int> >::iterator othermasterslavepair = allcoupledcolnodes_->find(colnode);
+            std::map<int,std::vector<int> >::iterator othermasterslavepair = allcoupledcolnodes_->find(colnode);
             if(othermasterslavepair!=allcoupledcolnodes_->end())
             {
               // add connection to all slaves
 
-              for(vector<int>::iterator iter=othermasterslavepair->second.begin();
+              for(std::vector<int>::iterator iter=othermasterslavepair->second.begin();
                   iter!=othermasterslavepair->second.end();++iter)
               {
                 int othermastersslaveindex = *iter;
@@ -1583,7 +1564,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       // build.
 
       // rowrecv is a fully redundant vector (size of number of nodes)
-      vector<int> rowrecv(rowmap.NumGlobalElements());
+      std::vector<int> rowrecv(rowmap.NumGlobalElements());
 
       // after AllreduceEMap rowrecv contains
       //
@@ -1622,15 +1603,15 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 
       // metis requests indexes. So we need a reverse lookup from gids
       // to indexes.
-      map<int,int> idxmap;
+      std::map<int,int> idxmap;
       // xadj points from index i to the index of the
       // first adjacent node
-      vector<int> xadj  (rowmap.NumGlobalElements()+1);
+      std::vector<int> xadj  (rowmap.NumGlobalElements()+1);
       // a list of adjacent nodes, adressed using xadj
-      vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
+      std::vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
 
       // This is a vector of size n that upon successful completion stores the partition vector of the graph
-      vector<int> part(tmap.NumMyElements());
+      std::vector<int> part(tmap.NumMyElements());
 
       // construct reverse lookup for all procs
       for (unsigned i=0; i<rowrecv.size(); ++i)
@@ -1693,10 +1674,10 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 
       // -------------------------------------------------------------
       // set a fully redundant vector of weights for edges
-      vector<int> ladjwgt(adjncy.size(),0);
-      vector<int>  adjwgt(adjncy.size(),0);
+      std::vector<int> ladjwgt(adjncy.size(),0);
+      std::vector<int>  adjwgt(adjncy.size(),0);
 
-      for(vector<int>::iterator iter =ladjwgt.begin();
+      for(std::vector<int>::iterator iter =ladjwgt.begin();
           iter!=ladjwgt.end();
           ++iter)
       {
@@ -1704,7 +1685,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       }
 
       // loop all master nodes on this proc
-      map<int,vector<int> >::iterator masterslavepair;
+      std::map<int,std::vector<int> >::iterator masterslavepair;
 
       for(masterslavepair =allcoupledcolnodes_->begin();
           masterslavepair!=allcoupledcolnodes_->end()  ;
@@ -1718,7 +1699,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
           continue;
         }
 
-        map<int,int>::iterator paul=idxmap.find(master->Id());
+        std::map<int,int>::iterator paul=idxmap.find(master->Id());
         if (paul == idxmap.end())
         {
           dserror("master not in reverse lookup");
@@ -1728,7 +1709,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
         int masterindex=idxmap[master->Id()];
 
         // loop slavenodes
-        for(vector<int>::iterator iter=masterslavepair->second.begin();
+        for(std::vector<int>::iterator iter=masterslavepair->second.begin();
             iter!=masterslavepair->second.end();++iter)
         {
           DRT::Node*  slave = discret_->gNode(*iter);
@@ -1740,7 +1721,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 
           int slaveindex=idxmap[slave->Id()];
 
-          map<int,int>::iterator foo=idxmap.find(slave->Id());
+          std::map<int,int>::iterator foo=idxmap.find(slave->Id());
           if (foo == idxmap.end())
           {
             dserror("slave not in reverse lookup");
@@ -1771,7 +1752,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       tmap.Comm().SumAll(&ladjwgt[0], &adjwgt[0], adjwgt.size());
 
       // the standard edge weight is one
-      for(vector<int>::iterator iter =adjwgt.begin();
+      for(std::vector<int>::iterator iter =adjwgt.begin();
           iter!=adjwgt.end();
           ++iter)
       {
@@ -1787,7 +1768,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       if (myrank==workrank)
       {
         // the vertex weights
-        vector<int> vwgt(tweights.MyLength());
+        std::vector<int> vwgt(tweights.MyLength());
         for (int i=0; i<tweights.MyLength(); ++i) vwgt[i] = (int)tweights[i];
 
         // 0 No weights (vwgts and adjwgt are NULL)
@@ -1888,9 +1869,9 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       Epetra_Map newmap(size,count,&part[0],0,nodegraph->Comm());
 
       // create the new graph and export to it
-      RefCountPtr<Epetra_CrsGraph> newnodegraph;
+      Teuchos::RCP<Epetra_CrsGraph> newnodegraph;
 
-      newnodegraph = rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
+      newnodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
       Epetra_Export exporter2(nodegraph->RowMap(),newmap);
       err = newnodegraph->Export(*nodegraph,exporter2,Add);
       if (err<0) dserror("Graph export returned err=%d",err);
