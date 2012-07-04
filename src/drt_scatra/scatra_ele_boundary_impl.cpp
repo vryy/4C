@@ -93,18 +93,18 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
   {
     return ScaTraBoundaryImpl<DRT::Element::line3>::Instance(numdofpernode,numscal);
   }
-  case DRT::Element::nurbs2:    // 1D nurbs boundary element
+ /* case DRT::Element::nurbs2:    // 1D nurbs boundary element
   {
     return ScaTraBoundaryImpl<DRT::Element::nurbs2>::Instance(numdofpernode,numscal);
-  }
+  } */
   case DRT::Element::nurbs3:    // 1D nurbs boundary element
   {
     return ScaTraBoundaryImpl<DRT::Element::nurbs3>::Instance(numdofpernode,numscal);
   }
-  case DRT::Element::nurbs4:    // 2D nurbs boundary element
+ /*  case DRT::Element::nurbs4:    // 2D nurbs boundary element
   {
     return ScaTraBoundaryImpl<DRT::Element::nurbs4>::Instance(numdofpernode,numscal);
-  }
+  } */
   case DRT::Element::nurbs9:    // 2D nurbs boundary element
   {
     return ScaTraBoundaryImpl<DRT::Element::nurbs9>::Instance(numdofpernode,numscal);
@@ -1700,7 +1700,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         }
         else
           pow_conint_gamma_k = pow(conint/refcon,gamma);
-
         const double linearfunct = (alphaa*frt*eta + 1.0);
         // note: gamma==0 deactivates concentration dependency
         double concterm = 0.0;
@@ -1712,14 +1711,15 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         for (int vi=0; vi<nen_; ++vi)
         {
           fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
+          const int fvi = vi*numdofpernode_+k;
           // ---------------------matrix
           for (int ui=0; ui<nen_; ++ui)
           {
-            emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*concterm*funct_(ui)*linearfunct;
-            emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(-alphaa)*frt*funct_(ui);
+            emat(fvi,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*concterm*funct_(ui)*linearfunct;
+            emat(fvi,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(-alphaa)*frt*funct_(ui);
           }
           // ------------right-hand-side
-          erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*linearfunct;
+          erhs[fvi] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*linearfunct;
         }
       }
       else
