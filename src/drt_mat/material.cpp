@@ -26,6 +26,7 @@ Maintainer: Lena Wiechert
 #include "plasticneohooke.H"
 #include "plasticlinelast.H"
 #include "robinson.H"
+#include "damage.H"
 #include "micromaterial.H"
 #include "neohooke.H"
 #include "aaaneohooke.H"
@@ -142,6 +143,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Robinson(curmat));
     MAT::PAR::Robinson* params = static_cast<MAT::PAR::Robinson*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_elpldamage:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Damage(curmat));
+    MAT::PAR::Damage* params = static_cast<MAT::PAR::Damage*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_struct_multiscale:

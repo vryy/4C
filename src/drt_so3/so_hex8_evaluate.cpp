@@ -29,6 +29,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/robinson.H"
+#include "../drt_mat/damage.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
@@ -480,6 +481,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
         robinson->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_elpldamage)
+      {
+        MAT::Damage* damage = static_cast <MAT::Damage*>(mat.get());
+        damage->Update();
+      }
       else if (mat->MaterialType() == INPAR::MAT::m_growth)
       {
         MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
@@ -586,6 +592,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       {
         MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
         robinson->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_elpldamage)
+      {
+        MAT::Damage* damage = static_cast <MAT::Damage*>(mat.get());
+        damage->Update();
       }
       else if (mat->MaterialType() == INPAR::MAT::m_growth)
       {

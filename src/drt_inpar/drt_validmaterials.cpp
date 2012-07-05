@@ -474,6 +474,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // Elasto-plastic material with damage, based on MAT_Struct_PlasticLinElast
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_Damage",
+                                            "elasto-plastic von Mises material with damage",
+                                            INPAR::MAT::m_elpldamage));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Elastic orthotropic material
   {
     Teuchos::RCP<MaterialDefinition> m

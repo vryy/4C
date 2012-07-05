@@ -33,7 +33,14 @@ Maintainer: Caroline Danowski
 //#define TSIASOUTPUT            /* flag for detailed active set output */
 //#define TSIMONOLITHASOUTPUT    /* flag for detailed output in monolithic TSI */
 //#define TSIPARTITIONEDASOUTPUT /* flag for detailed output in partitioned TSI */
+
+
+/************************************************************************/
+/* Output options for thermal problems                                  */
+/************************************************************************/
+
 //#define THRASOUTPUT            /* flag for output in the thermal field */
+//#define CALCSTABILOFREACTTERM  /* flag for output of stabilisation parameter in THR equation */
 
 
 /************************************************************************/

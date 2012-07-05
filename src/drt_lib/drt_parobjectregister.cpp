@@ -97,6 +97,7 @@
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/robinson.H"
+#include "../drt_mat/damage.H"
 #include "../drt_mat/biofilm.H"
 #include "../drt_mat/spring.H"
 #include "../drt_mortar/mortar_node.H"
@@ -235,6 +236,7 @@ std::string DRT::ParObjectList()
     << MAT::PlasticNeoHookeType::Instance().Name() << " "
     << MAT::PlasticLinElastType::Instance().Name() << " "
     << MAT::RobinsonType::Instance().Name() << " "
+    << MAT::DamageType::Instance().Name() << " "
 #ifdef D_RED_AIRWAYS
     << DRT::ELEMENTS::RedAirwayType::Instance().Name() << " "
 #endif

@@ -34,6 +34,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/robinson.H"
+#include "../drt_mat/damage.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
@@ -131,6 +132,13 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(mat.get());
       pllinelast->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
       *density = pllinelast->Density();
+      break;
+    }
+    case INPAR::MAT::m_elpldamage: /*-- plastic linear elastic Material */
+    {
+      MAT::Damage* damage = static_cast <MAT::Damage*>(mat.get());
+      damage->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
+      *density = damage->Density();
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */

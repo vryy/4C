@@ -401,6 +401,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/permeablefluid.cpp
   src/drt_mat/plasticneohooke.cpp
   src/drt_mat/plasticlinelast.cpp
+  src/drt_mat/damage.cpp
   src/drt_mat/protein.cpp
   src/drt_mat/scatra_mat.cpp
   src/drt_mat/spring.cpp

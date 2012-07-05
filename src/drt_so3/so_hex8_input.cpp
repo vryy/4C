@@ -25,6 +25,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/robinson.H"
+#include "../drt_mat/damage.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/structporo.H"
@@ -127,6 +128,12 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
     {
       MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
       robinson->Setup(NUMGPT_SOH8, linedef);
+    }
+      break;
+    case  INPAR::MAT::m_elpldamage:
+    {
+      MAT::Damage* damage = static_cast <MAT::Damage*>(mat.get());
+      damage->Setup(NUMGPT_SOH8);
     }
       break;
     case  INPAR::MAT::m_humphreycardiovascular:
