@@ -71,14 +71,17 @@ int main(int argc, char *argv[])
   Teuchos::RCP<Epetra_Comm> gcomm = Teuchos::rcp(problem->GetNPGroup()->GlobalComm().get(), false);
   int ngroups = problem->GetNPGroup()->NumGroups();
 
-  if ((gcomm->MyPID() == 0) && (strcmp(argv[argc-1], "--interactive") == 0))
+  if (strcmp(argv[argc-1], "--interactive") == 0)
   {
-  	char hostname[256];
-  	gethostname(hostname, sizeof(hostname));
-  	printf("PID %d on %s ready for attach\n", getpid(), hostname);
-    printf( "\n** Enter a character to continue > \n"); fflush(stdout);
-    char go = ' ';
-    scanf("%c",&go);
+    char hostname[256];
+    gethostname(hostname, sizeof(hostname));
+    printf("Global rank %d with PID %d on %s is ready for attach\n", gcomm->MyPID(), getpid(), hostname);
+    if (gcomm->MyPID() == 0)
+    {
+      printf( "\n** Enter a character to continue > \n"); fflush(stdout);
+      char go = ' ';
+      scanf("%c",&go);
+    }
   }
 
   gcomm->Barrier();
