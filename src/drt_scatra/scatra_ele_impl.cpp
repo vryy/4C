@@ -2605,7 +2605,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
         }
       }
     }
-  }
+  } // if (is_reactive_)
 
 //----------------------------------------------------------------
 // 4) element right hand side
@@ -2676,15 +2676,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     if (is_reactive_)
     {
       // scalar at integration point
-      //const double phi = funct_.Dot(ephin_[k]);
+      const double phi = funct_.Dot(ephin_[k]);
 
-      rea_phi_[k] = densnp_[k]*reacterm_[k]; //reacoeff_[k]*phi;
+      rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
+      // reacterm_[k] must be evaluated at t^n to be used in the line above!
     }
 
     rhsint   += densam_[k]*hist_[k]*(alphaF/timefac);
     scatrares_[k] = (1.0-alphaF) * (densn_[k]*conv_phi_[k]
                                            - diff_phin + rea_phi_[k]) - rhsint;
-//    - diff_phi_[k] + rea_phi_[k]) - rhsint;
     rhsfac    = timefacfac*(1.0-alphaF)/alphaF;
     rhstaufac = timetaufac/alphaF;
     rhsint   *= (timefac/alphaF);
