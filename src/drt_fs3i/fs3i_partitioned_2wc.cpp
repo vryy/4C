@@ -81,7 +81,7 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
   fluidscatra_->ScaTraField().SetVelocityField(fsi_->FluidField().Velnp(),
                                                Teuchos::null,
                                                Teuchos::null,
-                                               fsi_->FluidField().FsVel(),
+                                               Teuchos::null,
                                                Teuchos::null,
                                                fsi_->FluidField().Discretization());
 
