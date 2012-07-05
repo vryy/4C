@@ -32,6 +32,8 @@ int main(
         int argc,
         char** argv)
 {
+  try
+  {
     Teuchos::CommandLineProcessor My_CLP;
     My_CLP.setDocString("Post DRT ensight Filter\n");
 
@@ -45,9 +47,6 @@ int main(
         writer.WriteFiles();
     }
 #endif
-
-    try
-    {
 
     // each problem type is different and writes different results
     switch (problem.Problemtype())
@@ -471,7 +470,7 @@ int main(
         break;
     }
 
-    }
+    } // try
     catch ( std::runtime_error & err )
     {
       char line[] = "=========================================================================\n";
@@ -481,6 +480,9 @@ int main(
                 << "\n"
                 << line
                 << "\n" << std::endl;
+
+      // proper cleanup
+      DRT::Problem::Done();
 #ifdef DSERROR_DUMP
       abort();
 #endif
@@ -490,8 +492,9 @@ int main(
 #else
       exit(1);
 #endif
-    }
+    } // catch
 
+    // proper cleanup
     DRT::Problem::Done();
 
     return 0;
