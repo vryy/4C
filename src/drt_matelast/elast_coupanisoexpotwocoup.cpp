@@ -181,18 +181,18 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(
   double B8=params_->B8_;
 
 
-  double gamma = 2.0 * A4 * (I4-1.)* exp(B4 * (I4-1.)*(I4-1.));
+  double gamma = 2.0 * A4 * (I4-1.0) * exp(B4 * (I4-1.0)*(I4-1.0));
   stress.Update(gamma, A1_, 1.0);
-  gamma = 2.0 * A6 * (I6-1.)* exp(B6 * (I6-1.)*(I6-1.));
+  gamma = 2.0 * A6 * (I6-1.0) * exp(B6 * (I6-1.0)*(I6-1.0));
   stress.Update(gamma, A2_, 1.0);
   gamma = A8 * I8 * exp( B8*I8*I8);
   stress.Update(gamma, A1A2sym, 1.0);
 
-  double delta = 2.*(1. + 2.*B4*(I4-1.)*(I4-1.))*2.*A4* exp(B4*(I4-1.)*(I4-1.));
+  double delta = 2.0 * (1.0 + 2.0*B4*(I4-1.0)*(I4-1.0)) * 2.0 * A4 * exp(B4*(I4-1.0)*(I4-1.0));
   cmat.MultiplyNT(delta, A1_, A1_, 1.0);
-  delta = 2.*(1. + 2.*B6*(I6-1.)*(I6-1.))*2.*A6* exp(B6*(I6-1.)*(I6-1.));
+  delta = 2.0 * (1.0 + 2.0*B6*(I6-1.0)*(I6-1.0)) * 2.0 * A6 * exp(B6*(I6-1.0)*(I6-1.0));
   cmat.MultiplyNT(delta, A2_, A2_, 1.0);
-  delta = A8 * exp( B8*I8*I8)*(1 + 2 * B8*I8*I8);
+  delta = A8 * exp( B8*I8*I8)*(1 + 2.0 * B8*I8*I8);
   cmat.MultiplyNT(delta, A1A2sym, A1A2sym, 1.0);
 }
 
