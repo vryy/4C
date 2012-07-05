@@ -13,6 +13,7 @@
 #include <Epetra_SerialComm.h>
 #endif
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_inputreader.H"
 
@@ -73,8 +74,8 @@ int main(int argc, char** argv)
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(com);
 #endif
 
-  // and now the actual reading
-  DRT::INPUT::DatFileReader reader(datfile.c_str(), comm);
+  // and now the actual reading (no dump to the non-existing error file!)
+  DRT::INPUT::DatFileReader reader(datfile.c_str(), comm, 0, false);
 
   /*---------------------------------------------- input of time curves */
   DRT::UTILS::TimeCurveManager manager;
