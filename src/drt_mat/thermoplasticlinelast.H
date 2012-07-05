@@ -239,6 +239,12 @@ private:
 
     /// return density
     virtual double Density() const { return params_->density_; }
+    
+    //! Return accumulated strain at Gauss points
+    LINALG::Matrix<1,1> AccumulatedStrain(
+      int gp
+      )
+    const { return ( strainbarplcurr_->at(gp) ); }
 
     /// check if history variables are already initialized
     bool Initialized() const

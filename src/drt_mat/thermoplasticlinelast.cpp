@@ -381,12 +381,12 @@ void MAT::ThermoPlasticLinElast::Reset()
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::Evaluate(
-  const LINALG::Matrix<6,1>& linstrain,  //!< linear strain vector
-  LINALG::Matrix<6,1>& plstrain,  //!< linear strain vector
-  const int gp, //!< current Gauss point
-  Teuchos::ParameterList& params,  //!< parameter list for communication & HISTORY
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat, //!< material stiffness matrix
-  LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
+  const LINALG::Matrix<6,1>& linstrain,  // linear strain vector
+  LINALG::Matrix<6,1>& plstrain,  // linear strain vector
+  const int gp, // current Gauss point
+  Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat, // material stiffness matrix
+  LINALG::Matrix<NUM_STRESS_3D,1>& stress // 2nd PK-stress
   )
 {
   // get material parameters
@@ -402,9 +402,6 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   double Hkin = params_->kinhard_;
 
   // initialize scalars
-  // lame constant
-  double lambda = 0.0;
-  lambda = nu * young / ( (1.0 + nu) * (1.0 - 2.0*nu) );
   // lame constant
   // shear modulus parameter mu == G
   double G = 0.0;
@@ -817,17 +814,17 @@ void MAT::ThermoPlasticLinElast::Evaluate(
 
   // build a finite difference check
   FDCheck(
-    stress,  //!< updated stress sigma_n+1
-    cmatFD, //!< material tangent calculated with FD of stresses
-    beta,  //!< updated back stresses
-    p,  //!< volumetric stress
-    trialstrain_e,  //!< elastic strain vector
-    Dgamma,  //!< plastic multiplier
-    G,  //!< shear modulus
-    qbar,  //!< elastic trial von Mises effective stress
-    kappa, //!< bulk modulus
-    flovec, //!<  flow vector
-    heaviside  //!< Heaviside function
+    stress,  // updated stress sigma_n+1
+    cmatFD, // material tangent calculated with FD of stresses
+    beta,  // updated back stresses
+    p,  // volumetric stress
+    trialstrain_e,  // elastic strain vector
+    Dgamma,  // plastic multiplier
+    G,  // shear modulus
+    qbar,  // elastic trial von Mises effective stress
+    kappa, // bulk modulus
+    flovec, //  flow vector
+    heaviside  // Heaviside function
     );
 
   cout << "cmat " << cmat << endl;
@@ -854,9 +851,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
  | computes linear stress tensor                             dano 05/11 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::Stress(
-  const double p,  //!< volumetric stress
-  const LINALG::Matrix<6,1>& devstress,  //!< deviatoric stress tensor
-  LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
+  const double p,  // volumetric stress
+  const LINALG::Matrix<6,1>& devstress,  // deviatoric stress tensor
+  LINALG::Matrix<NUM_STRESS_3D,1>& stress // 2nd PK-stress
   )
 {
   // total stress = deviatoric + hydrostatic pressure . I
@@ -871,9 +868,9 @@ void MAT::ThermoPlasticLinElast::Stress(
  | compute relative deviatoric stress tensor                 dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::RelDevStress(
-  const LINALG::Matrix<6,1>& devstress,  //!< deviatoric stress tensor
-  const LINALG::Matrix<6,1>& beta,  //!< back stress tensor
-  LINALG::Matrix<NUM_STRESS_3D,1>& eta //!< relative stress
+  const LINALG::Matrix<6,1>& devstress,  // deviatoric stress tensor
+  const LINALG::Matrix<6,1>& beta,  // back stress tensor
+  LINALG::Matrix<NUM_STRESS_3D,1>& eta // relative stress
   )
 {
   // relative stress = deviatoric - back stress
@@ -932,15 +929,15 @@ void MAT::ThermoPlasticLinElast::SetupCmat(LINALG::Matrix<6,6>& cmat)
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
-  LINALG::Matrix<6,6>& cmat,  //!< elasto-plastic tangent modulus (out)
-  double Dgamma,  //!< plastic multiplier
-  double G,  //!< shear modulus
-  double q,  //!< elastic trial von Mises effective stress
-  LINALG::Matrix<6,1> flowvector,  //!< unit flow vector
-  LINALG::Matrix<6,1> eta,  //!< relative stress eta = s - beta
-  double heaviside,  //!< Heaviside function,
+  LINALG::Matrix<6,6>& cmat,  // elasto-plastic tangent modulus (out)
+  double Dgamma,  // plastic multiplier
+  double G,  // shear modulus
+  double q,  // elastic trial von Mises effective stress
+  LINALG::Matrix<6,1> flowvector,  // unit flow vector
+  LINALG::Matrix<6,1> eta,  // relative stress eta = s - beta
+  double heaviside,  // Heaviside function,
   double Hiso,
-  double Hkin  //!< kinematic hardening modulus
+  double Hkin  // kinematic hardening modulus
   )
 {
   // incremental constitutive function for the stress tensor
@@ -988,13 +985,11 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
   // if plastic loading:   heaviside = 1.0 --> use C_ep
   // if elastic unloading: heaviside = 0.0 --> use C_e
   double epfac = 0.0;
-  double epfac2 = 0.0;
   double epfac3 = 0.0;
   // elastic trial von Mises effective stress
   if (q != 0.0)
   {
     epfac = (-1.0) * heaviside * Dgamma * 6 * G * G / q;
-    epfac2 = heaviside * 6 * G * G * Dgamma / q;
   }
   // constitutive tensor
   // I_d = id4sharp - 1/3 Id \otimes Id

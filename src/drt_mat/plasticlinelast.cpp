@@ -347,9 +347,6 @@ void MAT::PlasticLinElast::Evaluate(
 
   // initialize scalars
   // lame constant
-  double lambda = 0.0;
-  lambda = nu * young / ( (1.0 + nu) * (1.0 - 2.0*nu) );
-  // lame constant
   // shear modulus parameter mu == G
   double G = 0.0;
   G = young / ( 2.0 * (1.0 + nu) );
@@ -889,13 +886,11 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   // if plastic loading:   heaviside = 1.0 --> use C_ep
   // if elastic unloading: heaviside = 0.0 --> use C_e
   double epfac = 0.0;
-  double epfac2 = 0.0;
   double epfac3 = 0.0;
   // elastic trial von Mises effective stress
   if (q != 0.0)
   {
     epfac = (-1.0) * heaviside * Dgamma * 6 * G * G / q;
-    epfac2 = heaviside * 6 * G * G * Dgamma / q;
   }
   // constitutive tensor
   // I_d = id4sharp - 1/3 Id \otimes Id

@@ -29,6 +29,9 @@ Maintainer: Michael Gee
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/structporo.H"
+#include "../drt_mat/plasticlinelast.H"
+#include "../drt_mat/thermoplasticlinelast.H"
+#include "../drt_mat/damage.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -683,6 +686,15 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     string porosity = "porosity";
     names[porosity] = 1; // scalar
   }
+  if ( (Material()->MaterialType() == INPAR::MAT::m_pllinelast) ||
+       (Material()->MaterialType() == INPAR::MAT::m_thermopllinelast) ||
+       (Material()->MaterialType() == INPAR::MAT::m_elpldamage)
+       )
+  {
+    string accumulatedstrain = "accumulatedstrain";
+    names[accumulatedstrain] = 1; // scalar
+  }
+  
 
   return;
 }
@@ -1206,8 +1218,43 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
           data[0] = structporo->PorosityAv();
       }
   }
-
-
+  if (Material()->MaterialType() == INPAR::MAT::m_pllinelast)
+  {
+    MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(Material().get());
+    if (name == "accumulatedstrain")
+    {
+      if ((int)data.size()!=1) dserror("size mismatch");
+      LINALG::Matrix<1,1> temp(true);
+      for (int iter=0; iter<NUMGPT_SOH8; iter++)
+        temp.Update(1.0,pllinelast->AccumulatedStrain(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOH8;
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_thermopllinelast)
+  {
+    MAT::ThermoPlasticLinElast* thrpllinelast = static_cast <MAT::ThermoPlasticLinElast*>(Material().get());
+    if (name == "accumulatedstrain")
+    {
+      if ((int)data.size()!=1) dserror("size mismatch");
+      LINALG::Matrix<1,1> temp(true);
+      for (int iter=0; iter<NUMGPT_SOH8; iter++)
+        temp.Update(1.0,thrpllinelast->AccumulatedStrain(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOH8;
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_elpldamage)
+  {
+    MAT::Damage* damage = static_cast <MAT::Damage*>(Material().get());
+    if (name == "accumulatedstrain")
+    {
+      if ((int)data.size()!=1) dserror("size mismatch");
+      LINALG::Matrix<1,1> temp(true);
+      for (int iter=0; iter<NUMGPT_SOH8; iter++)
+        temp.Update(1.0,damage->AccumulatedStrain(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOH8;
+    }
+  }
+  
   return true;
 }
 
