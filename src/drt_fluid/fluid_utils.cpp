@@ -389,11 +389,36 @@ void FLD::UTILS::LiftDrag(
           const LINALG::Matrix<3,1> x((*actnode)->X(),false); // pointer to nodal coordinates
           const Epetra_BlockMap& rowdofmap = trueresidual.Map();
           const std::vector<int> dof = dis.Dof(*actnode);
+          const unsigned numdof = dof.size();
+
+          // extension of lift and drag function to enriched two-phase flow problems
+          int dofvelx=0;
+          int dofvely=0;
+          int dofvelz=0;
+
+          // numdof == 4 : standard fluid or node not enriched
+          // numdof == 5 : only pressure field enriched
+          if(numdof==4 or numdof==5)
+          {
+            dofvelx=dof[0];
+            dofvely=dof[1];
+            dofvelz=dof[2];
+          }
+          // numdof == 8 : pressure and velocity field enriched
+          // numdof == 9 : only velocity field enriched (rare)
+          else if(numdof==8 or numdof==7)
+          {
+            dofvelx=dof[0];
+            dofvely=dof[2];
+            dofvelz=dof[4];
+          }
+         else
+          dserror("Number of dofs not known for lift&drag!");
 
           // get nodal forces
-          const double fx = trueresidual[rowdofmap.LID(dof[0])];
-          const double fy = trueresidual[rowdofmap.LID(dof[1])];
-          const double fz = trueresidual[rowdofmap.LID(dof[2])];
+          const double fx = trueresidual[rowdofmap.LID(dofvelx)];
+          const double fy = trueresidual[rowdofmap.LID(dofvely)];
+          const double fz = trueresidual[rowdofmap.LID(dofvelz)];
           values[0] += fx;
           values[1] += fy;
           values[2] += fz;

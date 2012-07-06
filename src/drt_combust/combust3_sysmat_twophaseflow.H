@@ -38,7 +38,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_io/io_gmsh.H"
-
+//#include "two_phase_defines.H"
 
 namespace COMBUST
 {

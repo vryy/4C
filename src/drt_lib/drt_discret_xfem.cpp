@@ -65,10 +65,6 @@ Maintainer: Michael Gee
   vectors "curve", "funct", "onoff" and "val" only have length 6. But an enriched node has 8 dofs
   (4 standard fluid ones and 3-4 enrichred ones)!
 
-- For Axels XFSI problems this never caused trouble, because he only has the (void) enriched dofs
-  (that is 4!) - the standard dofs have been kicked out since they are 0 anyway. Values prescribed
-  in the input file thus have a different meaning. They act directly upon the enriched dofs!
-
 - For two-phase flow and combustion problems, however, standard dofs and enriched dofs exist at the
   same time for an enriched node. The number of dofs per node exceeds 6 and there is no way to get
   around this!
@@ -102,6 +98,9 @@ Maintainer: Michael Gee
   dof 5        velz enriched    ->    vector component 2
   dof 6        pres standard    ->    vector component 3
   dof 7        pres enriched    ->    vector component 3
+
+-
+
 
 \author henke 07/09
 */
@@ -419,6 +418,86 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           (*dbcgids).insert(gid);
       }  // loop over nodal DOFs
     }
+    // only velocity field enriched, standard FEM for pressure
+    // special option for two-phase flow
+    else if(numdf==7) //ExtendedFEM
+    {
+      for (unsigned j=0; j<numdf; ++j) // loop over all dofs (Std + Enr)
+      {
+        // this is a hack to truncate a double!
+        int truncj = j/2; // the closest smaller integer number is taken
+
+        if ((*onoff)[truncj]==0) // if Dirichlet value is turned off in input file (0)
+        {
+          const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+          if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+          if (toggle!=Teuchos::null)
+             (*toggle)[lid] = 0.0;
+          // get rid of entry in DBC map - if it exists
+          if (dbcgids != Teuchos::null)
+              (*dbcgids).erase(dofs[j]);
+          continue; // for loop over dofs is advanced by 1 (++j)
+        }
+        const int gid = dofs[j];
+        vector<double> value(deg+1,(*val)[truncj]);
+
+        // factor given by time curve
+         std::vector<double> curvefac(deg+1, 1.0);
+         int curvenum = -1;
+
+         if (curve) curvenum = (*curve)[truncj];
+         if (curvenum>=0 && usetime)
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
+         else
+            for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+
+         // factor given by spatial function
+         double functfac = 1.0;
+         int funct_num = -1;
+         if (funct) funct_num = (*funct)[truncj];
+         {
+           if (funct_num>0)
+             functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,
+                                                                              actnode->X(),
+                                                                              time,
+                                                                              &dis);
+         }
+
+         // apply factors to Dirichlet value
+         for (unsigned i=0; i<deg+1; ++i)
+         {
+            value[i] *= functfac * curvefac[i];
+         }
+
+         // overwrite Dirichlet values for XFEM dofs
+         dsassert((*onoff)[truncj]!=0,"there should be a Dirichlet condition assigned to this dof!");
+         //if (j%2!=0) // if XFEM dof
+         //--> ENR-DBC == 0
+         if (j%2!=0) // if XFEM dof
+         {
+           //cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << endl;
+           for (unsigned i=0; i<deg+1; ++i)
+           {
+             value[i] = 0.0; // previously assigned DBC value is overwritten by 0.0
+           }
+         }
+         // assign value
+         const int lid = (*systemvectoraux).Map().LID(gid);
+         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+         if (systemvector != Teuchos::null)
+           (*systemvector)[lid] = value[0];
+          if (systemvectord != Teuchos::null)
+            (*systemvectord)[lid] = value[1];
+          if (systemvectordd != Teuchos::null)
+            (*systemvectordd)[lid] = value[2];
+          // set toggle vector
+          if (toggle != Teuchos::null)
+            (*toggle)[lid] = 1.0;
+          // amend vector of DOF-IDs which are Dirichlet BCs
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).insert(gid);
+      }  // loop over nodal DOFs
+    }
     else if(numdf==6)
     {
       for (unsigned j=0; j<numdf; ++j)
@@ -636,6 +715,88 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
             (*dbcgids).erase(dofs[j]);
           continue;
         }
+      }  // loop over nodal DOFs
+    }
+    // only pressure field enriched, standard FEM for velocity
+    // special option for two-phase flow
+    else if(numdf==5) //ExtendedFEM
+    {
+      //std::cout<< " numdof=5 ->using right path!"<< std::endl;
+      for (unsigned j=0; j<numdf; ++j) // loop over all dofs (Std + Enr)
+      {
+        // variable to set correct DC according to InputFile
+        int truncj = 0;
+        if(j<4) truncj=j;
+        else truncj=j-1;
+
+        if ((*onoff)[truncj]==0) // if Dirichlet value is turned off in input file (0)
+        {
+          const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+          if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+          if (toggle!=Teuchos::null)
+            (*toggle)[lid] = 0.0;
+          // get rid of entry in DBC map - if it exists
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).erase(dofs[j]);
+          continue; // for loop over dofs is advanced by 1 (++j)
+        }
+        const int gid = dofs[j];
+        vector<double> value(deg+1,(*val)[truncj]);
+
+        // factor given by time curve
+        std::vector<double> curvefac(deg+1, 1.0);
+        int curvenum = -1;
+
+        if (curve) curvenum = (*curve)[truncj];
+        if (curvenum>=0 && usetime)
+          curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
+        else
+        for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+
+        // factor given by spatial function
+        double functfac = 1.0;
+        int funct_num = -1;
+        if (funct) funct_num = (*funct)[truncj];
+        {
+          if (funct_num>0)
+            functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,
+                                                                             actnode->X(),
+                                                                             time,
+                                                                             &dis);
+        }
+
+        // apply factors to Dirichlet value
+        for (unsigned i=0; i<deg+1; ++i)
+        {
+          value[i] *= functfac * curvefac[i];
+        }
+
+        // overwrite Dirichlet values for XFEM dofs
+        dsassert((*onoff)[truncj]!=0,"there should be a Dirichlet condition assigned to this dof!");
+        //if (j%2!=0) // if XFEM dof
+        if (j==4) // if XFEM dof
+        {
+          cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << endl;
+          for (unsigned i=0; i<deg+1; ++i)
+          {
+            value[i] = 0.0; // previously assigned DBC value is overwritten by 0.0
+          }
+        }
+        // assign value
+        const int lid = (*systemvectoraux).Map().LID(gid);
+        if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+        if (systemvector != Teuchos::null)
+          (*systemvector)[lid] = value[0];
+        if (systemvectord != Teuchos::null)
+          (*systemvectord)[lid] = value[1];
+        if (systemvectordd != Teuchos::null)
+          (*systemvectordd)[lid] = value[2];
+        // set toggle vector
+        if (toggle != Teuchos::null)
+           (*toggle)[lid] = 1.0;
+        // amend vector of DOF-IDs which are Dirichlet BCs
+        if (dbcgids != Teuchos::null)
+          (*dbcgids).insert(gid);
       }  // loop over nodal DOFs
     }
     else if (numdf==0) //relevant for xfsi and fxf-Coupling (void enrichment)

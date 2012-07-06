@@ -430,8 +430,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         );
       }
 #else
-      const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-          *eleDofManager_, NumNode(), NodeIds());
+      XFEM::AssemblyType assembly_type=XFEM::standard_assembly;
+
+      // suppress enrichment dofs
+      if(params.get<int>("selectedenrichment") != INPAR::COMBUST::selectedenrichment_none)
+        assembly_type = XFEM::ComputeAssemblyType(*eleDofManager_, NumNode(), NodeIds());
 
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat(assembly_type,

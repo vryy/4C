@@ -191,18 +191,6 @@ public:
   */
   void NonlinearSolve();
 
-  /*!
-  \brief predictor
-
-  */
-  void Predictor();
-
-  /*!
-  \brief (multiple) corrector
-
-  */
-  void MultiCorrector();
-
   Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
   /*!
@@ -472,11 +460,6 @@ protected:
   /// import geometrical information about the interface and incorporate it into the fluid field
   void IncorporateInterface(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
 
-  /*!
-  \brief call elements to calculate system matrix/rhs and assemble
-
-  */
-  void AssembleMatAndRHS();
 
   /*!
   \brief compute values at intermediate time steps for gen.-alpha
@@ -491,7 +474,7 @@ protected:
   void GenAlphaUpdateAcceleration();
 
   //! @name general algorithm parameters
-  const Teuchos::ParameterList&                 xparams_;
+  Teuchos::ParameterList&                       xparams_;
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
   Teuchos::RCP<Epetra_Vector>                   phinp_;
 

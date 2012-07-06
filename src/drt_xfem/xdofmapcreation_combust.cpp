@@ -138,6 +138,7 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
 bool XFEM::ApplyKinkEnrichment(
     const DRT::Element*                       xfemele,
     const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    const INPAR::COMBUST::SelectedEnrichment& selectedEnrichment,
     std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
 {
   // type of enrichment determined by name of function; label (first argument) = 0
@@ -153,24 +154,27 @@ bool XFEM::ApplyKinkEnrichment(
     for (int inode = 0; inode<numnodes; ++inode)
     {
       const int nodeid = nodeidptrs[inode];
-//      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
-//      if (not anothervoidenrichment_in_set)
-//      {
-      // jedes Feld bekommet ein KinkEnrichment auch der Druck (im Moment)
-      // überschreibt das die alten Werte
+
         for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
         {
+//          // if (*field != XFEM::PHYSICS::Pres)
 //          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
-          //cout << "Kink Enrichment applied for all fields" << endl;
-//          std::cout << "Kink Enrichment applied for node " << nodeid << std::endl;
-          //Falls nur die Geschw ein KinkEnr bekommen
-//          if (*field != XFEM::PHYSICS::Pres)
-          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
-          //cout << "Kink Enrichment applied for velocity fields only" << endl;
-        }
-    };
+//          //cout << "Kink Enrichment applied for velocity fields only" << endl;
 
-  //  }
+          if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_both)
+             nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+          else if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_pressure)
+          {
+            if (*field == XFEM::PHYSICS::Pres)
+               nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+          }
+          else if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_velocity)
+          {
+            if (*field != XFEM::PHYSICS::Pres)
+               nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+          }
+        }
+    }
 
   return skipped_element;
 }
@@ -186,6 +190,7 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
     const Epetra_Vector*                      phinp,
     const DRT::Element*                       xfemele,
     const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    const INPAR::COMBUST::SelectedEnrichment& selectedEnrichment,
     std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
 {
   // type of enrichment determined by name of function; label (first argument) = 0
@@ -199,6 +204,12 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
   const int numnodes = xfemele->NumNode();
   const int* nodeidptrs = xfemele->NodeIds();
 
+  // get element diameter
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  static LINALG::Matrix<3,numnode> xyze;
+  GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
+  const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
+
   // get phi values for nodes
   std::vector<double> phinp_;
 
@@ -207,6 +218,7 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 
   if((int)phinp_.size() != numnodes) dserror("phinp_ - vector has not the same length as numnodes");
 
+  unsigned nodecount = 0;
 
   // enrich only nodes which are touched, that means nodes which have Gfunc ~ 0.0
   for (int inode = 0; inode<numnodes; ++inode)
@@ -215,25 +227,49 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 
     for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
     {
-      // nodes with abs(Gfunc)< tol => touch point
-      if ((plusDomain(phinp_[inode]) == true) and (plusDomain(-phinp_[inode]) == true))
+//      // nodes with abs(Gfunc)< tol => touch point
+//      if ((plusDomain(phinp_[inode]) == true) and (plusDomain(-phinp_[inode]) == true))
+      // to avoid phi-values near zero and bad conditioned element matrices, we enrich only
+      // the nodes with phi-value approximative 0.0
+      if (fabs(phinp_[inode]) < 0.1*hk_eleDiam)
       {
-        // pressure fields gets jump enrichment
-        if (*field == XFEM::PHYSICS::Pres){
-          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
-        }
-        else if(*field == XFEM::PHYSICS::Velx ||
-                *field == XFEM::PHYSICS::Vely ||
-                *field == XFEM::PHYSICS::Velz)
+//        // pressure fields gets jump enrichment
+//        if (*field == XFEM::PHYSICS::Pres){
+//          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+//        }
+//        else if(*field == XFEM::PHYSICS::Velx ||
+//                *field == XFEM::PHYSICS::Vely ||
+//                *field == XFEM::PHYSICS::Velz)
+//        {
+//          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+//        }
+//        else {
+//          dserror ("ApplyKinkJumpEnrichmentToTouched called for wrong XFEM::PHYSICS:: - Field");
+//        }
+
+        if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_both or INPAR::COMBUST::selectedenrichment_pressure)
         {
-          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+          if ((plusDomain(phinp_[inode]) == true) and (plusDomain(-phinp_[inode]) == true))
+          {
+            // pressure fields gets jump enrichment
+            if (*field == XFEM::PHYSICS::Pres)
+              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+           }
         }
-        else {
-          dserror ("ApplyKinkJumpEnrichmentToTouched called for wrong XFEM::PHYSICS:: - Field");
-        }
+        nodecount += 1;
       }
     }
   }
+
+  if (nodecount < 4)
+    //dserror("number of enriched nodes of touched element less than four %d ", nodecount);
+    cout << "/!\\ touched element " << xfemele->Id() << " has less than four enriched nodes: " << nodecount << endl;
+  if (nodecount != 4)
+    cout << "/!\\ touched element " << xfemele->Id() << " has " << nodecount << " enriched nodes" << endl;
+#ifdef COMBUST_SXFEM
+  if (nodecount != 8)
+    dserror("Enrichment function probably not evaluated correctly if not all nodes of the element are enriched");
+#endif
 
   return skipped_element;
 }
@@ -242,6 +278,7 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 bool XFEM::ApplyKinkJumpEnrichment(
     const DRT::Element*                       xfemele,
     const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    const INPAR::COMBUST::SelectedEnrichment& selectedEnrichment,
     std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
 {
   // type of enrichment determined by name of function; label (first argument) = 0
@@ -266,21 +303,52 @@ bool XFEM::ApplyKinkJumpEnrichment(
     // das Druck-Feld bekommt jumps
     for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
     {
-      // pressure fields gets jump enrichment
-      if (*field == XFEM::PHYSICS::Pres){
-        nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+//      // pressure fields gets jump enrichment
+//      if (*field == XFEM::PHYSICS::Pres){
+//        nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+//      }
+//      else if(*field == XFEM::PHYSICS::Velx ||
+//              *field == XFEM::PHYSICS::Vely ||
+//              *field == XFEM::PHYSICS::Velz)
+//      {
+//        nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+//      }
+//      else {
+//        dserror ("ApplyKinkJumpEnrichment called for wrong XFEM::PHYSICS:: - Field");
+//      }
+
+      if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_both)
+      {
+        // pressure fields gets jump enrichment
+        if (*field == XFEM::PHYSICS::Pres)
+        {
+          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+        }
+        else if(*field == XFEM::PHYSICS::Velx ||
+                *field == XFEM::PHYSICS::Vely ||
+                *field == XFEM::PHYSICS::Velz)
+        {
+          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+        }
+        else
+        {
+          dserror ("ApplyKinkJumpEnrichment called for wrong XFEM::PHYSICS:: - Field");
+        }
       }
-      else if(*field == XFEM::PHYSICS::Velx ||
+      else if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_pressure)
+      {
+        if (*field == XFEM::PHYSICS::Pres)
+          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+      }
+      else if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_velocity)
+      {
+          if (*field == XFEM::PHYSICS::Velx ||
               *field == XFEM::PHYSICS::Vely ||
               *field == XFEM::PHYSICS::Velz)
-      {
-        nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
-      }
-      else {
-        dserror ("ApplyKinkJumpEnrichment called for wrong XFEM::PHYSICS:: - Field");
+            nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
       }
     }
-  };
+  }
   return skipped_element;
 }
 
@@ -332,6 +400,9 @@ void XFEM::createDofMapCombust(
     // remark: - for any regular call of DofManager the flame front exists (ih.FlameFront() != Teuchos::null),
     //         - for the initialization call of DofManager in CombustFluidImplicitTimeInt constructor the
     //           flame front does not exist yet (ih.FlameFront() == Teuchos::null)
+    //         - special option for two-phase flow: suppress one or both enrichments 
+     const INPAR::COMBUST::SelectedEnrichment selectedEnrichment=DRT::INPUT::get<INPAR::COMBUST::SelectedEnrichment>(params, "SELECTED_ENRICHMENT");
+
     if (phinp != NULL) // TODO works this???
     {
       //----------------------------------------
@@ -358,18 +429,15 @@ void XFEM::createDofMapCombust(
         case INPAR::COMBUST::combusttype_twophaseflow:
         {
           // apply kink enrichments to all nodes of a bisected element
-          skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, nodeDofMap);
+          if (selectedEnrichment != INPAR::COMBUST::selectedenrichment_none)
+           skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, selectedEnrichment, nodeDofMap);
         }
         break;
         case INPAR::COMBUST::combusttype_twophaseflow_surf:
         {
-#ifndef BCF_SURFTENS_PRES_KINK
           // apply kink enrichments to all nodes for velocity field and jumps to pressure field of a bisected element
-          skipped_node_enr = ApplyKinkJumpEnrichment(xfemele, fieldset, nodeDofMap);
-#else
-          // apply kink enrichments to all nodes for velocity field and jumps to pressure field of a bisected element
-          skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, nodeDofMap);
-#endif
+          if (selectedEnrichment != INPAR::COMBUST::selectedenrichment_none)
+            skipped_node_enr = ApplyKinkJumpEnrichment(xfemele, fieldset, selectedEnrichment, nodeDofMap);
         }
         break;
         case INPAR::COMBUST::combusttype_twophaseflowjump:
@@ -428,7 +496,8 @@ void XFEM::createDofMapCombust(
         {
           //std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
           // apply kink enrichments to all nodes for velocity field and jumps to pressure field of an intersected element
-          skipped_node_enr += ApplyKinkJumpEnrichmentToTouched(ih,phinp,xfemele, fieldset, nodeDofMap);
+          if (selectedEnrichment != INPAR::COMBUST::selectedenrichment_none)
+            skipped_node_enr += ApplyKinkJumpEnrichmentToTouched(ih,phinp,xfemele, fieldset, selectedEnrichment, nodeDofMap);
         }
         break;
         case INPAR::COMBUST::combusttype_twophaseflowjump:

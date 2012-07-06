@@ -5,8 +5,8 @@
 
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -31,6 +31,7 @@ namespace DRT
   class Element;
 }
 
+
 namespace XFEM
 {
   class ElementAnsatz;
@@ -43,7 +44,6 @@ namespace XFEM
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
   
-  // schott Aug 3, 2010
   //! apply nodal enrichments to touched element: used for combustion and Nitsche problem
   bool ApplyJumpEnrichmentToTouched(
       const COMBUST::InterfaceHandleCombust&    ih,
@@ -57,14 +57,15 @@ namespace XFEM
   bool ApplyKinkEnrichment(
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
+      const INPAR::COMBUST::SelectedEnrichment& selectedEnrichment,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
-  
-  // schott Jun 15, 2010
+
   //! apply nodal enrichments to intersected element: used for two phase problem with surface tension only
   bool ApplyKinkJumpEnrichment(
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
+      const INPAR::COMBUST::SelectedEnrichment& selectedEnrichment,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
   
@@ -75,6 +76,7 @@ namespace XFEM
       const Epetra_Vector*                      phinp,
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
+      const INPAR::COMBUST::SelectedEnrichment& selectedEnrichment,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
 
@@ -102,7 +104,7 @@ namespace XFEM
       std::map<int, std::set<XFEM::FieldEnr> >&     nodeDofMap ///<
       );
 
-    /*!
+  /*!
    * \brief apply standard dofs to nodes
    * \note preliminary split-off function from applyStandardEnrichment() for combustion problems
    */

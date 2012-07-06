@@ -1366,7 +1366,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("SEARCH_ALGORITHM","Binarytree","Type of contact search",
        tuple<std::string>("BruteForce","bruteforce",
-      		                "BruteForceEleBased","bruteforceelebased",
+                          "BruteForceEleBased","bruteforceelebased",
                           "BinaryTree","Binarytree","binarytree"),
        tuple<int>(INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
                   INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
@@ -1636,14 +1636,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Toggles helical binding spot structure of the actin filament
   setStringToIntegralParameter<int>("LOOMSETUP","No","Turns specific routines for loom network on and off",
                                yesnotuple,yesnovalue,&statmech);
-	//Rise per monomer in the actin double helix according to Howard, p. 125
-	DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);
-	//Rotation per monomer in the actin double helix according to Howard, p. 125
-	DoubleParameter("ROTPERBSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
-	//angular offset of the binding spot orientation (constant for each filament)
-	DoubleParameter("BSPOTOFFSET",0.0,"angular offset of the binding spot orientation (constant for each filament)",&statmech);
-	//angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume
-	DoubleParameter("PHIBSPOT",0.524,"angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume",&statmech);
+  //Rise per monomer in the actin double helix according to Howard, p. 125
+  DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);
+  //Rotation per monomer in the actin double helix according to Howard, p. 125
+  DoubleParameter("ROTPERBSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
+  //angular offset of the binding spot orientation (constant for each filament)
+  DoubleParameter("BSPOTOFFSET",0.0,"angular offset of the binding spot orientation (constant for each filament)",&statmech);
+  //angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume
+  DoubleParameter("PHIBSPOT",0.524,"angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume",&statmech);
   //Reading double parameter for shear flow field
   DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain!",&statmech);
   //Reading double parameter for viscosity of background fluid
@@ -1665,7 +1665,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //number of overall crosslink molecules in the boundary volume
   IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
   //number of overall crosslink molecules in the boundary volume
-	IntParameter("INITOCCUPIEDBSPOTS",0,"binding spots occupied by (singly-bound) crosslinkers before the first time step",&statmech);
+  IntParameter("INITOCCUPIEDBSPOTS",0,"binding spots occupied by (singly-bound) crosslinkers before the first time step",&statmech);
   //number by which the number of crosslinkers is reduced.
   IntParameter("REDUCECROSSLINKSBY",0,"number of crosslinker elements by which the overall number of crosslinker is reduced.",&statmech);
   //Reading double parameter for crosslinker protein mean length
@@ -1713,7 +1713,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
   //Number of time steps between two gmsh outputs written
-	IntParameter("GMSHOUTINTERVALS",100,"Number of time steps between two gmsh outputs written",&statmech);
+  IntParameter("GMSHOUTINTERVALS",100,"Number of time steps between two gmsh outputs written",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
   IntParameter("OSCILLDIR",-1,"Global spatial direction of oscillatory motion by Dirichlet BCs",&statmech);
   //Reading time curve number for oscillatory motion
@@ -3362,39 +3362,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("ADAPTCONV","yes","Switch on adaptive control of linear solver tolerance for nonlinear solution",&scatra_nonlin);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&scatra_nonlin);
 
-  /*----------------------------------------------------------------------*/
-//  Teuchos::ParameterList& scatradyn_levelset = scatradyn.sublist("LEVELSET",false,
-//      "control parameters for a level set function");
-//
-//  setStringToIntegralParameter<int>("REINITIALIZATION","None",
-//                               "Type of reinitialization strategy for level set function",
-//                               tuple<std::string>(
-//                                 "None",
-//                                 "DirectDistance",
-//                                 "Sussman",
-//                                 "InterfaceProjection",
-//                                 "Function",
-//                                 "Signed_Distance_Function"),
-//                               tuple<int>(
-//                                 INPAR::SCATRA::reinitaction_none,
-//                                 INPAR::SCATRA::reinitaction_directdistance,
-//                                 INPAR::SCATRA::reinitaction_sussman,
-//                                 INPAR::SCATRA::reinitaction_interfaceprojection,
-//                                 INPAR::SCATRA::reinitaction_function,
-//                                 INPAR::SCATRA::reinitaction_signeddistancefunction),
-//                               &scatradyn_levelset);
-//
-//  setStringToIntegralParameter<int>("MASSCALCULATION","No",
-//                               "Type of mass calculation",
-//                               tuple<std::string>(
-//                                 "No",
-//                                 "Squares",
-//                                 "Interpolated"),
-//                               tuple<int>(
-//                                 INPAR::SCATRA::masscalc_none,
-//                                 INPAR::SCATRA::masscalc_squares,
-//                                 INPAR::SCATRA::masscalc_interpolated),
-//                             &scatradyn_levelset);
 
 /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatradyn_stab = scatradyn.sublist("STABILIZATION",false,"");
@@ -3967,6 +3934,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
+  // for selection of enriched fields (velocity, pressure, velocity+pressure)
+  setStringToIntegralParameter<int>("SELECTED_ENRICHMENT","both",
+       "select fields which get enriched dofs",
+       tuple<std::string>(
+           "both",
+           "velocity",
+           "pressure",
+           "none"),
+           tuple<int>(
+               INPAR::COMBUST::selectedenrichment_both,
+               INPAR::COMBUST::selectedenrichment_velocity,
+               INPAR::COMBUST::selectedenrichment_pressure,
+               INPAR::COMBUST::selectedenrichment_none),
+               &combustcontrolfluid);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,

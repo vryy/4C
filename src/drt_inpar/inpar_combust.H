@@ -81,6 +81,15 @@ namespace INPAR
       xfemtimeintenr_minimal
     };
 
+    /// enriched fields when using kink enrichments
+    enum SelectedEnrichment
+        {
+          selectedenrichment_both,
+          selectedenrichment_velocity,
+          selectedenrichment_pressure,
+          selectedenrichment_none
+        };
+
     /// type of initial fluid field
     enum InitialField
     {
