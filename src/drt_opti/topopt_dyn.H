@@ -15,10 +15,6 @@ Maintainer: Martin Winklmaier
 #ifndef TOPOPT_DYN_H
 #define TOPOPT_DYN_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 /*!
 
@@ -45,8 +41,5 @@ extern "C"
 
 void fluid_topopt_dyn();
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* #ifndef TOPOPT_DYN_H */

@@ -15,20 +15,11 @@ Maintainer: Volker Gravemeier
 #ifndef LOMA_DYN_H
 #define LOMA_DYN_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-/* headers and prototypes of functions also accessible from c */
-
 /*! entry point for the solution of low-Mach-number flow problems */
 void loma_dyn(
     int restart        /* do we have to perform a restart?  */
     );
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* #ifndef LOMA_DYN_H */
 

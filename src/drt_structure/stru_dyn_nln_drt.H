@@ -17,44 +17,8 @@ Maintainer: Thomas Klöppel
 #define STRU_DYN_NLN_DRT_H
 
 
-#ifdef __cplusplus /* stuff which is c++ specific */
-
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif
-#include "Epetra_Time.h"
-#include "Teuchos_RefCountPtr.hpp"
-
-
-using namespace std;
-using namespace Teuchos;
-
-
-
-#endif /* end of #ifdef __cplusplus */
-
-
-
-
-
-/* headers and prototypes of functions also acessible from c */
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 void dyn_nlnstructural_drt();
 void caldyn_drt();
-
-#ifdef __cplusplus
-}
-#endif
-
-
-
-
 
 
 #endif  /* #ifndef STRU_DYN_NLN_DRT_H */

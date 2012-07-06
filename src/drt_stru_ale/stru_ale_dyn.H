@@ -15,18 +15,8 @@ Maintainer: Markus Gitterle
 #ifndef STRU_ALE_DYN_H
 #define STRU_ALE_DYN_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-/* headers and prototypes of functions also accessible from c */
-
 /* entry point for the solution of structural ale problems */
 void stru_ale_dyn_drt(int restart);
-
-#ifdef __cplusplus
-}
-#endif
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef STRU_ALE_DYN_H */

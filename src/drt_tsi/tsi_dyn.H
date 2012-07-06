@@ -15,18 +15,8 @@ Maintainer: Caroline Danowski
 #ifndef TSI_DYN_H
 #define TSI_DYN_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-/* headers and prototypes of functions also accessible from c */
-
 /* entry point for the solution of thermo-structure-interaction problems */
 void tsi_dyn_drt();
-
-#ifdef __cplusplus
-}
-#endif
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef TSI_DYN_H */

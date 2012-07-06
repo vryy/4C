@@ -15,36 +15,18 @@ Maintainer: Mahmoud Ismail
 #ifndef ART_NET_DYN_DRT_H
 #define ART_NET_DYN_DRT_H
 
-#ifdef __cplusplus
 
-
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
-
-#include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_io/io.H"
-#include "artnetexplicitintegration.H"
 
-using namespace std;
-using namespace Teuchos;
-
-/* headers and prototypes of functions also accessible from c */
-extern "C"
-{
-  void dyn_art_net_drt();
+// forward declaration
+namespace ART{
+ class ArtNetExplicitTimeInt;
 }
-Teuchos::RCP<ART::ArtNetExplicitTimeInt>  dyn_art_net_drt(bool CoupledTo3D);
-//void dyn_art_net_drt();
 
-#endif /* endif __cplusplus*/
+void dyn_art_net_drt();
+
+Teuchos::RCP<ART::ArtNetExplicitTimeInt>  dyn_art_net_drt(bool CoupledTo3D);
+
 
 #endif  /* #ifndef ART_NET_DYN_DRT_H */
 

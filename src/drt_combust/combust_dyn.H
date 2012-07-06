@@ -14,10 +14,6 @@ Maintainer: Florian Henke
 #ifndef COMBUST_DYN_H
 #define COMBUST_DYN_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 /*!
 
@@ -63,8 +59,5 @@ extern "C"
 
 void combust_dyn();
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* #ifndef COMBUST_DYN_H */

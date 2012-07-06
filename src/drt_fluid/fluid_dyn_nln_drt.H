@@ -25,44 +25,9 @@ Maintainer: Peter Gamnitzer
 #define FLUID_DYN_NLN_DRT_H
 
 
-
-/* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
-#ifdef __cplusplus /* stuff which is c++ specific */
-
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
-
-
-#endif /* end of #ifdef __cplusplus */
-/* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
-
-
-
-
-/* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-/* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
-
-
-
-
-/* headers and prototypes of functions also acessible from c */
 void dyn_fluid_drt(const int restart);
+
 void fluid_fluid_drt();
-
-
-
-/* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
-#ifdef __cplusplus
-}
-#endif
-/* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 
 
 #endif  /* #ifndef FLUID_DYN_NLN_DRT_H */

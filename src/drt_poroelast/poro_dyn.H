@@ -15,19 +15,11 @@
 #ifndef POROELAST_H
 #define POROELAST_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  /* headers and prototypes of functions also accessible from c */
 
   void poroelast_drt();  // global control routine for standard porous media problem
 
   void poro_scatra_drt(); // global control routine for Poro + ScaTra problem.
 
-  #ifdef __cplusplus
-}
-#endif
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef POROELAST_H */

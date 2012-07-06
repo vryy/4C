@@ -16,15 +16,6 @@ Maintainer: Mahmoud Ismail
 #ifndef RED_AIRWAYS_DRT_DRT_H
 #define RED_AIRWAYS_DRT_DRT_H
 
-#ifdef __cplusplus
-
-
-#ifdef PARALLEL
-#include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
-
 #include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
@@ -37,14 +28,10 @@ Maintainer: Mahmoud Ismail
 using namespace std;
 using namespace Teuchos;
 
-/* headers and prototypes of functions also accessible from c */
-extern "C"
-{
   void dyn_red_airways_drt();
-}
 
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D);
-#endif /* endif __cplusplus*/
+
 
 #endif  /* #ifndef RED_AIRWAYS_DRT_DRT_H */
 
