@@ -2295,7 +2295,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_myocard)
       {
-        MAT::Myocard* actmat = static_cast<const MAT::Myocard*>(material.get());
+        MAT::Myocard* actmat = static_cast<MAT::Myocard*>(material.get());
 
         dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
 
