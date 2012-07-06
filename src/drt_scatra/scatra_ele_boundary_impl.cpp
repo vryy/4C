@@ -38,6 +38,7 @@ Maintainer: Georg Bauer
 
 // material headers
 #include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/myocard.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/arrhenius_spec.H"

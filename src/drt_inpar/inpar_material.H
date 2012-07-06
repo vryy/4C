@@ -60,6 +60,7 @@ namespace INPAR
       m_yoghurt,  ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and extended by an Arrhenius-type term to account for temperature dependence
       m_permeable_fluid,       ///< permeable fluid
       m_scatra,   ///< scalar transport material
+      m_myocard,   ///< anisotropic electrophysical model of heart tissue
       m_mixfrac,  ///< material according to mixture-fraction approach
       m_sutherland,     ///< material with temperature dependence according to Sutherland law
       m_arrhenius_spec, ///< material with Arrhenius-type chemical kinetics (species)

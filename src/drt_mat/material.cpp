@@ -36,6 +36,7 @@ Maintainer: Lena Wiechert
 #include "aaa_mixedeffects.H"
 #include "logneohooke.H"
 #include "scatra_mat.H"
+#include "myocard.H"
 #include "mixfrac.H"
 #include "sutherland.H"
 #include "arrhenius_spec.H"
@@ -257,6 +258,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ScatraMat* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_myocard:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::Myocard(curmat));
+      MAT::PAR::Myocard* params = static_cast<MAT::PAR::Myocard*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
   case INPAR::MAT::m_mixfrac:
   {
     if (curmat->Parameter() == NULL)

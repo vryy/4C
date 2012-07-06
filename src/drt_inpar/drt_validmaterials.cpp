@@ -180,6 +180,46 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+  /*----------------------------------------------------------------------*/
+  // Myocard muscle material (with complicated reaction coefficient)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_myocard",
+                                            "Myocard muscle material",
+                                            INPAR::MAT::m_myocard));
+
+    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedReal(m,"U_O","kinematic diffusivity");
+    AddNamedReal(m,"U_U","kinematic diffusivity");
+    AddNamedReal(m,"THETA_V","kinematic diffusivity");
+    AddNamedReal(m,"THETA_W","kinematic diffusivity");
+    AddNamedReal(m,"THETA_VM","kinematic diffusivity");
+    AddNamedReal(m,"THETA_O","kinematic diffusivity");
+    AddNamedReal(m,"TAU_V1M","kinematic diffusivity");
+    AddNamedReal(m,"TAU_V2M","kinematic diffusivity");
+    AddNamedReal(m,"TAU_VP","kinematic diffusivity");
+    AddNamedReal(m,"TAU_W1M","kinematic diffusivity");
+    AddNamedReal(m,"TAU_W2M","kinematic diffusivity");
+    AddNamedReal(m,"K_WM","kinematic diffusivity");
+    AddNamedReal(m,"U_WM","kinematic diffusivity");
+    AddNamedReal(m,"TAU_WP","kinematic diffusivity");
+    AddNamedReal(m,"TAU_FI","kinematic diffusivity");
+    AddNamedReal(m,"TAU_O1","kinematic diffusivity");
+    AddNamedReal(m,"TAU_O2","kinematic diffusivity");
+    AddNamedReal(m,"TAU_SO1","kinematic diffusivity");
+    AddNamedReal(m,"TAU_SO2","kinematic diffusivity");
+    AddNamedReal(m,"K_SO","kinematic diffusivity");
+    AddNamedReal(m,"U_SO","kinematic diffusivity");
+    AddNamedReal(m,"TAU_S1","kinematic diffusivity");
+    AddNamedReal(m,"TAU_S2","kinematic diffusivity");
+    AddNamedReal(m,"K_S","kinematic diffusivity");
+    AddNamedReal(m,"U_S","kinematic diffusivity");
+    AddNamedReal(m,"TAU_SI","kinematic diffusivity");
+    AddNamedReal(m,"TAU_WINF","kinematic diffusivity");
+    AddNamedReal(m,"W_INFS","kinematic diffusivity");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*----------------------------------------------------------------------*/
   // material according to mixture-fraction approach

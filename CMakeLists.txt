@@ -395,6 +395,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/mixfrac.cpp
   src/drt_mat/modpowerlaw.cpp
   src/drt_mat/mooneyrivlin.cpp
+  src/drt_mat/myocard.cpp
   src/drt_mat/neohooke.cpp
   src/drt_mat/newtonianfluid.cpp
   src/drt_mat/optimization_density.cpp
@@ -2165,6 +2166,8 @@ baci_test(scatra_gaussian_hill_pbc_genalpha 2 "90")
 baci_test(scatra_graetz_problem_system 1 5)
 baci_test(scatra_graetz_problem_system 2 5)
 baci_test(scatra_graetz_problem_system_ost 2 5)
+baci_test(scatra_myocard_material 1 "")
+baci_test(scatra_myocard_material 2 "")
 baci_test(scatra_nurbs9_channel 1 "")
 baci_test(scatra_nurbs9_channel 2 5)
 baci_test(scatra_turbmodel_test_mfs 1 "")

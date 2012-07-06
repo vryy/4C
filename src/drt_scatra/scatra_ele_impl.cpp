@@ -32,6 +32,7 @@
 #include "../drt_inpar/inpar_turbulence.H"
 
 #include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/myocard.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/arrhenius_spec.H"
@@ -2292,6 +2293,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       visc_ = actmat->ComputeViscosity(rateofstrain,tempnp);
     }
   }
+  else if (material->MaterialType() == INPAR::MAT::m_myocard)
+      {
+        MAT::Myocard* actmat = static_cast<const MAT::Myocard*>(material.get());
+
+        dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
+
+        // set specific heat capacity at constant pressure to 1.0
+        shc_ = 1.0;
+
+        // compute diffusivity
+        diffus_[0] = actmat->ComputeDiffusivity();
+
+        // set constant density
+        densnp_[0] = 1.0;
+        densam_[0] = 1.0;
+        densn_[0] = 1.0;
+        densgradfac_[0] = 0.0;
+
+        // set reaction flag to true
+        is_reactive_ = true;
+
+        // get reaction coeff. and set temperature rhs for reactive equation system to zero
+        const double csnp = funct_.Dot(ephinp_[0]);
+        reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp, dt);
+        reacterm_[0] = actmat->ComputeReactionCoeff(csnp, dt);
+        reatemprhs_[0] = 0.0;
+
+      }
   else dserror("Material type is not supported");
 
 // check whether there is negative (physical) diffusivity
