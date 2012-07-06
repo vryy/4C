@@ -128,6 +128,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   params.set<int>("scatratype",scatratype_);
   params.set("frt",frt_);
   params.set<int>("fluxtype",fluxtype);
+  params.set<double>("time-step length",dta_);
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)

@@ -155,8 +155,9 @@ private:
 
   //! get the material parameters
   virtual void GetMaterialParams(
-    const DRT::Element*                   ele,       //!< the element we are dealing with
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
+    const DRT::Element*                   ele,        //!< the element we are dealing with
+    const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
+    const double                          dt          //!< current time-step length
   );
 
   //! calculate element matrix and rhs vector (One-Step-Theta, BDF2, Gen.-alpha)
@@ -240,7 +241,8 @@ private:
     const double                    frt,      //!< factor F/RT needed for ELCH calculations
     const INPAR::SCATRA::FluxType   fluxtype, //!< type of flux to calculate
     const int                       k,        //!< index of current scalar
-    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
+    const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
+    const double                    dt        //!< current time-step length
   );
 
   //! calculate scalars and domain integral

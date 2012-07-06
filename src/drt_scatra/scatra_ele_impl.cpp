@@ -920,6 +920,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // access control parameter for flux calculation
     INPAR::SCATRA::FluxType fluxtype = DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "fluxtype");
 
+    // access time-step length
+    const double dt = params.get<double>("time-step length");
+
     // set flag for potential evaluation of material law at int. point
     ParameterList& stablist = params.sublist("STABILIZATION");
     const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
@@ -957,7 +960,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       // calculate flux vectors for actual scalar
       eflux.Clear();
-      CalculateFlux(eflux,ele,frt,fluxtype,idof,scatratype);
+      CalculateFlux(eflux,ele,frt,fluxtype,idof,scatratype,dt);
       // assembly
       for (int inode=0;inode<nen_;inode++)
       {
@@ -1048,7 +1051,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
     else // conductivity = diffusivity for a electric potential field
     {
-      GetMaterialParams(ele,scatratype);
+      GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
       elevec1_epetra(0)=diffus_[0];
       elevec1_epetra(1)=diffus_[0];
     }
@@ -1143,7 +1146,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
   //----------------------------------------------------------------------
-  if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele,scatratype);
+  if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele,scatratype,dt);
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -1229,7 +1232,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     {
       // make sure to get material parameters at element center
       // hence, determine them if not yet available
-      if (mat_gp_) GetMaterialParams(ele,scatratype);
+      if (mat_gp_) GetMaterialParams(ele,scatratype,dt);
       // provide necessary velocities and gradients at element center
       convelint_.Multiply(econvelnp_,funct_);
       fsvelint_.Multiply(efsvel_,funct_);
@@ -1265,7 +1268,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
-      if (mat_gp_) GetMaterialParams(ele, scatratype);
+      if (mat_gp_) GetMaterialParams(ele, scatratype,dt);
 
       // get velocity at integration point
       velint_.Multiply(evelnp_,funct_);
@@ -1371,7 +1374,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
-      if (mat_gp_) GetMaterialParams(ele,scatratype);
+      if (mat_gp_) GetMaterialParams(ele,scatratype,dt);
 
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
@@ -1484,7 +1487,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           {
             // make sure to get material parameters at element center
             // hence, determine them if not yet available
-            if (not mat_gp_) GetMaterialParams(ele,scatratype);
+            if (not mat_gp_) GetMaterialParams(ele,scatratype,dt);
             // calculate model coefficients
             CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,Csgs_sgvel,alpha,calc_N,N_vel,refvel,reflength,c_nu,nwl,Csgs_sgphi,c_diff,vol,k);
           }
@@ -1690,7 +1693,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   const DRT::Element*  ele,
-  const enum INPAR::SCATRA::ScaTraType  scatratype
+  const enum INPAR::SCATRA::ScaTraType  scatratype,
+  const double dt // current time-step length
   )
 {
 // get the material
@@ -3232,7 +3236,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
   if (not mat_gp_ or not tau_gp_)
   {
 
-    GetMaterialParams(ele,scatratype);
+    GetMaterialParams(ele,scatratype,dt);
 
     if (not tau_gp_)
     {
@@ -3261,7 +3265,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(ele,scatratype);
+    if (mat_gp_) GetMaterialParams(ele,scatratype,dt);
 
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
@@ -3415,7 +3419,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   const double frt = params.get<double>("frt");
 
   // get material constants
-  GetMaterialParams(ele,scatratype);
+  GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
@@ -3624,7 +3628,8 @@ const DRT::Element*             ele,
 const double                    frt,
 const INPAR::SCATRA::FluxType   fluxtype,
 const int                       k,
-const enum INPAR::SCATRA::ScaTraType  scatratype
+const enum INPAR::SCATRA::ScaTraType  scatratype,
+const double                    dt
 )
 {
 /*
@@ -3640,7 +3645,7 @@ const enum INPAR::SCATRA::ScaTraType  scatratype
 */
 
 // get material parameters (evaluation at element center)
-if (not mat_gp_) GetMaterialParams(ele,scatratype);
+if (not mat_gp_) GetMaterialParams(ele,scatratype,dt);
 
 // integration rule
 DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -3652,7 +3657,7 @@ for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
   const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
   // get material parameters (evaluation at integration point)
-  if (mat_gp_) GetMaterialParams(ele,scatratype);
+  if (mat_gp_) GetMaterialParams(ele,scatratype,dt);
 
   // get velocity at integration point
   velint_.Multiply(evelnp_,funct_);
@@ -6570,7 +6575,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
   Epetra_SerialDenseVector& sigma
   )
 {
-  GetMaterialParams(ele,scatratype);
+  GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
@@ -6616,7 +6621,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
   )
 {
   // access material parameters
-  GetMaterialParams(ele,scatratype);
+  GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
