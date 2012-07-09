@@ -340,9 +340,6 @@ void MAT::Damage::Evaluate(
 
   // initialize scalars
   // lame constant
-  double lambda = 0.0;
-  lambda = nu * young / ( (1.0 + nu) * (1.0 - 2.0*nu) );
-  // lame constant
   // shear modulus parameter mu == G
   double G = 0.0;
   G = young / ( 2.0 * (1.0 + nu) );
@@ -501,8 +498,8 @@ void MAT::Damage::Evaluate(
     // kinematic hardening curve of current time step and old time step
     // betabar = Hkin * strainbar_p
     // linear kinematic hardening: Hkin = const., else: Hkin = Hkin(strainnbar_p)
-    double betabarold = 0.0;
-    double betabar = 0.0;
+    betabarold = 0.0;
+    betabar = 0.0;
 
     // pass the current plastic strains to the element (for visualisation)
     // compute converged engineering strain components (Voigt-notation)
@@ -837,13 +834,11 @@ void MAT::Damage::SetupCmatElastoPlastic(
   // if plastic loading:   heaviside = 1.0 --> use C_ep
   // if elastic unloading: heaviside = 0.0 --> use C_e
   double epfac = 0.0;
-  double epfac2 = 0.0;
   double epfac3 = 0.0;
   // elastic trial von Mises effective stress
   if (q != 0.0)
   {
     epfac = (-1.0) * heaviside * Dgamma * 6 * G * G / q;
-    epfac2 = heaviside * 6 * G * G * Dgamma / q;
   }
   // constitutive tensor
   // I_d = id4sharp - 1/3 Id \otimes Id
@@ -884,7 +879,6 @@ void MAT::Damage::SetupCmatElastoPlastic(
 //  cout << " heaviside " << heaviside << endl;
 //  cout << " epfac " << epfac << endl;
 //  cout << " epfac1 " << epfac1 << endl;
-//  cout << " epfac2 " << epfac2 << endl;
 //  cout << " cmat " << cmat << endl;
 #endif // #ifdef DEBUGMATERIAL
 
