@@ -13,7 +13,12 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 
 
-#include"drt_nodematchingoctree.H"
+#include "drt_nodematchingoctree.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+//#include "drt_parobject.H"
+#include "drt_exporter.H"
+#include "standardtypes_cpp.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

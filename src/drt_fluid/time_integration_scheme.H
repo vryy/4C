@@ -26,7 +26,6 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "fluid_utils_mapextractor.H" // should go away
 
 //forward declarations

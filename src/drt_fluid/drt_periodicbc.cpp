@@ -25,6 +25,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_dofset_pbc.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -829,7 +830,6 @@ void PeriodicBoundaryConditions::AddConnectivity(
             DRT::PackBuffer data;
 
             std::vector<int> mids;
-            int i = 0;
             for (std::map<int, std::vector<int> >::const_iterator iter = multiplecouplings.begin(); iter != multiplecouplings.end(); ++iter)
               mids.push_back(iter->first);
 

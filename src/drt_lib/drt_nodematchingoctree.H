@@ -14,14 +14,16 @@ Maintainer: Peter Gamnitzer
 #ifndef NODEMATCHINGOCTREE_H
 #define NODEMATCHINGOCTREE_H
 
-#include "drt_utils.H"
-#include "drt_discret.H"
-#include "drt_parobject.H"
-#include "drt_exporter.H"
-#include "Teuchos_RefCountPtr.hpp"
-#include "standardtypes_cpp.H"
+#include "Teuchos_RCP.hpp"
+#include "Epetra_SerialDenseMatrix.h"
+#include <vector>
+
+using namespace std;
 
 namespace DRT {
+
+class Discretization;
+
 namespace UTILS {
 
 class OctreeElement;
@@ -195,7 +197,7 @@ private:
   //! \brief all nodes in leafs are nodes of this discretistion
   const DRT::Discretization&       discret_;
   //! \brief root of the local search tree
-  RefCountPtr<OctreeElement>       octreeroot_;
+  Teuchos::RCP<OctreeElement>       octreeroot_;
   //! \brief coordinate of one point in the master plane
   vector <double>                  masterplanecoords_;
 }; // class NodeMatchingOctree
@@ -302,10 +304,10 @@ public:
 
   \param   x   (i) coordinate
 
-  \return  RefCountPtr<OctreeElement> child
+  \return  Teuchos::RCP<OctreeElement> child
 
   */
-  RefCountPtr<OctreeElement> ReturnChildContainingPoint(
+  Teuchos::RCP<OctreeElement> ReturnChildContainingPoint(
     const vector <double> &x
     );
 
@@ -367,9 +369,9 @@ private:
   //! \brief depth of the octree element in the tree
   int                              layer_;
   //! \brief  pointer to first child
-  RefCountPtr<OctreeElement>       octreechild1_;
+  Teuchos::RCP<OctreeElement>       octreechild1_;
   //! \brief  pointer to second child
-  RefCountPtr<OctreeElement>       octreechild2_;
+  Teuchos::RCP<OctreeElement>       octreechild2_;
 
 }; // class OctreeElement
 

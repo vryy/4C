@@ -22,7 +22,6 @@ Maintainer: Axel Gerstenberger
 #define TIME_INTEGRATION_SCHEME_H
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_fluid.H"
 
