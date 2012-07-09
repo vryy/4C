@@ -22,7 +22,6 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_linedefinition.H"

@@ -21,7 +21,6 @@ Maintainer: Lena Wiechert
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_SerialDenseVector.h>
 #include "../drt_lib/drt_parobject.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_material.H"
 

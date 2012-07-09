@@ -18,7 +18,6 @@ Maintainer: Ursula Mayer
 #include "intersection_service_templates.H"
 #include "position_array.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 

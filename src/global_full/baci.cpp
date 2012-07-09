@@ -8,7 +8,6 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include <../headers/compile_settings.h>
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validconditions.H"
@@ -41,6 +40,14 @@
 #endif /* TRAP_FE */
 
 
+/*----------------------------------------------------------------------*
+ | size of buffer to attach to intra-communicator in byte               |
+ *----------------------------------------------------------------------*/
+#define MPIBUFFSIZE      (52428800) /* this is 50 MB */
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ntam(
     int                 argc,
     char               *argv[]

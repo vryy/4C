@@ -22,7 +22,6 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_comm/comm_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
