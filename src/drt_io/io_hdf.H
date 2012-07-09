@@ -18,8 +18,12 @@ Maintainer: Ulrich Kuettler
 
 #ifdef BINIO
 
-#define H5Gcreate_vers 1
-#define H5Dopen_vers 1
+#ifndef H5GCreate_vers
+  #define H5Gcreate_vers 1
+#endif
+#ifndef H5Dopen_vers
+  #define H5Dopen_vers 1
+#endif
 
 #include <hdf5.h>
 

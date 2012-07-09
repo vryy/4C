@@ -18,6 +18,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_opti/topopt_fluidAdjointImplTimeIntegration.H"
 #include "../linalg/linalg_solver.H"
 

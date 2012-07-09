@@ -12,20 +12,12 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
-
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_dserror.H"
-
 #include "io.H"
 #include "io_control.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 
@@ -58,7 +50,7 @@ IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, string name)
+void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::string name)
 {
 #ifdef BINIO
   MAP* result = map_read_map(restart_step_, name.c_str());
@@ -74,13 +66,13 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, strin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadSerialDenseMatrix(RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > mapdata,
-                                                     string name)
+void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata,
+                                                     std::string name)
 {
 #ifdef BINIO
   MAP* result = map_read_map(restart_step_, name.c_str());
-  string id_path = map_read_string(result, "ids");
-  string value_path = map_read_string(result, "values");
+  std::string id_path = map_read_string(result, "ids");
+  std::string value_path = map_read_string(result, "values");
   int columns = map_find_int(result,"columns",&columns);
   if (not map_find_int(result,"columns",&columns))
   {
@@ -89,14 +81,14 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(RefCountPtr<std::map<int, R
   if (columns != 1)
     dserror("got multivector with name '%s', vector<char> expected", name.c_str());
 
-  RefCountPtr<Epetra_Map> elemap;
-  RefCountPtr<std::vector<char> > data = reader_->ReadResultDataVecChar(id_path, value_path, columns,
+  Teuchos::RCP<Epetra_Map> elemap;
+  Teuchos::RCP<std::vector<char> > data = reader_->ReadResultDataVecChar(id_path, value_path, columns,
                                                                         dis_->Comm(), elemap);
 
-  vector<char>::size_type position=0;
+  std::vector<char>::size_type position=0;
   for (int i=0;i<elemap->NumMyElements();++i)
   {
-    RefCountPtr<Epetra_SerialDenseMatrix> matrix = rcp(new Epetra_SerialDenseMatrix);
+    Teuchos::RCP<Epetra_SerialDenseMatrix> matrix = Teuchos::rcp(new Epetra_SerialDenseMatrix);
     DRT::ParObject::ExtractfromPack(position, *data, *matrix);
     (*mapdata)[elemap->GID(i)]=matrix;
   }
@@ -106,12 +98,12 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(RefCountPtr<std::map<int, R
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, string name)
+void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
 #ifdef BINIO
   MAP* result = map_read_map(restart_step_, name.c_str());
-  string id_path = map_read_string(result, "ids");
-  string value_path = map_read_string(result, "values");
+  std::string id_path = map_read_string(result, "ids");
+  std::string value_path = map_read_string(result, "values");
   int columns;
   if (not map_find_int(result,"columns",&columns))
   {
@@ -130,15 +122,15 @@ void IO::DiscretizationReader::ReadMesh(int step)
 #ifdef BINIO
   FindMeshGroup(step, input_->ControlFile());
 
-  Teuchos::RCP<vector<char> > nodedata =
+  Teuchos::RCP<std::vector<char> > nodedata =
     meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
 
-  Teuchos::RCP<vector<char> > elementdata =
+  Teuchos::RCP<std::vector<char> > elementdata =
     meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> noderowmap = rcp(new Epetra_Map(*dis_->NodeRowMap()));
-  Teuchos::RCP<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*dis_->NodeColMap()));
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeColMap()));
 
   // unpack nodes and elements and redistirbuted to current layout
 
@@ -158,8 +150,8 @@ void IO::DiscretizationReader::ReadMesh(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<vector<double> >& doublevec,
-							  const string name)
+void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vector<double> >& doublevec,
+							  const std::string name)
 {
 #ifdef BINIO
   int length;
@@ -170,7 +162,7 @@ void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<vector<do
     // was muß aber jetzt hier wirklich geschehen???
 
     MAP* result = map_read_map(restart_step_, name.c_str());
-    string value_path = map_read_string(result, "values");
+    std::string value_path = map_read_string(result, "values");
 
     doublevec = reader_->ReadDoubleVector(value_path);
 
@@ -191,7 +183,7 @@ void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<vector<do
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int IO::DiscretizationReader::ReadInt(string name)
+int IO::DiscretizationReader::ReadInt(std::string name)
 {
   return map_read_int(restart_step_, name.c_str());
 }
@@ -199,7 +191,7 @@ int IO::DiscretizationReader::ReadInt(string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double IO::DiscretizationReader::ReadDouble(string name)
+double IO::DiscretizationReader::ReadDouble(std::string name)
 {
   return map_read_real(restart_step_, name.c_str());
 }
@@ -336,11 +328,11 @@ IO::DiscretizationReader::OpenFiles(const char* filestring,
     numoutputproc = 1;
   }
 
-  const string name = input_->FileName();
+  const std::string name = input_->FileName();
 
-  string dirname;
-  const string::size_type pos = name.find_last_of('/');
-  if (pos==string::npos)
+  std::string dirname;
+  const std::string::size_type pos = name.find_last_of('/');
+  if (pos==std::string::npos)
   {
     dirname = "";
   }
@@ -349,10 +341,10 @@ IO::DiscretizationReader::OpenFiles(const char* filestring,
     dirname = name.substr(0,pos+1);
   }
 
-  const string filename = map_read_string(result_step, filestring);
+  const std::string filename = map_read_string(result_step, filestring);
 
   const Epetra_Comm& comm = dis_->Comm();
-  Teuchos::RCP<HDFReader> reader = rcp(new HDFReader(dirname));
+  Teuchos::RCP<HDFReader> reader = Teuchos::rcp(new HDFReader(dirname));
   reader->Open(filename,numoutputproc,comm.NumProc(),comm.MyPID());
   return reader;
 }
@@ -436,27 +428,23 @@ IO::DiscretizationWriter::~DiscretizationWriter()
    	// Get the number of open groups
     int num_og = H5Fget_obj_count(resultfile_, H5F_OBJ_GROUP);
 
-    // get pointer to store ids of open groups
-    hid_t      *oid_list;
-    oid_list = (hid_t*)calloc((size_t)num_og, sizeof(hid_t));
+    // get vector to store ids of open groups
+    std::vector<hid_t> oid_list(num_og, -1);
 
-    if(oid_list != NULL)
+    herr_t status = H5Fget_obj_ids(resultfile_,H5F_OBJ_GROUP,num_og,&(oid_list[0]));
+    if (status < 0)
+       dserror("Failed to get id's of open groups in resultfile");
+
+    // loop over open groups
+    for( int i = 0; i < num_og; i++ )
     {
-      herr_t status = H5Fget_obj_ids(resultfile_,H5F_OBJ_GROUP,num_og,oid_list);
-      if (status < 0)
-         dserror("Failed to get id's of open groups in resultfile");
-
-      // loop over open groups
-      for( int i = 0; i < num_og; i++ )
-      {
-        const herr_t status_g = H5Gclose(oid_list[i]);
-            if (status_g < 0)
-              dserror("Failed to close HDF-group in resultfile");
-      }
+      const herr_t status_g = H5Gclose(oid_list[i]);
+          if (status_g < 0)
+            dserror("Failed to close HDF-group in resultfile");
     }
     //now close the result file
-    const herr_t status = H5Fclose(resultfile_);
-    if (status < 0)
+    const herr_t status_c = H5Fclose(resultfile_);
+    if (status_c < 0)
     {
       dserror("Failed to close HDF file %s", resultfilename_.c_str());
     }
@@ -493,7 +481,7 @@ void IO::DiscretizationWriter::CreateMeshFile(const int step)
 {
 #ifdef BINIO
 
-  ostringstream meshname;
+  std::ostringstream meshname;
 
   meshname << output_->FileName()
            << ".mesh."
@@ -530,7 +518,7 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
 {
 #ifdef BINIO
 
-  ostringstream resultname;
+  std::ostringstream resultname;
   resultname << output_->FileName()
              << ".result."
              << dis_->Name()
@@ -575,7 +563,7 @@ void IO::DiscretizationWriter::NewResultFile(int numb_run)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::NewResultFile(string name_appendix, int numb_run)
+void IO::DiscretizationWriter::NewResultFile(std::string name_appendix, int numb_run)
 {
   resultfile_changed_ = -1;
   meshfile_changed_ = -1;
@@ -602,7 +590,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 
   step_ = step;
   time_ = time;
-  ostringstream groupname;
+  std::ostringstream groupname;
   groupname << "step" << step_;
 
   if (resultgroup_ != -1)
@@ -640,9 +628,9 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
         output_->ControlFile()
           << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
       }
-      string filename;
-      const string::size_type pos = resultfilename_.find_last_of('/');
-      if (pos==string::npos)
+      std::string filename;
+      const std::string::size_type pos = resultfilename_.find_last_of('/');
+      if (pos==std::string::npos)
         filename = resultfilename_;
       else
         filename = resultfilename_.substr(pos+1);
@@ -662,7 +650,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 /*----------------------------------------------------------------------*/
 /*write double to control file                                  tk 04/08*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteDouble(const string name, const double value)
+void IO::DiscretizationWriter::WriteDouble(const std::string name, const double value)
 {
 #ifdef BINIO
 
@@ -670,7 +658,7 @@ void IO::DiscretizationWriter::WriteDouble(const string name, const double value
   {
     // using a local stringstream we make sure that we do not change
     // the output formatting of control file permanently
-    stringstream s;
+    std::stringstream s;
      s<< "    " << name << " = " << std::scientific << std::setprecision(16)
       << value << "\n\n" << std::flush;
     output_->ControlFile()<<s.str() << std::flush;
@@ -682,7 +670,7 @@ void IO::DiscretizationWriter::WriteDouble(const string name, const double value
 /*----------------------------------------------------------------------*/
 /*write int to control file                                     tk 04/08*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteInt(const string name, const int value)
+void IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
 {
 #ifdef BINIO
 
@@ -696,13 +684,13 @@ void IO::DiscretizationWriter::WriteInt(const string name, const int value)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteVector(const string name,
+void IO::DiscretizationWriter::WriteVector(const std::string name,
                                            Teuchos::RCP<Epetra_MultiVector> vec,
                                            IO::DiscretizationWriter::VectorType vt)
 {
 #ifdef BINIO
 
-  string valuename = name + ".values";
+  std::string valuename = name + ".values";
   double* data = vec->Values();
   const hsize_t size = vec->MyLength() * vec->NumVectors();
   int length = 1;
@@ -712,7 +700,7 @@ void IO::DiscretizationWriter::WriteVector(const string name,
   if (make_status < 0)
     dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
 
-  string idname;
+  std::string idname;
 
   // We maintain a map cache to avoid rewriting the same map all the
   // time. The idea is that a map is never modified once it is
@@ -721,7 +709,7 @@ void IO::DiscretizationWriter::WriteVector(const string name,
   // all maps with the same data pointer are guaranteed to be
   // identical.
 
-  ostringstream groupname;
+  std::ostringstream groupname;
   groupname << "/step"
             << step_
             << "/"
@@ -775,6 +763,7 @@ void IO::DiscretizationWriter::WriteVector(const string name,
       break;
     default:
       dserror("unknown vector type %d", vt);
+      break;
     }
     output_->ControlFile()
       << "    " << name << ":\n"
@@ -796,21 +785,21 @@ void IO::DiscretizationWriter::WriteVector(const string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteVector(const string name,
+void IO::DiscretizationWriter::WriteVector(const std::string name,
                                            const std::vector<char>& vec,
                                            const Epetra_Map& elemap,
                                            IO::DiscretizationWriter::VectorType vt)
 {
 #ifdef BINIO
 
-  string valuename = name + ".values";
+  std::string valuename = name + ".values";
   const hsize_t size = vec.size();
   const char* data = &vec[0];
   const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),1,&size,data);
   if (make_status < 0)
     dserror("Failed to create dataset in HDF-resultfile");
 
-  string idname;
+  std::string idname;
 
   // We maintain a map cache to avoid rewriting the same map all the
   // time. The idea is that a map is never modified once it is
@@ -819,7 +808,7 @@ void IO::DiscretizationWriter::WriteVector(const string name,
   // all maps with the same data pointer are guaranteed to be
   // identical.
 
-  ostringstream groupname;
+  std::ostringstream groupname;
   groupname << "/step"
             << step_
             << "/"
@@ -870,6 +859,7 @@ void IO::DiscretizationWriter::WriteVector(const string name,
       break;
     default:
       dserror("unknown vector type %d", vt);
+      break;
     }
     output_->ControlFile()
       << "    " << name << ":\n"
@@ -891,11 +881,11 @@ void IO::DiscretizationWriter::WriteVector(const string name,
 /*----------------------------------------------------------------------*
  *                                                          a.ger 11/07 *
  *----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteCondition(const string condname) const
+void IO::DiscretizationWriter::WriteCondition(const std::string condname) const
 {
 #ifdef BINIO
   // put condition into block
-  Teuchos::RCP<vector<char> > block = dis_->PackCondition(condname);
+  Teuchos::RCP<std::vector<char> > block = dis_->PackCondition(condname);
 
   // write block to file. Note: Block can be empty, if the condition is not found,
   // which means it is not used -> so no dserror() here
@@ -934,13 +924,13 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     CreateMeshFile(step);
     write_file = true;
   }
-  ostringstream name;
+  std::ostringstream name;
   name << "step" << step;
   meshgroup_ = H5Gcreate(meshfile_,name.str().c_str(),0);
   if (meshgroup_ < 0)
     dserror("Failed to write group in HDF-meshfile");
 
-  Teuchos::RCP<vector<char> > elementdata = dis_->PackMyElements();
+  Teuchos::RCP<std::vector<char> > elementdata = dis_->PackMyElements();
   if (elementdata->size()==0)
     dserror("no element data on proc %d. Too few elements?", dis_->Comm().MyPID());
   hsize_t dim = static_cast<hsize_t>(elementdata->size());
@@ -948,7 +938,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   if (element_status < 0)
     dserror("Failed to create dataset in HDF-meshfile");
 
-  Teuchos::RCP<vector<char> > nodedata = dis_->PackMyNodes();
+  Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
   dim = static_cast<hsize_t>(nodedata->size());
   const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
   if (node_status < 0)
@@ -980,9 +970,9 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
         output_->ControlFile()
           << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
       }
-      string filename;
-      string::size_type pos = meshfilename_.find_last_of('/');
-      if (pos==string::npos)
+      std::string filename;
+      std::string::size_type pos = meshfilename_.find_last_of('/');
+      if (pos==std::string::npos)
         filename = meshfilename_;
       else
         filename = meshfilename_.substr(pos+1);
@@ -1006,7 +996,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteMesh(const int step, const double time, string name_base_file )
+void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std::string name_base_file )
 {
 #ifdef BINIO
 
@@ -1029,7 +1019,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time, stri
     // knotvectors for nurbs-discretisation
     //WriteKnotvector();
     // create name for meshfile as in createmeshfile which is not called here
-    ostringstream meshname;
+    std::ostringstream meshname;
 
     meshname << name_base_file
                << ".mesh."
@@ -1043,9 +1033,9 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time, stri
         output_->ControlFile()
           << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
       }
-      string filename;
-      string::size_type pos = meshfilename_.find_last_of('/');
-      if (pos==string::npos)
+      std::string filename;
+      std::string::size_type pos = meshfilename_.find_last_of('/');
+      if (pos==std::string::npos)
         filename = meshfilename_;
       else
         filename = meshfilename_.substr(pos+1);
@@ -1063,8 +1053,8 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time, stri
 void IO::DiscretizationWriter::WriteElementData()
 {
 #ifdef BINIO
-  map<string,int>::const_iterator fool;
-  map<string,int> names;   // contains name and dimension of data
+  std::map<std::string,int>::const_iterator fool;
+  std::map<std::string,int> names;   // contains name and dimension of data
 
   // loop all elements and build map of data names and dimensions
   const Epetra_Map* elerowmap = dis_->ElementRowMap();
@@ -1084,7 +1074,7 @@ void IO::DiscretizationWriter::WriteElementData()
     if (fool->second<1) dserror("Dimension of data must be at least 1");
 
   // loop all names aquired form the elements and fill data vectors
-  vector<double> eledata(0);
+  std::vector<double> eledata(0);
   for (fool = names.begin(); fool!= names.end(); ++fool)
   {
     const int dimension = fool->second;
@@ -1125,7 +1115,7 @@ void IO::DiscretizationWriter::WriteKnotvector() const
   if(nurbsdis!=NULL)
   {
     // get knotvector from nurbsdis
-    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // put knotvector into block
     DRT::PackBuffer block;
@@ -1159,15 +1149,15 @@ void IO::DiscretizationWriter::WriteKnotvector() const
 /*----------------------------------------------------------------------*/
 /* write a stl vector of doubles from proc0                             */
 /*----------------------------------------------------------------------*/
-  void IO::DiscretizationWriter::WriteRedundantDoubleVector(const string name,
-							    Teuchos::RCP<vector<double> > doublevec)
+  void IO::DiscretizationWriter::WriteRedundantDoubleVector(const std::string name,
+							    Teuchos::RCP<std::vector<double> > doublevec)
 {
 #ifdef BINIO
   if (dis_->Comm().MyPID() == 0)
   {
     // only proc0 writes the vector entities to the binary data
     // an appropriate name has to be provided
-    string valuename = name + ".values";
+    std::string valuename = name + ".values";
     const hsize_t size = doublevec->size();
     int length = 1;
     if (size==0)
@@ -1177,7 +1167,7 @@ void IO::DiscretizationWriter::WriteKnotvector() const
       dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
 
     // do I need the following naming stuff?
-    ostringstream groupname;
+    std::ostringstream groupname;
 
     groupname << "/step"
 	      << step_

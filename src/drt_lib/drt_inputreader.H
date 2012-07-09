@@ -30,10 +30,6 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-using namespace std;
-using Teuchos::RCP;
-using Teuchos::ParameterList;
-
 namespace DRT
 {
 
@@ -85,10 +81,10 @@ class DatFileReader
 public:
 
   /// construct a reader for a given file
-  DatFileReader(string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag=0, bool dumpinput=true);
+  DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag=0, bool dumpinput=true);
 
   /// return my inputfile name
-  string MyInputfileName() const;
+  std::string MyInputfileName() const;
 
   /// return my output flag
   int MyOutputFlag() const;
@@ -99,22 +95,22 @@ public:
     read so that we can read them in parallel. This is done using the
     NodeReader and the ElementReader.
    */
-  ifstream::pos_type ExcludedSectionPosition(string section) const;
+  std::ifstream::pos_type ExcludedSectionPosition(std::string section) const;
 
   /// get number of lines of excluded section
-  unsigned ExcludedSectionLength(string section) const;
+  unsigned int ExcludedSectionLength(std::string section) const;
 
   /// return my communicator
   Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
 
   /// convert a parameter section in extended format in a parameter list
-  bool ReadSection(string name, Teuchos::ParameterList& list);
+  bool ReadSection(std::string name, Teuchos::ParameterList& list);
 
   /// convert a parameter section in GiD format in a parameter list
-  bool ReadGidSection(string name, Teuchos::ParameterList& list);
+  bool ReadGidSection(std::string name, Teuchos::ParameterList& list);
 
   /// return the content of a section
-  vector<const char*> Section(string name);
+  std::vector<const char*> Section(std::string name);
 
   /// read a node-design topology section
   void ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode);
@@ -129,7 +125,7 @@ public:
   */
   void ReadKnots(
     const int                              dim     ,
-    const string                           name    ,
+    const std::string                           name    ,
     Teuchos::RCP<DRT::NURBS::Knotvector> & disknots
     );
 
@@ -139,10 +135,10 @@ public:
 private:
 
   /// parse name string an get sublist of global input list
-  Teuchos::ParameterList& FindSublist(string name, Teuchos::ParameterList& list);
+  Teuchos::ParameterList& FindSublist(std::string name, Teuchos::ParameterList& list);
 
   /// parse the value and add the key,value pair to the list
-  void AddEntry(string key, string value, Teuchos::ParameterList& list);
+  void AddEntry(std::string key, std::string value, Teuchos::ParameterList& list);
 
   /// actual read dat file, store and broadcast general sections
   void ReadDat();
@@ -151,7 +147,7 @@ private:
   void DumpInput();
 
   /// input file name
-  string filename_;
+  std::string filename_;
 
   /// my communicator
   Teuchos::RCP<Epetra_Comm> comm_;
@@ -163,19 +159,19 @@ private:
   int outflag_;
 
   /// the whole input file, lines separated by 0
-  vector<char> inputfile_;
+  std::vector<char> inputfile_;
 
   /// pointers to line beginnings
-  vector<char*> lines_;
+  std::vector<char*> lines_;
 
   /// file positions of skipped sections
-  map<string,std::pair<ifstream::pos_type,unsigned> > excludepositions_;
+  std::map<std::string,std::pair<std::ifstream::pos_type,unsigned int> > excludepositions_;
 
   /// section positions of all sections
-  map<string,unsigned> positions_;
+  std::map<std::string,unsigned int> positions_;
 
   /// protocol of known and unknown section names
-  map<string,bool> knownsections_;
+  std::map<std::string,bool> knownsections_;
 };
 
 

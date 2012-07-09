@@ -16,15 +16,28 @@ Maintainer: Ulrich Kuettler
 #define IO_DRT_H
 
 
-
-#include <Epetra_BlockMap.h>
-
-#include "../drt_lib/drt_discret.H"
 #include "io_hdf.H"
-#include "../drt_lib/standardtypes_cpp.H"
 
-extern "C" {
+#include <Teuchos_RCP.hpp>
+
+#include <map>
+#include <string>
+#include <vector>
+
+extern "C" { // this needs to go after the stl headers or else they go crazy
 #include "../pss_full/pss_table.h"
+}
+
+
+class Epetra_Vector;
+class Epetra_MultiVector;
+class Epetra_SerialDenseMatrix;
+class Epetra_Map;
+class Epetra_BlockMap;
+class Epetra_BlockMapData;
+namespace DRT
+{
+  class Discretization;
 }
 
 /// IO: input/output facility
@@ -33,6 +46,7 @@ namespace IO
 
   class InputControl;
   class OutputControl;
+  class HDFReader;
 
 /*!
   \brief base class of baci restart
@@ -57,20 +71,20 @@ public:
                        int step);
 
   /// read into given vector
-  void ReadVector(Teuchos::RCP<Epetra_Vector> vec, string name);
+  void ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::string name);
 
   /// read into given vector
-  void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, string name);
+  void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
   /// read into given std::map<int, RCP<Epetra_SerialDenseMatrix> >
-  void ReadSerialDenseMatrix(RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > mapdata,
-                             string name);
+  void ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata,
+                             std::string name);
 
   /// read an integer value from the control file
-  int ReadInt(string name);
+  int ReadInt(std::string name);
 
   /// read a double value from the control file
-  double ReadDouble(string name);
+  double ReadDouble(std::string name);
 
   /// read into the discretization given in the constructor
   void ReadMesh(int step);
@@ -81,7 +95,7 @@ public:
     It is assumed that this is a 'small' vector which has to be present on all procs.
     It is read from proc0 again and then communicated to all present procs.
    */
-  void ReadRedundantDoubleVector(Teuchos::RCP<vector<double> >& doublevec, const string name);
+  void ReadRedundantDoubleVector(Teuchos::RCP<std::vector<double> >& doublevec, const std::string name);
 
 protected:
 
@@ -189,7 +203,7 @@ public:
     \author tk
     \date 04/08
   */
-  virtual void WriteDouble(const string name, const double value);
+  virtual void WriteDouble(const std::string name, const double value);
 
   //! write a result integer to constrol file
   /*!
@@ -202,7 +216,7 @@ public:
     \author tk
     \date 04/08
   */
-  virtual void WriteInt(const string name, const int value);
+  virtual void WriteInt(const std::string name, const int value);
 
 
   //! write a result vector
@@ -214,7 +228,7 @@ public:
     \param vec  : the result data vector
     \param vt   : vector type
   */
-  virtual void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, VectorType vt=dofvector);
+  virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_MultiVector> vec, VectorType vt=dofvector);
 
   //! write a result vector
   /*!
@@ -226,10 +240,10 @@ public:
     \param elemap: element map of discretization
     \param vt   : vector type
   */
-  virtual void WriteVector(const string name, const std::vector<char>& vec, const Epetra_Map& elemap, VectorType vt=dofvector);
+  virtual void WriteVector(const std::string name, const std::vector<char>& vec, const Epetra_Map& elemap, VectorType vt=dofvector);
 
   //! write a condition identified by its name
-  virtual void WriteCondition(const string condname) const;
+  virtual void WriteCondition(const std::string condname) const;
 
 
   /*!
@@ -243,7 +257,7 @@ public:
   //! write new "field" group to control file including node and element chunks
   virtual void WriteMesh(const int step, const double time);
   // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
-  virtual void WriteMesh(const int step, const double time, string name_base_file );
+  virtual void WriteMesh(const int step, const double time, std::string name_base_file );
 
   //! write element data to file
   virtual void WriteElementData();
@@ -254,8 +268,8 @@ public:
     which is present on all procs. It shall be read from proc0 again and then
     communicated to all present procs.
    */
-  virtual void WriteRedundantDoubleVector(const string name,
-					  Teuchos::RCP<vector<double> > doublevec);
+  virtual void WriteRedundantDoubleVector(const std::string name,
+					  Teuchos::RCP<std::vector<double> > doublevec);
 
   /// overwrite result files for the inverse analysis
   void OverwriteResultFile();
@@ -264,7 +278,7 @@ public:
   void NewResultFile(int numb_run);
 
   /// creating new result files for the mlmc
-  void NewResultFile(string name_appendix, int numb_run);
+  void NewResultFile(std::string name_appendix, int numb_run);
 
   //@}
 
@@ -288,8 +302,8 @@ private:
 #ifdef BINIO
   hid_t meshfile_;
   hid_t resultfile_;
-  string meshfilename_;
-  string resultfilename_;
+  std::string meshfilename_;
+  std::string resultfilename_;
   hid_t meshgroup_;
   hid_t resultgroup_;
 #endif

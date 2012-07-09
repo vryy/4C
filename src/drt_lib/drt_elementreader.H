@@ -79,7 +79,7 @@ public:
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
    */
-  ElementReader(RCP<Discretization> dis, const DatFileReader& reader, string sectionname);
+  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, string sectionname);
 
   /// construct element reader for a given field that reads a given section
   /*!
@@ -90,7 +90,7 @@ public:
     \param sectionname (i) the section that contains the element lines
     \param elementtype (i) element type name to read in this discretization
    */
-  ElementReader(RCP<Discretization> dis, const DatFileReader& reader, string sectionname, string elementtype);
+  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, string sectionname, string elementtype);
 
   /// construct element reader for a given field that reads a given section
   /*!
@@ -101,10 +101,10 @@ public:
     \param sectionname (i) the section that contains the element lines
     \param elementtypes (i) element type names to read in this discretization
    */
-  ElementReader(RCP<Discretization> dis, const DatFileReader& reader, string sectionname, const std::set<std::string> & elementtypes);
+  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, string sectionname, const std::set<std::string> & elementtypes);
 
   /// give the discretization this reader fills
-  RCP<Discretization> MyDis() const { return dis_; }
+  Teuchos::RCP<Discretization> MyDis() const { return dis_; }
 
 private:
 
@@ -129,7 +129,7 @@ private:
   const DatFileReader& reader_;
 
   /// my comm
-  RCP<Epetra_Comm> comm_;
+  Teuchos::RCP<Epetra_Comm> comm_;
 
   /// my section to read
   string sectionname_;
@@ -140,22 +140,22 @@ private:
     on processor 0. We need it to easily figure out to which
     discretization a node belongs.
    */
-  set<int> nodes_;
+  std::set<int> nodes_;
 
   /// my discretization
-  RCP<DRT::Discretization> dis_;
+  Teuchos::RCP<DRT::Discretization> dis_;
 
   /// node row map
-  RCP<Epetra_Map> rownodes_;
+  Teuchos::RCP<Epetra_Map> rownodes_;
 
   /// node col map
-  RCP<Epetra_Map> colnodes_;
+  Teuchos::RCP<Epetra_Map> colnodes_;
 
   /// element row map
-  RCP<Epetra_Map> roweles_;
+  Teuchos::RCP<Epetra_Map> roweles_;
 
   /// element col map
-  RCP<Epetra_Map> coleles_;
+  Teuchos::RCP<Epetra_Map> coleles_;
 
   /// element type names to read
   std::set<std::string> elementtypes_;

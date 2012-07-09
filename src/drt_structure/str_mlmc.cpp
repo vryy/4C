@@ -25,6 +25,7 @@ Maintainer: Jonas Biehler
 #include "str_mlmc.H"
 #include "../drt_mlmc/mlmc.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_io/io.H"

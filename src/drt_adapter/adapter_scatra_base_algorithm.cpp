@@ -15,6 +15,7 @@ Maintainer: Georg Bauer
 
 #include "adapter_scatra_base_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"

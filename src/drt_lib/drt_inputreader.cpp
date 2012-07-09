@@ -24,6 +24,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_io/io_control.H"
 #include "../drt_nurbs_discret/drt_knotvector.H"
 
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/trim_all.hpp>
 #include <Epetra_Time.h>
 #include <iterator>
 #include <sstream>
@@ -42,18 +44,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 static std::string trim(const std::string& line)
 {
-  std::istringstream t;
-  std::string s;
-  std::string newline;
-  t.str(line);
-  while (t >> s)
-  {
-    newline.append(s);
-    newline.append(" ");
-  }
-  if (newline.size()>0)
-    newline.resize(newline.size()-1);
-  return newline;
+  return boost::algorithm::trim_all_copy(boost::algorithm::replace_all_copy(line,"\t"," "));
 }
 
 
@@ -65,7 +56,7 @@ namespace INPUT
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DatFileReader::DatFileReader(string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag, bool dumpinput)
+DatFileReader::DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag, bool dumpinput)
   : filename_(filename), comm_(comm), outflag_(outflag)
 {
   ReadDat();
@@ -76,7 +67,7 @@ DatFileReader::DatFileReader(string filename, Teuchos::RCP<Epetra_Comm> comm, in
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string DatFileReader::MyInputfileName() const
+std::string DatFileReader::MyInputfileName() const
 {
   return filename_;
 }
@@ -92,9 +83,9 @@ int DatFileReader::MyOutputFlag() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ifstream::pos_type DatFileReader::ExcludedSectionPosition(string section) const
+std::ifstream::pos_type DatFileReader::ExcludedSectionPosition(std::string section) const
 {
-  map<string,std::pair<ifstream::pos_type,unsigned> >::const_iterator i = excludepositions_.find(section);
+  std::map<std::string,std::pair<std::ifstream::pos_type,unsigned int> >::const_iterator i = excludepositions_.find(section);
   if (i==excludepositions_.end())
   {
     //dserror("unknown section '%s'",section.c_str());
@@ -106,9 +97,9 @@ ifstream::pos_type DatFileReader::ExcludedSectionPosition(string section) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-unsigned DatFileReader::ExcludedSectionLength(string section) const
+unsigned int DatFileReader::ExcludedSectionLength(std::string section) const
 {
-  map<string,std::pair<ifstream::pos_type,unsigned> >::const_iterator i = excludepositions_.find(section);
+  std::map<std::string,std::pair<std::ifstream::pos_type,unsigned int> >::const_iterator i = excludepositions_.find(section);
   if (i==excludepositions_.end())
   {
     //dserror("unknown section '%s'",section.c_str());
@@ -120,7 +111,7 @@ unsigned DatFileReader::ExcludedSectionLength(string section) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DatFileReader::ReadSection(string name, Teuchos::ParameterList& list)
+bool DatFileReader::ReadSection(std::string name, Teuchos::ParameterList& list)
 {
   if (name.length() < 3 or name[0]!='-' or name[1]!='-')
     dserror("illegal section name '%s'", name.c_str());
@@ -133,11 +124,11 @@ bool DatFileReader::ReadSection(string name, Teuchos::ParameterList& list)
   if (positions_.find(name)==positions_.end())
     return false;
 
-  for (unsigned pos = positions_[name]+1;
+  for (size_t pos = positions_[name]+1;
        pos < lines_.size();
        ++pos)
   {
-    string line = lines_[pos];
+    std::string line = lines_[pos];
     if (line[0]=='-' and line[1]=='-')
     {
       break;
@@ -163,7 +154,7 @@ bool DatFileReader::ReadSection(string name, Teuchos::ParameterList& list)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
+bool DatFileReader::ReadGidSection(std::string name, Teuchos::ParameterList& list)
 {
   if (name.length() < 3 or name[0]!='-' or name[1]!='-')
     dserror("illegal section name '%s'", name.c_str());
@@ -176,28 +167,28 @@ bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
   if (positions_.find(name)==positions_.end())
     return false;
 
-  for (unsigned pos = positions_[name]+1;
+  for (size_t pos = positions_[name]+1;
        pos < lines_.size();
        ++pos)
   {
-    string line = lines_[pos];
+    std::string line = lines_[pos];
     if (line[0]=='-' and line[1]=='-')
     {
       break;
     }
 
-    string key;
-    string value;
+    std::string key;
+    std::string value;
 
-    string::size_type loc = line.find(" ");
-    if (loc==string::npos)
+    std::string::size_type loc = line.find(" ");
+    if (loc==std::string::npos)
     {
       //dserror("line '%s' with just one word in GiD parameter section", line.c_str());
       key = line;
     }
     else
     {
-      //if (line.find(" ", loc+1)!=string::npos)
+      //if (line.find(" ", loc+1)!=std::string::npos)
       //  dserror("more that two words on line '%s' in GiD parameter section", line.c_str());
       key = line.substr(0,loc);
       value = line.substr(loc+1);
@@ -214,18 +205,18 @@ bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-vector<const char*> DatFileReader::Section(string name)
+std::vector<const char*> DatFileReader::Section(std::string name)
 {
   // The section name is desired from outside. Thus, we consider it as valid
   knownsections_[name] = true;
 
-  vector<const char*> sec;
+  std::vector<const char*> sec;
 
-  map<string,unsigned>::const_iterator i = positions_.find(name);
+  std::map<std::string,unsigned int>::const_iterator i = positions_.find(name);
   if (i!=positions_.end())
   {
 
-    for (unsigned pos = i->second+1;
+    for (size_t pos = i->second+1;
          pos < lines_.size();
          ++pos)
     {
@@ -254,10 +245,10 @@ void DatFileReader::ReadDesign(
   std::string sectionname = name + "-NODE TOPOLOGY";
   std::string marker = std::string("--") + sectionname;
 
-  map<string,unsigned>::const_iterator i = positions_.find(marker);
+  std::map<std::string,unsigned int>::const_iterator i = positions_.find(marker);
   if (i!=positions_.end())
   {
-    for (unsigned pos = i->second+1; pos < lines_.size(); ++pos)
+    for (size_t pos = i->second+1; pos < lines_.size(); ++pos)
     {
       const char* l = lines_[pos];
       if (l[0]=='-' and l[1]=='-')
@@ -304,7 +295,7 @@ void DatFileReader::ReadDesign(
 //----------------------------------------------------------------------
 void DatFileReader::ReadKnots(
   const int                              dim     ,
-  const string                           name    ,
+  const std::string                           name    ,
   Teuchos::RCP<DRT::NURBS::Knotvector> & disknots
   )
 {
@@ -316,7 +307,7 @@ void DatFileReader::ReadKnots(
 
   // only the knotvector section of this discretisation
   // type is of interest
-  string field;
+  std::string field;
   if(name=="fluid" or name=="xfluid")
   {
     field = "FLUID";
@@ -339,7 +330,7 @@ void DatFileReader::ReadKnots(
   }
 
   // another valid section name was found
-  const string sectionname = "--"+field+" KNOTVECTORS";
+  const std::string sectionname = "--"+field+" KNOTVECTORS";
   knownsections_[sectionname] = true;
 
   if (myrank==0)
@@ -361,11 +352,11 @@ void DatFileReader::ReadKnots(
   //--------------------------------------------------------------------
   {
     // open input file --- this is done on all procs
-    ifstream file;
+    std::ifstream file;
     file.open(filename_.c_str());
 
     // temporary string
-    string tmp;
+    std::string tmp;
 
     // flag indicating knot vector section in input
     bool knotvectorsection=false;
@@ -380,13 +371,13 @@ void DatFileReader::ReadKnots(
       if((tmp[0]=='-'&&tmp[1]=='-'))
       {
         // check whether it is the knotvectorsection
-        string::size_type loc=string::npos;
+        std::string::size_type loc=std::string::npos;
 
         // only the knotvector section of this discretisation
         // type is of interest
         loc= tmp.rfind(field);
 
-        if (loc == string::npos)
+        if (loc == std::string::npos)
         {
           knotvectorsection=false;
 
@@ -401,7 +392,7 @@ void DatFileReader::ReadKnots(
           // check whether second keyword is knotvector
           loc= tmp.rfind("KNOTVECTORS");
 
-          if (loc != string::npos)
+          if (loc != std::string::npos)
           {
             // if this is true, we are at the beginning of a
             // knot section
@@ -424,10 +415,10 @@ void DatFileReader::ReadKnots(
       if(knotvectorsection)
       {
         // check for a new patch
-        string::size_type loc;
+        std::string::size_type loc;
 
         loc = tmp.rfind("ID");
-        if (loc != string::npos)
+        if (loc != std::string::npos)
         {
           // increase number of patches
           npatches++;
@@ -471,15 +462,15 @@ void DatFileReader::ReadKnots(
   {
     // this is a pointer to the knots of one patch in one direction
     // we will read them and put them
-    vector<Teuchos::RCP<vector<double> > > patch_knots(dim);
+    std::vector<Teuchos::RCP<std::vector<double> > > patch_knots(dim);
 
     // open input file --- this is done on all procs
-    ifstream file;
+    std::ifstream file;
 
     file.open(filename_.c_str());
 
     // temporary string
-    string tmp;
+    std::string tmp;
 
     // start to read something when read is true
     bool read=false;
@@ -492,15 +483,15 @@ void DatFileReader::ReadKnots(
     // index for u/v/w
     int            actdim          =-1;
     // ints for the number of knots
-    vector<int>    n_x_m_x_l(dim);
+    std::vector<int>    n_x_m_x_l(dim);
     // ints for patches degrees
-    vector<int>    degree(dim);
+    std::vector<int>    degree(dim);
     // a vector of strings holding the knotvectortypes read
-    vector<string> knotvectortype(dim);
+    std::vector<std::string> knotvectortype(dim);
 
     // count for sanity check
     int            count_read=0;
-    vector<int>    count_vals(dim);
+    std::vector<int>    count_vals(dim);
 
     // loop lines in file
     for (; file;)
@@ -511,13 +502,13 @@ void DatFileReader::ReadKnots(
       if((tmp[0]=='-'&&tmp[1]=='-'))
       {
         // check whether it is the knotvectorsection
-        string::size_type loc=string::npos;
+        std::string::size_type loc=std::string::npos;
 
         // only the knotvector section of this discretisation
         // type is of interest
         loc= tmp.rfind(field);
 
-        if (loc == string::npos)
+        if (loc == std::string::npos)
         {
           knotvectorsection=false;
 
@@ -532,7 +523,7 @@ void DatFileReader::ReadKnots(
           // check whether second keyword is knotvector
           loc= tmp.rfind("KNOTVECTORS");
 
-          if (loc != string::npos)
+          if (loc != std::string::npos)
           {
             // if this is true, we are at the beginning of a
             // knot section
@@ -554,10 +545,10 @@ void DatFileReader::ReadKnots(
       if(knotvectorsection)
       {
         // check for a new patch
-        string::size_type loc=string::npos;
+        std::string::size_type loc=std::string::npos;
 
         loc = tmp.rfind("BEGIN");
-        if (loc != string::npos)
+        if (loc != std::string::npos)
         {
           file >> tmp;
 
@@ -569,7 +560,7 @@ void DatFileReader::ReadKnots(
           // create vectors for knots in this patch
           for(int rr=0;rr<dim;++rr)
           {
-            patch_knots[rr]=rcp(new vector<double>);
+            patch_knots[rr]=rcp(new std::vector<double>);
             (*(patch_knots[rr])).clear();
           }
 
@@ -584,9 +575,9 @@ void DatFileReader::ReadKnots(
 
         // get ID of patch we are currently reading
         loc = tmp.rfind("ID");
-        if (loc != string::npos)
+        if (loc != std::string::npos)
         {
-          string str_npatch;
+          std::string str_npatch;
           file >> str_npatch;
 
           char* endptr = NULL;
@@ -599,9 +590,9 @@ void DatFileReader::ReadKnots(
         // get number of knots in the knotvector direction
         // we are currently reading
         loc = tmp.rfind("NUMKNOTS");
-        if (loc != string::npos)
+        if (loc != std::string::npos)
         {
-          string str_numknots;
+          std::string str_numknots;
           file >> str_numknots;
 
           // increase dimesion for knotvector (i.e. next time
@@ -621,9 +612,9 @@ void DatFileReader::ReadKnots(
         // get number of bspline polinomial associated with
         // knots in this direction
         loc = tmp.rfind("DEGREE");
-        if (loc != string::npos)
+        if (loc != std::string::npos)
         {
-          string str_degree;
+          std::string str_degree;
           file >> str_degree;
 
           char* endptr = NULL;
@@ -634,9 +625,9 @@ void DatFileReader::ReadKnots(
 
         // get type of knotvector (interpolated or periodic)
         loc = tmp.rfind("TYPE");
-        if (loc != string::npos)
+        if (loc != std::string::npos)
         {
-          string type;
+          std::string type;
 
           file >> type;
           knotvectortype[actdim]=type;
@@ -646,7 +637,7 @@ void DatFileReader::ReadKnots(
 
         // locate end of patch
         loc = tmp.rfind("END");
-        if (loc != string::npos)
+        if (loc != std::string::npos)
         {
           for (int rr=0;rr<dim;++rr)
           {
@@ -717,12 +708,12 @@ void DatFileReader::ReadKnots(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::ParameterList& DatFileReader::FindSublist(string name, Teuchos::ParameterList& list)
+Teuchos::ParameterList& DatFileReader::FindSublist(std::string name, Teuchos::ParameterList& list)
 {
   Teuchos::ParameterList* sublist = &list;
 
-  for (string::size_type pos=name.find('/');
-       pos!=string::npos;
+  for (std::string::size_type pos=name.find('/');
+       pos!=std::string::npos;
        pos=name.find('/'))
   {
     sublist = &sublist->sublist(name.substr(0,pos));
@@ -735,7 +726,7 @@ Teuchos::ParameterList& DatFileReader::FindSublist(string name, Teuchos::Paramet
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DatFileReader::AddEntry(string key, string value, Teuchos::ParameterList& list)
+void DatFileReader::AddEntry(std::string key, std::string value, Teuchos::ParameterList& list)
 {
   { // try to find an int
     std::stringstream ssi;
@@ -774,7 +765,7 @@ void DatFileReader::AddEntry(string key, string value, Teuchos::ParameterList& l
 /*----------------------------------------------------------------------*/
 void DatFileReader::ReadDat()
 {
-  vector<string> exclude;
+  std::vector<std::string> exclude;
 
   exclude.push_back("--NODE COORDS");
   exclude.push_back("--STRUCTURE ELEMENTS");
@@ -789,21 +780,21 @@ void DatFileReader::ReadDat()
 
   if (comm_->MyPID()==0)
   {
-    ifstream file(filename_.c_str());
+    std::ifstream file(filename_.c_str());
     if (not file)
       dserror("unable to open file: %s", filename_.c_str());
 
-    list<string> content;
+    std::list<std::string> content;
     bool ignoreline = false;
-    string line;
-    unsigned * linecount = NULL;
+    std::string line;
+    unsigned int * linecount = NULL;
 
     // loop all input lines
     while (getline(file, line))
     {
       // remove comments
-      string::size_type loc = line.find("//");
-      if (loc != string::npos)
+      std::string::size_type loc = line.find("//");
+      if (loc != std::string::npos)
       {
         line = line.substr(0,loc);
       }
@@ -835,13 +826,13 @@ void DatFileReader::ReadDat()
         // remember all section positions
         if (line.find("--")==0)
         {
-          for (vector<int>::size_type i=0; i<exclude.size(); ++i)
+          for (std::vector<int>::size_type i=0; i<exclude.size(); ++i)
           {
-            if (line.find(exclude[i]) != string::npos)
+            if (line.find(exclude[i]) != std::string::npos)
             {
               if (excludepositions_.find(exclude[i])!=excludepositions_.end())
                 dserror("section '%s' defined more than once", exclude[i].c_str());
-              std::pair<ifstream::pos_type,unsigned> & p = excludepositions_[exclude[i]];
+              std::pair<std::ifstream::pos_type,unsigned int> & p = excludepositions_[exclude[i]];
               p.first = file.tellg();
               p.second = 0;
               linecount = &p.second;
@@ -865,7 +856,8 @@ void DatFileReader::ReadDat()
     numrows_ = static_cast<int>(content.size());
 
     // allocate space for copy of file
-    inputfile_.resize(arraysize);
+    inputfile_.clear();
+    inputfile_.reserve(arraysize);
 
     // CAUTION: We allocate one more row pointer that necessary. This
     // pointer will be used to point to temporary lines when the
@@ -873,20 +865,18 @@ void DatFileReader::ReadDat()
     // another EVIL HACK. Don't tell anybody.
     lines_.reserve(numrows_+1);
 
-    // fill file buffer
-    char* ptr = &inputfile_[0];
-    for (list<string>::iterator i=content.begin(); i!=content.end(); ++i)
+    lines_.push_back(&(inputfile_[0]));
+    for (std::list<std::string>::const_iterator i=content.begin(); i!=content.end(); ++i)
     {
-      strcpy(ptr,i->c_str());
-      lines_.push_back(ptr);
-      ptr += i->length()+1;
+      inputfile_.insert(inputfile_.end(), i->begin(), i->end());
+      inputfile_.push_back('\0');
+      lines_.push_back(&(inputfile_.back())+1);
     }
-
-    if (ptr - &inputfile_[0] != static_cast<int>(arraysize))
-      dserror("internal error in file read");
-
     // add the slot for the temporary line...
-    lines_.push_back(NULL);
+    lines_.back() = 0;
+
+    if (inputfile_.size() != static_cast<size_t>(arraysize))
+      dserror("internal error in file read: inputfile has %d chars, but was predicted to be %d chars long", inputfile_.size(), arraysize);
   }
 
   // Now lets do all the parallel setup. Afterwards all processors
@@ -937,17 +927,17 @@ void DatFileReader::ReadDat()
 
 #ifdef PARALLEL
     // distribute excluded section positions
-    for (vector<int>::size_type i=0; i<exclude.size(); ++i)
+    for (std::vector<int>::size_type i=0; i<exclude.size(); ++i)
     {
       if (comm_->MyPID()==0)
       {
-        map<string,std::pair<ifstream::pos_type,unsigned> >::iterator ep = excludepositions_.find(exclude[i]);
+        std::map<std::string,std::pair<std::ifstream::pos_type,unsigned int> >::iterator ep = excludepositions_.find(exclude[i]);
         if (ep==excludepositions_.end())
         {
-          excludepositions_[exclude[i]] = std::pair<ifstream::pos_type,unsigned>(-1,0);
+          excludepositions_[exclude[i]] = std::pair<std::ifstream::pos_type,unsigned int>(-1,0);
         }
       }
-      std::pair<ifstream::pos_type,unsigned> & p = excludepositions_[exclude[i]];
+      std::pair<std::ifstream::pos_type,unsigned int> & p = excludepositions_[exclude[i]];
       //comm_->Broadcast(&p.second,1,0);
       MPI_Bcast(&p.second,1,MPI_INT,0,mpicomm.GetMpiComm());
     }
@@ -956,7 +946,7 @@ void DatFileReader::ReadDat()
 
   // Now finally find the section names. We have to do this on all
   // processors, so it cannot be done while reading.
-  for (vector<char*>::size_type i=0; i<lines_.size()-1; ++i)
+  for (std::vector<char*>::size_type i=0; i<lines_.size()-1; ++i)
   {
     char* l = lines_[i];
     if (l and l[0]=='-' and l[1]=='-')
@@ -1017,7 +1007,7 @@ void DatFileReader::DumpInput()
             "broadcasted copy of input file:\n"
             "============================================================================\n"
       );
-    for (unsigned i=0; i<lines_.size()-1; ++i)
+    for (size_t i=0; i<lines_.size()-1; ++i)
     {
       fprintf(out_err,"%s\n", lines_[i]);
     }
@@ -1040,7 +1030,7 @@ bool DatFileReader::PrintUnknownSections()
 
   bool printout(false);
 
-    map<string,bool>::iterator iter;
+    std::map<std::string,bool>::iterator iter;
     // is there at least one unknown section?
     for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
     {
