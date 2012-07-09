@@ -24,8 +24,11 @@ Maintainer: Ulrich Kuettler
 #include "../drt_io/io_control.H"
 #include "../drt_nurbs_discret/drt_knotvector.H"
 
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
+#endif
+
 #include <Epetra_Time.h>
 #include <iterator>
 #include <sstream>
@@ -44,7 +47,22 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 static std::string trim(const std::string& line)
 {
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
   return boost::algorithm::trim_all_copy(boost::algorithm::replace_all_copy(line,"\t"," "));
+#else
+  std::istringstream t;
+  std::string s;
+  std::string newline;
+  t.str(line);
+  while (t >> s)
+  {
+    newline.append(s);
+    newline.append(" ");
+  }
+  if (newline.size()>0)
+    newline.resize(newline.size()-1);
+  return newline;
+#endif
 }
 
 

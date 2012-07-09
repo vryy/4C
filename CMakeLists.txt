@@ -236,6 +236,9 @@ if (Boost_FOUND)
     ${Boost_LIBRARIES}
     ${LIBRARIES}
     )
+  # Pass the version to baci
+  add_definitions("-DBOOST_MAJOR_VERSION=${Boost_MAJOR_VERSION}")
+  add_definitions("-DBOOST_MINOR_VERSION=${Boost_MINOR_VERSION}")
 else()
  message(FATAL_ERROR ${Boost_ERROR_REASON})
 endif()
