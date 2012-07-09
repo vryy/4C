@@ -230,7 +230,7 @@ if (Boost_FOUND)
   #message("Found Boost: ${Boost_INCLUDE_DIRS}")
   #message("Boost libraries: ${Boost_LIBRARIES}")
   #message("Boost libraries: ${Boost_LIBRARY_DIRS}")
-  include_directories(${Boost_INCLUDE_DIRS})
+  include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS}) 
   set(LIBRARIES
     ${Boost_LIBRARIES}
@@ -243,8 +243,8 @@ endif()
 # trilinos libraries
 # Choose trilinos libraries explicitly.
 if (Trilinos_FOUND)
-  include_directories(${Trilinos_INCLUDE_DIRS})
-  include_directories(${Trilinos_TPL_INCLUDE_DIRS})
+  include_directories(SYSTEM ${Trilinos_INCLUDE_DIRS})
+  include_directories(SYSTEM ${Trilinos_TPL_INCLUDE_DIRS})
   link_directories(${Trilinos_LIBRARY_DIRS})
 
   set(LIBRARIES
