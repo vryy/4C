@@ -24,8 +24,8 @@ namespace DRT
 
     virtual ~SingletonDestruction() {}
 
-    /// called upon destruction
-    virtual void Done() {}
+    /// called upon destruction (pure virtual to enforce specific implementation!)
+    virtual void Done() = 0;
   };
 }
 

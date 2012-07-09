@@ -155,6 +155,15 @@ DRT::ParObjectFactory& DRT::ParObjectFactory::Instance()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::ParObjectFactory::Done(){
+  if (instance_!=NULL)
+    delete instance_;
+  instance_ = NULL;
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ParObjectFactory::Create( const vector<char> & data )
 {
   FinalizeRegistration();
