@@ -18,8 +18,6 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_SerialDenseMatrix.h"
 #include <vector>
 
-using namespace std;
-
 namespace DRT {
 
 class Discretization;
@@ -72,7 +70,7 @@ public:
   */
   NodeMatchingOctree(
     const DRT::Discretization&       actdis,
-    const vector <int> &             masternodeids,
+    const std::vector <int> &        masternodeids,
     int                              maxnodeperleaf=150,
     double                           tol=1e-8
     );
@@ -127,10 +125,10 @@ public:
 
   */
   void CreateGlobalNodeMatching(
-    const vector<int>     & slavenodeids,
-    const vector<int>     & dofsforpbcplane,
+    const std::vector<int>  & slavenodeids,
+    const std::vector<int>  & dofsforpbcplane,
     const double            rotangle,
-    map<int,vector<int> > & midtosid
+    std::map<int,std::vector<int> > & midtosid
     );
 
   /// find pairs of nearest nodes
@@ -152,8 +150,8 @@ public:
 
    */
   void FindMatch(const DRT::Discretization& slavedis,
-                 const vector<int>& slavenodeids,
-                 map<int,pair<int,double> >& coupling);
+                 const std::vector<int>& slavenodeids,
+                 std::map<int,std::pair<int,double> >& coupling);
 
   //@}
 
@@ -185,7 +183,7 @@ protected:
 
   */
   bool SearchClosestNodeOnThisProc(
-    const vector<double>& x,
+    const std::vector<double>& x,
     int           & idofclosestpoint,
     double        & distofclosestpoint
   );
@@ -194,12 +192,12 @@ protected:
 
 private:
 
-  //! \brief all nodes in leafs are nodes of this discretistion
+  //! \brief all nodes in leafs are nodes of this discretization
   const DRT::Discretization&       discret_;
   //! \brief root of the local search tree
-  Teuchos::RCP<OctreeElement>       octreeroot_;
+  Teuchos::RCP<OctreeElement>      octreeroot_;
   //! \brief coordinate of one point in the master plane
-  vector <double>                  masterplanecoords_;
+  std::vector <double>             masterplanecoords_;
 }; // class NodeMatchingOctree
 
 
@@ -241,7 +239,7 @@ public:
 
   OctreeElement(
     const DRT::Discretization&       actdis,
-    vector <int> &                   nodeids,
+    std::vector<int> &               nodeids,
     Epetra_SerialDenseMatrix&        boundingbox,
     int                              layer,
     int                              maxnodeperleaf,
@@ -272,7 +270,7 @@ public:
 
   */
   bool IsPointInBoundingBox(
-    const vector <double> &x
+    const std::vector <double> &x
     );
 
   /*!
@@ -308,7 +306,7 @@ public:
 
   */
   Teuchos::RCP<OctreeElement> ReturnChildContainingPoint(
-    const vector <double> &x
+    const std::vector<double> &x
     );
 
   /*!
@@ -332,7 +330,7 @@ public:
   */
 
   void SearchClosestNodeInLeaf(
-    const vector <double> & x,
+    const std::vector<double> & x,
     int             & idofclosestpoint,
     double          & distofclosestpoint
   );
@@ -365,7 +363,7 @@ private:
   //! \brief the bounding box of the element
   Epetra_SerialDenseMatrix         boundingbox_;
   //! \brief the nodeids
-  vector <int>                     nodeids_;
+  std::vector <int>                nodeids_;
   //! \brief depth of the octree element in the tree
   int                              layer_;
   //! \brief  pointer to first child
