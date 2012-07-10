@@ -192,10 +192,14 @@ private:
     virtual double Density() const { return params_->density_; }
     
     //! Return accumulated strain at Gauss points
+    //! use the old vector (last_) for postprocessing
+    //! Output is called after(!!) Update, so that newest values are included in
+    //! the old history vectors last_, while the current history vectors curr_
+    //! are reset
     LINALG::Matrix<1,1> AccumulatedStrain(
       int gp
       )
-    const { return ( strainbarplcurr_->at(gp) ); }
+    const { return ( strainbarpllast_->at(gp) ); }
 
     //! Check if history variables are already initialized
     bool Initialized() const
