@@ -1897,7 +1897,8 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
   curvature_ = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeColMap(),true));
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
-  const Teuchos::RCP<Epetra_Vector> rowcurv = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap(),true));
+  // this is only used in this method, so there is no need to make it an rcp
+  Epetra_Vector rowcurv(*fluiddis_->NodeRowMap(),true);
 
   // this is only needed in case we use the node based curvature
   if (DRT::INPUT::IntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(combustdyn.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX") == INPAR::COMBUST::surface_tension_approx_nodal_curvature)
@@ -2094,11 +2095,11 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
 
       double avcurv = -sumcurv / sumele;
 
-      int nodelid = fluiddis_->NodeRowMap()->LID(gid);
-      // insert velocity value into node-based vector
-      const int err = rowcurv->ReplaceMyValues(1, &avcurv, &nodelid);
-      if (err)
+      const int nodelid = rowcurv.Map().LID(gid);
+      if (nodelid < 0)
         dserror("could not insert values for curvature");
+      // insert velocity value into node-based vector
+      rowcurv[nodelid] = avcurv;
 
       // now the PBC slave nodes
       if (isPBCMaster)
@@ -2106,9 +2107,10 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
         std::vector<int> slaveids = pbcmap_->find(gid)->second;
         for (std::vector<int>::const_iterator islave = slaveids.begin(); islave != slaveids.end(); ++islave)
         {
-          const int serr = rowcurv->ReplaceMyValues(1, &avcurv, &(*islave));
-          if (serr != 0)
+          const int slid = rowcurv.Map().LID(*islave);
+          if (slid < 0)
             dserror("PBC slave nodes could not be found on the master proc.");
+          rowcurv[slid] = avcurv;
         }
       }
 
@@ -2116,7 +2118,7 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
   } // if surftensapprox is surface_tension_approx_nodal_curvature
 
   // export NodeRowMap to NodeColMap gradphi_
-  LINALG::Export(*rowcurv,*curvature_);
+  LINALG::Export(rowcurv,*curvature_);
 
 }
 
