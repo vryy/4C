@@ -358,13 +358,13 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   std::vector<Point*> pts( points );
 
   //Find the middle point
-  LINALG::Matrix<3,1> avg,cur;
-  avg.Scale(0.0);
+  LINALG::Matrix<3,1> cur;
+  LINALG::Matrix<3,1> avg(true); //fill with zeros
   for( std::vector<Point*>::iterator i=pts.begin();i!=pts.end();i++ )
   {
     Point* p1 = *i;
     p1->Coordinates(cur.A());
-    avg.Update(1,cur,1);
+    avg.Update(1.0,cur,1.0);
   }
   avg.Scale(1.0/pts.size());
   Point * p_mid = mesh.NewPoint( avg.A(), NULL, ParentSide() );

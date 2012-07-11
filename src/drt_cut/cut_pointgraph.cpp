@@ -425,9 +425,17 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Element * element, Side * si
     vertex_iterator vi, vi_end;
     for ( boost::tie( vi, vi_end )=boost::vertices( g ); vi!=vi_end; ++vi )
     {
+      // prepare vars
       Point * p = name_map[*vi];
       LINALG::Matrix<3,1> xyz( p->X() );
-      side->LocalCoordinates( xyz, local[*vi] );
+      LINALG::Matrix<3,1> tmpmat;
+
+      // get coords
+      side->LocalCoordinates( xyz, tmpmat );
+
+      // add to map
+      std::pair<vertex_t, LINALG::Matrix<3,1> > tmppair(*vi,tmpmat);
+      local.insert(tmppair);
     }
 
     // find unconnected components (main facet(s) and holes)
