@@ -43,6 +43,7 @@ Maintainer: Michael Gee
 #include <stdexcept>
 
 #include "drt_dserror.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 static int         latest_line = -1;
 static std::string latest_file = "{dserror_func call without prototype}";
