@@ -57,7 +57,6 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_solver.H"
 #include "linalg_solver.H"
 #include "linalg_sparsematrix.H"
-#include "../drt_lib/standardtypes_cpp.H"
 
 #include "BelosTypes.hpp" // for Belos verbosity codes
 
