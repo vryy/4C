@@ -250,10 +250,10 @@ int main(
         fluidwriter.WriteFiles();
 
 
-        cout << "  Interface Field" << endl;
-        PostField* ifacefield = problem.get_discretization(2);
-        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
-        ifacewriter.WriteFiles();
+//        cout << "  Interface Field" << endl;
+//        PostField* ifacefield = problem.get_discretization(2);
+//        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
+//        ifacewriter.WriteFiles();
 
 
         // in the future, we might also write the interface
@@ -283,10 +283,10 @@ int main(
         fluidwriter.WriteFiles();
 
 
-        cout << "  Interface Field" << endl;
-        PostField* ifacefield = problem.get_discretization(1);
-        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
-        ifacewriter.WriteFiles();
+//        cout << "  Interface Field" << endl;
+//        PostField* ifacefield = problem.get_discretization(1);
+//        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
+//        ifacewriter.WriteFiles();
 
         break;
     }

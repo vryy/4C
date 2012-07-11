@@ -193,6 +193,76 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
   }
 }
 
+
+
+/*------------------------------------------------------------------------------------------------*
+ | write dof-based vector field to Gmsh postprocessing file at current position      schott 12/09 |
+ *------------------------------------------------------------------------------------------------*/
+void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<const Epetra_Vector> vectorfield_row,
+    std::map<int,LINALG::Matrix<3,1> >&     currpos,
+    std::ostream&                           s,
+    const int                               nsd,
+    const int                               numdofpernode
+)
+{
+
+
+#ifdef PARALLEL
+  // tranform solution vector from DofRowMap to DofColMap
+  const Teuchos::RCP<const Epetra_Vector> vectorfield = DRT::UTILS::GetColVersionOfRowVector(discret,vectorfield_row);
+#else
+  const Teuchos::RCP<const Epetra_Vector> vectorfield = vectorfield_row;
+#endif
+
+  // loop all row elements on this processor
+  for (int iele=0; iele<discret->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = discret->lRowElement(iele);
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+
+    LINALG::SerialDenseMatrix xyze(nsd,numnode);
+
+    const DRT::Node*const* nodes = ele->Nodes();
+    for(int inode = 0; inode < numnode; ++inode)
+    {
+      int nid = nodes[inode]->Id();
+      for(int idim = 0; idim < nsd; ++idim)
+        xyze(idim,inode) = ((currpos.find(nid))->second)(idim,0);
+    }
+
+    s << "V"; // vector field indicator
+    s << distypeToGmshElementHeader(distype);
+
+    // write node coordinates to Gmsh stream
+    CoordinatesToStream(xyze, distype, s);
+
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    ele->LocationVector(*discret, lm, lmowner, lmstride);
+
+    // extract local values from the global vector
+    Epetra_SerialDenseVector extractmyvectorfield(lm.size());
+    DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, lm);
+
+    // Extract velocity from local velnp_
+    LINALG::SerialDenseMatrix myvectorfield(nsd,numnode);
+    for (int inode = 0; inode < numnode; ++inode)
+      for (int idim = 0; idim < nsd; ++idim)
+        myvectorfield(idim,inode)= extractmyvectorfield(idim + inode*numdofpernode);
+
+    // write vector field to Gmsh stream
+    // remark: only the first 3 components are written to the Gmsh postprocessing file
+    //         -> e.g. pressure in velnp_ fluid state vector is not written ('myvectorfield': velx,vely,velz,pressure)
+    VectorFieldToStream(myvectorfield, distype, s);
+
+    s << "\n";
+  }
+}
+
 /*------------------------------------------------------------------------------------------------*
  | write scalar / vector from a dof-based vector field (e.g. velocity)                            |
  | (only supported by fluid implicit integration)                                                 |

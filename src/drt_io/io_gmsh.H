@@ -53,6 +53,16 @@ namespace IO
         std::ostream&                           s
         );
 
+    //! write dof-based vector field to Gmsh postprocessing file
+    void SurfaceVectorFieldDofBasedToGmsh(
+        const Teuchos::RCP<DRT::Discretization> discret,
+        const Teuchos::RCP<const Epetra_Vector> vectorfield,
+        std::map<int,LINALG::Matrix<3,1> >&     currpos,
+        std::ostream&                           s,
+        const int                               nsd,
+        const int                               numdofpernode
+        );
+
     //! write dof-based velocity / pressure field to Gmsh postprocessing file
     //!
     void VelocityPressureFieldDofBasedToGmsh(

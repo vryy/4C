@@ -702,7 +702,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
     sysmat_->Complete();
 
-}
+  }
 
 }
 
@@ -1560,7 +1560,7 @@ FLD::XFluid::XFluid(
   // create boundary dis
   // -------------------------------------------------------------------
 
-  string element_name = "BELE3"; // use always 3 dofs
+  string element_name = "BELE3"; // use always 3 dofs (if you change this take care for numdof in boundary output!)
 
   // ensure that degrees of freedom in the discretization have been set
   if ( not discret_->Filled() or not discret_->HaveDofs() )
@@ -1584,6 +1584,11 @@ FLD::XFluid::XFluid(
     dserror("Empty boundary discretization detected. No FSI coupling will be performed...");
   }
 
+  // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
+  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis_,true));
+  boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
+  boundarydis_->FillComplete();
+
 
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
@@ -1597,12 +1602,7 @@ FLD::XFluid::XFluid(
   boundarydis_->ExportColumnNodes(nodecolmap);
   boundarydis_->ExportColumnElements(elemcolmap);
 
-  boundarydis_->FillComplete();
 
-
-  // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
-  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis_,true));
-  boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
 
 
@@ -1620,9 +1620,18 @@ FLD::XFluid::XFluid(
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
 
-  // create interface/boundary output object
-  boundary_output_ = rcp(new IO::DiscretizationWriter(boundarydis_));
-  boundary_output_->WriteMesh(0,0.0);
+  //gmsh
+  {
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", 1, 0, 0,actdis->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+    IO::GMSH::disToStream("DisBoundary", 0.0, boundarydis_,gmshfilecontent);
+    IO::GMSH::disToStream("DisFluid", 0.0, discret_, gmshfilecontent);
+    IO::GMSH::disToStream("DisSolid", 0.0, soliddis_,gmshfilecontent);
+    gmshfilecontent.close();
+  }
+
+//  boundary_output_ = rcp(new IO::DiscretizationWriter(boundarydis_));
+//  boundary_output_->WriteMesh(0,0.0);
 
 
 
@@ -3530,17 +3539,17 @@ void FLD::XFluid::StatisticsAndOutput()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::Output()
 {
+  const int step_diff = 10;
+  bool screen_out = gmsh_debug_out_screen_;
+
+  // compute the current solid and boundary position
+  std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
+  std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
+
   //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
   if(gmsh_discret_out_)
   {
-    const int step_diff = 10;
-    bool screen_out = gmsh_debug_out_screen_;
 
-
-
-    // compute the current solid and boundary position
-    std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
-    std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
     {
 
       Epetra_Vector dispcol( *soliddis_->DofColMap() );
@@ -3737,6 +3746,22 @@ void FLD::XFluid::Output()
 
        state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , output_col_vel );
 
+
+       //--------------------------------------------------------------------
+
+       const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SOL_force", step_, step_diff, screen_out, boundarydis_->Comm().MyPID());
+       std::ofstream gmshfilecontent(filename.c_str());
+
+       {
+         // add 'View' to Gmsh postprocessing file
+         gmshfilecontent << "View \" " << "force \" {" << endl;
+         // draw vector field 'force' for every node
+         IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(boundarydis_,itrueresidual_,currinterfacepositions,gmshfilecontent,3,3);
+         gmshfilecontent << "};" << endl;
+       }
+
+       gmshfilecontent.close();
+
    }
 
     //---------------------------------- PARAVIEW SOLUTION OUTPUT (solution fields for pressure, velocity) ------------------------
@@ -3830,13 +3855,13 @@ void FLD::XFluid::Output()
        fluid_output_->WriteElementData();
 
 
-       // output for interface
-       boundary_output_->NewStep(step_,time_);
-
-       boundary_output_->WriteVector("ivelnp", ivelnp_);
-       boundary_output_->WriteVector("idispnp", idispnp_);
-
-       boundary_output_->WriteElementData();
+//       // output for interface
+//       boundary_output_->NewStep(step_,time_);
+//
+//       boundary_output_->WriteVector("ivelnp", ivelnp_);
+//       boundary_output_->WriteVector("idispnp", idispnp_);
+//
+//       boundary_output_->WriteElementData();
 
 
        // no solid output for XFluid, solid output for XFSI done by Adapter and structure part

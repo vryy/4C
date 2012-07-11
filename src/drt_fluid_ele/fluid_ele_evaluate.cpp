@@ -321,6 +321,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
       // integrate shape function for this element
       // (results assembled into element vector)
       // return DRT::ELEMENTS::FluidImplInterface::Impl(Shape(),"test")->ComputeError(this, params, mat, discretization, lm, elevec1);
+      return  DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->ComputeError(this, params, mat, discretization, lm, elevec1);
     }
     break;
     case calc_turbulence_statistics:
