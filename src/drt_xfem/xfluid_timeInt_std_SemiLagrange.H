@@ -12,16 +12,15 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef TIMEINT_STD_SEMILAGRANGE_H_
-#define TIMEINT_STD_SEMILAGRANGE_H_
+#ifndef XFLUID_TIMEINT_STD_SEMILAGRANGE_H_
+#define XFLUID_TIMEINT_STD_SEMILAGRANGE_H_
 
 
-#include "timeInt.H"
+#include "xfluid_timeInt_base.H"
 
 
 namespace XFEM
 {
-  class Extrapolation;
 
 /*!
   \brief this class is used in XFEM to compute new values for standard degrees of freedom
@@ -29,39 +28,43 @@ namespace XFEM
   It bases on the Semi-Lagrangian approach described in
   "/intern/arbeiten/diplomarbeiten/WinklmaierMartin2010.pdf"
  */
-class SemiLagrange : public STD
+class XFLUID_SemiLagrange : public XFLUID_STD
 {
 public:
 
   //! constructor
-  explicit SemiLagrange(
-      XFEM::TIMEINT& timeInt,
-      INPAR::COMBUST::XFEMTimeIntegration& timeIntType,
+  explicit XFLUID_SemiLagrange(
+      XFEM::XFLUID_TIMEINT_BASE& timeInt,
+      const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,
+      INPAR::XFEM::XFluidTimeInt& timeIntType,
       const RCP<Epetra_Vector> veln,
       const double& dt,
       const double& theta,
       const RCP<COMBUST::FlameFront> flamefront,
-      const double& flamespeed,
       bool initialize
   );
 
   //! destructor
-  ~SemiLagrange()
+  ~XFLUID_SemiLagrange()
   {return;}
 
   //! get startvalues in time step for nodes which changed interface-side
   void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      vector<RCP<Epetra_Vector> >& newRowVectorsn
   );
 
 private:
 
   //! disabled copy constructor
-  explicit SemiLagrange(const XFEM::SemiLagrange& slvalues);
+  explicit XFLUID_SemiLagrange(const XFEM::XFLUID_SemiLagrange& slvalues);
 
   //! disabled default constructor
-  explicit SemiLagrange();
+  explicit XFLUID_SemiLagrange();
+
+  void getNodalDofSet(DRT::Element* ele,
+      LINALG::Matrix<3,1>& x ,
+      std::vector<int>& nds,
+      bool step_np);
 
   //! run a Newton loop in order to compute the exact Lagrangian origin for a node which changed interface side
   void NewtonLoop(
@@ -98,6 +101,13 @@ private:
       LINALG::Matrix<3,1>& xi,
       const char* backTrackingType
   );
+
+  template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
+  void extractNodalValuesFromVector(
+      LINALG::Matrix<3,numnode>& evel,
+      LINALG::Matrix<numnode,1>& epre,
+      RCP<Epetra_Vector> vel_vec,
+      std::vector<int>& lm);
 
   //! track back the Lagrangian origin to get final values
   template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
@@ -154,7 +164,7 @@ private:
 
   // constants
   const double theta_default_; // factor of one-step theta scheme
-  double flamespeed_; // absolute flame velocity without fluid influence
+//  double flamespeed_; // absolute flame velocity without fluid influence
 }; // class Startvalues
 } // namespace XFEM
-#endif /*TIMEINT_SEMILAGRANGE_H_*/
+#endif /*XFLUID_TIMEINT_SEMILAGRANGE_H_*/

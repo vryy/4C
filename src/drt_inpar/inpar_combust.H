@@ -30,7 +30,7 @@ namespace INPAR
       combusttype_twophaseflow,
       combusttype_twophaseflow_surf,
       combusttype_twophaseflowjump
-    }; //schott 04/27/2010
+    };
 
     /// type of reinitialization for level set function (G-function)
     enum ReInitialActionGfunc

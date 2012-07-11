@@ -93,6 +93,9 @@ public:
   //! get the sidehandle created within the cut
   GEO::CUT::SideHandle* GetSideHandle( int sid );
 
+  //! get the sidehandle for cut sides
+  GEO::CUT::SideHandle * GetCutSide( int sid, int mi );
+
   //! get the node created within the cut
   GEO::CUT::Node * GetNode( int nid );
 

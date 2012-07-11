@@ -42,6 +42,8 @@ public:
   */
   bool Contains( Point * p );
 
+  bool Contains( LINALG::Matrix<3,1>& x);
+
   void Neighbors( Point * p,
                   const plain_volumecell_set & cells,
                   const plain_volumecell_set & done,

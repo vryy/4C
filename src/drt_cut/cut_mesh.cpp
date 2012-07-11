@@ -751,7 +751,7 @@ GEO::CUT::Line * GEO::CUT::Mesh::NewLineInternal( Point* p1, Point* p2, Side * c
     line = new Line( p1, p2, cut_side1, cut_side2, cut_element );
     lines_.push_back( Teuchos::rcp( line ) );
 #if 0
-    std::cout << "Mesh::NewLine: ";
+    std::cout << "Mesh::NewLineInternal: ";
     p1->Print();
     std::cout << "--";
     p2->Print();

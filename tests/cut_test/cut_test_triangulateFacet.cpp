@@ -126,7 +126,7 @@ void check4nodedInline( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::S
   ptlist[3] = p4;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -161,7 +161,7 @@ void check4nodedconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::
   ptlist[3] = p4;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -203,7 +203,7 @@ void check5nodedInline( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::S
   ptlist[4] = p5;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -242,7 +242,7 @@ void check5nodedconvex( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::S
   ptlist[4] = p5;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -298,7 +298,7 @@ void check5nodedconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::
   ptlist[4] = p5;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -354,7 +354,7 @@ void check5nodedAdjacentconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GE
   ptlist[4] = p5;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -417,7 +417,7 @@ void check6nodedconvex( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::S
   ptlist[5] = p6;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -477,7 +477,7 @@ void check6nodedconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::
   ptlist[5] = p6;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -541,7 +541,7 @@ void check7nodedconvex( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::S
   ptlist[6] = p7;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -607,7 +607,7 @@ void check7nodedconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::
   ptlist[6] = p7;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -677,7 +677,7 @@ void check8nodedconvex( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::S
   ptlist[7] = p8;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -747,7 +747,7 @@ void check8nodedconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::
   ptlist[7] = p8;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -817,7 +817,7 @@ void check8nodedAdjacentconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GE
   ptlist[7] = p8;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -894,7 +894,7 @@ void check9nodedconvex( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::S
   ptlist[8] = p9;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -971,7 +971,7 @@ void check9nodedconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::
   ptlist[8] = p9;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1052,7 +1052,7 @@ void check10nodedconvex( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::
   ptlist[9] = p10;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1133,7 +1133,7 @@ void check10nodedconcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT:
   ptlist[9] = p10;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1194,7 +1194,7 @@ void check5nodedTwinConcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::C
   ptlist[4] = p5;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1255,7 +1255,7 @@ void check6nodedTwinConcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::C
   ptlist[5] = p6;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1322,7 +1322,7 @@ void check8nodedTriConcave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CU
   ptlist[7] = p8;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1392,7 +1392,7 @@ void check8nodedTriConcaveGenPlane( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e,
   ptlist[7] = p8;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1442,7 +1442,7 @@ void check13nodedConvex( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::
   }
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1516,7 +1516,7 @@ void check7nodedconti3concave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO:
   ptlist[6] = p7;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;
@@ -1600,7 +1600,7 @@ void check10nodedShiftEarClipToSplit( GEO::CUT::Mesh& mesh, GEO::CUT::Element * 
   ptlist[9] = p10;
 
   GEO::CUT::Facet face1( mesh, ptlist, s, false );
-  GEO::CUT::TriangulateFacet tf( &face1, mesh, ptlist );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
   tf.SplitFacet();
 
   std::vector<std::vector<GEO::CUT::Point*> > split;

@@ -933,7 +933,7 @@ void GEO::CUT::Facet::FindCornerPoints()
 
 void GEO::CUT::Facet::Print( std::ostream & stream )
 {
-  stream << "# Facet: " << points_.size()
+  stream << "# Facet: " << "numpoints " << points_.size()
          << "\n# ";
   std::copy( points_.begin(), points_.end(), std::ostream_iterator<Point*>( stream, " " ) );
   stream << "\n";

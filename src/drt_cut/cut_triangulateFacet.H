@@ -1,7 +1,7 @@
 #ifndef CUT_TRIANGULATEFACET_H
 #define CUT_TRIANGULATEFACET_H
 
-#include "cut_facet.H"
+//#include "cut_facet.H"
 
 
 namespace GEO
@@ -9,6 +9,7 @@ namespace GEO
 namespace CUT
 {
 class Point;
+class Facet;
 
 /*!
 \brief A class to split a facet into tri and quad cells

@@ -1,3 +1,4 @@
+#include "cut_facet.H"
 #include "cut_triangulateFacet.H"
 #include "cut_kernel.H"
 

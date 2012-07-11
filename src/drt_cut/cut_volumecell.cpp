@@ -149,6 +149,22 @@ bool GEO::CUT::VolumeCell::Contains( Point * p )
   return false;
 }
 
+bool GEO::CUT::VolumeCell::Contains( LINALG::Matrix<3,1>& x)
+{
+
+  if(integrationcells_.size() == 0) dserror("no integrationcells for volumecell stored, implement Contains check without integrationcells");
+
+  for(GEO::CUT::plain_integrationcell_set::iterator it=integrationcells_.begin(); it!=integrationcells_.end(); it++)
+  {
+    GEO::CUT::IntegrationCell* intcell = *it;
+
+    if(intcell->Contains(x)) return true;
+  }
+
+  return false;
+}
+
+
 void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh,
                                                        const std::vector<std::vector<Point*> > & tets,
                                                        const std::map<Facet*, std::vector<Point*> > & sides_xyz )
@@ -246,10 +262,10 @@ void GEO::CUT::VolumeCell::Position( Point::PointPosition position )
 void GEO::CUT::VolumeCell::Print( std::ostream & stream )
 {
   stream << "# VolumeCell: "
-         << position_ << " "
-         << facets_.size() << " "
-         << integrationcells_.size() << " "
-         << bcells_.size()
+         << " pos: "      << position_ << " "
+         << "#facets: "   << facets_.size() << " "
+         << "#intcells: " << integrationcells_.size() << " "
+         << "#bcells: "   << bcells_.size()
          << "\n";
   for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {

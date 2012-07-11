@@ -42,6 +42,11 @@ public:
 
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
 
+  bool Contains( LINALG::Matrix<3,1>& x);
+
+  template<DRT::Element::DiscretizationType celltype>
+  bool Contains( LINALG::Matrix<3,1>& x);
+
 protected:
 
   Point::PointPosition position_;

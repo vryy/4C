@@ -74,6 +74,11 @@ namespace GEO
     GEO::CUT::SideHandle * GetSide( int sid );
 
     /*!
+    \brief Get this side (not from cut meshes) from the cut libraries
+     */
+    GEO::CUT::SideHandle * GetCutSide( int sid, int mi );
+
+    /*!
     \brief Get this element from the cut libraries
      */
     GEO::CUT::ElementHandle * GetElement( DRT::Element * ele );

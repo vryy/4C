@@ -244,6 +244,7 @@ namespace DRT
           const double &                                    timefacfac,    ///< (time factor) x (integration factor)
           double &                                          tau_grad,      ///< penalty parameter for ghost penalty terms
           bool &                                            ghost_penalty, ///< boolian if ghost penalty terms has to be assembled
+          bool &                                            ghost_penalty_reconstruct,
           bool &                                            use2ndderiv
       );
 

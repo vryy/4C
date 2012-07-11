@@ -126,6 +126,13 @@ namespace INPAR
       Xff_TimeInt_KeepGhostValues
     };
 
+    /// xfluid time integration approach
+    enum XFluidTimeInt
+    {
+      Xf_TimeInt_SemiLagrange,
+      Xf_TimeInt_GhostPenalty,
+      Xf_TimeInt_Copy
+    };
 
   }  // namespace XFEM
 

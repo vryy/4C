@@ -198,6 +198,12 @@ GEO::CUT::SideHandle * XFEM::FluidWizard::GetSideHandle( int sid )
   return cut_->GetSide( sid );
 }
 
+GEO::CUT::SideHandle * XFEM::FluidWizard::GetCutSide( int sid, int mi )
+{
+  return cut_->GetCutSide(sid, mi);
+}
+
+
 /*-------------------------------------------------------------*
 * get the node created within the cut                          *
 *--------------------------------------------------------------*/

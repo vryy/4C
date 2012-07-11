@@ -768,17 +768,18 @@ namespace GEO
 
         void SetupSolve()
         {
-          xsi_ = 0;
-          dx_ = 0;
-          old_b_ = 0;
+          xsi_ = 0;                // local coordinates (xi1_side, xi2_side, xi_line)
+          dx_ = 0;                 // increment in local coordinates d(xi1_side, xi2_side, xi_line)
+          old_b_ = 0;              // rhs of linear system
           off_count_ = 0;
 
-          residual_ = 0;
-          incr_ = 1;
+          residual_ = 0;           // residual
+          incr_ = 1;               // increment 2-norm || dx_ = dxi_ ||
 
-          // Newton steps are supposed to converge within the side. Provide a
+          // Newton steps are supposed to converge within the side and within the line. Provide a
           // maximum legal step size. Larger steps are supposed to diverge.
-          maxincr_ = 10 * xyze_surface_->Norm2();
+          // REMARK: local coordinates for lines and sides are supposed to be in [-1,1], a radius of 5 should be okay
+          maxincr_ = 10.0; //   Uli's version: 10 * xyze_surface_->Norm2(); (unreasonable, update is done in local coordinates, xyz is global!!!)
         }
 
         void SetupStep( int iter )

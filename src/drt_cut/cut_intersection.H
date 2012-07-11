@@ -259,6 +259,8 @@ template <DRT::Element::DiscretizationType edgetype,
 bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCurveSurfaceIntersection()
 {
   KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
+  //KERNEL::DebugComputeIntersection<edgetype, sidetype> ci( xsi_ );
+
 
   if ( ci( xyze_surfaceElement_, xyze_lineElement_ ) )
   {

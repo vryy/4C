@@ -176,8 +176,12 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
   bool ghost_penalty   = params.get<bool>("ghost_penalty");
   bool edge_based_stab = params.get<bool>("edge_based_stab");
+  bool ghost_penalty_reconstruct = params.get<bool>("ghost_penalty_reconstruct");
 
-  if( (!ghost_penalty) and (!edge_based_stab)) dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");
+  if( (!ghost_penalty) and (!edge_based_stab) and (!ghost_penalty_reconstruct))
+  {
+    dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");
+  }
 
   //    const double timefac      = fldpara_->TimeFac();     // timefac_ = theta_*dt_;
   //    const double timefacpre   = fldpara_->TimeFacPre();  // special factor for pressure terms in genalpha time integration
@@ -631,13 +635,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         timefacfac,
         tau_grad,
         ghost_penalty,
+        ghost_penalty_reconstruct,
         use2ndderiv);
 
 
 #if(1)
 
     // EOS stabilization terms for whole Reynolds number regime
-    if(edge_based_stab)
+    if(edge_based_stab or ghost_penalty_reconstruct)
     {
 
       // assemble pressure (EOS) stabilization terms for fluid
@@ -648,7 +653,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                       elevector_m,
                       elevector_s,
                       timefacfac_pre,
-                      tau_p);
+                      tau_p
+      );
 
 
       // assemble combined divergence and streamline(EOS) stabilization terms for fluid
@@ -673,7 +679,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 #else
     // first version of Burman's EOS stabilization
-    if(edge_based_stab)
+    if(edge_based_stab or ghost_penalty_reconstruct,
+)
     {
 
       LINALG::Matrix<3,1> conv_diff(true);
@@ -1564,13 +1571,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
             const double &                                    timefacfac,
             double &                                          tau_grad,
             bool &                                            ghost_penalty,
+            bool &                                            ghost_penalty_reconstruct,
             bool &                                            use2ndderiv)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: GhostPenalty" );
 
 
-  if(ghost_penalty)
+  if(ghost_penalty or ghost_penalty_reconstruct)
   {
     double tau_timefacfac = tau_grad * timefacfac;
 
@@ -1753,7 +1761,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
             LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
             LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
             const double &                                    timefacfacpre,
-            double &                                          tau_p)
+            double &                                          tau_p
+)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: pressureEOS" );

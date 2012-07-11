@@ -6,6 +6,8 @@
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
 
+#include "cut_position.H"
+
 #include "../drt_geometry/element_volume.H"
 
 
@@ -358,6 +360,39 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
   return false;
 }
 #endif
+
+bool GEO::CUT::IntegrationCell::Contains( LINALG::Matrix<3,1>& x)
+{
+  switch( this->Shape() )
+  {
+  case DRT::Element::tet4:
+  {
+    // find element local position of gauss point
+    return Contains<DRT::Element::tet4>( x );
+  }
+  case DRT::Element::hex8:
+  {
+    return Contains<DRT::Element::hex8>( x );
+  }
+  default: dserror("unknown type of integration cell ");
+  }
+
+  return false;
+}
+
+template<DRT::Element::DiscretizationType celltype>
+bool GEO::CUT::IntegrationCell::Contains( LINALG::Matrix<3,1>& x)
+{
+  const int ncn = DRT::UTILS::DisTypeToNumNodePerEle<celltype>::numNodePerElement;
+
+  LINALG::Matrix<3,ncn> coords(xyz_);
+
+  GEO::CUT::Position<celltype> pos( coords, x );
+  pos.Compute();
+
+  return pos.WithinLimits();
+}
+
 
 void GEO::CUT::Hex8IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
 {

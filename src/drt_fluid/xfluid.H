@@ -58,6 +58,7 @@ namespace XFEM
   class XFEM_EdgeStab;
   class FluidWizard;
   class FluidDofSet;
+  class XFluidTimeInt;
 }
 
 namespace FLD
@@ -130,6 +131,14 @@ namespace FLD
                        Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
                        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
                        );
+
+      /// call the loop over elements to assemble volume and interface integrals
+      void GradientPenalty( Teuchos::ParameterList & eleparams, ///< element parameters
+                     DRT::Discretization & discret,      ///< background fluid discretization
+                     DRT::Discretization & cutdiscret,   ///< cutter surface discretization
+                     RCP<Epetra_Vector> vec,
+                     int itnum                           ///< iteration number
+                     );
 
       /// system matrix filled with EpetraFECrs matrix
       Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
@@ -212,6 +221,9 @@ namespace FLD
 
       /// return edgestab object
       Teuchos::RCP<XFEM::XFEM_EdgeStab> EdgeStab() {return edgestab_;}
+
+      /// return xfem fluid dofset
+      Teuchos::RCP<XFEM::FluidDofSet> Dofset() {return dofset_;}
 
       /// XFluid object
       XFluid & xfluid_;
@@ -307,6 +319,10 @@ namespace FLD
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void NonlinearSolve();
+
+    /// reconstruct ghost values using ghost penalty approach
+    void ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
+                                RCP<Epetra_Vector> vec);
 
     /// compute lift and drag values by integrating the true residuals
     void LiftDrag() const;
@@ -586,6 +602,11 @@ namespace FLD
     bool gmsh_discret_out_;
     bool gmsh_cut_out_;
     //@}
+
+    //-----------------------------time integration----------------------
+
+    Teuchos::RCP<XFEM::XFluidTimeInt> xfluid_timeint_;
+
 
     //---------------------------------output----------------------------
 

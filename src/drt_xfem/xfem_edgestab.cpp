@@ -406,11 +406,13 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
   edgebasedparams.set("action","EOS_and_GhostPenalty_stabilization");
 
   // decide if the element has to be stabilized
-  bool stabilize_edge_based_fluid = eleparams.get<bool>("edge_based");
-  bool stabilize_ghost_penalty    = eleparams.get<bool>("ghost_penalty");
+  bool stabilize_edge_based_fluid             = eleparams.get<bool>("edge_based");
+  bool stabilize_ghost_penalty                = eleparams.get<bool>("ghost_penalty");
+  bool stabilize_ghost_penalty_reconstruct    = eleparams.get<bool>("ghost_penalty_reconstruct", false);
 
   bool final_edge_stab = false;
   bool final_ghost_pen = false;
+  bool final_ghost_pen_reconstruct = false;
 
   if (stabilize_edge_based_fluid == false) final_edge_stab = false;
   else                                     final_edge_stab = edge_based_stab;
@@ -418,8 +420,13 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
   if (stabilize_ghost_penalty == false)    final_ghost_pen = false;
   else                                     final_ghost_pen = ghost_penalty;
 
+  if(stabilize_ghost_penalty_reconstruct == false)   final_ghost_pen_reconstruct = false;
+  else                                               final_ghost_pen_reconstruct = ghost_penalty;
+
+
   edgebasedparams.set("edge_based_stab", final_edge_stab);
   edgebasedparams.set("ghost_penalty", final_ghost_pen);
+  edgebasedparams.set("ghost_penalty_reconstruct", final_ghost_pen_reconstruct);
 
   edgebasedparams.set("ghost_penalty_fac", eleparams.get<double>("GHOST_PENALTY_FAC"));
 
@@ -428,7 +435,7 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
 
 
   // call the egde-based assemble and evaluate routine
-  if(final_edge_stab or final_ghost_pen)
+  if(final_edge_stab or final_ghost_pen or final_ghost_pen_reconstruct)
   DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(intface)->AssembleInternalFacesUsingNeighborData(     intface,
                                                                                                        nds_master,
                                                                                                        nds_slave,
