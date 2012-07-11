@@ -123,15 +123,37 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraBoundaryImpl<distype> * DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Instance(
     const int numdofpernode,
-    const int numscal
+    const int numscal,
+    const bool create
     )
 {
   static ScaTraBoundaryImpl<distype> * instance;
-  if ( instance==NULL )
-    instance = new ScaTraBoundaryImpl<distype>(numdofpernode,numscal);
+  if ( create )
+  {
+    if ( instance==NULL )
+    {
+      instance = new ScaTraBoundaryImpl<distype>(numdofpernode,numscal);
+    }
+  }
+  else
+  { // proper destruction
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
   return instance;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance(0,0,false );
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

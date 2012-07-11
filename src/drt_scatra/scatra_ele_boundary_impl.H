@@ -16,7 +16,7 @@ Maintainer: Georg Bauer
 #ifndef SCATRA_ELE_BOUNDARY_IMPL_H
 #define SCATRA_ELE_BOUNDARY_IMPL_H
 
-
+#include "../drt_lib/drt_singletondestruction.H"
 #include "scatra_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_scatra.H"
@@ -38,7 +38,7 @@ class TransportBoundary;
   this class actually defines is Impl, which returns a pointer to
   the appropriate version of ScaTraImpl.
  */
-class ScaTraBoundaryImplInterface
+class ScaTraBoundaryImplInterface : public DRT::SingletonDestruction
 {
 
 public:
@@ -124,7 +124,14 @@ public:
   ScaTraBoundaryImpl(int numdofpernode, int numscal);
 
   /// Singleton access method
-  static ScaTraBoundaryImpl<distype> * Instance(const int numdofpernode,const int numscal);
+  static ScaTraBoundaryImpl<distype> * Instance(
+      const int numdofpernode,
+      const int numscal,
+      const bool create=true
+  );
+
+  //! called upon destruction
+  virtual void Done();
 
   //! number of element nodes (nomenclature: T. Hughes, The finite element method)
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
