@@ -16,7 +16,6 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_ost.H"
-#include "../drt_lib/standardtypes_cpp.H"
 
 /*----------------------------------------------------------------------*/
 /*forward declarations*/

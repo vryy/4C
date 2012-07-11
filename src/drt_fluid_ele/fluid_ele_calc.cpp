@@ -33,6 +33,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_elementtype.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"

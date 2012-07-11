@@ -36,8 +36,6 @@ Maintainer: Robert Metzke
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
-//extern struct _MATERIAL *mat;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Itskov::Itskov( Teuchos::RCP<MAT::PAR::Material> matdata )
@@ -367,12 +365,12 @@ printf("\nSecond Piola Kirchhoff_Constr\n");
 void MAT::Itskov::calc_factors (	LINALG::Matrix<3,3>&C,
 						LINALG::Matrix<3,3>&Cinv,
 						LINALG::Matrix<3,3>&L,
-						DOUBLE alpha,
-						DOUBLE beta,
-						DOUBLE mu,
-						DOUBLE *factors)
+						double alpha,
+						double beta,
+						double mu,
+						double *factors)
 {
-	DOUBLE Ir, Kr;
+	double Ir, Kr;
 //-----modified invariants
 //------------------------------------------------1. Invariant: tr(CL)
 	LINALG::Matrix<3,3> CL(true); //false
@@ -403,7 +401,7 @@ void MAT::Itskov::calc_Itskov (	LINALG::Matrix<3,3>&C,
 						LINALG::Matrix<3,3>&L,
 						LINALG::Matrix<3,3>&PK2_,
 						LINALG::Matrix<6,6>&cmat_,
-						DOUBLE *factors)
+						double *factors)
 {
 //--------------------------------------------Tensorproduct Cinv*L*Cinv
 	LINALG::Matrix<3,3> CinvL(true);  //false

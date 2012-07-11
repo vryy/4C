@@ -3,8 +3,6 @@
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_lib/standardtypes_cpp.H"
-
 #include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"

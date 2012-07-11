@@ -25,10 +25,6 @@ is handed to a c++ object mesh.
 
 #include <exodusII.h>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 using namespace std;
 using namespace Teuchos;
 

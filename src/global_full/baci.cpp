@@ -20,23 +20,7 @@
 #include "../drt_lib/drt_parobjectregister.H"
 
 #ifdef TRAP_FE
-
-#ifdef LINUX_MUENCH
 #include <fenv.h>
-#endif
-
-#ifdef HPUX_MUENCH
-#include <fenv.h>
-#endif
-
-#ifdef HPUXITA
-#include <fenv.h>
-#endif
-
-#ifdef HPUX11
-#include <fenv.h>
-#endif
-
 #endif /* TRAP_FE */
 
 

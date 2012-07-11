@@ -23,10 +23,6 @@ Maintainer: Mahmoud Ismail
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include "art_net_dyn_drt.H"
 #include "artery_resulttest.H"
 

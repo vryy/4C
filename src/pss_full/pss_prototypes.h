@@ -18,10 +18,10 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  |  pss_am.c                                             m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void ShiftPointer(
+/* void ShiftPointer(
     void    **ptr,
     PTRSIZE   diff);
-
+*/
 /*----------------------------------------------------------------------*
  | redefinition of malloc DEBUG version                       m.gee 2/02|
  | bhaves exactly like malloc conform to ansi c standard                |

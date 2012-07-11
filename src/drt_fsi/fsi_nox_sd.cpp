@@ -18,7 +18,6 @@
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
 
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 

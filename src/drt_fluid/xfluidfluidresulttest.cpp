@@ -21,10 +21,6 @@ Maintainer: Shadan Shahmiri
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::XFluidFluidResultTest::XFluidFluidResultTest(XFluidFluid& fluid)

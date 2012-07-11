@@ -15,6 +15,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include "viscoanisotropic.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/matpar_bundle.H"
 
 

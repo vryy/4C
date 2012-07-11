@@ -19,7 +19,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>
-#include "../drt_lib/standardtypes_cpp.H"
 #include "matpar_material.H"
 
 /*----------------------------------------------------------------------*/

@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <sys/times.h>
 
-#include "../drt_lib/standardtypes_cpp.H"
 #include "global_init_control.H"
 #include "global_inp_control.H"
 #include "../drt_lib/drt_globalproblem.H"

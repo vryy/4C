@@ -58,6 +58,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_linedefinition.H"
 
 #include "drt_globalproblem.H"
+#include "standardtypes_cpp.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 

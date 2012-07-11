@@ -17,7 +17,6 @@
 
 #include <Epetra_Vector.h>
 
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_serialdensevector.H"

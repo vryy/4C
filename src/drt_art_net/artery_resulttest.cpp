@@ -20,10 +20,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)

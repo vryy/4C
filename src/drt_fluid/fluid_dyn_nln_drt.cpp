@@ -27,10 +27,6 @@ Maintainer: Peter Gamnitzer
 #include <iostream>
 */
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include "fluid_dyn_nln_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"

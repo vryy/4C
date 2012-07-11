@@ -14,236 +14,20 @@ Maintainer: Malte Neumann
  | NOTE:                                                                |
  | - if changes or additions are made to this file, a complete recompile|
  |   of the whole code is recommended                                   |
- | - if segmentation violation errors occure in runtime, check the      |
- |   values below, as some of them are the default sizes of arrays      |
- | - please do not define thousands of all kinds of variables, because  |
- |   they are global, do only define globally important ones            |
- | - do NOT use common words (e.g. JACOBI, NODE, ELEMENT ...)           |
  | - always use strict upper case letters                               |
  |                                                                      |
  *----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- | some definitions that are important for dynamic memory management    |
- *----------------------------------------------------------------------*/
-#ifdef SIXTYFOUR /*--------------- a 64 bit pointer is of size long int */
-typedef long int PTRSIZE;
-#else/*-------------------------------- a 32 bit pointer is of size INT */
-typedef int PTRSIZE;
-#endif
+#ifndef DEFINITIONS_H
+#define DEFINITIONS_H
 
 /*----------------------------------------------------------------------*
- | basic data types, do not use INT, DOUBLE or char !                   |
- *----------------------------------------------------------------------*/
-#ifdef INT
-#undef INT
-#endif
-typedef int       INT;
-#ifdef DOUBLE
-#undef DOUBLE
-#endif
-typedef double    DOUBLE;
-#ifdef CHAR
-#undef CHAR
-#endif
-typedef char      CHAR;
-
-/*----------------------------------------------------------------------*
- | our binary files are big endian                                      |
- *----------------------------------------------------------------------*/
-
-#if defined(LINUX) || defined(LINUX64)
-#define IS_LITTLE_ENDIAN
-#endif
-
-#ifdef WIN
-#define IS_LITTLE_ENDIAN
-#endif
-
-#ifdef LINUX_MUENCH
-#define IS_LITTLE_ENDIAN
-#endif
-
-#ifdef WIN_MUENCH
-#define IS_LITTLE_ENDIAN
-#endif
-
-/*----------------------------------------------------------------------*
- | special definitions for special compilers.....                       |
- *----------------------------------------------------------------------*/
-/* append underslashs, if necessary */
-#undef CCA_APPEND_U
-
-/* append underslash for gnu's linux compiler gcc and g77 */
-#if defined(LINUX) || defined(LINUX64)
-#define CCA_APPEND_U (1)
-#endif
-
-#ifdef WIN
-#define CCA_APPEND_U (1)
-#endif
-
-#ifdef LINUX_MUENCH
-#define CCA_APPEND_U (1)
-#endif
-
-#ifdef WIN_MUENCH
-#define CCA_APPEND_U (1)
-#endif
-
-#ifdef HPUX_GNU
-#define CCA_APPEND_U (1)
-#endif
-
-#ifdef TX7
-#define CCA_APPEND_U (1)
-#endif
-
-/* append underslash for CUSS Sunfire */
-#ifdef SUN
-#define CCA_APPEND_U (1)
-#endif
-
-/* append underslash for SIXTYFOUR flag */
-#ifdef SIXTYFOUR
-#define CCA_APPEND_U (1)
-#endif
-
-/* append underslash for HPUX11i flag */
-#ifdef HPUXITA
-#define CCA_APPEND_U (1)
-#endif
-
-#ifdef HPUX_MUENCH
-#define CCA_APPEND_U (1)
-#endif
-
-#ifdef CCA_APPEND_U
-#define c1ab                c1ab_
-#define c1inv3              c1inv3_
-#define c1inv6              c1inv6_
-#define c1invf              c1invf_
-#define c1jacb              c1jacb_
-#define colsol              colsol_
-#define dgesv               dgesv_
-#define dgetrf              dgetrf_
-#define dgetri              dgetri_
-#define dgetrs              dgetrs_
-#define dsyev               dsyev_
-#define dsyevd              dsyevd_
-#define dsygv               dsygv_
-#define dsytrf              dsytrf_
-#define dsytri              dsytri_
-#define dsytrs              dsytrs_
-#define dveczero            dveczero_
-#define fortranpow          fortranpow_
-#define fsdoc               fsdoc_
-#define iluk                iluk_
-#define iveczero            iveczero_
-#define lusol               lusol_
-#define mlpcgupdupdvec      mlpcgupdupdvec_
-#define mlpcgupdvec         mlpcgupdvec_
-#define mlpcgvecvec         mlpcgvecvec_
-#define mlpcgveczero        mlpcgveczero_
-#define mumps_interface     mumps_interface_
-#define mxmab               mxmab_
-#define mxmabt              mxmabt_
-#define mxmatb              mxmatb_
-#define mydsyevx            mydsyevx_
-#define qat2v2              qat2v2_
-#define s8jacb              s8jacb_
-#define solveq              solveq_
-#define sspace              sspace_
-#define v2call              v2call_
-#define v2data              v2data_
-#define v2grid              v2grid_
-#define v2scal              v2scal_
-#define v2vect              v2vect_
-
-
-/* The number of underscores your fortran requires might differ.
- * On i386 Linux we need 2. */
-#ifdef LINUX_MUENCH
-
-#define v2_cursor           v2_cursor__
-#define v3cell              v3cell_
-#define v3string            v3string_
-
-#else
-
-#define v2_cursor           v2_cursor_
-
-#endif
-
-#define v2update            v2update_
-#define qat2v2              qat2v2_
-#define v3call              v3call_
-#define v3call_struct       v3call_struct_
-#define v3grid              v3grid_
-#define v3surface           v3surface_
-#define v3scal              v3scal_
-#define v3vect              v3vect_
-#define v3update            v3update_
-
-#define f3fhex             f3fhex_
-#define f3ftet             f3ftet_
-#define f3fjaco            f3fjaco_
-#define f3fveli            f3fveli_
-#define f3fcovi            f3fcovi_
-#define f3fgder            f3fgder_
-#define f3fgder2           f3fgder2_
-#define f3fgder2loop       f3fgder2loop_
-#define f3fcalstabpar      f3fcalstabpar_
-#define f3fvder            f3fvder_
-#define f3fvder2           f3fvder2_
-#define f3fpder            f3fpder_
-#define f3fprei            f3fprei_
-
-#define f3fcalgalk         f3fcalgalk_
-#define f3fcalgalm         f3fcalgalm_
-#define f3fcalstabk        f3fcalstabk_
-#define f3fcalstabm        f3fcalstabm_
-
-#define f3fcalif           f3fcalif_
-
-#define f3fcalstabexf      f3fcalstabexf_
-#define f3fcalgalexf       f3fcalgalexf_
-
-#define f3fmast            f3fmast_
-#define f3fmassrhs         f3fmassrhs_
-#define f3fsigint          f3fsigint_
-
-#define f3fcalmat          f3fcalmat_
-#define f3fcalresvec       f3fcalresvec_
-#define f3finterr          f3finterr_
-
-#define fadm               fadm_
-#define fadmp              fadmp_
-#define fastsd                fastsd_
-#define fastsd2               fastsd2_
-
-#endif
-
-
-void colsol(DOUBLE *a, DOUBLE *v, INT *maxa, INT *nn, INT *nrr, INT *nrc, INT *nwa, INT *nqm, INT *nr1, INT *nr2, INT *kkk, DOUBLE *det, INT *isc, INT *nsch, INT *ipr, INT *info);
-void iluk(INT *n, DOUBLE *a, INT *ja, INT *ia, INT *lfil, DOUBLE *alu, INT *jlu, INT *ju, INT *levs, INT *iwk, DOUBLE *w, INT *jw, INT *ierr);
-void lusol(INT *n, DOUBLE *y, DOUBLE *x, DOUBLE *alu, INT *jlu, INT *ju);
-void mlpcgveczero(DOUBLE *x, INT *n);
-void mlpcgvecvec(DOUBLE *x, DOUBLE *y, DOUBLE *sum, INT *n);
-void mlpcgupdupdvec(DOUBLE *a, DOUBLE *y, DOUBLE *facy, DOUBLE *x, DOUBLE *facx, INT *init, INT *n);
-void mlpcgupdvec(DOUBLE *y, DOUBLE *x, DOUBLE *fac, INT *init, INT *n);
-void dveczero(DOUBLE *x, INT *n);
-void iveczero(INT *x, INT *n);
-void mydsyevx(char *jobz,char *range,char *uplo,INT *n,DOUBLE *a,INT *lda,DOUBLE *vl,DOUBLE *vu,INT *il,INT *iu,DOUBLE *abstol,INT *m,DOUBLE *w,DOUBLE *z,INT *ldz,DOUBLE *work,INT *lwork,INT *iwork,INT *ifail,INT *info);
-void fortranpow(DOUBLE *V,DOUBLE *R,DOUBLE *RE);
-
-/*----------------------------------------------------------------------*
- | sign of an integer                                          |
+ | sign of an integer                                                   |
  *----------------------------------------------------------------------*/
 #define SIGN(x)    ((x) <  0  ? (-1) : (1))
 
 /*----------------------------------------------------------------------*
- | sign of a DOUBLE                                            |
+ | sign of a double                                                     |
  *----------------------------------------------------------------------*/
 #define FSIGN(x)   ((x) < 0.0 ? (-(1.0)) : (1.0))
 
@@ -253,12 +37,12 @@ void fortranpow(DOUBLE *V,DOUBLE *R,DOUBLE *RE);
 #define ABS(x)    ((x) <  0  ? (-x) : (x))
 
 /*----------------------------------------------------------------------*
- | absolut value of a DOUBLE                                            |
+ | absolut value of a double                                            |
  *----------------------------------------------------------------------*/
 #define FABS(x)   ((x) < 0.0 ? (-(x)) : (x))
 
 /*----------------------------------------------------------------------*
- | square of a DOUBLE                                                   |
+ | square of a double                                                   |
  *----------------------------------------------------------------------*/
 #define DSQR(a) ((a)*(a))
 
@@ -266,62 +50,26 @@ void fortranpow(DOUBLE *V,DOUBLE *R,DOUBLE *RE);
  | plain old min and max (working version)                              |
  *----------------------------------------------------------------------*/
 #if !defined(MAX)
-#define	MAX(a,b) (((a)>(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 #endif
 #if !defined(MIN)
 #define	MIN(a,b) (((a)<(b))?(a):(b))
 #endif
 
 /*----------------------------------------------------------------------*
- | the larger of two doubles (fast version)                             |
+ | the larger of two doubles (still in use)                             |
  *----------------------------------------------------------------------*/
-/*
-static DOUBLE dmaxarg1,dmaxarg2;
-#define DMAX(a,b) (dmaxarg1=(a),dmaxarg2=(b), (dmaxarg1) > (dmaxarg2) ? (dmaxarg1) : (dmaxarg2))
-*/
 #define DMAX MAX
 
 /*----------------------------------------------------------------------*
- | the smaller of two doubles (fast version)                            |
+ | the smaller of two doubles (still in use)                            |
  *----------------------------------------------------------------------*/
-/*
-static DOUBLE dminarg1,dminarg2;
-#define DMIN(a,b) (dminarg1=(a),dminarg2=(b), (dminarg1) < (dminarg2) ? (dminarg1) : (dminarg2))
-*/
 #define DMIN MIN
 
 /*----------------------------------------------------------------------*
- | the larger of two integer (fast version)                             |
+ | the smaller of two integer (used in pss_am.c)                        |
  *----------------------------------------------------------------------*/
-/*
-static INT imaxarg1,imaxarg2;
-#define IMAX(a,b) (imaxarg1=(a),imaxarg2=(b), (imaxarg1) > (imaxarg2) ? (imaxarg1) : (imaxarg2))
-*/
-#define IMAX MAX
-
-/*----------------------------------------------------------------------*
- | the smaller of two integer (fast version)                            |
- *----------------------------------------------------------------------*/
-/*
-static INT iminarg1,iminarg2;
-#define IMIN(a,b) (iminarg1=(a),iminarg2=(b), (iminarg1) < (iminarg2) ? (iminarg1) : (iminarg2))
-*/
 #define IMIN MIN
-
-/* exchange two integers */
-/* #define SWAP_INT(a, b) { INT t; t = a; a = b; b = t; } */
-
-/*----------------------------------------------------------------------*
- | max number of processors                                             |
- *----------------------------------------------------------------------*/
-#ifndef MAXPROC
-#define MAXPROC          (64)
-#endif
-
-/*----------------------------------------------------------------------*
- | size of buffer to attach to intra-communicator in byte               |
- *----------------------------------------------------------------------*/
-#define MPIBUFFSIZE      (52428800) /* this is 50 MB */
 
 /*----------------------------------------------------------------------*
  | exact one RAD                                                        |
@@ -360,3 +108,4 @@ static INT iminarg1,iminarg2;
 #define VERYLARGEINT     (1000000000)
 #define VERYLARGEREAL    (1000000000.0)
 
+#endif /* DEFINITIONS_H */

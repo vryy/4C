@@ -18,6 +18,7 @@ Maintainer: Christian Cyron
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 08/08|

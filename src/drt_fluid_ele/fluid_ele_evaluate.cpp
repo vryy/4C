@@ -3235,7 +3235,7 @@ void DRT::ELEMENTS::Fluid::f3_get_mf_params(
        double val = 0.0;
        for (int rr=0;rr<NEN;++rr) /* loop element nodes */
        {
-         val += FABS( normed_velgrad(0)*derxy(0,rr)
+         val += fabs( normed_velgrad(0)*derxy(0,rr)
                      +normed_velgrad(1)*derxy(1,rr)
                      +normed_velgrad(2)*derxy(2,rr));
        } /* end of loop over element nodes */

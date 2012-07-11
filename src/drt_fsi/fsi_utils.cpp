@@ -13,7 +13,6 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/matpar_bundle.H"
 
 #include <Epetra_CrsMatrix.h>

@@ -22,10 +22,6 @@ http://www.lnm.mw.tum.de/Members/kuettler
 #include "fluidimplicitintegration.H"
 #include "fluid_genalpha_integration.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)

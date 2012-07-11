@@ -4,8 +4,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-#include "../drt_lib/standardtypes_cpp.H"
-
 #include "fsi_debugwriter.H"
 #include "fsi_monolithic_nonox.H"
 #include "fsi_statustest.H"

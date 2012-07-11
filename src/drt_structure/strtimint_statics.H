@@ -18,7 +18,6 @@ Maintainer: Thomas Klöppel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_impl.H"
-#include "../drt_lib/standardtypes_cpp.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */

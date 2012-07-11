@@ -218,17 +218,17 @@ private:
     void calc_factors (	LINALG::Matrix<3,3>&C,
 				LINALG::Matrix<3,3>&Cinv,
 				LINALG::Matrix<3,3>&L,
-				DOUBLE alpha,
-				DOUBLE beta,
-				DOUBLE mu,
-				DOUBLE *factors);
+				double alpha,
+				double beta,
+				double mu,
+				double *factors);
 
     void calc_Itskov (	LINALG::Matrix<3,3>&C,
 						LINALG::Matrix<3,3>&Cinv,
 						LINALG::Matrix<3,3>&L,
 						LINALG::Matrix<3,3>&PK2_,
 						LINALG::Matrix<6,6>&cmat_,
-						DOUBLE *factors);
+						double *factors);
 
   };
 }

@@ -19,10 +19,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_discret.H"
 #include "ale.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 
 ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
 : aledis_(ale.Discretization()),

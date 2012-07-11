@@ -1302,7 +1302,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       double val = 0.0;
       for (int rr=0;rr<nen_;++rr) /* loop element nodes */
       {
-        val += FABS( normed_velgrad(0)*derxy_(0,rr)
+        val += fabs( normed_velgrad(0)*derxy_(0,rr)
                     +normed_velgrad(1)*derxy_(1,rr)
                     +normed_velgrad(2)*derxy_(2,rr));
       } /* end of loop over element nodes */

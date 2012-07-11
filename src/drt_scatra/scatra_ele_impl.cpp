@@ -19,6 +19,7 @@
 #include "scatra_ele_impl_reinit.H"
 
 #include "../drt_lib/drt_globalproblem.H"  // for time curve in body force
+#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -854,14 +855,16 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     if (material->MaterialType() == INPAR::MAT::m_sutherland)
     {
-      const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+      const Teuchos::RCP<const MAT::Sutherland>& actmat
+        = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material);
       params.set("thermodynamic pressure",actmat->ThermPress());
     }
     else params.set("thermodynamic pressure",0.0);
 
     if (material->MaterialType() == INPAR::MAT::m_scatra)
     {
-      const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+      const Teuchos::RCP<const MAT::ScatraMat>& actmat
+        = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
       params.set("scnum",actmat->ScNum());
     }
     else params.set("scnum",-1.0);
@@ -1704,7 +1707,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 // get diffusivity / diffusivities
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
-    const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+    const Teuchos::RCP<const MAT::MatList>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
     if (actmat->NumMat() < numscal_) dserror("Not enough materials in MatList.");
 
     for (int k = 0;k<numscal_;++k)
@@ -1729,7 +1733,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
       if (singlemat->MaterialType() == INPAR::MAT::m_ion)
       {
-        const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+        const Teuchos::RCP<const MAT::Ion>& actsinglemat
+          = Teuchos::rcp_dynamic_cast<const MAT::Ion>(singlemat);
         valence_[k] = actsinglemat->Valence();
         diffus_[k] = actsinglemat->Diffusivity();
         diffusvalence_[k] = valence_[k]*diffus_[k];
@@ -1768,7 +1773,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_spec)
       {
-        const MAT::ArrheniusSpec* actsinglemat = static_cast<const MAT::ArrheniusSpec*>(singlemat.get());
+        const Teuchos::RCP<const MAT::ArrheniusSpec>& actsinglemat
+          = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusSpec>(singlemat);
 
         // compute temperature
         const double tempnp = funct_.Dot(ephinp_[numscal_-1]);
@@ -1791,7 +1797,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       {
         if (k != numscal_-1) dserror("Temperature equation always needs to be the last variable for reactive equation system!");
 
-        const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
+        const Teuchos::RCP<const MAT::ArrheniusTemp>& actsinglemat
+          = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusTemp>(singlemat);
 
         // get specific heat capacity at constant pressure
         shc_ = actsinglemat->Shc();
@@ -1834,7 +1841,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_scatra)
       {
-        const MAT::ScatraMat* actsinglemat = static_cast<const MAT::ScatraMat*>(singlemat.get());
+        const Teuchos::RCP<const MAT::ScatraMat>& actsinglemat
+          = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(singlemat);
+
         diffus_[k] = actsinglemat->Diffusivity();
 
         // in case of reaction with constant coefficient, read coefficient and
@@ -1851,7 +1860,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_biofilm)
       {
-        const MAT::Biofilm* actsinglemat = static_cast<const MAT::Biofilm*>(singlemat.get());
+        const Teuchos::RCP<const MAT::Biofilm>& actsinglemat
+          = Teuchos::rcp_dynamic_cast<const MAT::Biofilm>(singlemat);
+
         diffus_[k] = actsinglemat->Diffusivity();
         // double rearate_k = actsinglemat->ReaRate();
         // double satcoeff_k = actsinglemat->SatCoeff();
@@ -1879,7 +1890,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_scatra)
   {
-    const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+    const Teuchos::RCP<const MAT::ScatraMat>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for SCATRA material");
 
@@ -1920,7 +1932,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_ion)
   {
-    const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(material.get());
+    const Teuchos::RCP<const MAT::Ion>& actsinglemat
+      = Teuchos::rcp_dynamic_cast<const MAT::Ion>(material);
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for single ion material");
 
@@ -1944,7 +1957,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   {
-    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
+    const Teuchos::RCP<const MAT::MixFrac>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::MixFrac>(material);
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for mixture-fraction material");
 
@@ -1992,7 +2006,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   {
-    const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+    const Teuchos::RCP<const MAT::Sutherland>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material);
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for Sutherland material");
 
@@ -2043,7 +2058,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {
-    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+    const Teuchos::RCP<const MAT::ArrheniusPV>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusPV>(material);
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for progress-variable material");
 
@@ -2101,7 +2117,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   {
-    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+    const Teuchos::RCP<const MAT::FerEchPV>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::FerEchPV>(material);
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for progress-variable material");
 
@@ -2162,7 +2179,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   {
     dsassert(numdofpernode_==1,"more than 1 dof per node for BIOFILM material");
 
-    const MAT::Biofilm* actmat = static_cast<const MAT::Biofilm*>(material.get());
+    const Teuchos::RCP<const MAT::Biofilm>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::Biofilm>(material);
+
     diffus_[0] = actmat->Diffusivity();
     // double rearate_k = actmat->ReaRate();
     // double satcoeff_k = actmat->SatCoeff();
@@ -2198,7 +2217,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   {
     dsassert(numdofpernode_==1,"more than 1 dof per node for isotropic Fourier material");
 
-    const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
+    const Teuchos::RCP<const MAT::FourierIso>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::FourierIso>(material);
 
     // get constant diffusivity (conductivity divided by specific heat capacity)
     diffus_[0] = actmat->Conductivity()/actmat->Capacity();
@@ -2223,7 +2243,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   {
     dsassert(numdofpernode_==1,"more than 1 dof per node for thermo St. Venant-Kirchhoff material");
 
-    const MAT::ThermoStVenantKirchhoff* actmat = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get());
+    const Teuchos::RCP<const MAT::ThermoStVenantKirchhoff>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::ThermoStVenantKirchhoff>(material);
 
     // get constant diffusivity (conductivity divided by specific heat capacity)
     diffus_[0] = actmat->Conductivity()/actmat->Capacity();
@@ -2257,7 +2278,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
   {
-    const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+    const Teuchos::RCP<const MAT::Yoghurt>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::Yoghurt>(material);
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for Yoghurt material");
 
@@ -2295,7 +2317,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_myocard)
       {
-        MAT::Myocard* actmat = static_cast<MAT::Myocard*>(material.get());
+        // reference to rcp not possible here, since the material is required to be
+        // not const for this application
+        Teuchos::RCP<MAT::Myocard> actmat
+          = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
 
         dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
 
@@ -4115,7 +4140,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
 
   if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   {
-    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
+    const Teuchos::RCP<const MAT::MixFrac>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::MixFrac>(material);
 
     // compute mixture fraction at n+1 or n+alpha_F
     double mixfracnp = funct_.Dot(ephinp_[k]);
@@ -4152,7 +4178,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   {
-    const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+    const Teuchos::RCP<const MAT::Sutherland>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material);
 
     // compute temperature at n+1 or n+alpha_F
     double tempnp = funct_.Dot(ephinp_[k]);
@@ -4192,7 +4219,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {
-    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+    const Teuchos::RCP<const MAT::ArrheniusPV>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusPV>(material);
 
     // get progress variable at n+1 or n+alpha_F
     double provarnp = funct_.Dot(ephinp_[k]);
@@ -4241,7 +4269,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   {
-    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+    const Teuchos::RCP<const MAT::FerEchPV>& actmat
+             = Teuchos::rcp_dynamic_cast<const MAT::FerEchPV>(material);
 
     // get progress variable at n+1 or n+alpha_F
     double provarnp = funct_.Dot(ephinp_[k]);
@@ -6731,7 +6760,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidual_PoroScatraMod(
 
 
 /*---------------------------------------------------------------------------*
- |  modidy element matrix and rhs for scatra in porous media (private)  vuong 06/12|
+ |  modify element matrix and rhs for scatra in porous media (private)  vuong 06/12|
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
@@ -6752,7 +6781,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
   if (structele == NULL)
     dserror("Structure element %i not on local processor", eleid);
 
-  MAT::StructPoro* structmat = static_cast<MAT::StructPoro* >((structele->Material()).get());
+  const Teuchos::RCP<const MAT::StructPoro>& structmat
+            = Teuchos::rcp_dynamic_cast<const MAT::StructPoro>(structele->Material());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
     dserror("invalid structure material for poroelasticity");
 

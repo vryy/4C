@@ -212,7 +212,7 @@ namespace MAT
       }
 
       /// Return porosity evaluated at some gauss point.           %urrecha 04/12
-      double GetPorosityAtGP(int gp)
+      double GetPorosityAtGP(int gp) const
       {
         return porosity_->at(gp);
       }
@@ -220,7 +220,7 @@ namespace MAT
       void   SetDPoroDtAtGP(std::vector<double> dporodt_gp);
 
       /// Return derivative of porosity wrt time evaluated at some gauss point.           %urrecha 04/12
-      double GetDPoroDtAtGP(int gp)
+      double GetDPoroDtAtGP(int gp) const
       {
         return dporodt_->at(gp);
       }
@@ -228,7 +228,7 @@ namespace MAT
       void   SetGradPorosityAtGP(std::vector< LINALG::Matrix<3,1> > gradporosity_gp);
 
       /// Return porosity gradient evaluated at some gauss point.  %urrecha 04/12
-      LINALG::Matrix<3,1> GetGradPorosityAtGP(int gp)
+      LINALG::Matrix<3,1> GetGradPorosityAtGP(int gp) const
       {
         return gradporosity_->at(gp);
       }

@@ -27,6 +27,7 @@ Maintainer: Georg Bauer
 #include "scatra_element.H"
 
 #include "../drt_lib/drt_globalproblem.H" // for curves and functions
+#include "../drt_lib/standardtypes_cpp.H" // for EPS12 and so on
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
@@ -3349,8 +3350,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
         // normal velocity
         const double normvel = velint.Dot(bnormal);
 
-        bool outflow_point = false;
-        if(normvel > 0.0) outflow_point=true;
+        //bool outflow_point = false;
+        //if(normvel > 0.0) outflow_point=true;
 
 
         LINALG::Matrix<1,pnen> derxy_vel;
