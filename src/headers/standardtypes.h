@@ -30,14 +30,6 @@ Maintainer: Michael Gee
  | definitions file                                       m.gee 8/00    |
  *----------------------------------------------------------------------*/
 #include "definitions.h"
-/*----------------------------------------------------------------------*
- | old fortran compiler definitions still in use            gjb 7/12    |
- *----------------------------------------------------------------------*/
-#include "compiler_definitions.h"
-/*----------------------------------------------------------------------*
- | structure types used by the array management           m.gee 8/00    |
- *----------------------------------------------------------------------*/
- #include "am.h"
 
 
 #endif

@@ -11,6 +11,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #include "../../drt_lib/standardtypes_cpp.H"
+#include "../../headers/am.h"
 #include "../../headers/materials.h"
 
 #ifdef D_SHELL8

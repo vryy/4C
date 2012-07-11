@@ -37,7 +37,7 @@ Maintainer: Malte Neumann
 #define c1invf              c1invf_
 #define c1jacb              c1jacb_
 #define colsol              colsol_
-/* required for lapack access */
+/* required for lapack access. do not remove! */
 #define dgesv               dgesv_
 #define dgetrf              dgetrf_
 #define dgetri              dgetri_
@@ -67,35 +67,33 @@ Maintainer: Malte Neumann
 
 #endif
 
-/*----------------------------------------------------------------------*
- | basic data types, do not use INT, DOUBLE or CHAR in baci !           |
- | only still here to allow the compilation of shell8 and some C stuff  |
- *----------------------------------------------------------------------*/
-#ifdef INT
-#undef INT
-#endif
-typedef int       INT;
-#ifdef DOUBLE
-#undef DOUBLE
-#endif
-typedef double    DOUBLE;
-#ifdef CHAR
-#undef CHAR
-#endif
-typedef char      CHAR;
-
 /* methods located in src/fortran and (theoretically) still in usable  (gjb 7/12) */
 /* however, the corresponding source files are currently not in CmakeMakeLists and hence not compiled */
-void colsol(DOUBLE *a, DOUBLE *v, INT *maxa, INT *nn, INT *nrr, INT *nrc, INT *nwa, INT *nqm, INT *nr1, INT *nr2, INT *kkk, DOUBLE *det, INT *isc, INT *nsch, INT *ipr, INT *info);
-void iluk(INT *n, DOUBLE *a, INT *ja, INT *ia, INT *lfil, DOUBLE *alu, INT *jlu, INT *ju, INT *levs, INT *iwk, DOUBLE *w, INT *jw, INT *ierr);
-void lusol(INT *n, DOUBLE *y, DOUBLE *x, DOUBLE *alu, INT *jlu, INT *ju);
-void mlpcgveczero(DOUBLE *x, INT *n);
-void mlpcgvecvec(DOUBLE *x, DOUBLE *y, DOUBLE *sum, INT *n);
-void mlpcgupdupdvec(DOUBLE *a, DOUBLE *y, DOUBLE *facy, DOUBLE *x, DOUBLE *facx, INT *init, INT *n);
-void mlpcgupdvec(DOUBLE *y, DOUBLE *x, DOUBLE *fac, INT *init, INT *n);
-void dveczero(DOUBLE *x, INT *n);
-void iveczero(INT *x, INT *n);
-void fortranpow(DOUBLE *V,DOUBLE *R,DOUBLE *RE);
+void colsol(double *a, double *v, int *maxa, int *nn, int *nrr, int *nrc, int *nwa, int *nqm, int *nr1, int *nr2, int *kkk, double *det, int *isc, int *nsch, int *ipr, int *info);
+void iluk(int *n, double *a, int *ja, int *ia, int *lfil, double *alu, int *jlu, int *ju, int *levs, int *iwk, double *w, int *jw, int *ierr);
+void lusol(int *n, double *y, double *x, double *alu, int *jlu, int *ju);
+void mlpcgveczero(double *x, int *n);
+void mlpcgvecvec(double *x, double *y, double *sum, int *n);
+void mlpcgupdupdvec(double *a, double *y, double *facy, double *x, double *facx, int *init, int *n);
+void mlpcgupdvec(double *y, double *x, double *fac, int *init, int *n);
+void dveczero(double *x, int *n);
+void iveczero(int *x, int *n);
+void fortranpow(double *V,double *R,double *RE);
 
+/* fortran routines from the lapack package, used in src/linalg/linalg_utils.cpp */
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
+void dgetrf(int *m,int *n, double *a, int *lda, int *ipiv, int* info);
+void dgetri(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+
+#ifdef __cplusplus
+}
+
+#endif
 
 #endif /* COMPILER_DEFINITIONS_H */

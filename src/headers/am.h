@@ -13,6 +13,8 @@ Maintainer: Malte Neumann
 #ifndef AM_H
 #define AM_H
 
+#include "ccarat_datatypes.h"
+
 /*!
 \addtogroup AMSYSTEM
 *//*! @{ (documentation module open)*/

@@ -13,7 +13,39 @@ Maintainer: Michael Gee
 #ifdef D_SHELL8
 #include "../../headers/standardtypes.h"
 #include "shell8.h"
-#include "../../math/math_prototypes.h"
+
+
+/*----------------------------------------------------------------------*
+ |  r(I) = A(I,K)*b(K)*factor -----  r = A*b*factor          m.gee 6/01 |
+ |  or                                                                  |
+ |  r(I) += A(I,K)*b(K)*factor                                          |
+ *----------------------------------------------------------------------*/
+void math_matvecdense(DOUBLE  *r,
+                         DOUBLE **A,
+                         DOUBLE  *b,
+                         INT      ni,
+                         INT      nk,
+                         INT      init,
+                         DOUBLE   factor)
+{
+INT i,k;
+DOUBLE sum;
+/*----------------------------------------------------------------------*/
+if (init==0)
+{
+   for (i=0; i<ni; i++) r[i]=0.0;
+}
+for (i=0; i<ni; i++)
+{
+   sum=0.0;
+   for (k=0; k<nk; k++) sum += A[i][k]*b[k];
+   r[i] += sum*factor;
+}
+/*----------------------------------------------------------------------*/
+return;
+} /* end of math_matvecdense */
+
+
 /*----------------------------------------------------------------------*
  | st.venant-kirchhoff-material                           m.gee 6/01    |
  *----------------------------------------------------------------------*/

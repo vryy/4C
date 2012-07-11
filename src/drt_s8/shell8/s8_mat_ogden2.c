@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
 #include "../../headers/standardtypes.h"
+#include "../../headers/compiler_definitions.h" /* access to fortran routines */
 #include "shell8.h"
 #include "../../drt_lib/drt_dserror.H"
 

@@ -43,6 +43,7 @@ Maintainer: Michael Gee
 #include <numeric>
 #include <vector>
 
+#include "../headers/compiler_definitions.h" /* access to fortran routines */
 #include "linalg_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "EpetraExt_Transpose_RowMatrix.h"
@@ -443,22 +444,6 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
   return d;
 }
 
-#ifdef LINUX_MUENCH
-#define CCA_APPEND_U (1)
-#endif
-#ifdef CCA_APPEND_U
-#define dsytrf dsytrf_
-#define dsytri dsytri_
-#define dgetrf dgetrf_
-#define dgetri dgetri_
-#endif
-extern "C"
-{
-  void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
-  void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
-  void dgetrf(int *m,int *n, double *a, int *lda, int *ipiv, int* info);
-  void dgetri(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
-}
 
 /*----------------------------------------------------------------------*
  |  invert a dense symmetric matrix  (public)                mwgee 12/06|

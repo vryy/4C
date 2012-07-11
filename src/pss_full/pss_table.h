@@ -46,6 +46,7 @@ table. This table can be queried for those values quite easily.
 #define PSS_TABLE_H
 
 #include "../headers/standardtypes.h"
+#include "../headers/am.h"
 #ifdef PARALLEL
 #include <mpi.h>
 #endif

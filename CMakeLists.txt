@@ -745,7 +745,6 @@ set(OBJS_DRT_S8_LIB
   src/drt_s8/shell8_line.cpp
   src/drt_s8/shell8_line_evaluate.cpp
   src/fortran/s8_fserv.f
-  src/math/math1.c
   src/drt_s8/shell8/s8_mat_linel.c
   src/drt_s8/shell8/s8_mat_ogden.c
   src/drt_s8/shell8/s8_mat_ogden2.c
