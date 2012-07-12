@@ -1672,7 +1672,7 @@ endmacro (baci_test_Nested_Par)
 
 # FRAMEWORK TESTS
 macro (baci_framework_test arg nproc)
-  set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ ${PROJECT_SOURCE_DIR}/tests/framework-test/tutorial_fluid.jou)
+  set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/tutorial_fluid.jou)
   set (RUNPREEXODUS ./pre_exodus\ --exo=xxx_${arg}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.head\ --dat=xxx.dat)
   set (RUNPRECURVE ./pre_curve\ --datfile=xxx.dat)
   set (RUNBACI ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx)
@@ -2497,7 +2497,7 @@ if (FS3I_INCACouplingTest)
 endif (FS3I_INCACouplingTest)
 
 # remove any output files from our tests
-add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.* *.cub")
+add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.*")
 
 
 
