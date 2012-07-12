@@ -42,7 +42,7 @@ Maintainer: Michael Gee
 
 
 #include "drt_dserror.H"
-#include "../../src/drt_lib/standardtypes_cpp.H"
+#include <mpi.h>
 
 #ifdef THROWELEMENTERRORS
 
