@@ -40,8 +40,6 @@ Maintainer: Ulrich Kuettler
 #include <vector>
 #include <algorithm>
 
-#include "../drt_lib/standardtypes_cpp.H"
-
 #include "Teuchos_RCP.hpp"
 
 #ifdef PARALLEL

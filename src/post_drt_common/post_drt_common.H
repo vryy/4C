@@ -42,8 +42,7 @@ The new filters can be used in parallel.
 #endif
 
 extern "C" {
-#include "../pss_full/pss_table.h"
-#include "../pss_full/pss_table_iter.h"
+#include "../pss_full/pss_types.h"
 }
 
 #include <Teuchos_RCP.hpp>
@@ -370,10 +369,10 @@ public:
   MAP* group() { return group_; }
 
   //! returns time of this result
-  double time() const { return map_read_real(group_, "time"); }
+  double time() const;
 
   //! returns step number of this result
-  int step() const { return map_read_int(group_, "step"); }
+  int step() const;
 
   //@}
 private:

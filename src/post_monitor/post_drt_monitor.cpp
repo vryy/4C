@@ -18,7 +18,7 @@ Maintainer: Christiane FÃ¶rster
 \addtogroup Monitoring
 *//*! @{ (documentation module open)*/
 
-
+#include "post_drt_monitor.H"
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
 
@@ -26,7 +26,9 @@ Maintainer: Christiane FÃ¶rster
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "post_drt_monitor.H"
+extern "C" {
+#include "../pss_full/pss_table.h"
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

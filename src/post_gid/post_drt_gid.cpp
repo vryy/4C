@@ -24,6 +24,8 @@ Maintainer: Ulrich Kuettler
 
 extern "C" {
 #include "gid_out.h"
+#include "../pss_full/pss_table.h"
+#include "../pss_full/pss_table_iter.h"
 }
 
 extern char* fieldnames[];

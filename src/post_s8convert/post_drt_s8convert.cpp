@@ -12,6 +12,9 @@
 #include <Teuchos_RCP.hpp>
 #include <vector>
 
+extern "C" {
+#include "../pss_full/pss_table.h"
+}
 
 class Converter
 {

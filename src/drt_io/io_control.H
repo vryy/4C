@@ -20,11 +20,9 @@ Maintainer: Ulrich Kuettler
 
 #include <Epetra_Comm.h>
 
-#include "../drt_lib/standardtypes_cpp.H"
-
 extern "C" {
 
-#include "../pss_full/pss_table.h"
+#include "../pss_full/pss_types.h"
 
 }
 

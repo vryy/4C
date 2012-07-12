@@ -24,8 +24,9 @@ Maintainer: Ulrich Kuettler
 #include <string>
 #include <vector>
 
-extern "C" { // this needs to go after the stl headers or else they go crazy
-#include "../pss_full/pss_table.h"
+extern "C"
+{
+#include "../pss_full/pss_types.h" // typedef struct MAP etc.
 }
 
 

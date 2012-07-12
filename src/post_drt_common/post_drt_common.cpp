@@ -29,6 +29,11 @@ Maintainer: Ulrich Kuettler
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_discret_xfem.H"
 
+extern "C" {
+#include "../pss_full/pss_table.h"
+#include "../pss_full/pss_table_iter.h"
+}
+
 /*----------------------------------------------------------------------*
  * The main part of this file. All the functions of the three classes
  * PostProblem, PostField and PostResult are defined here.
@@ -1001,6 +1006,14 @@ RCP<Epetra_MultiVector> PostResult::read_multi_result(const string name)
   }
   return file_.ReadResultData(id_path, value_path, columns, *comm);
 }
+
+//! returns time of this result
+double PostResult::time() const { return map_read_real(group_, "time"); }
+
+//! returns step number of this result
+int PostResult::step() const { return map_read_int(group_, "step"); }
+
+
 
 
 //! returns the number of global Dof-Ids

@@ -21,11 +21,8 @@ Maintainer: Ulrich Kuettler
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
-#ifndef WIN_MUENCH
 #include <pwd.h>
 #include <Epetra_MpiComm.h>
-#endif
-
 #include <vector>
 #include <iostream>
 #include <sstream>
@@ -34,8 +31,8 @@ Maintainer: Ulrich Kuettler
 
 extern "C" {
 
-#include "compile_settings.h"
-
+#include "compile_settings.h"      // for printing current revision number
+#include "../pss_full/pss_table.h" // access to C method  parse_control_file()
 }
 
 
@@ -114,20 +111,12 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 
     char hostname[31];
     struct passwd *user_entry;
-#ifndef WIN_MUENCH
     user_entry = getpwuid(getuid());
     gethostname(hostname, 30);
-#else
-    strcpy(hostname, "unknown host");
-#endif
 
     controlfile_ << "# baci output control file\n"
                  << "# created by "
-#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
                  << user_entry->pw_name
-#else
-                 << "unknown"
-#endif
                  << " on " << hostname << " at " << ctime(&time_value)
                  << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
                  << "input_file = \"" << inputfile << "\"\n"
@@ -245,20 +234,12 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 
     char hostname[31];
     struct passwd *user_entry;
-#ifndef WIN_MUENCH
     user_entry = getpwuid(getuid());
     gethostname(hostname, 30);
-#else
-    strcpy(hostname, "unknown host");
-#endif
 
     controlfile_ << "# baci output control file\n"
                  << "# created by "
-#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
                  << user_entry->pw_name
-#else
-                 << "unknown"
-#endif
                  << " on " << hostname << " at " << ctime(&time_value)
                  << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
                  << "input_file = \"" << inputfile << "\"\n"
@@ -296,20 +277,12 @@ void IO::OutputControl::OverwriteResultFile()
 
   char hostname[31];
   struct passwd *user_entry;
-#ifndef WIN_MUENCH
   user_entry = getpwuid(getuid());
   gethostname(hostname, 30);
-#else
-  strcpy(hostname, "unknown host");
-#endif
 
   controlfile_ << "# baci output control file\n"
                << "# created by "
-#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
                << user_entry->pw_name
-#else
-               << "unknown"
-#endif
                << " on " << hostname << " at " << ctime(&time_value)
                << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
                << "input_file = \"" << inputfile_ << "\"\n"
@@ -348,20 +321,12 @@ void IO::OutputControl::NewResultFile(int numb_run)
 
   char hostname[31];
   struct passwd *user_entry;
-#ifndef WIN_MUENCH
   user_entry = getpwuid(getuid());
   gethostname(hostname, 30);
-#else
-  strcpy(hostname, "unknown host");
-#endif
 
   controlfile_ << "# baci output control file\n"
                << "# created by "
-#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
                << user_entry->pw_name
-#else
-               << "unknown"
-#endif
                << " on " << hostname << " at " << ctime(&time_value)
                << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
                << "input_file = \"" << inputfile_ << "\"\n"
@@ -395,20 +360,12 @@ void IO::OutputControl::NewResultFile(string name_appendix, int numb_run)
 
   char hostname[31];
   struct passwd *user_entry;
-#ifndef WIN_MUENCH
   user_entry = getpwuid(getuid());
   gethostname(hostname, 30);
-#else
-  strcpy(hostname, "unknown host");
-#endif
 
   controlfile_ << "# baci output control file\n"
                << "# created by "
-#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
                << user_entry->pw_name
-#else
-               << "unknown"
-#endif
                << " on " << hostname << " at " << ctime(&time_value)
                << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
                << "input_file = \"" << inputfile_ << "\"\n"

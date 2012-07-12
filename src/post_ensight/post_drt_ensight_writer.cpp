@@ -22,6 +22,12 @@
 
 #include <string>
 
+extern "C" {
+#include "../pss_full/pss_table.h"
+#include "../pss_full/pss_table_iter.h"
+}
+
+
 using namespace std;
 
 

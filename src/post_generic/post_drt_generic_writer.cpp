@@ -19,6 +19,12 @@
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include <string>
 
+extern "C" {
+#include "../pss_full/pss_table.h"
+#include "../pss_full/pss_table_iter.h"
+}
+
+
 using namespace std;
 
 

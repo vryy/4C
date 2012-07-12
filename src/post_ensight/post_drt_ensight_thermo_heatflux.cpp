@@ -26,6 +26,9 @@
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 
+extern "C" {
+#include "../pss_full/pss_table.h"
+}
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 11/09 |
