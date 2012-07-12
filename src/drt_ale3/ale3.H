@@ -354,16 +354,23 @@ private:
 //=======================================================================
 //=======================================================================
 
-class Ale3_Impl_Interface
+class Ale3_Impl_Interface : SingletonDestruction
 {
 public:
+
+  /// Empty constructor
+  Ale3_Impl_Interface() {}
+
   virtual ~Ale3_Impl_Interface() {}
+
+  /// Internal implementation class for fluid element
+  static Ale3_Impl_Interface* Impl(DRT::ELEMENTS::Ale3* ele);
 
   virtual void static_ke_spring(Ale3*                     ele,
                                 Epetra_SerialDenseMatrix& sys_mat,
                                 const vector<double>&     displacements) = 0;
   virtual void static_ke(Ale3*                      ele,
-			 DRT::Discretization&       discretization,
+                         DRT::Discretization&       discretization,
                          vector<int>&               lm,
                          Epetra_SerialDenseMatrix&  sys_mat,
                          Epetra_SerialDenseVector&  residual,
@@ -386,17 +393,23 @@ public:
                                    std::vector<double>&       my_dispnp
       ) = 0;
 
-  static Ale3_Impl_Interface* Impl(Ale3* ele);
-protected:
-  Ale3_Impl_Interface() {}
 };
 
 template <DRT::Element::DiscretizationType distype>
 class Ale3_Impl: public Ale3_Impl_Interface
 {
-public:
+
   Ale3_Impl() {}
+public:
+
+
   ~Ale3_Impl() {}
+
+  /// Singleton access method
+  static Ale3_Impl<distype> * Instance( bool create=true );
+
+  /// called upon destruction
+  virtual void Done();
 
   void static_ke_laplace(
     Ale3*                      ele,

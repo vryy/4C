@@ -29,78 +29,80 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(DRT
   {
   case DRT::Element::hex8:
   {
-    static Ale3_Impl<DRT::Element::hex8>* ah8;
-    if (ah8==NULL)
-      ah8 = new Ale3_Impl<DRT::Element::hex8>();
-    return ah8;
+    return Ale3_Impl<DRT::Element::hex8>::Instance(true);
   }
   case DRT::Element::hex20:
   {
-    static Ale3_Impl<DRT::Element::hex20>* ah20;
-    if (ah20==NULL)
-      ah20 = new Ale3_Impl<DRT::Element::hex20>();
-    return ah20;
+    return Ale3_Impl<DRT::Element::hex20>::Instance(true);
   }
   case DRT::Element::hex27:
   {
-    static Ale3_Impl<DRT::Element::hex27>* ah27;
-    if (ah27==NULL)
-      ah27 = new Ale3_Impl<DRT::Element::hex27>();
-    return ah27;
+    return Ale3_Impl<DRT::Element::hex27>::Instance(true);
   }
   case DRT::Element::tet4:
   {
-    static Ale3_Impl<DRT::Element::tet4>* at4;
-    if (at4==NULL)
-      at4 = new Ale3_Impl<DRT::Element::tet4>();
-    return at4;
+    return Ale3_Impl<DRT::Element::tet4>::Instance(true);
   }
   case DRT::Element::tet10:
   {
-    static Ale3_Impl<DRT::Element::tet10>* at10;
-    if (at10==NULL)
-      at10 = new Ale3_Impl<DRT::Element::tet10>();
-    return at10;
+    return Ale3_Impl<DRT::Element::tet10>::Instance(true);
   }
   case DRT::Element::wedge6:
   {
-    static Ale3_Impl<DRT::Element::wedge6>* aw6;
-    if (aw6==NULL)
-      aw6 = new Ale3_Impl<DRT::Element::wedge6>();
-    return aw6;
+    return Ale3_Impl<DRT::Element::wedge6>::Instance(true);
   }
-  case DRT::Element::wedge15:
+/*  case DRT::Element::wedge15:
   {
-    static Ale3_Impl<DRT::Element::wedge15>* aw15;
-    if (aw15==NULL)
-      aw15 = new Ale3_Impl<DRT::Element::wedge15>();
-    return aw15;
-  }
+    return Ale3_Impl<DRT::Element::wedge15>::Instance(true);
+  }*/
   case DRT::Element::pyramid5:
   {
-    static Ale3_Impl<DRT::Element::pyramid5>* ap5;
-    if (ap5==NULL)
-      ap5 = new Ale3_Impl<DRT::Element::pyramid5>();
-    return ap5;
+    return Ale3_Impl<DRT::Element::pyramid5>::Instance(true);
   }
   case DRT::Element::nurbs8:
   {
-    static Ale3_Impl<DRT::Element::nurbs8>* an8;
-    if (an8==NULL)
-      an8 = new Ale3_Impl<DRT::Element::nurbs8>();
-    return an8;
+    return Ale3_Impl<DRT::Element::nurbs8>::Instance(true);
   }
   case DRT::Element::nurbs27:
   {
-    static Ale3_Impl<DRT::Element::nurbs27>* an27;
-    if (an27==NULL)
-      an27 = new Ale3_Impl<DRT::Element::nurbs27>();
-    return an27;
+    return Ale3_Impl<DRT::Element::nurbs27>::Instance(true);
   }
   default:
     dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
   }
   return NULL;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::Ale3_Impl<distype> * DRT::ELEMENTS::Ale3_Impl<distype>::Instance( bool create )
+{
+  static Ale3_Impl<distype> * instance;
+  if ( create )
+  {
+    if ( instance==NULL )
+      instance = new Ale3_Impl<distype>();
+  }
+  else
+  {
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Ale3_Impl<distype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
 }
 
 
