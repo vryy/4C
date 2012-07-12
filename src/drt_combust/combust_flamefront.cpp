@@ -2378,10 +2378,9 @@ void COMBUST::FlameFront::FindFlameFront(
       //for (std::size_t i=0; i<gfuncelement.size(); i++)
       //  std::cout<< gfuncelement[i] << std::endl;
 
-      const int numnode = cell->Ele()->NumNode();
+      const size_t numnode = cell->Ele()->NumNode();
 #ifdef DEBUG
-      if (gfuncelement.size() != static_cast<unsigned>(numnode) or
-          numnodecell != numnode)
+      if (gfuncelement.size() != numnode or numnodecell != numnode)
         dserror("number of G-Function values does not match number of element nodes");
 #endif
       // loop over all vertices of the refinement cell
@@ -2396,7 +2395,7 @@ void COMBUST::FlameFront::FindFlameFront(
 #endif
         // compute G-Function value
         gfunctionvalues[ivertex] = 0.0;
-        for (int inode = 0; inode < numnode; inode++)
+        for (size_t inode = 0; inode < numnode; inode++)
           gfunctionvalues[ivertex] += gfuncelement[inode] * funct(inode);
       }
       cell->SetGfuncValues(gfunctionvalues);

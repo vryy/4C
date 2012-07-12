@@ -1103,7 +1103,8 @@ void SysmatBoundarySurfaceTensionIntCell(
     // normal points from Omega^+ to Omega^-
     if ((smoothed_boundary_integration == true)
         and (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed
-        and surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal))
+        and surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal
+        and surftensapprox != INPAR::COMBUST::surface_tension_approx_nodal_curvature))
     {
       static LINALG::Matrix<numnode,1> funct_gp;
       funct_gp.Clear();
