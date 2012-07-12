@@ -73,7 +73,7 @@ ITEMAX       100
 CONVTOL      1.0E-8
 COUPMETHOD   conforming
 SECONDORDER  Yes //No
-COUPVARIABLE Displacement
+COUPVARIABLE Force //Displacement
 -----------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 INITIALFIELD     field_by_function //zero_field
