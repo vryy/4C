@@ -1670,6 +1670,23 @@ macro (baci_test_Nested_Par arg1 arg2 restart)
   set_tests_properties ( ${arg1}-nestedPar PROPERTIES TIMEOUT 200 )
 endmacro (baci_test_Nested_Par)
 
+# FRAMEWORK TESTS
+macro (baci_framework_test arg nproc)
+  set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ ${PROJECT_SOURCE_DIR}/tests/framework-test/tutorial_fluid.jou)
+  set (RUNPREEXODUS ./pre_exodus\ --exo=xxx_${arg}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.head\ --dat=xxx.dat)
+  set (RUNPRECURVE ./pre_curve\ --datfile=xxx.dat)
+  set (RUNBACI ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx)
+  set (RUNPOSTFILTER ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx)
+
+  add_test(NAME ${arg}-p${nproc}-fw 
+  COMMAND sh -c "${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNPRECURVE} && ${RUNBACI} && ${RUNPOSTFILTER}")
+
+# note: for the clean-up job in the end, every generated intermediate file has to start with "xxx"
+
+  set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES TIMEOUT 1000 )
+  set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ;Error " )
+
+endmacro (baci_framework_test)
 ###------------------------------------------------------------------ List of tests
 ##if(NOT TRILINOS_DEV)
 baci_test(artaneurysm_hex 1 "")
@@ -2467,6 +2484,8 @@ baci_test_Nested_Par(tsi_heatconvection_monolithic tsi_heatconvection_monolithic
 baci_test_Nested_Par(sohex8_multiscale_macro sohex8_multiscale_npsupport "1")
 baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport "1")
 
+# testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
+baci_framework_test(tutorial_fluid 2)
 
 if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
@@ -2478,7 +2497,7 @@ if (FS3I_INCACouplingTest)
 endif (FS3I_INCACouplingTest)
 
 # remove any output files from our tests
-add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.*")
+add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.* *.cub")
 
 
 

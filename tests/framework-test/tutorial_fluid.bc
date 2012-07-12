@@ -1,0 +1,82 @@
+----------- Mesh contents -----------
+
+Mesh consists of 7211 Nodes, 7058 Elements, organized in 
+1 ElementBlocks, 5 NodeSets, 0 SideSets 
+
+---------- Syntax examples ----------
+
+Element Block, named: 
+of Shape: TET4
+has 9417816 Elements
+'*eb0="ELEMENT"'
+sectionname="FLUID"
+description="MAT 1 NA Euler GP_TET 4 GP_ALT standard"
+elementname="FLUID3" 
+
+Element Block, named: 
+of Shape: HEX8
+has 9417816 Elements
+'*eb0="ELEMENT"'
+sectionname="STRUCTURE"
+description="MAT 1 EAS mild KINTYP nln"
+elementname="SOLIDH8" 
+
+Node Set, named:
+Property Name: INFLOW
+has 45107 Nodes
+'*ns0="CONDITION"'
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0"
+
+MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'
+The 'E num' in the dat-file depends on the order of the specification below
+------------------------------------------------BCSPECS
+
+Element Block, named:
+of Shape: SHELL4
+has 7058 Elements
+*eb1="ELEMENT"
+sectionname="FLUID"
+description="MAT 1 NA Euler"
+elementname="FLUID2"
+
+Node Set, named: inflow
+Property Name: none
+has 23 Nodes
+*ns1="CONDITION"
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="6 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0"
+
+Node Set, named: top
+Property Name: none
+has 68 Nodes
+*ns2="CONDITION"
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="6 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0"
+
+Node Set, named: bottom
+Property Name: none
+has 68 Nodes
+*ns3="CONDITION"
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="6 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0"
+
+Node Set, named: cylinder
+Property Name: none
+has 116 Nodes
+*ns4="CONDITION"
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="6 1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0"
+
+Node Set, named: edges
+Property Name: none
+has 2 Nodes
+*ns5="CONDITION"
+sectionname="DESIGN POINT DIRICH CONDITIONS"
+description="6 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none 0 0 0 0 0 0"
+
+-----------------------------------------VALIDCONDITIONS
+------------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT                          0
+//E num - none 0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0  
+... remaining stuff has been removed
