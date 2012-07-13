@@ -226,7 +226,8 @@ cout << "\t velocity" << vel << endl;
   else
   {
 #ifdef PARALLEL
-    exportAlternativAlgoData(); // export data of failed nodes
+    //TODO: implement in parallel
+    //exportAlternativAlgoData(); // export data of failed nodes
 #endif
     getDataForNotConvergedNodes(); // compute final data for failed nodes
   }
@@ -494,7 +495,10 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes(
       if (data->state_==TimeIntData::failedSL_)
       {
 
-        dserror(" what to do in case that failedSL -> implement alternative algo!");
+        cout << "WARNING: failedSL -> alternative algo!" << endl;
+
+        cout << "node " << data->node_.Id() << endl;
+        cout << "use initial point" << data->initialpoint_ << endl;
 
 //        if (data->startGid_.size() != 1)
 //          dserror("data for alternative nodes shall be computed for one node here");
@@ -507,7 +511,34 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes(
 //        LINALG::Matrix<nsd,1> xi(true); // local coordinates of failed node
 //        LINALG::Matrix<nsd,1> vel(true); // velocity at pseudo-Lagrangian origin
 //        bool elefound = false;
-//
+
+        // Initialization
+        DRT::Element* ele = NULL;         // pointer to the element where  pseudo-Lagrangian origin lies in
+        LINALG::Matrix<nsd,1> xi(true);   // local coordinates of failed node
+        LINALG::Matrix<nsd,1> vel(true);  // velocity at pseudo-Lagrangian origin
+        bool elefound = false;             // true if an element for a point was found on the processor
+
+        // search for an element where the current startpoint lies in
+        // if found, give out all data at the startpoint
+        elementSearch(ele,data->initialpoint_,xi,elefound);
+
+        if(elefound)
+        {
+          bool step_np = false; // new timestep or old timestep
+          getNodalDofSet(ele, data->initialpoint_,data->nds_, step_np);
+
+          LINALG::Matrix<nsd,nsd> vel_deriv_tmp(true); // dummy matrix
+
+          // compute the velocity at startpoint
+          getGPValues(ele,xi,data->nds_,step_np,vel,vel_deriv_tmp,true);
+
+          cout << "\t velocity" << vel << endl;
+        }
+        else // possibly slave node looked for element of master node or vice versa
+        {
+          dserror("element not found");
+        }
+
 //        /*----------------------------------------------------------*
 //         * element data at pseudo-Lagrangian origin                 *
 //         * remark: an element must be found since the intersected   *
@@ -530,7 +561,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes(
 //            dserror("element of a row node not on same processor as node?! BUG!");
 //        }
 //
-//        callBackTracking(ele,&*data,xi,static_cast<const char*>("failing"));
+        callBackTracking(ele,&*data,xi,static_cast<const char*>("failing"));
       }
 
     } // end loop over nodes
@@ -739,8 +770,16 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
       (strcmp(backTrackingType,static_cast<const char*>("failing"))!=0))
     dserror("backTrackingType not implemented");
 
+  if (strcmp(backTrackingType,static_cast<const char*>("standard"))==0)
+  {
     cout << data->node_ << "has lagrange origin " << data->startpoint_ << "with xi-coordinates "
         << xi << "in element " << *fittingele << endl;
+  }
+  if(strcmp(backTrackingType,static_cast<const char*>("failing"))==0)
+  {
+    cout << data->node_ << "has pseudo lagrange origin " << data->initialpoint_ << "with xi-coordinates "
+            << xi << "in element " << *fittingele << endl;
+  }
 
   LINALG::Matrix<numnode,1> shapeFcn(true);      // shape function
   LINALG::Matrix<3,numnode> shapeFcnDeriv(true); // shape function derivatives w.r.t xyz
@@ -770,9 +809,11 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   {
 
     // get all surrounding elements around node for alternative algo
-    dserror("why is the lagrangian origin a node? -> alternative algo?");
-    addPBCelements(node,nodeeles);
-    numele=nodeeles.size();
+    cout << "check if the lagrangian origin for failing is a node? -> alternative algo?" << endl;
+    numele=1;
+//    dserror("why is the lagrangian origin a node? -> alternative algo?");
+//    addPBCelements(node,nodeeles);
+//    numele=nodeeles.size();
   }
   else // standard case
     numele=1;

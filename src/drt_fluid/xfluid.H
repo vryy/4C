@@ -322,7 +322,9 @@ namespace FLD
 
     /// reconstruct ghost values using ghost penalty approach
     void ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
-                                RCP<Epetra_Vector> vec);
+                                RCP<Epetra_Vector> vec,
+                                const bool screen_out
+                                );
 
     /// compute lift and drag values by integrating the true residuals
     void LiftDrag() const;

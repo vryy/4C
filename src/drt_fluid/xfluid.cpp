@@ -2791,6 +2791,12 @@ void FLD::XFluid::CutAndSetStateVectors()
 {
   if(myrank_==0) std::cout << "CutAndSetStateVectors " << endl;
 
+  bool print_status = true;
+  bool screen_out = false;
+  bool gmsh_ref_sol_out_ = true;
+
+  //---------------------------------------------------------------
+
 
   // get old dofmaps, compute a new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
@@ -2852,6 +2858,9 @@ void FLD::XFluid::CutAndSetStateVectors()
     Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
     if (ghost_penaly_dbcmaps != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
 
+
+    //---------------------------------------------------------------
+
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > reconstr_method;
 
 
@@ -2878,12 +2887,71 @@ void FLD::XFluid::CutAndSetStateVectors()
 
       if(myrank_==0) std::cout << " done\n" << std::flush;
 
+      xfluid_timeint_->SetAndPrintStatus(print_status);
+
     } // TransferDofsToNewMap
 
 
     //------------------------------------------------------------------------------------
+
+    bool timint_ghost_penalty   = false;
+    bool timint_semi_lagrangean = false;
+
+    std::map<INPAR::XFEM::XFluidTimeInt, int>& reconstr_count =  xfluid_timeint_->Get_Reconstr_Counts();
+
+    std::map<INPAR::XFEM::XFluidTimeInt, int>::iterator it;
+
+    if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_GhostPenalty)) != reconstr_count.end())
+      timint_ghost_penalty = (it->second > 0);
+    if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_SemiLagrange)) != reconstr_count.end())
+      timint_semi_lagrangean = (it->second > 0);
+
+
+    //------------------------------------------------------------------------------------
+
+    // timint output for reconstruction methods
+    {
+
+      // output for all dofsets of nodes
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method", step_, 10, true, discret_->Comm().MyPID());
+      std::ofstream gmshfilecontent(filename.c_str());
+      gmshfilecontent.setf(ios::scientific,ios::floatfield);
+      gmshfilecontent.precision(16);
+      {
+        gmshfilecontent << "View \" " << "Reconstr-Method \" {\n";
+
+        std::map<int,std::vector<int> >& reconstr_method = xfluid_timeint_->Get_Output_Reconstr();
+
+        for (int i=0; i<discret_->NumMyRowNodes(); ++i)
+        {
+          const DRT::Node* actnode = discret_->lRowNode(i);
+          const LINALG::Matrix<3,1> pos(actnode->X());
+
+          std::map<int,std::vector<int> >::iterator it = reconstr_method.find(actnode->Id());
+
+          if(it == reconstr_method.end()) dserror("node not found in output map");
+
+          std::vector<int>& nds = it->second;
+
+          for(size_t j=0; j<nds.size(); j++ )
+          {
+            IO::GMSH::cellWithScalarToStream(DRT::Element::point1, nds[j], pos, gmshfilecontent);
+          }
+        }
+        gmshfilecontent << "};\n";
+      }
+
+      gmshfilecontent.close();
+
+      if(myrank_==0) std::cout << endl;
+    }
+
+    //------------------------------------------------------------------------------------
+
+    //------------------------------------------------------------------------------------
     //                      SEMILAGRANGE RECONSTRUCTION of std values
     //------------------------------------------------------------------------------------
+    if(timint_semi_lagrangean)
     {
 
       if(myrank_==0) std::cout << "\t ...SemiLagrangean...";
@@ -3010,6 +3078,7 @@ void FLD::XFluid::CutAndSetStateVectors()
     //------------------------------------------------------------------------------------
     //                      GHOST PENALTY RECONSTRUCTION of ghost values
     //------------------------------------------------------------------------------------
+    if(timint_ghost_penalty)
     {
 
       if(myrank_==0) std::cout << "\t ...Ghost Penalty Reconstruction..." << endl;
@@ -3039,17 +3108,13 @@ void FLD::XFluid::CutAndSetStateVectors()
         }
       }
 
-      //cout << "dbcgids.size()" << dbcgids->size() << endl;
-
+      // ghost-penalty reconstruction for all vectors
       for(vector<RCP<Epetra_Vector> >::iterator vecs = newRowStateVectorsn.begin();
           vecs != newRowStateVectorsn.end();
           vecs++)
       {
-        //cout << **vecs << endl;
-
-
         // reconstruct values using ghost penalty approach
-        ReconstructGhostValues(ghost_penaly_dbcmaps, *vecs);
+        ReconstructGhostValues(ghost_penaly_dbcmaps, *vecs, screen_out);
       }
 
 
@@ -3074,7 +3139,7 @@ void FLD::XFluid::CutAndSetStateVectors()
     {
       // write gmsh-output for reference solution fields
       // reference solution output
-      if(gmsh_sol_out_)
+      if(gmsh_ref_sol_out_)
       {
         int count = -1; // no counter for standard solution output
 
@@ -3088,43 +3153,6 @@ void FLD::XFluid::CutAndSetStateVectors()
         state_->GmshOutput( *discret_, *boundarydis_, "TIMINT", step_, count , output_col_vel, output_col_acc );
 
       }
-
-      // timint output
-      {
-
-        // output for all dofsets of nodes
-        const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method", step_, 10, true, discret_->Comm().MyPID());
-        std::ofstream gmshfilecontent(filename.c_str());
-        gmshfilecontent.setf(ios::scientific,ios::floatfield);
-        gmshfilecontent.precision(16);
-        {
-          gmshfilecontent << "View \" " << "Reconstr-Method \" {\n";
-
-          std::map<int,std::vector<int> >& reconstr_method = xfluid_timeint_->Get_Output_Reconstr();
-
-          for (int i=0; i<discret_->NumMyRowNodes(); ++i)
-          {
-            const DRT::Node* actnode = discret_->lRowNode(i);
-            const LINALG::Matrix<3,1> pos(actnode->X());
-
-            std::map<int,std::vector<int> >::iterator it = reconstr_method.find(actnode->Id());
-
-            if(it == reconstr_method.end()) dserror("node not found in output map");
-
-            std::vector<int>& nds = it->second;
-
-            for(size_t j=0; j<nds.size(); j++ )
-            {
-              IO::GMSH::cellWithScalarToStream(DRT::Element::point1, nds[j], pos, gmshfilecontent);
-            }
-          }
-          gmshfilecontent << "};\n";
-        }
-
-        gmshfilecontent.close();
-
-        if(myrank_==0) std::cout << endl;
-      } // end if gmsh_discret_out_
 
       if(myrank_==0) std::cout << "finished CutAndSetStateVectors()" << endl;
 
@@ -3156,7 +3184,8 @@ void FLD::XFluid::CutAndSetStateVectors()
  |  reconstruct ghost values via ghost penalty             schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
-                                         RCP<Epetra_Vector> vec)
+                                         RCP<Epetra_Vector> vec,
+                                         const bool screen_out)
 {
   state_->residual_->PutScalar(0.0);
   state_->incvel_->PutScalar(0.0);
@@ -3180,7 +3209,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
   dtele_    = 0.0;
   dtfilter_ = 0.0;
 
-  if (myrank_ == 0)
+  if (myrank_ == 0 and screen_out)
   {
     printf("\n+++++++++++++++++++++ Gradient Penalty Ghost value reconstruction++++++++++++++++++++++++++++\n");
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
@@ -3255,7 +3284,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
         - convergence check is not required (we solve at least once!)    */
     if (itnum == 1)
     {
-      if (myrank_ == 0)
+      if (myrank_ == 0 and screen_out)
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
@@ -3275,7 +3304,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
           incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
       {
         stopnonliniter=true;
-        if (myrank_ == 0)
+        if (myrank_ == 0 and screen_out)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
@@ -3295,7 +3324,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
         break;
       }
       else // if not yet converged
-        if (myrank_ == 0)
+        if (myrank_ == 0 and screen_out)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
@@ -3316,7 +3345,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
                              incprenorm_L2/prenorm_L2 > ittol))
     {
       stopnonliniter=true;
-      if (myrank_ == 0)
+      if (myrank_ == 0) // not converged output also in case of !screen_out
       {
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");
@@ -3546,10 +3575,8 @@ void FLD::XFluid::Output()
   std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
   std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
 
-  //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
-  if(gmsh_discret_out_)
+  if(gmsh_discret_out_ or gmsh_sol_out_)
   {
-
     {
 
       Epetra_Vector dispcol( *soliddis_->DofColMap() );
@@ -3603,6 +3630,11 @@ void FLD::XFluid::Output()
         currinterfacepositions.insert(make_pair(node->Id(),currpos));
       }
     }
+  }
+
+  //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
+  if(gmsh_discret_out_)
+  {
 
     // cast to DiscretizationXFEM
     RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
@@ -3741,10 +3773,10 @@ void FLD::XFluid::Output()
 
        LINALG::Export(*state_->velnp_,*output_col_vel);
 
-//       const Teuchos::RCP<const Epetra_Vector> output_col_vel;
-//       output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_, state_->velnp_);
+       Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
+       LINALG::Export(*state_->accnp_,*output_col_acc);
 
-       state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , output_col_vel );
+       state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , output_col_vel, output_col_acc );
 
 
        //--------------------------------------------------------------------

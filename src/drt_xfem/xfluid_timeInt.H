@@ -78,8 +78,9 @@ public:
     return;
   }
 
-  /// all surrounding elements uncut?
-  bool UncutEles(GEO::CUT::Node* n);
+  /// set and print reconstruction status for nodes
+  void SetAndPrintStatus(bool screenout);
+
 
   /// transfer standard and ghost dofs to new map as far as possible and mark dofs for reconstruction
   void TransferDofsToNewMap(
@@ -91,6 +92,23 @@ public:
       Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
       );
 
+
+  /// return the output map containing reconstruction method for each dofset of node
+  std::map<int, std::vector<int> >& Get_Output_Reconstr(){return output_reconstr_;};
+
+  std::map<INPAR::XFEM::XFluidTimeInt,int>& Get_Reconstr_Counts(){return reconstr_counts_;};
+
+  private:
+
+  /// returns matching string for each reconstruction method
+  std::string MapMethodEnumToString
+  (
+     const enum INPAR::XFEM::XFluidTimeInt term
+  );
+
+  /// all surrounding elements uncut?
+  bool UncutEles(GEO::CUT::Node* n);
+
   /// copy dofs from old vectors to new vector for all row vectors
   void CopyDofs(
       DRT::Node*                   node,               /// drt node
@@ -99,7 +117,7 @@ public:
       vector<RCP<Epetra_Vector> >& newRowStateVectors, /// row map based state vectors at t^(n+1)
       vector<RCP<const Epetra_Vector> >& oldRowStateVectors, /// row map based state vectors at t^n
       Teuchos::RCP<std::set<int> > dbcgids
-      );
+  );
 
   /// mark nodal dofs of vector w.r.t new interface position for reconstruction
   void MarkDofs(
@@ -108,20 +126,20 @@ public:
       vector<RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
       INPAR::XFEM::XFluidTimeInt     method,               /// reconstruction method
       Teuchos::RCP<std::set<int> >   dbcgids               /// set of dof gids that must not be changed by ghost penalty reconstruction
-      );
+  );
 
   /// set the reconstruction method for current nodal dofset
   void SetReconstrMethod(
       DRT::Node*                     node,                 /// drt node
       const int                      nds_new,              /// nodal dofset at t^(n+1)
       INPAR::XFEM::XFluidTimeInt     method
-      );
+  );
 
   /// is this node a standard or ghost node w.r.t current set
   bool Is_Std_CellSet(
       GEO::CUT::Node*                                  node,     /// cut node
       const std::set<GEO::CUT::plain_volumecell_set>&  cell_set  /// set of volumecells
-      );
+  );
 
   /// identify cellsets at time t^n with cellsets at time t^(n+1)
   void IdentifyOldSets(
@@ -129,7 +147,7 @@ public:
       std::vector<int> &                                             identified_sides,   /// set identified using sides (side-Ids)
       const std::vector<std::set<GEO::CUT::plain_volumecell_set> >&  dof_cellsets_old,   /// all dofcellsets at t^n
       const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_new        /// dofcellset at t^(n+1) which has to be identified
-      );
+  );
 
   /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if check was successful
   bool CheckChangingSide(
@@ -139,14 +157,7 @@ public:
       GEO::CUT::Node *                                               n_new,               /// node w.r.t to new wizard
       const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_old,        /// dofcellset at t^n
       const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_new         /// dofcellset at t^(n+1)
-      );
-
-  /// return the output map containing reconstruction method for each dofset of node
-  std::map<int, std::vector<int> >& Get_Output_Reconstr(){return output_reconstr_;};
-
-
-
-  private:
+  );
 
   /// check if the node is within the space time side
   template<DRT::Element::DiscretizationType space_time_distype>
@@ -183,6 +194,8 @@ public:
   std::map<int, std::vector<int> > output_reconstr_; /// map of nodeIds and reconstruction method for all nodal dofsets (just for output)
 
   std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method_; /// map of nodeIds and reconstruction method for all nodal dofsets
+
+  std::map<INPAR::XFEM::XFluidTimeInt,int> reconstr_counts_; /// counts the number of dofsets that have to be reconstructed using each method
 
 };
 

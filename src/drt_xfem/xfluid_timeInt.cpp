@@ -84,29 +84,72 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
 
 
 // -------------------------------------------------------------------
-// all surrounding elements uncut ?
+// set and print reconstruction status for nodes
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::UncutEles(GEO::CUT::Node* n)
+void XFEM::XFluidTimeInt::SetAndPrintStatus(bool screenout)
 {
-  // surrounding elements
-  const GEO::CUT::plain_element_set& adj_eles = n->Elements();
 
-  // assume all elements are uncut
-  bool all_eles_uncut = true;
-
-  // loop surrounding elements
-  for(GEO::CUT::plain_element_set::const_iterator eles = adj_eles.begin(); eles!=adj_eles.end(); eles++)
+  for(std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator node_it=reconstr_method_.begin();
+      node_it!= reconstr_method_.end();
+      node_it++)
   {
-    GEO::CUT::Element* e = *eles;
-    if(e->IsCut())
+    std::vector<INPAR::XFEM::XFluidTimeInt> nodesets = node_it->second;
+
+    for(std::vector<INPAR::XFEM::XFluidTimeInt>::iterator sets= nodesets.begin();
+        sets != nodesets.end();
+        sets++)
     {
-      all_eles_uncut = false;
-      return all_eles_uncut; // at least one element is cut
+      std::map<INPAR::XFEM::XFluidTimeInt,int>::iterator it = reconstr_counts_.find(*sets);
+
+      if(it!=reconstr_counts_.end())
+        (it->second)++; // increase counter
+      else
+        reconstr_counts_.insert(pair<INPAR::XFEM::XFluidTimeInt,int>(*sets,1)); // initialize counter with 1
     }
   }
 
-  return all_eles_uncut;
+  if(screenout)
+  {
+    cout << "\nXFEM::XFluidTimeInt::Status:\n" << std::flush;
+
+    for(std::map<INPAR::XFEM::XFluidTimeInt,int>::iterator reconstrMethod = reconstr_counts_.begin();
+        reconstrMethod != reconstr_counts_.end();
+        reconstrMethod++)
+    {
+      cout << MapMethodEnumToString(reconstrMethod->first) << ":\t #dofsets:\t" << reconstrMethod->second << endl;
+    }
+  }
+
+  return;
 }
+
+
+/*----------------------------------------------------------------------*
+| returns matching string for each reconstruction method   schott 07/12 |
+*----------------------------------------------------------------------*/
+std::string XFEM::XFluidTimeInt::MapMethodEnumToString
+(
+   const enum INPAR::XFEM::XFluidTimeInt term
+)
+{
+  // length of return string is 14 due to usage in formated screen output
+  switch (term)
+  {
+  case INPAR::XFEM::Xf_TimeInt_Copy:
+    return "Copy Dofset";
+    break;
+  case INPAR::XFEM::Xf_TimeInt_GhostPenalty:
+    return "Ghost-Penalty";
+    break;
+  case INPAR::XFEM::Xf_TimeInt_SemiLagrange:
+    return "Semi-Lagrange";
+    break;
+  default :
+    dserror("Cannot cope with name enum %d", term);
+    return "";
+    break;
+  }
+} // ScaTraTimIntImpl::MapTimIntEnumToString
 
 
 // -------------------------------------------------------------------
@@ -121,8 +164,9 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
     Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
     )
 {
-
+#ifdef DEBUG_TIMINT
   const int numdofpernode = 4;
+#endif
 
   // output map <node, vec<reconstr_method for each dofset>> (assume all vel and pressure dofs are reconstructed in the same way)
   output_reconstr_.clear();
@@ -549,6 +593,32 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
 
 // -------------------------------------------------------------------
+// all surrounding elements uncut ?
+// -------------------------------------------------------------------
+bool XFEM::XFluidTimeInt::UncutEles(GEO::CUT::Node* n)
+{
+  // surrounding elements
+  const GEO::CUT::plain_element_set& adj_eles = n->Elements();
+
+  // assume all elements are uncut
+  bool all_eles_uncut = true;
+
+  // loop surrounding elements
+  for(GEO::CUT::plain_element_set::const_iterator eles = adj_eles.begin(); eles!=adj_eles.end(); eles++)
+  {
+    GEO::CUT::Element* e = *eles;
+    if(e->IsCut())
+    {
+      all_eles_uncut = false;
+      return all_eles_uncut; // at least one element is cut
+    }
+  }
+
+  return all_eles_uncut;
+}
+
+
+// -------------------------------------------------------------------
 // copy dofs from old vectors to new vector for all row vectors
 // -------------------------------------------------------------------
 void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                         node,               /// drt node
@@ -825,7 +895,9 @@ void XFEM::XFluidTimeInt::IdentifyOldSets(
 
   if(num_found_old_cellsets > 1)
   {
+#ifdef DEBUG_TIMINT
     cout << "Warning: found dofset at t^n not unique, set status to unfound!" << endl;
+#endif
     nds_old = -1;
   }
 
@@ -908,7 +980,7 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
     {
 
 #ifdef DEBUG_TIMINT
-      cout << "\tCheckChangingSide for node " << n_new->Id() << ": node has changed side, node within space-time side element for at least one side" << endl;
+      cout << "\t\t node " << n_new->Id()<< " changed interface side, node within space-time side element for at least one side" << endl;
 #endif
 
       changed_side = true;
@@ -943,6 +1015,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   side_old->Coordinates(xyze_old);
   side_new->Coordinates(xyze_new);
 
+
   // space time side coordinates
   LINALG::Matrix<3,numnode_space_time> xyze_st;
 
@@ -962,7 +1035,9 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   {
     double error = 1e-008;
 
-    cout << "\t Not Successful -> Apply small artificial all over translation in all directions at t^(n+1) " << error << endl;
+#ifdef DEBUG_TIMINT
+    cout << "\t\t\t Not Successful! -> Apply small artificial translation in all directions at t^(n+1) of " << error << endl;
+#endif
 
     for( int i=0; i<numnode_side; ++i )
     {
@@ -974,6 +1049,11 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     }
 
     successful_check = CheckSTSideVolume<space_time_distype,numnode_space_time>(xyze_st);
+
+#ifdef DEBUG_TIMINT
+    if(successful_check) cout << "\t\t\t Successful check!" << endl;
+    else                 cout << "\t\t\t Again not successful check!" << endl;
+#endif
   }
 
   if(!successful_check) return successful_check;
@@ -992,7 +1072,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     within_space_time_side=true;
 
 #ifdef DEBUG_TIMINT
-    cout << "\t\tChanging side w.r.t new side at t^(n+1)" << xyze_new << " \n local coords " << rst << endl;
+    cout << "\t\t\t changing side found!" << xyze_new << " \n local coords " << rst << endl;
 #endif
   }
 
@@ -1039,19 +1119,26 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time
   catch (std::runtime_error) {
      // code that executes when exception-declaration is thrown
      // in the try block
-     cout << "computing det for space time element not possible (det == 0.0) -> distorted flat st-element" << endl;
+#ifdef DEBUG_TIMINT
+     cout << "\t\t\t det for space-time side element (det == 0.0) => distorted flat st-element" << endl;
+#endif
      successful = false;
      return successful;
   };
 
 #ifdef DEBUG_TIMINT
   const double wquad = intpoints_stab.IP().qwgt[0];
-
-  cout << "spacetime side element volume " << wquad*det << endl;
+  cout << "\t\t\t space-time side element volume " << wquad*det << endl;
 #endif
 
   if (det < 1E-14 and det > -1E-14)
-    dserror("SpaceTime Side element \n NEARLY ZERO JACOBIAN DETERMINANT -> flat or distorted space time element: %f", det);
+  {
+#ifdef DEBUG_TIMINT
+    cout << "\t\t\t det for space-time side element (det == " << det << ") => distorted flat st-element" << endl;
+#endif
+    successful = false;
+    return successful;
+  }
 
 
   return successful;
