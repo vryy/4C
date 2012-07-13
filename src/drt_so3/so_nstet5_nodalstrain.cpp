@@ -23,7 +23,7 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_serialdensevector.H"
 //#include "../linalg/linalg_fixedsizematrix.H"
 
-
+#include "../drt_mat/material_service.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"

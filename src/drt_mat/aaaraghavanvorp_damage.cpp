@@ -24,6 +24,7 @@ date: 26/05/2009
 #include "aaaraghavanvorp_damage.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material_service.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

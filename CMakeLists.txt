@@ -390,6 +390,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/itskov.cpp
   src/drt_mat/logneohooke.cpp
   src/drt_mat/material.cpp
+  src/drt_mat/material_service.cpp
   src/drt_mat/matlist.cpp
   src/drt_mat/matpar_bundle.cpp
   src/drt_mat/matpar_material.cpp

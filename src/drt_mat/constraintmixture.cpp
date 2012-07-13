@@ -28,6 +28,7 @@ Maintainer: Susanna Tinkl
 #include "constraintmixture.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "matpar_bundle.H"
+#include "../drt_mat/material_service.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_io/io_gmsh.H" // for debug plotting with gmsh
 #include "../drt_io/io_control.H" // for debug plotting with gmsh

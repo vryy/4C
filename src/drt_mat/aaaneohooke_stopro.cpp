@@ -27,6 +27,7 @@ Maintainer: Jonas Biehler
 #include "aaaneohooke_stopro.H"
 #include "matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/material_service.H"
 
 
 /*----------------------------------------------------------------------*

@@ -17,6 +17,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material_service.H"
 
 
 /*----------------------------------------------------------------------*

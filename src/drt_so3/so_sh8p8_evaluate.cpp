@@ -29,6 +29,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_io/io_gmsh.H"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
+#include "../drt_mat/material_service.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/aaaneohooke.H"

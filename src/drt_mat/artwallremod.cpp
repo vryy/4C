@@ -25,6 +25,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material_service.H"
 
 //#define PI        (asin(1.0)*2.0)
 

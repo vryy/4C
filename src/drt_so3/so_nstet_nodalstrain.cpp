@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include "Epetra_FECrsMatrix.h"
 #include "Sacado.hpp"
 
+#include "../drt_mat/material_service.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"

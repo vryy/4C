@@ -35,6 +35,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material_service.H"
 
 //#include <iostream>
 
