@@ -14,14 +14,6 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-
-#ifdef PARALLEL
-#include <mpi.h>
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
-
 #include "drt_utils_createdis.H"
 
 

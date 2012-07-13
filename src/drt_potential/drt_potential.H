@@ -16,10 +16,6 @@ Maintainer: Ursula Mayer
 #ifndef DRT_POTENTIAL_H_
 #define DRT_POTENTIAL_H_
 
-#ifdef PARALLEL
-#include "mpi.h"
-#endif
-
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 

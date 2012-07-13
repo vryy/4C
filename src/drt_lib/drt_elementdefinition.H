@@ -70,15 +70,7 @@ namespace INPUT
 
 #endif
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+void PrintElementDatHeader();
 
-  void PrintElementDatHeader();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

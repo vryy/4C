@@ -20,11 +20,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
-extern "C"
-{
-  #include "../pss_full/pss_table.h" // access to C methods
-}
-
+#include "../pss_full/pss_cpp.h" // access to legacy parser module
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

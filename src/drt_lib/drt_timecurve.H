@@ -145,15 +145,7 @@ namespace UTILS {
 
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  void PrintTimeCurveDatHeader();
-
-#ifdef __cplusplus
-}
-#endif
+void PrintTimeCurveDatHeader();
 
 
 #endif

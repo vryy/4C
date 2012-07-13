@@ -46,17 +46,7 @@ namespace INPUT {
 
 #endif
 
-/* headers and prototypes of functions also acessible from c */
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-  /*! print empty condition sections */
-  void PrintConditionDatHeader();
-
-#ifdef __cplusplus
-}
-#endif
+/// print empty condition sections
+void PrintConditionDatHeader();
 
 #endif

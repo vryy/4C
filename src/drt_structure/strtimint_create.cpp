@@ -19,10 +19,6 @@ Maintainer: Thomas Klöppel
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include "strtimint_create.H"
 #include "strtimint_statics.H"
 #include "strtimint_prestress.H"

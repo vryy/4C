@@ -17,8 +17,6 @@
 #include "../drt_structure/stru_aux.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
-#include <mpi.h>
-
 /*----------------------------------------------------------------------*/
 // constructor (public)
 /*----------------------------------------------------------------------*/

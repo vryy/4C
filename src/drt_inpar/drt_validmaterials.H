@@ -52,17 +52,8 @@ namespace INPUT {
 
 #endif
 
-/* headers and prototypes of functions also acessible from c */
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+/// print empty material sections
+void PrintMaterialDatHeader();
 
-  /*! print empty material sections */
-  void PrintMaterialDatHeader();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

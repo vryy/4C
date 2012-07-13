@@ -16,13 +16,6 @@ Maintainer: Volker Gravemeier
 #include <string>
 #include <iostream>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
-
 #include "loma_dyn.H"
 #include "loma_algorithm.H"
 #include "../drt_inpar/drt_validparameters.H"

@@ -16,7 +16,6 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 
 #ifdef PARALLEL
-#include <mpi.h>
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>

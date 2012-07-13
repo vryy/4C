@@ -18,10 +18,7 @@
 #include <string>
 #include "post_drt_generic_single_field_writers.H"
 #include "../drt_lib/drt_utils.H"
-
-extern "C" {
-#include "../pss_full/pss_table.h"
-}
+#include "../pss_full/pss_cpp.h"
 
 using namespace std;
 

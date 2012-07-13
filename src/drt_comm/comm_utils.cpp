@@ -16,7 +16,6 @@ Maintainer: Georg Hammerl
  | definitions                                              ghamm 01/12 |
  *----------------------------------------------------------------------*/
 #include <Epetra_MpiComm.h>
-#include <mpi.h>
 
 #include <vector>
 #include <sstream>

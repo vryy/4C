@@ -36,9 +36,6 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 
 #include "../drt_lib/drt_condition_utils.H"
 
-#include <mpi.h>
-#include <Epetra_MpiComm.h>
-
 #include "fs3i_partitioned.H"
 
 

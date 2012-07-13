@@ -114,15 +114,6 @@ namespace DRT
 
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  void PrintResultDescrDatHeader();
-
-#ifdef __cplusplus
-}
-#endif
-
+void PrintResultDescrDatHeader();
 
 #endif

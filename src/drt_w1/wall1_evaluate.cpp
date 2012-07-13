@@ -42,13 +42,6 @@ using POTENTIAL::PotentialManager; // potential manager
 
 
 /*----------------------------------------------------------------------*
- |                                                        mgit 03/07    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-//extern struct _MATERIAL  *mat;
-
-/*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,

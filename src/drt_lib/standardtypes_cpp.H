@@ -2,8 +2,7 @@
  * \file standardtypes_cpp.H
  *
  * Use this header when you need access to standardtypes.h
- *
- * (this is to ensure that the C++ mpi.h header is included before the c version)
+*
 
 <pre>
 -------------------------------------------------------------------------

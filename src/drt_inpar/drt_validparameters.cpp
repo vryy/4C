@@ -49,9 +49,8 @@ Maintainer: Ulrich Kuettler
 #include <AztecOO.h>
 
 /*----------------------------------------------------------------------*/
-//! Print function to be called from C
+//! Print function
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintValidParameters()
 {
   Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
@@ -65,9 +64,8 @@ void PrintValidParameters()
 
 
 /*----------------------------------------------------------------------*/
-//! Print help message to be called from C
+//! Print help message
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintHelpMessage()
 {
 #ifdef DEBUG
@@ -245,9 +243,8 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream,
 
 
 /*----------------------------------------------------------------------*/
-//! Print function to be called from C
+//! Print function
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintDefaultDatHeader()
 {
   Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();

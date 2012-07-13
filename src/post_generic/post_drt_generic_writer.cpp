@@ -18,9 +18,8 @@
 //#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include <string>
-
+#include "../pss_full/pss_cpp.h"
 extern "C" {
-#include "../pss_full/pss_table.h"
 #include "../pss_full/pss_table_iter.h"
 }
 

@@ -16,8 +16,6 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/10 |
  *----------------------------------------------------------------------*/
-#include <mpi.h>
-
 #include "tsi_monolithic.H"
 #include "tsi_defines.H"
 

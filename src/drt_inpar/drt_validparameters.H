@@ -110,23 +110,14 @@ namespace INPUT {
 
 #endif
 
-/* headers and prototypes of functions also acessible from c */
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+/*! print list of valid parameters with documentation */
+void PrintValidParameters();
 
-  /*! print list of valid parameters with documentation */
-  void PrintValidParameters();
+/*! print help message */
+void PrintHelpMessage();
 
-  /*! print help message */
-  void PrintHelpMessage();
+/*! print flag sections of dat file with default flags */
+void PrintDefaultDatHeader();
 
-  /*! print flag sections of dat file with default flags */
-  void PrintDefaultDatHeader();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -21,10 +21,6 @@ Maintainer: Thomas Klöppel
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include "../drt_adapter/ad_str_structure.H"
 #include "stru_dyn_nln_drt.H"
 #include "../drt_io/io.H"

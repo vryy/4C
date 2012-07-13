@@ -25,10 +25,7 @@ Maintainer: Christiane FÃ¶rster
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-
-extern "C" {
-#include "../pss_full/pss_table.h"
-}
+#include "../pss_full/pss_cpp.h"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

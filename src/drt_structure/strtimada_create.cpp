@@ -22,10 +22,6 @@ Maintainer: Alexander Popp
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include "strtimada_create.H"
 #include "strtimada_zienxie.H"
 #include "strtimada_joint.H"

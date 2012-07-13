@@ -24,10 +24,6 @@ Maintainer: Caroline Danowski
 #include "thr_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/

@@ -59,7 +59,6 @@ void DRT::INPUT::PrintEmptyMaterialDefinitions(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintMaterialDatHeader()
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > matlist = DRT::INPUT::ValidMaterials();

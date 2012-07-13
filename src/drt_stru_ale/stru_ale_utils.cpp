@@ -11,16 +11,6 @@ Maintainer: Markus Gitterle
             089 - 289-15251
 </pre>
 */
-/*----------------------------------------------------------------------*
- | definitions                                               mgit 04/11 |
- *----------------------------------------------------------------------*/
-
-#ifdef PARALLEL
-#include <mpi.h>
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 
 /*----------------------------------------------------------------------*
  | headers                                                   mgit 04/11 |
@@ -32,10 +22,6 @@ Maintainer: Markus Gitterle
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_ale2/ale2.H"
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

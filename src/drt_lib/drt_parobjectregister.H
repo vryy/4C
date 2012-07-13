@@ -12,17 +12,8 @@ namespace DRT
 
 #endif
 
-/* headers and prototypes of functions also acessible from c */
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+/*! print list of known parobjects */
+void PrintParObjectList();
 
-  /*! print list of known parobjects */
-  void PrintParObjectList();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

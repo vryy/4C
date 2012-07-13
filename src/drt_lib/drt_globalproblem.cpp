@@ -20,7 +20,6 @@ Maintainer: Ulrich Kuettler
 
 #include <Epetra_Time.h>
 #include <Epetra_Comm.h>
-#include <mpi.h>
 
 #include "drt_conditiondefinition.H"
 #include "drt_materialdefinition.H"

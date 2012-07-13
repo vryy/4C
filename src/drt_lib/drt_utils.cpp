@@ -53,7 +53,6 @@ extern "C"
 			   idxtype *);
 }
 #endif
-#include <mpi.h>
 #endif // PARALLEL
 
 #include <algorithm>
@@ -73,7 +72,6 @@ extern "C"
 #include "drt_discret.H"
 
 #include "drt_dserror.H"
-#include "standardtypes_cpp.H"
 
 #include "drt_parobjectfactory.H"
 

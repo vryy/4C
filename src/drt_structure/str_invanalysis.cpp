@@ -22,10 +22,6 @@ Maintainer: Sophie Rausch
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include "str_invanalysis.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"

@@ -13,10 +13,6 @@ Maintainer: Alexander Popp
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include <string>
 #include "stru_resulttest.H"
 #include "strtimint.H"

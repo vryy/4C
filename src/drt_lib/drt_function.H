@@ -155,16 +155,8 @@ namespace UTILS {
 
 #endif
 
+void PrintFunctionDatHeader();
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  void PrintFunctionDatHeader();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
 

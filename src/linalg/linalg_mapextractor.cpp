@@ -49,9 +49,6 @@ Maintainer: Ulrich Kuettler
 #include <numeric>
 #include <cmath>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

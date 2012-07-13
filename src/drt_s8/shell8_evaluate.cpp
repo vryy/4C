@@ -30,12 +30,6 @@ extern "C"
 #include "../pss_full/pss_prototypes.h"
 }
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-//extern struct _MATERIAL  *mat;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|

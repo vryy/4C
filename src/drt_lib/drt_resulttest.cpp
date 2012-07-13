@@ -15,7 +15,6 @@ Maintainer: Ulrich Kuettler
 
 #include "drt_resulttest.H"
 #include "drt_dserror.H"
-#include "standardtypes_cpp.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
@@ -280,7 +279,6 @@ void DRT::ResultTestManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintResultDescrDatHeader()
 {
   DRT::ResultTestManager resulttestmanager;

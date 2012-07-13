@@ -20,9 +20,8 @@ Maintainer: Ulrich Kuettler
 
 
 /*----------------------------------------------------------------------*/
-//! Print function to be called from C
+//! Print function
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintElementDatHeader()
 {
   DRT::INPUT::ElementDefinition ed;

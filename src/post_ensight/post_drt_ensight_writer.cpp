@@ -22,8 +22,8 @@
 
 #include <string>
 
+#include "../pss_full/pss_cpp.h"
 extern "C" {
-#include "../pss_full/pss_table.h"
 #include "../pss_full/pss_table_iter.h"
 }
 

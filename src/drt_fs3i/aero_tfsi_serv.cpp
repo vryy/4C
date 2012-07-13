@@ -16,8 +16,6 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
-#include <mpi.h>
-
 #include "aero_tfsi_serv.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_utils.H"

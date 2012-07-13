@@ -31,9 +31,6 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
 
-#include <mpi.h>
-#include <Epetra_SerialComm.h>
-
 #include "biofilm_fsi.H"
 #include "../drt_adapter/ad_str_bio.H"
 #include "../drt_adapter/adapter_coupling.H"

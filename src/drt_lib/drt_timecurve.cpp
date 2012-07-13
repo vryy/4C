@@ -62,11 +62,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-
 using namespace std;
 using namespace Teuchos;
 
@@ -355,9 +350,8 @@ namespace UTILS {
 
 
 /*----------------------------------------------------------------------*/
-//! Print function to be called from C
+//! Print function
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintTimeCurveDatHeader()
 {
   DRT::UTILS::TimeCurveManager timecurvemanager;

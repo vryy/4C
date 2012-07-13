@@ -22,9 +22,9 @@ Maintainer: Ulrich Kuettler
 #include "post_drt_gid.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../pss_full/pss_cpp.h"
 extern "C" {
 #include "gid_out.h"
-#include "../pss_full/pss_table.h"
 #include "../pss_full/pss_table_iter.h"
 }
 

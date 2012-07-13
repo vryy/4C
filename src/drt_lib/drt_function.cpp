@@ -624,9 +624,8 @@ namespace UTILS {
 
 
 /*----------------------------------------------------------------------*/
-//! Print function to be called from C
+//! Print function
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintFunctionDatHeader()
 {
   DRT::UTILS::FunctionManager functionmanager;

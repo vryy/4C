@@ -32,9 +32,7 @@ void DRT::INPUT::PrintEmptyConditionDefinitions(std::ostream& stream,
 
 
 /*----------------------------------------------------------------------*/
-//! Print function to be called from C
 /*----------------------------------------------------------------------*/
-extern "C"
 void PrintConditionDatHeader()
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();

@@ -35,7 +35,7 @@ The new filters can be used in parallel.
 #include "../drt_io/io_hdf.H"
 
 #ifdef PARALLEL
-#include <mpi.h>
+//#include <mpi.h>
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>

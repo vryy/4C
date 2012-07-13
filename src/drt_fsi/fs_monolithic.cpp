@@ -29,9 +29,6 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 
-
-#include <mpi.h>
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,

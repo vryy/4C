@@ -43,11 +43,7 @@ its parameters and conditions.
 #include "pre_exodus_validate.H"
 #include "pre_exodus_centerline.H"
 
-
-//using namespace std;
-
 #ifdef PARALLEL
-#include <mpi.h>
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>

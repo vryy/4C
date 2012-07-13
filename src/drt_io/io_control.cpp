@@ -30,11 +30,10 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_dserror.H"
 
 extern "C" {
-
 #include "compile_settings.h"      // for printing current revision number
-#include "../pss_full/pss_table.h" // access to C method  parse_control_file()
 }
 
+#include "../pss_full/pss_cpp.h" // access to legacy parser module
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

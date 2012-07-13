@@ -17,9 +17,6 @@ Maintainer: Jonas Biehler
 
 /*----------------------------------------------------------------------*/
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 /* headers */
 
 #include "str_mlmc.H"

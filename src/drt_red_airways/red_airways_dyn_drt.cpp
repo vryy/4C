@@ -20,10 +20,6 @@ Maintainer: Mahmoud Ismail
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include "red_airway_resulttest.H"
 #include "red_airways_dyn_drt.H"
 #include "airwayimplicitintegration.H"
