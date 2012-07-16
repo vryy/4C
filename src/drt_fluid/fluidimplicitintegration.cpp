@@ -5494,8 +5494,10 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
           double valvel = (*col_filteredveltmp)[lidi];
           double valfsvel = (*col_finescaleveltmp)[lidi];
           // store them
-          ((*filteredvel_)(di))->ReplaceMyValues(1,&valvel,&nid);
-          ((*finescalevel_)(di))->ReplaceMyValues(1,&valfsvel,&nid);
+          int err = 0;
+          err += ((*filteredvel_)(di))->ReplaceMyValues(1,&valvel,&nid);
+          err += ((*finescalevel_)(di))->ReplaceMyValues(1,&valfsvel,&nid);
+          if (err!=0) dserror("dof not on proc");
         }
       }
 
@@ -5522,7 +5524,8 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
                 double val = (*((*col_filteredreystretmp)(dj)))[lidi];
                 // and store it
                 const int ij = di*3+dj;
-                ((*filteredreystr_)(ij))->ReplaceMyValues(1,&val,&nid);
+                int err = ((*filteredreystr_)(ij))->ReplaceMyValues(1,&val,&nid);
+                if (err!=0) dserror("dof not on proc");
               }
             }
           }
@@ -6173,7 +6176,8 @@ void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
-        initporosityfield_->ReplaceMyValues(1,&initialval,&doflid);
+        int err = initporosityfield_->ReplaceMyValues(1,&initialval,&doflid);
+        if (err != 0) dserror("dof not on proc");
 
       }
     }

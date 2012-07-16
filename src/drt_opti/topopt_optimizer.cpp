@@ -149,7 +149,8 @@ void TOPOPT::Optimizer::SetInitialDensityField(
 
       // evaluate component k of spatial function
       double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL); // scalar
-      dens_ip_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
+      int err = dens_ip_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
+      if (err != 0) dserror("dof not on proc");
     }
     break;
   }

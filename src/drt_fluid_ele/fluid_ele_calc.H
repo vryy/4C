@@ -40,7 +40,7 @@ namespace ELEMENTS
     <h3>Purpose</h3>
 
     The idea is to separate the element maintenance (class Fluid) from the
-    mathematical contents (this class). There are different�
+    mathematical contents (this class). There are different
     implementations of the fluid element, this is just one such
     implementation.
 

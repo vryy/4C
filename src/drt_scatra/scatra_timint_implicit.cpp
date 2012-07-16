@@ -1472,7 +1472,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
         double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
-        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        int err = phin_->ReplaceMyValues(1,&initialval,&doflid);
+        if (err != 0) dserror("dof not on proc");
       }
     }
 
@@ -1575,10 +1576,12 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         double initialval = 0.0;
         if (x > -EPS10) initialval = 1.0;
 
-        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        int err = 0;
+        err += phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the
         // solution after the first time step (much better than starting with a zero vector)
-        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        err += phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        if (err != 0) dserror("dof not on proc");
       }
     }
     break;
@@ -1636,10 +1639,12 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         else
           initialval = fac2*(x2-trans2) + abs2;
 
-        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        int err = 0;
+        err += phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the
         // solution after the first time step (much better than starting with a zero vector)
-        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        err += phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        if (err != 0) dserror("dof not on proc");
       }
     }
     break;
@@ -1696,10 +1701,12 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         double initialval = 0.0;
         initialval = 0.5*(1.0+(vp-vm)/(vp+vm));
 
-        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        int err = 0;
+        err += phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the
         // solution after the first time step (much better than starting with a zero vector)
-        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        err += phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        if (err != 0) dserror("dof not on proc");
       }
     }
     break;
@@ -1732,11 +1739,13 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         if ((x1 <= 0.25 and x2 <= 0.5) or (x1 <= 0.5 and x2 <= 0.25))
           initialval = 1.0;
 
-        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        int err = 0;
+        err += phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good
         // guess for the solution after the first time step (much better than
         // starting with a zero vector)
-        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        err += phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        if (err != 0) dserror("dof not on proc");
       }
     }
     break;
@@ -1768,10 +1777,12 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         if (x1 < 0.0) initialval = -(x1+0.75);
         else initialval = x1-0.75;
 
-        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        int err = 0;
+        err += phin_->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the
         // solution after the first time step (much better than starting with a zero vector)
-        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        err += phinp_->ReplaceMyValues(1,&initialval,&doflid);
+        if (err != 0) dserror("dof not on proc");
       }
     }
     break;
@@ -1868,10 +1879,12 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         else
           dserror("impossible!");
 #endif
-        phin_->ReplaceMyValues(1,&initval,&doflid);
+        int err = 0;
+        err += phin_->ReplaceMyValues(1,&initval,&doflid);
         // initialize also the solution vector. These values are a pretty good guess for the
         // solution after the first time step (much better than starting with a zero vector)
-        phinp_->ReplaceMyValues(1,&initval,&doflid);
+        err += phinp_->ReplaceMyValues(1,&initval,&doflid);
+        if (err != 0) dserror("dof not on proc");
       }
     }
   break;

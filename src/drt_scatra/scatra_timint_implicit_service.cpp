@@ -2568,7 +2568,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
   for (int i = 0; i < length; ++i)
   {
     sgvsqrt[i] = sqrt(sgvsqrt[i]);
-    subgrdiff_->ReplaceMyValues(1,&sgvsqrt[i],&i);
+    int err = subgrdiff_->ReplaceMyValues(1,&sgvsqrt[i],&i);
+    if (err != 0) dserror("index not found");
   }
 
   // get unscaled S^T*M*S from Sep

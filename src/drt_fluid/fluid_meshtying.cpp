@@ -1451,7 +1451,8 @@ void FLD::Meshtying::ReplaceMatrixEntries(
       dserror("Replace PMat: more than one nonZero value in specific row");
 
     double unity = 1.0;
-    Pmat->ReplaceMyValues(i, 1, &unity, &indices[0]);
+    int err = Pmat->ReplaceMyValues(i, 1, &unity, &indices[0]);
+    if (err!=0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d",error);
   }
 
   double normfrob = sparsematrix->NormFrobenius();
