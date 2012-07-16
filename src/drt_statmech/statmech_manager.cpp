@@ -290,9 +290,13 @@ void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter)
     randomnumbergen_.seed((unsigned int)seedvariable);
   }
 
-  boost::uniform_01<>          uniformdist;
-  boost::normal_distribution<> normaldist(0.0,1.0);
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+  uniformgen_ = Teuchos::rcp(new boost::uniform_01<randnumgen&>(randomnumbergen_));
+#else
+  boost::uniform_01<>           uniformdist;
   uniformgen_ = Teuchos::rcp(new boost::variate_generator<randnumgen&,boost::uniform_01<> >(randomnumbergen_,uniformdist));
+#endif
+  boost::normal_distribution<>  normaldist(0.0,1.0);
   normalgen_ = Teuchos::rcp(new boost::variate_generator<randnumgen&,boost::normal_distribution<> >(randomnumbergen_,normaldist));
 
   return;

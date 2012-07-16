@@ -597,8 +597,13 @@ protected:
   //! \brief a random number generator object (boost)
   randnumgen randomnumbergen_;
 
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+  //! \brief generates uniformly distributed random numbers in interval [0;1[
+  Teuchos::RCP<boost::uniform_01<randnumgen&> > uniformgen_;
+#else
   //! \brief generates uniformly distributed random numbers in interval [0;1[
   Teuchos::RCP<boost::variate_generator<randnumgen&,boost::uniform_01<> > > uniformgen_;
+#endif
 
   //! \brief generates Gaussian random numbers with zero mean and unit standard deviation
   Teuchos::RCP<boost::variate_generator<randnumgen&,boost::normal_distribution<> > > normalgen_;
