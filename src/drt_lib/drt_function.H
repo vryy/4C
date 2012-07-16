@@ -46,7 +46,6 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_FUNCTION_H
 #define DRT_FUNCTION_H
 
-#ifdef __cplusplus
 
 #include <iostream>
 #include <vector>
@@ -153,7 +152,6 @@ namespace UTILS {
 }
 }
 
-#endif
 
 void PrintFunctionDatHeader();
 

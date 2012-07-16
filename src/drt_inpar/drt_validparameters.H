@@ -18,8 +18,6 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_VALIDPARAMETERS_H
 #define DRT_VALIDPARAMETERS_H
 
-#ifdef __cplusplus /* stuff which is c++ specific */
-
 #include <string>
 #include <iostream>
 
@@ -107,8 +105,6 @@ namespace INPUT {
 }
 }
 
-
-#endif
 
 /*! print list of valid parameters with documentation */
 void PrintValidParameters();

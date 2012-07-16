@@ -17,8 +17,6 @@ Maintainer: Ulrich Kuettler
 #define DRT_RESULTTEST_H
 
 
-#ifdef __cplusplus
-
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
@@ -111,8 +109,6 @@ namespace DRT
   };
 
 }
-
-#endif
 
 void PrintResultDescrDatHeader();
 

@@ -74,12 +74,12 @@ int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition&
 
   fprintf(err,"actual = %.17e, given = %.17e, diff = %.17e\n",
           actresult, givenresult, actresult-givenresult);
-  if (!(FABS(FABS(actresult-givenresult)-FABS(actresult-givenresult)) < tolerance) )
+  if (!(fabs(fabs(actresult-givenresult)-fabs(actresult-givenresult)) < tolerance) )
   {
     printf("RESULTCHECK: %s is NAN!\n", name.c_str());
     ret = 1;
   }
-  else if (FABS(actresult-givenresult) > tolerance)
+  else if (fabs(actresult-givenresult) > tolerance)
   {
     printf("RESULTCHECK: %s not correct. actresult=%.17e, givenresult=%.17e\n",
            name.c_str(), actresult, givenresult);

@@ -18,8 +18,6 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_VALIDCONDITIONS_H
 #define DRT_VALIDCONDITIONS_H
 
-#ifdef __cplusplus /* stuff which is c++ specific */
-
 #include <vector>
 #include <string>
 #include <iostream>
@@ -43,8 +41,6 @@ namespace INPUT {
 
 }
 }
-
-#endif
 
 /// print empty condition sections
 void PrintConditionDatHeader();

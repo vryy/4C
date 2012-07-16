@@ -14,8 +14,6 @@ Maintainer: Michael Gee
 #ifndef INPAR_SOLVER_H
 #define INPAR_SOLVER_H
 
-#ifdef __cplusplus /* stuff which is c++ specific */
-
 #include "inpar_parameterlist_utils.H"
 
 /*----------------------------------------------------------------------*/
@@ -125,6 +123,5 @@ namespace INPAR
 
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef __cplusplus
 
 #endif  // #ifndef INPAR_SOLVER_H

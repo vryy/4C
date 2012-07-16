@@ -18,8 +18,6 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_ELEMENTDEFINITION_H
 #define DRT_ELEMENTDEFINITION_H
 
-#ifdef __cplusplus
-
 #include <iostream>
 #include <map>
 #include <string>
@@ -68,7 +66,6 @@ namespace INPUT
 }
 }
 
-#endif
 
 void PrintElementDatHeader();
 

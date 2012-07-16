@@ -46,8 +46,6 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_TIMECURVE_H
 #define DRT_TIMECURVE_H
 
-#ifdef __cplusplus
-
 #include <iostream>
 #include <vector>
 #include <Teuchos_RCP.hpp>
@@ -142,8 +140,6 @@ namespace UTILS {
 
 }  // end namespace UTILS
 }  // end namespace DRT
-
-#endif
 
 void PrintTimeCurveDatHeader();
 

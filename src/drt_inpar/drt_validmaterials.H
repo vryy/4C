@@ -20,8 +20,6 @@ Maintainer: Burkhard Bornemann
 #ifndef DRT_VALIDMATERIALS_H
 #define DRT_VALIDMATERIALS_H
 
-#ifdef __cplusplus /* stuff which is c++ specific */
-
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <vector>
@@ -49,8 +47,6 @@ namespace INPUT {
 
 }
 }
-
-#endif
 
 /// print empty material sections
 void PrintMaterialDatHeader();

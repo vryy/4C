@@ -15,7 +15,6 @@ Maintainer: Caroline Danowski
 #ifndef INPAR_THERMO_H
 #define INPAR_THERMO_H
 
-#ifdef __cplusplus /* stuff which is c++ specific */
 
 #include "inpar_parameterlist_utils.H"
 
@@ -308,5 +307,4 @@ namespace THR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef __cplusplus
 #endif  // #ifndef INPAR_THERMO_H

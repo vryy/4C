@@ -14,7 +14,6 @@ Maintainer: Burkhard Bornemann
 #ifndef INPAR_STRUCTURE_H
 #define INPAR_STRUCTURE_H
 
-#ifdef __cplusplus /* stuff which is c++ specific */
 
 #include "inpar_parameterlist_utils.H"
 
@@ -421,5 +420,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifdef __cplusplus
 #endif  // #ifndef INPAR_STRUCTURE_H
