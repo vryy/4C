@@ -226,7 +226,8 @@ public:
         for (int i =0;i<3;++i)
         {
           double val = (*((*col_filtered_vel_)(i)))[nid];
-          ((*velocity)(i))->ReplaceMyValues(1,&val,&nid);
+          int err = ((*velocity)(i))->ReplaceMyValues(1,&val,&nid);
+          if (err!=0) dserror("dof not on proc");
         }
       }
       return;
@@ -246,7 +247,8 @@ public:
           {
              const int ij = 3*i+j;
              double val = (*((*col_filtered_reynoldsstress_) (ij)))[nid];
-             ((*reystre) (ij))->ReplaceMyValues(1,&val,&nid);
+             int err = ((*reystre) (ij))->ReplaceMyValues(1,&val,&nid);
+             if (err!=0) dserror("dof not on proc");
           }
         }
       }
@@ -264,7 +266,8 @@ public:
         for (int i =0;i<3;++i)
         {
           double val = (*((*col_fs_vel_)(i)))[nid];
-          ((*velocity)(i))->ReplaceMyValues(1,&val,&nid);
+          int err = ((*velocity)(i))->ReplaceMyValues(1,&val,&nid);
+          if (err!=0) dserror("dof not on proc");
         }
       }
       return;

@@ -39,15 +39,17 @@ public:
 
   //! get child discretization
   const RCP<DRT::Discretization> GetChildDiscretization(){return childdiscret_;}
-  //! get node to node coupling in case of periodic boundary conditions
+  //! get node to node coupling in case of periodic boundary conditions (column and row version)
   RCP<map<int,vector<int> > > GetCoupledColNodesChildDiscretization(){return col_pbcmapmastertoslave_;}
+  RCP<map<int,vector<int> > > GetCoupledRowNodesChildDiscretization(){return row_pbcmapmastertoslave_;}
 private:
   //! the parent discretization
   RCP<DRT::Discretization>    parentdiscret_;
   //! the child discretization
   RCP<DRT::Discretization>    childdiscret_;
-  //! periodic boundary condition: node to node coupling
+  //! periodic boundary condition: node to node coupling (column and row version)
   RCP<map<int,vector<int> > > col_pbcmapmastertoslave_;
+  RCP<map<int,vector<int> > > row_pbcmapmastertoslave_;
 };
 
 }

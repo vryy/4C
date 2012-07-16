@@ -106,7 +106,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     PeriodicBoundaryConditions pbc(actdis);
     pbc.UpdateDofsForPeriodicBoundaryConditions();
 
-    pbcmapmastertoslave = pbc.ReturnAllCoupledColNodes();
+    // get node to node coupling of periodic boundary conditions
+    // we have to transfer the node to node coupling of periodic boundary conditions
+    // to the fluid time integration because it is necessary for initial field
+    // generation in case of disturbed functions
+    // as well as for box filtering in case of turbulence modeling
+    pbcmapmastertoslave = pbc.ReturnAllCoupledRowNodes();
   }
 
   // -------------------------------------------------------------------

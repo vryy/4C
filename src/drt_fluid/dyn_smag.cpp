@@ -614,6 +614,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
       vector<int>::iterator slavenode;
 
       int lid = noderowmap->LID(masternode->first);
+      if (lid < 0) dserror("nodelid < 0 ?");
 
       val = (*patchvol)[lid];
 
@@ -653,41 +654,46 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
 
       // replace value by sum
       lid = noderowmap->LID(masternode->first);
-      patchvol->ReplaceMyValues(1,&val,&lid);
+      int error = patchvol->ReplaceMyValues(1,&val,&lid);
+      if (error != 0) dserror("dof not on proc");
 
       for (int idim =0;idim<numdim;++idim)
       {
-        ((*filtered_vel_)(idim))->ReplaceMyValues(1,&(vel_val[idim]),&lid);
+        int err = 0;
+        err += ((*filtered_vel_)(idim))->ReplaceMyValues(1,&(vel_val[idim]),&lid);
 
         for (int jdim =0;jdim<numdim;++jdim)
         {
           const int ij = numdim*idim+jdim;
 
-          ((*filtered_reynoldsstress_        )(ij))->ReplaceMyValues(1,&(reystress_val             [idim][jdim]),&lid);
+          err += ((*filtered_reynoldsstress_        )(ij))->ReplaceMyValues(1,&(reystress_val             [idim][jdim]),&lid);
           if (apply_dynamic_smagorinsky_)
-            ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1,&(modeled_subgrid_stress_val[idim][jdim]),&lid);
+            err += ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1,&(modeled_subgrid_stress_val[idim][jdim]),&lid);
         } // end loop jdim
+        if (err != 0) dserror("dof not on proc");
       } // end loop idim
 
       // loop all this masters slaves
       for(slavenode=(masternode->second).begin();slavenode!=(masternode->second).end();++slavenode)
       {
+        int err = 0;
         lid = noderowmap->LID(*slavenode);
-        patchvol->ReplaceMyValues(1,&val,&lid);
+        err += patchvol->ReplaceMyValues(1,&val,&lid);
 
         for (int idim =0;idim<numdim;++idim)
         {
-          ((*filtered_vel_)(idim))->ReplaceMyValues(1,&(vel_val[idim]),&lid);
+          err += ((*filtered_vel_)(idim))->ReplaceMyValues(1,&(vel_val[idim]),&lid);
 
           for (int jdim =0;jdim<numdim;++jdim)
           {
             const int ij = numdim*idim+jdim;
 
-            ((*filtered_reynoldsstress_        )(ij))->ReplaceMyValues(1,&(reystress_val             [idim][jdim]),&lid);
+            err += ((*filtered_reynoldsstress_        )(ij))->ReplaceMyValues(1,&(reystress_val             [idim][jdim]),&lid);
             if (apply_dynamic_smagorinsky_)
-              ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1,&(modeled_subgrid_stress_val[idim][jdim]),&lid);
+              err += ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1,&(modeled_subgrid_stress_val[idim][jdim]),&lid);
           } // end loop jdim
         } // end loop idim
+        if (err != 0) dserror("dof not on proc");
       } // end loop slaves
     } // end loop masters
   }
@@ -731,13 +737,14 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
       // this node is on a wall
       if (is_dirichlet_node == numdim)
       {
+        int err = 0;
         for (int idim =0;idim<numdim;++idim)
         {
           int gid_i = nodedofset[idim];
           int lid_i = dofrowmap->LID(gid_i);
 
           double valvel_i = (*velocity)[lid_i];
-          ((*filtered_vel_)(idim))->ReplaceMyValues(1,&valvel_i,&lnodeid);
+          err += ((*filtered_vel_)(idim))->ReplaceMyValues(1,&valvel_i,&lnodeid);
 
           for (int jdim =0;jdim<numdim;++jdim)
           {
@@ -748,27 +755,28 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
 
             double valvel_j = (*velocity)[lid_j];
             double valvel_ij= valvel_i * valvel_j;
-            ((*filtered_reynoldsstress_         ) (ij))->ReplaceMyValues(1,&valvel_ij,&lnodeid);
+            err += ((*filtered_reynoldsstress_         ) (ij))->ReplaceMyValues(1,&valvel_ij,&lnodeid);
 
             if (apply_dynamic_smagorinsky_)
             {
               if (is_no_slip_node == numdim)
               {
                 double val = 0.0;
-                ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+                err += ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
               }
               else
               {
                 double thisvol = (*patchvol)[lnodeid];
                 double val = ((*((*filtered_modeled_subgrid_stress_ ) (ij)))[lnodeid])/thisvol;
-                ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+                err += ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
               }
             }
           } // end loop jdim
         } // end loop idim
 
         double volval = 1.0;
-        patchvol->ReplaceMyValues(1,&volval,&lnodeid);
+        err += patchvol->ReplaceMyValues(1,&volval,&lnodeid);
+        if (err!=0) dserror("dof not on proc");
       }
     } // end loop all nodes
   }
@@ -784,22 +792,24 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
 
     for (int idim =0;idim<3;++idim)
     {
+      int err = 0;
       double val = ((*((*filtered_vel_)(idim)))[lnodeid])/thisvol;
-      ((*filtered_vel_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
+      err += ((*filtered_vel_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
 
       for (int jdim =0;jdim<3;++jdim)
       {
         const int ij = numdim*idim+jdim;
 
         val = ((*((*filtered_reynoldsstress_ ) (ij)))[lnodeid])/thisvol;
-        ((*filtered_reynoldsstress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+        err += ((*filtered_reynoldsstress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
 
         if (apply_dynamic_smagorinsky_)
         {
           val = ((*((*filtered_modeled_subgrid_stress_ ) (ij)))[lnodeid])/thisvol;
-          ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+          err += ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
         }
       } // end loop jdim
+      if (err!=0) dserror("dof not on proc");
     } // end loop idim
   } // end loop nodes
 
@@ -829,7 +839,8 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         // calculate fine scale velocity
         double val = vel - filteredvel;
         // calculate fine scale velocity
-        ((*fs_vel_)(d))->ReplaceMyValues(1,&val,&nid);
+        int err = ((*fs_vel_)(d))->ReplaceMyValues(1,&val,&nid);
+        if (err!=0) dserror("dof not on proc");
       }
     }
   }

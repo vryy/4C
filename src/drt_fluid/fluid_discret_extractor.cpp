@@ -411,6 +411,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // get node to node coupling
       col_pbcmapmastertoslave_ = Teuchos::rcp(new map<int,vector<int> > ());
       col_pbcmapmastertoslave_ = pbc.ReturnAllCoupledColNodes();
+      row_pbcmapmastertoslave_ = Teuchos::rcp(new map<int,vector<int> > ());
+      row_pbcmapmastertoslave_ = pbc.ReturnAllCoupledRowNodes();
     }
 
     if(childdiscret_->Comm().MyPID()==0)
