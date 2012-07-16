@@ -249,14 +249,13 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 
         if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_both or INPAR::COMBUST::selectedenrichment_pressure)
         {
-          if ((plusDomain(phinp_[inode]) == true) and (plusDomain(-phinp_[inode]) == true))
+          // pressure fields gets jump enrichment
+          if (*field == XFEM::PHYSICS::Pres)
           {
-            // pressure fields gets jump enrichment
-            if (*field == XFEM::PHYSICS::Pres)
-              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
-           }
+            nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+            nodecount += 1;
+          }
         }
-        nodecount += 1;
       }
     }
   }
