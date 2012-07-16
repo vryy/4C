@@ -132,7 +132,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     fssgvisc_(0.0),
     mfssgscaint_(0.0)
 {
-  rotsymmpbc_= new FLD::RotationallySymmetricPeriodicBC<distype>();
+  rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
 
   // pointer to class FluidEleParameter (access to the general parameter)
   fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
@@ -1438,7 +1438,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
            DRT::ELEMENTS::Fluid*               ele,
-           DRT::ELEMENTS::FluidEleParameter*  f3Parameter,
+           Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter>&  f3Parameter,
            LINALG::Matrix<nsd_,nen_>&           ebofoaf,
            LINALG::Matrix<nsd_,nen_> &          eprescpgaf,
            LINALG::Matrix<nen_,1>&              escabofoaf)

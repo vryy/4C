@@ -425,7 +425,7 @@ namespace DRT
 
 
       //! pointer to parameter list
-      DRT::ELEMENTS::FluidEleParameter* fldpara_;
+      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
 
       // nodal arrays
       // ------------

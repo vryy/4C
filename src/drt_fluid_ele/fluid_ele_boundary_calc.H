@@ -49,7 +49,7 @@ public:
   FluidBoundaryImplInterface() {}
   /// Empty destructor
   virtual ~FluidBoundaryImplInterface() {}
-  
+
   /// Evaluate a Neumann boundary condition
   /*!
     This class does not provide a definition for this function, it
@@ -630,14 +630,14 @@ private:
     {
       // get dimensionless velocity
       const double up = normu/utau;
-      
+
       const double chi=0.4;
       const double B  =5.5;
 
       //      +
       // get y , a dimensionless boundary layer thickness
       const double yp = y*utau/visc;
-      
+
       /*
       // Evaluate Spaldings law of the wall
       //                                /                                                  \
@@ -664,7 +664,7 @@ private:
     {
       // get dimensionless velocity
       const double up = normu/utau;
-      
+
       const double chi=0.4;
       const double B  =5.5;
 
@@ -679,7 +679,7 @@ private:
       //                    +
       // get derivative of u  wrt u_tau
       const double duplus_dutau=-normu/(utau*utau);
-      
+
       return(dyplus_dutau-df_duplus*duplus_dutau);
     }
 
@@ -710,7 +710,7 @@ private:
       //                    +
       // get derivative of u  wrt u
       const double duplus_du=1.0/utau;
-      
+
       return(dyplus_du-df_duplus*duplus_du);
     }
 
@@ -750,7 +750,7 @@ private:
       //                                   +
       // get derivative of function f wrt u
       const double df_duplus=1+exp(-chi*B)*(chi*exp(chi*up)-chi-chi*chi*up-chi*chi*chi*up*up/2.0);
-      
+
       return(dyplus_duplus-df_duplus);
     }
 
@@ -762,7 +762,7 @@ private:
                          );
 
   //! pointer to parameter list
-  DRT::ELEMENTS::FluidEleParameter* fldpara_;
+  Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
 
   //! node coordinates for boundary element
   LINALG::Matrix<nsd_,bdrynen_> xyze_;

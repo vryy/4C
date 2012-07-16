@@ -205,6 +205,8 @@ DRT::UTILS::GaussPointCache & DRT::UTILS::GaussPointCache::Instance()
 void DRT::UTILS::GaussPointCache::Done()
 {
   gp_cache_.clear();
+  delete instance_;
+  instance_ = NULL;
 }
 
 Teuchos::RCP<DRT::UTILS::GaussPoints> DRT::UTILS::GaussPointCache::Create( DRT::Element::DiscretizationType distype, int degree )

@@ -397,7 +397,7 @@ namespace ELEMENTS
 
     /// calculate body force from nodal conditions
     void BodyForce(DRT::ELEMENTS::Fluid*              ele,         //< pointer to element
-                   DRT::ELEMENTS::FluidEleParameter*  f3Parameter, //< pointer to fluid parameter
+                   Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter>&  f3Parameter, //< pointer to fluid parameter
                    LINALG::Matrix<nsd_,nen_> &        ebofoaf,     //< body force at nodes
                    LINALG::Matrix<nsd_,nen_> &        eprescpgaf,  //< prescribed pressure gradient (required for turbulent channel flow!)
                    LINALG::Matrix<nen_,1> &           escabofoaf   //< scatra body force at nodes
@@ -868,13 +868,13 @@ namespace ELEMENTS
 //    }
 
     //! for the handling of rotationally symmetric periodic boundary conditions
-    FLD::RotationallySymmetricPeriodicBC<distype>* rotsymmpbc_;
+    Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_;
     //! Flag to (de)activate higher order elements
     //! elements with only mixed second order derivatives are not counted as higher order elements
     //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
     bool is_higher_order_ele_;
     //! pointer to parameter list
-    DRT::ELEMENTS::FluidEleParameter* fldpara_;
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
     //! element type: nurbs
     bool isNurbs_;
     //! weights for nurbs elements

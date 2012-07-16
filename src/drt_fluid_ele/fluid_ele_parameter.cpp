@@ -26,16 +26,16 @@ using namespace std;
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameter* DRT::ELEMENTS::FluidEleParameter::instance_;
+Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> DRT::ELEMENTS::FluidEleParameter::instance_;
 
 
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameter* DRT::ELEMENTS::FluidEleParameter::Instance()
+Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> DRT::ELEMENTS::FluidEleParameter::Instance()
 {
-  if (instance_==NULL)
-    instance_ = new FluidEleParameter();
+  if (instance_==Teuchos::null)
+    instance_ = Teuchos::rcp(new FluidEleParameter());
   return instance_;
 }
 

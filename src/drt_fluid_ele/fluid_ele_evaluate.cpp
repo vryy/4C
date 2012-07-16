@@ -138,22 +138,22 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
 
   if (action == "set_general_fluid_parameter")
   {
-    DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
     fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
   }
   else if (action == "set_time_parameter")
   {
-    DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
     fldpara->SetElementTimeParameter(p);
   }
   else if (action == "set_turbulence_parameter")
   {
-    DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
     fldpara->SetElementTurbulenceParameter(p);
   }
   else if (action == "set_loma_parameter")
   {
-    DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
     fldpara->SetElementLomaParameter(p);
   }
   else if (action == "set_general_adjoint_parameter")

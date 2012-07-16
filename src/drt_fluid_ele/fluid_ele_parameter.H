@@ -21,6 +21,7 @@ Maintainer: Andreas Ehrl
 #define FLUID_ELE_PARAMETER_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_RefCountPtr.hpp>
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_turbulence.H"
@@ -36,7 +37,7 @@ class FluidEleParameter
 public:
 
   //! Singleton access method
-  static FluidEleParameter* Instance();
+  static Teuchos::RCP<FluidEleParameter> Instance();
 
   //! general fluid parameter are set
   void SetElementGeneralFluidParameter(Teuchos::ParameterList& params,   //> parameter list
@@ -306,7 +307,7 @@ private:
   FluidEleParameter& operator=(const FluidEleParameter&);
 
   /// the single instance
-  static FluidEleParameter* instance_;
+  static Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> instance_;
 };
 
 }
