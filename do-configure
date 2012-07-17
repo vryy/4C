@@ -4,7 +4,14 @@
 
 BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
-BUILD_TYPE="RELEASE"
+
+# activate debug version: ./do-configure --debug 
+# or choose do-configure-debug which does the same
+if [ "x$1" == "x--debug" ]; then
+  BUILD_TYPE="DEBUG"
+else
+  BUILD_TYPE="RELEASE"
+fi
 
 ##############################################################
 # detect operating system
@@ -63,9 +70,9 @@ $CMAKE_COMMAND \
     -D CMAKE_CXX_COMPILER:FILEPATH="$MPIDIR/bin/mpic++" \
     -D CMAKE_C_COMPILER:FILEPATH="$MPIDIR/bin/mpicc" \
     -D CMAKE_Fortran_COMPILER:FILEPATH="$MPIDIR/bin/mpif90" \
-    -D CMAKE_CXX_FLAGS:STRING="-Wall" \
+    -D CMAKE_CXX_FLAGS:STRING="-Wall -mfpmath=sse -msse3 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_CXX_FLAGS_RELEASE:STRING="-O3" \
-    -D CMAKE_C_FLAGS:STRING="-Wall" \
+    -D CMAKE_C_FLAGS:STRING="-Wall -mfpmath=sse -msse3 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_C_FLAGS_RELEASE:STRING="-O3" \
     -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl" \
     -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING="-O2" \
@@ -79,7 +86,6 @@ $CMAKE_COMMAND \
     -D D_ARTNET:BOOL=ON \
     -D D_RED_AIRWAYS:BOOL=ON \
     -D TRAP_FE:BOOL=OFF \
-    -D PARALLEL:BOOL=ON \
     -D PARMETIS:BOOL=ON \
     -D COLOROUTPUT:BOOL=OFF \
     -D D_EXODUS:BOOL=ON \
