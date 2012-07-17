@@ -1655,7 +1655,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     // define interface thickness, sinusoidal disturbance wave amplitude and pi
     const double delta = 0.002;
     const double alpha = 0.001;
-    const double pi = 3.141592654;
 
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -1675,14 +1674,14 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       //double x2_int = 0.05*cos(pi*(x1+0.5));
       //double x2_int = 0.05*cos(2.0*pi*x1);
       double x2_int = 0.0;
-      x2_int -= cos(4*pi*x1);
-      x2_int -= cos(14*pi*x1);
-      x2_int -= cos(23*pi*x1);
-      x2_int -= cos(28*pi*x1);
-      x2_int -= cos(33*pi*x1);
-      x2_int -= cos(42*pi*x1);
-      x2_int -= cos(51*pi*x1);
-      x2_int -= cos(59*pi*x1);
+      x2_int -= cos(4*M_PI*x1);
+      x2_int -= cos(14*M_PI*x1);
+      x2_int -= cos(23*M_PI*x1);
+      x2_int -= cos(28*M_PI*x1);
+      x2_int -= cos(33*M_PI*x1);
+      x2_int -= cos(42*M_PI*x1);
+      x2_int -= cos(51*M_PI*x1);
+      x2_int -= cos(59*M_PI*x1);
       x2_int *= alpha;
 
       const double value = (x2_int-x2)/(2.0*delta);

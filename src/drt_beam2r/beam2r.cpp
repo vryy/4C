@@ -490,9 +490,9 @@ void DRT::ELEMENTS::Beam2r::SetUpReferenceGeometry(const std::vector<double>& xr
       if (check<0)
       {
         if(theta0_[numgp]> 0 )
-        theta0_[numgp]-=3.141592653589;
+        theta0_[numgp]-=M_PI;
         else
-          theta0_[numgp]+=3.141592653589;
+          theta0_[numgp]+=M_PI;
       }
 
     }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
