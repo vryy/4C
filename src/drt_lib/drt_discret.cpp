@@ -599,7 +599,7 @@ void DRT::Discretization::SetState(unsigned nds,const string& name,RCP<const Epe
 #ifdef DEBUG
     if (not DofRowMap(nds)->SameAs(state->Map()))
     {
-      dserror("row map of discretization and state vector are different. This is a fatal bug!");
+      dserror("row map of discretization and state vector %s are different. This is a fatal bug!",name.c_str());
     }
 #endif
     RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
