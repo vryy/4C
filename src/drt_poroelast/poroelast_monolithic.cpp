@@ -52,17 +52,12 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams
     ) :
     PoroBase(comm,timeparams),
-    //solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1),
-   // solveradaptolbetter_(sdynparams.get<double> ("ADAPTCONV_BETTER")),
     printscreen_(true), // ADD INPUT PARAMETER
     printiter_(true), // ADD INPUT PARAMETER
-    printerrfile_(true and errfile_), // ADD INPUT PARAMETER FOR 'true'
-    errfile_(NULL),
+    printerrfile_(true), // ADD INPUT PARAMETER FOR 'true'
+    errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
     zeros_(Teuchos::null),
-    //strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
-    timer_(comm),
-    veln_(Teuchos::null),
-    dispn_(Teuchos::null)
+    timer_(comm)
 {
   const Teuchos::ParameterList& sdynparams
   = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -72,13 +67,6 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
   solveradaptolbetter_ = (sdynparams.get<double> ("ADAPTCONV_BETTER"));
 
   strmethodname_ = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP");
-
-  // add extra parameters (a kind of work-around)
-  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(
-      new Teuchos::ParameterList());
-  xparams->set<FILE*> ("err file",
-      DRT::Problem::Instance()->ErrorFile()->Handle());
-  errfile_ = xparams->get<FILE*> ("err file");
 
   // velocities V_{n+1} at t_{n+1}
   veln_ = LINALG::CreateVector(*(StructureField()->DofRowMap()), true);
@@ -1373,7 +1361,7 @@ void POROELAST::Monolithic::PoroFDCheck()
     // else cout<<"GID "<<i<<" mit DBC"<<endl;
   }
 
-  // if(success)
+  if(success)
   {
     cout << "finite difference check successful, max. rel. error: "
         << error_max << endl;
