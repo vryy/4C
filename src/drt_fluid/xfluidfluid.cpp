@@ -13,11 +13,11 @@
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
 #include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_dofset_independent.H"
 
+#include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
@@ -39,6 +39,7 @@
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+#include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_ostream0.H"
@@ -4423,4 +4424,12 @@ void FLD::XFluidFluid::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condeleme
 Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluid::CreateFieldTest()
 {
   return Teuchos::rcp(new FLD::XFluidFluidResultTest(*this));
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | return system matrix
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> FLD::XFluidFluid::SystemMatrix()
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_);
 }

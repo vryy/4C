@@ -18,11 +18,18 @@ Maintainer: Shadan Shahmiri
 
 
 #include "../drt_lib/drt_resulttest.H"
-#include "xfluidfluid.H"
-#include "fluid_genalpha_integration.H"
+#include <Epetra_Vector.h>
+
+namespace DRT
+{
+class Discretization;
+}
 
 namespace FLD
 {
+// forward declarations
+class XFluidFluid;
+
 
 class XFluidFluidResultTest : public DRT::ResultTest
 {
@@ -47,15 +54,15 @@ public:
 private:
 
     /// pointer to fluid discretization
-    RefCountPtr<DRT::Discretization> embfluiddis_;
+    Teuchos::RCP<DRT::Discretization> embfluiddis_;
     /// pointer to xfluid discretization
-    RefCountPtr<DRT::Discretization> bgfluiddis_;
+    Teuchos::RCP<DRT::Discretization> bgfluiddis_;
     /// pointer to unknown vector with values
-    RefCountPtr<Epetra_Vector>       embfluidsol_;
+    Teuchos::RCP<Epetra_Vector>       embfluidsol_;
     /// pointer to unknown vector with values
-    RefCountPtr<Epetra_Vector>       bgfluidsol_;
+    Teuchos::RCP<Epetra_Vector>       bgfluidsol_;
     /// pointer to traction vector with values
-    //RefCountPtr<Epetra_Vector>       mytraction_;
+    //Teuchos::RCP<Epetra_Vector>       mytraction_;
 };
 
 }

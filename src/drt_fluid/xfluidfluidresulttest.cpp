@@ -18,6 +18,8 @@ Maintainer: Shadan Shahmiri
 #include <string>
 
 #include "xfluidfluidresulttest.H"
+#include "xfluidfluid.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 

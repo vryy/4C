@@ -360,7 +360,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Map>VelocityRowMap() { return state_->fluidfluidvelpressplitter_.OtherMap(); }
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
 
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_); }
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
     Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor(){ return state_->fluidfluidsplitter_; }
 
