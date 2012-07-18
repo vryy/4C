@@ -1254,8 +1254,8 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     const double epe1 = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
     // respective "switching" parameters
-    const double xi  = DMAX(epe,1.0);
-    const double xi1 = DMAX(epe1,1.0);
+    const double xi  = max(epe,1.0);
+    const double xi1 = max(epe1,1.0);
 
     tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*sigma_tot*xi1 + 2.0*diffus*xi/mk);
 
@@ -1321,8 +1321,8 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     if (is_reactive_) epe1 = 2.0*diffus/(mk*densnp_[k]*reacoeff_[k]*DSQR(h));
 
     // respective "switching" parameters
-    const double xi  = DMAX(epe,1.0);
-    const double xi1 = DMAX(epe1,1.0);
+    const double xi  = max(epe,1.0);
+    const double xi1 = max(epe1,1.0);
 
     tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*reacoeff_[k]*xi1 + 2.0*diffus*xi/mk);
 
@@ -1473,7 +1473,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     const double epe = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
     // respective "switching" parameter
-    const double xi = DMAX(epe,1.0);
+    const double xi = max(epe,1.0);
 
     // constant c_u as suggested in Badia and Codina (2010), method A
     // is set to be 1.0 here as in Franca et al. (2005)

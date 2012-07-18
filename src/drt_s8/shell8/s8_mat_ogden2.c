@@ -140,35 +140,35 @@ lambda[0] = sqrt(CGlambda2[0]);
 lambda[1] = sqrt(CGlambda2[1]);
 lambda[2] = sqrt(CGlambda2[2]);
 /* test for equality of two or three of them */
-if (FABS(lambda[0]-lambda[1])<EPS9) printf("lambda[0]==lambda[1]\n");
-if (FABS(lambda[0]-lambda[2])<EPS9) printf("lambda[0]==lambda[2]\n");
-if (FABS(lambda[1]-lambda[2])<EPS9) printf("lambda[1]==lambda[2]\n");
+if (fabs(lambda[0]-lambda[1])<EPS9) printf("lambda[0]==lambda[1]\n");
+if (fabs(lambda[0]-lambda[2])<EPS9) printf("lambda[0]==lambda[2]\n");
+if (fabs(lambda[1]-lambda[2])<EPS9) printf("lambda[1]==lambda[2]\n");
 /* test orthogonality of eigenvectors */
 /* N0 * N1 = 0.0 */
 work = N[0][0]*N[1][0]+N[0][1]*N[1][1]+N[0][2]*N[1][2];
-if (FABS(work)>EPS10)printf("eigenvectors N0 * N1 = %f\n",work);
+if (fabs(work)>EPS10)printf("eigenvectors N0 * N1 = %f\n",work);
 /* N0 * N2 = 0.0 */
 work = N[0][0]*N[2][0]+N[0][1]*N[2][1]+N[0][2]*N[2][2];
-if (FABS(work)>EPS10)printf("eigenvectors N0 * N2 = %f\n",work);
+if (fabs(work)>EPS10)printf("eigenvectors N0 * N2 = %f\n",work);
 /* N1 * N2 = 0.0 */
 work = N[1][0]*N[2][0]+N[1][1]*N[2][1]+N[1][2]*N[2][2];
-if (FABS(work)>EPS10)printf("eigenvectors N1 * N2 = %f\n",work);
+if (fabs(work)>EPS10)printf("eigenvectors N1 * N2 = %f\n",work);
 /* test length==1 of eigenvectors */
 work = N[0][0]*N[0][0]+N[0][1]*N[0][1]+N[0][2]*N[0][2];
 work = sqrt(work);
-if (FABS(work-1.0)>EPS10) printf("eigenvectors N0 not unit length %f\n",work);
+if (fabs(work-1.0)>EPS10) printf("eigenvectors N0 not unit length %f\n",work);
 work = N[1][0]*N[1][0]+N[1][1]*N[1][1]+N[1][2]*N[1][2];
 work = sqrt(work);
-if (FABS(work-1.0)>EPS10) printf("eigenvectors N1 not unit length %f\n",work);
+if (fabs(work-1.0)>EPS10) printf("eigenvectors N1 not unit length %f\n",work);
 work = N[2][0]*N[2][0]+N[2][1]*N[2][1]+N[2][2]*N[2][2];
 work = sqrt(work);
-if (FABS(work-1.0)>EPS10) printf("eigenvectors N2 not unit length %f\n",work);
+if (fabs(work-1.0)>EPS10) printf("eigenvectors N2 not unit length %f\n",work);
 /* test proper right hand system, build N3 by cross product */
 Ntest[0] = N[0][1]*N[1][2] - N[0][2]*N[1][1];
 Ntest[1] = N[0][2]*N[1][0] - N[0][0]*N[1][2];
 Ntest[2] = N[0][0]*N[1][1] - N[0][1]*N[1][0];
 work = N[2][0]*Ntest[0] + N[2][1]*Ntest[1] + N[2][2]*Ntest[2];
-if (FABS(work-1.0)>EPS10) printf("eigenvectors are not right hand system  - cross product * N3 = %f\n",work);
+if (fabs(work-1.0)>EPS10) printf("eigenvectors are not right hand system  - cross product * N3 = %f\n",work);
 /*==================call holzapfel routine */
 #if 0
 bpr[0] = CGlambda2[0];
@@ -312,19 +312,19 @@ C[2][2][0][0] = C[0][0][2][2];
 C[2][2][1][1] = C[1][1][2][2];
 /*--------------------------------------------- make C[a][b][a][b] a!=b */
 /*--------------------------------------------- deviatoric contribution */
-if (FABS(CGlambda2[0]-CGlambda2[1])>EPS12)
+if (fabs(CGlambda2[0]-CGlambda2[1])>EPS12)
 C[0][1][0][1] = (PK2main_dev[0]-PK2main_dev[1])/(CGlambda2[0]-CGlambda2[1]);
 else
 C[0][1][0][1] = 0.5*(C[0][0][0][0]-C[0][0][1][1]);
 
 
-if (FABS(CGlambda2[0]-CGlambda2[2])>EPS12)
+if (fabs(CGlambda2[0]-CGlambda2[2])>EPS12)
 C[0][2][0][2] = (PK2main_dev[0]-PK2main_dev[2])/(CGlambda2[0]-CGlambda2[2]);
 else
 C[0][2][0][2] = 0.5*(C[0][0][0][0]-C[0][0][2][2]);
 
 
-if (FABS(CGlambda2[1]-CGlambda2[2])>EPS12)
+if (fabs(CGlambda2[1]-CGlambda2[2])>EPS12)
 C[1][2][1][2] = (PK2main_dev[1]-PK2main_dev[2])/(CGlambda2[1]-CGlambda2[2]);
 else
 C[1][2][1][2] = 0.5*(C[1][1][1][1]-C[1][1][2][2]);
@@ -351,19 +351,19 @@ C_vol[2][2][0][0] = C_vol[0][0][2][2];
 C_vol[2][2][1][1] = C_vol[1][1][2][2];
 /*--------------------------------------------- make C[a][b][a][b] a!=b */
 /*--------------------------------------------- volumetric contribution */
-if (FABS(CGlambda2[0]-CGlambda2[1])>EPS12)
+if (fabs(CGlambda2[0]-CGlambda2[1])>EPS12)
 C_vol[0][1][0][1] = (PK2main_vol[0]-PK2main_vol[1])/(CGlambda2[0]-CGlambda2[1]);
 else
 C_vol[0][1][0][1] = 0.5*(C_vol[0][0][0][0]-C_vol[0][0][1][1]);
 
 
-if (FABS(CGlambda2[0]-CGlambda2[2])>EPS12)
+if (fabs(CGlambda2[0]-CGlambda2[2])>EPS12)
 C_vol[0][2][0][2] = (PK2main_vol[0]-PK2main_vol[2])/(CGlambda2[0]-CGlambda2[2]);
 else
 C_vol[0][2][0][2] = 0.5*(C_vol[0][0][0][0]-C_vol[0][0][2][2]);
 
 
-if (FABS(CGlambda2[1]-CGlambda2[2])>EPS12)
+if (fabs(CGlambda2[1]-CGlambda2[2])>EPS12)
 C_vol[1][2][1][2] = (PK2main_vol[1]-PK2main_vol[2])/(CGlambda2[1]-CGlambda2[2]);
 else
 C_vol[1][2][1][2] = 0.5*(C_vol[1][1][1][1]-C_vol[1][1][2][2]);

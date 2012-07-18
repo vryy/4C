@@ -22,6 +22,11 @@ Maintainer: Malte Neumann
 #include "pss_prototypes.h"
 
 
+/*----------------------------------------------------------------------*
+ | the smaller of two integer (used in pss_am.c)                        |
+ *----------------------------------------------------------------------*/
+#define IMIN(a,b) (((a)<(b))?(a):(b))
+
 /*!
 \addtogroup AMSYSTEM
 *//*! @{ (documentation module open)*/

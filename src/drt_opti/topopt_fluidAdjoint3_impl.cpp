@@ -944,10 +944,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
                  re12 = mk * dens * fluidvel_norm * hk / (2.0 * visc);
 
     // respective "switching" parameters
-    const double xi01 = DMAX(re01,1.0);
-    const double xi11 = DMAX(re11,1.0);
-    const double xi02 = DMAX(re02,1.0);
-    const double xi12 = DMAX(re12,1.0);
+    const double xi01 = max(re01,1.0);
+    const double xi11 = max(re11,1.0);
+    const double xi02 = max(re02,1.0);
+    const double xi12 = max(re12,1.0);
 
     tau_(0) = DSQR(strle)/(DSQR(strle)*dens*sigma_tot*xi01+(4.0*visc/mk)*xi02);
     tau_(1) = DSQR(hk)/(DSQR(hk)*dens*sigma_tot*xi11+(4.0*visc/mk)*xi12);
@@ -977,10 +977,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
                  re12 = mk * dens * fluidvel_norm * hk / (2.0 * visc);
 
     // respective "switching" parameters
-    const double xi01 = DMAX(re01,1.0);
-    const double xi11 = DMAX(re11,1.0);
-    const double xi02 = DMAX(re02,1.0);
-    const double xi12 = DMAX(re12,1.0);
+    const double xi01 = max(re01,1.0);
+    const double xi11 = max(re11,1.0);
+    const double xi02 = max(re02,1.0);
+    const double xi12 = max(re12,1.0);
 
     tau_(0) = DSQR(strle)/(DSQR(strle)*dens*reacoeff_*xi01+(4.0*visc/mk)*xi02);
     tau_(1) = DSQR(hk)/(DSQR(hk)*dens*reacoeff_*xi11+(4.0*visc/mk)*xi12);
@@ -1186,10 +1186,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     */
 
     // element Reynolds number based on covariant metric tensor
-    const double reG = sqrt(Gnormu/Gvisc);
+    const double reG = std::sqrt(Gnormu/Gvisc);
 
     // "switching" parameter
-    const double xi_tau_c = DMIN(reG,1.0);
+    const double xi_tau_c = min(reG,1.0);
 
     tau_(2) = xi_tau_c*sqrt(Gnormu)/traceG;
   }
@@ -1221,7 +1221,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     */
 
     // "switching" parameter
-    const double xi_tau_c = DMIN(re12,1.0);
+    const double xi_tau_c = std::min(re12,1.0);
 
     tau_(2) = 0.5 * dens * fluidvel_norm * hk * xi_tau_c;
   }

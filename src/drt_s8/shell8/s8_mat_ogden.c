@@ -141,13 +141,13 @@ for (p=0; p<3; p++)
 #if 1
 /*N0 * N1 = 0*/
 scal = N[0][0]*N[1][0] + N[0][1]*N[1][1] + N[0][2]*N[1][2];
-dsassert(FABS(scal)<EPS10,"eigenvectors N0,N1 not orthogonal");
+dsassert(fabs(scal)<EPS10,"eigenvectors N0,N1 not orthogonal");
 /*N0 * N2 = 0*/
 scal = N[0][0]*N[2][0] + N[0][1]*N[2][1] + N[0][2]*N[2][2];
-dsassert(FABS(scal)<EPS10,"eigenvectors N0,N2 not orthogonal");
+dsassert(fabs(scal)<EPS10,"eigenvectors N0,N2 not orthogonal");
 /*N1 * N2 = 0*/
 scal = N[1][0]*N[2][0] + N[1][1]*N[2][1] + N[1][2]*N[2][2];
-dsassert(FABS(scal)<EPS10,"eigenvectors N1,N2 not orthogonal");
+dsassert(fabs(scal)<EPS10,"eigenvectors N1,N2 not orthogonal");
 /*--------------------------- test proper orientation of eigenvectors N */
 /*N2 = N0 x N1*/
 Ncross[0] = N[0][1]*N[1][2] - N[0][2]*N[1][1];
@@ -155,7 +155,7 @@ Ncross[1] = N[0][2]*N[1][0] - N[0][0]*N[1][2];
 Ncross[2] = N[0][0]*N[1][1] - N[0][1]*N[1][0];
 /*N2 * Ncross = 1.0*/
 scal = Ncross[0]*N[2][0] + Ncross[1]*N[2][1] + Ncross[2]*N[2][2];
-dsassert(FABS((scal-1.0))<EPS10,"eigenvectors do not form proper othogonal system");
+dsassert(fabs((scal-1.0))<EPS10,"eigenvectors do not form proper othogonal system");
 #endif
 /*----------------------------------------------------------------------*/
 /*--------------------------------------------------------- make energy */
@@ -209,17 +209,17 @@ C0011 /= (lam2[0]*lam2[1]);
 C0022 /= (lam2[0]*lam2[2]);
 C1122 /= (lam2[1]*lam2[2]);
 /*================== components C_abab */
-if (FABS(lam2[0]-lam2[1])>EPS12)
+if (fabs(lam2[0]-lam2[1])>EPS12)
 C0101 = (PK2[0]-PK2[1])/(lam2[0]-lam2[1]);
 else
 C0101 = 0.5*(C0000-C0011);
 
-if (FABS(lam2[0]-lam2[2])>EPS12)
+if (fabs(lam2[0]-lam2[2])>EPS12)
 C0202 = (PK2[0]-PK2[2])/(lam2[0]-lam2[2]);
 else
 C0202 = 0.5*(C0000-C0022);
 
-if (FABS(lam2[1]-lam2[2])>EPS12)
+if (fabs(lam2[1]-lam2[2])>EPS12)
 C1212 = (PK2[1]-PK2[2])/(lam2[1]-lam2[2]);
 else
 C1212 = 0.5*(C1111-C1122);

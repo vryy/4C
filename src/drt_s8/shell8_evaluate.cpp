@@ -4012,7 +4012,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
  |  average director (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
 #define DSQR(a) ((a)*(a))
-#define ABS(x)  ((x) <  0  ? (-x) : (x))
+//#define ABS(x)  ((x) <  0  ? (-x) : (x))
 void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, double a3[])
 {
   double davn[3];
@@ -4043,7 +4043,7 @@ void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, dou
                   +DSQR(dir_list(1,i)))*DSQR(averdir[0])-2.*averdir[2]*averdir[0]
                   *dir_list(2,i)*dir_list(0,i)+(DSQR(dir_list(0,i))+DSQR(dir_list(1,i)))
                   *DSQR(averdir[2]);
-       if (ABS(denom)<=1.e-13) dserror("Making of mod. directors failed");
+       if (fabs(denom)<=1.e-13) dserror("Making of mod. directors failed");
        const double alpha = (averdir[2]*dir_list(2,i)-DSQR(dir_list(0,i))+averdir[0]*dir_list(0,i)
                    -DSQR(dir_list(1,i))+dir_list(1,i)*averdir[1]-DSQR(dir_list(2,i)))/denom;
 

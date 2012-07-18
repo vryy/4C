@@ -4358,7 +4358,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
 
       // parameter relating convective and diffusive forces + respective switch
       const double epe = mk * densnp_[k] * vel_norm * h / diffus_[k];
-      const double xi = DMAX(epe,1.0);
+      const double xi = max(epe,1.0);
 
       // compute subgrid diffusivity
       sgdiff_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus_[k]*xi);
@@ -4547,7 +4547,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcFineScaleSubgrDiff(
 
     // parameter relating convective and diffusive forces + respective switch
     const double epe = mk * densnp_[k] * vel_norm * h / diffus_[k];
-    const double xi = DMAX(epe,1.0);
+    const double xi = max(epe,1.0);
 
     // compute artificial subgrid diffusivity
     sgdiff_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus_[k]*xi);
@@ -4823,8 +4823,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const double epe1 = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
     // respective "switching" parameters
-    const double xi  = DMAX(epe,1.0);
-    const double xi1 = DMAX(epe1,1.0);
+    const double xi  = max(epe,1.0);
+    const double xi1 = max(epe1,1.0);
 
     tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*sigma_tot*xi1 + 2.0*diffus*xi/mk);
 
@@ -4891,8 +4891,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     if (is_reactive_) epe1 = 2.0*diffus/(mk*densnp_[k]*reacoeff_[k]*DSQR(h));
 
     // respective "switching" parameters
-    const double xi  = DMAX(epe,1.0);
-    const double xi1 = DMAX(epe1,1.0);
+    const double xi  = max(epe,1.0);
+    const double xi1 = max(epe1,1.0);
 
     tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*reacoeff_[k]*xi1 + 2.0*diffus*xi/mk);
 
@@ -5044,7 +5044,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const double epe = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
     // respective "switching" parameter
-    const double xi = DMAX(epe,1.0);
+    const double xi = max(epe,1.0);
 
     // constant c_u as suggested in Badia and Codina (2010), method A
     // is set to be 1.0 here as in Franca et al. (2005)
@@ -5338,7 +5338,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
         double val = 0.0;
         for (int rr=0;rr<nen_;++rr) /* loop element nodes */
         {
-          val += FABS( normed_velgrad(0)*derxy_(0,rr)
+          val += fabs( normed_velgrad(0)*derxy_(0,rr)
                       +normed_velgrad(1)*derxy_(1,rr)
                       +normed_velgrad(2)*derxy_(2,rr));
         } /* end of loop over element nodes */
@@ -5992,7 +5992,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     double rhsfac       = 0.0;
     double rhstaufac    = 0.0;
 
-    double residual_elim = 0.0;
+    //double residual_elim = 0.0;
 
     // perform time-integration specific actions
     if (is_stationary_)
@@ -6004,16 +6004,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       if (migrationinresidual_)
       {
         residual  = conv_eff_k - diff_ephinp_k + migrea_k - rhsint;
-        if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-          residual_elim = (-valence_[k]/valence_[numscal_])*(conv_ephinp_k+diffusvalence_[numscal_]*(migconv_.Dot(ephinp_[k])) -((diffus_[numscal_]/diffus_[k])*diff_ephinp_k));
+        //if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+        //  residual_elim = (-valence_[k]/valence_[numscal_])*(conv_ephinp_k+diffusvalence_[numscal_]*(migconv_.Dot(ephinp_[k])) -((diffus_[numscal_]/diffus_[k])*diff_ephinp_k));
       }
       else
       {
         residual  = conv_ephinp_k - diff_ephinp_k - rhsint;
-        if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-        {
-          residual_elim = (-valence_[k]/valence_[numscal_])*(conv_ephinp_k -((diffus_[numscal_]/diffus_[k])*diff_ephinp_k));
-        }
+        //if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+        //{
+        //  residual_elim = (-valence_[k]/valence_[numscal_])*(conv_ephinp_k -((diffus_[numscal_]/diffus_[k])*diff_ephinp_k));
+        //}
       }
 
       rhsfac      = fac;

@@ -18,7 +18,7 @@ Maintainer: Florian Henke
 #include "intersection_service_templates.H"
 #include "../drt_combust/combust_refinementcell.H"
 #include "../drt_lib/drt_node.H"
-#include "../headers/definitions.h"
+#include "../drt_lib/standardtypes_cpp.H"
 
 
 /*----------------------------------------------------------------------------------*

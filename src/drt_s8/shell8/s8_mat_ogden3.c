@@ -143,13 +143,13 @@ for (i=0; i<3; i++) mat->l[i] = lam[i];
 /*---------------- test orthogonality and unit length of eigenvectors N */
 /*N0 * N1 = 0*/
 scal = N[0][0]*N[1][0] + N[0][1]*N[1][1] + N[0][2]*N[1][2];
-dsassert(FABS(scal)<EPS10,"eigenvectors N0,N1 not orthogonal");
+dsassert(fabs(scal)<EPS10,"eigenvectors N0,N1 not orthogonal");
 /*N0 * N2 = 0*/
 scal = N[0][0]*N[2][0] + N[0][1]*N[2][1] + N[0][2]*N[2][2];
-dsassert(FABS(scal)<EPS10,"eigenvectors N0,N2 not orthogonal");
+dsassert(fabs(scal)<EPS10,"eigenvectors N0,N2 not orthogonal");
 /*N1 * N2 = 0*/
 scal = N[1][0]*N[2][0] + N[1][1]*N[2][1] + N[1][2]*N[2][2];
-dsassert(FABS(scal)<EPS10,"eigenvectors N1,N2 not orthogonal");
+dsassert(fabs(scal)<EPS10,"eigenvectors N1,N2 not orthogonal");
 /*--------------------------- test proper orientation of eigenvectors N */
 /*N2 = N0 x N1*/
 Ncross[0] = N[0][1]*N[1][2] - N[0][2]*N[1][1];
@@ -157,7 +157,7 @@ Ncross[1] = N[0][2]*N[1][0] - N[0][0]*N[1][2];
 Ncross[2] = N[0][0]*N[1][1] - N[0][1]*N[1][0];
 /*N2 * Ncross = 1.0*/
 scal = Ncross[0]*N[2][0] + Ncross[1]*N[2][1] + Ncross[2]*N[2][2];
-dsassert(FABS((scal-1.0))<EPS10,"eigenvectors do not form proper othogonal system");
+dsassert(fabs((scal-1.0))<EPS10,"eigenvectors do not form proper othogonal system");
 /*----------------------------------------------------------------------*/
 #endif
 /*----------------------------------------------------- make J = det(F) */
@@ -247,17 +247,17 @@ Cdev0011 /= (lam2[0]*lam2[1]);
 Cdev0022 /= (lam2[0]*lam2[2]);
 Cdev1122 /= (lam2[1]*lam2[2]);
 /*================== components Cdev_abab */
-if (FABS(lam2[0]-lam2[1])>EPS12)
+if (fabs(lam2[0]-lam2[1])>EPS12)
 Cdev0101 = (PK2dev[0]-PK2dev[1])/(lam2[0]-lam2[1]);
 else
 Cdev0101 = 0.5*(Cdev0000-Cdev0011);
 
-if (FABS(lam2[0]-lam2[2])>EPS12)
+if (fabs(lam2[0]-lam2[2])>EPS12)
 Cdev0202 = (PK2dev[0]-PK2dev[2])/(lam2[0]-lam2[2]);
 else
 Cdev0202 = 0.5*(Cdev0000-Cdev0022);
 
-if (FABS(lam2[1]-lam2[2])>EPS12)
+if (fabs(lam2[1]-lam2[2])>EPS12)
 Cdev1212 = (PK2dev[1]-PK2dev[2])/(lam2[1]-lam2[2]);
 else
 Cdev1212 = 0.5*(Cdev1111-Cdev1122);
@@ -275,17 +275,17 @@ Cvol0022 =  scal / (lam2[0]*lam2[2]);
 Cvol1122 =  scal / (lam2[1]*lam2[2]);
 
 /*================== components Cvol_abab */
-if (FABS(lam2[0]-lam2[1])>EPS12)
+if (fabs(lam2[0]-lam2[1])>EPS12)
 Cvol0101 = (PK2vol[0]-PK2vol[1])/(lam2[0]-lam2[1]);
 else
 Cvol0101 = 0.5*(Cvol0000-Cvol0011);
 
-if (FABS(lam2[0]-lam2[2])>EPS12)
+if (fabs(lam2[0]-lam2[2])>EPS12)
 Cvol0202 = (PK2vol[0]-PK2vol[2])/(lam2[0]-lam2[2]);
 else
 Cvol0202 = 0.5*(Cvol0000-Cvol0022);
 
-if (FABS(lam2[1]-lam2[2])>EPS12)
+if (fabs(lam2[1]-lam2[2])>EPS12)
 Cvol1212 = (PK2vol[1]-PK2vol[2])/(lam2[1]-lam2[2]);
 else
 Cvol1212 = 0.5*(Cvol1111-Cvol1122);

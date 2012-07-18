@@ -99,9 +99,9 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
       DRT::Node* actnode = discret_.gNode(masternodesonthisproc[locn]);
       for (int dim=0;dim<3;dim++)
       {
-        initialboundingbox(dim,0)=DMIN(initialboundingbox(dim,0),
+        initialboundingbox(dim,0)=std::min(initialboundingbox(dim,0),
                                        actnode->X()[dim]-tol);
-        initialboundingbox(dim,1)=DMAX(initialboundingbox(dim,1),
+        initialboundingbox(dim,1)=std::max(initialboundingbox(dim,1),
                                        actnode->X()[dim]+tol);
       }
     }
@@ -737,7 +737,7 @@ DRT::UTILS::OctreeElement::OctreeElement(
     // get the coordinate with the maximum distance
     for(int dim=0;dim<3;dim++)
     {
-      double thisdist= DMIN(mean[dim]-boundingbox_(dim,0),
+      double thisdist= std::min(mean[dim]-boundingbox_(dim,0),
                             boundingbox_(dim,1)-mean[dim]);
 
       if(maxdist<thisdist)

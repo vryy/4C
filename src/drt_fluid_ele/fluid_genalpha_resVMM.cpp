@@ -10845,7 +10845,7 @@ int DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcResAvgs(
       double val = 0.0;
       for (int rr=0;rr<iel;++rr) /* loop element nodes */
       {
-        val += FABS( normed_velintaf(0)*derxy_(0,rr)
+        val += fabs( normed_velintaf(0)*derxy_(0,rr)
                     +normed_velintaf(1)*derxy_(1,rr)
                     +normed_velintaf(2)*derxy_(2,rr));
       } /* end of loop over element nodes */
@@ -10888,7 +10888,7 @@ int DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcResAvgs(
       double val = 0.0;
       for (int rr=0;rr<iel;++rr) /* loop element nodes */
       {
-        val += FABS( normed_velgrad(0)*derxy_(0,rr)
+        val += fabs( normed_velgrad(0)*derxy_(0,rr)
                     +normed_velgrad(1)*derxy_(1,rr)
                     +normed_velgrad(2)*derxy_(2,rr));
       } /* end of loop over element nodes */
@@ -12257,7 +12257,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       //---------------------------------------------- compute tau_Mu = tau_Mp
       /* convective : viscous forces (element reynolds number)*/
       const double re_convectaf = (vel_normaf * hk / visceff ) * (mk/2.0);
-      const double xi_convectaf = DMAX(re_convectaf,1.0);
+      const double xi_convectaf = max(re_convectaf,1.0);
 
       /*
                xi_convect ^
@@ -12294,7 +12294,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       */
       const double re_convectnp = (vel_normnp * hk / visceff ) * (mk/2.0);
 
-      const double xi_tau_c = DMIN(re_convectnp,1.0);
+      const double xi_tau_c = std::min(re_convectnp,1.0);
 
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
     }
@@ -12374,7 +12374,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       */
       const double re_convectnp = (vel_normnp * hk / visceff ) * (mk/2.0);
 
-      const double xi_tau_c = DMIN(re_convectnp,1.0);
+      const double xi_tau_c = std::min(re_convectnp,1.0);
 
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
     }
@@ -12430,7 +12430,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       double val = 0.0;
       for (int rr=0;rr<iel;++rr) /* loop element nodes */
       {
-        val += FABS( normed_velgrad(0)*derxy_(0,rr)
+        val += fabs( normed_velgrad(0)*derxy_(0,rr)
                     +normed_velgrad(1)*derxy_(1,rr)
                     +normed_velgrad(2)*derxy_(2,rr));
       } /* end of loop over element nodes */
@@ -12441,7 +12441,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       //---------------------------------------------- compute tau_Mu = tau_Mp
       /* convective : viscous forces (element reynolds number)*/
       const double re_convectaf = (vel_normaf * gradle / visceff ) * (mk/2.0);
-      const double xi_convectaf = DMAX(re_convectaf,1.0);
+      const double xi_convectaf = max(re_convectaf,1.0);
 
       /*
                xi_convect ^
@@ -12478,7 +12478,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       */
       const double re_convectnp = (vel_normnp * gradle / visceff ) * (mk/2.0);
 
-      const double xi_tau_c = DMIN(re_convectnp,1.0);
+      const double xi_tau_c = std::min(re_convectnp,1.0);
 
       tau_(2) = vel_normnp * gradle * 0.5 * xi_tau_c;
     }
@@ -12656,7 +12656,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       double val = 0.0;
       for (int rr=0;rr<iel;++rr) /* loop element nodes */
       {
-        val += FABS( normed_velintaf(0)*derxy_(0,rr)
+        val += fabs( normed_velintaf(0)*derxy_(0,rr)
                     +normed_velintaf(1)*derxy_(1,rr)
                     +normed_velintaf(2)*derxy_(2,rr));
       } /* end of loop over element nodes */
@@ -12684,8 +12684,8 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));   /* viscous : reactive forces   */
       const double re2 = mk * vel_normaf * strle / (2.0 * visceff);      /* convective : viscous forces */
 
-      const double xi1 = DMAX(re1,1.0);
-      const double xi2 = DMAX(re2,1.0);
+      const double xi1 = max(re1,1.0);
+      const double xi2 = max(re2,1.0);
 
       tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
 
@@ -12695,8 +12695,8 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk)); /* viscous : reactive forces   */
       const double re_convect = mk * vel_normaf * hk / (2.0 * visceff);    /* convective : viscous forces */
 
-      const double xi_viscous = DMAX(re_viscous,1.0);
-      const double xi_convect = DMAX(re_convect,1.0);
+      const double xi_viscous = max(re_viscous,1.0);
+      const double xi_convect = max(re_convect,1.0);
 
       /*
                   xi1,xi2 ^
@@ -12723,7 +12723,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
                           +--------------> Re2
                               1
       */
-      const double xi_tau_c = DMIN(re_convect,1.0);
+      const double xi_tau_c = std::min(re_convect,1.0);
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
 
     }
@@ -12758,7 +12758,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       double val = 0.0;
       for (int rr=0;rr<iel;++rr) /* loop element nodes */
       {
-        val += FABS( normed_velintaf(0)*derxy_(0,rr)
+        val += fabs( normed_velintaf(0)*derxy_(0,rr)
                     +normed_velintaf(1)*derxy_(1,rr)
                     +normed_velintaf(2)*derxy_(2,rr));
       } /* end of loop over element nodes */
@@ -12785,8 +12785,8 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));   /* viscous : reactive forces   */
       const double re2 = mk * vel_normaf * strle / (2.0 * visceff);      /* convective : viscous forces */
 
-      const double xi1 = DMAX(re1,1.0);
-      const double xi2 = DMAX(re2,1.0);
+      const double xi1 = max(re1,1.0);
+      const double xi2 = max(re2,1.0);
 
       tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
 
@@ -12796,8 +12796,8 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk)); /* viscous : reactive forces   */
       const double re_convect = mk * vel_normaf * hk / (2.0 * visceff);    /* convective : viscous forces */
 
-      const double xi_viscous = DMAX(re_viscous,1.0);
-      const double xi_convect = DMAX(re_convect,1.0);
+      const double xi_viscous = max(re_viscous,1.0);
+      const double xi_convect = max(re_convect,1.0);
 
       /*
                   xi1,xi2 ^
@@ -12864,7 +12864,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       //---------------------------------------------- compute tau_Mu = tau_Mp
       /* convective : viscous forces (element reynolds number)*/
       const double re_convectaf = (vel_normaf * hk / visceff ) * (mk/2.0);
-      const double xi_convectaf = DMAX(re_convectaf,1.0);
+      const double xi_convectaf = max(re_convectaf,1.0);
 
       /*
                xi_convect ^
@@ -12900,7 +12900,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       */
       const double re_convectnp = (vel_normnp * hk / visceff ) * (mk/2.0);
 
-      const double xi_tau_c = DMIN(re_convectnp,1.0);
+      const double xi_tau_c = std::min(re_convectnp,1.0);
 
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
     }
@@ -12940,7 +12940,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       double val = 0.0;
       for (int rr=0;rr<iel;++rr) /* loop element nodes */
       {
-        val += FABS( normed_velgrad(0)*derxy_(0,rr)
+        val += fabs( normed_velgrad(0)*derxy_(0,rr)
                     +normed_velgrad(1)*derxy_(1,rr)
                     +normed_velgrad(2)*derxy_(2,rr));
       } /* end of loop over element nodes */
@@ -12967,8 +12967,8 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
       const double re1 = 4.0 * timefac * visceff / (mk * DSQR(gradle));   /* viscous : reactive forces   */
       const double re2 = mk * vel_normaf * gradle / (2.0 * visceff);      /* convective : viscous forces */
 
-      const double xi1 = DMAX(re1,1.0);
-      const double xi2 = DMAX(re2,1.0);
+      const double xi1 = max(re1,1.0);
+      const double xi2 = max(re2,1.0);
 
       tau_(0) = timefac * DSQR(gradle) / (DSQR(gradle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
       tau_(1) = tau_(0);
@@ -12984,7 +12984,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcTau(
                           +--------------> Re2
                               1
       */
-      const double xi_tau_c = DMIN(re2,1.0);
+      const double xi_tau_c = std::min(re2,1.0);
       tau_(2) = vel_normnp * gradle * 0.5 * xi_tau_c;
 
     }

@@ -14,7 +14,7 @@ Maintainer: Martin Winklmaier
 
 #include "topopt_optimizer_ele_parameter.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../headers/definitions.h"
+#include "../drt_lib/standardtypes_cpp.H"
 
 
 using namespace std;

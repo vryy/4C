@@ -165,8 +165,8 @@ void FLD::UTILS::computeStabilizationParams(
                  re12 = mk * dens * vel_norm * hk / (2.0 * dynvisc);
 
     // respective "switching" parameters
-    const double xi02 = DMAX(re02,1.0);
-    const double xi12 = DMAX(re12,1.0);
+    const double xi02 = std::max(re02,1.0);
+    const double xi12 = std::max(re12,1.0);
 
     if (tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
         not instationary)
@@ -182,8 +182,8 @@ void FLD::UTILS::computeStabilizationParams(
       const double re11 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(hk));
 
       // respective "switching" parameters
-      const double xi01 = DMAX(re01,1.0);
-      const double xi11 = DMAX(re11,1.0);
+      const double xi01 = max(re01,1.0);
+      const double xi11 = max(re11,1.0);
 
       tau_stab_Mu = timefac*DSQR(strle)/(DSQR(strle)*dens*xi01+(4.0*timefac*dynvisc/mk)*xi02);
       tau_stab_Mp = timefac*DSQR(hk)/(DSQR(hk)*dens*xi11+(4.0*timefac*dynvisc/mk)*xi12);
@@ -393,7 +393,7 @@ void FLD::UTILS::computeStabilizationParams(
     const double reG = sqrt(Gnormu/Gvisc);
 
     // "switching" parameter
-    const double xi_tau_c = DMIN(reG,1.0);
+    const double xi_tau_c = fmin(reG,1.0);
 
     tau_stab_C = xi_tau_c*sqrt(Gnormu)/traceG;
   }
@@ -425,7 +425,7 @@ void FLD::UTILS::computeStabilizationParams(
     */
 
     // "switching" parameter
-    const double xi_tau_c = DMIN(re12,1.0);
+    const double xi_tau_c = fmin(re12,1.0);
 
     tau_stab_C = 0.5 * dens * vel_norm * hk * xi_tau_c;
   }
