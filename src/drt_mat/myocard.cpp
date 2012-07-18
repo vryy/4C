@@ -208,19 +208,19 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
      const double Tau_wm = params_->Tau_w1m + (params_->Tau_w2m - params_->Tau_w1m)*(1.0 + tanh(params_->k_wm*(phi - params_->u_wm)))/2.0;
      const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
      const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, phi, params_->Theta_w);
-     const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi,params_->Theta_o);
+     const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
 
      // calculate infinity values ([7] page 545)
      const double v_inf = GatingFunction(1.0, 0.0, phi, params_->Theta_vm);
-     const double w_inf = GatingFunction((1.0 - phi/params_->Tau_winf), params_->w_infs, phi, params_->Theta_o);
+     const double w_inf = GatingFunction(1.0 - phi/params_->Tau_winf, params_->w_infs, phi, params_->Theta_o);
 
      // calculate gating variables according to [8]
-     const double exp_v = -dt*GatingFunction(1.0/Tau_vm, 1.0/params_->Tau_vp, phi, params_->Theta_v);
-     const double exp_w = -dt*GatingFunction(1.0/Tau_wm, 1.0/params_->Tau_wp, phi, params_->Theta_w);
+     const double exp_v = -GatingFunction(dt/Tau_vm, dt/params_->Tau_vp, phi, params_->Theta_v);
+     const double exp_w = -GatingFunction(dt/Tau_wm, dt/params_->Tau_wp, phi, params_->Theta_w);
 
      const double v = GatingFunction(v_inf, 0.0, phi, params_->Theta_v) + GatingFunction(v0_ - v_inf, v0_, phi, params_->Theta_v)*exp(exp_v);
      const double w = GatingFunction(w_inf, 0.0, phi, params_->Theta_w) + GatingFunction(w0_ - w_inf, w0_, phi, params_->Theta_w)*exp(exp_w);
-     const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 - (s0_ + tanh(params_->k_s*(phi - params_->u_s)))/2.0*exp(-dt/Tau_s);
+     const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 + (s0_ - (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0)*exp(-dt/Tau_s);
 
      // update initial values according to [8]
      v0_ = v;
@@ -228,9 +228,9 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
      s0_ = s;
 
      // calculate currents J_fi, J_so and J_si ([7] page 545)
-     const double J_fi = -v*GatingFunction(0.0, 1.0/params_->Tau_fi, phi, params_->Theta_v)*(phi - params_->Theta_v)*(params_->u_u - phi); // fast inward current
-     const double J_so = (phi - params_->u_o)*GatingFunction(1.0/Tau_o, 0.0, phi, params_->Theta_w) + GatingFunction(0.0, 1.0/Tau_so, phi, params_->Theta_w); // slow outward current
-     const double J_si = -GatingFunction(0.0, 1.0, phi, params_->Theta_w)*w*s/params_->Tau_si; // slow inward current
+     const double J_fi = -GatingFunction(0.0, v*(phi - params_->Theta_v)*(params_->u_u - phi)/params_->Tau_fi, phi, params_->Theta_v); // fast inward current
+     const double J_so = GatingFunction((phi - params_->u_o)/Tau_o, 1.0/Tau_so, phi, params_->Theta_w);// slow outward current
+     const double J_si = -GatingFunction(0.0, w*s/params_->Tau_si, phi, params_->Theta_w); // slow inward current
 
      const double reacoeff = (J_fi + J_so + J_si);
 
@@ -245,7 +245,7 @@ double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt
     // calculate voltage dependent time constants ([7] page 545)
      const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, phi, params_->Theta_vm);
      const double Tau_wm = params_->Tau_w1m + (params_->Tau_w2m - params_->Tau_w1m)*(1.0 + tanh(params_->k_wm*(phi - params_->u_wm)))/2.0;
-     const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
+//     const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
      const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, phi, params_->Theta_w);
      const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
 
