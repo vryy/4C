@@ -9,8 +9,10 @@ EXTRA_ARGS=$@
 # or choose do-configure-debug which does the same
 if [ "x$1" == "x--debug" ]; then
   BUILD_TYPE="DEBUG"
+  TRILINOS_BUILD_TYPE="dbg"
 else
   BUILD_TYPE="RELEASE"
+  TRILINOS_BUILD_TYPE="release"
 fi
 
 ##############################################################
@@ -53,7 +55,7 @@ fi
 if [ "$OS_VERSION" == "FC16" ]; then
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/lib"
-	Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc16_openmpi_release/"
+	Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc16_openmpi_$TRILINOS_BUILD_TYPE/"
 else
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc8/openmpi-gcc/lib"
