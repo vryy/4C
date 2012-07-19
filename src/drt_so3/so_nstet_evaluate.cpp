@@ -620,10 +620,10 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       LINALG::Matrix<3,3> Fbar(false);
       Fbar.SetCopy(defgrd.A());
       Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
-      temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress,0.);
+      temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress);
       cauchystress.MultiplyNT(temp,Fbar);
 #else
-      temp.Multiply(1.0/defgrd.Determinant(),defgrd,pkstress,0.);
+      temp.Multiply(1.0/defgrd.Determinant(),defgrd,pkstress);
       cauchystress.MultiplyNT(temp,defgrd);
 #endif
 

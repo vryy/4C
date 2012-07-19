@@ -885,7 +885,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 
       LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> temp;
       LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchystress;
-      temp.Multiply(1.0/detF,defgrd,pkstress,0.);
+      temp.Multiply(1.0/detF,defgrd,pkstress);
       cauchystress.MultiplyNT(temp,defgrd);
 
       (*elestress)(gp,0) = cauchystress(0,0);

@@ -903,7 +903,7 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
 
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> cauchystress;
-      temp.Multiply(1.0/detF,defgrd,pkstress,0.0);
+      temp.Multiply(1.0/detF,defgrd,pkstress);
       cauchystress.MultiplyNT(temp,defgrd);
 
       (*elestress)(gp,0) = cauchystress(0,0);
@@ -1175,7 +1175,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
 
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> cauchystress;
-      temp.Multiply(1.0/detF,defgrd,pkstress,0.0);
+      temp.Multiply(1.0/detF,defgrd,pkstress);
       cauchystress.MultiplyNT(temp,defgrd);
 
       (*elestress)(gp,0) = cauchystress(0,0);

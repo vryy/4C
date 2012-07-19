@@ -1179,7 +1179,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 
       LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
       LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchystress;
-      temp.Multiply(1.0/detF,defgrd,pkstress,0.);
+      temp.Multiply(1.0/detF,defgrd,pkstress);
       cauchystress.MultiplyNT(temp,defgrd);
 
       (*elestress)(gp,0) = cauchystress(0,0);

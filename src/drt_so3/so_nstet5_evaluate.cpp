@@ -652,7 +652,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
 #ifndef PUSO_NSTET5
         Fbar.Scale(pow(F.Determinant(),-1./3.));
 #endif
-        temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress,0.);
+        temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress);
         cauchystress.MultiplyNT(temp,Fbar);
 
         (*elestress)(0,0) += (SubV(sub)/Vol() * cauchystress(0,0));

@@ -848,7 +848,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
 
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> cauchystress_bar;
-      temp.Multiply(1.0/detF_bar,defgrd_bar,pkstress_bar,0.0);
+      temp.Multiply(1.0/detF_bar,defgrd_bar,pkstress_bar);
       cauchystress_bar.MultiplyNT(temp,defgrd_bar);
 
       (*elestress)(gp,0) = cauchystress_bar(0,0);

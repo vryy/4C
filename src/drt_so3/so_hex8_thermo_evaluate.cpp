@@ -659,7 +659,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstifftemp(
 
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> cauchystresstemp;
-      temp.Multiply(1.0/detF,defgrd,pkstresstemp,0.0);
+      temp.Multiply(1.0/detF,defgrd,pkstresstemp);
       cauchystresstemp.MultiplyNT(temp,defgrd);
 
       (*elestress)(gp,0) = cauchystresstemp(0,0);

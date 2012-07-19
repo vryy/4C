@@ -844,7 +844,7 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
 
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> cauchystress;
-      temp.Multiply(1.0,defgrd,pkstress,0.0);
+      temp.Multiply(1.0,defgrd,pkstress);
       cauchystress.MultiplyNT(temp,defgrd);
 
       (*elestress)(gp,0) = cauchystress(0,0);
@@ -1085,7 +1085,7 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
 
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> cauchystresstemp;
-      temp.Multiply(1.0,defgrd,pkstresstemp,0.0);
+      temp.Multiply(1.0,defgrd,pkstresstemp);
       cauchystresstemp.MultiplyNT(temp,defgrd);
 
       (*elestress)(gp,0) = cauchystresstemp(0,0);
