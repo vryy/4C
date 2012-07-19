@@ -14,6 +14,7 @@
 
 #include "so_hex8.H"
 #include "so_tet4.H"
+#include "so_weg6.H"
 
 namespace DRT
 {
@@ -80,7 +81,34 @@ private:
   static So_tet4ScatraType instance_;
 };
 
+/*----------------------------------------------------------------------*
+ |  WEDGE 6 Element                                       |
+ *----------------------------------------------------------------------*/
+class So_weg6ScatraType : public So_weg6Type
+{
+public:
 
+  std::string Name() const { return "So_weg6ScatraType"; }
+
+  static So_weg6ScatraType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_weg6ScatraType instance_;
+};
 }
 }
 

@@ -625,7 +625,7 @@ void MAT::ViscoGenMax::Evaluate(
   {
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisoprinc(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoprinc(true) ;
-      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg);
+      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg,params);
       stress.Update(1.0, stressanisoprinc, 1.0);
       cmat.Update(1.0, cmatanisoprinc, 1.0);
 

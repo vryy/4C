@@ -502,7 +502,7 @@ void MAT::ElastHyper::Evaluate(
   {
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisoprinc(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoprinc(true) ;
-      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg);
+      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg,params);
       stress.Update(1.0, stressanisoprinc, 1.0);
       cmat.Update(1.0, cmatanisoprinc, 1.0);
   }
@@ -743,13 +743,14 @@ void MAT::ElastHyper::EvaluateIsotropicMod(
 void MAT::ElastHyper::EvaluateAnisotropicPrinc(
     LINALG::Matrix<6,1>& stressanisoprinc,
     LINALG::Matrix<6,6>& cmatanisoprinc,
-    LINALG::Matrix<6,1> rcg
+    LINALG::Matrix<6,1> rcg,
+    Teuchos::ParameterList& params
     )
 {
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc);
+    potsum_[p]->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc,params);
   }
 
   return ;

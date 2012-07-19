@@ -125,7 +125,8 @@ namespace ELASTIC
     virtual void AddStressAnisoPrincipal(
         const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
-        LINALG::Matrix<6,1>& stress  ///< 2nd PK-stress
+        LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
+        Teuchos::ParameterList& params /// additional parameters for computation of material properties
     );
 
     /// @name Access methods
@@ -147,7 +148,7 @@ namespace ELASTIC
     );
 
     /// Setup of patient-specific materials
-    virtual void SetupAAA(Teuchos::ParameterList& params);
+    virtual void SetupAAA(Teuchos::ParameterList& params){return;}
 
     /// Indicator for formulation
     virtual void SpecifyFormulation(

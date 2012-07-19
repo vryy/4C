@@ -43,6 +43,7 @@ class So3_Scatra : public so3_ele
   //! @name Friends
   friend class So_tet4ScatraType;
   friend class So_hex8ScatraType;
+  friend class So_weg6ScatraType;
 
 public:
 
@@ -120,6 +121,8 @@ public:
       return So_tet4ScatraType::Instance().UniqueParObjectId();
     case DRT::Element::hex8:
       return So_hex8ScatraType::Instance().UniqueParObjectId();
+    case DRT::Element::wedge6:
+      return So_weg6ScatraType::Instance().UniqueParObjectId();
     default: dserror("unknown element type!");
     }
   };
@@ -178,7 +181,10 @@ public:
       return So_tet4ScatraType::Instance();
     case DRT::Element::hex8:
       return So_hex8ScatraType::Instance();
+    case DRT::Element::wedge6:
+      return So_weg6ScatraType::Instance();
     default: dserror("unknown element type!");
+
     }
   };
 

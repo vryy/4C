@@ -298,7 +298,8 @@ private:
     virtual void EvaluateAnisotropicPrinc(
         LINALG::Matrix<6,1>& stressanisoprinc,
         LINALG::Matrix<6,6>& cmatanisoprinc,
-        LINALG::Matrix<6,1> rcg
+        LINALG::Matrix<6,1> rcg,
+        Teuchos::ParameterList& params
         );
 
     /// calculates the anisotropic stress and elasticity tensor for decoupled configuration

@@ -60,8 +60,33 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(ParameterList& para
 
       params.set<Teuchos::RCP<vector<double> > >("scalar",mytemp);
     }
-  }
+  }else{
 
+
+    const double time = params.get("total time",0.0);
+  // find out whether we will use a time curve and get the factor
+    int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
+    vector<double> xrefe; xrefe.resize(3);
+//    vector<double> xcurr; xcurr.resize(3);
+    DRT::Node** nodes = Nodes();
+    // get displacements of this element
+    //vector<double> mydisp(lm.size());
+  //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+   for (int i=0; i<numnod_; ++i){
+      const double* x = nodes[i]->X();
+      xrefe [0] +=  x[0]/numnod_;
+      xrefe [1] +=  x[1]/numnod_;
+      xrefe [2] +=  x[2]/numnod_;
+      /*xcurr[0] += (x[0]+mydisp[i*noddof_+0])/numnod_;
+      xcurr[1] += (x[1]+mydisp[i*noddof_+1])/numnod_;
+      xcurr[2] += (x[2]+mydisp[i*noddof_+2])/numnod_; */
+
+    }
+    const double* coordgpref = &xrefe[0];
+   //const double* coordgpref = &xcurr[0];
+    double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
+    params.set<double>("scalar",functfac);
+    }
   return;
 }
 /*----------------------------------------------------------------------*
@@ -101,6 +126,7 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(ParameterList& params
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_multidofsetcoupling")   act = So3_Scatra::calc_struct_multidofsetcoupling;
+  else if (action=="postprocess_stress")   act = So3_Scatra::postprocess_stress;
   // what should the element do
   switch(act)
   {
@@ -108,6 +134,7 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(ParameterList& params
   // coupling terms in force-vector and stiffness matrix
   case So3_Scatra::calc_struct_multidofsetcoupling:
   {
+
     MyEvaluate(params,
                       discretization,
                       la,
@@ -118,10 +145,23 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(ParameterList& params
                       elevec3_epetra);
   }
   break;
+  case So3_Scatra::postprocess_stress:
+  {
+    so3_ele::Evaluate(params,
+                          discretization,
+                          la[0].lm_,
+                          elemat1_epetra,
+                          elemat2_epetra,
+                          elevec1_epetra,
+                          elevec2_epetra,
+                          elevec3_epetra);
+  }
+  break;
   //==================================================================================
   default:
   {
     //in some cases we need to write/change some data before evaluating
+
     PreEvaluate(params,
                       discretization,
                       la);
@@ -143,6 +183,7 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(ParameterList& params
                       elevec1_epetra,
                       elevec2_epetra,
                       elevec3_epetra);
+
     break;
   }
   } // action

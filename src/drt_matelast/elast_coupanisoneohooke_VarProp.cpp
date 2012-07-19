@@ -141,14 +141,12 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(DRT::INPUT::LineDefinition* 
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
     const LINALG::Matrix<6,1> rcg,
     LINALG::Matrix<6,6>& cmat,
-    LINALG::Matrix<6,1>& stress
+    LINALG::Matrix<6,1>& stress,
+    Teuchos::ParameterList& params
 )
 {
- // double c=params_->c_;
-  // double gamma = 2.*c;  // TODO : space-time variation ....
-//	cout << stress_coeff_ << endl;
-//	cout << params_->c_ << endl;
-  stress.Update(2*(params_->c_), A_, 1.0);
+   double stressFact_=params.get<double>("scalar", 1.0);
+   stress.Update(2*(params_->c_)*stressFact_, A_, 1.0);
 
   // no contribution to cmat
   // double delta = 0.0;
@@ -202,16 +200,5 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::GetFiberVecs(
 )
 {
   fibervecs.push_back(a_);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetupAAA(Teuchos::ParameterList& params)
-{
-	cout << "HOLA " << endl;
-	   cout << stress_coeff_ << endl;
-   stress_coeff_=2*(params_->c_);
-   cout << stress_coeff_ << endl;
-
 }
 

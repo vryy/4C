@@ -11,7 +11,6 @@
 *----------------------------------------------------------------------*/
 
 #include "so3_scatra_eletypes.H"
-//#include "so3_volcoupl.H"
 #include "so3_scatra.H"
 
 #include "../drt_lib/drt_linedefinition.H"
@@ -152,3 +151,77 @@ int DRT::ELEMENTS::So_tet4ScatraType::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  WEDGE 6 Element                                       |
+ *----------------------------------------------------------------------*/
+
+
+DRT::ELEMENTS::So_weg6ScatraType DRT::ELEMENTS::So_weg6ScatraType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_weg6ScatraType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>* object =
+          new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDW6SCATRA" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>
+                                                                    (id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>
+                                                                        (id,owner));
+  return ele;
+}
+
+void DRT::ELEMENTS::So_weg6ScatraType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_weg6;
+  So_weg6Type::SetupElementDefinition(definitions_weg6);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_weg6 =
+      definitions_weg6["SOLIDW6"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["SOLIDW6SCATRA"];
+
+  defs["WEDGE6"]=defs_weg6["WEDGE6"];
+
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_weg6ScatraType::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6> * >(dis.lColElement(i));
+    if (!actele) dserror("cast to So_weg6_scatra* failed");
+    actele->So_weg6::InitJacobianMapping();
+   // actele->So3_Scatra<DRT::Element::wedge6>::InitJacobianMapping();
+  }
+  return 0;
+}
+
