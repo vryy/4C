@@ -16,10 +16,6 @@ Maintainer: Peter Gamnitzer
 #define ALE2_NURBS_H
 
 #include "ale2.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_fem_general/drt_utils_bspline.H"
-
 
 /*!
   \brief DRT: namespace of the ccarat discretization module

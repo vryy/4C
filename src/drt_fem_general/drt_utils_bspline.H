@@ -14,7 +14,6 @@ Maintainer: Peter Gamnitzer
 #ifndef BSPLINE_H
 #define BSPLINE_H
 
-#include<math.h>
 #include<string>
 #include<vector>
 #include<iostream>

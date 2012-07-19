@@ -13,10 +13,6 @@ Maintainer: Peter Gamnitzer
 #define WALL1_NURBS_H
 
 #include "wall1.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_fem_general/drt_utils_bspline.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 
 /*!
   \brief DRT: namespace of the ccarat discretization module

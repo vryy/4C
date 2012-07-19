@@ -16,10 +16,6 @@ Maintainer: Peter Gamnitzer
 #define ALE3_NURBS_H
 
 #include "ale3.H"
-#include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_fem_general/drt_utils_bspline.H"
 
 
 /*!

@@ -39,7 +39,7 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 
-#include <math.h>
+#include <cmath>
 #include <iostream>
 
 #include "drt_utils_integration.H"
