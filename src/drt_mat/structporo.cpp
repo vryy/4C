@@ -25,7 +25,6 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
   penaltyparameter_(matdata->GetDouble("PENALTYPARAMETER")),
   initporosity_(matdata->GetDouble("INITPOROSITY"))
 {
-  mat_ = MAT::Material::Factory(matid_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -49,7 +48,8 @@ DRT::ParObject* MAT::StructPoroType::Create(const std::vector<char> & data)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::StructPoro::StructPoro() :
-  params_(NULL)
+  params_(NULL),
+  mat_(Teuchos::null)
 {
 }
 
@@ -58,6 +58,7 @@ MAT::StructPoro::StructPoro() :
 MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
   params_(params)
 {
+  mat_ = MAT::Material::Factory(params_->matid_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -101,6 +102,8 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
   {
     AddtoPack(data,(*dporodt_)[i]);
   }
+
+  mat_->Pack(data);
 }
 
 /*----------------------------------------------------------------------*/
@@ -158,6 +161,18 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
   {
     ExtractfromPack(position,data,tmp3);
     dporodt_->push_back(tmp3);
+  }
+
+  // unpack the sub-material
+  {
+    // we create the sub-material using the factory, because this way we can use the known matid.
+    // This way however the material is fully setup according to the dat-file and in order to
+    // get a correct material the called unpack method must overwrite all sub-material members.
+    mat_ = MAT::Material::Factory(params_->matid_);
+
+    vector<char> basedata(0);
+    ExtractfromPack(position,data,basedata);
+    mat_->Unpack(basedata);
   }
 
   if (position != data.size())

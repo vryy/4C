@@ -234,9 +234,6 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    /// my material parameters
-    MAT::PAR::ElastHyper* params_;
-
 //  private:
   protected:
     /// calculates the kinematic quantities and tensors used afterwards
@@ -428,6 +425,9 @@ private:
     static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
                                      ///< by [3*i+j] for any i,j=0,1,2
     //@}
+
+    /// my material parameters
+    MAT::PAR::ElastHyper* params_;
 
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;

@@ -416,7 +416,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   {
     if (curmat->Parameter() == NULL)
         curmat->SetParameter(new MAT::PAR::StructPoro(curmat));
-      MAT::PAR::StructPoro* params = static_cast<MAT::PAR::StructPoro*>(curmat->Parameter());
+    MAT::PAR::StructPoro* params = static_cast<MAT::PAR::StructPoro*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::mes_couplogneohooke:

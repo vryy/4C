@@ -80,7 +80,9 @@ const int MAT::ElastHyper::VOIGT3X3SYM_[9] = {0,3,5, 3,1,4, 5,4,2};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ElastHyper::ElastHyper()
-  : params_(NULL)
+  : params_(NULL),
+    potsum_(0)
+
 {
 }
 
@@ -88,7 +90,9 @@ MAT::ElastHyper::ElastHyper()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
-  : params_(params)
+  : params_(params),
+    potsum_(0)
+
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
@@ -136,6 +140,15 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 {
+  // make sure we have a pristine material
+  params_ = NULL;
+  potsum_.clear();
+
+  isoprinc_ = false;
+  isomod_ = false;
+  anisoprinc_ = false;
+  anisomod_ = false;
+
   vector<char>::size_type position = 0;
   // extract type
   int type = 0;
@@ -145,7 +158,6 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position,data,matid);
-  params_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
@@ -158,11 +170,6 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
   }
-
-  isoprinc_ = false;
-  isomod_ = false;
-  anisoprinc_ = false;
-  anisomod_ = false;
 
   int isoprinc;
   int isomod;

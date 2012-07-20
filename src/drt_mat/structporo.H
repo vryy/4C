@@ -45,9 +45,6 @@ namespace MAT
         /// create material instance of matching type with my parameters
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-        //! actual material
-        Teuchos::RCP<MAT::Material> mat_;
-
         /// @name material parameters
         //@{
 
@@ -151,7 +148,7 @@ namespace MAT
       /// return material
       Teuchos::RCP<MAT::Material> GetMaterial() const
       {
-        return params_->mat_;
+        return mat_;
       }
 
       /// return material ID
@@ -237,6 +234,10 @@ namespace MAT
 
       /// my material parameters
       MAT::PAR::StructPoro* params_;
+
+      /// actual material
+      Teuchos::RCP<MAT::Material> mat_;
+
 
       RCP<vector<double> > porosity_;
       RCP<vector<double> > dporodt_;
