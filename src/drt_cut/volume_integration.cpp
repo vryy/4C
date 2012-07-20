@@ -40,9 +40,9 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 
     if(fnc==1)
     {
-      /*std::cout<<"volume = "<<rhs_mom(0)<<"\n";
+      std::cout<<"volume = "<<rhs_mom(0)<<"\n";
       if(rhs_mom.InfNorm()>1e-5 && rhs_mom(0)<0.0)
-        dserror("negaive volume in base function integration. is ordering of vertices right?");*/
+        dserror("negaive volume in base function integration. is ordering of vertices right?");
     }
 
   }
@@ -480,8 +480,38 @@ int GEO::CUT::VolumeIntegration::pnpoly(int npol, vector<double>xp, vector<doubl
   return c;
 }
 
-//Check whether the particular z-plane of the volumecell contains significant area so as to distribute
-//the Gauss points in that plane
+/*-------------------------------------------------------------------------------------------------------------------*
+
+*--------------------------------------------------------------------------------------------------------------------*/
+int GEO::CUT::VolumeIntegration::pnpoly(vector<vector<double> >xp, LINALG::Matrix<3,1> pt,
+                                        string projType)
+{
+  int npol = xp.size();
+  int ind1=1,ind2=2;
+  if( projType=="y" )
+  {
+    ind1 = 2;
+    ind2 = 0;
+  }
+  else if( projType=="z" )
+  {
+    ind1 = 0;
+    ind2 = 1;
+  }
+
+  int i, j, c = 0;
+  for (i = 0, j = npol-1; i < npol; j = i++) {
+    if ((((xp[i][ind2]<=pt(ind2,0)) && (pt(ind2,0)<xp[j][ind2])) ||
+         ((xp[j][ind2]<=pt(ind2,0)) && (pt(ind2,0)<xp[i][ind2]))) &&
+        (pt(ind1,0) < (xp[j][ind1] - xp[i][ind1]) * (pt(ind2,0) - xp[i][ind2]) / (xp[j][ind2] - xp[i][ind2]) + xp[i][ind1]))
+      c = !c;
+  }
+  return c;
+}
+/*-------------------------------------------------------------------------------------------------------------------*
+        Check whether the particular z-plane of the volumecell contains significant area so as to distribute
+        the Gauss points in that plane
+ *--------------------------------------------------------------------------------------------------------------------*/
 bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], double&zmin,vector<vector<double> > &pts,
                 vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach)
 {
@@ -580,8 +610,10 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
   return isArea;
 }
 
-/*  Generates equally spaced "num" number of points on the line whose end points are specified by
-        inter1 and inter2                                                                           */
+/*-------------------------------------------------------------------------------------------------------------------*
+        Generates equally spaced "num" number of points on the line whose end points are specified by
+              inter1 and inter2
+*-------------------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeIntegration::OnLine(vector<double>inter1,vector<double>inter2,
                 vector<vector<double> >&linePts,int num)
 {
@@ -610,8 +642,11 @@ void GEO::CUT::VolumeIntegration::OnLine(vector<double>inter1,vector<double>inte
 	}
 }
 
-//form the moment fitting matrix
-void GEO::CUT::VolumeIntegration::moment_fitting_matrix(std::vector<std::vector<double> >&mom,std::vector<std::vector<double> >gauspts)
+/*-------------------------------------------------------------------------------------------------------------------*
+                                                form the moment fitting matrix
+*--------------------------------------------------------------------------------------------------------------------*/
+void GEO::CUT::VolumeIntegration::moment_fitting_matrix(std::vector<std::vector<double> >&mom,
+                                                        std::vector<std::vector<double> >gauspts)
 {
     for(int i=0;i<num_func_;i++)
     {
@@ -625,8 +660,10 @@ void GEO::CUT::VolumeIntegration::moment_fitting_matrix(std::vector<std::vector<
     }
 }
 
-//Compute Gauss point weights by solving the moment fitting equations and returns the coordinates of Gauss points
-//and their corresponding weights
+/*-------------------------------------------------------------------------------------------------------------------*
+    Compute Gauss point weights by solving the moment fitting equations and returns the coordinates of Gauss points
+    and their corresponding weights
+*--------------------------------------------------------------------------------------------------------------------*/
 Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 {
 
@@ -954,3 +991,123 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVec
 	}
 
 }
+
+/*-------------------------------------------------------------------------------------*
+ * Check whether the point with this element Local coordinates is inside,              *
+ * outside or on boundary of this volumecell                            sudhakar 07/12 *
+ *-------------------------------------------------------------------------------------*/
+std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rst )
+{
+  const plain_facet_set & facete = volcell_->Facets();
+
+  //--------------------------------------------------------------------------------
+  // Step 1: Classify facets into facets having zero normal in x-direction and other
+  //--------------------------------------------------------------------------------
+  vector<plain_facet_set::const_iterator> XFacets;        //facets with non-zero nx
+  vector<plain_facet_set::const_iterator> NotXFacets;     //facets with zero nx
+  vector<vector<double> > Eqnplane;                       //eqn of plane for all facets
+
+  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+  {
+    Facet *fe = *i;
+    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+
+    FacetIntegration faee1(fe,elem1_,position_,false,false);
+    std::vector<double> eqnFacet = faee1.equation_plane(cornersLocal);
+    Eqnplane.push_back(eqnFacet);
+
+    if( fabs(eqnFacet[0]) > 1e-10 )
+      XFacets.push_back( i );
+    else
+      NotXFacets.push_back( i );
+  }
+
+  //-------------------------------------------------------------------------
+  // Step 2: Shoot a ray along x-direction and find all intersection points
+  //-------------------------------------------------------------------------
+  map<double,int> Xintersect;
+  // ray intersects only XFacets
+  for( unsigned i=0;i<XFacets.size();i++ )
+  {
+    // check whether the infinite ray thru given (y,z) intersect the facet
+    Facet *fe = *XFacets[i];
+    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+    int cutno = pnpoly( cornersLocal, rst, "x" );
+    if( cutno==1 )
+    {
+      // find x-value of intersection point, (yInt,zInt) = (y,z) of given pt
+      vector<double> eqn = Eqnplane[XFacets[i]-facete.begin()];
+      double x = (eqn[3]-eqn[1]*rst(1,0)-eqn[2]*rst(2,0))/eqn[0];
+      if( fabs((x-rst(0,0))/x) < 1e-8 ) // pt is on one of the XFacets
+        return "onBoundary";
+      Xintersect[x] = i;
+    }
+  }
+
+  //-------------------------------------------------------------------------------------
+  // Step 3: based on relative location of intersection points w.r to given point, decide
+  //-------------------------------------------------------------------------------------
+  int numInter = Xintersect.size();
+
+  // Check to see if point is in x-z or x-y oriented facets
+  for( unsigned i=0;i<NotXFacets.size();i++ )
+  {
+    vector<double> eqn = Eqnplane[NotXFacets[i]-facete.begin()];
+    // check pt on x-y plane facet
+    if( fabs(eqn[2])<1e-10 )  // make sure it is x-y facet
+    {
+      if( fabs((eqn[3]/eqn[1]-rst(1,0))/rst(1,0)) < 1e-10 ) // make sure pt is on same plane
+      {
+        Facet *fe = *NotXFacets[i];
+        std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+        int cutno = pnpoly( cornersLocal, rst, "y" );
+        if( cutno==1 ) // make sure pt is within facet area
+        {
+          return "onBoundary";
+        }
+      }
+    }
+    // check pt on x-z plane facet
+    if( fabs(eqn[1])<1e-10 )  // make sure it is x-z facet
+    {
+      if( fabs((eqn[3]/eqn[2]-rst(2,0))/rst(2,0)) < 1e-10 )
+      {
+        Facet *fe = *NotXFacets[i];
+        std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+        int cutno = pnpoly( cornersLocal, rst, "z" );
+        if( cutno==1 )
+        {
+          return "onBoundary";
+        }
+      }
+    }
+  }
+
+  // if pt is not on x-y or x-z facet and no intersection --> outside
+  if( numInter == 0 )
+    return "outside";
+
+  // add given point --> to sort intersection pts along with given pt
+  Xintersect[rst(0,0)] = -1;
+  numInter++;
+
+
+  map<double,int>::iterator it = Xintersect.find( rst(0,0) );
+
+  // all intersecting facets are right side to given pt
+  if( it == Xintersect.begin() )
+    return "outside";
+
+  map<double,int>::iterator itEnd = Xintersect.end();
+  --itEnd;
+  // all intersecting facets are left side to given pt
+  if( it == itEnd )
+    return "outside";
+
+  // if the no of facets right side of given pt is even number --> outside
+  int rightFacets = std::distance( it, itEnd );
+  if( rightFacets % 2 == 0 )
+    return "outside";
+  return "inside";
+}
+

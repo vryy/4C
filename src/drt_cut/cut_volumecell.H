@@ -38,7 +38,7 @@ public:
               Element * element );
 
   /*!
-  \brief Check whether the volumecell points point p
+  \brief Check whether the volumecell has this point as one of its defining entities
   */
   bool Contains( Point * p );
 
@@ -194,6 +194,18 @@ public:
   \brief Return internal gauss rule for a particular facet integration point
    */
   DRT::UTILS::GaussIntegration GetInternalRule( int facetIntNo ){ return intGP_[facetIntNo]; }
+
+  /*!
+  \brief Chcek whether this point is inside, outside or on boundary of this this volumecell.
+  The output string will be either "outside", "inside" or "onBoundary"
+   */
+  std::string IsThisPointInside( Point *pt );
+
+  /*!
+  \brief Chcek whether this Global coordinate point is inside, outside or on boundary of this this volumecell.
+  The output string will be either "outside", "inside" or "onBoundary"
+   */
+  std::string IsThisPointInside( LINALG::Matrix<3,1>& x );
 
 private:
 

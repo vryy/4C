@@ -52,6 +52,12 @@ namespace GEO
         */
         std::vector<std::vector<double> > getGaussPointLocation(){return gaus_pts_;}
 
+        /*!
+        \brief Check whether the point with this element Local coordinates is inside, outisde or
+        boundary of this volumecell. The output string will be either "outside", "inside" or "onBoundary"
+        */
+        std::string IsPointInside( LINALG::Matrix<3,1> & rst );
+
       private:
 
         /*!
@@ -98,6 +104,8 @@ namespace GEO
         \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with in the facet area
         */
         int pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y);
+
+        int pnpoly(vector<vector<double> >xp, LINALG::Matrix<3,1> pt,string projType);
 
         /*!
         \brief Adds linear combination of first order base function to the moment fitting system of equations

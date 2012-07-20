@@ -520,6 +520,37 @@ void GEO::CUT::VolumeCell::SimplifyIntegrationCells( Mesh & mesh )
   }
 }
 
+
+/*--------------------------------------------------------------------*
+ * Check wheter the point is inside, outside or on the boundary
+ * of this volumecelll                                    sudhakar 07/12
+ *--------------------------------------------------------------------*/
+std::string GEO::CUT::VolumeCell::IsThisPointInside( Point *pt )
+{
+  LINALG::Matrix<3,1> xglo;
+  pt->Coordinates(xglo.A());
+  std::string inside = IsThisPointInside( xglo );
+  return inside;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ * Check whether the point with this global coordinates is inside, outside or on the boundary
+ * of this volumecell                                                               sudhakar 07/12
+ *-----------------------------------------------------------------------------------------------*/
+std::string GEO::CUT::VolumeCell::IsThisPointInside( LINALG::Matrix<3,1>& xglo )
+{
+  LINALG::Matrix<3,1> xloc;
+  element_->LocalCoordinates( xglo, xloc );
+
+  const GEO::CUT::Point::PointPosition posi = Position();
+  if( posi==0 )
+    dserror( "undefined position for the volumecell" );
+
+  VolumeIntegration vc(this,element_,posi,0);
+  std::string inside = vc.IsPointInside( xloc );
+  return inside;
+}
+
 void GEO::CUT::VolumeCell::TestSurface()
 {
   if ( Empty() )
@@ -876,7 +907,7 @@ void GEO::CUT::VolumeCell::GenerateInternalGaussRule()
     const LINALG::Matrix<3,1> etaFacet( quadint.Point() );  //coordinates and weight of main gauss point
     LINALG::Matrix<3,1> intpt( etaFacet );
 
-    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 7 ); //internal gauss rule for interval (-1,1)
+    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 6 ); //internal gauss rule for interval (-1,1)
 
     Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
                          DRT::UTILS::CollectedGaussPoints( 0 ) );
@@ -999,7 +1030,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 #endif
 
 #if 0
-  const plain_facet_set & facete = Facets();
+  /*const plain_facet_set & facete = Facets();
   std::cout<<"the volumecell = "<<this->ParentElement()->Id()<<"\n";
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
@@ -1011,8 +1042,20 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
       std::vector<double> coo = *m;
       std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
-  }
-  dserror("over");
+  }*/
+
+  /*****************************************/
+  LINALG::Matrix<3,1> a,k;
+  a(0,0) = 0.9;
+  a(1,0) = 0.9;
+  a(2,0) = 0.0;
+
+  elem->GlobalCoordinates(a,k);
+  std::string is = this->IsThisPointInside(k);
+  std::cout<<"The point is = "<<is<<"\n";
+  /*****************************************/
+  //dserror("done");
+
 #endif
 
   DirectDivergence dd(this,elem,posi,mesh);
