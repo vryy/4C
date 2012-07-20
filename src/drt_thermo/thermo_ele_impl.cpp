@@ -50,115 +50,67 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
   DRT::Element* ele
   )
 {
-  //! we assume here, that numdofpernode is equal for every node within
-  //! the discretization and does not change during the computations
-  const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   switch (ele->Shape())
   {
   case DRT::Element::hex8:
   {
-    static TemperImpl<DRT::Element::hex8>* ch8;
-    if (ch8==NULL)
-      ch8 = new TemperImpl<DRT::Element::hex8>(numdofpernode);
-    return ch8;
+    return TemperImpl<DRT::Element::hex8>::Instance();
   }
   case DRT::Element::hex20:
   {
-    static TemperImpl<DRT::Element::hex20>* ch20;
-    if (ch20==NULL)
-      ch20 = new TemperImpl<DRT::Element::hex20>(numdofpernode);
-    return ch20;
+    return TemperImpl<DRT::Element::hex20>::Instance();
   }
   case DRT::Element::hex27:
   {
-    static TemperImpl<DRT::Element::hex27>* ch27;
-    if (ch27==NULL)
-      ch27 = new TemperImpl<DRT::Element::hex27>(numdofpernode);
-    return ch27;
+    return TemperImpl<DRT::Element::hex27>::Instance();
   }
   case DRT::Element::tet4:
   {
-    static TemperImpl<DRT::Element::tet4>* ct4;
-    if (ct4==NULL)
-      ct4 = new TemperImpl<DRT::Element::tet4>(numdofpernode);
-    return ct4;
+    return TemperImpl<DRT::Element::tet4>::Instance();
   }
  /* case DRT::Element::tet10:
   {
-    static TemperImpl<DRT::Element::tet10>* ct10;
-    if (ct10==NULL)
-      ct10 = new TemperImpl<DRT::Element::tet10>(numdofpernode);
-    return ct10;
+    return TemperImpl<DRT::Element::tet10>::Instance();
   } */
   case DRT::Element::wedge6:
   {
-    static TemperImpl<DRT::Element::wedge6>* cw6;
-    if (cw6==NULL)
-      cw6 = new TemperImpl<DRT::Element::wedge6>(numdofpernode);
-    return cw6;
+    return TemperImpl<DRT::Element::wedge6>::Instance();
   }
 /*  case DRT::Element::wedge15:
   {
-    static TemperImpl<DRT::Element::wedge15>* cw15;
-    if (cw15==NULL)
-      cw15 = new TemperImpl<DRT::Element::wedge15>(numdofpernode);
-    return cw15;
+    return TemperImpl<DRT::Element::wedge15>::Instance();
   } */
   case DRT::Element::pyramid5:
   {
-    static TemperImpl<DRT::Element::pyramid5>* cp5;
-    if (cp5==NULL)
-      cp5 = new TemperImpl<DRT::Element::pyramid5>(numdofpernode);
-    return cp5;
+    return TemperImpl<DRT::Element::pyramid5>::Instance();
   }
   case DRT::Element::quad4:
   {
-    static TemperImpl<DRT::Element::quad4>* cp4;
-    if (cp4==NULL)
-      cp4 = new TemperImpl<DRT::Element::quad4>(numdofpernode);
-    return cp4;
+    return TemperImpl<DRT::Element::quad4>::Instance();
   }
 /*  case DRT::Element::quad8:
   {
-    static TemperImpl<DRT::Element::quad8>* cp8;
-    if (cp8==NULL)
-      cp8 = new TemperImpl<DRT::Element::quad8>(numdofpernode);
-    return cp8;
+    return TemperImpl<DRT::Element::quad8>::Instance();
   }
   case DRT::Element::quad9:
   {
-    static TemperImpl<DRT::Element::quad9>* cp9;
-    if (cp9==NULL)
-      cp9 = new TemperImpl<DRT::Element::quad9>(numdofpernode);
-    return cp9;
+    return TemperImpl<DRT::Element::quad9>::Instance();
   }*/
   case DRT::Element::tri3:
   {
-    static TemperImpl<DRT::Element::tri3>* cp3;
-    if (cp3==NULL)
-      cp3 = new TemperImpl<DRT::Element::tri3>(numdofpernode);
-    return cp3;
+    return TemperImpl<DRT::Element::tri3>::Instance();
   }
 /*  case DRT::Element::tri6:
   {
-    static TemperImpl<DRT::Element::tri6>* cp6;
-    if (cp6==NULL)
-      cp6 = new TemperImpl<DRT::Element::tri6>(numdofpernode);
-    return cp6;
+    return TemperImpl<DRT::Element::tri6>::Instance();
   }*/
   case DRT::Element::line2:
   {
-    static TemperImpl<DRT::Element::line2>* cl2;
-    if (cl2==NULL)
-      cl2 = new TemperImpl<DRT::Element::line2>(numdofpernode);
-    return cl2;
+    return TemperImpl<DRT::Element::line2>::Instance();
   }/*
   case DRT::Element::line3:
   {
-    static TemperImpl<DRT::Element::line3>* cl3;
-    if (cl3==NULL)
-      cl3 = new TemperImpl<DRT::Element::line3>(numdofpernode);
-    return cl3;
+    return TemperImpl<DRT::Element::line3>::Instance();
   }*/
   default:
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
@@ -169,10 +121,45 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
 
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::TemperImpl<distype> * DRT::ELEMENTS::TemperImpl<distype>::Instance(
+  bool create
+  )
+{
+  static TemperImpl<distype> * instance;
+  if ( create )
+  {
+    if ( instance==NULL )
+    {
+      instance = new TemperImpl<distype>();
+    }
+  }
+  else
+  {
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance(false);
+}
+
+
+/*----------------------------------------------------------------------*
  |  Initialization of the data with respect to the declaration          |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::TemperImpl<distype>::TemperImpl(int numdofpernode)
+DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
   : etemp_(false),
     ecapa_(true),
     xyze_(true),

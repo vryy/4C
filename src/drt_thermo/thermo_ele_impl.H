@@ -41,7 +41,7 @@ namespace ELEMENTS
   //!  versions of TemperImpl. The only function
   //!  this class actually defines is Impl, which returns a pointer to
   //!  the appropriate version of TemperImpl.
-  class TemperImplInterface
+  class TemperImplInterface : SingletonDestruction
   {
 
   public:
@@ -116,8 +116,15 @@ namespace ELEMENTS
   class TemperImpl: public TemperImplInterface
   {
   public:
+
     //! Constructor
-    TemperImpl(int numdofpernode);
+    TemperImpl();
+
+    //! Singleton access method
+    static TemperImpl<distype> * Instance(bool create=true);
+
+    //! called upon destruction
+    virtual void Done();
 
     //! number of nodes
     static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
