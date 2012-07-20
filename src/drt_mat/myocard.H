@@ -185,6 +185,9 @@ namespace MAT
 	/// compute Heaviside step function
 	double GatingFunction(const double Gate1, const double Gate2, const double var, const double thresh) const;
 
+  /// time update for this material
+  void Update();
+
 	/// @name Access material constants
 	//@{
 

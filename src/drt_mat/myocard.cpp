@@ -238,6 +238,9 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
      else return 1E4;
 }
 
+/*----------------------------------------------------------------------*
+ |                                                           ljag 06/12 |
+ *----------------------------------------------------------------------*/
 double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt)
 {
     // Phenomenological model [5]-[8]
@@ -277,8 +280,25 @@ double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt
     else return 1E4;
 }
 
+/*----------------------------------------------------------------------*
+ |                                                           ljag 06/12 |
+ *----------------------------------------------------------------------*/
 double MAT::Myocard::GatingFunction(const double Gate1, const double Gate2, const double var, const double thresh) const
 {
     if (var<thresh) return Gate1;
     else return Gate2;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  update of material at the end of a time step             ljag 07/12 |
+ *----------------------------------------------------------------------*/
+void MAT::Myocard::Update()
+{
+  // update initial values according to [8]
+  //v0_ = v;
+  //w0_ = w;
+  //s0_ = s;
+  return;
+}
+
