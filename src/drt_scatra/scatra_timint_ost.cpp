@@ -382,7 +382,11 @@ void SCATRA::TimIntOneStepTheta::Update()
   // last step
   phidtn_->Update(1.0,*phidtnp_,0.0);
 
+  // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
+
+  // potential time update of time-dependent materials
+  ElementMaterialTimeUpdate();
 
   return;
 }

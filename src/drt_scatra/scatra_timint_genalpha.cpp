@@ -432,6 +432,9 @@ void SCATRA::TimIntGenAlpha::Update()
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
 
+  // potential time update of time-dependent materials
+  ElementMaterialTimeUpdate();
+
   return;
 }
 

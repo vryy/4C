@@ -101,12 +101,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   maxtime_  (params->get<double>("MAXTIME")),
   step_   (0),
   stepmax_  (params->get<int>("NUMSTEP")),
-  // itemax_, // not initialized
   dta_      (params->get<double>("TIMESTEP")),
   dtele_(0.0),
   dtsolve_(0.0),
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
-  // numscal_, not initialized
+  numscal_(0),
   // phi vectors, // all not initialized
   // vel_, // not initialized
   // many many not initialized
@@ -207,7 +206,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  numscal_ = discret_->NumDof(0,discret_->lRowNode(0));
+  int mynumscal= 0;
+  if (discret_->NumMyRowNodes()>0)
+    mynumscal = discret_->NumDof(0,discret_->lRowNode(0));
+  // to support completely empty procs, communication is required
+  discret_->Comm().MaxAll(&mynumscal,&numscal_,1);
+
   if (IsElch(scatratype_))
   {
     if (numscal_ > 1) // we have at least two ion species + el. potential
@@ -2897,6 +2901,25 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
 {
   step_ += 1;
   time_ += dta_;
+}
+
+/*----------------------------------------------------------------------*
+ | time update of time-dependent materials                    gjb 07/12 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ElementMaterialTimeUpdate()
+{
+  // create the parameters for the discretization
+  ParameterList p;
+  // action for elements
+  p.set<int>("action", SCATRA::time_update_material);
+  // further required parameters
+  p.set<int>("scatratype",scatratype_);
+  // go to elements
+  discret_->ClearState();
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+      Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->ClearState();
+  return;
 }
 
 /*==========================================================================*/

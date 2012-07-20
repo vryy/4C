@@ -631,6 +631,9 @@ protected:
 
   /*--- calculate and update -----------------------------------------------*/
 
+  //! time update of time-dependent materials
+  void ElementMaterialTimeUpdate();
+
   /*--- query and output ---------------------------------------------------*/
 
   /*========================================================================*/
@@ -838,9 +841,6 @@ protected:
 
   //! maximum number of steps ? name maxtime vs. stepmax
   int stepmax_;
-
-  //! maximum number of nonlinear iterations
-  int itemax_;
 
   //! time step size (for reinitialization methods this is a pseudo time step length)
   double dta_;

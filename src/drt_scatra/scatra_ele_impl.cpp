@@ -896,6 +896,19 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     break;
   }
+  case SCATRA::time_update_material:
+  {
+    // access the material
+    RCP<MAT::Material> material = ele->Material();
+    if (material->MaterialType() == INPAR::MAT::m_myocard)
+    {
+      // reference to rcp not possible here, since the material is required to be
+      // not const for this application
+      Teuchos::RCP<MAT::Myocard> mat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
+      mat->Update();
+    }
+    break;
+  }
   case SCATRA::calc_flux_domain:
   {
     // get velocity values at the nodes

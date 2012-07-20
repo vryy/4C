@@ -405,7 +405,11 @@ void SCATRA::TimIntBDF2::Update()
   phinm_->Update(1.0,*phin_ ,0.0);
   phin_ ->Update(1.0,*phinp_,0.0);
 
+  // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
+
+  // potential time update of time-dependent materials
+  ElementMaterialTimeUpdate();
 
   return;
 }
