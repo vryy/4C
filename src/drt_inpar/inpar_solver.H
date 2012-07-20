@@ -69,7 +69,8 @@ namespace INPAR
       azsolv_CGS,           ///< cg-squared-solver (can handle unsymmetric problems)
       azsolv_BiCGSTAB,      ///< bicgstab-solver
       azsolv_LU,            ///< LU-solver (I think this doesn't work for some reasons)
-      azsolv_TFQMR          ///< quasi-minimum residual-solver (never used it)
+      azsolv_TFQMR,         ///< quasi-minimum residual-solver (never used it)
+      belos_FGMRES          ///< flexible GMRES in Belos
     };
 
     /// Different preconditioners within the Aztec package

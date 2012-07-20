@@ -306,6 +306,8 @@ public:
 
   static const Teuchos::ParameterList TranslateBACIToTeko(const Teuchos::ParameterList& inparams);
 
+  static const Teuchos::ParameterList TranslateBACIToBelos(const Teuchos::ParameterList& inparams);
+
   /*!
   \brief Add a validated input parameter list as sublist to internal
          parameters

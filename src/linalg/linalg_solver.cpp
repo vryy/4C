@@ -39,7 +39,7 @@ Maintainer: Michael Gee
             089 - 289-15239
 </pre>
 
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 
 #undef WRITEOUTSTATISTICS
 #ifdef WRITEOUTSTATISTICS
@@ -80,10 +80,10 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 02/07|
  *----------------------------------------------------------------------*/
 LINALG::Solver::Solver(Teuchos::RCP<Teuchos::ParameterList> params,
-                       const Epetra_Comm& comm, FILE* outfile) :
-comm_(comm),
-params_(params),
-outfile_(outfile)
+    const Epetra_Comm& comm, FILE* outfile) :
+    comm_(comm),
+    params_(params),
+    outfile_(outfile)
 {
   Setup();
   return;
@@ -93,9 +93,9 @@ outfile_(outfile)
  |  ctor (public)                                            mwgee 03/08|
  *----------------------------------------------------------------------*/
 LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile) :
-comm_(comm),
-params_(rcp(new Teuchos::ParameterList())),
-outfile_(outfile)
+    comm_(comm),
+    params_(rcp(new Teuchos::ParameterList())),
+    outfile_(outfile)
 {
   // set the default solver
   Params().set("solver","klu");
@@ -111,11 +111,11 @@ outfile_(outfile)
  |  ctor (public)                                                  11/08|
  *----------------------------------------------------------------------*/
 LINALG::Solver::Solver(const Teuchos::ParameterList& inparams,
-                       const Epetra_Comm& comm,
-                       FILE* outfile) :
-comm_(comm),
-params_(rcp(new Teuchos::ParameterList())),
-outfile_(outfile)
+    const Epetra_Comm& comm,
+    FILE* outfile) :
+    comm_(comm),
+    params_(rcp(new Teuchos::ParameterList())),
+    outfile_(outfile)
 {
   // set solver parameters
   *params_ = TranslateSolverParameters(inparams);
@@ -178,8 +178,8 @@ void LINALG::Solver::Print(ostream& os) const
  |  adapt tolerance (public)                                 mwgee 02/08|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::AdaptTolerance(const double desirednlnres,
-                                    const double currentnlnres,
-                                    const double better)
+    const double currentnlnres,
+    const double better)
 {
   if (!Params().isSublist("Aztec Parameters")) return;
   const int myrank = Comm().MyPID();
@@ -228,19 +228,19 @@ void LINALG::Solver::ResetTolerance()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Setup(
-  Teuchos::RCP<Epetra_Operator>     matrix             ,
-  Teuchos::RCP<Epetra_MultiVector>       x             ,
-  Teuchos::RCP<Epetra_MultiVector>       b             ,
-  bool                              refactor           ,
-  bool                              reset              ,
-  Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
-  Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
-  bool                              project            )
+    Teuchos::RCP<Epetra_Operator>     matrix             ,
+    Teuchos::RCP<Epetra_MultiVector>       x             ,
+    Teuchos::RCP<Epetra_MultiVector>       b             ,
+    bool                              refactor           ,
+    bool                              reset              ,
+    Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
+    Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
+    bool                              project            )
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1)   Setup");
 
   // reset data flags on demand
-   if (reset)
+  if (reset)
   {
     Reset();
     refactor = true;
@@ -269,9 +269,9 @@ void LINALG::Solver::Setup(
 #endif
     }
     else if ("klu"    ==solvertype or
-             "umfpack"==solvertype or
-             "superlu"==solvertype or
-             "lapack" ==solvertype)
+        "umfpack"==solvertype or
+        "superlu"==solvertype or
+        "lapack" ==solvertype)
     {
       solver_ = Teuchos::rcp( new LINALG::SOLVER::DirectSolver( solvertype ) );
     }
@@ -300,14 +300,14 @@ int LINALG::Solver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve(
-  Teuchos::RCP<Epetra_Operator>     matrix             ,
-  Teuchos::RCP<Epetra_MultiVector>       x             ,
-  Teuchos::RCP<Epetra_MultiVector>       b             ,
-  bool                              refactor           ,
-  bool                              reset              ,
-  Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
-  Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
-  bool                              project            )
+    Teuchos::RCP<Epetra_Operator>     matrix             ,
+    Teuchos::RCP<Epetra_MultiVector>       x             ,
+    Teuchos::RCP<Epetra_MultiVector>       b             ,
+    bool                              refactor           ,
+    bool                              reset              ,
+    Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
+    Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
+    bool                              project            )
 {
   Setup( matrix, x, b, refactor, reset, weighted_basis_mean, kernel_c, project );
   Solve();
@@ -318,9 +318,9 @@ void LINALG::Solver::Solve(
  |  fix an ML nullspace to match a new map  (public)          mwgee 5/11|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::FixMLNullspace(std::string field,
-                                    const Epetra_Map& oldmap,
-                                    const Epetra_Map& newmap,
-                                    Teuchos::ParameterList& solveparams)
+    const Epetra_Map& oldmap,
+    const Epetra_Map& newmap,
+    Teuchos::ParameterList& solveparams)
 {
   // there is no ML list, do nothing
   if (!solveparams.isSublist("ML Parameters"))
@@ -332,7 +332,7 @@ void LINALG::Solver::FixMLNullspace(std::string field,
   if (ndim==-1) dserror("List does not contain nullspace dimension");
 
   Teuchos::RCP<vector<double> > ns =
-        params.get<Teuchos::RCP<vector<double> > >("nullspace",Teuchos::null);
+      params.get<Teuchos::RCP<vector<double> > >("nullspace",Teuchos::null);
   if (ns==Teuchos::null) dserror("List does not contain nullspace");
   double* ons = &((*ns)[0]);
 
@@ -413,7 +413,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(const Teucho
   {
   case INPAR::SOLVER::azprec_none:
     outparams.set("Preconditioner Type","None");
-  break;
+    break;
   case INPAR::SOLVER::azprec_ILUT:
   case INPAR::SOLVER::azprec_ILU:
   case INPAR::SOLVER::azprec_Jacobi:
@@ -442,7 +442,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(const Teucho
   break;
   default:
     dserror("Unknown preconditioner for Stratimikos");
-  break;
+    break;
   }
 
   return outparams;
@@ -499,19 +499,19 @@ const Teuchos::ParameterList LINALG::Solver::TranslateAztecToStratimikos(const T
   {
   case INPAR::SOLVER::azprec_none:
     aztec.set("Aztec Preconditioner","none");
-  break;
+    break;
   case INPAR::SOLVER::azprec_ILUT:
     aztec.set("Aztec Preconditioner","ilut");
-  break;
+    break;
   case INPAR::SOLVER::azprec_ILU:
     aztec.set("Aztec Preconditioner","ilu");
-  break;
+    break;
   case INPAR::SOLVER::azprec_Jacobi:
     aztec.set("Aztec Preconditioner","Jacobi");
-  break;
+    break;
   case INPAR::SOLVER::azprec_SymmGaussSeidel:
     aztec.set("Aztec Preconditioner","Symmetric Gauss-Seidel");
-  break;
+    break;
   }
   //------------------------------------- set type of AZTEC solver
   switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE"))
@@ -531,12 +531,12 @@ const Teuchos::ParameterList LINALG::Solver::TranslateAztecToStratimikos(const T
   //------------------------------------ other AZTEC parameters
   switch (DRT::INPUT::IntegralValue<int>(inparams,"AZCONV"))
   {
-    case AZ_r0:       aztec.set("Convergence Test","r0"); break;
-    case AZ_noscaled: aztec.set("Convergence Test","no scaling"); break;
-    case AZ_rhs:      aztec.set("Convergence Test","rhs"); break;
-    case AZ_Anorm:    aztec.set("Convergence Test","Anorm"); break;
-    case AZ_sol:      aztec.set("Convergence Test","sol"); break;
-    default: dserror("Convergence Test not supported by Stratimikos_Aztec"); break;
+  case AZ_r0:       aztec.set("Convergence Test","r0"); break;
+  case AZ_noscaled: aztec.set("Convergence Test","no scaling"); break;
+  case AZ_rhs:      aztec.set("Convergence Test","rhs"); break;
+  case AZ_Anorm:    aztec.set("Convergence Test","Anorm"); break;
+  case AZ_sol:      aztec.set("Convergence Test","sol"); break;
+  default: dserror("Convergence Test not supported by Stratimikos_Aztec"); break;
   }
   aztec.set("Output Frequency",inparams.get<int>("AZOUTPUT"));
   aztec.set("Drop Tolerance",inparams.get<double>("AZDROP"));  // for Aztec ILUT // TODO: remove me: we always use ifpack
@@ -560,34 +560,34 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBelosToStratimikos(const T
   switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE"))
   {
   case INPAR::SOLVER::azsolv_CG:
-    {
-      outparams.set("Solver Type","Block CG");
-      Teuchos::ParameterList& stype = outparams.sublist("Solver Types");
-      stype.sublist("Block CG").set("Adaptive Block Size",false);  // no adaptive block size, since # rhs always 1
-      stype.sublist("Block CG").set("Block Size",1);               // TODO: number of null space vectors?
-      stype.sublist("Block CG").set("Convergence Tolerance", inparams.get<double>("AZTOL"));
-      stype.sublist("Block CG").set("Maximum Iterations", inparams.get<int>("AZITER"));
-      stype.sublist("Block CG").set("Output Frequency", inparams.get<int>("AZOUTPUT"));
-    }
-    break;
+  {
+    outparams.set("Solver Type","Block CG");
+    Teuchos::ParameterList& stype = outparams.sublist("Solver Types");
+    stype.sublist("Block CG").set("Adaptive Block Size",false);  // no adaptive block size, since # rhs always 1
+    stype.sublist("Block CG").set("Block Size",1);               // TODO: number of null space vectors?
+    stype.sublist("Block CG").set("Convergence Tolerance", inparams.get<double>("AZTOL"));
+    stype.sublist("Block CG").set("Maximum Iterations", inparams.get<int>("AZITER"));
+    stype.sublist("Block CG").set("Output Frequency", inparams.get<int>("AZOUTPUT"));
+  }
+  break;
   case INPAR::SOLVER::azsolv_GMRES:
-    {
-      outparams.set("Solver Type","Block GMRES");
-      Teuchos::ParameterList& stype = outparams.sublist("Solver Types");
-      stype.sublist("Block GMRES").set("Adaptive Block Size",false);  // no adaptive block size, since # rhs always 1
-      stype.sublist("Block GMRES").set("Block Size",1);               // TODO: number of null space vectors?
-      stype.sublist("Block GMRES").set("Convergence Tolerance", inparams.get<double>("AZTOL"));
-      stype.sublist("Block GMRES").set("Maximum Iterations", inparams.get<int>("AZITER"));
-      stype.sublist("Block GMRES").set("Num Blocks", inparams.get<int>("AZSUB")); // number of Krylov space vectors
-      stype.sublist("Block GMRES").set("Output Frequency", inparams.get<int>("AZOUTPUT"));
+  {
+    outparams.set("Solver Type","Block GMRES");
+    Teuchos::ParameterList& stype = outparams.sublist("Solver Types");
+    stype.sublist("Block GMRES").set("Adaptive Block Size",false);  // no adaptive block size, since # rhs always 1
+    stype.sublist("Block GMRES").set("Block Size",1);               // TODO: number of null space vectors?
+    stype.sublist("Block GMRES").set("Convergence Tolerance", inparams.get<double>("AZTOL"));
+    stype.sublist("Block GMRES").set("Maximum Iterations", inparams.get<int>("AZITER"));
+    stype.sublist("Block GMRES").set("Num Blocks", inparams.get<int>("AZSUB")); // number of Krylov space vectors
+    stype.sublist("Block GMRES").set("Output Frequency", inparams.get<int>("AZOUTPUT"));
 
-    }
-    break;
-    default:
-    {
-      cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
-      dserror("Unknown solver for Stratimikos_Belos");            break;
-    }
+  }
+  break;
+  default:
+  {
+    cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
+    dserror("Unknown solver for Stratimikos_Belos");            break;
+  }
   }
 
   return outparams;
@@ -610,7 +610,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateIfpackToStratimikos(const 
   case INPAR::SOLVER::azprec_ILU:     outparams.set("Prec Type", "ILU");  break;
   case INPAR::SOLVER::azprec_Jacobi:
   {
-      outparams.set("Prec Type","point relaxation");
+    outparams.set("Prec Type","point relaxation");
   }
   break;
   case INPAR::SOLVER::azprec_SymmGaussSeidel:
@@ -710,31 +710,31 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   switch (prectyp)
   {
   case INPAR::SOLVER::azprec_ML: // do nothing, this is standard
-  break;
+    break;
   case INPAR::SOLVER::azprec_MLAPI: // set flag to use mlapi operator
     mllist.set<bool>("LINALG::AMG_Operator",true);
-  break;
+    break;
   case INPAR::SOLVER::azprec_MueLuAMG_sym: // MueLu operator (smoothed aggregation)
   case INPAR::SOLVER::azprec_MueLuAMG_contact: // MueLu operator (contact)
     mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
-  break;
+    break;
   case INPAR::SOLVER::azprec_MueLuAMG_nonsym: // MueLu operator (Petrov-Galerkin)
     mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
     mllist.set("energy minimization: enable",true);
     mllist.set("energy minimization: type",3); // TODO: different energy minimization modes not available for MueLu, yet
     mllist.set("aggregation: block scaling",false);
-  break;
+    break;
   case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restriction
     mllist.set("aggregation: use tentative restriction",true);
-  break;
+    break;
   case INPAR::SOLVER::azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
     mllist.set("energy minimization: enable",true);
     mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
     mllist.set("aggregation: block scaling",false);
-  break;
+    break;
   case INPAR::SOLVER::azprec_AMG:   // set flag to use AMGPreconditioner
     mllist.set<bool>("LINALG::AMGPreconditioner",true);
-  break;
+    break;
   default: dserror("Unknown type of ml preconditioner");
   }
   mllist.set("ML output"                       ,inparams.get<int>("ML_PRINT"));
@@ -756,11 +756,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   //mllist.set("low memory usage",true);
   switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_COARSEN"))
   {
-    case 0:  mllist.set("aggregation: type","Uncoupled");  break;
-    case 1:  mllist.set("aggregation: type","METIS");      break;
-    case 2:  mllist.set("aggregation: type","VBMETIS");    break;
-    case 3:  mllist.set("aggregation: type","MIS");        break;
-    default: dserror("Unknown type of coarsening for ML"); break;
+  case 0:  mllist.set("aggregation: type","Uncoupled");  break;
+  case 1:  mllist.set("aggregation: type","METIS");      break;
+  case 2:  mllist.set("aggregation: type","VBMETIS");    break;
+  case 3:  mllist.set("aggregation: type","MIS");        break;
+  default: dserror("Unknown type of coarsening for ML"); break;
   }
 
   // set ml smoothers
@@ -777,7 +777,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
 
   if ((int)mlsmotimessteps.size() < mlmaxlevel)
     dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-            mlsmotimessteps.size(),mlmaxlevel);
+        mlsmotimessteps.size(),mlmaxlevel);
 
   for (int i=0; i<mlmaxlevel-1; ++i)
   {
@@ -807,12 +807,12 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       smolevelsublist.set("smoother: type"                        ,"symmetric Gauss-Seidel");
       smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
       smolevelsublist.set("smoother: damping factor"              ,damp);
-    break;
+      break;
     case 7: // GS
       smolevelsublist.set("smoother: type"                        ,"Gauss-Seidel");
       smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
       smolevelsublist.set("smoother: damping factor"              ,damp);
-    break;
+      break;
     case 8: // DGS
       smolevelsublist.set("smoother: type"                        ,"Gauss-Seidel");
       smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
@@ -827,23 +827,23 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
         cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << endl;
       }
       {
-    	Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
+        Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
         ifpacklist.set("schwarz: reordering type","true");
       }
-    break;
+      break;
     case 1: // Jacobi
       smolevelsublist.set("smoother: type"                        ,"Jacobi");
       smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
       smolevelsublist.set("smoother: damping factor"              ,damp);
-    break;
+      break;
     case 2: // Chebychev
       smolevelsublist.set("smoother: type"                        ,"MLS");
       smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
-    break;
+      break;
     case 3: // MLS
       smolevelsublist.set("smoother: type"                        ,"MLS");
       smolevelsublist.set("smoother: MLS polynomial order"        ,-mlsmotimessteps[i]);
-    break;
+      break;
     case 4: // Ifpack's ILU
     {
       smolevelsublist.set("smoother: type"                        ,"IFPACK");
@@ -858,14 +858,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     break;
     case 5: // Amesos' KLU
       smolevelsublist.set("smoother: type"                        ,"Amesos-KLU");
-    break;
+      break;
     case 9: // Amesos' Umfpack
       smolevelsublist.set("smoother: type"                        ,"Amesos-UMFPACK");
-    break;
+      break;
 #ifdef PARALLEL
     case 6: // Amesos' SuperLU_Dist
       smolevelsublist.set("smoother: type"                        ,"Amesos-Superludist");
-    break;
+      break;
 #endif
     default: dserror("Unknown type of smoother for ML: tuple %d",type); break;
     } // switch (type)
@@ -875,70 +875,70 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   const int coarse = mlmaxlevel-1;
   switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERCOARSE"))
   {
-    case 0:
-      mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
-      mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
-      mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
+  case 0:
+    mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
+    mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+    mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
     break;
-    case 7:
-      mllist.set("coarse: type"          ,"Gauss-Seidel");
-      mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
-      mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
+  case 7:
+    mllist.set("coarse: type"          ,"Gauss-Seidel");
+    mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+    mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
     break;
-    case 8:
-      mllist.set("coarse: type"          ,"Gauss-Seidel");
-      mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
-      mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
-      if (azlist!=NULL)
-      {
-        azlist->set<bool>("downwinding",true);
-        azlist->set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
-      }
-      else
-      {
-        cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << endl;
-      }
-      {
-    	Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-        ifpacklist.set("schwarz: reordering type","true");
-      }
-    break;
-    case 1:
-      mllist.set("coarse: type"          ,"Jacobi");
-      mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
-      mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
-    break;
-    case 2: // Chebychev
-      mllist.set("smoother: type"                        ,"MLS");
-      mllist.set("smoother: sweeps"                      ,mlsmotimessteps[coarse]);
-    break;
-    case 3:
-      mllist.set("coarse: type"                ,"MLS");
-      mllist.set("coarse: MLS polynomial order",-mlsmotimessteps[coarse]);
-    break;
-    case 4:
+  case 8:
+    mllist.set("coarse: type"          ,"Gauss-Seidel");
+    mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+    mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
+    if (azlist!=NULL)
     {
-      mllist.set("coarse: type"          ,"IFPACK");
-      mllist.set("coarse: ifpack type"   ,"ILU");
-      mllist.set("coarse: ifpack overlap",inparams.get<int>("IFPACKOVERLAP"));
-      mllist.set<double>("coarse: ifpack level-of-fill",(double)mlsmotimessteps[coarse]); // 12.01.2012: TW fixed double -> int
+      azlist->set<bool>("downwinding",true);
+      azlist->set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
+    }
+    else
+    {
+      cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << endl;
+    }
+    {
       Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-      ifpacklist.set<int>("fact: level-of-fill", (int)mlsmotimessteps[coarse]);
-      ifpacklist.set("schwarz: reordering type","rcm");
-      ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
-      ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+      ifpacklist.set("schwarz: reordering type","true");
     }
     break;
-    case 5:
-      mllist.set("coarse: type","Amesos-KLU");
+  case 1:
+    mllist.set("coarse: type"          ,"Jacobi");
+    mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+    mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
     break;
-    case 9:
-      mllist.set("coarse: type","Amesos-UMFPACK");
+  case 2: // Chebychev
+    mllist.set("smoother: type"                        ,"MLS");
+    mllist.set("smoother: sweeps"                      ,mlsmotimessteps[coarse]);
     break;
-    case 6:
-      mllist.set("coarse: type","Amesos-Superludist");
+  case 3:
+    mllist.set("coarse: type"                ,"MLS");
+    mllist.set("coarse: MLS polynomial order",-mlsmotimessteps[coarse]);
     break;
-    default: dserror("Unknown type of coarse solver for ML"); break;
+  case 4:
+  {
+    mllist.set("coarse: type"          ,"IFPACK");
+    mllist.set("coarse: ifpack type"   ,"ILU");
+    mllist.set("coarse: ifpack overlap",inparams.get<int>("IFPACKOVERLAP"));
+    mllist.set<double>("coarse: ifpack level-of-fill",(double)mlsmotimessteps[coarse]); // 12.01.2012: TW fixed double -> int
+    Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
+    ifpacklist.set<int>("fact: level-of-fill", (int)mlsmotimessteps[coarse]);
+    ifpacklist.set("schwarz: reordering type","rcm");
+    ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
+    ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+  }
+  break;
+  case 5:
+    mllist.set("coarse: type","Amesos-KLU");
+    break;
+  case 9:
+    mllist.set("coarse: type","Amesos-UMFPACK");
+    break;
+  case 6:
+    mllist.set("coarse: type","Amesos-Superludist");
+    break;
+  default: dserror("Unknown type of coarse solver for ML"); break;
   } // switch (azvar->mlsmotype_coarse)
   // default values for nullspace
   mllist.set("PDE equations",1);
@@ -982,6 +982,174 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToTeko(const Teuchos::
   return tekolist;
 }
 
+const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos::ParameterList& inparams)
+{
+  Teuchos::ParameterList outparams;
+  outparams.set("solver","belos");
+  outparams.set("symmetric",false);
+  Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
+
+
+  //--------------------------------------------- set type of solver
+  switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE"))
+  {
+  case INPAR::SOLVER::azsolv_CG:       beloslist.set("Solver Type","CG");       break;
+  case INPAR::SOLVER::azsolv_GMRES:    beloslist.set("Solver Type","GMRES");    break;
+  case INPAR::SOLVER::belos_FGMRES:    beloslist.set("Solver Type","GMRES");
+                                       beloslist.set("Flexible Gmres",true);    break;
+  default:
+  {
+    cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
+    dserror("Unknown solver for Belos");            break;
+  }
+  }
+  //------------------------------------- set type of preconditioner
+  const int azprectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams,"AZPREC");
+  switch (azprectyp)
+  {
+  case INPAR::SOLVER::azprec_none:
+    beloslist.set("Preconditioner Type","none");
+    break;
+  case INPAR::SOLVER::azprec_ILUT:
+    // using ifpack
+    beloslist.set("Preconditioner Type","ILUT");
+    break;
+  case INPAR::SOLVER::azprec_ILU:
+    // using ifpack
+    beloslist.set("Preconditioner Type","ILU");
+    break;
+  case INPAR::SOLVER::azprec_TekoSIMPLE:
+  case INPAR::SOLVER::azprec_BGSnxn:
+    // using Teko
+    beloslist.set("Preconditioner Type","Teko");
+    break;
+  case INPAR::SOLVER::azprec_Jacobi:
+  case INPAR::SOLVER::azprec_SymmGaussSeidel:
+  case INPAR::SOLVER::azprec_GaussSeidel:
+    // using ifpack
+    beloslist.set("Preconditioner Type","point relaxation");
+    break;
+  case INPAR::SOLVER::azprec_DownwindGaussSeidel:
+    // using ifpack
+    beloslist.set("Preconditioner Type","point relaxation");
+    beloslist.set<bool>("downwinding",true);
+    beloslist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
+    cout << "warning: downwinding not supported?" << endl;
+    break;
+  case INPAR::SOLVER::azprec_LU:
+    // using ifpack
+    beloslist.set("Preconditioner Type","Amesos");
+    break;
+  case INPAR::SOLVER::azprec_ML:
+  case INPAR::SOLVER::azprec_MLfluid:
+  case INPAR::SOLVER::azprec_MLAPI:
+  case INPAR::SOLVER::azprec_MLfluid2:
+  case INPAR::SOLVER::azprec_MueLuAMG_sym:
+  case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+  case INPAR::SOLVER::azprec_MueLuAMG_contact:
+    beloslist.set("Preconditioner Type","ML");
+    break;
+  case INPAR::SOLVER::azprec_AMGBS:
+  case INPAR::SOLVER::azprec_AMG:
+  case INPAR::SOLVER::azprec_BGS2x2:
+    beloslist.set("Preconditioner Type","ML");
+    break;
+    break;
+  case INPAR::SOLVER::azprec_CheapSIMPLE:
+    beloslist.set("Preconditioner Type","CheapSIMPLE");
+    break;
+  default:
+    dserror("Unknown preconditioner for Belos");
+    break;
+  }
+  //------------------------------------- set other belos parameters
+  beloslist.set("Num Blocks",inparams.get<int>("AZSUB"));
+  beloslist.set("Block Size", 2);
+  beloslist.set("Maximum Iterations",inparams.get<int>("AZITER"));
+  //beloslist.set("Adaptive Block Size",true);
+  int outputfrequency = inparams.get<int>("AZOUTPUT");
+  beloslist.set("Output Frequency", outputfrequency);
+  int verbosity = inparams.get<int>("VERBOSITY");
+  if      (verbosity > 9) beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails + Belos::TimingDetails);
+  else if (verbosity > 4) beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails);
+  else if (verbosity > 2) beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
+  else if (verbosity > 0) beloslist.set("Verbosity", Belos::Errors);
+  beloslist.set("Output Style",Belos::Brief);
+  beloslist.set("Convergence Tolerance",inparams.get<double>("AZTOL"));
+  //-------------------------------- set parameters for Ifpack if used
+  if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
+      azprectyp == INPAR::SOLVER::azprec_ILUT ||
+      azprectyp == INPAR::SOLVER::azprec_ICC  ||
+      azprectyp == INPAR::SOLVER::azprec_LU   ||
+      azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel ||
+      azprectyp == INPAR::SOLVER::azprec_GaussSeidel ||
+      azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel ||
+      azprectyp == INPAR::SOLVER::azprec_Jacobi)
+  {
+    Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
+    ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
+  }
+  //------------------------------------- set parameters for Teko if used
+  if (azprectyp == INPAR::SOLVER::azprec_TekoSIMPLE ||
+      azprectyp == INPAR::SOLVER::azprec_BGSnxn)
+  {
+    Teuchos::ParameterList& tekolist = outparams.sublist("Teko Parameters");
+    tekolist = LINALG::Solver::TranslateBACIToTeko(inparams);
+  }
+  //------------------------------------- set parameters for CheapSIMPLE if used
+  if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
+  {
+    Teuchos::ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
+    simplelist.set("Prec Type","CheapSIMPLE"); // not used
+  }
+  //------------------------------------- set parameters for ML if used
+  if (azprectyp == INPAR::SOLVER::azprec_ML       ||
+      azprectyp == INPAR::SOLVER::azprec_MLfluid  ||
+      azprectyp == INPAR::SOLVER::azprec_MLfluid2 ||
+      azprectyp == INPAR::SOLVER::azprec_MLAPI ||
+      azprectyp == INPAR::SOLVER::azprec_AMG)          // new AMG preconditioner
+  {
+    Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
+    mllist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);
+  } // if ml preconditioner
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym      ||
+      azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym   )
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
+  }
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact    )
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
+  }
+  if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
+  {
+    Teuchos::ParameterList& bgslist = outparams.sublist("BGS Parameters");
+    bgslist.set("numblocks",2);
+
+    // currently, the number of Gauss-Seidel iterations and the relaxation
+    // parameter on the global level are set to 1 and 1.0, respectively
+    bgslist.set("global_iter",1);
+    bgslist.set("global_omega",1.0);
+
+    // the order of blocks in the given EpetraOperator can be changed in the
+    // Gauss-Seidel procedure,
+    // default: fliporder == 0, i.e., solve block1 --> block2
+    std::string fliporder = inparams.get<std::string>("BGS2X2_FLIPORDER");
+    bgslist.set("fliporder",(fliporder=="block1_block0_order") ? true : false);
+
+    // currently, the number of Richardson iteratios and the relaxation
+    // parameter on the individual block level are set to 1 and 1.0, respectively
+    bgslist.set("block1_iter",1);
+    bgslist.set("block1_omega",1.0);
+    bgslist.set("block2_iter",1);
+    bgslist.set("block2_omega",1.0);
+  }
+
+  return outparams;
+}
+
 /*----------------------------------------------------------------------*
  |  translate solver parameters (public)               mwgee 02/07,11/08|
  *----------------------------------------------------------------------*/
@@ -1001,35 +1169,35 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(inparams,"SOLVER"))
   {
   case INPAR::SOLVER::undefined: //=========================undefined solver
-	std::cout << "undefined solver! Set " << inparams.name() << "  in your dat file!" << std::endl;
+    std::cout << "undefined solver! Set " << inparams.name() << "  in your dat file!" << std::endl;
     dserror("fix your dat file");
     break;
 #ifdef PARALLEL
   case INPAR::SOLVER::superlu://============================== superlu solver (parallel only)
     outparams.set("solver","superlu");
     outparams.set("symmetric",false);
-  break;
+    break;
 #endif
   case INPAR::SOLVER::amesos_klu_sym://====================================== Tim Davis' KLU
     outparams.set("solver","klu");
     outparams.set("symmetric",true);
-  break;
+    break;
   case INPAR::SOLVER::amesos_klu_nonsym://=================================== Tim Davis' KLU
     outparams.set("solver","klu");
     outparams.set("symmetric",false);
-  break;
+    break;
   case INPAR::SOLVER::umfpack://========================================= Tim Davis' Umfpack
     outparams.set("solver","umfpack");
     outparams.set("symmetric",false);
-  break;
+    break;
   case INPAR::SOLVER::lapack_sym://================================================== Lapack
     outparams.set("solver","lapack");
     outparams.set("symmetric",true);
-  break;
+    break;
   case INPAR::SOLVER::lapack_nonsym://=============================================== Lapack
     outparams.set("solver","lapack");
     outparams.set("symmetric",false);
-  break;
+    break;
   case INPAR::SOLVER::stratimikos_amesos: //===================================== Stratimikos
   case INPAR::SOLVER::stratimikos_aztec:  //===================================== Stratimikos
   case INPAR::SOLVER::stratimikos_belos:  //===================================== Stratimikos
@@ -1042,164 +1210,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   break;
   case INPAR::SOLVER::belos:     //=================================================== Belos
   {
-    outparams.set("solver","belos");
-    outparams.set("symmetric",false);
-    Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
-    //--------------------------------------------- set type of solver
-    switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE"))
-    {
-    case INPAR::SOLVER::azsolv_CG:       beloslist.set("Solver Type","CG");       break;
-    case INPAR::SOLVER::azsolv_GMRES:    beloslist.set("Solver Type","GMRES");    break;
-    default:
-    {
-      cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
-      dserror("Unknown solver for Belos");            break;
-    }
-    }
-    //------------------------------------- set type of preconditioner
-    const int azprectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams,"AZPREC");
-    switch (azprectyp)
-    {
-    case INPAR::SOLVER::azprec_none:
-      beloslist.set("Preconditioner Type","none");
-    break;
-    case INPAR::SOLVER::azprec_ILUT:
-      // using ifpack
-      beloslist.set("Preconditioner Type","ILUT");
-    break;
-    case INPAR::SOLVER::azprec_ILU:
-      // using ifpack
-      beloslist.set("Preconditioner Type","ILU");
-    break;
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
-    case INPAR::SOLVER::azprec_BGSnxn:
-      // using Teko
-      beloslist.set("Preconditioner Type","Teko");
-      break;
-    case INPAR::SOLVER::azprec_Jacobi:
-    case INPAR::SOLVER::azprec_SymmGaussSeidel:
-    case INPAR::SOLVER::azprec_GaussSeidel:
-      // using ifpack
-      beloslist.set("Preconditioner Type","point relaxation");
-    break;
-    case INPAR::SOLVER::azprec_DownwindGaussSeidel:
-      // using ifpack
-      beloslist.set("Preconditioner Type","point relaxation");
-      beloslist.set<bool>("downwinding",true);
-      beloslist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
-      cout << "warning: downwinding not supported?" << endl;
-    break;
-    case INPAR::SOLVER::azprec_LU:
-      // using ifpack
-      beloslist.set("Preconditioner Type","Amesos");
-    break;
-    case INPAR::SOLVER::azprec_ML:
-    case INPAR::SOLVER::azprec_MLfluid:
-    case INPAR::SOLVER::azprec_MLAPI:
-    case INPAR::SOLVER::azprec_MLfluid2:
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
-    case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
-    case INPAR::SOLVER::azprec_MueLuAMG_contact:
-      beloslist.set("Preconditioner Type","ML");
-      break;
-    case INPAR::SOLVER::azprec_AMGBS:
-    case INPAR::SOLVER::azprec_AMG:
-    case INPAR::SOLVER::azprec_BGS2x2:
-      beloslist.set("Preconditioner Type","ML");
-      break;
-    break;
-    case INPAR::SOLVER::azprec_CheapSIMPLE:
-      beloslist.set("Preconditioner Type","CheapSIMPLE");
-      break;
-    default:
-      dserror("Unknown preconditioner for Belos");
-    break;
-    }
-    //------------------------------------- set other belos parameters
-     beloslist.set("Num Blocks",inparams.get<int>("AZSUB"));
-     beloslist.set("Maximum Iterations",inparams.get<int>("AZITER"));
-     beloslist.set("Adaptive Block Size",true);
-     int verbosity = inparams.get<int>("AZOUTPUT");
-     beloslist.set("Output Frequency", verbosity);
-     if (verbosity > 0) {
-       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails + Belos::TimingDetails);
-     } else {
-       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
-     }
-     beloslist.set("Convergence Tolerance",inparams.get<double>("AZTOL"));
-     //-------------------------------- set parameters for Ifpack if used
-     if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
-         azprectyp == INPAR::SOLVER::azprec_ILUT ||
-         azprectyp == INPAR::SOLVER::azprec_ICC  ||
-         azprectyp == INPAR::SOLVER::azprec_LU   ||
-         azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel ||
-         azprectyp == INPAR::SOLVER::azprec_GaussSeidel ||
-         azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel ||
-         azprectyp == INPAR::SOLVER::azprec_Jacobi)
-     {
-       Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
-       ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
-     }
-     //------------------------------------- set parameters for Teko if used
-     if (azprectyp == INPAR::SOLVER::azprec_TekoSIMPLE ||
-         azprectyp == INPAR::SOLVER::azprec_BGSnxn)
-     {
-       Teuchos::ParameterList& tekolist = outparams.sublist("Teko Parameters");
-       tekolist = LINALG::Solver::TranslateBACIToTeko(inparams);
-     }
-     //------------------------------------- set parameters for CheapSIMPLE if used
-     if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
-     {
-       Teuchos::ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
-       simplelist.set("Prec Type","CheapSIMPLE"); // not used
-     }
-     //------------------------------------- set parameters for ML if used
-     if (azprectyp == INPAR::SOLVER::azprec_ML       ||
-         azprectyp == INPAR::SOLVER::azprec_MLfluid  ||
-         azprectyp == INPAR::SOLVER::azprec_MLfluid2 ||
-         azprectyp == INPAR::SOLVER::azprec_MLAPI ||
-         azprectyp == INPAR::SOLVER::azprec_AMG)          // new AMG preconditioner
-     {
-       Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
-       mllist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);
-     } // if ml preconditioner
-     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym      ||
-         azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym   )
-     {
-         Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-         muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
-     }
-     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact    )
-     {
-         Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-         muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
-     }
-     if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
-     {
-       Teuchos::ParameterList& bgslist = outparams.sublist("BGS Parameters");
-       bgslist.set("numblocks",2);
-
-       // currently, the number of Gauss-Seidel iterations and the relaxation
-       // parameter on the global level are set to 1 and 1.0, respectively
-       bgslist.set("global_iter",1);
-       bgslist.set("global_omega",1.0);
-
-       // the order of blocks in the given EpetraOperator can be changed in the
-       // Gauss-Seidel procedure,
-       // default: fliporder == 0, i.e., solve block1 --> block2
-       std::string fliporder = inparams.get<std::string>("BGS2X2_FLIPORDER");
-       bgslist.set("fliporder",(fliporder=="block1_block0_order") ? true : false);
-
-       // currently, the number of Richardson iteratios and the relaxation
-       // parameter on the individual block level are set to 1 and 1.0, respectively
-       bgslist.set("block1_iter",1);
-       bgslist.set("block1_omega",1.0);
-       bgslist.set("block2_iter",1);
-       bgslist.set("block2_omega",1.0);
-     }
-
-    break;
+    outparams = LINALG::Solver::TranslateBACIToBelos(inparams);
   }
+  break;
   case INPAR::SOLVER::aztec_msr://================================================= AztecOO
   {
     outparams.set("solver","aztec");
@@ -1238,60 +1251,60 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       azlist.set("AZ_subdomain_solve",AZ_none);
       azlist.set("AZ_precond",AZ_none);
       azlist.set("Preconditioner Type","none");
-    break;
+      break;
     case INPAR::SOLVER::azprec_ILUT:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","ILUT");
-    break;
+      break;
     case INPAR::SOLVER::azprec_ILU:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","ILU");
-    break;
+      break;
     case INPAR::SOLVER::azprec_Neumann:
       azlist.set("AZ_precond",AZ_Neumann);
-    break;
+      break;
     case INPAR::SOLVER::azprec_Least_Squares:
       azlist.set("AZ_precond",AZ_ls);
-    break;
+      break;
     case INPAR::SOLVER::azprec_Jacobi:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","point relaxation");
-    break;
+      break;
     case INPAR::SOLVER::azprec_SymmGaussSeidel:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","point relaxation");
-    break;
+      break;
     case INPAR::SOLVER::azprec_GaussSeidel:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","point relaxation");
-    break;
+      break;
     case INPAR::SOLVER::azprec_DownwindGaussSeidel:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","point relaxation");
       azlist.set<bool>("downwinding",true);
       azlist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
-    break;
+      break;
     case INPAR::SOLVER::azprec_LU:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","Amesos");
-    break;
+      break;
     case INPAR::SOLVER::azprec_RILU:
       azlist.set("AZ_precond",AZ_dom_decomp);
       azlist.set("AZ_subdomain_solve",AZ_rilu);
       azlist.set("AZ_graph_fill",inparams.get<int>("IFPACKGFILL"));
-    break;
+      break;
     case INPAR::SOLVER::azprec_ICC:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","IC");
-    break;
+      break;
     case INPAR::SOLVER::azprec_ML:
     case INPAR::SOLVER::azprec_MLfluid:
     case INPAR::SOLVER::azprec_MLAPI:
@@ -1305,14 +1318,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
     case INPAR::SOLVER::azprec_MueLuAMG_contact:
       azlist.set("AZ_precond",AZ_user_precond);
-    break;
+      break;
     case INPAR::SOLVER::azprec_CheapSIMPLE:
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","CheapSIMPLE");
       break;
     default:
       dserror("Unknown preconditioner for AztecOO");
-    break;
+      break;
     }
     //------------------------------------- set other aztec parameters
     azlist.set("AZ_kspace",inparams.get<int>("AZSUB"));
@@ -1373,15 +1386,15 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       mllist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);
     } // if ml preconditioner
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_sym      ||
-    	azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym   )
+        azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym   )
     {
-    	Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-        muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);    	 // MueLu reuses the ML parameter list
+      Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
+      muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);    	 // MueLu reuses the ML parameter list
     }
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact    )
     {
-        Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-        muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
+      Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+      muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
     }
     //------------------------------------- set parameters for AMGBS if used
     if (azprectyp == INPAR::SOLVER::azprec_AMGBS      )
@@ -1403,11 +1416,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       amglist.set("smoother: sweeps",1);
       switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_COARSEN"))
       {
-        case 0:  amglist.set("aggregation: type","Uncoupled");  break;
-        case 1:  amglist.set("aggregation: type","METIS");      break;
-        case 2:  amglist.set("aggregation: type","VBMETIS");    break;
-        case 3:  amglist.set("aggregation: type","MIS");        break;
-        default: dserror("Unknown type of coarsening for ML"); break;
+      case 0:  amglist.set("aggregation: type","Uncoupled");  break;
+      case 1:  amglist.set("aggregation: type","METIS");      break;
+      case 2:  amglist.set("aggregation: type","VBMETIS");    break;
+      case 3:  amglist.set("aggregation: type","MIS");        break;
+      default: dserror("Unknown type of coarsening for ML"); break;
       }
 
       //////////////////// set braess-sarazin smoothers
@@ -1423,7 +1436,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
 
       if ((int)mlsmotimessteps.size() < mlmaxlevel)
         dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-                mlsmotimessteps.size(),mlmaxlevel);
+            mlsmotimessteps.size(),mlmaxlevel);
 
       //////////////////// read in damping parameters for Braess Sarazin
       std::vector<double> bsdamping;   // damping parameters for Braess-Sarazin
@@ -1435,7 +1448,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       }
       if ((int)bsdamping.size() < mlmaxlevel)
         dserror("Not enough damping factors AMGBS_BS_DAMPING=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-                bsdamping.size(),mlmaxlevel);
+            bsdamping.size(),mlmaxlevel);
 
       //////////////////// read in smoothing time steps for pressure correction equation with jacobi/sgs iteration
       std::vector<int> bspcsweeps;
@@ -1459,7 +1472,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       }
       if ((int)bspcdamping.size() < mlmaxlevel)
         dserror("Not enough damping factors AMGBS_BS_PCDAMPING=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-                bspcdamping.size(),mlmaxlevel);
+            bspcdamping.size(),mlmaxlevel);
 
       // Parameters for presssure correction smoother
       for (int i=0; i<mlmaxlevel; ++i)
@@ -1468,220 +1481,220 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
         sprintf(levelstr,"(level %d)",i);
         Teuchos::ParameterList& smolevelsublist = amglist.sublist("braess-sarazin: list "+(string)levelstr);
 
-          smolevelsublist.set("braess-sarazin: sweeps"                      ,mlsmotimessteps[i]);
-          smolevelsublist.set("braess-sarazin: damping factor"              ,bsdamping[i]);
-          smolevelsublist.set("pressure correction approx: type"      ,"ILU");   // TODO choose Umfpack, KLU, ILU, Jacobi, Gauss-Seidel, symmetric Gauss-Seidel
-          smolevelsublist.set("Ifpack overlap",inparams.get<int>("IFPACKOVERLAP"));
+        smolevelsublist.set("braess-sarazin: sweeps"                      ,mlsmotimessteps[i]);
+        smolevelsublist.set("braess-sarazin: damping factor"              ,bsdamping[i]);
+        smolevelsublist.set("pressure correction approx: type"      ,"ILU");   // TODO choose Umfpack, KLU, ILU, Jacobi, Gauss-Seidel, symmetric Gauss-Seidel
+        smolevelsublist.set("Ifpack overlap",inparams.get<int>("IFPACKOVERLAP"));
 
-          switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCCOARSE"))
-          {
-            case 0:
-            {
-              smolevelsublist.set("coarse: type","Umfpack");
-            }
-            break;
-            case 1:
-            {
-              smolevelsublist.set("coarse: type","KLU");
-            }
-            break;
-            case 2: // ILU is chosen
-            {
-              smolevelsublist.set("coarse: type"          ,"ILU");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
-              ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
-              ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-            }
-            break;
-            case 3:
-            case 6:
-            {
-              smolevelsublist.set("coarse: type","Jacobi");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","Jacobi");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            case 4:
-            case 7:
-            {
-              smolevelsublist.set("coarse: type","Gauss-Seidel");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","Gauss-Seidel");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            case 5:
-            case 8:
-            {
-              smolevelsublist.set("coarse: type","symmetric Gauss-Seidel");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
-          } // switch (azvar->mlsmotype_coarse)
+        switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCCOARSE"))
+        {
+        case 0:
+        {
+          smolevelsublist.set("coarse: type","Umfpack");
+        }
+        break;
+        case 1:
+        {
+          smolevelsublist.set("coarse: type","KLU");
+        }
+        break;
+        case 2: // ILU is chosen
+        {
+          smolevelsublist.set("coarse: type"          ,"ILU");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
+          ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
+          ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+        }
+        break;
+        case 3:
+        case 6:
+        {
+          smolevelsublist.set("coarse: type","Jacobi");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","Jacobi");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        case 4:
+        case 7:
+        {
+          smolevelsublist.set("coarse: type","Gauss-Seidel");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","Gauss-Seidel");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        case 5:
+        case 8:
+        {
+          smolevelsublist.set("coarse: type","symmetric Gauss-Seidel");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
+        } // switch (azvar->mlsmotype_coarse)
 
-          switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCMEDIUM"))
-          {
-            case 0:
-            {
-              smolevelsublist.set("medium: type","Umfpack");
-            }
-            break;
-            case 1:
-            {
-              smolevelsublist.set("medium: type","KLU");
-            }
-            break;
-            case 2:
-            {
-              smolevelsublist.set("medium: type"          ,"ILU");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
-              ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
-              ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-            }
-            break;
-            case 3:
-            case 6:
-            {
-              smolevelsublist.set("medium: type","Jacobi");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","Jacobi");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            case 4:
-            case 7:
-            {
-              smolevelsublist.set("medium: type","Gauss-Seidel");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","Gauss-Seidel");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            case 5:
-            case 8:
-            {
-              smolevelsublist.set("medium: type","symmetric Gauss-Seidel");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            default: dserror("Unknown type of medium level solver for pressure correction equation"); break;
-          }
+        switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCMEDIUM"))
+        {
+        case 0:
+        {
+          smolevelsublist.set("medium: type","Umfpack");
+        }
+        break;
+        case 1:
+        {
+          smolevelsublist.set("medium: type","KLU");
+        }
+        break;
+        case 2:
+        {
+          smolevelsublist.set("medium: type"          ,"ILU");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
+          ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
+          ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+        }
+        break;
+        case 3:
+        case 6:
+        {
+          smolevelsublist.set("medium: type","Jacobi");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","Jacobi");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        case 4:
+        case 7:
+        {
+          smolevelsublist.set("medium: type","Gauss-Seidel");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","Gauss-Seidel");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        case 5:
+        case 8:
+        {
+          smolevelsublist.set("medium: type","symmetric Gauss-Seidel");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        default: dserror("Unknown type of medium level solver for pressure correction equation"); break;
+        }
 
-          switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCFINE"))
-          {
-            case 0:
-            {
-              smolevelsublist.set("fine: type","Umfpack");
-            }
-            break;
-            case 1:
-            {
-              smolevelsublist.set("fine: type","KLU");
-            }
-            break;
-            case 2:
-            {
-              smolevelsublist.set("fine: type"          ,"ILU");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
-              ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
-              ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-            }
-            break;
-            case 3:
-            case 6:
-            {
-              smolevelsublist.set("fine: type","Jacobi");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","Jacobi");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            case 4:
-            case 7:
-            {
-              smolevelsublist.set("fine: type","Gauss-Seidel");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","Gauss-Seidel");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            case 5:
-            case 8:
-            {
-              smolevelsublist.set("fine: type","symmetric Gauss-Seidel");
-              Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
-              ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-              ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-              ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-              ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-              ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-              ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-              ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-              break;
-            }
-            default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
-          } // switch (azvar->mlsmotype_coarse)
+        switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCFINE"))
+        {
+        case 0:
+        {
+          smolevelsublist.set("fine: type","Umfpack");
+        }
+        break;
+        case 1:
+        {
+          smolevelsublist.set("fine: type","KLU");
+        }
+        break;
+        case 2:
+        {
+          smolevelsublist.set("fine: type"          ,"ILU");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
+          ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
+          ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+        }
+        break;
+        case 3:
+        case 6:
+        {
+          smolevelsublist.set("fine: type","Jacobi");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","Jacobi");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        case 4:
+        case 7:
+        {
+          smolevelsublist.set("fine: type","Gauss-Seidel");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","Gauss-Seidel");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        case 5:
+        case 8:
+        {
+          smolevelsublist.set("fine: type","symmetric Gauss-Seidel");
+          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
+          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
+          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
+          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+          ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
+          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
+          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
+          break;
+        }
+        default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
+        } // switch (azvar->mlsmotype_coarse)
 
 
       } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
@@ -1722,7 +1735,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   break;
   default:
     dserror("Unsupported type of solver");
-  break;
+    break;
   }
 
   //================================================================== deliver
@@ -1734,35 +1747,35 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
  | Multiply matrices A*B                                     mwgee 02/08|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
-                                             const LINALG::SparseMatrix& B,
-                                             bool complete)
+    const LINALG::SparseMatrix& B,
+    bool complete)
 {
   return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),
-                    A.explicitdirichlet_,A.savegraph_,complete);
+      A.explicitdirichlet_,A.savegraph_,complete);
 }
 
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 02/08|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
-                                             const LINALG::SparseMatrix& B,
-                                             bool explicitdirichlet,
-                                             bool savegraph,
-                                             bool complete)
+    const LINALG::SparseMatrix& B,
+    bool explicitdirichlet,
+    bool savegraph,
+    bool complete)
 {
   return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),
-                    explicitdirichlet,savegraph,complete);
+      explicitdirichlet,savegraph,complete);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
-                                                      bool transA,
-                                                      const LINALG::SparseMatrix& B,
-                                                      bool transB,
-                                                      bool explicitdirichlet,
-                                                      bool savegraph,
-                                                      bool completeoutput)
+    bool transA,
+    const LINALG::SparseMatrix& B,
+    bool transB,
+    bool explicitdirichlet,
+    bool savegraph,
+    bool completeoutput)
 {
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
@@ -1792,10 +1805,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix
  *----------------------------------------------------------------------*/
 //static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As);
 Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
-                                             const Epetra_CrsMatrix& Borig,
-                                             bool explicitdirichlet,
-                                             bool savegraph,
-                                             bool complete)
+    const Epetra_CrsMatrix& Borig,
+    bool explicitdirichlet,
+    bool savegraph,
+    bool complete)
 {
   EpetraExt::CrsMatrix_SolverMap Atransform;
   EpetraExt::CrsMatrix_SolverMap Btransform;
@@ -1838,7 +1851,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
     N_rcvd += (getrow_comm->neighbors)[i].N_rcv;
     N_send += (getrow_comm->neighbors)[i].N_send;
     if (  ((getrow_comm->neighbors)[i].N_rcv != 0) &&
-       ((getrow_comm->neighbors)[i].rcv_list != NULL) )  flag = 1;
+        ((getrow_comm->neighbors)[i].rcv_list != NULL) )  flag = 1;
   }
   // For some unknown reason, ML likes to have stuff one larger than
   // neccessary...
@@ -1888,7 +1901,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
 
   // allocate our result matrix and fill it
   Teuchos::RCP<Epetra_CrsMatrix> result
-    = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,A.RangeMap(),gcmap,educatedguess,false));
+  = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,A.RangeMap(),gcmap,educatedguess,false));
 
   vector<int> gcid(educatedguess);
   for (int i=0; i<myrowlength; ++i)
@@ -1964,6 +1977,6 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
   if (A.Filled()) As.FillComplete(A.DomainMap(),A.RangeMap(),true);
   return;
   }
-*/
+ */
 
 

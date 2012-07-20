@@ -4622,14 +4622,16 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
                        "CGS",
                        "TFQMR",
                        "BiCGSTAB",
-                       "LU"),
+                       "LU",
+                       "FGMRES"),
     tuple<int>(INPAR::SOLVER::azsolv_CG,
                INPAR::SOLVER::azsolv_GMRES,
                INPAR::SOLVER::azsolv_GMRESR,
                INPAR::SOLVER::azsolv_CGS,
                INPAR::SOLVER::azsolv_TFQMR,
                INPAR::SOLVER::azsolv_BiCGSTAB,
-               INPAR::SOLVER::azsolv_LU),
+               INPAR::SOLVER::azsolv_LU,
+               INPAR::SOLVER::belos_FGMRES),
     &list
     );
 
@@ -4885,6 +4887,9 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     tuple<std::string>("block0_block1_order","block1_block0_order"),
     tuple<int>(0,1),
     &list);
+
+  // verbosity flag (for Belos)
+  IntParameter("VERBOSITY",0,"verbosity level (0=no output,... 10=extreme), for Belos only",&list);
 
   // the only one stratimikos specific parameter
   setNumericStringParameter("STRATIMIKOS_XMLFILE","",
