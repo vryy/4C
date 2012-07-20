@@ -221,7 +221,8 @@ IO::HDFReader::ReadCharData(std::string path, int start, int end) const
                               H5P_DEFAULT,&((*data)[offset]));
       offset += dim;
       if (status < 0)
-        dserror("Failed to read data from dataset %s in HDF-file %s",
+        printf("Failed to read data from dataset %s in HDF-file %s. "
+            "This can be tolerated in case you have procs without row elements!",
                 path.c_str(),filenames_[i].c_str());
       status = H5Sclose(dataspace);
       if (status < 0)

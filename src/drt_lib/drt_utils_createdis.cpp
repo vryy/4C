@@ -79,6 +79,9 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
     }
   }
 
+  // ensure Reset() is called on targetdis on all procs (including procs without rownodes)
+  targetdis->CheckFilledGlobally();
+
   return;
 }
 

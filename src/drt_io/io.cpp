@@ -932,8 +932,9 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     dserror("Failed to write group in HDF-meshfile");
 
   Teuchos::RCP<std::vector<char> > elementdata = dis_->PackMyElements();
-  if (elementdata->size()==0)
-    dserror("no element data on proc %d. Too few elements?", dis_->Comm().MyPID());
+  // removed dserror in order to enable procs without row elements
+  //  if (elementdata->size()==0)
+  //    dserror("no element data on proc %d. Too few elements?", dis_->Comm().MyPID());
   hsize_t dim = static_cast<hsize_t>(elementdata->size());
   const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
   if (element_status < 0)
