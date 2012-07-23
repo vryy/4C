@@ -47,7 +47,7 @@ void NodeReader::Read()
 
   int numnodes = reader_.ExcludedSectionLength("--NODE COORDS");
 
-  if(numnodes < numproc)
+  if( (numnodes < numproc) && (numnodes != 0) )
     dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc,numnodes);
 
   for (unsigned i=0; i<ereader_.size(); ++i)
