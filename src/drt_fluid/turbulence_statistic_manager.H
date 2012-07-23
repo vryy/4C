@@ -53,12 +53,13 @@ namespace FLD
 class FluidGenAlphaIntegration;
 class FluidImplicitTimeInt;
 class CombustFluidImplicitTimeInt;
-class TurbulenceStatisticsGeneralMean;
 class TurbulenceStatisticsCha;
 class TurbulenceStatisticsCcy;
 class TurbulenceStatisticsLdc;
 class TurbulenceStatisticsBfs;
 class TurbulenceStatisticsSqc;
+
+//class TurbulenceStatisticsGeneralMean;
 
 
 class TurbulenceStatisticManager
@@ -186,8 +187,8 @@ public:
   \brief remote access method to general mean statistics manager
 
   */
-  const RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
-    { return statistics_general_mean_; }
+//  const RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
+//    { return statistics_general_mean_; }
 
 private:
   /*!
@@ -287,7 +288,7 @@ private:
   //! mean values of velocity and pressure, independent of special flow
   //! averaging takes place in time, if hom. directions have been specified
   //! additionally along these lines
-  RCP<TurbulenceStatisticsGeneralMean> statistics_general_mean_;
+//  RCP<TurbulenceStatisticsGeneralMean> statistics_general_mean_;
 
   //! turbulence statistics for turbulent channel flow
   RCP<TurbulenceStatisticsCha>         statistics_channel_;

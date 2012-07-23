@@ -894,7 +894,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/turbulence_statistics_cha.cpp
   src/drt_fluid/turbulence_statistics_bcf.cpp
   src/drt_fluid/turbulence_statistics_ldc.cpp
-  src/drt_fluid/turbulence_statistics_mean_general.cpp
+#  src/drt_fluid/turbulence_statistics_mean_general.cpp
   src/drt_fluid/turbulence_statistics_sqc.cpp
   src/drt_fluid/xfluid.cpp
   src/drt_fluid/xfluidfluid.cpp

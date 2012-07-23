@@ -19,7 +19,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H" // for LiftDrag
 #include "../drt_lib/drt_dofset_independent_pbc.H"
-#include "../drt_fluid/turbulence_statistics_mean_general.H"
+//#include "../drt_fluid/turbulence_statistics_mean_general.H"
 #include "../drt_fluid/turbulence_statistics_ccy.H"
 #include "../drt_fluid/turbulence_statistics_cha.H"
 #include "../drt_fluid/turbulence_statistics_bcf.H"
@@ -63,7 +63,7 @@ namespace FLD
     turbmodel_      (INPAR::FLUID::no_model),
     subgrid_dissipation_(false             ),
     inflow_(false                          ),
-    statistics_general_mean_(Teuchos::null ),
+//    statistics_general_mean_(Teuchos::null ),
     statistics_channel_(Teuchos::null      ),
     statistics_channel_multiphase_(Teuchos::null),
     statistics_ccy_(Teuchos::null          ),
@@ -297,23 +297,23 @@ namespace FLD
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
-      if(flow_==rotating_circular_cylinder_nurbs_scatra)
-      {
-        // additional averaging of scalar field
-        statistics_general_mean_
-        =rcp(new TurbulenceStatisticsGeneralMean(
-            discret_,
-            homdir,
-            fluid.VelPresSplitter(),true));
-      }
-      else
-      {
-        statistics_general_mean_
-        =rcp(new TurbulenceStatisticsGeneralMean(
-            discret_,
-            homdir,
-            fluid.VelPresSplitter(),false));
-      }
+//      if(flow_==rotating_circular_cylinder_nurbs_scatra)
+//      {
+//        // additional averaging of scalar field
+//        statistics_general_mean_
+//        =rcp(new TurbulenceStatisticsGeneralMean(
+//            discret_,
+//            homdir,
+//            fluid.VelPresSplitter(),true));
+//      }
+//      else
+//      {
+//        statistics_general_mean_
+//        =rcp(new TurbulenceStatisticsGeneralMean(
+//            discret_,
+//            homdir,
+//            fluid.VelPresSplitter(),false));
+//      }
     }
 
     return;
@@ -351,7 +351,7 @@ namespace FLD
     turbmodel_      (INPAR::FLUID::no_model),
     subgrid_dissipation_(false             ),
     inflow_(false                          ),
-    statistics_general_mean_(Teuchos::null ),
+//    statistics_general_mean_(Teuchos::null ),
     statistics_channel_(Teuchos::null      ),
     statistics_channel_multiphase_(Teuchos::null),
     statistics_ccy_(Teuchos::null          ),
@@ -424,22 +424,22 @@ namespace FLD
       Setup();
     }
 
-    statistics_general_mean_ = Teuchos::null;
-    // allocate one instance of the flow independent averaging procedure
-    // providing colorful output for paraview
-    {
-      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
-
-      string homdir = modelparams->get<string>("HOMDIR","not_specified");
-
-      statistics_general_mean_ = Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
-          discret_,
-          timeint.standarddofset_,
-          homdir,
-          *timeint.velpressplitterForOutput_,
-          withscatra_ // statistics for transported scalar
-      ));
-    }
+//    statistics_general_mean_ = Teuchos::null;
+//    // allocate one instance of the flow independent averaging procedure
+//    // providing colorful output for paraview
+//    {
+//      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
+//
+//      string homdir = modelparams->get<string>("HOMDIR","not_specified");
+//
+//      statistics_general_mean_ = Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
+//          discret_,
+//          timeint.standarddofset_,
+//          homdir,
+//          *timeint.velpressplitterForOutput_,
+//          withscatra_ // statistics for transported scalar
+//      ));
+//    }
 
     return;
 
@@ -952,8 +952,8 @@ namespace FLD
 
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
-      if (statistics_general_mean_!=Teuchos::null)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscaaf_,myfullphinp_);
+//      if (statistics_general_mean_!=Teuchos::null)
+//        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscaaf_,myfullphinp_);
 
     } // end step in sampling period
 
@@ -1025,8 +1025,8 @@ namespace FLD
 
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
-      if (statistics_general_mean_!=Teuchos::null)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,velnp,myscaaf_,myfullphinp_);
+//      if (statistics_general_mean_!=Teuchos::null)
+//        statistics_general_mean_->AddToCurrentTimeAverage(dt_,velnp,myscaaf_,myfullphinp_);
 
       if(discret_->Comm().MyPID()==0)
       {
@@ -1291,22 +1291,20 @@ namespace FLD
 
       // dump general mean value output in combination with a restart/output
       // don't write output if turbulent inflow or twophaseflow is computed
-      if (!inflow and flow_ != bubbly_channel_flow)
-      {
-        int upres    =params_->get<int>("write solution every");
-        int uprestart=params_->get<int>("write restart every" );
-
-        if(step%upres == 0 || (uprestart > 0 && step%uprestart == 0) )
-        {
-          if (discret_->Comm().MyPID()==0)
-            std::cout << "---  averaged vector: \n" << std::flush;
-
-          statistics_general_mean_->WriteOldAverageVec(output);
-
+//      if (!inflow and flow_ != bubbly_channel_flow)
+//      {
+//        int upres    =params_->get<int>("write solution every");
+//        int uprestart=params_->get<int>("write restart every" );
+//
+//        if(step%upres == 0 || (uprestart > 0 && step%uprestart == 0) )
+//        {
 //          if (discret_->Comm().MyPID()==0)
-//            std::cout << "done" << std::endl;
-        }
-      }
+//            std::cout << "---  averaged vector: \n" << std::flush;
+//
+//          statistics_general_mean_->WriteOldAverageVec(output);
+//
+//        }
+//      }
     } // end step is in sampling period
 
     return;
@@ -1334,8 +1332,8 @@ namespace FLD
     scatradis_   = scatradis;
     myfullphinp_ = phinp;
 
-    if (statistics_general_mean_!=Teuchos::null)
-      statistics_general_mean_->AddScaTraResults(scatradis, phinp);
+//    if (statistics_general_mean_!=Teuchos::null)
+//      statistics_general_mean_->AddScaTraResults(scatradis, phinp);
 
     if (statistics_ccy_!=Teuchos::null)
       statistics_ccy_->AddScaTraResults(scatradis, phinp);
@@ -1370,13 +1368,13 @@ namespace FLD
 
       // dump general mean value output for scatra results
       // in combination with a restart/output
-      int upres    =params_->get("write solution every", -1);
-      int uprestart=params_->get("write restart every" , -1);
+//      int upres    =params_->get("write solution every", -1);
+//      int uprestart=params_->get("write restart every" , -1);
 
-      if(step%upres == 0 || step%uprestart == 0)
-      {
-        statistics_general_mean_->DoOutputForScaTra(output,step);
-      }
+//      if(step%upres == 0 || step%uprestart == 0)
+//      {
+//        statistics_general_mean_->DoOutputForScaTra(output,step);
+//      }
     }
     return;
   }
@@ -1393,21 +1391,21 @@ namespace FLD
     )
   {
 
-    if(statistics_general_mean_!=Teuchos::null)
-    {
-      if(samstart_<step && step<=samstop_)
-      {
-        if(discret_->Comm().MyPID()==0)
-        {
-          cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-          cout << "Read general mean values           ";
-          cout << "XXXXXXXXXXXXXXXXXXXXX";
-          cout << "\n\n";
-        }
-
-        statistics_general_mean_->ReadOldStatistics(reader);
-      }
-    }
+//    if(statistics_general_mean_!=Teuchos::null)
+//    {
+//      if(samstart_<step && step<=samstop_)
+//      {
+//        if(discret_->Comm().MyPID()==0)
+//        {
+//          cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+//          cout << "Read general mean values           ";
+//          cout << "XXXXXXXXXXXXXXXXXXXXX";
+//          cout << "\n\n";
+//        }
+//
+//        statistics_general_mean_->ReadOldStatistics(reader);
+//      }
+//    }
 
     return;
   } // Restart
@@ -1425,21 +1423,21 @@ namespace FLD
   {
     // we have only to read in the mean field.
     // The rest of the restart was already done during the Restart() call
-    if(statistics_general_mean_!=Teuchos::null)
-    {
-      if(samstart_<step && step<=samstop_)
-      {
-        if(discret_->Comm().MyPID()==0)
-        {
-          cout << "XXXXXXXXXXXXXXXXXXXXX        ";
-          cout << "Read general mean values for ScaTra      ";
-          cout << "XXXXXXXXXXXXXXXXXXXXX";
-          cout << "\n\n";
-        }
-
-        statistics_general_mean_->ReadOldStatisticsScaTra(scatrareader);
-      }
-    }
+//    if(statistics_general_mean_!=Teuchos::null)
+//    {
+//      if(samstart_<step && step<=samstop_)
+//      {
+//        if(discret_->Comm().MyPID()==0)
+//        {
+//          cout << "XXXXXXXXXXXXXXXXXXXXX        ";
+//          cout << "Read general mean values for ScaTra      ";
+//          cout << "XXXXXXXXXXXXXXXXXXXXX";
+//          cout << "\n\n";
+//        }
+//
+//        statistics_general_mean_->ReadOldStatisticsScaTra(scatrareader);
+//      }
+//    }
 
     return;
   } // RestartScaTra
