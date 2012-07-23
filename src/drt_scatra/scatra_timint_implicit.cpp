@@ -2914,8 +2914,13 @@ void SCATRA::ScaTraTimIntImpl::ElementMaterialTimeUpdate()
   p.set<int>("action", SCATRA::time_update_material);
   // further required parameters
   p.set<int>("scatratype",scatratype_);
-  // go to elements
+  p.set("time-step length",dta_);
+
+  // set vector values needed by elements
   discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+
+  // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
