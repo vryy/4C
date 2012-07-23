@@ -31,12 +31,6 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef CCA_APPEND_U
-#define c1ab                c1ab_
-#define c1inv3              c1inv3_
-#define c1inv6              c1inv6_
-#define c1invf              c1invf_
-#define c1jacb              c1jacb_
-#define colsol              colsol_
 /* required for lapack access. do not remove! */
 #define dgesv               dgesv_
 #define dgetrf              dgetrf_
