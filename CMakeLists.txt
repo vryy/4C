@@ -1685,6 +1685,16 @@ macro (baci_framework_test arg nproc)
   set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ;Error " )
 
 endmacro (baci_framework_test)
+
+# CUT TESTS
+macro (cut_test nproc)
+  set (RUNTESTS ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ cut_test)
+  add_test(NAME test-p${nproc}-cut 
+  COMMAND sh -c "${RUNTESTS}")
+  set_tests_properties ( test-p${nproc}-cut PROPERTIES TIMEOUT 1000 )
+  set_tests_properties ( test-p${nproc}-cut PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR " )
+endmacro (cut_test)
+
 ###------------------------------------------------------------------ List of tests
 ##if(NOT TRILINOS_DEV)
 baci_test(artaneurysm_hex 1 "")
@@ -2484,6 +2494,9 @@ baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport 
 
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
 baci_framework_test(tutorial_fluid 2)
+
+# cut test 
+cut_test(2)
 
 if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
