@@ -293,7 +293,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
       //-------------------------------
       // t^(n)
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set> >& dof_cellsets_old = n_old->DofCellSets();
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets_old = n_old->DofCellSets();
 
       // how many sets of dofs?
       const int numDofSets_old = n_old->NumDofSets(); //= dof_cellsets_old.size()
@@ -310,7 +310,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         int nds_old = 0;
 
         // get the unique cellset
-        const std::set<GEO::CUT::plain_volumecell_set>& cell_set = dof_cellsets_old[nds_old];
+        const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set = dof_cellsets_old[nds_old];
 
         if(Is_Std_CellSet(n_old, cell_set)) // case b)
         {
@@ -387,7 +387,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
       //-------------------------------
       // t^(n+1)
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set> >& dof_cellsets_new = n_new->DofCellSets();
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets_new = n_new->DofCellSets();
 
 
       //------------------------------------------
@@ -402,7 +402,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         const int nds_new = 0;
 
         // get the unique cellset
-        const std::set<GEO::CUT::plain_volumecell_set>& cell_set = dof_cellsets_new[nds_new];
+        const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set = dof_cellsets_new[nds_new];
 
         if(Is_Std_CellSet(n_new, cell_set)) // case b)
         {
@@ -431,7 +431,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         int nds_new = 0; // nodal dofset counter
 
         // loop new dofsets
-        for(std::vector<std::set<GEO::CUT::plain_volumecell_set> >::const_iterator sets=dof_cellsets_new.begin();
+        for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator sets=dof_cellsets_new.begin();
             sets!=dof_cellsets_new.end();
             sets ++)
         {
@@ -480,21 +480,21 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
       //-------------------------------
       // t^n
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set> >& dof_cellsets_old = n_old->DofCellSets();
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets_old = n_old->DofCellSets();
 
       //-------------------------------
       // t^(n+1)
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set> >& dof_cellsets_new = n_new->DofCellSets();
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets_new = n_new->DofCellSets();
 
       int nds_new = 0; // nodal dofset counter
 
       // loop new dofsets
-      for(std::vector<std::set<GEO::CUT::plain_volumecell_set> >::const_iterator sets=dof_cellsets_new.begin();
+      for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >::const_iterator sets=dof_cellsets_new.begin();
                 sets!=dof_cellsets_new.end();
                 sets ++)
       {
 
-        const std::set<GEO::CUT::plain_volumecell_set>& cell_set = *sets;
+        const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set = *sets;
 
         //is current set at t^(n+1) std or ghost or dofset
         bool is_std_set_np = Is_Std_CellSet(n_new, cell_set);
@@ -771,7 +771,7 @@ void XFEM::XFluidTimeInt::SetReconstrMethod(
 // -------------------------------------------------------------------
 bool XFEM::XFluidTimeInt::Is_Std_CellSet(
     GEO::CUT::Node*                                  node,     /// cut node
-    const std::set<GEO::CUT::plain_volumecell_set>&  cell_set  /// set of volumecells
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >&  cell_set  /// set of volumecells
     )
 {
   // assume non-standard set
@@ -811,8 +811,8 @@ bool XFEM::XFluidTimeInt::Is_Std_CellSet(
 void XFEM::XFluidTimeInt::IdentifyOldSets(
     int &                                                          nds_old,            /// set identified nodal dofset at t^n
     std::vector<int> &                                             identified_sides,   /// set identified using sides (side-Ids)
-    const std::vector<std::set<GEO::CUT::plain_volumecell_set> >&  dof_cellsets_old,   /// all dofcellsets at t^n
-    const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_new        /// dofcellset at t^(n+1) which has to be identified
+    const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >&  dof_cellsets_old,   /// all dofcellsets at t^n
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new        /// dofcellset at t^(n+1) which has to be identified
     )
 {
   // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
@@ -842,14 +842,14 @@ void XFEM::XFluidTimeInt::IdentifyOldSets(
   int set_number = 0;
 
   //check each old dofset for identification with new dofset
-  for(std::vector<std::set<GEO::CUT::plain_volumecell_set> >::const_iterator old_sets=dof_cellsets_old.begin();
+  for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator old_sets=dof_cellsets_old.begin();
       old_sets!=dof_cellsets_old.end();
       old_sets++)
   {
 
     bool identified_set = false;
 
-    const std::set<GEO::CUT::plain_volumecell_set> & old_set = *old_sets;
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & old_set = *old_sets;
 
     // for each set a new map of bcs
     std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_old;
@@ -915,8 +915,8 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
     std::vector<int> &                                             identified_sides,    /// side Id of identified side
     GEO::CUT::Node *                                               n_old,               /// node w.r.t to old wizard
     GEO::CUT::Node *                                               n_new,               /// node w.r.t to new wizard
-    const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_old,        /// dofcellset at t^n
-    const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_new         /// dofcellset at t^(n+1)
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_old,        /// dofcellset at t^n
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new         /// dofcellset at t^(n+1)
     )
 {
   bool successful_check = true;

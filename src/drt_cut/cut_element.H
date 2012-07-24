@@ -73,6 +73,8 @@ public:
    */
   virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz ) = 0;
 
+  virtual void ElementCenter( LINALG::Matrix<3,1> & midpoint ) = 0;
+
   /*!
   \brief Find the scalar value at a particular point inside the element specified by its local coordinates rst. ns
   contains the value of the scalar at the corner nodes of the element
@@ -292,6 +294,25 @@ public:
     }
   }
 
+  /*------------------------------------------------------------------------*
+  | Center of a Tet4 element                         shahmiri 07/12
+  *-------------------------------------------------------------------------*/
+  virtual void ElementCenter( LINALG::Matrix<3,1> & midpoint )
+  {
+
+    LINALG::Matrix<3,1> center(DRT::UTILS::getLocalCenterPosition<3>(DRT::Element::tet4));
+
+    const int numNode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+    LINALG::Matrix<3,numNode> xyze;
+    Coordinates(xyze);
+
+    LINALG::Matrix<numNode,1> funct;
+    DRT::UTILS::shape_function_3D( funct, center(0,0), center(1,0), center(2,0), DRT::Element::tet4 );
+
+    midpoint.Multiply(xyze,funct);
+
+  }
+
   virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst )
   {
     const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
@@ -342,6 +363,11 @@ public:
       LINALG::Matrix<3,1> x( nodes[i]->point()->X() );
       xyz.Update( funct( i ), x, 1 );
     }
+  }
+
+  virtual void ElementCenter( LINALG::Matrix<3,1> & midpoint )
+  {
+    dserror("ElementCenter for wedge6 not implemented!");
   }
 
   virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst )
@@ -396,6 +422,11 @@ public:
     }
   }
 
+  virtual void ElementCenter( LINALG::Matrix<3,1> & midpoint )
+  {
+    dserror("ElementCenter for pyramid5 not implemented!");
+  }
+
   virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst )
   {
     const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement;
@@ -445,6 +476,25 @@ public:
       LINALG::Matrix<3,1> x( nodes[i]->point()->X() );
       xyz.Update( funct( i ), x, 1 );
     }
+  }
+
+  /*------------------------------------------------------------------------*
+  | Center of a Hex8 element                         shahmiri 07/12
+  *-------------------------------------------------------------------------*/
+  virtual void ElementCenter( LINALG::Matrix<3,1> & midpoint )
+  {
+
+    LINALG::Matrix<3,1> center(DRT::UTILS::getLocalCenterPosition<3>(DRT::Element::hex8));
+
+    const int numNode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+    LINALG::Matrix<3,numNode> xyze;
+    Coordinates(xyze);
+
+    LINALG::Matrix<numNode,1> funct;
+    DRT::UTILS::shape_function_3D( funct, center(0,0), center(1,0), center(2,0), DRT::Element::hex8 );
+
+    midpoint.Multiply(xyze,funct);
+
   }
 
   virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst )

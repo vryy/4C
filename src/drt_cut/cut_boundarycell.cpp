@@ -241,6 +241,36 @@ DRT::UTILS::GaussIntegration GEO::CUT::ArbitraryBoundaryCell::gaussRule()
   return gaussRule_;
 }
 
+void GEO::CUT::ArbitraryBoundaryCell::ElementCenter(LINALG::Matrix<3,1> & midpoint)
+{
+  dserror("Element Center for ArbitraryBoundaryCells not implemented!");
+}
+
+
+/*------------------------------------------------------------------------*
+  | Center of Tri3 boundarycell                shahmiri 07/12
+  *-----------------------------------------------------------------------*/
+void GEO::CUT::Tri3BoundaryCell::ElementCenter( LINALG::Matrix<3,1> &  midpoint )
+{
+  LINALG::Matrix<3,1> center;
+  center(0,0) = 0.25;
+  center(1,0) = 0.25;
+  center(2,0) = 0.0;
+  MyElementCenter<DRT::Element::tri3>(center,midpoint);
+}
+
+/*------------------------------------------------------------------------*
+  | Center of Quad4 boundarycell                shahmiri 07/12
+  *-----------------------------------------------------------------------*/
+void GEO::CUT::Quad4BoundaryCell::ElementCenter( LINALG::Matrix<3,1> & midpoint )
+{
+  LINALG::Matrix<3,1> center;
+  center(0,0) = 0.0;
+  center(1,0) = 0.0;
+  center(2,0) = 0.0;
+  MyElementCenter<DRT::Element::quad4>(center,midpoint);
+}
+
 LINALG::Matrix<3,1> GEO::CUT::Tri3BoundaryCell::GetNormalVector()
 {
   dserror("Call Transform function to get normal for Tri3 boundarycell");

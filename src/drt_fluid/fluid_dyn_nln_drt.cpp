@@ -115,7 +115,7 @@ void dyn_fluid_drt(const int restart)
 //----------------------------------------------------------------------------
 // main routine for fluid_fluid problems
 //-------------------------------------------------------------------------
-void fluid_fluid_drt()
+void fluid_fluid_drt(const int restart)
 {
    // create a communicator
   #ifdef PARALLEL
@@ -351,7 +351,7 @@ void fluid_fluid_drt()
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
   // read the restart information, set vectors and variables
-  //if (restart) fluidalgo->FluidField().ReadRestart(restart);
+  if (restart) fluidalgo->FluidField().ReadRestart(restart);
 
   // run the simulation
 //  fluidalgo->FluidField().TimeLoop();

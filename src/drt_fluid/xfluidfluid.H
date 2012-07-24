@@ -77,6 +77,7 @@ namespace FLD
                                DRT::Discretization    & cutdiscret,
                                DRT::Discretization    & embdis);
 
+
       void GmshOutput( DRT::Discretization & bgdis,
                        DRT::Discretization & embdis,
                        DRT::Discretization & cutdiscret,
@@ -96,8 +97,6 @@ namespace FLD
 
       /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
       Teuchos::RCP<Epetra_Vector>    zeros_;
-      //Teuchos::RCP<Epetra_Vector>    alezeros_;
-//      Teuchos::RCP<Epetra_Vector>    fluidfluidzeros_;
 
       /// the vector containing body and surface forces
       Teuchos::RCP<Epetra_Vector>    neumann_loads_;
@@ -157,7 +156,7 @@ namespace FLD
 
       // dof-row maps
       Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
-      Teuchos::RCP<Epetra_Map> fluidfluiddofrowmap_;
+      Teuchos::RCP<Epetra_Map>       fluidfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
       Teuchos::RCP<const Epetra_Map> fluidfluiddbcmaps_;
@@ -318,6 +317,8 @@ namespace FLD
 
     /// determine grid velocity
     void UpdateGridv();
+
+    void ReadRestart(int step);
 
     void CutAndSaveBgFluidStatus();
 
@@ -512,8 +513,8 @@ namespace FLD
     // output vector for bg-fluid field (velocity and pressure)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
 
-      /// ALE dof map
-      LINALG::MapExtractor                   meshmap_;
+    /// ALE dof map
+    LINALG::MapExtractor        meshmap_;
 
   private:
 
@@ -596,6 +597,11 @@ namespace FLD
     /// edgebased stabilization
     bool edge_based_;
 
+    // restart step
+    int restartstep_;
+
+    bool readrestart_;
+
     /// ghost penalty stabilization
     bool ghost_penalty_;
     double ghost_penalty_fac_;
@@ -676,8 +682,10 @@ namespace FLD
 
     bool   monolithicfluidfluidfsi_;
     bool   samemaps_; // same maps for the current cut and the last cut
-    int relaxing_ale_every_;
-    bool relaxing_ale_;
+
+    /// boolean indicating if we relax the ale mesh
+    bool   relaxing_ale_;
+    int    relaxing_ale_every_;
 
     // used for monolithic_fixedale_partitioned
     Teuchos::RCP<Epetra_Vector>    toggle_;

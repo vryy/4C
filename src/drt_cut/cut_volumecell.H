@@ -17,6 +17,7 @@ namespace CUT
   class IntegrationCellCreator;
   class Mesh;
 
+
 /// a partial volume of a cutted element of any shape
 /*!
   \brief Volume cell is a partial (or whole) element that is defined by its
@@ -29,6 +30,8 @@ namespace CUT
   - its position to the cut surface
   - the dof set number of all element nodes
  */
+
+
 class VolumeCell
 {
 public:
@@ -195,6 +198,8 @@ public:
    */
   DRT::UTILS::GaussIntegration GetInternalRule( int facetIntNo ){ return intGP_[facetIntNo]; }
 
+  std::set<int> VolumeCellPoints();
+
   /*!
   \brief Chcek whether this point is inside, outside or on boundary of this this volumecell.
   The output string will be either "outside", "inside" or "onBoundary"
@@ -206,6 +211,7 @@ public:
   The output string will be either "outside", "inside" or "onBoundary"
    */
   std::string IsThisPointInside( LINALG::Matrix<3,1>& x );
+
 
 private:
 
@@ -258,6 +264,9 @@ private:
   /// dof set number of all element nodes
   std::vector<int> nodaldofset_;
 
+  // point ids of a volume cell
+  std::set<int>    vcpoints_ids_;
+
   static int hex8totet4[5][4];
   static int wedge6totet4[3][4];
   static int pyramid5totet4[2][4];
@@ -283,7 +292,6 @@ private:
   std::vector<DRT::UTILS::GaussIntegration> intGP_;
 
 };
-
 
 }
 }

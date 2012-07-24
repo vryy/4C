@@ -62,7 +62,7 @@ void ntacal()
       fluid_fluid_fsi_drt();
     break;
     case prb_fluid_fluid:
-      fluid_fluid_drt();
+      fluid_fluid_drt(restart);
       break;
     case prb_fluid_ale:
       fluid_ale_drt();
@@ -128,7 +128,7 @@ void ntacal()
     case prb_struct_ale:
       stru_ale_dyn_drt(restart);
       break;
-      
+
     case prb_poroelast:
       poroelast_drt();
       break;

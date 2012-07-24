@@ -1,4 +1,15 @@
+/*!----------------------------------------------------------------------
+\file xfluidfluid.cpp
+\brief Control routine for fluid-fluid (in)stationary solvers with XFEM,
 
+<pre>
+Maintainer:  Shadan Shahmiri
+             shahmiri@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15240
+</pre>
+
+*----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -1026,7 +1037,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
 }
 
-
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discret,
@@ -1675,6 +1685,9 @@ FLD::XFluidFluid::XFluidFluid(
 
   gmsh_count_ = 0;
 
+  readrestart_ = false;
+  restartstep_ = 0;
+
 
   // load GMSH output flags
   gmsh_cut_out_          = (bool)params_->sublist("XFEM").get<int>("GMSH_CUT_OUT");
@@ -2322,7 +2335,7 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
   // numbers within only ONE simulation when you apply a proper
   // (pseudo-)timecurve
 
-   while (step_< stepmax_)
+  while (step_< stepmax_)
   {
     // -------------------------------------------------------------------
     //              set (pseudo-)time dependent parameters
@@ -2367,7 +2380,6 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
     Output();
   }
 }// FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
-
 
 /*----------------------------------------------------------------------*
  |  check xfluid input parameters/ safety checks           schott 05/12 |
@@ -2994,6 +3006,74 @@ void FLD::XFluidFluid::Evaluate(
 }//FLD::XFluidFluid::Evaluate
 
 // -------------------------------------------------------------------
+// Read Restart data
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::ReadRestart(int step)
+{
+  readrestart_ = true;
+  restartstep_ = step;
+
+  //-------- background discretization
+  //  ART_exp_timeInt_->ReadRestart(step);
+  IO::DiscretizationReader reader(bgdis_,step);
+  time_ = reader.ReadDouble("time");
+  step_ = reader.ReadInt("step");
+
+  reader.ReadVector(state_->velnp_,"velnp_bg");
+  reader.ReadVector(state_->velnm_,"velnm_bg");
+  reader.ReadVector(state_->veln_,"veln_bg");
+  reader.ReadVector(state_->accnp_,"accnp_bg");
+  reader.ReadVector(state_->accn_ ,"accn_bg");
+
+  // set element time parameter after restart:
+  // Here it is already needed by AVM3 and impedance boundary condition!!
+  SetElementTimeParameter();
+
+  // ensure that the overall dof numbering is identical to the one
+  // that was used when the restart data was written. Especially
+  // in case of multiphysics problems & periodic boundary conditions
+  // it is better to check the consistency of the maps here:
+  if (not (bgdis_->DofRowMap())->SameAs(state_->velnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (bgdis_->DofRowMap())->SameAs(state_->veln_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (bgdis_->DofRowMap())->SameAs(state_->accn_->Map()))
+    dserror("Global dof numbering in maps does not match");
+
+  //-------- embedded discretization
+  IO::DiscretizationReader embreader(embdis_,step);
+
+  embreader.ReadVector(alevelnp_,"velnp_emb");
+  embreader.ReadVector(aleveln_, "veln_emb");
+  embreader.ReadVector(alevelnm_,"velnm_emb");
+  embreader.ReadVector(aleaccnp_,"accnp_emb");
+  embreader.ReadVector(aleaccn_ ,"accn_emb");
+  // set element time parameter after restart:
+  // Here it is already needed by AVM3 and impedance boundary condition!!
+  SetElementTimeParameter();
+
+  if (alefluid_)
+  {
+    embreader.ReadVector(aledispnp_,"dispnp_emb");
+    embreader.ReadVector(aledispn_ , "dispn_emb");
+    embreader.ReadVector(aledispnm_,"dispnm_emb");
+
+    embreader.ReadVector(gridv_,"gridv_emb");
+  }
+
+  // ensure that the overall dof numbering is identical to the one
+  // that was used when the restart data was written. Especially
+  // in case of multiphysics problems & periodic boundary conditions
+  // it is better to check the consistency of the maps here:
+  if (not (embdis_->DofRowMap())->SameAs(alevelnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (embdis_->DofRowMap())->SameAs(aleveln_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (embdis_->DofRowMap())->SameAs(aleaccn_->Map()))
+    dserror("Global dof numbering in maps does not match");
+}
+
+// -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::UpdateGridv()
@@ -3198,9 +3278,24 @@ void FLD::XFluidFluid::CutAndSaveBgFluidStatus()
   // save the old state vector
   staten_ = state_;
 
+  // if restart
+  if (readrestart_ and ((restartstep_+1) == step_))
+  {
+    Epetra_Vector idispcoln( *boundarydis_->DofColMap() );
+    idispcoln.PutScalar( 0.0 );
+    LINALG::Export(*aledispn_,idispcoln);
+    staten_ = Teuchos::rcp( new XFluidFluidState( *this, idispcoln ) );
+    xfluidfluid_timeint_->CreateBgNodeMapsForRestart(bgdis_,staten_->wizard_);
+    staten_->velnp_ = state_->velnp_;
+    staten_->veln_ = state_->veln_;
+    staten_->velnm_ = state_->velnm_;
+    staten_->accnp_ = state_->accnp_;
+    staten_->accn_ = state_->accn_;
+  }
+
   // new cut for this time step
   Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-  idispcol.PutScalar( 0.0);
+  idispcol.PutScalar( 0.0 );
   LINALG::Export(*aledispnp_,idispcol);
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
@@ -3230,7 +3325,8 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
   INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
   int startfuncno = fdyn.get<int>("STARTFUNCNO");
 
-  if ((not monolithicfluidfluidfsi_ and step_>1 and alefluid_) or monolithicfluidfluidfsi_)
+  if (monolithicfluidfluidfsi_ or
+      (not monolithicfluidfluidfsi_ and step_>1 and alefluid_))
   {
     if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj or
         xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues or
@@ -3264,6 +3360,7 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
 
     }
     // Note: if Xff_TimeInt_ProjIfMoved is chosen and the maps remain the same
+    // (TODO: they remain the same just for one dofset)
     // the enriched values are not projected from the embedded fluid anymore.
     else if(xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and samemaps_)
     {
@@ -3323,10 +3420,10 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution()
   toggle_ = LINALG::CreateVector(*state_->fluidfluiddofrowmap_,true);
   LINALG::Export(*tmpvec,*toggle_);
 
-  int count = 1;
-  Teuchos::RCP<Epetra_Vector> testbg = state_->fluidfluidsplitter_->ExtractXFluidVector(toggle_);
-  Teuchos::RCP<Epetra_Vector> testemb = state_->fluidfluidsplitter_->ExtractFluidVector(toggle_);
-  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "toggle", count,  step_, testbg , testemb, aledispnp_);
+//   int count = 1;
+//   Teuchos::RCP<Epetra_Vector> testbg = state_->fluidfluidsplitter_->ExtractXFluidVector(toggle_);
+//   Teuchos::RCP<Epetra_Vector> testemb = state_->fluidfluidsplitter_->ExtractFluidVector(toggle_);
+//   state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "toggle", count,  step_, testbg , testemb, aledispnp_);
 
   NonlinearSolve();
 
@@ -3449,6 +3546,9 @@ void FLD::XFluidFluid::StatisticsAndOutput()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::Output()
 {
+  const bool write_visualization_data = step_%upres_ == 0;
+  const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
+
   //  ART_exp_timeInt_->Output();
   // output of solution
   {
@@ -3511,7 +3611,7 @@ void FLD::XFluidFluid::Output()
   int count = -1;
   state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", count,  step_, state_->velnp_ , alevelnp_, aledispnp_);
 
-  if (step_%upres_ == 0)
+  if (write_visualization_data)
   {
     //Velnp()->Print(cout);
     /*vector<int> lm;
@@ -3533,7 +3633,6 @@ void FLD::XFluidFluid::Output()
 //         (*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)] +                                                                (*state_->velnp_)[state_->velnp_->Map().LID(gid)];
 //     }
 
-#ifndef output
     const Epetra_Map* dofrowmap = dofset_out_->DofRowMap(); // original fluid unknowns
     const Epetra_Map* xdofrowmap = bgdis_->DofRowMap();    // fluid unknown for current cut
 
@@ -3619,7 +3718,6 @@ void FLD::XFluidFluid::Output()
       else cout << "decide which dofs are used for output" << endl;
     }
 
-#endif
 
     // velocity/pressure vector
     //output_->WriteVector("velnp",state_->velnpoutput_);
@@ -3634,8 +3732,23 @@ void FLD::XFluidFluid::Output()
 
   }
 
+  // write restart
+  if (write_restart_data)
+  {
+    cout << "---  write restart... " << endl;
+
+    // velocity/pressure vector
+    output_->WriteVector("velnp_bg",state_->velnp_);
+
+    // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+    output_->WriteVector("accnp_bg",state_->accnp_);
+    output_->WriteVector("accn_bg",state_->accn_);
+    output_->WriteVector("veln_bg",state_->veln_);
+    output_->WriteVector("velnm_bg",state_->velnm_);
+  }
+
   // embedded fluid output
-   if (step_%upres_ == 0)
+  if (write_visualization_data)
   {
     // step number and time
     emboutput_->NewStep(step_,time_);
@@ -3652,6 +3765,32 @@ void FLD::XFluidFluid::Output()
     if (alefluid_) emboutput_->WriteVector("dispnp", aledispnp_);
 
     if (step_==upres_) emboutput_->WriteElementData();
+
+  }
+
+  // write restart
+  if (write_restart_data)
+  {
+    // velocity/pressure vector
+    emboutput_->WriteVector("velnp_emb",alevelnp_);
+
+    //output_->WriteVector("residual", trueresidual_);
+    if (alefluid_)
+    {
+      emboutput_->WriteVector("dispnp_emb", aledispnp_);
+      emboutput_->WriteVector("dispn_emb", aledispn_);
+      emboutput_->WriteVector("dispnm_emb",aledispnm_);
+    }
+
+    //if(poroelast_)
+    emboutput_->WriteVector("gridv_emb", gridv_);
+
+    // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+    emboutput_->WriteVector("accnp_emb",aleaccnp_);
+    emboutput_->WriteVector("accn_emb", aleaccn_);
+    emboutput_->WriteVector("veln_emb", aleveln_);
+    emboutput_->WriteVector("velnm_emb", alevelnm_);
+    // emboutput_->WriteVector("neumann_loads",aleneumann_loads_);
   }
 
    return;

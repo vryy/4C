@@ -21,6 +21,7 @@ Maintainer: Benedikt Schott
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_cut/cut_utils.H"
+#include "../drt_cut/cut_node.H"
 
 
 class Epetra_Map;
@@ -36,7 +37,11 @@ namespace DRT
   class Exporter;
   class Node;
 }
-
+// namespace CUT
+// {
+//   class Cmp;
+//   class Node;
+// }
 namespace LINALG
 {
   class MapExtractor;
@@ -138,15 +143,15 @@ public:
   /// is this node a standard or ghost node w.r.t current set
   bool Is_Std_CellSet(
       GEO::CUT::Node*                                  node,     /// cut node
-      const std::set<GEO::CUT::plain_volumecell_set>&  cell_set  /// set of volumecells
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>&  cell_set  /// set of volumecells
   );
 
   /// identify cellsets at time t^n with cellsets at time t^(n+1)
   void IdentifyOldSets(
       int &                                                          nds_old,            /// set identified nodal dofset at t^n
       std::vector<int> &                                             identified_sides,   /// set identified using sides (side-Ids)
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set> >&  dof_cellsets_old,   /// all dofcellsets at t^n
-      const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_new        /// dofcellset at t^(n+1) which has to be identified
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >&  dof_cellsets_old,   /// all dofcellsets at t^n
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new        /// dofcellset at t^(n+1) which has to be identified
   );
 
   /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if check was successful
@@ -155,8 +160,8 @@ public:
       std::vector<int> &                                             identified_sides,    /// side Id of identified side
       GEO::CUT::Node *                                               n_old,               /// node w.r.t to old wizard
       GEO::CUT::Node *                                               n_new,               /// node w.r.t to new wizard
-      const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_old,        /// dofcellset at t^n
-      const std::set<GEO::CUT::plain_volumecell_set>&                cell_set_new         /// dofcellset at t^(n+1)
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_old,        /// dofcellset at t^n
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new         /// dofcellset at t^(n+1)
   );
 
   /// check if the node is within the space time side

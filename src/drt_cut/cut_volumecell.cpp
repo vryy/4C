@@ -1,4 +1,3 @@
-
 #include "cut_volumecell.H"
 #include "cut_boundarycell.H"
 #include "cut_integrationcell.H"
@@ -750,7 +749,8 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
 #if 1 // creates both tri and quad. less no of Gauss points
 
           if( !fac->IsFacetSplit() )
-            fac->SplitFacet( corners );
+            fac->SplitFacet(  corners );
+
           const std::vector<std::vector<Point*> > triangulation = fac->GetSplitCells();
 #endif
 
@@ -1092,5 +1092,37 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
       std::cout<<x[0]<<"\t"<<x[1]<<"\t"<<x[2]<<"\n";
     }
   }*/
+}
 
+/*-------------------------------------------------------------------------------------*
+| get the points of the  volume cell                                     shahmiri 06/12
+*--------------------------------------------------------------------------------------*/
+std::set<int> GEO::CUT::VolumeCell::VolumeCellPoints()
+{
+  if ( this->vcpoints_ids_.size() != 0)
+  {
+    return this->vcpoints_ids_;
+  }
+  else
+  {
+    const plain_facet_set & facete = this->Facets();
+
+    // loop over facets
+    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+    {
+      Facet *fe = *i;
+      std::vector<Point*> corners = fe->CornerPoints();
+
+      for(std::vector<Point*>::const_iterator c=corners.begin(); c!=corners.end(); c++)
+      {
+        Point* pt = *c;
+        this->vcpoints_ids_.insert(pt->Id());
+      }
+    }
+  }
+
+  if ( this->vcpoints_ids_.size() == 0)
+    dserror("The size of volumecell points is zero!!");
+
+  return this->vcpoints_ids_;
 }

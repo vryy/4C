@@ -80,7 +80,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       // set of volumecells which belong to the node. The size of the
       // vector depends on the combined volumecells which are around
       // the node. For the std nodes the size is 1.
-      std::vector<std::set<GEO::CUT::plain_volumecell_set> > vcs= n->DofCellSets();
+      std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> > vcs= n->DofCellSets();
       std::vector<int> parentelements;
 
       for (size_t i=0; i<vcs.size(); i++ )
@@ -90,7 +90,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
         // elements the size of the set is one
 
         // get the i volumecell set, which could be a set of volumecells
-        std::set<GEO::CUT::plain_volumecell_set> myvcsets = vcs.at(i);
+        std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> myvcsets = vcs.at(i);
 
         //get the first set
         std::set<GEO::CUT::plain_volumecell_set>::iterator s = myvcsets.begin();
@@ -239,6 +239,7 @@ int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discre
 
   oldbgdofmap_ = currentbgdofmap_;
   currentbgdofmap_ =  bgdis->DofRowMap();
+
   if ((oldbgdofmap_->SameAs(*currentbgdofmap_) and (stdnoden_ == stdnodenp_) and
        (enrichednoden_ == enrichednodenp_)))
     samemaps_ = true;
@@ -247,6 +248,20 @@ int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discre
   GmshOutput(bgdis);
 
   return samemaps_;
+}
+
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
+void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(RCP<DRT::Discretization> bgdis,
+                                                                   RCP<XFEM::FluidWizard>   wizard)
+{
+
+  // Create new maps
+  CreateBgNodeMaps(bgdis,wizard);
+
+  currentbgdofmap_ =  bgdis->DofRowMap();
+
 }
 
 // -------------------------------------------------------------------
@@ -1816,9 +1831,9 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
       break;
   }
 
-  string sysmat = "/home/shahmiri/work_tmp/sysmat";
+  //string sysmat = "/home/shahmiri/work_tmp/sysmat";
   //Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrixmatlab = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
-  LINALG::PrintMatrixInMatlabFormat(sysmat,*Q_spr->EpetraMatrix(),true);
+  //LINALG::PrintMatrixInMatlabFormat(sysmat,*Q_spr->EpetraMatrix(),true);
 
 
 //   int maxnumberofentries = 1000;

@@ -1630,8 +1630,8 @@ FLD::XFluid::XFluid(
     gmshfilecontent.close();
   }
 
-//  boundary_output_ = rcp(new IO::DiscretizationWriter(boundarydis_));
-//  boundary_output_->WriteMesh(0,0.0);
+  boundary_output_ = rcp(new IO::DiscretizationWriter(boundarydis_));
+  boundary_output_->WriteMesh(0,0.0);
 
 
 
@@ -3568,6 +3568,8 @@ void FLD::XFluid::StatisticsAndOutput()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::Output()
 {
+  const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
+
   const int step_diff = 10;
   bool screen_out = gmsh_debug_out_screen_;
 
@@ -3886,14 +3888,36 @@ void FLD::XFluid::Output()
 
        fluid_output_->WriteElementData();
 
+       // write restart
+       if (write_restart_data)
+       {
+         cout << "---  write restart... " << endl;
 
-//       // output for interface
-//       boundary_output_->NewStep(step_,time_);
-//
-//       boundary_output_->WriteVector("ivelnp", ivelnp_);
-//       boundary_output_->WriteVector("idispnp", idispnp_);
-//
-//       boundary_output_->WriteElementData();
+         // velocity/pressure vector
+         fluid_output_->WriteVector("velnp_res",state_->velnp_);
+
+         // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+         fluid_output_->WriteVector("accnp_res",state_->accnp_);
+         fluid_output_->WriteVector("accn_res",state_->accn_);
+         fluid_output_->WriteVector("veln_res",state_->veln_);
+         fluid_output_->WriteVector("velnm_res",state_->velnm_);
+       }
+
+
+       // output for interface
+       boundary_output_->NewStep(step_,time_);
+
+       boundary_output_->WriteVector("ivelnp", ivelnp_);
+       boundary_output_->WriteVector("idispnp", idispnp_);
+
+       boundary_output_->WriteElementData();
+
+       // write restart
+       if (write_restart_data)
+       {
+         boundary_output_->WriteVector("ivelnp_res", ivelnp_);
+         boundary_output_->WriteVector("idispnp_res", idispnp_);
+       }
 
 
        // no solid output for XFluid, solid output for XFSI done by Adapter and structure part
@@ -4486,6 +4510,51 @@ void FLD::XFluid::GenAlphaUpdateAcceleration()
   state_->GenAlphaUpdateAcceleration();
 }
 
+// -------------------------------------------------------------------
+// Read Restart data
+// -------------------------------------------------------------------
+void FLD::XFluid::ReadRestart(int step)
+{
+
+  //-------- fluid discretization
+  //  ART_exp_timeInt_->ReadRestart(step);
+  IO::DiscretizationReader reader(discret_,step);
+  time_ = reader.ReadDouble("time");
+  step_ = reader.ReadInt("step");
+
+  reader.ReadVector(state_->velnp_,"velnp_res");
+  reader.ReadVector(state_->velnm_,"velnm_res");
+  reader.ReadVector(state_->veln_,"veln_res");
+  reader.ReadVector(state_->accnp_,"accnp_res");
+  reader.ReadVector(state_->accn_ ,"accn_res");
+
+  // set element time parameter after restart:
+  // Here it is already needed by AVM3 and impedance boundary condition!!
+  SetElementTimeParameter();
+
+  // ensure that the overall dof numbering is identical to the one
+  // that was used when the restart data was written. Especially
+  // in case of multiphysics problems & periodic boundary conditions
+  // it is better to check the consistency of the maps here:
+  if (not (discret_->DofRowMap())->SameAs(state_->velnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (discret_->DofRowMap())->SameAs(state_->veln_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (discret_->DofRowMap())->SameAs(state_->accn_->Map()))
+    dserror("Global dof numbering in maps does not match");
+
+  //-------- boundary discretization
+  IO::DiscretizationReader boundaryreader(boundarydis_,step);
+
+  boundaryreader.ReadVector(ivelnp_,"ivelnp_res");
+  boundaryreader.ReadVector(idispnp_, "idispnp_res");
+
+  if (not (boundarydis_->DofRowMap())->SameAs(ivelnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (boundarydis_->DofRowMap())->SameAs(idispnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+
+}
 
 /*------------------------------------------------------------------------------------------------*
  | create field test

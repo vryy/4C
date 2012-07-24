@@ -11,6 +11,13 @@ namespace CUT
 {
   class VolumeCell;
 
+  class Cmp
+  {
+  public:
+    bool operator()( plain_volumecell_set s1, plain_volumecell_set s2 );
+
+  };
+
 /// One node in a cut mesh
 /*!
  \brief Class to deal with nodes in the cut mesh. Nodes have a mesh-unique id, a levelset-value and a point. The point
@@ -87,16 +94,13 @@ public:
 
   const std::vector<plain_volumecell_set> & DofSets() const { return dofsets_; }
 
-  const std::vector<std::set<plain_volumecell_set> > & DofCellSets() const { return dof_cellsets_; }
-
+  const std::vector<std::set<plain_volumecell_set, Cmp> > & DofCellSets() const { return dof_cellsets_; }
 
   // This is only for test with new dofsetmanagement
 #ifdef DOFSETS_NEW
   int NumDofSets() const { return DofCellSets().size(); }
-#else  
-  int NumDofSets() const { return DofSets().size(); }
-//  int NumDofSets() const { if (DofSets().size() > 1) return 1;
-//                           else return DofSets().size(); }
+#else
+  int NumDofSets() const { return DofSets().size();}
 #endif
 
 private:
@@ -121,8 +125,9 @@ private:
   std::vector<plain_volumecell_set> dofsets_;
 
   /// stores for each set of dofs, that has to be created, all its volume_sets which has been connected over all adjacent elements
-  std::vector<std::set<plain_volumecell_set> > dof_cellsets_;
+  std::vector<std::set<plain_volumecell_set, Cmp> > dof_cellsets_;
 };
+
 
 }
 }

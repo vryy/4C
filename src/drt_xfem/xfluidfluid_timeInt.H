@@ -84,6 +84,9 @@ public:
   int SaveAndCreateNewBgNodeMaps(Teuchos::RCP<DRT::Discretization> bgdis,
                                  Teuchos::RCP<XFEM::FluidWizard>   wizard);
 
+  void CreateBgNodeMapsForRestart(Teuchos::RCP<DRT::Discretization> bgdis,
+                                  Teuchos::RCP<XFEM::FluidWizard>   wizard);
+
   /// set values to background state vector
   void SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>  bgdis,
                                             Teuchos::RCP<Epetra_Vector>              bgstatevn,

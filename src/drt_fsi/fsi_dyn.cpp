@@ -432,6 +432,12 @@ void fluid_fluid_ale_drt()
   aledis->FillComplete();
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> alefluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(*comm));
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
+  {
+    // read the restart information, set vectors and variables
+    alefluid->ReadRestart(restart);
+  }
   alefluid->Timeloop();
 
   problem->AddFieldTest(alefluid->MBFluidField().CreateFieldTest());
@@ -708,6 +714,13 @@ void fluid_fluid_fsi_drt()
 
      // now do the coupling setup an create the combined dofmap
     fsi->SetupSystem();
+
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(restart);
+    }
 
     // here we go...
     fsi->Timeloop();

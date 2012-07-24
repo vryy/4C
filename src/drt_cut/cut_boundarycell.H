@@ -57,6 +57,11 @@ public:
   virtual double Area() = 0;
 
   /*!
+  \brief Returns the center of tri3 and quad4 boundarycell
+   */
+  virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint) = 0;
+
+  /*!
   \brief Get the outward normal vector for the tri3 and quad4 boundarycell
    */
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const = 0;
@@ -187,6 +192,19 @@ protected:
     return area;
   }
 
+  /*-------------------------------------------------------------------------------------*
+  | To calculate the element center of a boundary cell                   shahmiri 07/12
+  *--------------------------------------------------------------------------------------*/
+  template <DRT::Element::DiscretizationType distype>
+  void MyElementCenter(LINALG::Matrix<3,1> & center, LINALG::Matrix<3,1> & midpoint)
+  {
+    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    LINALG::Matrix<3,numnodes> xyze( this->xyz_, true );
+    LINALG::Matrix<numnodes,1> funct;
+    DRT::UTILS::shape_function_2D( funct, center(0,0), center(1,0), distype );
+    midpoint.Multiply(xyze,funct);
+  }
+
   Epetra_SerialDenseMatrix xyz_;
   Facet * facet_;
   Cycle points_;
@@ -209,6 +227,8 @@ public:
   virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   virtual double Area() { return MyArea<DRT::Element::tri3>(); }
+
+  virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint);
 
   virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
 
@@ -238,6 +258,8 @@ public:
   virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   virtual double Area() { return MyArea<DRT::Element::quad4>(); }
+
+  virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint);
 
   virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
 
@@ -270,6 +292,8 @@ public:
   virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   virtual double Area() { return 0.0;}
+
+  virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint);
 
   virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
 
