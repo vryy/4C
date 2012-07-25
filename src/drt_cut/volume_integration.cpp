@@ -470,6 +470,31 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
 *--------------------------------------------------------------------------------------------------------------------*/
 int GEO::CUT::VolumeIntegration::pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y)
 {
+  // check whether given point is one of the corner points
+  for( int i=0;i<npol;i++ )
+  {
+    if( fabs(xp[i]-x)<1e-8 && fabs(yp[i]-y)<1e-8 )
+      return 1;
+  }
+
+  // check whether given point is on the edge
+  for( int i=0;i<npol;i++ )
+  {
+    double x1 = xp[i], y1=yp[i], x2=xp[(i+1)%npol], y2=yp[(i+1)%npol];
+    // line with constant ind1
+    if( fabs(x2-x1) < 1e-8 && fabs(x2-x) < 1e-8 )
+      return 1;
+    // line with constant ind2
+    if( fabs(y2-y1) < 1e-8 && fabs(y2-y) < 1e-8 )
+      return 1;
+
+    // pt fall on edge if it satisfies eqn of edge
+    double xpre = x1+(x2-x1)/(y2-y1)*(y-y1);
+    if( fabs(xpre-x) < 1e-8 )
+      return 1;
+  }
+
+  // check inside
   int i, j, c = 0;
   for (i = 0, j = npol-1; i < npol; j = i++) {
     if ((((yp[i]<=y) && (y<yp[j])) ||
@@ -499,6 +524,33 @@ int GEO::CUT::VolumeIntegration::pnpoly(vector<vector<double> >xp, LINALG::Matri
     ind2 = 1;
   }
 
+  // check whether given point is one of the corner points
+  for( int i=0;i<npol;i++ )
+  {
+    if( fabs(xp[i][ind1]-pt(ind1,0))<1e-8 && fabs(xp[i][ind2]-pt(ind2,0))<1e-8 )
+      return 1;
+  }
+
+  // check whether given point is on the edge
+  for( int i=0;i<npol;i++ )
+  {
+    vector<double> end1 = xp[i];
+    vector<double> end2 = xp[(i+1)%npol];
+    // line with constant ind1
+    if( fabs(end1[ind1]-end2[ind1]) < 1e-8 && fabs(end1[ind1]-pt(ind1,0)) < 1e-8 )
+      return 1;
+    // line with constant ind2
+    if( fabs(end1[ind2]-end2[ind2]) < 1e-8 && fabs(end1[ind2]-pt(ind2,0)) < 1e-8 )
+      return 1;
+
+    // pt fall on edge if it satisfies eqn of edge
+    double xpre = end1[ind1]+(end2[ind1]-end1[ind1])/(end2[ind2]-end1[ind2])*
+        (pt(ind2,0)-end1[ind2]);
+    if( fabs(xpre-pt(ind1,0)) < 1e-8 )
+      return 1;
+  }
+
+  // check for inside
   int i, j, c = 0;
   for (i = 0, j = npol-1; i < npol; j = i++) {
     if ((((xp[i][ind2]<=pt(ind2,0)) && (pt(ind2,0)<xp[j][ind2])) ||
