@@ -31,7 +31,7 @@ Maintainer: Malte Neumann
 #endif
 
 #ifdef CCA_APPEND_U
-/* required for lapack access. do not remove! */
+/* required for lapack access. Do not remove! */
 #define dgesv               dgesv_
 #define dgetrf              dgetrf_
 #define dgetri              dgetri_
@@ -43,7 +43,8 @@ Maintainer: Malte Neumann
 #define dsytri              dsytri_
 #define dsytrs              dsytrs_
 #define dveczero            dveczero_
-
+/* required in shell8 element. Do not remove! */
+#define fortranpow          fortranpow_
 #define s8jacb              s8jacb_
 
 #endif
