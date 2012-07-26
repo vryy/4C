@@ -19,7 +19,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_mat/robinson.H"
 #include "../drt_mat/micromaterial.H"
 #include <iterator>
 
@@ -509,12 +508,6 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(ParameterList& params,
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
       micro->Update();
-    }
-    // incremental update of internal variables/history
-    if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
-    {
-      MAT::Robinson* robinson = static_cast<MAT::Robinson*>(mat.get());
-      robinson->Update();
     }
   }
   break;
