@@ -140,7 +140,7 @@ ITEMAX                          4
 ITEMIN                          1
 MAXTIME                         4
 NORMCOMBI_RESFINC               And
-NORM_INC                        Abs
+NORM_INC                        Rel  // Abs
 NORM_RESF                       Abs
 NUMSTEP                         10                              // 400
 RESTARTEVRY                     5

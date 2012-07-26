@@ -200,8 +200,10 @@ void TSI::Partitioned::TimeLoop()
     = DRT::Problem::Instance()->TSIDynamicParams();
 
   // decide if apply one-way coupling or full coupling
-  INPAR::TSI::SolutionSchemeOverFields coupling =
-    DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  INPAR::TSI::SolutionSchemeOverFields coupling
+    = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  normtypeinc_
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
 
   // get active nodes from structural contact simulation
   Teuchos::RCP<MORTAR::ManagerBase> cmtman = StructureField()->ContactManager();
@@ -1258,44 +1260,85 @@ bool TSI::Partitioned::ConvergenceCheck(
   if (tempnorm_L2 < 1e-6) tempnorm_L2 = 1.0;
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
-  // print the incremental based convergence check to the screen
-  if (Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
-  {
-    cout<<"\n";
-    cout<<"***********************************************************************************\n";
-    cout<<"    OUTER ITERATION STEP    \n";
-    cout<<"***********************************************************************************\n";
-    printf("+--------------+------------------------+--------------------+--------------------+\n");
-    printf("|-  step/max  -|-  tol      [norm]     -|--  temp-inc      --|--  disp-inc      --|\n");
-    printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
-    itnum,itmax,ittol,tempincnorm_L2/tempnorm_L2,dispincnorm_L2/dispnorm_L2);
-    printf("\n");
-    printf("+--------------+------------------------+--------------------+--------------------+\n");
-  }
-
   // converged
   // check convergence of the outer loop with a relative norm
-  // norm of the increment with respect to the norm of the variables itself: use the last converged solution
-  if ((tempincnorm_L2/tempnorm_L2 <= ittol) &&
-      (dispincnorm_L2/dispnorm_L2 <= ittol))
+  // norm of the increment with respect to the norm of the variables itself: use
+  // the last converged solution
+  // residual increments
+  switch (normtypeinc_)
   {
-    stopnonliniter = true;
-    if (Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+    case INPAR::TSI::convnorm_abs:
     {
-      printf("\n");
-      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax);
-      printf("+--------------+------------------------+--------------------+--------------------+\n");
+      // print the incremental based convergence check to the screen
+      // test here increment
+      if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+      {
+        cout<<"\n";
+        cout<<"***********************************************************************************\n";
+        cout<<"    OUTER ITERATION STEP    \n";
+        cout<<"***********************************************************************************\n";
+        printf("+--------------+------------------------+--------------------+--------------------+\n");
+        printf("|-  step/max  -|-  tol      [norm]     -|--  temp-inc      --|--  disp-inc      --|\n");
+        printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
+        itnum,itmax,ittol,tempincnorm_L2,dispincnorm_L2);
+        printf("\n");
+        printf("+--------------+------------------------+--------------------+--------------------+\n");
+      }
+
+      // converged
+      // check convergence of the outer loop with a relative norm
+      // norm of the increment with respect to the norm of the variables itself: use the last converged solution
+      stopnonliniter = ( (tempincnorm_L2 <= ittol) and (dispincnorm_L2 <= ittol) );
+      if ((stopnonliniter==true) and Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+      {
+        printf("\n");
+        printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax);
+        printf("+--------------+------------------------+--------------------+--------------------+\n");
+      }
     }
+    break;
+
+    case INPAR::TSI::convnorm_rel:
+    {
+      // print the incremental based convergence check to the screen
+      // test here increment/variable
+      if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+      {
+        cout<<"\n";
+        cout<<"***********************************************************************************\n";
+        cout<<"    OUTER ITERATION STEP    \n";
+        cout<<"***********************************************************************************\n";
+        printf("+--------------+------------------------+--------------------+--------------------+\n");
+        printf("|-  step/max  -|-  tol      [norm]     -|--  temp-inc/temp --|--  disp-inc/disp --|\n");
+        printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
+        itnum,itmax,ittol,tempincnorm_L2/tempnorm_L2,dispincnorm_L2/dispnorm_L2);
+        printf("\n");
+        printf("+--------------+------------------------+--------------------+--------------------+\n");
+      }
+
+      stopnonliniter = ((tempincnorm_L2/tempnorm_L2 <= ittol) and (dispincnorm_L2/dispnorm_L2 <= ittol));
+      if ( (stopnonliniter==true) and Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0) )
+      {
+        printf("\n");
+        printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax);
+        printf("+--------------+------------------------+--------------------+--------------------+\n");
+      }
+    }
+    break;
+
+    default:
+      dserror("Cannot check for convergence of residual values!");
   }
+  
 
   // warn if itemax is reached without convergence, but proceed to next
   // timestep
-  if ((itnum==itmax) and
-       ((tempincnorm_L2/tempnorm_L2 > ittol) || (dispincnorm_L2/dispnorm_L2 > ittol))
+  if ( (itnum==itmax) and
+       ( (tempincnorm_L2/tempnorm_L2 > ittol) || (dispincnorm_L2/dispnorm_L2 > ittol) )
      )
   {
     stopnonliniter = true;
-    if ((Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+    if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0) )
     {
       printf("|     >>>>>> not converged in itemax steps!                                       |\n");
       printf("+--------------+------------------------+--------------------+--------------------+\n");

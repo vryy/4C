@@ -175,6 +175,7 @@ CONVTOL                         1e-06                           // 11.02.10
 ITEMAX                          10                              // 11.02.10
 COUPVARIABLE                    Temperature
 COUPALGO                        tsi_iterstagg
+NORM_INC                        Rel  // Abs
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
 AZBDIAG                         0

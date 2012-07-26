@@ -1953,10 +1953,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // Iterationparameters
   setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",
                                tuple<std::string>(
-                                 "Abs"
+                                 "Abs",
+                                 "Rel"
                                  ),
                                tuple<int>(
-                                 INPAR::TSI::convnorm_abs
+                                 INPAR::TSI::convnorm_abs,
+                                 INPAR::TSI::convnorm_rel
                                  ),
                                &tsidyn);
 

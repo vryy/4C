@@ -24,7 +24,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
-
+#include "../drt_inpar/inpar_tsi.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/12 |
@@ -120,6 +120,8 @@ namespace TSI
       int itmax,  //!< maximal number of iterations
       double ittol  //!< iteration tolerance
       );
+
+    enum INPAR::TSI::ConvNorm normtypeinc_;  //!< convergence check for residual temperatures
 
     //! maximum iteration steps
     int itmax_;
