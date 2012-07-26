@@ -189,6 +189,7 @@ void TSI::Monolithic::ReadRestart(int step)
 void TSI::Monolithic::PrepareTimeStep()
 {
   // counter and print header
+  // increment time and step counter
   IncrementTimeAndStep();
   PrintHeader();
 
@@ -998,9 +999,9 @@ bool TSI::Monolithic::Converged()
   // combine temperature-like and force-like residuals
   bool conv = false;
   if (combincfres_==INPAR::TSI::bop_and)
-     conv = convinc and convfres;
-   else
-     dserror("Something went terribly wrong with binary operator!");
+    conv = convinc and convfres;
+  else
+    dserror("Something went terribly wrong with binary operator!");
 
   // return things
   return conv;

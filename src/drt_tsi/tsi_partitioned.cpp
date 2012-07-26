@@ -831,11 +831,7 @@ void TSI::Partitioned::OuterIterationLoop()
         {
           temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
         }
-        else // itnum > 1
-        {
-          // save temperature solution of old iteration step T_{n+1}^i
-          temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
-        }
+        // else: use relaxed solution vector temp_
 
         // begin nonlinear solver / outer iteration ******************************
 
@@ -946,11 +942,13 @@ void TSI::Partitioned::OuterIterationLoop()
         // omega_relax^{i+1} = 1- omega^{i+1}
         relax = 1.0 - omeganp_;
 
-        // relax displacement solution for next iteration step
+        // relax temperature solution for next iteration step
         // overwrite temp_ with relaxed solution vector
         // T^{i+1} = relax . T^{i+1} + (1- relax^{i+1}) T^i
         //         = T^i + relax^{i+1} * ( T^{i+1} - T^i )
         temp_->Update(relax,*del_,1.0);
+        // alternatively choose a fix relaxation parameter, here e.g. 0.01
+        // temp_->Update(0.01,*del_,1.0);
 
         // update Aitken parameter omega^{i+1}_{n+1}
         omegan_ = omeganp_;
@@ -993,8 +991,6 @@ void TSI::Partitioned::OuterIterationLoop()
       // get structure variables of old time step (d_n, v_n)
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       Teuchos::RCP<Epetra_Vector> dispnp
-        = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-      Teuchos::RCP<Epetra_Vector> velnp
         = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
       if ( Step()==1 )
       {
@@ -1243,16 +1239,19 @@ bool TSI::Partitioned::ConvergenceCheck(
   double dispincnorm_L2(0.0);
   double dispnorm_L2(0.0);
 
-  // build the current temperature increment Inc T^{i+1}
-  // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
+  // build the current temperature increment Inc T^{i+1} with Newton iteration index i
+  // \f Delta T^{i+1} = Inc T^{i+1} = T^{i+1} - T^{i}  \f
   tempincnp_->Update(1.0,*(ThermoField()->Tempnp()),-1.0);
   dispincnp_->Update(1.0,*(StructureField()->Dispnp()),-1.0);
 
   // build the L2-norm of the temperature increment and the temperature
   tempincnp_->Norm2(&tempincnorm_L2);
-  ThermoField()->Tempnp()->Norm2(&tempnorm_L2);
+  // for convergence test choose the last converged solution vector T_n/D_n,
+  // be careful to check the convergence with the current, NOT yet converged values n+1
+  // if a solution n+1 is highly difficult to find, the norm can oscillate
+  ThermoField()->Tempn()->Norm2(&tempnorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
-  StructureField()->Dispnp()->Norm2(&dispnorm_L2);
+  StructureField()->Dispn()->Norm2(&dispnorm_L2);
 
   // care for the case that there is (almost) zero temperature
   // (usually not required for temperature)
@@ -1269,12 +1268,14 @@ bool TSI::Partitioned::ConvergenceCheck(
     printf("+--------------+------------------------+--------------------+--------------------+\n");
     printf("|-  step/max  -|-  tol      [norm]     -|--  temp-inc      --|--  disp-inc      --|\n");
     printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
-         itnum,itmax,ittol,tempincnorm_L2/tempnorm_L2,dispincnorm_L2/dispnorm_L2);
+    itnum,itmax,ittol,tempincnorm_L2/tempnorm_L2,dispincnorm_L2/dispnorm_L2);
     printf("\n");
     printf("+--------------+------------------------+--------------------+--------------------+\n");
   }
 
   // converged
+  // check convergence of the outer loop with a relative norm
+  // norm of the increment with respect to the norm of the variables itself: use the last converged solution
   if ((tempincnorm_L2/tempnorm_L2 <= ittol) &&
       (dispincnorm_L2/dispnorm_L2 <= ittol))
   {

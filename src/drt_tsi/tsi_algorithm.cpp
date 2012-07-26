@@ -104,7 +104,7 @@ void TSI::Algorithm::Output()
       ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
     }
 
-}
+}  // Output
 
 
 /*----------------------------------------------------------------------*
