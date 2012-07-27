@@ -1404,93 +1404,204 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
     press( 0, i ) = m[4*i+3];
   }
 
-  const GEO::CUT::plain_integrationcell_set & intcells = vc->IntegrationCells();
-  for ( GEO::CUT::plain_integrationcell_set::const_iterator i=intcells.begin();
-        i!=intcells.end();
-        ++i )
+  // facet based output for cut volumes
+  // integrationcells are not available because tessellation is not used
+  if( xfluid_.VolumeCellGaussPointBy_!="Tessellation" )
   {
-    GEO::CUT::IntegrationCell * ic = *i;
-
-    const std::vector<GEO::CUT::Point*> & points = ic->Points();
-    Epetra_SerialDenseMatrix values( 4, points.size() );
-
-    switch ( ic->Shape() )
+    const GEO::CUT::plain_facet_set & facete = vc->Facets();
+    for(GEO::CUT::plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
     {
-    case DRT::Element::hex8:
-      vel_f << "VH(";
-      press_f << "SH(";
-      break;
-    case DRT::Element::tet4:
-      vel_f << "VS(";
-      press_f << "SS(";
-      break;
-    default:
-      dserror( "unsupported shape" );
-    }
+      // split facet into tri and quad cell
+      GEO::CUT::Facet *fe = *i;
+      std::vector<std::vector<GEO::CUT::Point*> > split;
+      std::vector<GEO::CUT::Point*> corners = fe->CornerPoints();
 
-    for ( unsigned i=0; i<points.size(); ++i )
-    {
-      if ( i > 0 )
+      if( corners.size()==3 ) // only Tri can be used directly. Quad may be concave
+        split.push_back( corners );
+      else
       {
-        vel_f << ",";
-        press_f << ",";
+        if( !fe->IsFacetSplit() )
+          fe->SplitFacet( fe->CornerPoints() );
+         split = fe->GetSplitCells();
       }
-      const double * x = points[i]->X();
-      vel_f   << x[0] << "," << x[1] << "," << x[2];
-      press_f << x[0] << "," << x[1] << "," << x[2];
+
+      for( std::vector<std::vector<GEO::CUT::Point*> >::const_iterator j=split.begin();
+                                                                       j!=split.end();j++ )
+      {
+        std::vector<GEO::CUT::Point*> cell = *j;
+
+        switch ( cell.size() )
+        {
+        case 3:
+          vel_f << "VT(";
+          press_f << "ST(";
+          break;
+        case 4:
+          vel_f << "VQ(";
+          press_f << "SQ(";
+          break;
+        default:
+          dserror( "splitting facets failed" );
+        }
+
+        for ( unsigned k=0; k<cell.size(); ++k )
+        {
+          if ( k > 0 )
+          {
+            vel_f << ",";
+            press_f << ",";
+          }
+          const double * x = cell[k]->X();
+          vel_f   << x[0] << "," << x[1] << "," << x[2];
+          press_f << x[0] << "," << x[1] << "," << x[2];
+        }
+        vel_f << "){";
+        press_f << "){";
+
+        for ( unsigned k=0; k<cell.size(); ++k )
+        {
+          LINALG::Matrix<3,1> v( true );
+          LINALG::Matrix<1,1> p( true );
+
+          GEO::CUT::Point * point = cell[k];
+          const LINALG::Matrix<3,1> & rst = e->LocalCoordinates( point );
+
+          switch ( actele->Shape() )
+          {
+          case DRT::Element::hex8:
+          {
+            const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+            LINALG::Matrix<numnodes,1> funct;
+            DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
+            LINALG::Matrix<3,numnodes> velocity( vel, true );
+            LINALG::Matrix<1,numnodes> pressure( press, true );
+
+            v.Multiply( 1, velocity, funct, 1 );
+            p.Multiply( 1, pressure, funct, 1 );
+            break;
+          }
+          case DRT::Element::hex20:
+          {
+            // TODO: check the output for hex20
+            const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+            LINALG::Matrix<numnodes,1> funct;
+            DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
+            LINALG::Matrix<3,numnodes> velocity( vel, true );
+            LINALG::Matrix<1,numnodes> pressure( press, true );
+
+            v.Multiply( 1, velocity, funct, 1 );
+            p.Multiply( 1, pressure, funct, 1 );
+            break;
+          }
+          default:
+            dserror( "unsupported shape" );
+          }
+
+          if ( k > 0 )
+          {
+            vel_f << ",";
+            press_f << ",";
+          }
+          vel_f   << v( 0 ) << "," << v( 1 ) << "," << v( 2 );
+          press_f << p( 0 );
+        }
+
+        vel_f << "};\n";
+        press_f << "};\n";
+      }
     }
-    vel_f << "){";
-    press_f << "){";
-
-    for ( unsigned i=0; i<points.size(); ++i )
+  }
+  // integrationcells based output for tessellation
+  else
+  {
+    const GEO::CUT::plain_integrationcell_set & intcells = vc->IntegrationCells();
+    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=intcells.begin();
+          i!=intcells.end();
+          ++i )
     {
-      LINALG::Matrix<3,1> v( true );
-      LINALG::Matrix<1,1> p( true );
+      GEO::CUT::IntegrationCell * ic = *i;
 
-       GEO::CUT::Point * point = points[i];
-      const LINALG::Matrix<3,1> & rst = e->LocalCoordinates( point );
+      const std::vector<GEO::CUT::Point*> & points = ic->Points();
+      Epetra_SerialDenseMatrix values( 4, points.size() );
 
-      switch ( actele->Shape() )
+      switch ( ic->Shape() )
       {
       case DRT::Element::hex8:
-      {
-        const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-        LINALG::Matrix<numnodes,1> funct;
-        DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
-        LINALG::Matrix<3,numnodes> velocity( vel, true );
-        LINALG::Matrix<1,numnodes> pressure( press, true );
-
-        v.Multiply( 1, velocity, funct, 1 );
-        p.Multiply( 1, pressure, funct, 1 );
+        vel_f << "VH(";
+        press_f << "SH(";
         break;
-      }
-      case DRT::Element::hex20:
-      {
-        const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-        LINALG::Matrix<numnodes,1> funct;
-        DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
-        LINALG::Matrix<3,numnodes> velocity( vel, true );
-        LINALG::Matrix<1,numnodes> pressure( press, true );
-
-        v.Multiply( 1, velocity, funct, 1 );
-        p.Multiply( 1, pressure, funct, 1 );
+      case DRT::Element::tet4:
+        vel_f << "VS(";
+        press_f << "SS(";
         break;
-      }
       default:
         dserror( "unsupported shape" );
       }
 
-      if ( i > 0 )
+      for ( unsigned i=0; i<points.size(); ++i )
       {
-        vel_f << ",";
-        press_f << ",";
+        if ( i > 0 )
+        {
+          vel_f << ",";
+          press_f << ",";
+        }
+        const double * x = points[i]->X();
+        vel_f   << x[0] << "," << x[1] << "," << x[2];
+        press_f << x[0] << "," << x[1] << "," << x[2];
       }
-      vel_f   << v( 0 ) << "," << v( 1 ) << "," << v( 2 );
-      press_f << p( 0 );
-    }
+      vel_f << "){";
+      press_f << "){";
 
-    vel_f << "};\n";
-    press_f << "};\n";
+      for ( unsigned i=0; i<points.size(); ++i )
+      {
+        LINALG::Matrix<3,1> v( true );
+        LINALG::Matrix<1,1> p( true );
+
+         GEO::CUT::Point * point = points[i];
+        const LINALG::Matrix<3,1> & rst = e->LocalCoordinates( point );
+
+        switch ( actele->Shape() )
+        {
+        case DRT::Element::hex8:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+          LINALG::Matrix<numnodes,1> funct;
+          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
+          LINALG::Matrix<3,numnodes> velocity( vel, true );
+          LINALG::Matrix<1,numnodes> pressure( press, true );
+
+          v.Multiply( 1, velocity, funct, 1 );
+          p.Multiply( 1, pressure, funct, 1 );
+          break;
+        }
+        case DRT::Element::hex20:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+          LINALG::Matrix<numnodes,1> funct;
+          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
+          LINALG::Matrix<3,numnodes> velocity( vel, true );
+          LINALG::Matrix<1,numnodes> pressure( press, true );
+
+          v.Multiply( 1, velocity, funct, 1 );
+          p.Multiply( 1, pressure, funct, 1 );
+          break;
+        }
+        default:
+          dserror( "unsupported shape" );
+        }
+
+        if ( i > 0 )
+        {
+          vel_f << ",";
+          press_f << ",";
+        }
+        vel_f   << v( 0 ) << "," << v( 1 ) << "," << v( 2 );
+        press_f << p( 0 );
+      }
+
+      vel_f << "};\n";
+      press_f << "};\n";
+    }
   }
 }
 
