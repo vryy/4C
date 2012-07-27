@@ -931,20 +931,37 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   if (meshgroup_ < 0)
     dserror("Failed to write group in HDF-meshfile");
 
+  // procs without row elements must not write data
   Teuchos::RCP<std::vector<char> > elementdata = dis_->PackMyElements();
-  // removed dserror in order to enable procs without row elements
-  //  if (elementdata->size()==0)
-  //    dserror("no element data on proc %d. Too few elements?", dis_->Comm().MyPID());
   hsize_t dim = static_cast<hsize_t>(elementdata->size());
-  const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
-  if (element_status < 0)
-    dserror("Failed to create dataset in HDF-meshfile");
+  if (elementdata->size() == 0)
+  {
+    const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",0,&dim,&((*elementdata)[0]));
+    if (element_status < 0)
+      dserror("Failed to create dataset in HDF-meshfile for group none");
+  }
+  else
+  {
+    const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
+    if (element_status < 0)
+      dserror("Failed to create dataset in HDF-meshfile");
+  }
 
+  // procs without row nodes must not write data
   Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
   dim = static_cast<hsize_t>(nodedata->size());
-  const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
-  if (node_status < 0)
-    dserror("Failed to create dataset in HDF-meshfile");
+  if (nodedata->size() == 0)
+  {
+    const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
+    if (node_status < 0)
+      dserror("Failed to create dataset in HDF-meshfile");
+  }
+  else
+  {
+    const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
+    if (node_status < 0)
+      dserror("Failed to create dataset in HDF-meshfile");
+  }
 
   // ... write other mesh informations
   if (dis_->Comm().MyPID() == 0)
