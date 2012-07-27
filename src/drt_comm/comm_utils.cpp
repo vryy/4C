@@ -13,23 +13,18 @@ Maintainer: Georg Hammerl
 */
 
 /*----------------------------------------------------------------------*
- | definitions                                              ghamm 01/12 |
- *----------------------------------------------------------------------*/
-#include <Epetra_MpiComm.h>
-
-#include <vector>
-#include <sstream>
-#include <string>
-
-/*----------------------------------------------------------------------*
  | headers                                                  ghamm 01/12 |
  *----------------------------------------------------------------------*/
+#include "comm_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
-#include "comm_utils.H"
+
+#include <vector>
+#include <sstream>
+#include <string>
 
 
 /*----------------------------------------------------------------------*
