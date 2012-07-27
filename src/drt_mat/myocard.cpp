@@ -21,6 +21,8 @@ Maintainer: Lasse Jagschies
 #include "myocard.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_lib/drt_linedefinition.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -119,6 +121,7 @@ void MAT::Myocard::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,v0_);
   AddtoPack(data,w0_);
   AddtoPack(data,s0_);
+  AddtoPack(data,difftensor_);
 
   return;
 }
@@ -152,6 +155,7 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,v0_);
   ExtractfromPack(position,data,w0_);
   ExtractfromPack(position,data,s0_);
+  ExtractfromPack(position,data,difftensor_);
 
 
   if (position != data.size())
@@ -159,31 +163,72 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  calculate cmat*gradphi                                   ljag 06/12 |
+ |  Setup conductivity tensor                                ljag 06/12 |
  *----------------------------------------------------------------------*/
 
-/*void MAT::Myocard::Evaluate(
-  const LINALG::Matrix<3,1>& gradphi,
-  LINALG::Matrix<3,3>& cmat,
-  LINALG::Matrix<3,1>& electricflux
-  ) const
-{
-  // conductivity tensor
-  cmat.Clear();
-  for (int i=0; i<3; ++i)
-      {
-      for (int j=0; j<3; ++j)
-	  {
-	  cmat(i,j) = params_->conduct_; // TODO How to get the parameter from the .dat-file?
-	  }
-      }
+void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
+    {
+    // get conductivity values of main fibre direction and
+    const double maindirdiffusivity = params_->diffusivity; //Todo replace by real values
+    const double offdirdiffusivity  = 0.3*params_->diffusivity; // "
 
-  // electric flux
-  electricflux.MultiplyNN(cmat,gradphi);
+    // read local eigenvectors of diffusion tensor at current element
+    vector<double> rad;
+    vector<double> axi;
+    vector<double> cir;
+    linedef->ExtractDoubleVector("RAD",rad);
+    linedef->ExtractDoubleVector("AXI",axi);
+    linedef->ExtractDoubleVector("CIR",cir);
 
-  // done
+    // eigenvector matrix
+    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+    LINALG::Matrix<3,3> evmat(true);
+    LINALG::Matrix<3,3> evmatinv(true);
+    for (int i = 0; i < 3; ++i) {
+	radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+    }
+    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+    for (int i=0; i<3; ++i){
+	evmat(i,0) = rad[i]/radnorm;
+	evmat(i,1) = axi[i]/axinorm;
+	evmat(i,2) = cir[i]/cirnorm;
+    }
+
+    // determinant of eigenvector matrix
+    double const evmatdet = evmat(0,0)*evmat(1,1)*evmat(2,2)
+			    + evmat(0,1)*evmat(1,2)*evmat(2,0)
+			    + evmat(0,2)*evmat(1,0)*evmat(2,1)
+			    - evmat(0,2)*evmat(1,1)*evmat(2,0)
+			    - evmat(0,1)*evmat(1,0)*evmat(2,2)
+			    - evmat(0,0)*evmat(1,2)*evmat(2,1);
+    // double const evmatdet = evmat.Determinant();
+
+    // inverse of eigenvector matrix
+    evmatinv(0,0) = evmat(1,1)*evmat(2,2)-evmat(1,2)*evmat(2,1);
+    evmatinv(0,1) = evmat(0,2)*evmat(2,1)-evmat(0,1)*evmat(2,2);
+    evmatinv(0,2) = evmat(0,1)*evmat(1,2)-evmat(0,2)*evmat(1,1);
+    evmatinv(1,0) = evmat(1,2)*evmat(2,0)-evmat(1,0)*evmat(2,2);
+    evmatinv(1,1) = evmat(0,0)*evmat(2,2)-evmat(0,2)*evmat(2,0);
+    evmatinv(1,2) = evmat(0,2)*evmat(1,0)-evmat(0,0)*evmat(1,2);
+    evmatinv(2,0) = evmat(1,0)*evmat(2,1)-evmat(1,1)*evmat(2,0);
+    evmatinv(2,1) = evmat(0,1)*evmat(2,0)-evmat(0,0)*evmat(2,1);
+    evmatinv(2,2) = evmat(0,0)*evmat(1,1)-evmat(0,1)*evmat(1,0);
+    evmatinv.Scale(1/evmatdet);
+    //const LINALG::Matrix<3,3> ematinv;
+    //evmat.Invert(ematinv);
+    cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << endl;
+    // Conductivity matrix D = EVmat*DiagonalConductivityMatrix*EVmatinv
+    for (int i = 0; i<3; i++){
+	evmatinv(0,i) *= maindirdiffusivity;
+	evmatinv(1,i) *= offdirdiffusivity;
+	evmatinv(2,i) *= offdirdiffusivity;
+    }
+
+    difftensor_.Multiply(evmat, evmatinv);
+
+    // done
   return;
-}*/
+}
 
 /*----------------------------------------------------------------------*
  |  calculate reaction coefficient                           ljag 06/12 |
@@ -223,9 +268,9 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
      const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 + (s0_ - (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0)*exp(-dt/Tau_s);
 
      // update initial values according to [8]
-     v0_ = v;
-     w0_ = w;
-     s0_ = s;
+     //v0_ = v;
+     //w0_ = w;
+     //s0_ = s;
 
      // calculate currents J_fi, J_so and J_si ([7] page 545)
      const double J_fi = -GatingFunction(0.0, v*(phi - params_->Theta_v)*(params_->u_u - phi)/params_->Tau_fi, phi, params_->Theta_v); // fast inward current
@@ -234,8 +279,7 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
 
      const double reacoeff = (J_fi + J_so + J_si);
 
-     if (reacoeff<1E4) return reacoeff;
-     else return 1E4;
+     return reacoeff;
 }
 
 /*----------------------------------------------------------------------*
@@ -246,38 +290,37 @@ double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt
     // Phenomenological model [5]-[8]
 
     // calculate voltage dependent time constants ([7] page 545)
-     const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, phi, params_->Theta_vm);
-     const double Tau_wm = params_->Tau_w1m + (params_->Tau_w2m - params_->Tau_w1m)*(1.0 + tanh(params_->k_wm*(phi - params_->u_wm)))/2.0;
-//     const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
-     const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, phi, params_->Theta_w);
-     const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
+    //const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, phi, params_->Theta_vm);
+    //const double Tau_wm = params_->Tau_w1m + (params_->Tau_w2m - params_->Tau_w1m)*(1.0 + tanh(params_->k_wm*(phi - params_->u_wm)))/2.0;
+    //const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
+    //const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, phi, params_->Theta_w);
+    //const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
 
-     // calculate infinity values ([7] page 545)
-     const double v_inf = GatingFunction(1.0, 0.0, phi, params_->Theta_vm);
-     const double w_inf = GatingFunction((1.0 - phi/params_->Tau_winf), params_->w_infs, phi, params_->Theta_o);
+    // calculate infinity values ([7] page 545)
+    //const double v_inf = GatingFunction(1.0, 0.0, phi, params_->Theta_vm);
+    //const double w_inf = GatingFunction((1.0 - phi/params_->Tau_winf), params_->w_infs, phi, params_->Theta_o);
 
-     // calculate gating variables according to [8]
-     const double exp_v = -dt*GatingFunction(1.0/Tau_vm, 1.0/params_->Tau_vp, phi, params_->Theta_v);
-     const double exp_w = -dt*GatingFunction(1.0/Tau_wm, 1.0/params_->Tau_wp, phi, params_->Theta_w);
+    // calculate gating variables according to [8]
+    //const double exp_v = -dt*GatingFunction(1.0/Tau_vm, 1.0/params_->Tau_vp, phi, params_->Theta_v);
+    //const double exp_w = -dt*GatingFunction(1.0/Tau_wm, 1.0/params_->Tau_wp, phi, params_->Theta_w);
 
-     const double v = GatingFunction(v_inf, 0.0, phi, params_->Theta_v) + GatingFunction(v0_ - v_inf, v0_, phi, params_->Theta_v)*exp(exp_v);
-     const double w = GatingFunction(w_inf, 0.0, phi, params_->Theta_w) + GatingFunction(w0_ - w_inf, w0_, phi, params_->Theta_w)*exp(exp_w);
-     const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 - (s0_ + tanh(params_->k_s*(phi - params_->u_s)))/2.0*exp(-dt/Tau_s);
+    //const double v = GatingFunction(v_inf, 0.0, phi, params_->Theta_v) + GatingFunction(v0_ - v_inf, v0_, phi, params_->Theta_v)*exp(exp_v);
+    //const double w = GatingFunction(w_inf, 0.0, phi, params_->Theta_w) + GatingFunction(w0_ - w_inf, w0_, phi, params_->Theta_w)*exp(exp_w);
+    //const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 - (s0_ + tanh(params_->k_s*(phi - params_->u_s)))/2.0*exp(-dt/Tau_s);
 
     // calculate derivatives of variables
-     const double dw_inf = -GatingFunction(1.0/params_->Tau_winf, 0.0, phi, params_->Theta_o);
+    //const double dw_inf = -GatingFunction(1.0/params_->Tau_winf, 0.0, phi, params_->Theta_o);
 
-     const double dw = GatingFunction(dw_inf, 0.0, phi, params_->Theta_w) - GatingFunction(1.0 - dw_inf, dw_inf, phi, params_->Theta_w)*exp(-dt/GatingFunction(Tau_wm, params_->Tau_wp, phi, params_->Theta_w));
-     const double ds = (1.0 - pow(tanh(params_->k_s*(phi - params_->u_s)), 2))*(1.0 - exp(dt/Tau_s));
+    //const double dw = GatingFunction(dw_inf, 0.0, phi, params_->Theta_w) - GatingFunction(1.0 - dw_inf, dw_inf, phi, params_->Theta_w)*exp(-dt/GatingFunction(Tau_wm, params_->Tau_wp, phi, params_->Theta_w));
+    //const double ds = (1.0 - pow(tanh(params_->k_s*(phi - params_->u_s)), 2))*(1.0 - exp(dt/Tau_s));
 
-     const double dJ_fi = -v*GatingFunction(0.0, 1.0/params_->Tau_fi, phi, params_->Theta_v)*(params_->Theta_v + params_->u_u - 2*phi);
-     const double dJ_so = GatingFunction(1.0/Tau_o, 0.0, phi, params_->Theta_w);
-     const double dJ_si = -GatingFunction(0.0, 1.0/params_->Tau_si, phi, params_->Theta_w)*(w*ds + dw*s);
+    //const double dJ_fi = -v*GatingFunction(0.0, 1.0/params_->Tau_fi, phi, params_->Theta_v)*(params_->Theta_v + params_->u_u - 2*phi);
+    //const double dJ_so = GatingFunction(1.0/Tau_o, 0.0, phi, params_->Theta_w);
+    //const double dJ_si = -GatingFunction(0.0, 1.0/params_->Tau_si, phi, params_->Theta_w)*(w*ds + dw*s);
 
-     const double reacoeffderiv = (dJ_fi + dJ_so + dJ_si);
+    //const double reacoeffderiv = (dJ_fi + dJ_so + dJ_si);
 
-    if (reacoeffderiv<1E4) return reacoeffderiv;
-    else return 1E4;
+    return 0.0;
 }
 
 /*----------------------------------------------------------------------*
@@ -293,12 +336,32 @@ double MAT::Myocard::GatingFunction(const double Gate1, const double Gate2, cons
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void MAT::Myocard::Update()
+void MAT::Myocard::Update(const double phi, const double dt)
 {
-  // update initial values according to [8]
-  //v0_ = v;
-  //w0_ = w;
-  //s0_ = s;
-  return;
+
+    // calculate voltage dependent time constants ([7] page 545)
+     const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, phi, params_->Theta_vm);
+     const double Tau_wm = params_->Tau_w1m + (params_->Tau_w2m - params_->Tau_w1m)*(1.0 + tanh(params_->k_wm*(phi - params_->u_wm)))/2.0;
+     //const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
+     const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, phi, params_->Theta_w);
+     //const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
+
+     // calculate infinity values ([7] page 545)
+     const double v_inf = GatingFunction(1.0, 0.0, phi, params_->Theta_vm);
+     const double w_inf = GatingFunction(1.0 - phi/params_->Tau_winf, params_->w_infs, phi, params_->Theta_o);
+
+     // calculate gating variables according to [8]
+     const double exp_v = -GatingFunction(dt/Tau_vm, dt/params_->Tau_vp, phi, params_->Theta_v);
+     const double exp_w = -GatingFunction(dt/Tau_wm, dt/params_->Tau_wp, phi, params_->Theta_w);
+
+     const double v = GatingFunction(v_inf, 0.0, phi, params_->Theta_v) + GatingFunction(v0_ - v_inf, v0_, phi, params_->Theta_v)*exp(exp_v);
+     const double w = GatingFunction(w_inf, 0.0, phi, params_->Theta_w) + GatingFunction(w0_ - w_inf, w0_, phi, params_->Theta_w)*exp(exp_w);
+     const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 + (s0_ - (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0)*exp(-dt/Tau_s);
+
+     // update initial values according to [8]
+     v0_ = v;
+     w0_ = w;
+     s0_ = s;
+     return;
 }
 

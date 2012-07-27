@@ -82,106 +82,169 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["HEX20"]
     .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["HEX27"]
     .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["NURBS27"]
     .AddIntVector("NURBS27",27)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["NURBS8"]
     .AddIntVector("NURBS8",8)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["TET10"]
     .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["WEDGE6"]
     .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["WEDGE15"]
     .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["PYRAMID5"]
     .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
-    ;
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+   ;
 
   defs["QUAD4"]
     .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["QUAD8"]
     .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["QUAD9"]
     .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["TRI3"]
     .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["TRI6"]
     .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["NURBS4"]
     .AddIntVector("NURBS4",4)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["NURBS9"]
     .AddIntVector("NURBS9",9)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["LINE2"]
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["LINE3"]
     .AddIntVector("LINE3",3)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["NURBS2"]
     .AddIntVector("NURBS2",2)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
   defs["NURBS3"]
     .AddIntVector("NURBS3",3)
     .AddNamedInt("MAT")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 
 }

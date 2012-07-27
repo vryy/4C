@@ -905,7 +905,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // reference to rcp not possible here, since the material is required to be
       // not const for this application
       Teuchos::RCP<MAT::Myocard> mat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
-      mat->Update();
+      const double dt   = params.get<double>("time-step length");
+
+
+
+      const double csnp = funct_.Dot(ephinp_[0]);
+      mat->Update(csnp, dt);
     }
     break;
   }

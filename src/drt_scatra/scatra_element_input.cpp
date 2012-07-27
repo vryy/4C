@@ -14,6 +14,7 @@ Maintainer: Georg Bauer
 
 #include "scatra_element.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/myocard.H"
 
 
 /*----------------------------------------------------------------------*
@@ -30,6 +31,11 @@ bool DRT::ELEMENTS::Transport::ReadElement(const std::string& eletype,
 
   SetDisType(DRT::StringToDistype(distype));
 
+  if (Material()->MaterialType() == INPAR::MAT::m_myocard)
+      {
+      Teuchos::RCP<MAT::Myocard> myocard = Teuchos::rcp_dynamic_cast<MAT::Myocard>(Material());
+      myocard->Setup(linedef);
+      }
   return true;
 }
 

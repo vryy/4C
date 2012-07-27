@@ -38,126 +38,71 @@ FILESTEPS                       1000
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-UPRES                           20
+UPRES                           1
 RESTARTEVRY                     10
-NUMSTEP                         2000
-MAXTIME                         10.0
-TIMESTEP                        0.00001
+NUMSTEP                         100
+MAXTIME                         1.0
+TIMESTEP                        0.01
 THETA                           0.5
 VELOCITYFIELD                   zero
-INITIALFIELD                    field_by_function//field_by_condition
+INITIALFIELD                    field_by_condition
 INITFUNCNO                      1
 FSSUGRDIFF                      No
 WRITEFLUX                       totalflux_boundary
 MATID                           1
-SKIPINITDER			yes
+SKIPINITDER						yes
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin
 EVALUATION_MAT                  integration_point // element_center //
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK//Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                               // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
-IFPACKFILL                      1.0                             // fill-in for ILUT
-IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-9                          // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           40                              // size of krylov space for gmres
-AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                               // unused
-AZPOLY                          1                               // polynomial order for Neumann
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                            // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-DWINDTAU                        2.5                             // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 0 0 1                       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                            // damping fine grid
-ML_DAMPMED                      1.0                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
-//PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_myocard DIFFUSIVITY 1.171 U_O -84.0 U_U 51.406 THETA_V -58.29 THETA_W -82.7145 THETA_VM -82.7145 THETA_O -83.4858 TAU_V1M 60.0 TAU_V2M 1150.0 TAU_VP 1.4506 TAU_W1M 70.0 TAU_W2M 20.0 K_WM 65.0 U_WM 0.03 TAU_WP 280.0 TAU_FI 0.11 TAU_O1 6.0 TAU_O2 6.0 TAU_SO1 43.0 TAU_SO2 0.2 K_SO 2.0 U_SO 0.65 TAU_S1 2.7342 TAU_S2 3.0 K_S 2.0994 U_S 0.9087 TAU_SI 2.8723 TAU_WINF 0.07 W_INFS 0.94
-//MAT 1 MAT_scatra DIFFUSIVITY 0.33333333333
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -84.0 t1 0.0 t2 0.0001
-CURVE1 on EXPR FUNC 150450*t-99.0451 t1 0.0001 t2 0.001
-CURVE1 on EXPR FUNC 51.406 t1 0.001 t2 0.02
-CURVE1 on EXPR FUNC -6770.3*t+186.812 t1 0.02 t2 0.04
-CURVE1 on EXPR FUNC -84.0 t1 0.04 t2 10.0
+MAT 1 MAT_myocard DIFFUSIVITY 0.001171 U_O 0 U_U 1.55 THETA_V 0.3 THETA_W 0.13 THETA_VM 0.006 THETA_O 0.006 TAU_V1M 60.0 TAU_V2M 1150.0 TAU_VP 1.4506 TAU_W1M 60.0 TAU_W2M 15.0 K_WM 65 U_WM 0.03 TAU_WP 200.0 TAU_FI 0.11 TAU_O1 400.0 TAU_O2 6.0 TAU_SO1 30.0181 TAU_SO2 0.9957 K_SO 2.0458 U_SO 0.65 TAU_S1 2.7342 TAU_S2 16.0 K_S 2.0994 U_S 0.9087 TAU_SI 1.8875 TAU_WINF 0.07 W_INFS 0.94
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -84.0
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 2.0
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 2 POSITION phi NAME phi VALUE 5.13860519017078232e+01 TOLERANCE 1e-7
-SCATRA DIS 1 NODE 4 POSITION phi NAME phi VALUE 5.07689365698012480e+01 TOLERANCE 1e-7
-SCATRA DIS 1 NODE 6 POSITION phi NAME phi VALUE 1.80502398425723918e+01 TOLERANCE 1e-7
-SCATRA DIS 1 NODE 8 POSITION phi NAME phi VALUE -8.54742220434897604e+01 TOLERANCE 1e-7
-SCATRA DIS 1 NODE 10 POSITION phi NAME phi VALUE -8.39685506053658770e+01 TOLERANCE 1e-7
+SCATRA DIS 1 NODE 2 POSITION phi NAME phi VALUE 1.48406361345610915e+00 TOLERANCE 1e-7
+SCATRA DIS 1 NODE 4 POSITION phi NAME phi VALUE 1.44944636707739316e+00 TOLERANCE 1e-7
+SCATRA DIS 1 NODE 6 POSITION phi NAME phi VALUE 1.31517506521248007e+00 TOLERANCE 1e-7
+SCATRA DIS 1 NODE 8 POSITION phi NAME phi VALUE 9.26946090175018500e-01 TOLERANCE 1e-7
+SCATRA DIS 1 NODE 10 POSITION phi NAME phi VALUE 3.76260414890594586e-01 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0
 NDSURF  0
 NDVOL   0
------------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 1
-E 1 - 6 1 0 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0  
 ---------------------------------------DESIGN POINT INITIAL FIELD CONDITIONS
-//DPOINT 1
-//E 1 - ScaTra 1
+DPOINT 1
+E 1 - ScaTra 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
----------------------------------------------------------DSURF-NODE TOPOLOGY
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
-NODE 2 COORD 1.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 3 COORD 2.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 4 COORD 3.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 5 COORD 4.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 6 COORD 5.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 7 COORD 6.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 8 COORD 7.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 9 COORD 8.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 10 COORD 9.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 11 COORD 1.00000000e-00 0.00000000e+00 0.00000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
+NODE 2 COORD 1.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 3 COORD 2.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 4 COORD 3.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 5 COORD 4.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 6 COORD 5.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 7 COORD 6.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 8 COORD 7.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 9 COORD 8.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 10 COORD 9.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 11 COORD 1.00000000e-01 0.00000000e+00 0.00000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
-1 TRANSP LINE2 1 2 MAT 1
-2 TRANSP LINE2 2 3 MAT 1
-3 TRANSP LINE2 3 4 MAT 1
-4 TRANSP LINE2 4 5 MAT 1
-5 TRANSP LINE2 5 6 MAT 1
-6 TRANSP LINE2 6 7 MAT 1
-7 TRANSP LINE2 7 8 MAT 1
-8 TRANSP LINE2 8 9 MAT 1
-9 TRANSP LINE2 9 10 MAT 1
-10 TRANSP LINE2 10 11 MAT 1
--------------------------------------------------------------THERMO ELEMENTS
+1 TRANSP LINE2 1 2 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+2 TRANSP LINE2 2 3 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+3 TRANSP LINE2 3 4 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+4 TRANSP LINE2 4 5 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+5 TRANSP LINE2 5 6 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+6 TRANSP LINE2 6 7 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+7 TRANSP LINE2 7 8 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+8 TRANSP LINE2 8 9 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+9 TRANSP LINE2 9 10 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
+10 TRANSP LINE2 10 11 MAT 1 RAD 0.0 0.0 1.0 AXI 0.0 1.0 0.0 CIR 1.0 0.0 0.0
 -------------------------------------------------------------------------END
 //                              END

@@ -166,12 +166,11 @@ namespace MAT
 	/// return copy of this material object
 	virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Myocard( *this ) ); }
 
-	/*/// Main 3D material call to determine heat flux and constitutive tensor
-	void Evaluate(
-		const LINALG::Matrix<3,1>& gradphi,  ///< temperature gradient (strain tensor)
-		LINALG::Matrix<3,3>& cmat,  ///< constitutive matrix
-		LINALG::Matrix<3,1>& electricflux  ///< 3D heatflux (2nd PK stress)
-	) const;*/
+
+	/// material call from DRT::ELEMENTS::Transport::ReadElement function
+        /// to setup conductivity tensor for each element
+	void Setup(DRT::INPUT::LineDefinition* linedef);
+
 
 	/// diffusivity
 	double ComputeDiffusivity() const { return params_->diffusivity; }
@@ -185,8 +184,8 @@ namespace MAT
 	/// compute Heaviside step function
 	double GatingFunction(const double Gate1, const double Gate2, const double var, const double thresh) const;
 
-  /// time update for this material
-  void Update();
+	/// time update for this material
+	void Update(const double phi, const double dt);
 
 	/// @name Access material constants
 	//@{
@@ -204,7 +203,7 @@ namespace MAT
 	double s0_; /// slow inward current
 
 	/// conductivity tensor
-	//LINALG::Matrix<3,3>& cmat_;
+	LINALG::Matrix<3,3> difftensor_;
 
 	/// my material parameters
 	MAT::PAR::Myocard* params_;
