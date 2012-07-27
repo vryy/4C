@@ -483,15 +483,24 @@ int GEO::CUT::VolumeIntegration::pnpoly(int npol, vector<double>xp, vector<doubl
     double x1 = xp[i], y1=yp[i], x2=xp[(i+1)%npol], y2=yp[(i+1)%npol];
     // line with constant ind1
     if( fabs(x2-x1) < 1e-8 && fabs(x2-x) < 1e-8 )
-      return 1;
+    {
+      if( y>std::min(y2,y1) && y< std::max(y2,y1))
+        return 1;
+    }
     // line with constant ind2
     if( fabs(y2-y1) < 1e-8 && fabs(y2-y) < 1e-8 )
-      return 1;
+    {
+      if( x>std::min(x2,x1) && x< std::max(x2,x1))
+        return 1;
+    }
 
     // pt fall on edge if it satisfies eqn of edge
-    double xpre = x1+(x2-x1)/(y2-y1)*(y-y1);
-    if( fabs(xpre-x) < 1e-8 )
-      return 1;
+    if( fabs(y2-y1) < 1e-8 && fabs(y2-y) < 1e-8 )
+    {
+      double xpre = x1+(x2-x1)/(y2-y1)*(y-y1);
+      if( fabs(xpre-x) < 1e-8 )
+        return 1;
+    }
   }
 
   // check inside
@@ -536,18 +545,34 @@ int GEO::CUT::VolumeIntegration::pnpoly(vector<vector<double> >xp, LINALG::Matri
   {
     vector<double> end1 = xp[i];
     vector<double> end2 = xp[(i+1)%npol];
+
     // line with constant ind1
-    if( fabs(end1[ind1]-end2[ind1]) < 1e-8 && fabs(end1[ind1]-pt(ind1,0)) < 1e-8 )
-      return 1;
+    if( fabs(end1[ind1]-end2[ind1]) < 1e-8 && fabs(end1[ind1]-pt(ind1,0)) < 1e-8 ) // pt is on infinite line check
+    {
+      // pt is within limits check
+      if( pt(ind2,0)>std::min(end1[ind2],end2[ind2]) && pt(ind2,0)<std::max(end1[ind2],end2[ind2]) )
+        return 1;
+      /*else
+        return 0;*/
+    }
     // line with constant ind2
     if( fabs(end1[ind2]-end2[ind2]) < 1e-8 && fabs(end1[ind2]-pt(ind2,0)) < 1e-8 )
-      return 1;
+    {
+      if( pt(ind1,0)>std::min(end1[ind1],end2[ind1]) && pt(ind1,0)<std::max(end1[ind1],end2[ind1]) )
+        return 1;
+      /*else
+        return 0;*/
+    }
 
     // pt fall on edge if it satisfies eqn of edge
-    double xpre = end1[ind1]+(end2[ind1]-end1[ind1])/(end2[ind2]-end1[ind2])*
-        (pt(ind2,0)-end1[ind2]);
-    if( fabs(xpre-pt(ind1,0)) < 1e-8 )
-      return 1;
+    if( pt(ind2,0)>std::min(end1[ind2],end2[ind2]) && // check within limits
+        pt(ind2,0)<std::max(end1[ind2],end2[ind2]) )
+    {
+      double xpre = end1[ind1]+(end2[ind1]-end1[ind1])/(end2[ind2]-end1[ind2])*
+          (pt(ind2,0)-end1[ind2]);
+      if( fabs(xpre-pt(ind1,0)) < 1e-8 )    // check eqn of line is satisfied with given pt
+        return 1;
+    }
   }
 
   // check for inside
