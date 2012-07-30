@@ -411,7 +411,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                       impl->ElementXfemInterfaceNIT(   ele,
                                                        discret,
                                                        la[0].lm_,
-                                                       intpoints_sets[set_counter],
                                                        cutdiscret,
                                                        bcells,
                                                        bintpoints,
@@ -420,7 +419,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                        strategy.Elematrix1(),
                                                        strategy.Elevector1(),
                                                        Cuiui,
-                                                       xfluid_.VolumeCellGaussPointBy_,
                                                        cells);
 
               }
@@ -544,7 +542,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                   impl->ElementXfemInterfaceNIT( ele,
                                                  discret,
                                                  la[0].lm_,
-                                                 intpoints[count],
                                                  cutdiscret,
                                                  bcells,
                                                  bintpoints,
@@ -553,7 +550,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                  strategy.Elematrix1(),
                                                  strategy.Elevector1(),
                                                  Cuiui,
-                                                 xfluid_.VolumeCellGaussPointBy_,
                                                  cells);
 
 

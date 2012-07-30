@@ -979,7 +979,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
     DRT::Discretization &                                               dis,               ///< background discretization
     const std::vector<int> &                                            lm,                ///< element local map
-    const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
     DRT::Discretization &                                               cutdis,            ///< cut discretization
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
@@ -988,8 +987,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
     Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
     Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-    std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
-    const GEO::CUT::plain_volumecell_set&                               vcSet
+    const GEO::CUT::plain_volumecell_set&                               vcSet							 ///< volumecell sets in this element
   )
 {
 
@@ -1022,8 +1020,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   if(compute_meas_vol)
   {
-    int eid = ele->Id();
-    meas_partial_volume = ComputeMeasVol(intpoints, eid, VCellGaussPts, vcSet);
+    meas_partial_volume = 0.0;
+    for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();i++ )
+    {
+      GEO::CUT::VolumeCell* vc = *i;
+      meas_partial_volume += vc->Volume();
+    }
   }
 
   if(compute_meas_surf)
@@ -1431,7 +1433,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     DRT::ELEMENTS::Fluid *                                              ele,
     DRT::Discretization &                                               dis,
     const std::vector<int> &                                            lm,
-    const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,
     DRT::Discretization &                                               cutdis,
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
@@ -1442,8 +1443,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     Epetra_SerialDenseMatrix&                                           elemat1_epetra,
     Epetra_SerialDenseVector&                                           elevec1_epetra,
     Epetra_SerialDenseMatrix&                                           Cuiui,
-    std::string&                                                        VCellGaussPts,
-    const GEO::CUT::plain_volumecell_set &                              cells
+    const GEO::CUT::plain_volumecell_set &                              vcSet
   )
 {
 
@@ -1476,8 +1476,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   {
     if(compute_meas_vol)
     {
-      int eid = ele->Id();
-      meas_partial_volume = ComputeMeasVol(intpoints, eid, VCellGaussPts, cells);
+      meas_partial_volume = 0.0;
+      for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();i++ )
+      {
+        GEO::CUT::VolumeCell* vc = *i;
+        meas_partial_volume += vc->Volume();
+      }
     }
   }
 
@@ -2003,61 +2007,6 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
 
   return;
 }
-
-
-
-/*--------------------------------------------------------------------------------
- * pre-compute the measure of the element's fluid volume
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double FluidEleCalcXFEM<distype>::ComputeMeasVol( const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                                                  int                                               eid,
-                                                  std::string&                                      VCellGaussPts,
-                                                  const GEO::CUT::plain_volumecell_set &            cells)
-{
-  double vol = 0.0;
-
-  if( VCellGaussPts!="DirectDivergence" )
-  {
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration intcell = *i;
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
-      {
-        // evaluate shape functions and derivatives at integration point
-        my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
-
-        vol += my::fac_;
-      }
-    }
-  }
-  else
-  {
-    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
-    {
-      const DRT::UTILS::GaussIntegration intcell = *i;
-      GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
-      int mainPtno = 0;
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
-      {
-        DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
-        mainPtno++;
-
-        double volLine=0.0;
-        for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
-        {
-          my::EvalShapeFuncAndDerivsAtIntPoint( quadint, eid );
-          volLine += my::fac_;
-        }
-        vol += volLine*iquad.Weight();
-      }
-    }
-  }
-
-  return vol;
-}
-
-
 
 /*--------------------------------------------------------------------------------
  * pre-compute the measure of all side's surface cutting the element

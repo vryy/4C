@@ -496,7 +496,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             impl->ElementXfemInterfaceNIT(    ele,
                                               discret,
                                               la[0].lm_,
-                                              intpoints_sets[set_counter],
                                               cutdiscret,
                                               bcells,
                                               bintpoints,
@@ -505,13 +504,11 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               Cuiui,
-                                              xfluid_.VolumeCellGaussPointBy_,
                                               cells);
           else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
             impl->ElementXfemInterfaceNIT2(   ele,
                                               discret,
                                               la[0].lm_,
-                                              intpoints_sets[set_counter],
                                               cutdiscret,
                                               bcells,
                                               bintpoints,
@@ -522,7 +519,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               Cuiui,
-                                              xfluid_.VolumeCellGaussPointBy_,
                                               cells);
 
 

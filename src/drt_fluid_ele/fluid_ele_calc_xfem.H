@@ -99,7 +99,6 @@ public:
         DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
         DRT::Discretization &                                               dis,               ///< background discretization
         const std::vector<int> &                                            lm,                ///< element local map
-        const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
         DRT::Discretization &                                               cutdis,            ///< cut discretization
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
@@ -108,8 +107,7 @@ public:
         Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
         Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
         Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-        std::string&                                                        VCellGaussPts,      ///< Method of volumecell gauss point generation
-        const GEO::CUT::plain_volumecell_set&                               vcSet
+        const GEO::CUT::plain_volumecell_set&                               vcSet							 ///< volumecell sets in this element
     );
 
     /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs
@@ -117,7 +115,6 @@ public:
         DRT::ELEMENTS::Fluid *                                              ele,
         DRT::Discretization &                                               dis,
         const std::vector<int> &                                            lm,
-        const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,
         DRT::Discretization &                                               cutdis,
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
@@ -128,7 +125,6 @@ public:
         Epetra_SerialDenseMatrix&                                           elemat1_epetra,
         Epetra_SerialDenseVector&                                           elevec1_epetra,
         Epetra_SerialDenseMatrix&                                           Cuiui,
-        std::string&                                                        VCellGaussPts,
         const GEO::CUT::plain_volumecell_set&                               vcSet
       );
 
@@ -164,14 +160,6 @@ private:
         INPAR::XFEM::ConvStabScaling       conv_stab_scaling,
         const double                       conv_stab_fac,
         const double             veln_normal
-    );
-
-    //! pre-compute the measure of the element's fluid volume
-    double ComputeMeasVol(
-        const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-        int                                               eid,
-        std::string&                                      VCellGaussPts,
-        const GEO::CUT::plain_volumecell_set &            cells
     );
 
     //! pre-compute the measure of the element's intersecting surface

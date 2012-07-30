@@ -229,7 +229,6 @@ namespace ELEMENTS
     virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid *                                            ele,
                                              DRT::Discretization &                                             dis,
                                              const std::vector<int> &                                          lm,
-                                             const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,
                                              DRT::Discretization &                                             cutdis,
                                              const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
                                              const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
@@ -238,7 +237,6 @@ namespace ELEMENTS
                                              Epetra_SerialDenseMatrix&                                         elemat1_epetra,
                                              Epetra_SerialDenseVector&                                         elevec1_epetra,
                                              Epetra_SerialDenseMatrix&                                         Cuiui,
-                                             std::string&                                                      VCellGaussPts,
                                              const GEO::CUT::plain_volumecell_set&                             vcSet
       ) {dserror("Implemented in derived xfem class!"); return;}
 
@@ -246,7 +244,6 @@ namespace ELEMENTS
                                        DRT::ELEMENTS::Fluid * 																					 ele,
                                        DRT::Discretization & 																						 dis,
                                        const std::vector<int> & 																				 lm,
-                                       const std::vector<DRT::UTILS::GaussIntegration> &      					 intpoints,
                                        DRT::Discretization & 																						 cutdis,
                                        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & 		 bcells,
                                        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
@@ -257,7 +254,6 @@ namespace ELEMENTS
                                        Epetra_SerialDenseMatrix&                                         elemat1_epetra,
                                        Epetra_SerialDenseVector&                                         elevec1_epetra,
                                        Epetra_SerialDenseMatrix&                                         Cuiui,
-                                       std::string&                                                      VCellGaussPts,
                                        const GEO::CUT::plain_volumecell_set&                             vcSet
       ) {dserror("Implemented in derived xfem class!"); return;}
 
