@@ -420,6 +420,7 @@ protected:
   RCP<Epetra_Vector> phinp_; // phi^n+1,i+1 in column map
   const RCP<COMBUST::InterfaceHandleCombust> oldinterfacehandle_; // interface handle of old time step t^n
   RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle_; // interface handle of new time step t^n+1
+  RCP<Epetra_MultiVector> gradphi_; // smoothed gradient of phi-vector of new time step t^n+1
   const vector<RCP<Epetra_Vector> > oldVectors_; // global vectors of old time step t^n in column map
   vector<RCP<Epetra_Vector> > newVectors_; // global vectors of new time step t^n+1 in row map
 
@@ -1300,12 +1301,18 @@ protected:
       LINALG::Matrix<3,1>&             normal
   ) const;
 
-  //! compute distance to vertex of patch
+  void ComputeDistanceToEdge(
+      const LINALG::Matrix<3,1>&       node,
+      const GEO::BoundaryIntCell&      patch,
+      const LINALG::SerialDenseMatrix& patchcoord,
+      double&                          edgedist
+  ) const;
+
+//! compute distance to vertex of patch
   void ComputeDistanceToPatch(
       const LINALG::Matrix<3,1>&       node,
       const GEO::BoundaryIntCell&      patch,
       const LINALG::SerialDenseMatrix& patchcoord,
-      const LINALG::Matrix<3,1>&       normal,
       double&                          vertexdist
   ) const;
 

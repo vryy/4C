@@ -44,6 +44,7 @@ phin_(flamefront->Phin()),
 phinp_(flamefront->Phinp()),
 oldinterfacehandle_(flamefront->InterfaceHandleOld()),
 newinterfacehandle_(flamefront->InterfaceHandle()),
+gradphi_(flamefront->GradPhi()),
 oldVectors_(oldVectors),
 pbcmap_(pbcmap),
 myrank_(discret_->Comm().MyPID()),
@@ -51,8 +52,6 @@ numproc_(discret_->Comm().NumProc()),
 newton_max_iter_(10),
 newton_tol_(1.0e-10)
 {
-  oldinterfacehandle_->toGmsh(11);
-  newinterfacehandle_->toGmsh(12);
   return;
 } // end constructor
 
@@ -1407,6 +1406,8 @@ void XFEM::ENR::SignedDistance(
   //-----------------------------------------------------------
   // smallest distance to the vertex of a flame front patch
   double vertexdist = 7777.7; // default value
+  // smallest distance to the edge of a flame front patch
+  double edgedist = 6666.6; // default value
   // smallest distance to flame front
   double mindist = 5555.5; // default value
 
@@ -1422,7 +1423,9 @@ void XFEM::ENR::SignedDistance(
     // only triangles and quadrangles are allowed as flame front patches (boundary cells)
     if (!(patch.Shape() == DRT::Element::tri3 or
         patch.Shape() == DRT::Element::quad4))
+    {
       dserror("invalid type of boundary integration cell for reinitialization");
+    }
 
     // get coordinates of vertices defining flame front patch
     const LINALG::SerialDenseMatrix& patchcoord = patch.CellNodalPosXYZ();
@@ -1449,14 +1452,30 @@ void XFEM::ENR::SignedDistance(
         mindist = patchdist;
     }
 
+    //-------------------------------------------------------------
+    // compute smallest distance to edges of this flame front patch
+    //-------------------------------------------------------------
+    ComputeDistanceToEdge(nodecoord,patch,patchcoord,edgedist);
+
+    //----------------------------------------------------------------
     // compute smallest distance to vertices of this flame front patch
-    ComputeDistanceToPatch(nodecoord,patch,patchcoord,normal,vertexdist);
+    //----------------------------------------------------------------
+    ComputeDistanceToPatch(nodecoord,patch,patchcoord,vertexdist);
+  }
+
+  if (fabs(edgedist) < fabs(mindist)) // case 2a
+  {
+    // if G-value at the node is negative, the minimal distance has to be negative
+    if ((*phi)[node->LID()] < 0.0 )
+      mindist = -edgedist;
+    else
+      mindist = edgedist;
   }
 
   if (fabs(vertexdist) < fabs(mindist))
   {
     // if the sign has been changed by mistake in ComputeDistanceToPatch(), this has to be corrected here
-    if ((*phi)[node->LID()] * vertexdist < 0.0 )
+    if ((*phi)[node->LID()] < 0.0 )
       mindist = -vertexdist;
     else
       mindist = vertexdist;
@@ -1580,16 +1599,93 @@ void XFEM::ENR::FindFacingPatchProjCellSpace(
 
 
 /*------------------------------------------------------------------------------------------------*
+ | private: compute distance to edge of patch                                         henke 08/09 |
+ *----------------------------------------------------------------------------------------------- */
+void XFEM::ENR::ComputeDistanceToEdge(
+    const LINALG::Matrix<3,1>&       node,
+    const GEO::BoundaryIntCell&      patch,
+    const LINALG::SerialDenseMatrix& patchcoord,
+    double&                          edgedist
+) const
+{
+  // set temporary edgedist to large value
+  double edgedisttmp = edgedist;
+
+  // number of vertices of flame front patch (3 for tri3; 4 for quad4)
+  const size_t numvertices = patchcoord.N();
+
+  // current vertex of the patch (first vertex)
+  static LINALG::Matrix<3,1> vertex1(true);
+  // current next vertex of the patch (second vertex)
+  static LINALG::Matrix<3,1> vertex2(true);
+  // distance vector from first vertex to node
+  static LINALG::Matrix<3,1> vertex1tonode(true);
+  // distance vector from first vertex to second vertex
+  static LINALG::Matrix<3,1> vertex1tovertex2(true);
+
+  // compute distance to all vertices of patch
+  for(size_t ivert = 0; ivert<numvertices; ++ivert)
+  {
+    // vertex1 of flame front patch
+    vertex1(0) = patchcoord(0,ivert);
+    vertex1(1) = patchcoord(1,ivert);
+    vertex1(2) = patchcoord(2,ivert);
+
+    if (ivert < (numvertices-1))
+    {
+      vertex2(0) = patchcoord(0,ivert+1);
+      vertex2(1) = patchcoord(1,ivert+1);
+      vertex2(2) = patchcoord(2,ivert+1);
+    }
+    else if (ivert == (numvertices-1))
+    {
+      vertex2(0) = patchcoord(0,0);
+      vertex2(1) = patchcoord(1,0);
+      vertex2(2) = patchcoord(2,0);
+    }
+
+    // compute distance vector from node to current first
+    vertex1tonode.Update(1.0, node, -1.0, vertex1);
+    // compute distance vector from current second first vertex to current frist vertex (edge)
+    vertex1tovertex2.Update(1.0, vertex2, -1.0, vertex1);
+    double normvertex1tovertex2 = vertex1tovertex2.Norm2();
+    // normalize vector
+    vertex1tovertex2.Scale(1.0/normvertex1tovertex2);
+
+    // scalar product of vertex1tonode and the normed vertex1tovertex2
+    double lotfusspointdist = vertex1tovertex2.Dot(vertex1tonode);
+
+    if( (lotfusspointdist >= 0.0) and (lotfusspointdist <= normvertex1tovertex2) ) // lotfusspoint on edge
+    {
+      LINALG::Matrix<3,1> lotfusspoint(true);
+      lotfusspoint.Update(1.0,vertex1,lotfusspointdist,vertex1tovertex2);
+      LINALG::Matrix<3,1> nodetolotfusspoint(true);
+      nodetolotfusspoint.Update(1.0,lotfusspoint,-1.0,node);
+
+      // determine length of vector from node to lot fuss point
+      edgedisttmp = nodetolotfusspoint.Norm2();
+      if (edgedisttmp < edgedist)
+        edgedist = edgedisttmp;
+    }
+  }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
  | private: compute distance to vertex of patch                                       henke 08/09 |
  *----------------------------------------------------------------------------------------------- */
 void XFEM::ENR::ComputeDistanceToPatch(
     const LINALG::Matrix<3,1>&       node,
     const GEO::BoundaryIntCell&      patch,
     const LINALG::SerialDenseMatrix& patchcoord,
-    const LINALG::Matrix<3,1>&       normal,
     double&                          vertexdist
 ) const
 {
+  // set temporary vertexdist to large value
+  double vertexdisttmp = vertexdist;
+
   // number of vertices of flame front patch (3 for tri3; 4 for quad4)
   const size_t numvertices = patchcoord.N();
 
@@ -1610,18 +1706,9 @@ void XFEM::ENR::ComputeDistanceToPatch(
     dist.Update(1.0, node, -1.0, vertex);
 
     // compute L2-norm of distance vector
-    double normdist = sqrt(dist(0)*dist(0) + dist(1)*dist(1) + dist(2)*dist(2));
-    if(normdist < fabs(vertexdist))
-    {
-      // determine sign of distance vector from node to flame front
-      double tmp = normal(0)*dist(0) + normal(1)*dist(1) + normal(2)*dist(2);
-      // tmp < 0 if node in burnt domain (G>0) and vice versa
-      if (tmp <= 0.0) // 'normal' and 'dist' point in different directions
-        vertexdist = normdist;
-      else // 'normal' and 'dist' point in the same direction
-        vertexdist = -normdist;
-      //cout << "distance to vertex is overwritten by: " << vertexdist << endl;
-    }
+    vertexdisttmp = dist.Norm2();
+    if (vertexdisttmp < vertexdist)
+      vertexdist = vertexdisttmp;
   }
 
   return;

@@ -1820,6 +1820,11 @@ void COMBUST::FlameFront::ComputeCurvatureForCombustion(const Teuchos::Parameter
 
     for (size_t iele=0; iele<numele;iele++)
     {
+#ifdef ORACLES
+      // skip the part of the domain left of the expansion
+      if (lnode->X()[0] < 0.0)
+        continue;
+#endif
       DRT::Element* adjele = adjeles[iele];
 
       // number of nodes of this element
