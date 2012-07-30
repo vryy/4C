@@ -197,16 +197,17 @@ namespace MAT
 
 	private:
 
+	/// my material parameters
+	MAT::PAR::Myocard* params_;
+
+	/// conductivity tensor
+	LINALG::Matrix<3,3> difftensor_;
+
 	/// initial gating variables
 	double v0_; /// fast inward current
 	double w0_; /// slow inward current
 	double s0_; /// slow inward current
 
-	/// conductivity tensor
-	LINALG::Matrix<3,3> difftensor_;
-
-	/// my material parameters
-	MAT::PAR::Myocard* params_;
 
 	}; // Myocard
 

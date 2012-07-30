@@ -82,7 +82,8 @@ DRT::ParObject* MAT::MyocardType::Create( const std::vector<char> & data )
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
 MAT::Myocard::Myocard()
-  : params_(NULL)
+  : params_(NULL),
+    difftensor_(true)
 {
     v0_ = 1.0;
     w0_ = 1.0;
@@ -93,7 +94,8 @@ MAT::Myocard::Myocard()
  |  Constructor                                  (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
 MAT::Myocard::Myocard(MAT::PAR::Myocard* params)
-  : params_(params)
+  : params_(params),
+    difftensor_(true)
 {
     v0_ = 1.0;
     w0_ = 1.0;
@@ -196,11 +198,11 @@ void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
 
     // determinant of eigenvector matrix
     double const evmatdet = evmat(0,0)*evmat(1,1)*evmat(2,2)
-			    + evmat(0,1)*evmat(1,2)*evmat(2,0)
-			    + evmat(0,2)*evmat(1,0)*evmat(2,1)
-			    - evmat(0,2)*evmat(1,1)*evmat(2,0)
-			    - evmat(0,1)*evmat(1,0)*evmat(2,2)
-			    - evmat(0,0)*evmat(1,2)*evmat(2,1);
+				    + evmat(0,1)*evmat(1,2)*evmat(2,0)
+				    + evmat(0,2)*evmat(1,0)*evmat(2,1)
+				    - evmat(0,2)*evmat(1,1)*evmat(2,0)
+				    - evmat(0,1)*evmat(1,0)*evmat(2,2)
+				    - evmat(0,0)*evmat(1,2)*evmat(2,1);
     // double const evmatdet = evmat.Determinant();
 
     // inverse of eigenvector matrix
@@ -216,7 +218,7 @@ void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
     evmatinv.Scale(1/evmatdet);
     //const LINALG::Matrix<3,3> ematinv;
     //evmat.Invert(ematinv);
-    cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << endl;
+    //cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << endl;
     // Conductivity matrix D = EVmat*DiagonalConductivityMatrix*EVmatinv
     for (int i = 0; i<3; i++){
 	evmatinv(0,i) *= maindirdiffusivity;

@@ -104,19 +104,19 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
   case DRT::Element::tet10:
   {
     return ScaTraImpl<DRT::Element::tet10>::Instance(numdofpernode,numscal);
-  }
+  }*/
   case DRT::Element::wedge6:
   {
     return ScaTraImpl<DRT::Element::wedge6>::Instance(numdofpernode,numscal);
-  }
+  } /*
   case DRT::Element::wedge15:
   {
     return ScaTraImpl<DRT::Element::wedge15>::Instance(numdofpernode,numscal);
-  }
+  } */
   case DRT::Element::pyramid5:
   {
     return ScaTraImpl<DRT::Element::pyramid5>::Instance(numdofpernode,numscal);
-  } */
+  }
   case DRT::Element::quad4:
   {
     return ScaTraImpl<DRT::Element::quad4>::Instance(numdofpernode,numscal);
@@ -907,7 +907,27 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       Teuchos::RCP<MAT::Myocard> mat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
       const double dt   = params.get<double>("time-step length");
 
+      // extract local values from the global vectors
+      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      if (phinp==Teuchos::null)
+        dserror("Cannot get state vector 'phinp'");
+      vector<double> myphinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
+      // fill all element arrays
+      for (int i=0;i<nen_;++i)
+      {
+        for (int k = 0; k< numscal_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+        }
+      }
+
+      // use one-point Gauss rule to do calculations at the element center
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+      EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
       const double csnp = funct_.Dot(ephinp_[0]);
       mat->Update(csnp, dt);
