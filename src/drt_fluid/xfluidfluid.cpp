@@ -1796,9 +1796,6 @@ FLD::XFluidFluid::XFluidFluid(
 
   gmsh_count_ = 0;
 
-  readrestart_ = false;
-  restartstep_ = 0;
-
 
   // load GMSH output flags
   gmsh_cut_out_          = (bool)params_->sublist("XFEM").get<int>("GMSH_CUT_OUT");
@@ -2048,13 +2045,6 @@ FLD::XFluidFluid::XFluidFluid(
   output_ = (rcp(new IO::DiscretizationWriter(bgdis_)));
   output_->WriteMesh(0,0.0);
 
-  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-  idispcol.PutScalar( 0.0 );
-  state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
-
-  if ( not bgdis_->Filled() or not actdis->HaveDofs() )
-   bgdis_->FillComplete();
-
   //-------------------------------------------------------------------
   // create internal faces extension for edge based stabilization
   if(edge_based_ or ghost_penalty_)
@@ -2070,7 +2060,6 @@ FLD::XFluidFluid::XFluidFluid(
 
 //   output_ = rcp(new IO::DiscretizationWriter(bgdis_));
 //   output_->WriteMesh(0,0.0);
-
 
   // embedded fluid state vectors
   FLD::UTILS::SetupFluidSplit(*embdis_,numdim_,alevelpressplitter_);
@@ -2149,6 +2138,7 @@ FLD::XFluidFluid::XFluidFluid(
     alezeros_->PutScalar(0.0); // just in case of change
   }
 
+
   //--------------------------------------------------------
   // FluidFluid-Boundary Vectros passes to element
   // -------------------------------------------------------
@@ -2161,6 +2151,23 @@ FLD::XFluidFluid::XFluidFluid(
   // -----------------------------------------------------------------
   SetElementGeneralFluidParameter();
   SetElementTurbulenceParameter();
+
+
+  //--------------------------------------------------
+  // XFluidFluid State
+  //-----------------------------------------------
+  const int restart = DRT::Problem::Instance()->Restart();
+  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+  idispcol.PutScalar( 0.0 );
+  if (restart)
+  {
+    ReadRestartEmb(restart);
+    LINALG::Export(*aledispn_,idispcol);
+  }
+  state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
+
+  if ( not bgdis_->Filled() or not actdis->HaveDofs() )
+    bgdis_->FillComplete();
 
   if (alefluid_)
     xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->wizard_, step_,
@@ -3117,18 +3124,13 @@ void FLD::XFluidFluid::Evaluate(
 }//FLD::XFluidFluid::Evaluate
 
 // -------------------------------------------------------------------
-// Read Restart data
+// Read Restart data for background discretization
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::ReadRestart(int step)
 {
-  readrestart_ = true;
-  restartstep_ = step;
-
   //-------- background discretization
   //  ART_exp_timeInt_->ReadRestart(step);
   IO::DiscretizationReader reader(bgdis_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
 
   reader.ReadVector(state_->velnp_,"velnp_bg");
   reader.ReadVector(state_->velnm_,"velnm_bg");
@@ -3150,9 +3152,17 @@ void FLD::XFluidFluid::ReadRestart(int step)
     dserror("Global dof numbering in maps does not match");
   if (not (bgdis_->DofRowMap())->SameAs(state_->accn_->Map()))
     dserror("Global dof numbering in maps does not match");
+}
 
+// -------------------------------------------------------------------
+// Read Restart data for embedded discretization
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::ReadRestartEmb(int step)
+{
   //-------- embedded discretization
   IO::DiscretizationReader embreader(embdis_,step);
+  time_ = embreader.ReadDouble("time");
+  step_ = embreader.ReadInt("step");
 
   embreader.ReadVector(alevelnp_,"velnp_emb");
   embreader.ReadVector(aleveln_, "veln_emb");
@@ -3168,7 +3178,6 @@ void FLD::XFluidFluid::ReadRestart(int step)
     embreader.ReadVector(aledispnp_,"dispnp_emb");
     embreader.ReadVector(aledispn_ , "dispn_emb");
     embreader.ReadVector(aledispnm_,"dispnm_emb");
-
     embreader.ReadVector(gridv_,"gridv_emb");
   }
 
@@ -3389,19 +3398,11 @@ void FLD::XFluidFluid::CutAndSaveBgFluidStatus()
   // save the old state vector
   staten_ = state_;
 
+  const int restart = DRT::Problem::Instance()->Restart();
   // if restart
-  if (readrestart_ and ((restartstep_+1) == step_))
+  if (restart and ((restart+1) == step_))
   {
-    Epetra_Vector idispcoln( *boundarydis_->DofColMap() );
-    idispcoln.PutScalar( 0.0 );
-    LINALG::Export(*aledispn_,idispcoln);
-    staten_ = Teuchos::rcp( new XFluidFluidState( *this, idispcoln ) );
     xfluidfluid_timeint_->CreateBgNodeMapsForRestart(bgdis_,staten_->wizard_);
-    staten_->velnp_ = state_->velnp_;
-    staten_->veln_ = state_->veln_;
-    staten_->velnm_ = state_->velnm_;
-    staten_->accnp_ = state_->accnp_;
-    staten_->accn_ = state_->accn_;
   }
 
   // new cut for this time step

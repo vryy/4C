@@ -320,6 +320,8 @@ namespace FLD
 
     void ReadRestart(int step);
 
+    void ReadRestartEmb(int step);
+
     void CutAndSaveBgFluidStatus();
 
     void SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp);
@@ -596,11 +598,6 @@ namespace FLD
 
     /// edgebased stabilization
     bool edge_based_;
-
-    // restart step
-    int restartstep_;
-
-    bool readrestart_;
 
     /// ghost penalty stabilization
     bool ghost_penalty_;
