@@ -26,7 +26,7 @@ using namespace Teuchos;
 
 
 // forward declarations
-struct _MATERIAL;
+//struct _MATERIAL;
 
 
 namespace DRT

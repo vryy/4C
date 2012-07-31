@@ -20,6 +20,7 @@ Maintainer: Mahmoud Ismail
 #include "airway_impl.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"

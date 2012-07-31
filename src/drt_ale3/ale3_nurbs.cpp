@@ -12,7 +12,7 @@ Maintainer: Peter Gamnitzer
 #ifdef D_ALE
 
 #include "ale3_nurbs.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 
 DRT::ELEMENTS::NURBS::Ale3_NurbsType DRT::ELEMENTS::NURBS::Ale3_NurbsType::instance_;
 

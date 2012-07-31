@@ -18,6 +18,7 @@ Maintainer: Florian Henke
 #include "combust_refinementcell.H"
 #include "../drt_cut/cut_position.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"

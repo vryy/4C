@@ -16,7 +16,6 @@
 #include "../drt_lib/drt_elementtype.H"
 
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
 #include "so3_scatra_eletypes.H"

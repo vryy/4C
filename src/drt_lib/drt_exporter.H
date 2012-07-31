@@ -52,7 +52,7 @@ Maintainer: Michael Gee
 #include <Teuchos_RCP.hpp>
 
 #include "drt_node.H"
-#include "drt_utils.H"
+#include "drt_utils_factory.H"
 #include "drt_parobject.H"
 
 using namespace std;

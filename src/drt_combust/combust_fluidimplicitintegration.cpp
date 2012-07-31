@@ -39,6 +39,8 @@ Maintainer: Florian Henke
 #include "../drt_geometry/position_array.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret_xfem.H"

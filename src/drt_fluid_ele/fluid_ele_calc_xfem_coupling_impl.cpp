@@ -19,6 +19,8 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 
 #include "fluid_ele_calc_stabilization.H"
 
+#include "../drt_lib/drt_utils.H"
+
 #include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_position.H"
 

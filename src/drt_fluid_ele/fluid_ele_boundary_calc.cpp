@@ -30,6 +30,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/mixfrac.H"

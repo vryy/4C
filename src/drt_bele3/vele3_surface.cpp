@@ -14,7 +14,7 @@ Maintainer: Ursula Mayer
 #include "vele3.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_factory.H"
 
 
 DRT::ELEMENTS::Vele3SurfaceType DRT::ELEMENTS::Vele3SurfaceType::instance_;

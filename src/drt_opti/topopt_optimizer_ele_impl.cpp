@@ -16,6 +16,7 @@ Maintainer: Martin Winklmaier
 #include "topopt_optimizer_ele_parameter.H"
 
 #include "../drt_geometry/position_array.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/optimization_density.H"
 

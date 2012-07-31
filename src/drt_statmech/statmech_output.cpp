@@ -15,7 +15,6 @@ Maintainer: Kei Müller
 
 #include "statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
-#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"

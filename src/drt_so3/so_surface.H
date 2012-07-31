@@ -12,10 +12,11 @@ Maintainer: Michael Gee
 #ifndef SO_SURFACE_H
 #define SO_SURFACE_H
 
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_lib/drt_node.H"
 
 
 namespace DRT

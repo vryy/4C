@@ -19,7 +19,6 @@ Maintainer: Moritz Frenzel
 #include "so_weg6.H"
 #include "so_disp.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"

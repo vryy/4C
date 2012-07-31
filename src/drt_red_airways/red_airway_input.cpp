@@ -13,7 +13,6 @@ Maintainer: Mahmoud Ismail
 #ifdef D_RED_AIRWAYS
 
 #include "red_airway.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 

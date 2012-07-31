@@ -13,7 +13,8 @@ Maintainer: Markus Gitterle
 
 #include "wall1.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_factory.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"

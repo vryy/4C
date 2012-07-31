@@ -20,6 +20,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_inpar/inpar_topopt.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/newtonianfluid.H"

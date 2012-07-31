@@ -28,7 +28,6 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_lib/drt_utils.H"
 #include "../drt_structure/stru_resulttest.H"
 
 

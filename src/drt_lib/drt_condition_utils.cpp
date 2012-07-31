@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "drt_discret_iterator.H"
 
 #include "drt_globalproblem.H"
-#include "drt_utils.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../linalg/linalg_utils.H"
 
 #include <map>

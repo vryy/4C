@@ -12,7 +12,7 @@ Maintainer: Christian Cyron
 *----------------------------------------------------------------------*/
 
 #include "torsion3.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 

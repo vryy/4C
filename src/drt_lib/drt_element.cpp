@@ -44,7 +44,7 @@ Maintainer: Michael Gee
 #include "drt_node.H"
 #include "drt_discret.H"
 #include "drt_dserror.H"
-#include "drt_utils.H"
+#include "../drt_lib/drt_utils_factory.H"
 #include "drt_linedefinition.H"
 
 #include "../drt_mat/material.H"

@@ -13,7 +13,7 @@ Maintainer: Moritz Frenzel
 
 #include "so_shw6.H"
 #include "so_weg6.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 

@@ -13,7 +13,7 @@ Maintainer: Christian Cyron
 
 #include "beam3.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_element.H"

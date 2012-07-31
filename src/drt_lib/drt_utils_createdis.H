@@ -18,8 +18,8 @@ Maintainer: Georg Bauer
 #ifndef DRT_UTILS_CREATEDIS_H
 #define DRT_UTILS_CREATEDIS_H
 
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils.H"
+#include "drt_condition_utils.H"
+#include "drt_utils_factory.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_parameter.H"

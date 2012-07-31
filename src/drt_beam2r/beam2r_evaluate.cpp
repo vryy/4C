@@ -15,6 +15,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"

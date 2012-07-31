@@ -17,7 +17,6 @@
 #include "post_drt_generic_writer.H"
 #include <string>
 #include "post_drt_generic_single_field_writers.H"
-#include "../drt_lib/drt_utils.H"
 #include "../pss_full/pss_cpp.h"
 
 using namespace std;

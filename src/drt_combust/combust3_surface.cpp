@@ -12,7 +12,7 @@ Maintainer: Florian Henke
 *----------------------------------------------------------------------*/
 
 #include "combust3.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_factory.H"
 
 
 DRT::ELEMENTS::Combust3SurfaceType DRT::ELEMENTS::Combust3SurfaceType::instance_;

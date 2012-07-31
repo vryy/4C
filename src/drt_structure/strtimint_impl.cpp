@@ -35,7 +35,6 @@ Maintainer: Thomas Klöppel
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"

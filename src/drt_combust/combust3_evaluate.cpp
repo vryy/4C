@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation_combust.H"
 #include "../drt_xfem/enrichment_utils.H"

@@ -19,6 +19,7 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/intersection_service_templates.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"

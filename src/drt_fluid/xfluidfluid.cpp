@@ -27,6 +27,8 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_lib/drt_dofset_transparent_independent.H"
 #include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_dofset_independent.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_solver.H"

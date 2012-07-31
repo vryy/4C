@@ -39,7 +39,6 @@ Maintainer: Alexander Popp
 
 #include "mortar_element.H"
 #include "mortar_node.H"
-#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"

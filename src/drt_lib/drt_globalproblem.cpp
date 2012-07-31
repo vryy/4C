@@ -30,7 +30,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_elementreader.H"
 #include "drt_nodereader.H"
 #include "drt_timecurve.H"
-#include "drt_utils.H"
+#include "drt_utils_parallel.H"
 #include "drt_discret.H"
 #include "drt_discret_xfem.H"
 #include "../drt_mat/material.H"

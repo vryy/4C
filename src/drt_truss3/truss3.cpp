@@ -12,9 +12,9 @@ Maintainer: Christian Cyron
 *----------------------------------------------------------------------*/
 
 #include "truss3.H"
-//#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 //#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_linedefinition.H"
 

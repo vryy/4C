@@ -13,6 +13,7 @@ Maintainer: Christian Cyron
 
 #include "torsion2.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/spring.H"
 

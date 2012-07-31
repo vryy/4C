@@ -1827,9 +1827,10 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
         yvalue = yvalue_rot;
       }
       // insert values
-      fluxk->ReplaceMyValue(i,0,xvalue);
-      fluxk->ReplaceMyValue(i,1,yvalue);
-      fluxk->ReplaceMyValue(i,2,zvalue);
+      int err = fluxk->ReplaceMyValue(i,0,xvalue);
+      err += fluxk->ReplaceMyValue(i,1,yvalue);
+      err += fluxk->ReplaceMyValue(i,2,zvalue);
+      if (err!=0) dserror("Detected error in ReplaceMyValue");
     }
     if (numscal_==1)
       output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);

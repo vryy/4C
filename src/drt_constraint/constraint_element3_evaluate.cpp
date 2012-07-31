@@ -15,6 +15,7 @@ Maintainer: Thomas Kloeppel
 #include "constraint_element3.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_utils.H"
 
 
 using namespace DRT::UTILS;

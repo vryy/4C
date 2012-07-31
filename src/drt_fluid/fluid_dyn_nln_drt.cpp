@@ -34,6 +34,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_dofset_fixed_size.H"
+#include "../drt_lib/drt_utils_parmetis.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:

@@ -45,7 +45,6 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "drt_parobject.H"
 
-#include "drt_utils.H"
 #include "drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 

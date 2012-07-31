@@ -46,6 +46,7 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
+#include "drt_utils_metis.H"
 
 /*----------------------------------------------------------------------*
  |  Export nodes owned by a proc (public)                    mwgee 11/06|

@@ -16,6 +16,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/element_normals.H"
 #include "../drt_geometry/element_volume.H"

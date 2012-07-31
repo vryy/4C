@@ -11,7 +11,8 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 
 #include "wall1_nurbs.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_factory.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
 

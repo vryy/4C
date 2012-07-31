@@ -18,6 +18,7 @@
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 
 using namespace DRT::UTILS;

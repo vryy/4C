@@ -14,8 +14,10 @@ Maintainer: Axel Gerstenberger
 
 #include "io_gmsh.H"
 #include "io_control.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../linalg/linalg_utils.H"  // LINALG::Export
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_geometry/intersection_service.H"

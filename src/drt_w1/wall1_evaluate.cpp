@@ -22,6 +22,7 @@ Maintainer: Markus Gitterle
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"

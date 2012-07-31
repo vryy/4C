@@ -14,7 +14,6 @@
 #include "bele3_4.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_utils.H"
 
 
 DRT::ELEMENTS::Bele3_4Type DRT::ELEMENTS::Bele3_4Type::instance_;

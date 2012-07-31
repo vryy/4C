@@ -1,6 +1,7 @@
 #include "../drt_fluid/fluid_discret_extractor.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_dofset_transparent.H"
+#include "../drt_lib/drt_utils_parmetis.H"
 
 
 /*----------------------------------------------------------------------*

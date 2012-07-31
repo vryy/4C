@@ -21,6 +21,7 @@ Maintainer: Georg Hammerl
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_utils_parmetis.H"
 
 #include <vector>
 #include <sstream>

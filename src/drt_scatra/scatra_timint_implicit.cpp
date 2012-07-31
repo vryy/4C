@@ -864,7 +864,7 @@ Teuchos::RCP<DRT::Discretization> dis)
         if (havetorotate) acceleration = FLD::GetComponentOfRotatedVectorField(index,acc,lid,rotangle);
 
         // insert acceleration value into node-based vector
-        accpre_->ReplaceMyValue(lnodeid,index,acceleration);
+        err = accpre_->ReplaceMyValue(lnodeid,index,acceleration);
         if (err != 0) dserror("Error while inserting value into vector accpre_!");
       }
 
@@ -2975,13 +2975,15 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
       {
         firstrowvalue = values[r];
         if (abs(firstrowvalue)<EPS14) dserror("diagonal value too small");
-        scalefactors->ReplaceMyValue(r,0,1.0); // set scalefactor 1.0
+        int err = scalefactors->ReplaceMyValue(r,0,1.0); // set scalefactor 1.0
+        if (err != 0) dserror("Error detected");
       }
       else
       {
         if(abs(values[r])<EPS14) dserror("devision by zero prevented");
         double scalefactor = 1.0*abs(firstrowvalue/values[r]); //sign-independent!
-        scalefactors->ReplaceMyValue(r,0,scalefactor);
+        int err = scalefactors->ReplaceMyValue(r,0,scalefactor);
+        if (err != 0) dserror("Error detected");
       }
     } // for (int r=0;r < w->MyLength(); r++)
 #if 0

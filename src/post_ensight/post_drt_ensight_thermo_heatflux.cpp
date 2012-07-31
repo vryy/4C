@@ -23,7 +23,6 @@
 #include "../post_drt_common/post_drt_common.H"
 #include <string>
 #include "post_drt_ensight_single_field_writers.H"
-#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../pss_full/pss_cpp.h"
 

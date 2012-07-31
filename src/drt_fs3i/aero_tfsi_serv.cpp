@@ -18,6 +18,7 @@ Maintainer: Georg Hammerl
  *----------------------------------------------------------------------*/
 #include "aero_tfsi_serv.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_adapter/ad_str_structure.H"

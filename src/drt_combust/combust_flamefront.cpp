@@ -18,6 +18,7 @@ Maintainer: Florian Henke
 #include "combust_defines.H"
 #include "combust_refinementcell.H"
 #include "combust3_utils.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_geometry/tetrahedradecomposition.H"
 #include "../drt_io/io_gmsh.H"
 #include "../linalg/linalg_utils.H"

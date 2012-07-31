@@ -30,7 +30,7 @@ Maintainer: Benedikt Schott
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 
-
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_cut/cut_position.H"

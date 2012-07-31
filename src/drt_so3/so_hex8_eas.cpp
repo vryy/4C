@@ -14,7 +14,6 @@ Maintainer: Moritz Frenzel
 #include "so_hex8.H"
 #include "so_sh8p8.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"

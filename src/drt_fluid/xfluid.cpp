@@ -28,6 +28,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_resulttest.H"
+#include "../drt_lib/drt_utils_parallel.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"

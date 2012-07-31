@@ -13,7 +13,6 @@
 #define SO3_PORO_H
 
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"

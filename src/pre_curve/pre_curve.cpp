@@ -16,6 +16,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_inputreader.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_parobjectregister.H"
 
 /*======================================================================*/
 /*======================================================================*/
@@ -43,6 +45,8 @@ int main(int argc, char** argv)
   double t2 = 1.;
   double dt = 0.1;
 
+  int printparobjecttypes = 0;
+
   CLP.throwExceptions(false);
 
   CLP.setOption("datfile",&datfile,"dat file to read curve from");
@@ -51,6 +55,7 @@ int main(int argc, char** argv)
   CLP.setOption("t1",&t1,"start time");
   CLP.setOption("t2",&t2,"end time");
   CLP.setOption("dt",&dt,"time step");
+  CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
 
   Teuchos::CommandLineProcessor::EParseCommandLineReturn parseReturn = CLP.parse(argc,argv);
 
@@ -61,6 +66,12 @@ int main(int argc, char** argv)
   if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
   {
     std::exit(1);
+  }
+  if (printparobjecttypes)
+  {
+    // hack so that the parobject types are registered
+    PrintParObjectList();
+    exit(0);
   }
 
   if (datfile=="")

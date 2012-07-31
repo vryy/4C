@@ -21,6 +21,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_combust/two_phase_defines.H"
 #include "field_enriched.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_combust/combust_defines.H"
 #include "../drt_combust/combust3_utils.H"

@@ -1,0 +1,104 @@
+/*!----------------------------------------------------------------------
+\file drt_utils_parmetis.H
+\brief A collection of helper methods for namespace DRT
+
+<pre>
+-------------------------------------------------------------------------
+                 BACI finite element library subsystem
+            Copyright (2008) Technical University of Munich
+
+Under terms of contract T004.008.000 there is a non-exclusive license for use
+of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library is proprietary software. It must not be published, distributed,
+copied or altered in any form or any media without written permission
+of the copyright holder. It may be used under terms and conditions of the
+above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library may solemnly used in conjunction with the BACI contact library
+for purposes described in the above mentioned contract.
+
+This library contains and makes use of software copyrighted by Sandia Corporation
+and distributed under LGPL licence. Licensing does not apply to this or any
+other third party software used here.
+
+Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
+                   or
+                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
+
+http://www.lnm.mw.tum.de
+
+-------------------------------------------------------------------------
+</pre>
+<pre>
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifndef UTILS_PARMETIS_H
+#define UTILS_PARMETIS_H
+
+
+#include "Teuchos_RCP.hpp"
+#include "Epetra_Comm.h"
+#include "Epetra_Map.h"
+
+
+namespace DRT
+{
+/// forward declarations
+class Discretization;
+
+/// collection of useful and important but less central stuff
+namespace UTILS
+{
+#if defined(PARALLEL) && defined(PARMETIS)
+
+  /// redistribute a discretization using ParMetis
+  /*!
+    Actually, only the \p rownodes and \p colnodes maps are created.
+   */
+#if 0
+  void PartUsingParMetis(RCP<DRT::Discretization> dis,
+                         RCP<Epetra_Map> roweles,
+                         RCP<Epetra_Map>& rownodes,
+                         RCP<Epetra_Map>& colnodes,
+                         vector<int>& nids,
+                         int nblock,
+                         int ntarget,
+                         RCP<Epetra_Comm> comm,
+                         Epetra_Time& time,
+                         bool outflag);
+#endif
+  void PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<Epetra_Map> roweles,
+      Teuchos::RCP<Epetra_Map>& rownodes,
+      Teuchos::RCP<Epetra_Map>& colnodes,
+      Teuchos::RCP<Epetra_Comm> comm,
+      bool outflag);
+#else
+
+#if 0 // this is out of date, we don't support non-parmetis anymore mmwgee 4/12
+  /// redistribute a discretization using metis
+  /*!
+    Actually, only the \p rownodes and \p colnodes maps are created.
+   */
+  void PartUsingMetis(Teuchos::RCP<Epetra_Map>& rownodes,
+      Teuchos::RCP<Epetra_Map>& colnodes,
+      list<vector<int> >& elementnodes,
+      Teuchos::RCP<Epetra_Comm> comm);
+#endif
+#endif
+
+} // namespace UTILS
+} // namespace DRT
+
+
+#endif  // #ifndef UTILS_PARMETIS_H
+
+
+
+

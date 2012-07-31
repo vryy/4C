@@ -19,7 +19,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
-
+#include "../drt_lib/drt_utils_parmetis.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

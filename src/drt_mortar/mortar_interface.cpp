@@ -56,6 +56,8 @@ Maintainer: Alexander Popp
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_utils.H"
 #include <Teuchos_Time.hpp>
 
 

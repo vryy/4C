@@ -21,6 +21,7 @@ Maintainer: Shadan Shahmiri
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_cut/cut_boundingbox.H"
 #include "../drt_cut/cut_elementhandle.H"

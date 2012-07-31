@@ -14,6 +14,8 @@ Maintainer: Florian Henke
 #include "combust3.H"
 #include "combust_interface.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_factory.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_xfem/dof_management_element.H"
 #include "../linalg/linalg_serialdensevector.H"

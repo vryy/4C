@@ -14,6 +14,7 @@ Maintainer: Christian Cyron
 #include "torsion3.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/spring.H"
 #include "../drt_inpar/inpar_statmech.H"

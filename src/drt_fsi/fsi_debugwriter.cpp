@@ -8,7 +8,7 @@
 #include "fsi_monolithic.H"
 
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_discret.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"

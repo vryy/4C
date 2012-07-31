@@ -17,6 +17,7 @@ Maintainer: Florian Henke
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
 
 #define NODETOL 1e-9
 

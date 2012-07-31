@@ -17,8 +17,10 @@ Maintainer: Ulrich Kuettler
 
 #include "drt_elementreader.H"
 #include "standardtypes_cpp.H"
-#include "drt_utils.H"
 #include "drt_elementdefinition.H"
+#include "drt_utils_parmetis.H"
+#include "drt_utils_factory.H"
+#include "drt_utils_parallel.H"
 
 #include <Epetra_Time.h>
 

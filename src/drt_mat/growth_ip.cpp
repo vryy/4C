@@ -30,7 +30,8 @@ Maintainer: Susanna Tinkl
 #include "aaaneohooke.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_utils.H"  // for function Factory in Unpack and debug plotting with gmsh
+#include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
+#include "../drt_lib/drt_utils.H"  // for debug plotting with gmsh
 #include "../drt_io/io_gmsh.H" // for debug plotting with gmsh
 #include "../drt_io/io_control.H" // for debug plotting with gmsh
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H" // for debug plotting with gmsh
