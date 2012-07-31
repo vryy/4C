@@ -24,7 +24,8 @@ namespace GEO
          elem1_(element1),            //the element for which the facet is a part of
          position_(posi),             //position
          bcellInt_(bcellInt),         //"true" if it is boundarycell integration
-         global_(global)              //"true" for performing integration in global coordinates
+         global_(global),             //"true" for performing integration in global coordinates
+         orderingComputed_(false)     //whether cw or acw ordering of vertices computed
         {
         }
 
@@ -53,7 +54,7 @@ namespace GEO
         /*!
         \brief Return whether the vertices numbering of the facet is clockwise
         */
-        bool IsClockwiseOrdering(){return clockwise_;}
+        bool IsClockwiseOrdering();
 
         /*!
         \brief Generate Gaussian points over the considered facet by triangulating it. This is used when
@@ -113,6 +114,7 @@ namespace GEO
         bool global_;
         int inte_num_;
         bool clockwise_;
+        bool orderingComputed_; // whether the clockwise or ACW ordering computed already
         std::vector<double> eqn_plane_;
 
     };

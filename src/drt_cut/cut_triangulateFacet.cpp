@@ -13,6 +13,19 @@ void GEO::CUT::TriangulateFacet::SplitFacet()
 
   KERNEL::DeleteInlinePts( ptlist_ );
 
+  /*****************************************************************************************/
+  /*std::cout<<"NUmber of points after deleting = "<<ptlist_.size()<<"\n";//blockkk
+  std::cout<<"The coordinates of the facet after deleting\n";
+  for( unsigned i=0;i<ptlist_.size();i++ )
+  {
+    Point* ptx = ptlist_[i];
+    double coox[3];
+    ptx->Coordinates(coox);
+    std::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+  }*/
+  /*****************************************************************************************/
+
+
   // Deal with zero point facet -- this should never occur, but happens in axel10 cut-test
   if( ptlist_.size()==0 )
     return;
@@ -26,65 +39,22 @@ void GEO::CUT::TriangulateFacet::SplitFacet()
   {
     dserror("A facet must have atleast 3 corners");
   }
+  else if ( numpts==3 )
+  {
+    split_.push_back( ptlist_ );
+    return;
+  }
   else
   {
     split_.clear();
-    switch( numpts )
-    {
-    case 3:
-    {
-      split_.push_back( ptlist_ );
-      break;
-    }
-    case 4:
-    {
-      Split4nodeFacet( ptlist_ );
-      break;
-    }
-    case 5:
-    {
-      Split5nodeFacet();
-      break;
-    }
-    case 6:
-    {
-      Split6nodeFacet();
-      break;
-    }
-    case 7:
-    {
-      Split7nodeFacet();
-      break;
-    }
-    case 8:
-    {
-      Split8nodeFacet();
-      break;
-    }
-    case 9:
-    {
-      Split9nodeFacet();
-      break;
-    }
-    case 10:
-    {
-      Split10nodeFacet();
-      break;
-    }
-    default:
-    {
-      std::string geoType;
-      std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
 
-      if( ptConcavity.size()==0 ) //this means a convex facet with more than 10 pts
-        ptConcavity.push_back(0);
+    std::string geoType;
+    std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
 
-  //    std::cout<<"size of concavity = "<<ptConcavity.size()<<"\n";
-
-      SplitAnyFacet( ptConcavity );
-      break;
-    }
-    }
+    if( geoType=="convex" || geoType=="1ptConcave" )
+      SplitConvex_1ptConcave_Facet( ptConcavity );
+    else
+      SplitGeneralFacet( ptConcavity );
   }
 }
 
@@ -110,6 +80,18 @@ void GEO::CUT::TriangulateFacet::Split4nodeFacet( std::vector<Point*> &poly,
   std::string geoType;
   std::vector<int> ptConcavity = KERNEL::CheckConvexity(  poly, geoType );
 
+
+  /*************************************************************/
+  /*std::cout<<"the 4 noded facet is  "<<geoType<<"\n";//blockkk
+  std::cout<<"The coordinates of the facet after deleting\n";
+  for( unsigned i=0;i<poly.size();i++ )
+  {
+    Point* ptx = poly[i];
+    double coox[3];
+    ptx->Coordinates(coox);
+    std::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+  }*/
+/***********************************************************/
   int indStart=0;
   if( geoType=="convex" )
   {
@@ -145,14 +127,14 @@ void GEO::CUT::TriangulateFacet::Split4nodeFacet( std::vector<Point*> &poly,
   else // if there are two concave pts for 4 noded facet --> selfcut
   {
     // this means splitAnyFacet is failed --> call earclipping
-    if( callFromSplitAnyFacet )
+    /*if( callFromSplitAnyFacet )
     {
-      std::cout<<"WARNING!!!! calling earclipping because splitanyfacet failed\n";//blockkk
+      std::cout<<"WARNING!!!! calling earclipping because splitanyfacet failed\n";
       ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
       split_.clear();
       EarClipping( ptConcavity, false );
       return;
-    }
+    }*/
     std::cout<<"the points are\n";
     for( unsigned i=0;i<poly.size();i++ )
     {
@@ -166,470 +148,278 @@ void GEO::CUT::TriangulateFacet::Split4nodeFacet( std::vector<Point*> &poly,
   }
 }
 
-/*---------------------------------------------------------------------------------------------*
-   A 5 noded facet is split into a tri and a quad if it does not have two adjacent concave pts
-   For concave volumes the point which produces the concavity is found, and used accordingly
-
-           4  _______  3                   3
-              |     .\                     |\       1                            Sudhakar 04/12
-              | B  .  \                    | \    /|
-              |   .    \ 2                 |  \ 2/ |
-              |  .  A  /                   | B \/  |
-              | .     /                    |  .  A |
-            0 |._____/ 1                 0 |.______| 1
-*---------------------------------------------------------------------------------------------*/
-void GEO::CUT::TriangulateFacet::Split5nodeFacet()
-{
-//  std::cout<<"I am in 5 noded facet program\n";
-  if( ptlist_.size()!=5 )
-    dserror("This is not a 5 noded facet");
-
-  split_.clear();
-
-  std::string geoType;
-  std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
-
-  int indStart=0;
-  if( geoType=="convex" || geoType=="1ptConcave" )
-  {
-    if( geoType=="convex" )
-      indStart = 0;
-    else if( geoType=="1ptConcave" )
-      indStart = ptConcavity[0];
-
-    std::vector<Point*> temp1(3),temp2(4);
-    temp1[0] = ptlist_[indStart];
-    temp1[1] = ptlist_[(indStart+1)%5];
-    temp1[2] = ptlist_[(indStart+2)%5];
-
-    temp2[0] = ptlist_[(indStart+2)%5];
-    temp2[1] = ptlist_[(indStart+3)%5];
-    temp2[2] = ptlist_[(indStart+4)%5];
-    temp2[3] = ptlist_[indStart];
-
-    split_.resize(2);
-    split_[0] = temp1;
-    split_[1] = temp2;
-  }
-  else
-  {
-    bool conti = HasTwoContinuousConcavePts( ptConcavity );
-    if( conti )
-      EarClipping( ptConcavity );
-    else
-      SplitAnyFacet( ptConcavity );
-  }
-}
-
-/*---------------------------------------------------------------------------------------------*
-   A 6 noded facet is split into 2 quad if it does not have two adjacent concave pts
-   For concave volumes the point which produces the concavity is found, and used accordingly
-
-               4  _______  3                   5 ______ 4
-                 /      .\                      |      |        Sudhakar 04/12
-                /   B  .  \                     |  B   |3____
-               /      .    \ 2                  |     .      | 2
-            5  \     .  A  /                    |   .        |
-                \   .     /                     | .     A    |
-                0\ ._____/ 1                  0 |.___________| 1
-*---------------------------------------------------------------------------------------------*/
-void GEO::CUT::TriangulateFacet::Split6nodeFacet()
-{
-//  std::cout<<"I am in 6 noded facet program\n";
-  if(ptlist_.size()!=6)
-    dserror("This is not a 6 noded facet");
-
-  split_.clear();
-
-  std::string geoType;
-  std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
-
-  int indStart=0;
-  if( geoType=="convex" || geoType=="1ptConcave" )
-  {
-    if( geoType=="convex" )
-      indStart = 0;
-    else if( geoType=="1ptConcave" )
-      indStart = ptConcavity[0];
-
-    std::vector<Point*> temp1(4),temp2(4);
-    temp1[0] = ptlist_[indStart];
-    temp1[1] = ptlist_[(indStart+1)%6];
-    temp1[2] = ptlist_[(indStart+2)%6];
-    temp1[3] = ptlist_[(indStart+3)%6];
-
-    temp2[0] = ptlist_[(indStart+3)%6];
-    temp2[1] = ptlist_[(indStart+4)%6];
-    temp2[2] = ptlist_[(indStart+5)%6];
-    temp2[3] = ptlist_[indStart];
-
-    split_.resize(2);
-    split_[0] = temp1;
-    split_[1] = temp2;
-  }
-  else
-  {
-    bool conti = HasTwoContinuousConcavePts( ptConcavity );
-    if( conti )
-      EarClipping( ptConcavity );
-    else
-      SplitAnyFacet( ptConcavity );
-  }
-}
-
-/*---------------------------------------------------------------------------------------------*
-   A 7 noded facet is split into 2 quad and a tri if it does not have two adjacent concave pts
-   For concave volumes the point which produces the concavity is found, and used accordingly
-
-
-           4  __________  3                  6  ______________ 5
-             /.        .\                      | .            |                       Sudhakar 04/12
-            / .       .  \                     |   .     A    |
-           /  .  B   .    \ 2                  |     .       / 4
-        5 |   .     .      \                   |       .    /
-          | C .    .        \                  |         . /
-          |   .   .         /                  |  B     .  \ 3
-        6 |   .  .     A   /                   |      .     \
-           \  . .         /                    |    .        \ 2
-            \ ..         /                     |  .      C    |
-            0\._________/ 1                  0 |._____________| 1
-*---------------------------------------------------------------------------------------------*/
-void GEO::CUT::TriangulateFacet::Split7nodeFacet()
-{
-  //std::cout<<"I am in 7 noded split\n";
-  if(ptlist_.size()!=7)
-    dserror("This is not a 7 noded facet");
-
-  split_.clear();
-
-  std::string geoType;
-  std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
-
-  int indStart=0;
-  if( geoType=="convex" || geoType=="1ptConcave" )
-  {
-    if( geoType=="convex" )
-      indStart = 0;
-    else if( geoType=="1ptConcave" )
-      indStart = ptConcavity[0];
-
-    std::vector<Point*> temp1(4),temp2(3),temp3(4);
-
-    temp1[0] = ptlist_[indStart];
-    temp1[1] = ptlist_[(indStart+1)%7];
-    temp1[2] = ptlist_[(indStart+2)%7];
-    temp1[3] = ptlist_[(indStart+3)%7];
-
-    temp2[0] = ptlist_[(indStart+3)%7];
-    temp2[1] = ptlist_[(indStart+4)%7];
-    temp2[2] = ptlist_[indStart];
-
-    temp3[0] = ptlist_[(indStart+4)%7];
-    temp3[1] = ptlist_[(indStart+5)%7];
-    temp3[2] = ptlist_[(indStart+6)%7];
-    temp3[3] = ptlist_[indStart];
-
-    split_.resize(3);
-    split_[0] = temp1;
-    split_[1] = temp2;
-    split_[2] = temp3;
-  }
-  else
-  {
-    bool conti = HasTwoContinuousConcavePts( ptConcavity );
-    if( conti )
-      EarClipping( ptConcavity );
-    else
-      SplitAnyFacet( ptConcavity );
-  }
-}
-
-/*---------------------------------------------------------------------------------------------*
-   A 8 noded facet is split into 3 quad if it does not have two adjacent concave pts
-
-                 5  __________  4                5  __________  4
-                   /.         \                    /          |               Sudhakar 04/12
-                  / .          \                  /      A    |
-                 /  .  B        \ 3              /............|3
-              6 |   .         .  |            6 |            .\
-                | C .       .    |              |           .  \
-                |   .     .      |              |   B     .     \
-              7 |   .    .   A   | 2          7 |        .   C   / 2
-                 \  .  .        /                \     .        /
-                  \ . .        /                  \   .        /
-                  0\._________/ 1                 0\._________/ 1
-*---------------------------------------------------------------------------------------------*/
-void GEO::CUT::TriangulateFacet::Split8nodeFacet()
-{
-//  std::cout<<"I am in 8 noded facet program\n";
-  if(ptlist_.size()!=8)
-    dserror("This is not a 8 noded facet");
-
-  split_.clear();
-
-  std::string geoType;
-  std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
-
-  int indStart=0;
-  if( geoType=="convex" || geoType=="1ptConcave" )
-  {
-    if( geoType=="convex" )
-      indStart = 0;
-    else if( geoType=="1ptConcave" )
-      indStart = ptConcavity[0];
-
-    std::vector<Point*> temp1(4),temp2(4),temp3(4);
-
-    temp1[0] = ptlist_[indStart];
-    temp1[1] = ptlist_[(indStart+1)%8];
-    temp1[2] = ptlist_[(indStart+2)%8];
-    temp1[3] = ptlist_[(indStart+3)%8];
-
-    temp2[0] = ptlist_[(indStart+3)%8];
-    temp2[1] = ptlist_[(indStart+4)%8];
-    temp2[2] = ptlist_[(indStart+5)%8];
-    temp2[3] = ptlist_[indStart];
-
-    temp3[0] = ptlist_[(indStart+5)%8];
-    temp3[1] = ptlist_[(indStart+6)%8];
-    temp3[2] = ptlist_[(indStart+7)%8];
-    temp3[3] = ptlist_[indStart];
-
-    split_.resize(3);
-    split_[0] = temp1;
-    split_[1] = temp2;
-    split_[2] = temp3;
-  }
-  else
-  {
-    bool conti = HasTwoContinuousConcavePts( ptConcavity );
-    if( conti )
-      EarClipping( ptConcavity );
-    else
-      SplitAnyFacet( ptConcavity );
-  }
-}
-
-/*---------------------------------------------------------------------------------------------*
-   A 9 noded facet is split into 3 quad and a tri if it does not have two adjacent concave pts
-*----------------------------------------------------------------------------------------------*/
-void GEO::CUT::TriangulateFacet::Split9nodeFacet()
-{
-  if(ptlist_.size()!=9)
-    dserror("This is not a 9 noded facet");
-
-  split_.clear();
-
-  std::string geoType;
-  std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
-
-  int indStart=0;
-  if( geoType=="convex" || geoType=="1ptConcave" )
-  {
-    if( geoType=="convex" )
-      indStart = 0;
-    else if( geoType=="1ptConcave" )
-      indStart = ptConcavity[0];
-
-    std::vector<Point*> temp1(4),temp2(4),temp3(4),temp4(3);
-
-    temp1[0] = ptlist_[indStart];
-    temp1[1] = ptlist_[(indStart+1)%9];
-    temp1[2] = ptlist_[(indStart+2)%9];
-    temp1[3] = ptlist_[(indStart+3)%9];
-
-    temp2[0] = ptlist_[(indStart+3)%9];
-    temp2[1] = ptlist_[(indStart+4)%9];
-    temp2[2] = ptlist_[(indStart+5)%9];
-    temp2[3] = ptlist_[indStart];
-
-    temp3[0] = ptlist_[(indStart+5)%9];
-    temp3[1] = ptlist_[(indStart+6)%9];
-    temp3[2] = ptlist_[(indStart+7)%9];
-    temp3[3] = ptlist_[indStart];
-
-    temp4[0] = ptlist_[(indStart+7)%9];
-    temp4[1] = ptlist_[(indStart+8)%9];
-    temp4[2] = ptlist_[indStart];
-
-    split_.resize(4);
-    split_[0] = temp1;
-    split_[1] = temp2;
-    split_[2] = temp3;
-    split_[3] = temp4;
-  }
-  else
-  {
-    bool conti = HasTwoContinuousConcavePts( ptConcavity );
-    if( conti )
-      EarClipping( ptConcavity );
-    else
-      SplitAnyFacet( ptConcavity );
-  }
-}
-
 /*---------------------------------------------------------------------------------------------------*
-   A 10 noded facet is split into 4 quad if it does not have two adjacent concave pts
+   A facet that is convex or having one concave point is split into 1 Tri and few Quad cells
+   splitting starts with concave pt --- eliminate the need to check whether any other pt is
+   inside the newCell formed                                                            Sudhakar 07/12
 *----------------------------------------------------------------------------------------------------*/
-void GEO::CUT::TriangulateFacet::Split10nodeFacet()
+void GEO::CUT::TriangulateFacet::SplitConvex_1ptConcave_Facet( std::vector<int> ptConcavity )
 {
-  if( ptlist_.size()!=10 )
-    dserror("This is not a 10 noded facet");
+  //std::cout<<"Splitting the convex or 1ptConcave facet\n";//blockkk
 
-  split_.clear();
-
-  std::string geoType;
-  std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
-
-  int indStart=0;
-  if( geoType=="convex" || geoType=="1ptConcave" )
+  /************************************************************************/
+  /*std::cout<<"After this loop the no of points = "<<ptlist_.size()<<"\n";
+  for( unsigned i=0;i<ptlist_.size();i++ )
   {
-    if( geoType=="convex" )
-      indStart = 0;
-    else if( geoType=="1ptConcave" )
-      indStart = ptConcavity[0];
+    Point* ptx = ptlist_[i];
+    double coox[3];
+    ptx->Coordinates(coox);
+    std::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+  }*/
+  /************************************************************************/
 
-    std::vector<Point*> temp1(4),temp2(4),temp3(4),temp4(4);
-
-    temp1[0] = ptlist_[indStart];
-    temp1[1] = ptlist_[(indStart+1)%10];
-    temp1[2] = ptlist_[(indStart+2)%10];
-    temp1[3] = ptlist_[(indStart+3)%10];
-
-    temp2[0] = ptlist_[(indStart+3)%10];
-    temp2[1] = ptlist_[(indStart+4)%10];
-    temp2[2] = ptlist_[(indStart+5)%10];
-    temp2[3] = ptlist_[indStart];
-
-    temp3[0] = ptlist_[(indStart+5)%10];
-    temp3[1] = ptlist_[(indStart+6)%10];
-    temp3[2] = ptlist_[(indStart+7)%10];
-    temp3[3] = ptlist_[indStart];
-
-    temp4[0] = ptlist_[(indStart+7)%10];
-    temp4[1] = ptlist_[(indStart+8)%10];
-    temp4[2] = ptlist_[(indStart+9)%10];
-    temp4[3] = ptlist_[indStart];
-
-    split_.resize(4);
-    split_[0] = temp1;
-    split_[1] = temp2;
-    split_[2] = temp3;
-    split_[3] = temp4;
-  }
-  else
-  {
-    bool conti = HasTwoContinuousConcavePts( ptConcavity );
-    if( conti )
-      EarClipping( ptConcavity );
-    else
-      SplitAnyFacet( ptConcavity );
-  }
-}
-
-/*---------------------------------------------------------------------------------------------------*
-     A concave facet which has minimum 2 concavity points are split into appropriate cells
-     Also facets those have more than 10 corner points are split
-                                                                                       Sudhakar 04/12
-*----------------------------------------------------------------------------------------------------*/
-void GEO::CUT::TriangulateFacet::SplitAnyFacet( std::vector<int> ptConcavity )
-{
-  // if the polygon has two adjacent concave points this method fails
-  // earclipping is called in such situations
-  if( ptConcavity.size()>1 )
-  {
-    bool conti = HasTwoContinuousConcavePts( ptConcavity );
-    if( conti )
-    {
-      EarClipping( ptConcavity );
-      return;
-    }
-  }
+  if( ptConcavity.size() > 1 )
+    dserror( "should be called only when the facet has one or no concave points" );
 
   int num = ptlist_.size();
-  int concsize = ptConcavity.size();
 
-  int concNum = 0;
-  bool triDone=false,fresh=true;
+  if( ptlist_.size()==3 )
+  {
+    split_.push_back( ptlist_ );
+    return;
+  }
+  else if ( ptlist_.size()==4 )
+  {
+    Split4nodeFacet( ptlist_, false );
+    return;
+  }
+
+  bool triDone = false, convex = true;;
+  int firstPt=0,secondPt=0,thirdPt=0,lastPt=1,endPt=num-1;
+  if( ptConcavity.size()==1 )
+  {
+    convex = false;
+    firstPt = ptConcavity[0];
+    lastPt = (firstPt+1)%num; //initialization
+    if( firstPt!=0 )
+      endPt = firstPt-1;
+  }
   std::vector<Point*> newCell;
-  int secondPt,lastPt=0,endPt=0;
-
-  // endPt is the last point to encounter in splitting
-  // once algorithm reached endPT, splitting is finished
-  if( ptConcavity[0]==0 && concsize==1 )
-    endPt = ptlist_.size()-1;
-  else if( concsize==1 )
-    endPt = ptConcavity[0]-1;
-  else
-    endPt = ptConcavity[0];
 
   while(1)
   {
     newCell.clear();
-    int indStart = ptConcavity[concNum];
 
-    // the location of second point is decided by whether we encounter the next
-    // concave point or not
-    if( fresh )
-      secondPt = (indStart+1)%num;
-    else
-      secondPt = lastPt;
+    secondPt = lastPt;  //properly initialized
+    thirdPt = (secondPt+1)%num;
 
-    newCell.push_back(ptlist_[indStart]);
+    newCell.push_back(ptlist_[firstPt]);
     newCell.push_back(ptlist_[secondPt]);
+    newCell.push_back(ptlist_[thirdPt]);    // tri cell is now formed
 
-    lastPt = (secondPt+1)%num;
-    newCell.push_back(ptlist_[lastPt]); // now a Tri is formed, and will be checked below whether a Quad can be formed
-
-    fresh = false;
-
-    if( lastPt==endPt )
-    {
+    if( thirdPt==endPt )
       triDone = true;
-    }
-    if( concNum!=concsize-1 && lastPt==ptConcavity[concNum+1] ) // next concave pt reached,
-    {                                                           // fresh=true ---> should change indStart for next newCell
-      fresh = true;                                             // forming a Quad is impossible in this case
-      concNum++;
-    }
-    else if( !triDone )   // "newCell" which has Tri now, is modified to have a Quad
+    else if ( !triDone )      // check whether tri can be extended to quad cell
     {
-      lastPt = (secondPt+2)%num;
+      lastPt = (thirdPt+1)%num;
       newCell.push_back(ptlist_[lastPt]);
-
-      if( concNum<num-1 && lastPt==ptConcavity[concNum+1] )
-      {
-        fresh = true;
-        concNum++;
-      }
       if( lastPt==endPt )
         triDone = true;
     }
 
-    if( newCell.size()==3 )
-    {
+    KERNEL::DeleteInlinePts( newCell );
+
+    if( newCell.size()==3 || convex )
       split_.push_back( newCell );
-    }
     else if( newCell.size()==4 ) //check the resulting quad is convex, else split into 2 tri
-    {
-      KERNEL::DeleteInlinePts( newCell );
-      if( newCell.size()<3 )
-        dserror( "not a valid cell" );
-      else if( newCell.size()==3 )
-        split_.push_back( newCell );
-      else
-      {
-        Split4nodeFacet( newCell, true );
-      }
-    }
+      Split4nodeFacet( newCell, true );
     else
-      dserror( "neither tri nor quad: Something went wrong in SplitAnyFacet" );
+      dserror( "should have either 2 or 3 points" );
 
     if( triDone )
       break;
   }
 }
 
+/*---------------------------------------------------------------------------------------------------*
+ * Generalized facet splitting procedure which works for simple facets with any number  sudhakar 08/12
+ * of concave points. Involves checking whether a reflex point is inside formed cell
+ *---------------------------------------------------------------------------------------------------*/
+void GEO::CUT::TriangulateFacet::SplitGeneralFacet( std::vector<int> ptConcavity )
+{
+  //std::cout<<"splitting general facet\n"; //blockkk
+  if( ptConcavity.size() < 2 )
+    dserror( "Call TriangulateFacet::SplitConvex_1ptConcave_Facet in such cases" );
+
+  if( ptlist_.size()==3 ) // directly form a Tri cell
+  {
+    split_.push_back( ptlist_ );
+    return;
+  }
+  else if ( ptlist_.size()==4 ) // can be a convex or concave quad
+  {
+    Split4nodeFacet( ptlist_, false );
+    return;
+  }
+
+  int num = ptlist_.size();
+  int concsize = ptConcavity.size();
+
+  int firstPt=0,secondPt=1,thirdPt=2,fourthPt=3;
+  std::vector<Point*> newCell;
+
+  while(1)
+  {
+    if( (num-concsize) < 4 ) // this means that no Quad cells can be formed for this geometry
+    {
+      EarClipping( ptConcavity );
+      return;
+    }
+
+    newCell.clear();
+    int ncross = 0;
+    for( int i=0;i<num;++i )
+    {
+      newCell.clear();
+      ncross++;
+      int concNo = 0;
+
+      if( i==0 )
+      {
+        firstPt = ptConcavity[concNo];
+        secondPt = (firstPt+1)%num;
+      }
+      else
+      {
+        firstPt++;
+        secondPt = (firstPt+1)%num;
+      }
+      if(std::find(ptConcavity.begin(), ptConcavity.end(), secondPt) != ptConcavity.end())
+        continue;
+
+      thirdPt = (secondPt+1)%num;
+
+      newCell.push_back(ptlist_[firstPt]);
+      newCell.push_back(ptlist_[secondPt]);
+      newCell.push_back(ptlist_[thirdPt]);    // tri cell is now formed
+
+      if(std::find(ptConcavity.begin(), ptConcavity.end(), thirdPt) == ptConcavity.end())
+      {
+        fourthPt = (thirdPt+1)%num;
+        newCell.push_back(ptlist_[fourthPt]);
+      }
+
+      KERNEL::DeleteInlinePts( newCell );
+
+      /********************************************************/
+      /*std::cout<<"the newCell points are\n";
+      for( unsigned i=0;i<newCell.size();i++ )
+      {
+        Point* ptx = newCell[i];
+        double coox[3];
+        ptx->Coordinates(coox);
+        std::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+      }*/
+      /********************************************************/
+
+      bool isEar=true;
+
+      if( newCell.size()==3 )
+      {
+        for( unsigned j=0;j<ptConcavity.size();j++ )
+        {
+          unsigned reflInd = ptConcavity[j];
+          if(std::find(newCell.begin(), newCell.end(), ptlist_[reflInd]) != newCell.end())
+            continue;
+          if( KERNEL::PtInsideTriangle( newCell, ptlist_[reflInd]) )
+          {
+            isEar = false;
+            break;
+          }
+        }
+        if( isEar )
+        {
+          ptlist_.erase( ptlist_.begin()+secondPt ); // erase a pt to form new polygon
+          split_.push_back( newCell );
+          break;
+        }
+      }
+      else if( newCell.size()==4 ) //check the resulting quad is convex, else split into 2 tri
+      {
+        for( unsigned j=0;j<ptConcavity.size();j++ )
+        {
+          unsigned reflInd = ptConcavity[j];
+          if(std::find(newCell.begin(), newCell.end(), ptlist_[reflInd]) != newCell.end())
+            continue;
+          if( KERNEL::PtInsideQuad( newCell, ptlist_[reflInd]) )
+          {
+            isEar = false;
+            break;
+          }
+        }
+
+        if( isEar )
+        {
+          Split4nodeFacet( newCell, true );
+
+          // erase internal points of cell to form new polygon
+          // when an element is deleted, all other elements are renumbered
+          // if-else condition to make sure correct points are deleted
+          if( thirdPt==0 )
+          {
+            ptlist_.erase( ptlist_.begin()+secondPt );
+            ptlist_.erase( ptlist_.begin()+thirdPt );
+          }
+          else
+          {
+            ptlist_.erase( ptlist_.begin()+thirdPt );
+            ptlist_.erase( ptlist_.begin()+secondPt );
+          }
+          break;
+        }
+      }
+      else
+      {
+        std::cout<<"number of points in the cell = "<<newCell.size()<<"\n";
+        dserror( "neither tri nor quad: Something went wrong in SplitAnyFacet" );
+      }
+
+      if( ncross==num )
+        dserror("cannot form cell even after making one cycle");
+    }
+
+    KERNEL::DeleteInlinePts( ptlist_ );
+    num = ptlist_.size();
+    if( num==3 )
+    {
+      split_.push_back( ptlist_ );
+      return;
+    }
+    else if ( num==4 )
+    {
+      Split4nodeFacet( ptlist_, false );
+      return;
+    }
+    else
+    {
+      ptConcavity.clear();
+      std::string geoType;
+
+      ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
+
+      concsize = ptConcavity.size();
+      if( concsize < 2 ) // new ptlist_ forms a convex facet
+      {
+        SplitConvex_1ptConcave_Facet( ptConcavity );
+        return;
+      }
+    }
+    /*****************************************************************************/
+    /*std::cout<<"After this loop the no of points = "<<ptlist_.size()<<"\n";
+    for( unsigned i=0;i<ptlist_.size();i++ )
+    {
+      Point* ptx = ptlist_[i];
+      double coox[3];
+      ptx->Coordinates(coox);
+      std::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+    }
+    std::cout<<"the concave points are = ";
+    for( unsigned i=0;i<ptConcavity.size();i++ )
+      std::cout<<ptConcavity[i]<<"\t";
+    std::cout<<"\n";*/
+    /*****************************************************************************/
+  }
+}
 
 /*------------------------------------------------------------------------------------------------------*
             check whether the polygon has two continuous concave points.
@@ -665,7 +455,7 @@ bool GEO::CUT::TriangulateFacet::HasTwoContinuousConcavePts( std::vector<int> pt
 void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   // list of concave points
                                               bool triOnly )                  // whether to create triangles only?
 {
-  //std::cout<<"I am ear clipped\n";
+  //std::cout<<"I am ear clipped\n"; //blockkk
   std::vector<int> convex;
 
   /*std::cout<<"number of points before deleting = "<<ptlist_.size()<<"\n";
@@ -804,7 +594,6 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
       std::cout<<ptt3[0]<<"\t"<<ptt3[1]<<"\t"<<ptt3[2]<<"\n";*/
       /***********************************************/
 
-      //std::cout<<"Ear = "<<ind0<<"\t"<<i<<"\t"<<ind2<<"\n";//blockkk
       split_.push_back(tri);
       ptlist_.erase( ptlist_.begin()+i ); // the main pt of ear is removed, and new polygon is formed
       break;
@@ -821,41 +610,29 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
       break;
     }
 
+    else if( ptlist_.size()==4 && !triOnly )
+    {
+      Split4nodeFacet( ptlist_, false );
+      break;
+    }
+
     std::string str1;
     ptConcavity.clear();
     ptConcavity = KERNEL::CheckConvexity(  ptlist_, str1 ); // concave points for the new polygon
 
-    if( triOnly==false ) // if possible it shifts to splitAnyFacet so that no of cells are reduced
+    if( triOnly==false ) // if possible it shifts to splitGeneralFacet so that no of cells are reduced
     {
-      if( ptConcavity.size()<2 )
+      if( ptConcavity.size() < 2 )
       {
-        if( ptConcavity.size()==0 )
-          ptConcavity.push_back(0);
-        SplitAnyFacet( ptConcavity );
+        SplitConvex_1ptConcave_Facet( ptConcavity );
         return;
       }
-
-      else
+      else if( (ptlist_.size()-ptConcavity.size()) > 3 )
       {
-        bool conti = HasTwoContinuousConcavePts( ptConcavity );
-        if( !conti )
-        {
-          SplitAnyFacet( ptConcavity );
-          return;
-        }
+        SplitGeneralFacet( ptConcavity );
+        return;
       }
     }
-
-    /***************************************************************///blockkk
-    /*std::cout<<"the modified points are\n";
-    for( unsigned mm=0;mm<ptlist_.size();mm++ )
-    {
-      Point* pt1 = ptlist_[mm];
-      double com[3];
-      pt1->Coordinates(com);
-      std::cout<<com[0]<<"\t"<<com[1]<<"\t"<<com[2]<<"\n";
-    }*/
-    /***************************************************************/
 
     /*std::cout<<"the reflex points are = ";
     for( unsigned i=0;i<reflex.size();i++ )
@@ -882,3 +659,5 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
   }*/
   //dserror("ear clipped\n");
 }
+
+

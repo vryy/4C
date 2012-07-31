@@ -9,7 +9,9 @@
 #include <string>
 #include <stack>
 
-//Cutting the considered element with the considered cut side
+/*--------------------------------------------------------------------*
+ *            cut this element with given cut_side
+ *--------------------------------------------------------------------*/
 bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
 {
   bool cut = false;
@@ -97,8 +99,8 @@ void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
 
 bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & side, Side & other, int recursion )
 {
-  bool cut = side.FindCutPoints( mesh, this, other, recursion ); //check whether the edges of "side" cuts the "other"
-  bool reverse_cut = other.FindCutPoints( mesh, this, side, recursion ); //check whether the edges of "other" cuts the "side"
+  bool cut = side.FindCutPoints( mesh, this, other, recursion );
+  bool reverse_cut = other.FindCutPoints( mesh, this, side, recursion );
   return cut or reverse_cut;
 }
 
@@ -462,7 +464,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
     VolumeCell * vc = *cells_.begin();
     if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
     {
-      CalculateVolumeOfCells();
+      CalculateVolumeOfCellsTessellation();
       return;
     }
   }
@@ -471,7 +473,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
   {
     if ( IntegrationCellCreator::CreateCells( mesh, this, cells_ ) )
     {
-      CalculateVolumeOfCells();
+      CalculateVolumeOfCellsTessellation();
       return;
     }
   }
@@ -526,7 +528,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
   TetMesh tetmesh( points, facets_, false );
   tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count, levelset );
 
-  CalculateVolumeOfCells();
+  CalculateVolumeOfCellsTessellation();
 }
 
 void GEO::CUT::Element::RemoveEmptyVolumeCells()
@@ -711,7 +713,10 @@ void GEO::CUT::Element::DumpFacets()
   }
 }
 
-void GEO::CUT::Element::CalculateVolumeOfCells()
+/*-----------------------------------------------------------------*
+ * Calculate volume of all volumecells when Tessellation is used
+ *-----------------------------------------------------------------*/
+void GEO::CUT::Element::CalculateVolumeOfCellsTessellation()
 {
   const plain_volumecell_set& volcells = VolumeCells();
   for(plain_volumecell_set::const_iterator i=volcells.begin();i!=volcells.end();i++)
@@ -761,8 +766,8 @@ void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner, 
   for(plain_volumecell_set::iterator i=cells_.begin();
                            i!=cells_.end();i++)
   {
-          VolumeCell *cell1 = *i;
-          cell1->MomentFitGaussWeights(this, mesh, include_inner, Bcellgausstype);
+    VolumeCell *cell1 = *i;
+    cell1->MomentFitGaussWeights(this, mesh, include_inner, Bcellgausstype);
   }
 }
 
@@ -775,28 +780,10 @@ void GEO::CUT::Element::DirectDivergenceGaussRule( Mesh & mesh, bool include_inn
   if ( not active_ )
     return;
 
-  /*//When the cut side touches the element the shape of the element is retained
-  if(cells_.size()==1)
-  {
-    VolumeCell * vc = *cells_.begin();
-    if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
-    {
-         return;
-    }
-  }*/
-
- /* if ( mesh.CreateOptions().SimpleShapes() )
-    {
-      if ( IntegrationCellCreator::CreateCells( mesh, this, cells_ ) )
-      {
-        return;
-      }
-    }*/
-
   for(plain_volumecell_set::iterator i=cells_.begin();
                            i!=cells_.end();i++)
   {
-          VolumeCell *cell1 = *i;
-          cell1->DirectDivergenceGaussRule(this, mesh, include_inner, Bcellgausstype);
+    VolumeCell *cell1 = *i;
+    cell1->DirectDivergenceGaussRule(this, mesh, include_inner, Bcellgausstype);
   }
 }

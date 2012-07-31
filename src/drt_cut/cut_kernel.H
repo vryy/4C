@@ -171,6 +171,11 @@ namespace GEO
       bool PtInsideTriangle( std::vector<Point*> tri, Point* check );
 
       /*!
+      \brief Check whether the point "check" is inside the Quad
+      */
+      bool PtInsideQuad( std::vector<Point*> quad, Point* check );
+
+      /*!
       \brief Return true if the points of the polygon are ordered clockwise
        */
       bool IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projType );

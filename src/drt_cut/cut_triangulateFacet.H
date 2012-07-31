@@ -44,6 +44,9 @@ public:
   void EarClipping( std::vector<int> ptConcavity,
                     bool triOnly=false  );          //create triangles only?
 
+  /*!
+  \brief Returns Tri and Quad cells that are created by facet splitting
+   */
   std::vector<std::vector<Point*> > GetSplitCells(){return split_;}
 
 private:
@@ -54,40 +57,14 @@ private:
   void Split4nodeFacet( std::vector<Point*> &poly, bool callFromSplitAnyFacet=false );
 
   /*!
-  \brief Split a 5 noded facet into a tri and a quad
+  \brief Split a convex facet or a facet with only one concave point into 1 Tri and few Quad cells
+   */
+  void SplitConvex_1ptConcave_Facet( std::vector<int> ptConcavity );
+
+  /*!
+  \brief A concave facet which has more than 2 concavity points are split into appropriate cells
   */
-  void Split5nodeFacet();
-
-  /*!
-  \brief Split a 6 noded facet into 2 quad
-   */
-  void Split6nodeFacet();
-
-  /*!
-  \brief Split a 7 noded facet into 2 quad and a tri
-   */
-  void Split7nodeFacet();
-
-  /*!
-  \brief Split a 8 noded facet into 2 quad and a tri
-   */
-  void Split8nodeFacet();
-
-  /*!
-  \brief Split a 9 noded facet into 2 quad and a tri
-   */
-  void Split9nodeFacet();
-
-  /*!
-  \brief Split a 10 noded facet into 4 quad
-   */
-  void Split10nodeFacet();
-
-  /*!
-  \brief A concave facet which has more than 2 concavity points are split into appropriate cells. This also
-  splits facets those has more than 10 corners
-  */
-  void SplitAnyFacet( std::vector<int> ptConcavity );
+  void SplitGeneralFacet( std::vector<int> ptConcavity );
 
   /*!
   \brief check whether any two adjacent polygonal points are concave

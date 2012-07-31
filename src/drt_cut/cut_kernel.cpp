@@ -187,7 +187,17 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
 
     bool isline = IsOnLine( pt1, pt2, pt3 );
     if( isline )
+    {
+      std::cout<<"the points are\n";
+      for( unsigned i=0;i<ptlist.size();i++ )
+      {
+        Point* ptx = ptlist[i];
+        double coox[3];
+        ptx->Coordinates(coox);
+        std::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+      }
       dserror( "Inline checking for facets not done before calling this" );
+    }
   }
 
   bool isClockwise = IsClockwiseOrderedPolygon( ptlist, projPlane );
@@ -292,6 +302,9 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlane( Point* & pt1, Point* & pt2, Poin
 *-------------------------------------------------------------------------------------------------------------*/
 bool GEO::CUT::KERNEL::PtInsideTriangle( std::vector<Point*> tri, Point* check )
 {
+  if( tri.size()!=3 )
+    dserror("expecting a triangle");
+
   LINALG::Matrix<3,1> t1,t2,t3,pt, v0(0.0), v1(0.0), v2(0.0);
   tri[0]->Coordinates( t1.A() );
   tri[1]->Coordinates( t2.A() );
@@ -321,6 +334,50 @@ bool GEO::CUT::KERNEL::PtInsideTriangle( std::vector<Point*> tri, Point* check )
 
   if( (u >= 0) && (v >= 0) && (u + v < 1) )
     return true;
+  return false;
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+           Check whether the point "check" is inside the Quad formed by quad               sudhakar 07/12
+           Splits Quad into 2 Tri and perform the check on each
+*-------------------------------------------------------------------------------------------------------------*/
+bool GEO::CUT::KERNEL::PtInsideQuad( std::vector<Point*> quad, Point* check )
+{
+  if( quad.size()!=4 )
+    dserror( "expecting a Quad" );
+
+  std::vector<int> concavePts;
+  std::string str1;
+
+  concavePts = CheckConvexity(  quad, str1 );
+
+  int concsize = concavePts.size();
+  if( concsize > 1 )
+    dserror( "Quad has more than 1 concave pt --> Selfcut" );
+
+  int indStart = 0;
+  if( concsize==1 )
+    indStart = concavePts[0];
+
+
+  std::vector<Point*> tri1(3),tri2(3);
+
+  tri1[0] = quad[indStart];
+  tri1[1] = quad[(indStart+1)%4];
+  tri1[2] = quad[(indStart+2)%4];
+
+  bool insideTri1 = PtInsideTriangle( tri1, check );
+  if( insideTri1 )
+    return true;
+
+  tri2[0] = quad[indStart];
+  tri2[1] = quad[(indStart+2)%4];
+  tri2[2] = quad[(indStart+3)%4];
+
+  bool insideTri2 = PtInsideTriangle( tri2, check );
+  if( insideTri2 )
+    return true;
+
   return false;
 }
 
@@ -397,11 +454,11 @@ void GEO::CUT::KERNEL::DeleteInlinePts( std::vector<Point*>& poly )
       ind = num-1;
     Point* pt3 = poly[ind];       // previous point
 
-    std::vector<Point*>::iterator delPt = poly.begin()+i;
     anyInLine = IsOnLine( pt3, pt1, pt2 );
 
     if( anyInLine )
     {
+      std::vector<Point*>::iterator delPt = poly.begin()+i; //iterator of the point to be deleted
       poly.erase(delPt);
       break;
     }

@@ -973,8 +973,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
 
   gp_ = GaussPointsFitting();                        // convert the weight and the location to Gauss rule
 
-  //generate boundary cells. if Tessellation option is used instead of MomentFitting,
-  //this happens inside "createintegrationcells"
+  // generate boundary cells -- when using tessellation this is automatically done
   GenerateBoundaryCells( mesh, posi, elem, BaseNos, BCellgausstype );
 }
 
@@ -1045,14 +1044,14 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   }*/
 
   /*****************************************/
-  LINALG::Matrix<3,1> a,k;
-  a(0,0) = 0.9;
-  a(1,0) = 0.9;
-  a(2,0) = 0.0;
+  /*LINALG::Matrix<3,1> a,k;
+  a(0,0) = -2;
+  a(1,0) = 1;
+  a(2,0) = 1;
 
   elem->GlobalCoordinates(a,k);
   std::string is = this->IsThisPointInside(k);
-  std::cout<<"The point is = "<<is<<"\n";
+  std::cout<<"The point is = "<<is<<"\n";*/
   /*****************************************/
   //dserror("done");
 
@@ -1060,38 +1059,18 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 
   DirectDivergence dd(this,elem,posi,mesh);
 
-  RefEqnPlane_.reserve(4); //it has to store a,b,c,d in ax+by+cz=d
-  gp_ = dd.VCIntegrationRule( RefEqnPlane_ ); // compute main gauss points
+  RefEqnPlane_.reserve(4);                   //it has to store a,b,c,d in ax+by+cz=d
+  gp_ = dd.VCIntegrationRule( RefEqnPlane_ );// compute main gauss points
 
-  GenerateInternalGaussRule();  // compute internal gauss points for every main gauss point
+  GenerateInternalGaussRule();               // compute internal gauss points for every main gauss point
 
-#if 1
+  // compute volume of this cell
+  // also check whether generated gauss rule predicts volume accurately
   DRT::UTILS::GaussIntegration gpi(gp_);
   dd.DebugVolume( gpi, RefEqnPlane_, intGP_ );
-#endif
 
-//  std::cout<<"reference plane equation = "<<RefEqnPlane_[0]<<"\t"<<RefEqnPlane_[1]<<"\t"<<"\t"<<RefEqnPlane_[2]<<"\t"<<RefEqnPlane_[3]<<"\n";
-
-  // generate boundary cells. if Tessellation option is used this happens inside "createintegrationcells"
+  // generate boundary cells -- when using tessellation this is automatically done
   GenerateBoundaryCells( mesh, posi, elem, 0, "Tessellation" );
-
-/*  std::cout<<"vol id = "<<this->ParentElement()->Id()<<"\n";
-  const plain_boundarycell_set & vbcells = BoundaryCells();
-  for ( plain_boundarycell_set::const_iterator i=vbcells.begin();
-        i!=vbcells.end();
-        ++i )
-  {
-    BoundaryCell * bc = *i;
-    std::cout<<"boundary cell\n";
-    const std::vector<Point*> pts = bc->Points();
-    for( unsigned j=0;j<pts.size();j++ )
-    {
-      Point* p1 = pts[j];
-      double x[3];
-      p1->Coordinates(x);
-      std::cout<<x[0]<<"\t"<<x[1]<<"\t"<<x[2]<<"\n";
-    }
-  }*/
 }
 
 /*-------------------------------------------------------------------------------------*
@@ -1099,13 +1078,13 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 *--------------------------------------------------------------------------------------*/
 std::set<int> GEO::CUT::VolumeCell::VolumeCellPoints()
 {
-  if ( this->vcpoints_ids_.size() != 0)
+  if ( vcpoints_ids_.size() != 0)
   {
-    return this->vcpoints_ids_;
+    return vcpoints_ids_;
   }
   else
   {
-    const plain_facet_set & facete = this->Facets();
+    const plain_facet_set & facete = Facets();
 
     // loop over facets
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
@@ -1116,13 +1095,13 @@ std::set<int> GEO::CUT::VolumeCell::VolumeCellPoints()
       for(std::vector<Point*>::const_iterator c=corners.begin(); c!=corners.end(); c++)
       {
         Point* pt = *c;
-        this->vcpoints_ids_.insert(pt->Id());
+        vcpoints_ids_.insert(pt->Id());
       }
     }
   }
 
-  if ( this->vcpoints_ids_.size() == 0)
+  if ( vcpoints_ids_.size() == 0)
     dserror("The size of volumecell points is zero!!");
 
-  return this->vcpoints_ids_;
+  return vcpoints_ids_;
 }

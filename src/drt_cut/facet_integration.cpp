@@ -249,6 +249,10 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
 			if(parentSideno==3 && eqn_plane_[0]>0.0)
 				clockwise_ = 1;
 #endif
+
+		// After an element is mapped in local coordinate system, it has
+		// non-zero x-normal component only for checked "parentSideno"
+		// (See BaciReport for ordering of sides and nodes in Baci)
     switch ( elem1_->Shape() )
     {
       case DRT::Element::hex8:
@@ -294,7 +298,26 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
   }
 
 #endif
+  orderingComputed_ = true;
 
+}
+
+/*-----------------------------------------------------------------------------------------------*
+          Returns true if vertices of facets are ordered clockwise              sudhakar 07/12
+*------------------------------------------------------------------------------------------------*/
+bool GEO::CUT::FacetIntegration::IsClockwiseOrdering()
+{
+  if( orderingComputed_ )
+    return clockwise_;
+
+  std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
+  if( eqn_plane_.size()==0)
+  {
+    eqn_plane_ = equation_plane(cornersLocal);
+  }
+
+  this->IsClockwise( eqn_plane_, cornersLocal );
+  return clockwise_;
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -599,12 +622,6 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
   if(clockwise_) //because if ordering is clockwise the contribution of this facet must be subtracted
     normalX = -1.0*normalX;
 
-  //std::cout<<"isclockwise = "<<clockwise_<<"\n";
-
-  //std::cout<<"size of the divergenceCells = "<<divCells.size()<<"\n";
-  //Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
-
-  //DRT::UTILS::GaussIntegration gi_temp;
   for(plain_boundarycell_set::iterator i=divCells.begin();i!=divCells.end();i++)
   {
     BoundaryCell* bcell = *i;
@@ -709,16 +726,6 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
     }
     else //split the aribtrary noded facet into cells
     {
-
-      /*std::cout<<"number of corners = "<<corners.size()<<"\n";
-      for( std::vector<Point*>::iterator nn=corners.begin();nn!=corners.end();nn++ )
-      {
-        Point* pt1 = *nn;
-        double xx[3];
-        pt1->Coordinates(xx);
-        std::cout<<xx[0]<<"\t"<<xx[1]<<"\t"<<xx[2]<<"\n";
-      }*/
-
       std::string splitMethod;
 
 #if 1 // split facet
@@ -861,7 +868,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
       Point* pt = corners[i];
       double coo[3];
       pt->Coordinates(coo);
-      std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
+      std::cout<<std::setprecision(20)<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
     }
 
     std::cout<<"cells produced by Method 1\n";
@@ -896,7 +903,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
 
     std::cout<<"Area1 = "<<area1<<"\t"<<"Area2 = "<<area2<<"\n";
     std::cout<<"!!!WARNING!!! area predicted by splitting and triangulation are not the same\n";
-    //dserror( "error: area predicted by splitting and triangulation are not the same" );
+    dserror( "error: area predicted by splitting and triangulation are not the same" );
 
 
     /***************************************************************************************/
@@ -916,9 +923,8 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
         dserror("Splitting created neither tri3 or quad4");
       }
     }
-    std::cout<<"I am changed\n";
+    std::cout<<"I am changed\n"; //blockkk
     /***************************************************************************************/
-
   }
 }
 

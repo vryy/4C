@@ -197,9 +197,9 @@ public:
   void AssignOtherVolumeCell( VolumeCell * vc ) { cells_.insert( vc ); }
 
   /*!
-  \brief Calculate the volume of all the volumecells associated with this element
+  \brief Calculate the volume of all the volumecells associated with this element only when tessellation is used
    */
-  void CalculateVolumeOfCells();
+  void CalculateVolumeOfCellsTessellation();
 
   /*!
   \brief Transform the scalar variable either from local coordinates to the global coordinates or the other way specified by
@@ -251,6 +251,7 @@ private:
 
   std::vector<Node*> nodes_;
 
+  /// sides that cut this element
   plain_side_set cut_faces_;
 
   plain_facet_set facets_;

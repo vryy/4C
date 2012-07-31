@@ -28,7 +28,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
     faee1.DivergenceIntegrationRule( mesh_, cgp );
   }
 
-  /******************************************************************************///blockkk
+  /******************************************************************************/
   /*std::cout<<"the corner coordinates of the reference facet\n";
   Facet * fe = *IteratorRefFacet;
   std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
@@ -269,14 +269,12 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
   Epetra_SerialDenseVector volMom = vi.compute_rhs_moment();
   volMom(0) = volcell_->Volume();
   std::cout<<"comparison of volume prediction\n";
-  std::cout<<volGlobal<<"\t"<<volMom(0)<<"\n";
-  if( fabs(volGlobal-volMom(0))>1e-15 )
-    dserror("volume prediction is wrong");
+  std::cout<<std::setprecision(15)<<volGlobal<<"\t"<<volMom(0)<<"\n";
+  if( fabs(volGlobal-volMom(0))>1e-8 )
+    dserror("volume prediction is wrong"); //unblockkkk
 #endif
 
   volcell_->SetVolume(volGlobal);
-
-  std::cout<<"volume = "<<volGlobal<<"\n";
 }
 
 /*--------------------------------------------------------------------------------------------------------------*

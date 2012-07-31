@@ -35,7 +35,8 @@ double LineIntegration::integrate_line()
 
       double inte = 0.0;
 
-    //15 is the order of Gauss integration used in the line integration
+    //8 is the order of Gauss integration used in the line integration
+    //since we integrate 6th order polynomial in volume, 8th order must be used for line
     DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 8 );
 
     for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
@@ -46,12 +47,12 @@ double LineIntegration::integrate_line()
       double drs=0.0;
       Transform<DRT::Element::line2>(end_pts_,eta(0,0),actCoord,normaltemp,drs);
 
-      if(bcellInt_==false)
+      if(bcellInt_==false)  //integration over volumecell
       {
         double linein = base_func_line_int(actCoord, inte_num_,alpha_);
         inte = inte+weight*linein*drs;
       }
-      else
+      else                 // integration over boundarycell
       {
         double linein=0.0;
         if(intType_=="x")
