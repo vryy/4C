@@ -42,7 +42,8 @@ LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner
     schurSolver_list_(correct_list),
     alpha_(SIMPLER_ALPHA),
     vdw_(false),
-    pdw_(false)
+    pdw_(false),
+    label_(SetupLabel())
 {
   // remove the SIMPLER sublist from the predictSolver_list_,
   // otherwise it will try to recursively create a SIMPLE

@@ -85,11 +85,11 @@ public:
 	}
 
 	/*!
-  \brief Returns the label of this class.
+  \brief Setup the label of this class.
 	 */
-	const char* Label() const {
+	const string SetupLabel() {
 	  std::stringstream strLabel;
-	  //strLabel << "LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner ";
+
 	  strLabel << "CheapSIMPLE ";
 
 	  const bool visml = predictSolver_list_.isSublist("ML Parameters");
@@ -123,9 +123,16 @@ public:
     else strLabel << "unknown";
 
     strLabel << "]";
-	  return strLabel.str().substr(0,128).c_str();
-	  //return "LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner";
+
+    return strLabel.str();
+
 	}
+  /*
+   *  \brief Returns the label of this class.
+   */
+  const char* Label() const {
+   return &label_[0];
+ }
 
 	/*!
   \brief get Comm of this class
