@@ -58,6 +58,7 @@ namespace FLD
     myfilteredvel_   (fluid.filteredvel_   ),
     myfilteredreystr_(fluid.filteredreystr_),
     myfsvelaf_       (fluid.fsvelaf_       ),
+    myfsscaaf_       (fluid.fsscaaf_       ),
     flow_            (no_special_flow      ),
     withscatra_      (false                ),
     turbmodel_      (INPAR::FLUID::no_model),
@@ -346,6 +347,7 @@ namespace FLD
     myfilteredvel_   (null                 ),
     myfilteredreystr_(null                 ),
     myfsvelaf_       (null                 ),
+    myfsscaaf_       (null                 ),
     flow_            (no_special_flow      ),
     withscatra_      (false                ),
     turbmodel_      (INPAR::FLUID::no_model),
@@ -897,6 +899,9 @@ namespace FLD
             statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
             if (myfsvelaf_==null)
               dserror ("Have not got fsvel!");
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
+            if (myfsscaaf_==null)
+                          dserror ("Have not got fssca!");
           }
           if (turbmodel_ == INPAR::FLUID::scale_similarity_basic)
           {

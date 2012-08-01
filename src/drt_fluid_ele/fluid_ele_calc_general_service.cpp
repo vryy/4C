@@ -902,33 +902,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     }
 
 
-    // evaluate momentum residual once for all stabilization right hand sides
-    if (fldpara_->IsGenalpha())
-    {
-      // get acceleration at time n+alpha_M at integration point
-      accint_.Multiply(eaccam,funct_);
-
-      for (int rr=0;rr<nsd_;++rr)
-      {
-        momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
-                       -2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr)-prescribedpgrad_(rr);
-      }
-    }
-    else
-    {
-      rhsmom_.Update((densn_/fldpara_->Dt()/fldpara_->Theta()),histmom_,densaf_,bodyforce_);
-      // and pressure gradient prescribed as body force
-      // caution: not density weighted
-      rhsmom_.Update(1.0,prescribedpgrad_,1.0);
-      // compute instationary momentum residual:
-      // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
-      for (int rr=0;rr<nsd_;++rr)
-      {
-        momres_old_(rr) = ((densaf_*velint_(rr)/fldpara_->Dt()
-                         +fldpara_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
-                         -2*visceff_*visc_old_(rr)))/fldpara_->Theta())-rhsmom_(rr);
-      }
-    }
     // compute residual of continuity equation
     // residual contains velocity divergence only for incompressible flow
     conres_old_ = vdiv_;
@@ -954,6 +927,34 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
           UpdateMaterialParams(mat,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
         else
           UpdateMaterialParams(mat,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+      }
+    }
+
+    // evaluate momentum residual once for all stabilization right hand sides
+    if (fldpara_->IsGenalpha())
+    {
+      // get acceleration at time n+alpha_M at integration point
+      accint_.Multiply(eaccam,funct_);
+
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
+                       -2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr)-prescribedpgrad_(rr);
+      }
+    }
+    else
+    {
+      rhsmom_.Update((densn_/fldpara_->Dt()/fldpara_->Theta()),histmom_,densaf_,bodyforce_);
+      // and pressure gradient prescribed as body force
+      // caution: not density weighted
+      rhsmom_.Update(1.0,prescribedpgrad_,1.0);
+      // compute instationary momentum residual:
+      // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        momres_old_(rr) = ((densaf_*velint_(rr)/fldpara_->Dt()
+                         +fldpara_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
+                         -2*visceff_*visc_old_(rr)))/fldpara_->Theta())-rhsmom_(rr);
       }
     }
 

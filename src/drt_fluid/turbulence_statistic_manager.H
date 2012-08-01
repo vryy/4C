@@ -251,6 +251,7 @@ private:
   RCP<Epetra_MultiVector>              myfilteredvel_;
   RCP<Epetra_MultiVector>              myfilteredreystr_;
   RCP<Epetra_Vector>                   myfsvelaf_    ;
+  RCP<Epetra_Vector>                   myfsscaaf_;
 
 
   //! specifies the special flow
