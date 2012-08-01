@@ -479,7 +479,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       else if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
       {
         MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-        robinson->Update();
+        bool imrlike = false;
+        robinson->Update(imrlike, 0.0);
       }
       else if (mat->MaterialType() == INPAR::MAT::m_elpldamage)
       {
@@ -591,7 +592,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       else if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
       {
         MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-        robinson->Update();
+        // in case of generalise alphat time integration we have to interpolate
+        // from midpoint n+1-alphaf to end of old time step n for
+        bool imrlike = true;
+        double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
+        robinson->Update(imrlike,alphaf);
       }
       else if (mat->MaterialType() == INPAR::MAT::m_elpldamage)
       {

@@ -132,10 +132,12 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         soh8_linstiffmass(lm,mydisp,myres,&mytempnp,&myemat,NULL,&elevec1,NULL,NULL,NULL,
           params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
-
-      // calculate the THERMOmechanical term for fint
-      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
-        NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      else
+      {
+        // calculate the THERMOmechanical term for fint
+        soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
+          NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
     }
   }
   break;
@@ -166,8 +168,10 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     if (elemat1.IsInitialized()) matptr = &elemat1;
 
     // that is NOT a beautiful implementation, but it works
-    // If a visco-plastic Robinson's material is used evaluate the element using
-    // the current temperature
+    // For all materials apart from the visco-plastic Robinson's material, use the
+    // default routine soh8_linstiffmass() and no temperature, i.e. NULL
+    // If it's a visco-plastic Robinson's material, i.e. the current temperature is required,
+    // pass &mytempnp
     if (mat->MaterialType() != INPAR::MAT::m_vp_robinson)
     {
       // call the purely structural method
@@ -207,10 +211,12 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         soh8_linstiffmass(lm,mydisp,myres,&mytempnp,matptr,NULL,&elevec1,NULL,NULL,NULL,
           params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
-
-      // calculate the THERMOmechanical term for fint
-      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
-        NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      else
+      {
+        // calculate the THERMOmechanical term for fint
+        soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
+          NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
     }
   }
   break;
@@ -287,12 +293,14 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         soh8_linstiffmass(lm,mydisp,myres,&mytempnp,&elemat1,&elemat2,&elevec1,NULL,NULL,
           NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
-
-      // build the current temperature vector
-      LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
-      // calculate the THERMOmechanical term for fint
-      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
-        NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      else
+      {
+        // build the current temperature vector
+        LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
+        // calculate the THERMOmechanical term for fint
+        soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
+          NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
     }
 
     if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -336,6 +344,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       vector<double> myres((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
+
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> plstrain;
       INPAR::STR::StressType iostress
@@ -386,17 +395,19 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         // If a visco-plastic Robinson's material is used evaluate the element using
         // the current temperature
         // that is NOT a beautiful implementation, but it works
-        if (mat->MaterialType() != INPAR::MAT::m_vp_robinson)
+        // get the temperature dependent stress
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp(true);
+        if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
         {
           soh8_linstiffmass(lm,mydisp,myres,&mytempnp,NULL,NULL,NULL,&stress,&strain,
             &plstrain,params,iostress,iostrain,ioplstrain);
         }
-
-        // get the temperature dependent stress
-        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp;
-        // calculate the THERMOmechanical term for fint: temperature stresses
-        soh8_finttemp(la,mydisp,myres,mytempnp,NULL,&stresstemp,NULL,params,
-          iostress,INPAR::STR::strain_none);
+        else
+        {
+          // calculate the THERMOmechanical term for fint: temperature stresses
+          soh8_finttemp(la,mydisp,myres,mytempnp,NULL,&stresstemp,NULL,params,
+            iostress,INPAR::STR::strain_none);
+        }
 
         // total stress
         // add stresstemp to the mechanical stress
@@ -455,7 +466,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     else if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
     {
       MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-      robinson->Update();
+      bool imrlike = false;
+      robinson->Update(imrlike, 0.0);
     }
   }
   break;
@@ -540,7 +552,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
 
   //==================================================================================
   default:
-  dserror("Unknown type of action for So_hex8");
+    dserror("Unknown type of action for So_hex8");
+
   } // action
 
   return 0;
@@ -554,7 +567,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
 void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
   vector<int>& lm,  // location matrix
   vector<double>& disp,  // current displacements
-  vector<double>& residual,  // current residual displ
+  vector<double>& residual,  // current residual displacements or displacement increment
   const vector<double>* tempnp,  // current temperature
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  // element stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
@@ -595,15 +608,12 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
   }
 
   LINALG::Matrix<NUMDOF_SOH8,1> nodaldisp;
+  // in case of Robinson's material, the (residual) displacements are required
+  // residual displacements correspond to current displacement increment
+  LINALG::Matrix<NUMDOF_SOH8,1> res_d;
   for (int i=0; i<NUMDOF_SOH8; ++i)
   {
     nodaldisp(i,0) = disp[i];
-  }
-
-  // we need the (residual) displacement -- current increment of displacement
-  LINALG::Matrix<NUMDOF_SOH8,1> res_d;
-  for (int i = 0; i < NUMDOF_SOH8; ++i)
-  {
     res_d(i) = residual[i];
   }
 
@@ -720,6 +730,11 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
       dserror("requested strain type not available");
     }
 
+    // build incremental strains
+    // Delta strain = B . Delta disp
+    LINALG::Matrix<NUMSTR_SOH8,1> straininc(true);
+    straininc.Multiply(boplin,res_d);
+
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
     ** the stress vector, a C-matrix, and a density must be retrieved,
@@ -731,15 +746,11 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
     LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
 
-    // build iterative strains
-    LINALG::Matrix<NUMSTR_SOH8,1> incstrain(true);
-    incstrain.Multiply(boplin,res_d);
-
     // default: material call in structural function is purely deformation dependent
-    if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
+    if ( Material()->MaterialType() != INPAR::MAT::m_vp_robinson )
       soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
     // if Robinson's material --> pass the current temperature to the material
-    else if ((Material()->MaterialType() == INPAR::MAT::m_vp_robinson))
+    else if ( (Material()->MaterialType() == INPAR::MAT::m_vp_robinson) )
     {
       // scalar-valued temperature: T = shapefunctions . element temperatures
       // T = N_T^(e) . T^(e)
@@ -752,8 +763,9 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
       {
         MAT::Robinson* robinson
           = static_cast <MAT::Robinson*>(Material().get());
+        // initialise the temperature field
         scalartemp = robinson->InitTemp();
-        soh8_mat_temp(&stress,&ctemp,NULL,&cmat,&defgrd,&glstrain,&plglstrain,incstrain,scalartemp,&density,gp,params);
+        soh8_mat_temp(&stress,&ctemp,NULL,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
       }
       else // (tempnp != NULL)
       {
@@ -763,7 +775,7 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
         // identical shapefunctions for the displacements and the temperatures
         double scalartemp  = (shapefcts[gp]).Dot(etemp);
 
-        soh8_mat_temp(&stress,&ctemp,NULL,&cmat,&defgrd,&glstrain,&plglstrain,incstrain,scalartemp,&density,gp,params);
+        soh8_mat_temp(&stress,&ctemp,NULL,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
       }
 
     } // end Robinson's material
@@ -813,6 +825,7 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
     break;
     case INPAR::STR::strain_none:
      break;
+
     default:
      dserror("requested plastic strain type not available");
     }
@@ -1034,8 +1047,7 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
     const double scalartemp  = shapetemp.Dot(etemp);
 
     // build iterative strains
-    LINALG::Matrix<NUMSTR_SOH8,1> incstrain(true);
-    incstrain.Multiply(boplin,res_d);
+    LINALG::Matrix<NUMSTR_SOH8,1> straininc(true);
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
@@ -1053,8 +1065,8 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) stresstemp = C . Delta T
     // do not call the material for Robinson's material
-    if (!(Material()->MaterialType() == INPAR::MAT::m_vp_robinson))
-      soh8_mat_temp(&stresstemp,&ctemp,&Ntemp,&cmat,&defgrd,&glstrain,&plglstrain,incstrain,scalartemp,&density,gp,params);
+    if ( !(Material()->MaterialType() == INPAR::MAT::m_vp_robinson) )
+      soh8_mat_temp(&stresstemp,&ctemp,&Ntemp,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1098,6 +1110,7 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
     break;
     case INPAR::STR::stress_none:
       break;
+
     default:
       dserror("requested stress type not available");
     }
@@ -1109,7 +1122,6 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
       double detJ_w = detJ*gpweights[gp];
       force->MultiplyTN(detJ_w, boplin, stresstemp, 1.0);
     }  // if (force != NULL)
-
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/

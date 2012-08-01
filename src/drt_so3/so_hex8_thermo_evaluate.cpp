@@ -106,7 +106,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
     // internal force vector
     LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
-    // elemat2, elevec2+3 is not used anyway
+    // elemat2, elevec2+3 are not used anyway
 
     // need current displacement and residual forces
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
@@ -120,6 +120,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
+    // build a matrix dummy
     if (elemat1.IsInitialized()) matptr = &elemat1;
     // call the well-known soh8_nlnstiffmass for the normal structure solution
     soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
@@ -405,7 +406,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
     {
       MAT::Robinson* robinson = static_cast<MAT::Robinson*>(mat.get());
-      robinson->Update();
+      bool imrlike = false;
+      robinson->Update(imrlike, 0.0);
     }
   }
   break;
@@ -780,7 +782,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
   // I'm not sure whether all of these are always supplied, we'll see....
   if (!stresstemp) dserror("No stress vector supplied");
   if (!ctemp) dserror("No material tangent matrix supplied");
-  if (!Ntemp) dserror("No temperature supplied");
+//  if (!Ntemp) dserror("No temperature supplied");
   if (!defgrd) dserror("No defgrd supplied");
 #endif
 
@@ -851,8 +853,15 @@ void DRT::ELEMENTS::So_hex8::Ctemp(LINALG::Matrix<6,1>* ctemp)
       return thrpllinelast->SetupCthermo(*ctemp);
       break;
     }
+    case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
+    {
+      // so far: do nothing, because the displacement-dependent coupling term
+      // is neglected
+      return;
+      break;
+    }
     default:
-      dserror("Cannot ask material for the temperature rhs");
+      dserror("Cannot ask material for the temperature-dependent material tangent");
       break;
 
   } // switch (mat->MaterialType())
