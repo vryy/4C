@@ -67,36 +67,40 @@ namespace MAT
       //! kind of Robinson material (slight differences:vague,butler,arya,arya_narloyz,arya_crmosteel)
       const string* kind_;
       //! Young's modulus (temperature dependent --> polynomial expression)
+      // 'E' [N/m^2]
       const vector<double> youngs_;
-      //! Possion's ratio
+      //! Possion's ratio \f$ \nu \f$ [-]
       const double poissonratio_;
-      //! mass density
+      //! mass density \f$ \rho [kg/m^3] \f$
       const double density_;
-      //! linear coefficient of thermal expansion
+      //! linear coefficient of thermal expansion \f$ \alpha_T \f$ [1/K]
       const double thermexpans_;
-      /// initial temperature (constant) \f$ \theta_0 \f$
+      /// initial temperature (constant) \f$ \theta_0  \f$ [K]
       const double inittemp_;
-      //! hardening factor 'A' (needed for flow law)
+      //! hardening factor 'A' (needed for flow law) [1/s]
       const double hrdn_fact_;
-      //! hardening power 'n'  (exponential of F in the flow law)
+      //! hardening power 'n'  (exponent of F in the flow law) [-]
       const double hrdn_expo_;
-      //! Bingam-Prager shear stress threshold \f$\kappa^2\f$ 'K^2=K^2(K_0)'
+      //! Bingam-Prager shear stress threshold \f$ \kappa^2 \f$
+      //! 'K^2=K^2(K_0)' [N^2 / m^4]
       const vector<double> shrthrshld_;
-      //! recovery factor 'R_0'
+      //! recovery factor 'R_0' [N/(s . m^2)]
       const double rcvry_;
-      //! activation energy 'Q_0'
+      //! activation energy 'Q_0' for Arya_NARloy-Z [1/s]
       const double actv_ergy_;
-      //! activation temperature 'T_0'
+      //! activation temperature 'T_0' [K]
       const double actv_tmpr_;
-      //! 'G_0' (temperature independent, minimum value attainable by G )
+      //! 'G_0' (temperature independent, minimum value attainable by G )  [-]
       const double g0_;
-      //! 'm' (temperature independent, exponential in evolution law of back stress)
+      //! 'm'  [-]
+      //! temperature independent, exponent in evolution law for back stress
       const double m_;
-      //! '\f$\beta\f$' (temperature independent)
+      //! '\f$\beta\f$' [-] (temperature independent)
       //! Arya_NarloyZ: \f$\beta = 0.533e-6 T^2 + 0.8\f$
       const vector<double> beta_;
-      //! h
-      //! Arya_NarloyZ: \f$H = 1.67e4 . (6.895)^(beta - 1) / (3 . K_0^2)\f$
+      //! H
+      //! Arya_NarloyZ: \f$H = 1.67e4 . (6.895)^(beta - 1) / (3 . K_0^2)\f$ [N^3/m^6]
+      //! Arya_CrMoSteel: [N/m^2]
       const double h_;
 
       //@}
@@ -184,7 +188,10 @@ private:
       );
 
     //! update internal stress variables
-    void Update();
+    void Update(
+      bool imrlike,  //!< if a generalised-alpha time integration scheme is used: true
+      double alphaf  //!< generalised-alpha tis parameter alpha_f
+      );
 
     //! reset internal stress variables
     void Reset();
@@ -284,10 +291,14 @@ private:
                           = [  0  ]  on every element (e)
                             [  0  ]  and at each Gauss point gp
 
-    with - total strain increment   iinc eps   -->  straininc
-         - viscous strain increment iinc eps^v -->  strain_pn
-         - back stress increment    iinc al    -->  backstress
-         -                          kee        -->  cmat
+    with - total strain increment/residual strains  iinc eps   -->  straininc
+         - viscous strain increment                 iinc eps^v -->  strain_pn
+         - back stress increment                    iinc al    -->  backstress
+         - material tangent                         kee        -->  cmat
+
+         - kee = dsigma / d eps = cmat,  kev = dsigma / d eps^v, kea = dsigma / d alpha
+         - kve = dres^v / d eps, kvv = dres^v / d eps^v, kva = dres^v / d alpha,
+         - kae = dres^al / d eps, kav = dres^al / d eps^v, kaa = dres^al / d alpha,
 
     Due to the fact that the internal residuals (the BE-discretised evolution
     laws of the viscous strain and the back stress) are C^{-1}-continuous
@@ -310,7 +321,10 @@ private:
       kee_red^i = kee^i - [ kev  kea ]^i [          ]      [     ]
                                          [ kav  kaa ]      [ kae ]
 
-      ==> condensed system: kee_red^i . iinc eps = sig_red^i
+      ==> condensed system:
+
+      Lin sig = kee_red^i . iinc eps + sig_red^i
+
     */
     void CalculateCondensedSystem(
       LINALG::Matrix<NUM_STRESS_3D,1>& stress,  //!< (6x1) (io) stress vector \f$\sigma\f$
@@ -346,14 +360,7 @@ private:
     //! backstresscurr_ = backstresslast_ + Delta backstress (o)
     void IterativeUpdateOfInternalVariables(
       const int numgp,  //!< total number of Gauss points
-      const LINALG::Matrix<NUM_STRESS_3D,1> straininc,  //!< (i) increment of total strain
-      LINALG::Matrix<NUM_STRESS_3D,1>&  strain_pn,  //!< (i) viscous strain \f$\varepsilon_{n+1}\f$ at t_{n+1}^i
-      LINALG::Matrix<NUM_STRESS_3D,1>&  backstress_n  //!< (i) back stress \f$alpha_{n+1}\f$ at t_{n+1}^i
-      );
-
-    // incremental update of material internal variables
-    void IncrementalUpdateOfInternalVariables(
-      const int gp  //!< total number of GPs in domain
+      const LINALG::Matrix<NUM_STRESS_3D,1> straininc  //!< (i) increment of total strain
       );
 
     //! return density
