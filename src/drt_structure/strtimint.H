@@ -285,6 +285,16 @@ namespace STR
     //! Update step for contact / meshtying
     void UpdateStepContactMeshtying();
 
+    //! Velocity update method (VUM) for contact
+    //!
+    //! The VUM is an explicit update method at the end of each time step
+    //! which is supposed to assure exact algorithmic conservation of total
+    //! energy during contact. Further details can be found in the original
+    //! paper by Laursen and Love (IJNME, 2002) and in the more recent and
+    //! mortar-related paper by Hartmann et al. (IJNME, 2007).
+    //! CAUTION: The VUM is only available for Gen-Alpha and GEMM.
+    void UpdateStepContactVUM();
+
     //! Update step for beam contact
     void UpdateStepBeamContact();
 

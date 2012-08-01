@@ -831,6 +831,27 @@ void STR::TimInt::UpdateStepBeamContact()
 }
 
 /*----------------------------------------------------------------------*/
+/* Velocity update method (VUM) for contact */
+void STR::TimInt::UpdateStepContactVUM()
+{
+  if (HaveContactMeshtying())
+  {
+    bool do_vum = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"VELOCITY_UPDATE");
+
+    //********************************************************************
+    // VELOCITY UPDATE METHOD
+    //********************************************************************
+    if (do_vum)
+    {
+      // not yet implemented
+      dserror("ERROR: Velocity update method not yet implemented");
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* Reset configuration after time step */
 void STR::TimInt::ResetStep()
 {

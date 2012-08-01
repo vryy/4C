@@ -413,6 +413,10 @@ void STR::TimIntGEMM::UpdateIterIteratively()
 /* update after time step */
 void STR::TimIntGEMM::UpdateStepState()
 {
+  // velocity update for contact
+  // (must be called BEFORE the following update steps)
+  UpdateStepContactVUM();
+
   // update all old state at t_{n-1} etc
   // important for step size adaptivity
   // new displacements at t_{n+1} -> t_n

@@ -1395,6 +1395,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
                                yesnotuple,yesnovalue,&scontact);
 
+  setStringToIntegralParameter<int>("VELOCITY_UPDATE","No","If chosen, velocity update method is applied",
+                               yesnotuple,yesnovalue,&scontact);
+
   setStringToIntegralParameter<int>("EMOUTPUT","None","Type of energy and momentum output",
       tuple<std::string>("None","none", "No", "no",
                          "Screen", "screen",
