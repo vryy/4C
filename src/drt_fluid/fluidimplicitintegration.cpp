@@ -3670,8 +3670,6 @@ void FLD::FluidImplicitTimeInt::Output()
 
     // velocity/pressure vector
     output_->WriteVector("velnp",velnp_);
-    output_->WriteVector("tract_resid",trac_residual_);
-    output_->WriteVector("neumann_loads",neumann_loads_);
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
     output_->WriteVector("pressure", pressure);
@@ -3814,8 +3812,6 @@ void FLD::FluidImplicitTimeInt::Output()
     output_->WriteVector("accn", accn_);
     output_->WriteVector("veln", veln_);
     output_->WriteVector("velnm",velnm_);
-    output_->WriteVector("tract_resid",trac_residual_);
-    output_->WriteVector("neumann_loads",neumann_loads_);
 
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC

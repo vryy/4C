@@ -171,7 +171,6 @@ void XFluidEnsightWriter::WriteAllResults(PostField* field)
     // just turn the following lines on
     EnsightWriter::WriteResult("velnp", "velocity", dofbased, field->problem()->num_dim());
     EnsightWriter::WriteResult("pressure", "pressure", dofbased, 1);
-    EnsightWriter::WriteResult("tract_resid", "tract_residual", dofbased, field->problem()->num_dim());
   }
 
   WriteElementResults(field);
