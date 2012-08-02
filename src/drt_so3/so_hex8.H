@@ -94,6 +94,7 @@ public:
   friend class So_hex8Type;
   friend class So_hex8ScatraType;
   friend class So_hex8PoroType;
+  friend class So_hex8ThermoType;
 
   //@}
   //! @name Constructors and destructors and related methods
