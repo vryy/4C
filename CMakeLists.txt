@@ -644,6 +644,9 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_scatra.cpp
   src/drt_so3/so3_scatra_evaluate.cpp
   src/drt_so3/so3_scatra_eletypes.cpp
+  src/drt_so3/so3_thermo.cpp
+  src/drt_so3/so3_thermo_evaluate.cpp
+  src/drt_so3/so3_thermo_eletypes.cpp
 )
 set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight.cpp
