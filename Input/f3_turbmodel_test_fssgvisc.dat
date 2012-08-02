@@ -71,6 +71,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           vstab_usfem
 EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 FSSUGRVISC                      Smagorinsky_small
 PHYSICAL_MODEL                  no_model

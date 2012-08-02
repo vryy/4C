@@ -363,11 +363,9 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   //------------------------------------------------------------------------
   // get material parameters at element center
   if (not my::fldpara_->MatGp() or not my::fldpara_->TauGp())
+  {
     my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
-  // calculate subgrid viscosity and/or stabilization parameter at element center
-  if (not my::fldpara_->TauGp())
-  {
     // calculate all-scale subgrid viscosity at element center
     my::visceff_ = my::visc_;
     if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
@@ -377,7 +375,11 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       my::visceff_ += my::sgvisc_;
     }
+  }
 
+  // calculate stabilization parameter at element center
+  if (not my::fldpara_->TauGp())
+  {
     // get convective velocity at element center for evaluation of
     // stabilization parameter
     my::velint_.Multiply(evelaf,my::funct_);
@@ -412,11 +414,8 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     //----------------------------------------------------------------------
     // get material parameters at integration point
     if (my::fldpara_->MatGp())
-      my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
-
-    // calculate subgrid viscosity and/or stabilization parameter at integration point
-    if (my::fldpara_->TauGp())
     {
+      my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
@@ -426,10 +425,11 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         my::visceff_ += my::sgvisc_;
       }
-
-      // calculate stabilization parameters at integration point
-      my::CalcStabParameter(vol);
     }
+
+    // calculate stabilization parameter at integration point
+    if (my::fldpara_->TauGp())
+      my::CalcStabParameter(vol);
 
     // evaluation of convective operator
     my::conv_c_.MultiplyTN(my::derxy_,my::convvelint_);
@@ -443,6 +443,8 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     my::ComputeSubgridScaleScalar(escaaf,escaam);
 
     // update material parameters including subgrid-scale part of scalar
+    if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+      dserror("No material update in combination with smagorinsky model!");
     if (my::fldpara_->UpdateMat())
       my::UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,my::sgscaint_);
 
@@ -472,8 +474,8 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     //----------------------------------------------------------------------
     // subgrid-scale-velocity term (governed by cross-stress flag here)
     //----------------------------------------------------------------------
-    if (my::fldpara_->Cross()    == INPAR::FLUID::cross_stress_stab or
-        my::fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab)
+    if (my::fldpara_->ContiCross()    == INPAR::FLUID::cross_stress_stab or
+        my::fldpara_->ContiReynolds() == INPAR::FLUID::reynolds_stress_stab)
     {
       //----------------------------------------------------------------------
       //  evaluation of various values at integration point:
@@ -521,7 +523,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       double * svelnp = NULL;
       my::ComputeSubgridScaleVelocity(eaccam,fac1,fac2,fac3,facMtau,*iquad,saccn,sveln,svelnp);
 
-      if (my::fldpara_->Cross()==INPAR::FLUID::cross_stress_stab)
+      if (my::fldpara_->ContiCross()==INPAR::FLUID::cross_stress_stab)
       {
         // evaluate subgrid-scale-velocity term
         for (int ui=0; ui<my::nen_; ++ui)

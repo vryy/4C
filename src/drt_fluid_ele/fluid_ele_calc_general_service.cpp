@@ -686,7 +686,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   //------------------------------------------------------------------------
   // get material parameters at element center
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
+  {
     GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+
+    // calculate all-scale or fine-scale subgrid viscosity at element center
+    visceff_ = visc_;
+    if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+    {
+      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
+      // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
+      visceff_ += sgvisc_;
+    }
+    else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
+      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
+  }
 
   // potential evaluation of multifractal subgrid-scales at element center
   // coefficient B of fine-scale velocity
@@ -718,20 +731,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   }
 
 
-  // calculate subgrid viscosity and/or stabilization parameter at element center
+  // calculate stabilization parameter at element center
   if (not fldpara_->TauGp())
   {
-    // calculate all-scale or fine-scale subgrid viscosity at element center
-    visceff_ = visc_;
-    if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
-    {
-      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
-      // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
-      visceff_ += sgvisc_;
-    }
-    else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
-      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
-
     // get convective velocity at element center for evaluation of
     // stabilization parameter
     velint_.Multiply(evelaf,funct_);
@@ -881,11 +883,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 
     // get material parameters at integration point
     if (fldpara_->MatGp())
+    {
       GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
-    // calculate subgrid viscosity and/or stabilization parameter at integration point
-    if (fldpara_->TauGp())
-    {
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
       if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
@@ -896,10 +896,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       }
       else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
         CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
-
-      // calculate stabilization parameters at integration point
-      CalcStabParameter(vol);
     }
+
+    // calculate stabilization parameter at integration point
+    if (fldpara_->TauGp())
+      CalcStabParameter(vol);
 
 
     // compute residual of continuity equation
