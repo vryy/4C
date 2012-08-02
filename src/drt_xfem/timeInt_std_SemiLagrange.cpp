@@ -95,11 +95,11 @@ void XFEM::SemiLagrange::compute(
       for (vector<TimeIntData>::iterator data=timeIntData_->begin();
           data!=timeIntData_->end(); data++)
       {
+        //cout << endl << "on proc " << myrank_ << " iteration starts for " <<
+        //    data->node_ << " with initial startpoint " << data->startpoint_;
+
         if (data->state_ == TimeIntData::currSL_)
         {
-//          cout << endl << "on proc " << myrank_ << " iteration starts for " <<
-//              data->node_ << " with initial startpoint " << data->startpoint_;
-
           // Initialization
           DRT::Element* ele = NULL; // pointer to the element where start point lies in
           LINALG::Matrix<nsd,1> xi(true); // local transformed coordinates of x
@@ -130,7 +130,12 @@ void XFEM::SemiLagrange::compute(
           else  // if element is found, the newton iteration to find a better startpoint can start
           {
             if (interfaceSideCompare(ele,data->startpoint_,0,data->phiValue_) == false) // Lagrangian origin and original node on different interface sides
-              data->state_ = TimeIntData::failedSL_;
+            {
+              if (data->counter_==0)
+                data->state_ = TimeIntData::initfailedSL_;
+              else
+                data->state_ = TimeIntData::failedSL_;
+            }
             else  // Newton loop just for sensible points
               NewtonLoop(ele,&*data,xi,vel,phin,elefound,stdBackTracking);
 
@@ -155,10 +160,11 @@ void XFEM::SemiLagrange::compute(
               data->state_ = TimeIntData::failedSL_;
             }
           } // end if over nodes which changed interface
-
-//          cout << "on proc " << myrank_ << " after " << data->counter_ << " iterations "
-//              << data->node_ << " has startpoint " << data->startpoint_ << endl;
         }
+
+          //cout << "on proc " << myrank_ << " after " << data->counter_ << " iterations "
+          //    << data->node_ << " has startpoint " << data->startpoint_ <<
+          //    " and state " << data->stateToString() << endl;
       } // end loop over all nodes with changed interface side
     } // end if movenodes is empty or max. iter reached
     else //
@@ -1405,7 +1411,8 @@ bool XFEM::SemiLagrange::globalNewtonFinished(
       data!=timeIntData_->end(); data++)
   {
     if ((data->state_==TimeIntData::currSL_) or
-        (data->state_==TimeIntData::nextSL_))
+        (data->state_==TimeIntData::nextSL_) or
+        (data->state_==TimeIntData::initfailedSL_))
       return false; // one node requires more data
   }
   return true; // if no more node requires data, we are done
@@ -1616,7 +1623,20 @@ void XFEM::SemiLagrange::exportIterData(
     for (vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
-      if (data->state_==TimeIntData::nextSL_)
+      switch (data->state_)
+      {
+      case TimeIntData::initfailedSL_:
+      {
+        if (data->startOwner_[0]==myrank_)
+        {
+          data->state_ = TimeIntData::currSL_;
+          DRT::Node* startnode = discret_->gNode(data->startGid_[0]);
+          data->startpoint_ = LINALG::Matrix<nsd,1>(startnode->X());
+
+          break;
+        } // else -> do same as in nextsl
+      }
+      case TimeIntData::nextSL_:
       {
         packNode(dataSend,data->node_);
         DRT::ParObject::AddtoPack(dataSend,data->vel_);
@@ -1629,6 +1649,10 @@ void XFEM::SemiLagrange::exportIterData(
         DRT::ParObject::AddtoPack(dataSend,data->startGid_);
         DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
         DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
+        DRT::ParObject::AddtoPack(dataSend,(int)data->state_);
+      }
+      default:
+        break; // do nothing
       }
     }
 
@@ -1637,7 +1661,8 @@ void XFEM::SemiLagrange::exportIterData(
     for (vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
-      if (data->state_==TimeIntData::nextSL_)
+      if ((data->state_==TimeIntData::nextSL_) or
+          (data->state_==TimeIntData::initfailedSL_ and data->startOwner_[0]!=myrank_))
       {
         packNode(dataSend,data->node_);
         DRT::ParObject::AddtoPack(dataSend,data->vel_);
@@ -1650,10 +1675,12 @@ void XFEM::SemiLagrange::exportIterData(
         DRT::ParObject::AddtoPack(dataSend,data->startGid_);
         DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
         DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
+        DRT::ParObject::AddtoPack(dataSend,(int)data->state_);
       }
     }
 
     clearState(TimeIntData::nextSL_);
+    clearState(TimeIntData::initfailedSL_);
 
     vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
@@ -1676,6 +1703,7 @@ void XFEM::SemiLagrange::exportIterData(
       vector<int> startGid;
       vector<int> startOwner;
       int newtype;
+      int newstate;
 
       unpackNode(posinData,dataRecv,node);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,vel);
@@ -1688,7 +1716,30 @@ void XFEM::SemiLagrange::exportIterData(
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startGid);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startOwner);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,newtype);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,newstate);
 
+      // reset data of initially failed nodes which get a second chance if on correct proc
+      switch ((TimeIntData::state)newstate)
+      {
+      case TimeIntData::initfailedSL_:
+      {
+        if (startOwner[0]==myrank_)
+        {
+          newstate = (int)TimeIntData::currSL_;
+          DRT::Node* startnode = discret_->gNode(startGid[0]);
+          startpoint = LINALG::Matrix<nsd,1>(startnode->X());
+        }
+        break;
+      }
+      case TimeIntData::nextSL_:
+      {
+        newstate = (int)TimeIntData::currSL_;
+        break;
+      }
+      default:
+        dserror("data sent to new proc which should not be sent!");
+      }
+      
       timeIntData_->push_back(TimeIntData(
           node,
           vel,
@@ -1700,7 +1751,8 @@ void XFEM::SemiLagrange::exportIterData(
           iter,
           startGid,
           startOwner,
-          (TimeIntData::type)newtype));
+          (TimeIntData::type)newtype,
+          (TimeIntData::state)newstate));
     } // end loop over number of points to get
 
     // processors wait for each other

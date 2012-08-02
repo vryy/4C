@@ -208,6 +208,7 @@ protected:
       basicStd_,
       currSL_,
       nextSL_,
+      initfailedSL_,
       failedSL_,
       extrapolateStd_,
       doneStd_,
@@ -218,7 +219,7 @@ protected:
     enum type
     {
       predictor_ = 0,
-          standard_ = 1
+      standard_ = 1
     };
 
     //! constructor for the enrichment computation
@@ -279,7 +280,8 @@ protected:
         int counter,
         vector<int> startGid,
         vector<int> startOwner,
-        type newtype
+        type newtype,
+        state newstate
     ) :
       node_(node),
       vel_(vel),
@@ -291,7 +293,7 @@ protected:
       counter_(counter),
       startGid_(startGid),
       startOwner_(startOwner),
-      state_(currSL_),
+      state_(newstate),
       type_(newtype)
     {return;}
 
@@ -355,6 +357,7 @@ protected:
       case currSL_: output = "current Semi-Lagrange";break;
       case nextSL_: output = "next Semi-Lagrange";break;
       case failedSL_: output = "failed Semi-Lagrange";break;
+      case initfailedSL_: output = "initially failed Semi-Lagrange";break;
       case extrapolateStd_: output = "extrapolate Standard";break;
       case doneStd_: output = "done Standard";break;
       case failedEnr_: output = "failed enrichment";break;
