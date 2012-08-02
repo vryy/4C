@@ -247,7 +247,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     else if (Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
       // check for dual shape functions and linear LM interpolation
-      if (shapefcn_ == INPAR::MORTAR::shape_dual && lmtype==INPAR::MORTAR::lagmult_lin_lin)
+      if ((shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin) &&
+          lmtype==INPAR::MORTAR::lagmult_lin_lin)
         dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
 
       // check for standard shape functions and quadratic LM interpolation
@@ -287,7 +288,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
       // check for dual shape functions
-      if (shapefcn_ == INPAR::MORTAR::shape_dual)
+      if (shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
         dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
 
       // prepare integration and linearization of M, g (and possibly D) on intcells

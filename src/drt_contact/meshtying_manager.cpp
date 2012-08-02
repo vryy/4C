@@ -394,6 +394,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin)
+    dserror("Petrov-Galerkin approach makes no sense for meshtying");
+
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************

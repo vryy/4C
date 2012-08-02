@@ -555,7 +555,7 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
     if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
       dserror("Condensation works only for dual shape functions");
 
-  if(myrank == 0)
+  if (myrank == 0)
   {
     if (DRT::INPUT::IntegralValue<int>(input,"SHAPEFCN")==INPAR::MORTAR::shape_standard)
     {
@@ -566,7 +566,11 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
     {
       if(comm.MyPID()==0)
         cout << "Shape functions:  dual" << endl;
-  }
+    }
+    else
+    {
+      dserror("ERROR: Only standard or dual shape functions in this mortar adapter");
+    }
   }
 
   // check for parallel redistribution (only if more than 1 proc)

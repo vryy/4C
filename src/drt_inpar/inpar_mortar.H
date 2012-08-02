@@ -53,9 +53,10 @@ namespace INPAR
     /// (this enum represents the input file parameter SHAPEFCN)
     enum ShapeFcn
     {
-      shape_undefined, ///< undefined
-      shape_standard,  ///< standard shape functions
-      shape_dual       ///< dual shape functions
+      shape_undefined,      ///< undefined
+      shape_standard,       ///< standard shape functions
+      shape_dual,           ///< dual shape functions
+      shape_petrovgalerkin  ///< Petrov-Galerkin approach
     };
     
     /// Type of Lagrange multiplier interpolation for quadratic FE case

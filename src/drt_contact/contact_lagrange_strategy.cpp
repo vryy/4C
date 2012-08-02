@@ -190,7 +190,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   if (systype == INPAR::CONTACT::system_condensed)
   {
     // double-check if this is a dual LM system
-    if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+    if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+      dserror("Condensation only for dual LM");
     
     /********************************************************************/
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                    */
@@ -1140,7 +1141,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   if (systype == INPAR::CONTACT::system_condensed)
   {
     // double-check if this is a dual LM system
-    if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+    if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+      dserror("Condensation only for dual LM");
     
 #ifdef CONTACTBASISTRAFO
 
@@ -2830,7 +2832,8 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   if (systype == INPAR::CONTACT::system_condensed)
   {
     // double-check if this is a dual LM system
-    if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+    if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+      dserror("Condensation only for dual LM");
         
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));

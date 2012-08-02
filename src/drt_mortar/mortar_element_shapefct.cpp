@@ -1305,9 +1305,10 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
   if (!IsSlave())
     dserror("ERROR: EvaluateShapeLagMult called for master element");
 
-  // dual shape functions or not
+  // dual LM shape functions or not
   bool dual = false;
-  if (lmtype==INPAR::MORTAR::shape_dual) dual = true;
+  if (lmtype==INPAR::MORTAR::shape_dual || lmtype==INPAR::MORTAR::shape_petrovgalerkin)
+    dual = true;
   
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
@@ -1462,7 +1463,8 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
   
   // dual shape functions or not
   bool dual = false;
-  if (lmtype==INPAR::MORTAR::shape_dual) dual = true;
+  if (lmtype==INPAR::MORTAR::shape_dual || lmtype==INPAR::MORTAR::shape_petrovgalerkin)
+    dual = true;
   
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();

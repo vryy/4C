@@ -67,7 +67,7 @@ ALPHA_F                         0.0
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Dual
+SHAPEFCN                        PetrovGalerkin
 FRICTION                        Coulomb
 FRCOEFF                         0.1
 FULL_LINEARIZATION              Yes

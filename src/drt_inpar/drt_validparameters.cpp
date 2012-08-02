@@ -1331,10 +1331,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("SHAPEFCN","Dual","Type of employed set of shape functions",
         tuple<std::string>("Dual", "dual",
-                           "Standard", "standard", "std"),
+                           "Standard", "standard", "std",
+                           "PetrovGalerkin", "petrovgalerkin", "pg"),
         tuple<int>(
                 INPAR::MORTAR::shape_dual, INPAR::MORTAR::shape_dual,
-                INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard),
+                INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard,
+                INPAR::MORTAR::shape_petrovgalerkin,INPAR::MORTAR::shape_petrovgalerkin,INPAR::MORTAR::shape_petrovgalerkin),
         &scontact);
 
   setStringToIntegralParameter<int>("SYSTEM","Condensed","Type of linear system setup / solution",

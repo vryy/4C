@@ -556,6 +556,8 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
           cout << "===== Standard Lagrange multiplier strategy ====================\n" << endl;
         else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
           cout << "===== Dual Lagrange multiplier strategy ========================\n" << endl;
+        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+          cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n" << endl;
         else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
           cout << "===== Standard Penalty strategy ================================\n" << endl;
         else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)

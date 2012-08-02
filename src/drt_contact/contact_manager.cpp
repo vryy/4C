@@ -430,6 +430,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") != INPAR::CONTACT::solution_lagmult &&
+              DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin)
+    dserror("Petrov-Galerkin approach for LM only with Lagrange multiplier strategy");
+
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
@@ -560,7 +564,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
-    dserror("No Petrov-Galerkin approach (for LM) implemented for quadratic contact with STANDARD shape fct.");
+    dserror("Only quad/quad, lin/lin, pwlin/pwlin (for LM) implemented for quadratic contact with STANDARD shape fct.");
 
   if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin ||

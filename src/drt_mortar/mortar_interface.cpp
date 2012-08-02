@@ -84,6 +84,8 @@ maxdofglobal_(-1)
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(),"SHAPEFCN");
   if (shapefcn == INPAR::MORTAR::shape_dual)
    shapefcn_ = INPAR::MORTAR::shape_dual;
+  else if (shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+    shapefcn_ = INPAR::MORTAR::shape_petrovgalerkin;
   else if (shapefcn == INPAR::MORTAR::shape_standard)
     shapefcn_ = INPAR::MORTAR::shape_standard;
   else
@@ -2297,7 +2299,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
           double val = colcurr->second;
 
           // do the assembly into global D matrix
-          if (shapefcn_ == INPAR::MORTAR::shape_dual)
+          if (shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
           {
 #ifdef MORTARTRAFO
             // do lumping of D-matrix
@@ -2457,7 +2459,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
     return;
 
   // check for dual shape functions and quadratic slave elements
-  if (shapefcn_ != INPAR::MORTAR::shape_dual || quadslave_ == false)
+  if (shapefcn_ == INPAR::MORTAR::shape_standard || quadslave_ == false)
     dserror("ERROR: AssembleTrafo -> you should not be here...");
 
   //********************************************************************
