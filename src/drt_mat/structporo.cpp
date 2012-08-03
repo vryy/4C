@@ -49,14 +49,20 @@ DRT::ParObject* MAT::StructPoroType::Create(const std::vector<char> & data)
 /*----------------------------------------------------------------------*/
 MAT::StructPoro::StructPoro() :
   params_(NULL),
-  mat_(Teuchos::null)
+  mat_(Teuchos::null),
+  porosity_(Teuchos::null),
+  dporodt_(Teuchos::null),
+  gradporosity_(Teuchos::null)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
-  params_(params)
+  params_(params),
+  porosity_(Teuchos::null),
+  dporodt_(Teuchos::null),
+  gradporosity_(Teuchos::null)
 {
   mat_ = MAT::Material::Factory(params_->matid_);
 }
@@ -110,7 +116,7 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*/
 void MAT::StructPoro::Unpack(const vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position, data, type);
@@ -135,7 +141,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
   // porosity_
   int size = 0;
   ExtractfromPack(position,data,size);
-  porosity_=rcp(new vector<double >);
+  porosity_=rcp(new std::vector<double >);
   double tmp1 = 0.0;
   for (int i=0; i<size; ++i)
   {
@@ -144,7 +150,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
   }
 
   // gradporosity_
-  gradporosity_=rcp(new vector<LINALG::Matrix<3,1> >);
+  gradporosity_=rcp(new std::vector<LINALG::Matrix<3,1> >);
   ExtractfromPack(position,data,size);
   LINALG::Matrix<3,1> tmp2(true);
   for (int i=0; i<size; ++i)
@@ -155,7 +161,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
 
   // dporodt_
   ExtractfromPack(position,data,size);
-  dporodt_=rcp(new vector<double >);
+  dporodt_=rcp(new std::vector<double >);
   double tmp3 = 0.0;
   for (int i=0; i<size; ++i)
   {
@@ -168,15 +174,19 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
     // we create the sub-material using the factory, because this way we can use the known matid.
     // This way however the material is fully setup according to the dat-file and in order to
     // get a correct material the called unpack method must overwrite all sub-material members.
-    mat_ = MAT::Material::Factory(params_->matid_);
 
-    vector<char> basedata(0);
-    ExtractfromPack(position,data,basedata);
-    mat_->Unpack(basedata);
+    if (params_ != NULL)// material are not accessible in postprocessing mode
+    {
+      mat_ = MAT::Material::Factory(params_->matid_);
+
+      vector<char> basedata(0);
+      ExtractfromPack(position,data,basedata);
+      mat_->Unpack(basedata);
+
+      if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+    }
   }
-
-  if (position != data.size())
-  dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
     /*----------------------------------------------------------------------*/
@@ -283,13 +293,6 @@ void MAT::StructPoro::SetPorosityAtGP(std::vector<double> porosity_gp)
 /*----------------------------------------------------------------------*/
 void MAT::StructPoro::SetDPoroDtAtGP(std::vector<double> dporodt_gp)
 {
-  //int numgp = dporodt_gp.size();
-
-  //dporodt_ = rcp(new vector<double> (numgp));
-
-  //cout<<"length1: "<<dporodt_gp.size()<<endl;
-  //cout<<"length2: "<<dporodt_->size()<<endl;
-
   //set dporodt values
   std::vector<double>::iterator m = dporodt_gp.begin();
   for (int i = 0; m != dporodt_gp.end(); ++m, ++i)
@@ -304,8 +307,6 @@ void MAT::StructPoro::SetDPoroDtAtGP(std::vector<double> dporodt_gp)
 /*----------------------------------------------------------------------*/
 void MAT::StructPoro::SetGradPorosityAtGP(std::vector<  LINALG::Matrix<3,1> > gradporosity_gp)
 {
-    //gradporosity_ = rcp(new vector<double*> (gradporosity_gp.size()));
-
     std::vector<LINALG::Matrix<3,1> >::iterator m = gradporosity_gp.begin();
     for (int i = 0; m != gradporosity_gp.end(); ++m, ++i)
     {
@@ -319,10 +320,9 @@ void MAT::StructPoro::SetGradPorosityAtGP(std::vector<  LINALG::Matrix<3,1> > gr
  *----------------------------------------------------------------------*/
 void MAT::StructPoro::Setup(const int numgp)
 {
-  porosity_ = rcp(new vector< double > (numgp,params_->initporosity_));
-  //porosity_->resize(numgp,params_->initporosity_);
-  gradporosity_ = rcp(new vector< LINALG::Matrix<3,1> > (numgp));
-  dporodt_ = rcp(new vector<double> (numgp));
+  porosity_ = rcp(new std::vector< double > (numgp,params_->initporosity_));
+  gradporosity_ = rcp(new std::vector< LINALG::Matrix<3,1> > (numgp));
+  dporodt_ = rcp(new std::vector<double> (numgp));
 
   const LINALG::Matrix<3,1> emptyvec(true);
   for (int j=0; j<numgp; ++j)

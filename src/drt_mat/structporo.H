@@ -48,12 +48,16 @@ namespace MAT
         /// @name material parameters
         //@{
 
+        /// material ID of sub-material
         int matid_;
 
+        /// bulk modulus of skeleton phase
         double bulkmodulus_;
 
+        /// penalty parameter for porosity
         double penaltyparameter_;
 
+        /// intial porosity
         double initporosity_;
 
         //@}
@@ -238,12 +242,15 @@ namespace MAT
       /// actual material
       Teuchos::RCP<MAT::Material> mat_;
 
-
+      /// porosity at gauss points
       RCP<vector<double> > porosity_;
+
+      /// porosity time derivative at gauss points
       RCP<vector<double> > dporodt_;
+
+      /// porosity gradient at gauss points
       Teuchos::RCP<vector<LINALG::Matrix<3,1> > > gradporosity_;
 
-      //void SetupPorosity(int numgp);
   };
 
 }
