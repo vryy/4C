@@ -4039,12 +4039,12 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   // that was used when the restart data was written. Especially
   // in case of multiphysics problems & periodic boundary conditions
   // it is better to check the consistency of the maps here:
-    if (not (discret_->DofRowMap())->SameAs(velnp_->Map()))
-      dserror("Global dof numbering in maps does not match");
-    if (not (discret_->DofRowMap())->SameAs(veln_->Map()))
-      dserror("Global dof numbering in maps does not match");
-    if (not (discret_->DofRowMap())->SameAs(accn_->Map()))
-      dserror("Global dof numbering in maps does not match");
+  if (not (discret_->DofRowMap())->SameAs(velnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (discret_->DofRowMap())->SameAs(veln_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (discret_->DofRowMap())->SameAs(accn_->Map()))
+    dserror("Global dof numbering in maps does not match");
 
   // Read restart of one-dimensional arterial network
 }

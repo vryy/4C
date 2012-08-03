@@ -138,7 +138,8 @@ void ALE::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
     // dispn_ has zeros at the Dirichlet-entries, so we maintain zeros there
     LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispn_,*(dbcmaps_->CondMap()));
 
-    if (xffinterface_->XFluidFluidCondRelevant()){
+    if (xffinterface_->XFluidFluidCondRelevant())
+    {
       Teuchos::RCP<Epetra_Vector>  dispnp_ttt = LINALG::CreateVector(*discret_->DofRowMap(),true);
       LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_ttt,xfftoggle_);
 
