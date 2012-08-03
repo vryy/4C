@@ -28,13 +28,13 @@ Constraint(discr,conditionname)
   {
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
-      vector<double> mypenalties=*(constrcond_[i]->Get<vector<double> >("penalty"));
-      vector<double> myrhos=*(constrcond_[i]->Get<vector<double> >("rho"));
+      const std::vector<double>* mypenalties = constrcond_[i]->Get<vector<double> >("penalty");
+      const std::vector<double>* myrhos = constrcond_[i]->Get<vector<double> >("rho");
       int condID=constrcond_[i]->GetInt("ConditionID");
-      if (mypenalties.size() and myrhos.size())
+      if (mypenalties->size() and myrhos->size())
       {
-        penalties_.insert(pair<int,double>(condID,mypenalties[0]));
-        rho_.insert(pair<int,double>(condID,myrhos[0]));
+        penalties_.insert(pair<int,double>(condID,(*mypenalties)[0]));
+        rho_.insert(pair<int,double>(condID,(*myrhos)[0]));
       }
       else
       {

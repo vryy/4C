@@ -46,10 +46,10 @@ actdisc_(discr)
         offsetID=condID;
       }
 
-      vector<double> myinittime=*(constrcond_[i]->Get<vector<double> >("activTime"));
-      if (myinittime.size())
+      const std::vector<double>* myinittime = constrcond_[i]->Get<vector<double> >("activTime");
+      if (myinittime->size())
       {
-        inittimes_.insert(pair<int,double>(condID,myinittime[0]));
+        inittimes_.insert(pair<int,double>(condID,(*myinittime)[0]));
         activecons_.insert(pair<int,bool>(condID,false));
       }
       else
@@ -79,11 +79,11 @@ actdisc_(discr)
     constrtype_=GetConstrType(conditionname);
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
-      vector<double> myinittime=*(constrcond_[i]->Get<vector<double> >("activTime"));
+      const std::vector<double>* myinittime = (constrcond_[i]->Get<vector<double> >("activTime"));
       int condID=constrcond_[i]->GetInt("ConditionID");
-      if (myinittime.size())
+      if (myinittime->size())
       {
-        inittimes_.insert(pair<int,double>(condID,myinittime[0]));
+        inittimes_.insert(pair<int,double>(condID,(*myinittime)[0]));
         activecons_.insert(pair<int,bool>(condID,false));
       }
       else

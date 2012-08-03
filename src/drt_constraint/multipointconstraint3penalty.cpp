@@ -45,9 +45,9 @@ MPConstraint
     for (conditer=constrcond_.begin();conditer!=constrcond_.end();conditer++)
     {
       const int condID = (*conditer)->GetInt("ConditionID");
-      vector<double> mypenalties=*((*conditer)->Get<vector<double> >("penalty"));
-      penalties_[condID]=mypenalties[0];
-      const string* type = (*conditer)-> Get<string>("control");
+      const std::vector<double>* mypenalties = (*conditer)->Get<vector<double> >("penalty");
+      penalties_[condID] = (*mypenalties)[0];
+      const string* type = (*conditer)->Get<string>("control");
       if (*type == "abs")
         absconstraint_[condID]=true;
       else

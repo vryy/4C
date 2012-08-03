@@ -931,23 +931,23 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   if (meshgroup_ < 0)
     dserror("Failed to write group in HDF-meshfile");
 
-  // procs without row elements must not write data
+  // only procs with row elements need to write data
   Teuchos::RCP<std::vector<char> > elementdata = dis_->PackMyElements();
   hsize_t dim = static_cast<hsize_t>(elementdata->size());
   if (elementdata->size() != 0)
   {
     const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
     if (element_status < 0)
-      dserror("Failed to create dataset in HDF-meshfile for group none");
+      dserror("Failed to create dataset in HDF-meshfile");
   }
   else
   {
     const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",0,&dim,&((*elementdata)[0]));
     if (element_status < 0)
-      dserror("Failed to create dataset in HDF-meshfile");
+      dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row elements", dis_->Comm().MyPID());
   }
 
-  // procs without row nodes must not write data
+  // only procs with row nodes need to write data
   Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
   dim = static_cast<hsize_t>(nodedata->size());
   if (nodedata->size() != 0)
@@ -960,7 +960,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   {
     const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
     if (node_status < 0)
-      dserror("Failed to create dataset in HDF-meshfile");
+      dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
   }
 
   // ... write other mesh informations
