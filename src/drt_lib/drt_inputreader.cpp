@@ -1079,7 +1079,7 @@ bool DatFileReader::PrintUnknownSections()
   // we also want to have the printing above being finished.
   Comm()->Barrier();
   if (printout)
-    dserror("Unknown sections detected. Correct this!");
+    dserror("Unknown sections detected. Correct this! Find hints on these unknown sections above." );
 
   return printout;
 }
