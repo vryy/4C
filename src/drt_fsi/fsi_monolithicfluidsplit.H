@@ -143,9 +143,6 @@ namespace FSI
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
-    /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
-
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 

@@ -132,13 +132,15 @@ namespace UTILS
 
     //@}
 
-    ADAPTER::Coupling& StructureFluidCoupling() { return *coupsf_; }
-    ADAPTER::Coupling& StructureAleCoupling()   { return *coupsa_; }
-    ADAPTER::Coupling& FluidAleCoupling()       { return *coupfa_; }
+    ADAPTER::Coupling& StructureFluidCoupling()         { return *coupsf_; }
+    ADAPTER::Coupling& StructureAleCoupling()           { return *coupsa_; }
+    ADAPTER::Coupling& FluidAleCoupling()               { return *coupfa_; }
+    ADAPTER::Coupling& InterfaceFluidAleCoupling()      { return *icoupfa_; }
 
-    const ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
-    const ADAPTER::Coupling& StructureAleCoupling()   const { return *coupsa_; }
-    const ADAPTER::Coupling& FluidAleCoupling()       const { return *coupfa_; }
+    const ADAPTER::Coupling& StructureFluidCoupling()     const { return *coupsf_; }
+    const ADAPTER::Coupling& StructureAleCoupling()       const { return *coupsa_; }
+    const ADAPTER::Coupling& FluidAleCoupling()           const { return *coupfa_; }
+    const ADAPTER::Coupling& InterfaceFluidAleCoupling()  const { return *icoupfa_; }
 
   private:
 
@@ -148,8 +150,11 @@ namespace UTILS
     /// coupling of structure and ale at the interface
     Teuchos::RCP<ADAPTER::Coupling>               coupsa_;
 
-    /// coupling of fluid and ale
+    /// coupling of fluid and ale in the entire fluid volume
     Teuchos::RCP<ADAPTER::Coupling>               coupfa_;
+
+    /// coupling of fluid and ale at the interface
+    Teuchos::RCP<ADAPTER::Coupling>               icoupfa_;
   };
 
 
@@ -189,7 +194,7 @@ namespace UTILS
     ReadMesh is called), the dofmaps for the blocks might get invalid.
 
     */
-    virtual void SetupSystem() = 0;
+    virtual void SetupSystem();
 
     /// prepare time loop
     void PrepareTimeloop();

@@ -129,9 +129,6 @@ namespace FSI
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
-    /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
-
     /// coupling of fluid and ale at the free surface
     Teuchos::RCP<ADAPTER::Coupling> fscoupfa_;
 

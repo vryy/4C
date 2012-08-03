@@ -54,8 +54,6 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
 
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
-
   // Recovering of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap()));
   fmgipre_ = Teuchos::null;
@@ -78,62 +76,8 @@ void FSI::MonolithicFluidSplit::SetupSystem()
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
-  // right now we use matching meshes at the interface
-
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
-
-  const int ndim = DRT::Problem::Instance()->NDim();
-
-  // structure to fluid
-
-  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
-                                 StructureField()->Interface()->FSICondMap(),
-                                *FluidField().Discretization(),
-                                 FluidField().Interface()->FSICondMap(),
-                                "FSICoupling",
-                                ndim);
-
-  // structure to ale
-
-  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
-                                 StructureField()->Interface()->FSICondMap(),
-                                *AleField().Discretization(),
-                                 AleField().Interface()->FSICondMap(),
-                                 "FSICoupling",
-                                ndim);
-
-  // fluid to ale at the interface
-
-  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface()->FSICondMap(),
-                                   *AleField().Discretization(),
-                                   AleField().Interface()->FSICondMap(),
-                                   "FSICoupling",
-                                   ndim);
-
-  // In the following we assume that both couplings find the same dof
-  // map at the structural side. This enables us to use just one
-  // interface dof map for all fields and have just one transfer
-  // operator from the interface map to the full field map.
-  if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
-
-  if (coupsf.MasterDofMap()->NumGlobalElements()==0)
-    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
-
-  // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
-
-  coupfa.SetupCoupling(*FluidField().Discretization(),
-                       *AleField().Discretization(),
-                       *fluidnodemap,
-                       *alenodemap,
-                       ndim);
-
-  FluidField().SetMeshMap(coupfa.MasterDofMap());
+  // call SetupSystem in base class
+  FSI::Monolithic::SetupSystem();
 
   // create combined map
 
@@ -1133,8 +1077,8 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
    *                          - F_{\Gamma I} \Delta u_I - F_{\Gamma I}^G \Delta d_I^G]
    */
   lambda_->Update(1.0, *fgpre_, -ftiparam);
-  lambda_->Update(-1.0, *icoupfa_->SlaveToMaster(fgialeddi), -1.0, *fgidui, 1.0);
-  lambda_->Update(-1.0, *fggddg, -1.0, *icoupfa_->SlaveToMaster(fggaleddg), 1.0);
+  lambda_->Update(-1.0, *InterfaceFluidAleCoupling().SlaveToMaster(fgialeddi), -1.0, *fgidui, 1.0);
+  lambda_->Update(-1.0, *fggddg, -1.0, *InterfaceFluidAleCoupling().SlaveToMaster(fggaleddg), 1.0);
   lambda_->Scale(1/(1.0-ftiparam)); // entire Lagrange multiplier is divided by (1.-ftiparam)
 
   return;

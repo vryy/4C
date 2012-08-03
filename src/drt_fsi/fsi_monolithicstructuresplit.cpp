@@ -60,7 +60,6 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
   fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
 
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
   // Recovering of Lagrange multiplier happens on structure field
@@ -85,44 +84,14 @@ void FSI::MonolithicStructureSplit::SetupSystem()
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
-  // right now we use matching meshes at the interface
-
-  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
-
-  const int ndim = DRT::Problem::Instance()->NDim();
-
-  // structure to fluid
-
-  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
-                                 StructureField()->Interface()->FSICondMap(),
-                                *FluidField().Discretization(),
-                                 FluidField().Interface()->FSICondMap(),
-                                "FSICoupling",
-                                 ndim);
-
-  // structure to ale
-
-  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
-                                 StructureField()->Interface()->FSICondMap(),
-                                *AleField().Discretization(),
-                                 AleField().Interface()->FSICondMap(),
-                                "FSICoupling",
-                                 ndim);
-
-  // fluid to ale at the interface
-
-  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface()->FSICondMap(),
-                                   *AleField().Discretization(),
-                                   AleField().Interface()->FSICondMap(),
-                                   "FSICoupling",
-                                   ndim);
+  // call SetupSystem in base class
+  FSI::Monolithic::SetupSystem();
 
   // we might have a free surface
   if (FluidField().Interface()->FSCondRelevant())
   {
+    const int ndim = DRT::Problem::Instance()->NDim();
+
     fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                        FluidField().Interface()->FSCondMap(),
                                       *AleField().Discretization(),
@@ -130,28 +99,6 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                       "FREESURFCoupling",
                                        ndim);
   }
-
-  // In the following we assume that both couplings find the same dof
-  // map at the structural side. This enables us to use just one
-  // interface dof map for all fields and have just one transfer
-  // operator from the interface map to the full field map.
-  if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
-
-  if (coupsf.MasterDofMap()->NumGlobalElements()==0)
-    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
-
-  // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
-
-  coupfa.SetupCoupling(*FluidField().Discretization(),
-                       *AleField().Discretization(),
-                       *fluidnodemap,
-                       *alenodemap,
-                        ndim);
-
-  FluidField().SetMeshMap(coupfa.MasterDofMap());
 
   // create combined map
 
@@ -376,7 +323,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
       // extract fluid free surface velocities.
       Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractFreeSurfaceVeln();
-      Teuchos::RCP<Epetra_Vector> aveln = icoupfa_->MasterToSlave(fveln);
+      Teuchos::RCP<Epetra_Vector> aveln = InterfaceFluidAleCoupling().MasterToSlave(fveln);
 
       Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
       aig.Apply(*aveln,*rhs);
@@ -437,7 +384,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   // matrix W
 
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  //const ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
   if (s==Teuchos::null)
@@ -507,7 +454,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    a->FullColMap(),
                    aig,
                    1./timescale,
-                   ADAPTER::CouplingSlaveConverter(*icoupfa_),
+                   ADAPTER::CouplingSlaveConverter(icoupfa),
                    mat.Matrix(2,1));
   mat.Assign(2,2,View,aii);
 

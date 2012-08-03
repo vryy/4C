@@ -14,6 +14,7 @@
 #include "fsi_statustest.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -25,6 +26,8 @@
 
 #include "../drt_io/io_control.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -56,6 +59,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 }
 
 
@@ -232,6 +236,72 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::SetupSystem()
+{
+  // right now we use matching meshes at the interface
+
+  const int ndim = DRT::Problem::Instance()->NDim();
+
+  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
+
+  // structure to fluid
+
+  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
+                                *FluidField().Discretization(),
+                                 FluidField().Interface()->FSICondMap(),
+                                "FSICoupling",
+                                 ndim);
+
+  // structure to ale
+
+  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->FSICondMap(),
+                                *AleField().Discretization(),
+                                 AleField().Interface()->FSICondMap(),
+                                "FSICoupling",
+                                 ndim);
+
+  // fluid to ale at the interface
+
+  icoupfa.SetupConditionCoupling(*FluidField().Discretization(),
+                                   FluidField().Interface()->FSICondMap(),
+                                   *AleField().Discretization(),
+                                   AleField().Interface()->FSICondMap(),
+                                   "FSICoupling",
+                                   ndim);
+
+  // In the following we assume that both couplings find the same dof
+  // map at the structural side. This enables us to use just one
+  // interface dof map for all fields and have just one transfer
+  // operator from the interface map to the full field map.
+  if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
+    dserror("structure interface dof maps do not match");
+
+  if (coupsf.MasterDofMap()->NumGlobalElements()==0)
+    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+
+  // the fluid-ale coupling always matches
+  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
+
+  coupfa.SetupCoupling(*FluidField().Discretization(),
+                       *AleField().Discretization(),
+                       *fluidnodemap,
+                       *alenodemap,
+                        ndim);
+
+  FluidField().SetMeshMap(coupfa.MasterDofMap());
+
+  return;
 }
 
 
