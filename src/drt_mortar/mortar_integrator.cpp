@@ -573,7 +573,7 @@ Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D
 
   // scalar product n1 * n2
   double n1n2 = 0.0;
-  for (int i=0;i<3;++i)
+  for (int i=0;i<2;++i)
     n1n2+=n[0][i]*n[1][i];
 
   // vector product n1 x n2
