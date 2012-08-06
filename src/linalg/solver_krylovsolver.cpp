@@ -167,7 +167,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     }
     else
     {
-      dserror( "unknown preconditioner" );
+      dserror( "unknown preconditioner for block matrix solver" );
     }
   }
 
