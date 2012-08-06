@@ -797,8 +797,8 @@ public:
   }
   double TimeScaling() const
   {
-    double dt = Dt();
-    double gamma = Gamma();
+    const double dt = Dt();
+    const double gamma = Gamma();
     return 1./(dt*dt*gamma);
   }
   Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
@@ -807,7 +807,7 @@ public:
 
     return ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
   }
-  Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity()
+  Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp()
   {
     return interface_->ExtractFSICondVector(Velnp());
   }
@@ -856,8 +856,8 @@ public:
     //                  = ( ( Delta a(n+1,i+1) * gamma * dt + u(n) ) * dt
     //
 
-    double dt = Dt();
-    double gamma = Gamma();
+    const double dt = Dt();
+    const double gamma = Gamma();
 
     // get interface velocity at t(n)
     Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
@@ -868,10 +868,17 @@ public:
     // reduce to Delta a(n+1,i+1)
     fcx->Scale(1./dt/gamma);
   }
+  /// Conversion of displacement to velocity at the interface considering predictors or inhomogeneous DBCs
+  void DisplacementToVelocity(
+      Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid displacement step increment
+      Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
+      Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
+  );
+
   void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
   {
-    double dt = Dt();
-    double gamma = Gamma();
+    const double dt = Dt();
+    const double gamma = Gamma();
 
     // get interface velocity at t(n)
     Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
@@ -879,6 +886,14 @@ public:
     fcx->Update(1.,*veln,dt*gamma);
     fcx->Scale(dt);
   }
+
+  /// Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
+  void VelocityToDisplacement(
+      Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid velocity step increment at interface
+      Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
+      Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
+  );
+
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape()
   {
     return interface_->ExtractFSICondVector(IntegrateInterfaceShape("FSICoupling"));

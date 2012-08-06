@@ -168,7 +168,7 @@ public:
 
   virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
-  virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }

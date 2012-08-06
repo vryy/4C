@@ -573,7 +573,7 @@ void FSI::MortarMonolithicStructureSplit::Update()
     AleField().ApplyInterfaceDisplacements(acx);
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
 
-    Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(FluidField().ExtractInterfaceFluidVelocity());
+    Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(FluidField().ExtractInterfaceVelnp());
     FluidField().ApplyInterfaceVelocities(unew);
   }
 

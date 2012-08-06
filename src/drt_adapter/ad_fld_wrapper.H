@@ -201,8 +201,8 @@ namespace ADAPTER
     { dserror("Not implemented in the base class, may be overridden by a subclass."); }
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
     { return fluid_->ApplyInterfaceVelocities(ivel); }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity()
-    { return fluid_->ExtractInterfaceFluidVelocity(); }
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp()
+    { return fluid_->ExtractInterfaceVelnp(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln()
     { return fluid_->ExtractInterfaceVeln(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()

@@ -419,8 +419,8 @@ namespace ADAPTER {
     //! @name Extract interface values
     /// Maybe we do not need all of them?
 
-    /// extract fluid velocity at the interface
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity() = 0;
+    /// extract fluid velocity at the interface from time step n+1
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() = 0;
 
     /// extract fluid velocity at the interface from time step n
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() = 0;
@@ -454,8 +454,22 @@ namespace ADAPTER {
     /// convert Delta d(n+1,i+1) to the fluid unknown at the interface
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
+    /// Conversion of displacement to velocity at the interface considering predictors or inhomogeneous DBCs
+    virtual void DisplacementToVelocity(
+        Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid displacement step increment at interface
+        Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
+        Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
+    ){ dserror("Not implemented in base class."); }
+
     /// convert the fluid unknown to Delta d(n+1,i+1) at the interface
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+
+    /// Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
+    virtual void VelocityToDisplacement(
+        Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid velocity step increment at interface
+        Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
+        Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
+    ){ dserror("Not implemented in base class."); }
 
     /// convert Delta d(n+1,i+1) to the fluid unknown at the free surface
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;

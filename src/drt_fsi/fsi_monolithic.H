@@ -123,12 +123,14 @@ namespace UTILS
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToAleInterface(Teuchos::RCP<Epetra_Vector> iv) const;
 
     virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToAleInterface(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
 
@@ -319,6 +321,19 @@ namespace UTILS
 
     /// add a status test to be used for adaptive linear solver convergence
     void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test) { statustests_.push_back(test); }
+
+    //! @name Predictor/inhomogeneous Dirichlet related stuff
+
+    /// flag is true if this is the first Newton iteration, false otherwise
+    bool firstcall_;
+
+    //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
+    Teuchos::RCP<Epetra_Vector> ddgpre_;
+
+    //! fluid velocity increment of interface DOFs due to predictor or inhomogeneous DBCs
+    Teuchos::RCP<Epetra_Vector> dugpre_;
+
+    //@}
 
   private:
 

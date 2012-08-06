@@ -133,21 +133,22 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceForces()
   return fluidimpl_->ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceFluidVelocity()
+/*----------------------------------------------------------------------*
+ | Return interface velocity at new time level n+1                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceVelnp()
 {
   return interface_->ExtractFSICondVector(fluidimpl_->Velnp());
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Return interface velocity at old time level n                        |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractInterfaceVeln()
 {
   return interface_->ExtractFSICondVector(fluidimpl_->Veln());
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -155,7 +156,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractFreeSurfaceVeln()
 {
   return Interface()->ExtractFSCondVector(fluidimpl_->Veln());
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -183,14 +183,12 @@ void ADAPTER::FluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> 
   fluidimpl_->UpdateGridv();
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
 {
   meshmap_->InsertCondVector(gridvel,fluidimpl_->ViewOfGridVel());
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -206,12 +204,47 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
-  // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
-  //
-  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
-  //
-  double timescale = TimeScaling();
+  /*
+   * Delta u(n+1,i+1) = fac * Delta d(n+1,i+1) - dt * u(n)
+   *
+   *             / = 2 / dt   if interface time integration is second order
+   * with fac = |
+   *             \ = 1 / dt   if interface time integration is first order
+   */
+  const double timescale = TimeScaling();
   fcx->Update(-timescale*fluidimpl_->Dt(),*veln,timescale);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::DisplacementToVelocity(
+    Teuchos::RCP<Epetra_Vector> fcx,
+    Teuchos::RCP<Epetra_Vector> ddgpre,
+    Teuchos::RCP<Epetra_Vector> dugpre
+)
+{
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().SameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().SameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
+#endif
+
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+
+  /*
+   * Delta u(n+1,i+1) = fac * [ Delta d(n+1,i+1) - dt * u_fluid(n) + Delta d_(predicted) ]
+   *
+   *                  - Delta u_fluid(predicted)
+   *
+   *             / = 2 / dt   if interface time integration is second order
+   * with fac = |
+   *             \ = 1 / dt   if interface time integration is first order
+   */
+  const double ts = TimeScaling();
+  const double dt = fluidimpl_->Dt();
+  fcx->Update(-dt*ts,*veln,ts,*ddgpre,ts);
+  fcx->Update(-1.0,*dugpre,1.0);
 }
 
 
@@ -222,12 +255,46 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
-  // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
-  //
-  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
-  //
-  double timescale = 1./TimeScaling();
+  /*
+   * Delta d(n+1,i+1) = fac * [Delta u(n+1,i+1) + 2 * u(n)]
+   *
+   *             / = dt / 2   if interface time integration is second order
+   * with fac = |
+   *             \ = dt       if interface time integration is first order
+   */
+  const double timescale = 1./TimeScaling();
   fcx->Update(fluidimpl_->Dt(),*veln,timescale);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::VelocityToDisplacement(
+    Teuchos::RCP<Epetra_Vector> fcx,
+    Teuchos::RCP<Epetra_Vector> ddgpre,
+    Teuchos::RCP<Epetra_Vector> dugpre
+)
+{
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().SameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().SameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
+#endif
+
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+
+  /*
+   * Delta d(n+1,i+1) = fac * [ Delta u(n+1,i+1) + Delta u(predicted)]
+   *
+   *                  + dt * u(n) - Delta d_structure(predicted)
+   *
+   *             / = dt / 2   if interface time integration is second order
+   * with fac = |
+   *             \ = dt       if interface time integration is first order
+   */
+  const double ts = 1.0/TimeScaling();
+  fcx->Update(fluidimpl_->Dt(), *veln, ts, *dugpre, ts);
+  fcx->Update(-1.0, *ddgpre, 1.0);
 }
 
 
@@ -246,7 +313,6 @@ void ADAPTER::FluidFSI::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vecto
   fcx->Update(-timescale*fluidimpl_->Dt(),*veln,timescale);
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
@@ -262,14 +328,12 @@ void ADAPTER::FluidFSI::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vecto
   fcx->Update(fluidimpl_->Dt(),*veln,timescale);
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::IntegrateInterfaceShape()
 {
   return interface_->ExtractFSICondVector(fluidimpl_->IntegrateInterfaceShape("FSICoupling"));
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -278,7 +342,6 @@ void ADAPTER::FluidFSI::UseBlockMatrix(bool splitmatrix)
   Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
   fluidimpl_->UseBlockMatrix(condelements,*Interface(),*Interface(),splitmatrix);
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -418,7 +481,6 @@ void ADAPTER::FluidFSI::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> ma
 {
   fluidimpl_->RemoveDirichCond(maptoremove);
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

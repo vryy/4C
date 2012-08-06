@@ -67,6 +67,8 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() { dserror("Not implemented, yet!");
+                                                                  return Teuchos::null; }
 
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);

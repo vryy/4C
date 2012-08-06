@@ -83,8 +83,10 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
+    /// Return interface velocity at new time level n+1
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
 
+    /// Return interface velocity at old time level n
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln();
@@ -99,9 +101,29 @@ namespace ADAPTER {
 
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 
-    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
+    /// Conversion of displacement to velocity at the interface without predictors or inhomogeneous DBCs
+    virtual void DisplacementToVelocity(
+        Teuchos::RCP<Epetra_Vector> fcx     ///< fluid displacement step increment
+    );
 
-    virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
+    /// Conversion of displacement to velocity at the interface considering predictors or inhomogeneous DBCs
+    virtual void DisplacementToVelocity(
+        Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid displacement step increment
+        Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
+        Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
+    );
+
+    /// Conversion of velocity to displacement at the interface without predictors or inhomogeneous DBCs
+    virtual void VelocityToDisplacement(
+        Teuchos::RCP<Epetra_Vector> fcx     ///< fluid velocity step increment at interface
+    );
+
+    /// Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
+    virtual void VelocityToDisplacement(
+        Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid velocity step increment at interface
+        Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
+        Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
+    );
 
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
 

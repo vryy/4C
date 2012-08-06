@@ -132,10 +132,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceFluidVelocity()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceVelnp()
 {
   dserror("Robin stuff");
-  return FluidField().ExtractInterfaceFluidVelocity();
+  return FluidField().ExtractInterfaceVelnp();
 }
 
 
@@ -145,7 +145,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceVeln()
 {
   return FluidField().ExtractInterfaceVeln();
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -176,6 +176,12 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<Epetra_
   return coupfa_->SlaveToMaster(iv);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return icoupfa_->MasterToSlave(iv);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -216,7 +222,12 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const E
   return coupfa_->SlaveToMaster(iv);
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return icoupfa_->MasterToSlave(iv);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -236,6 +247,11 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
+
+  firstcall_ = true;
+
+  ddgpre_ = Teuchos::null;
+  dugpre_ = Teuchos::null;
 }
 
 

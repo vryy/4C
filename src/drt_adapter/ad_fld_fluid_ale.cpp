@@ -225,9 +225,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceFluidVelocity()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceVelnp()
 {
-  return FluidField().ExtractInterfaceFluidVelocity();
+  return FluidField().ExtractInterfaceVelnp();
 }
 
 

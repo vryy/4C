@@ -79,7 +79,7 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 

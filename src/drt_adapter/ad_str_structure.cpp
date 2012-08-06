@@ -161,39 +161,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   {
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
-  // sanity checks and default flags
-  if (probtype == prb_fsi or
-      probtype == prb_fsi_lung or
-      probtype == prb_gas_fsi or
-      probtype == prb_biofilm_fsi or
-      probtype == prb_thermo_fsi or
-      probtype == prb_fluid_fluid_fsi)
-  {
-    // FSI input parameters
-    const Teuchos::ParameterList& fsidyn
-      = DRT::Problem::Instance()->FSIDynamicParams();
-
-    // check if predictor fits to FSI algo
-    int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
-    if ( (coupling == fsi_iter_monolithicfluidsplit)
-         or (coupling == fsi_iter_monolithicstructuresplit)
-         or (coupling == fsi_iter_lung_monolithicstructuresplit)
-         or (coupling == fsi_iter_lung_monolithicfluidsplit)
-         or (coupling == fsi_iter_constr_monolithicfluidsplit)
-         or (coupling == fsi_iter_constr_monolithicstructuresplit)
-         or (coupling == fsi_iter_mortar_monolithicfluidsplit)
-         or (coupling == fsi_iter_mortar_monolithicstructuresplit)
-         or (coupling == fsi_iter_fluidfluid_monolithicstructuresplit))
-    {
-      if ((DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
-          != INPAR::STR::pred_constdisvelacc) and
-          (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
-          != INPAR::STR::pred_constdisvelaccpres))
-      {
-        dserror("only constant structure predictor with monolithic FSI possible");
-      }
-    }
-  }
 
   // create a solver
   Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis);

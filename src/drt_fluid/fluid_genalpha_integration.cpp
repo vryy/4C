@@ -3455,3 +3455,66 @@ double FLD::FluidGenAlphaIntegration::TimIntParam() const
   }
   return retval;
 }
+
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+void FLD::FluidGenAlphaIntegration::DisplacementToVelocity(
+    Teuchos::RCP<Epetra_Vector> fcx,
+    Teuchos::RCP<Epetra_Vector> ddgpre,
+    Teuchos::RCP<Epetra_Vector> dugpre
+)
+{
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().SameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().SameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
+#endif
+
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+
+  /*
+   * Delta u(n+1,i+1) = fac * [ Delta d(n+1,i+1) - dt * u_fluid(n) + Delta d_(predicted) ]
+   *
+   *                  - Delta u_fluid(predicted)
+   *
+   *             / = 2 / dt   if interface time integration is second order
+   * with fac = |
+   *             \ = 1 / dt   if interface time integration is first order
+   */
+  const double ts = TimeScaling();
+  const double dt = Dt();
+  fcx->Update(-dt*ts,*veln,ts,*ddgpre,ts);
+  fcx->Update(-1.0,*dugpre,1.0);
+}
+
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+void FLD::FluidGenAlphaIntegration::VelocityToDisplacement(
+    Teuchos::RCP<Epetra_Vector> fcx,
+    Teuchos::RCP<Epetra_Vector> ddgpre,
+    Teuchos::RCP<Epetra_Vector> dugpre
+)
+{
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().SameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().SameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
+#endif
+
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+
+  /*
+   * Delta d(n+1,i+1) = fac * [ Delta u(n+1,i+1) + Delta u(predicted)]
+   *
+   *                  + dt * u(n) - Delta d_structure(predicted)
+   *
+   *             / = dt / 2   if interface time integration is second order
+   * with fac = |
+   *             \ = dt       if interface time integration is first order
+   */
+  const double ts = 1.0/TimeScaling();
+  fcx->Update(Dt(), *veln, ts, *dugpre, ts);
+  fcx->Update(-1.0, *ddgpre, 1.0);
+}
