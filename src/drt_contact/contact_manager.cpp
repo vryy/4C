@@ -465,12 +465,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("Parameter ct = 0, must be greater than 0 for frictional contact");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
-                                                   input.get<double>("FRBOUND") <= 0.0)
-    dserror("No valid Tresca friction bound provided, must be greater than 0");
+                                                   input.get<double>("FRBOUND") < 0.0)
+    dserror("No valid Tresca friction bound provided, must be >= 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb &&
-                                                   input.get<double>("FRCOEFF") <= 0.0)
-    dserror("No valid Coulomb friction coefficient provided, must be greater than 0");
+                                                   input.get<double>("FRCOEFF") < 0.0)
+    dserror("No valid Coulomb friction coefficient provided, must be >= 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
