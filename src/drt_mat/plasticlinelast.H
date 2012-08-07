@@ -6,11 +6,20 @@
        following ideal von Mises plasticity and a linear elastic material law
        (St.Venant Kirchhoff).
 
+       geometric linear, for small strains
+
        plastic materail with kinematic hardening
         - independent yield stress level of degree of plastification
         - constant uniaxial yield stress sigma_y = const.
 
-       geometric linear, for small strains
+       extend to linear isotropic hardening
+        - yield stress no longer constant, depends on level of accumulated
+          plastic strain, i.e. \f$ \sigma_y \,=\, \sigma_y(\bar{\strain}_p)\f$
+
+       example input line:
+       MAT 1 MAT_Struct_PlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
+         YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
+
 
 <pre>
 Maintainer: Caroline Danowski
@@ -61,7 +70,7 @@ namespace MAT
       const double isohard_;
       //! linear kinematic hardening modulus
       const double kinhard_;
-      // tolerance for local Newton iteration
+      //! tolerance for local Newton iteration
       const double abstol_;
 
       //@}
@@ -187,8 +196,7 @@ private:
       double Dgamma,  //!< plastic multiplier
       double G,  //!< shear modulus
       double q,  //!< effective stress
-      const LINALG::Matrix<NUM_STRESS_3D,1> flowvector,  //!< flow vector
-      const LINALG::Matrix<NUM_STRESS_3D,1> eta,  //!< relative stress
+      const LINALG::Matrix<NUM_STRESS_3D,1> Nbar,  // unit flow vector
       double heaviside,  //!< heaviside function: decide if loading/unloading
       double Hiso,  //!< isotropic hardening modulus
       double Hkin  //!< kinematic hardening modulus
