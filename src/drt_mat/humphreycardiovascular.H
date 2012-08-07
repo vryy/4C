@@ -181,16 +181,16 @@ private:
     double ShearMod() const {return params_->mue_;};
 
     /// return a1s
-    RCP<vector<vector<double> > > Geta1() const {return a1_;};
+    Teuchos::RCP<vector<vector<double> > > Geta1() const {return a1_;};
 
     /// return a2s
-    RCP<vector<vector<double> > > Geta2() const {return a2_;};
+    Teuchos::RCP<vector<vector<double> > > Geta2() const {return a2_;};
 
     /// return a3s
-    RCP<vector<vector<double> > > Geta3() const {return a3_;};
+    Teuchos::RCP<vector<vector<double> > > Geta3() const {return a3_;};
 
     /// return a4s
-    RCP<vector<vector<double> > > Geta4() const {return a4_;};
+    Teuchos::RCP<vector<vector<double> > > Geta4() const {return a4_;};
 
     /// evaluate fiber directions from locsys, pull back
     void EvaluateFiberVecs
@@ -205,14 +205,14 @@ private:
     MAT::PAR::HumphreyCardio* params_;
 
     // internal variables for fibers
-    RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp (reference), circumferential
-    RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp (reference), axial
-    RCP<vector<vector<double> > > a3_; ///< third fiber vector per gp (reference), diagonal
-    RCP<vector<vector<double> > > a4_; ///< fourth fiber vector per gp (reference), diagonal
-    RCP<vector<vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
-    RCP<vector<vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
-    RCP<vector<vector<double> > > ca3_; ///< third fiber vector per gp (spatial config)
-    RCP<vector<vector<double> > > ca4_; ///< fourth fiber vector per gp (spatial config)
+    Teuchos::RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp (reference), circumferential
+    Teuchos::RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp (reference), axial
+    Teuchos::RCP<vector<vector<double> > > a3_; ///< third fiber vector per gp (reference), diagonal
+    Teuchos::RCP<vector<vector<double> > > a4_; ///< fourth fiber vector per gp (reference), diagonal
+    Teuchos::RCP<vector<vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
+    Teuchos::RCP<vector<vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
+    Teuchos::RCP<vector<vector<double> > > ca3_; ///< third fiber vector per gp (spatial config)
+    Teuchos::RCP<vector<vector<double> > > ca4_; ///< fourth fiber vector per gp (spatial config)
 
     bool isinit_;  ///< indicates if material is initialized
 

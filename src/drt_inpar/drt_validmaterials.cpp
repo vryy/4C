@@ -379,6 +379,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "list/collection of materials, i.e. material IDs",
                                             INPAR::MAT::m_matlist));
 
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
+    //AddNamedInt(m,"LOCAL","individual materials allocated per element or only at global scope");
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
 

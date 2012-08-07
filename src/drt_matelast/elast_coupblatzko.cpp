@@ -21,6 +21,7 @@ Maintainer: Sophie Rausch
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_coupblatzko.H"
+#include "../drt_mat/matpar_material.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

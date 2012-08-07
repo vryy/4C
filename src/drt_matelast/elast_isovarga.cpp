@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_isovarga.H"
+#include "../drt_mat/matpar_material.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

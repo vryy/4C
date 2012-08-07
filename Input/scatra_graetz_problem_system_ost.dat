@@ -184,7 +184,9 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0
 MAT 2 MAT_scatra DIFFUSIVITY 0.001
 MAT 3 MAT_scatra DIFFUSIVITY 0.005
 MAT 4 MAT_scatra DIFFUSIVITY 0.01
-MAT 5 MAT_matlist NUMMAT 3 MATIDS 2 3 4
+// MAT 5 MAT_matlist LOCAL No NUMMAT 3 MATIDS 2 3 4
+// allocate materials individually per element: just for nightly testing!!
+MAT 5 MAT_matlist LOCAL Yes NUMMAT 3 MATIDS 2 3 4
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

@@ -17,6 +17,7 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include "Teuchos_RefCountPtr.hpp"
 #include "matpar_parameter.H"
+#include "matpar_material.H"
 
 
 /*----------------------------------------------------------------------*/

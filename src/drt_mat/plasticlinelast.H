@@ -26,6 +26,7 @@ Maintainer: Caroline Danowski
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {

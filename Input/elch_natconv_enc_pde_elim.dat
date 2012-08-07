@@ -243,7 +243,7 @@ MAT 1 MAT_fluid DYNVISCOSITY 1e-2 DENSITY 1.0
 MAT 2 MAT_ion DIFFUSIVITY 5e-6 VALENCE 1.0 DENSIFICATION 0.5
 MAT 3 MAT_ion DIFFUSIVITY 5e-6 VALENCE -2.0
 MAT 4 MAT_ion DIFFUSIVITY 1e-6 VALENCE 0.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 5.0e-6 ELIM_VALENCE -2.0
-MAT 5 MAT_matlist NUMMAT 2 MATIDS 2 4
+MAT 5 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 4
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0
 ----------------------------------------------------------------------CURVE2

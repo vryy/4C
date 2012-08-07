@@ -16,6 +16,7 @@ Maintainer: Andreas Nagler
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_coupanisoexpotwocoup.H"
+#include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 

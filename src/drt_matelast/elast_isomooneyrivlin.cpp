@@ -18,6 +18,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_isomooneyrivlin.H"
+#include "../drt_mat/matpar_material.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

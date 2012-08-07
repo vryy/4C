@@ -19,7 +19,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>
-#include "matpar_material.H"
+#include "../drt_inpar/inpar_material.H"
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */

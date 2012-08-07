@@ -89,7 +89,7 @@ SOLVER                          UMFPACK                         // Aztec_MSR vm3
 MAT 1 MAT_ion DIFFUSIVITY 0.006666666666666666666 VALENCE +2.0
 MAT 2 MAT_ion DIFFUSIVITY 0.02 VALENCE -2.0
 MAT 3 MAT_ion DIFFUSIVITY 0.003 VALENCE 1.0
-MAT 4 MAT_matlist NUMMAT 4 MATIDS 1 2 3 5
+MAT 4 MAT_matlist LOCAL No NUMMAT 4 MATIDS 1 2 3 5
 MAT 5 MAT_ion DIFFUSIVITY 0.01 VALENCE 0.0 // a non-charged scalar for comparison
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t-1.0 t1 0.0 t2 1000.0

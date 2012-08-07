@@ -169,17 +169,17 @@ namespace MAT
       const int gp,  ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      ParameterList& params   ///< parameter list
+      Teuchos::ParameterList& params   ///< parameter list
     );
 
     /// Return density
     virtual double Density() const {return params_->density_;}
 
     /// Return theta
-    RCP<vector<double> > Gettheta() const {return theta_;}
+    Teuchos::RCP<vector<double> > Gettheta() const {return theta_;}
 
     /// Return mandel stress
-    RCP<vector<double> > Getmandel() const {return mandel_;}
+    Teuchos::RCP<vector<double> > Getmandel() const {return mandel_;}
 
     /// Return elastic material
     Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
@@ -193,11 +193,11 @@ namespace MAT
     MAT::PAR::Growth* params_;
 
     /// growth stretch
-    RCP<vector<double> > theta_;
+    Teuchos::RCP<vector<double> > theta_;
     /// growth stretch old time step
-    RCP<vector<double> > thetaold_;
+    Teuchos::RCP<vector<double> > thetaold_;
     /// mandel stress
-    RCP<vector<double> > mandel_;
+    Teuchos::RCP<vector<double> > mandel_;
     /// elastic material
     Teuchos::RCP<MAT::Material> matelastic_;
     /// indicates if material is initialized
@@ -210,7 +210,7 @@ namespace MAT
       const int gp,   ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      ParameterList& params
+      Teuchos::ParameterList& params
     );
 
     /// Evaluate growth law

@@ -16,6 +16,7 @@ Maintainer: Sophie Rausch
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_isoexpopow.H"
+#include "../drt_mat/matpar_material.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

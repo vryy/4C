@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 // forward declaration due to avoid header definition
 namespace MAT

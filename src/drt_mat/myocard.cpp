@@ -246,7 +246,7 @@ void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
 // [8] Rush and Larsen - A practical algorithm for solving dynamic membrane equations
 // [9] ten Tusscher et. al. - A model for human ventricular tissue
 
-double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
+double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) const
 {
     // Phenomenological model [5]-[8]
 
@@ -287,7 +287,7 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |                                                           ljag 06/12 |
  *----------------------------------------------------------------------*/
-double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt)
+double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt) const
 {
     // Phenomenological model [5]-[8]
 

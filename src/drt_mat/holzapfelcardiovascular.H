@@ -171,10 +171,10 @@ private:
     double ShearMod() const {return params_->mue_;};
 
     /// return a1s
-    RCP<vector<vector<double> > > Geta1() const {return a1_;};
+    Teuchos::RCP<vector<vector<double> > > Geta1() const {return a1_;};
 
     /// return a2s
-    RCP<vector<vector<double> > > Geta2() const {return a2_;};
+    Teuchos::RCP<vector<vector<double> > > Geta2() const {return a2_;};
 
     /// evaluate fiber directions from locsys and alignment angle, pull back
     void EvaluateFiberVecs
@@ -189,10 +189,10 @@ private:
     MAT::PAR::HolzapfelCardio* params_;
 
     // internal variables for fibers
-    RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp (reference)
-    RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp (reference)
-    RCP<vector<vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
-    RCP<vector<vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
+    Teuchos::RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp (reference)
+    Teuchos::RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp (reference)
+    Teuchos::RCP<vector<vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
+    Teuchos::RCP<vector<vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
 
     bool isinit_;  ///< indicates if material is initialized
 

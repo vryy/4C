@@ -16,6 +16,12 @@ Maintainer: Robert Metzke
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
+// forward declarations
+namespace DRT
+{
+  class Container;
+}
+
 namespace MAT {
 
     namespace PAR {

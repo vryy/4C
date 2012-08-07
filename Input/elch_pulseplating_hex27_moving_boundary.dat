@@ -243,7 +243,7 @@ NAME                            ALE-Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
-MAT 2 MAT_matlist NUMMAT 3 MATIDS 3 4 5
+MAT 2 MAT_matlist LOCAL No NUMMAT 3 MATIDS 3 4 5
 MAT 3 MAT_ion DIFFUSIVITY 0.000423 VALENCE 2.0
 MAT 4 MAT_ion DIFFUSIVITY 0.001065 VALENCE -2.0
 MAT 5 MAT_ion DIFFUSIVITY 0.009312 VALENCE 1.0

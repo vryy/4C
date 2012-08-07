@@ -67,6 +67,7 @@ MAT::Ion::Ion(MAT::PAR::Ion* params)
 /*----------------------------------------------------------------------*/
 void MAT::Ion::Pack(DRT::PackBuffer& data) const
 {
+  {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
 
@@ -78,6 +79,21 @@ void MAT::Ion::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
+  }
+
+  /*
+  for (unsigned i=0;i<data().size();i++)
+  cout<<"Pack ION: pb["<<i<<"] = "<<(data())[i]<<endl;
+*/
+  /*
+  // extract type
+  vector<char>::size_type posit = 0;
+  vector<char> pbtest;
+  int typio = 0;
+  ExtractfromPack(posit,data(),typio);
+  cout<<"ION Pack: Type will be "<<typio<<endl;
+*/
+ // cout<<"Ion Pack: "<<data().size()<<endl;
 }
 
 
@@ -89,7 +105,7 @@ void MAT::Ion::Unpack(const vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  if (type != UniqueParObjectId()) dserror("wrong instance type data. type = %d, UniqueParObjectId()=%d",type,UniqueParObjectId());
 
   // matid and recover params_
   int matid;

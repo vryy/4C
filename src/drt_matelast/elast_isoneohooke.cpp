@@ -20,6 +20,7 @@ Maintainer: Sophie Rausch & Thomas Kloeppel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_isoneohooke.H"
+#include "../drt_mat/matpar_material.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

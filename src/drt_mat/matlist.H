@@ -36,22 +36,35 @@ namespace MAT
       /// destructor
       virtual ~MatList() { ; }
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
       /// @name material parameters
       //@{
 
-      /// provide access to material by its ID
-      Teuchos::RCP<const MAT::Material> MaterialById(const int id) const
-      {
-        std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+      /// provide ids of the individual materials
+      const std::vector<int>* MatIds() const {return matids_;}
 
-        if (m == mat_.end())
+      /// provide access to material by its ID
+      Teuchos::RCP<MAT::Material> MaterialById(const int id) const
+              {
+        if (not local_)
         {
-          dserror("Material %d could not be found", id);
-          return Teuchos::null;
+          std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+
+          if (m == mat_.end())
+          {
+            dserror("Material %d could not be found", id);
+            return Teuchos::null;
+          }
+          else
+            return m->second;
         }
         else
-          return m->second;
-      }
+          dserror("This is not allowed");
+
+        return Teuchos::null;
+              }
 
       /// length of material list
       const int nummat_;
@@ -59,12 +72,12 @@ namespace MAT
       /// the list of material IDs
       const std::vector<int>* matids_;
 
-      /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      /// flag for individual materials or only one at global scope
+      bool local_;
 
     private:
 
-      /// map to materials
+      /// map to materials (only used for local_==true)
       std::map<int,Teuchos::RCP<MAT::Material> > mat_;
 
       //@}
@@ -162,15 +175,40 @@ private:
     }
 
     /// provide access to material by its ID
-    Teuchos::RCP<const MAT::Material> MaterialById(const int id) const { return params_->MaterialById(id); }
+    Teuchos::RCP<MAT::Material> MaterialById(const int id) const
+    {
+      if (params_->local_)
+      {
+      std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+      if (m == mat_.end())
+      {
+        dserror("Material %d could not be found", id);
+        return Teuchos::null;
+      }
+      else
+        return m->second;
+      }
+      else // material is global (stored in material parameters)
+        return params_->MaterialById(id);
+     }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 
+    /// setup of material map
+    void SetupMatMap();
+
+    /// clear everything
+    void Clear();
+
     /// my material parameters
     MAT::PAR::MatList* params_;
+
+    /// map to materials
+    std::map<int,Teuchos::RCP<MAT::Material> > mat_;
+
   };
 
 }

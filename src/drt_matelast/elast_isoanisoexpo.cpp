@@ -18,6 +18,7 @@ Maintainer: Susanna Tinkl
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_isoanisoexpo.H"
+#include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/material_service.H"

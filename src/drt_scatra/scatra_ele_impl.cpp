@@ -898,13 +898,44 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   }
   case SCATRA::time_update_material:
   {
-    // access the material
-    RCP<MAT::Material> material = ele->Material();
-    if (material->MaterialType() == INPAR::MAT::m_myocard)
+    vector<Teuchos::RCP<MAT::Myocard> > updatemat;
+    updatemat.reserve(numscal_);
+
+    // access the general material
+    Teuchos::RCP<MAT::Material> material = ele->Material();
+
+    // first, determine the materials which need a time update, i.e. myocard materials
+    if (material->MaterialType() == INPAR::MAT::m_matlist)
     {
-      // reference to rcp not possible here, since the material is required to be
+      const Teuchos::RCP<MAT::MatList> actmat
+      = Teuchos::rcp_dynamic_cast<MAT::MatList>(material);
+      if (actmat->NumMat() < numscal_) dserror("Not enough materials in MatList.");
+
+      for (int k = 0;k<numscal_;++k)
+      {
+        const int matid = actmat->MatID(k);
+        Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+
+        if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
+        {
+          // reference to rcp not possible here, since the material is required to be
+          // not const for this application
+          updatemat.push_back(Teuchos::rcp_dynamic_cast<MAT::Myocard>(singlemat));
+        }
+      }
+    }
+    if (material->MaterialType() == INPAR::MAT::m_myocard)
+    {      // reference to rcp not possible here, since the material is required to be
       // not const for this application
-      Teuchos::RCP<MAT::Myocard> mat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
+      updatemat.push_back(Teuchos::rcp_dynamic_cast<MAT::Myocard>(material));
+    }
+
+    if (updatemat.size()>0) // found at least one material to be updated
+    {
+      // all materials in the matlist should be of the same kind
+      if (updatemat.size()!= (unsigned) numscal_) dserror("Not allowed");
+
+      // get time-step length
       const double dt   = params.get<double>("time-step length");
 
       // extract local values from the global vectors
@@ -929,8 +960,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
       EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
 
-      const double csnp = funct_.Dot(ephinp_[0]);
-      mat->Update(csnp, dt);
+      for (unsigned i=0;i<updatemat.size();i++)
+      {
+        const double csnp = funct_.Dot(ephinp_[i]); // be careful, we assume k==i here
+        updatemat[i]->Update(csnp, dt);
+      }
     }
     break;
   }
@@ -1920,6 +1954,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         const double phi = funct_.Dot(ephinp_[k]);
         reacterm_[k]=reacoeff_[k]*phi;
       }
+      else if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
+      {
+        Teuchos::RCP<const MAT::Myocard> actsinglemat
+        = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(singlemat);
+
+        dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
+
+        // set specific heat capacity at constant pressure to 1.0
+        shc_ = 1.0;
+
+        // compute diffusivity
+        diffus_[k] = actsinglemat->ComputeDiffusivity();
+
+        // set constant density
+        densnp_[k] = 1.0;
+        densam_[k] = 1.0;
+        densn_[k] = 1.0;
+        densgradfac_[k] = 0.0;
+
+        // set reaction flag to true
+        is_reactive_ = true;
+
+        // get reaction coeff. and set temperature rhs for reactive equation system to zero
+        const double csnp = funct_.Dot(ephinp_[k]);
+        reacoeffderiv_[k] = actsinglemat->ComputeReactionCoeffDeriv(csnp, dt);
+        reacterm_[k] = actsinglemat->ComputeReactionCoeff(csnp, dt);
+        reatemprhs_[k] = 0.0;
+      }
       else dserror("material type not allowed");
 
       // check whether there is negative (physical) diffusivity
@@ -2355,10 +2417,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_myocard)
       {
-        // reference to rcp not possible here, since the material is required to be
-        // not const for this application
-        Teuchos::RCP<MAT::Myocard> actmat
-          = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
+        const Teuchos::RCP<const MAT::Myocard>& actmat
+          = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
 
         dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
 

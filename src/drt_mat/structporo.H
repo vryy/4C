@@ -162,7 +162,7 @@ namespace MAT
       }
 
       /// return porosity at gausspoints
-      RCP< vector<double> > Porosity() const
+      Teuchos::RCP< vector<double> > Porosity() const
       {
         return porosity_;
       }
@@ -243,10 +243,10 @@ namespace MAT
       Teuchos::RCP<MAT::Material> mat_;
 
       /// porosity at gauss points
-      RCP<vector<double> > porosity_;
+      Teuchos::RCP<vector<double> > porosity_;
 
       /// porosity time derivative at gauss points
-      RCP<vector<double> > dporodt_;
+      Teuchos::RCP<vector<double> > dporodt_;
 
       /// porosity gradient at gauss points
       Teuchos::RCP<vector<LINALG::Matrix<3,1> > > gradporosity_;

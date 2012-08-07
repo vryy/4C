@@ -19,6 +19,7 @@ maintainer: Andreas Maier
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_isovolaaagasser.H"
+#include "../drt_mat/matpar_material.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*

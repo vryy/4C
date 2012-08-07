@@ -173,13 +173,13 @@ namespace MAT
 
 
 	/// diffusivity
-	double ComputeDiffusivity() const { return params_->diffusivity; }
+	double ComputeDiffusivity() const { if (params_ == NULL) dserror("UUUPS"); return params_->diffusivity; }
 
 	/// compute reaction coefficient
-	double ComputeReactionCoeff(const double phi, const double dt);
+	double ComputeReactionCoeff(const double phi, const double dt) const;
 
 	/// compute reaction coefficient derivative
-	double ComputeReactionCoeffDeriv(const double csnp, const double dt);
+	double ComputeReactionCoeffDeriv(const double csnp, const double dt) const;
 
 	/// compute Heaviside step function
 	double GatingFunction(const double Gate1, const double Gate2, const double var, const double thresh) const;
