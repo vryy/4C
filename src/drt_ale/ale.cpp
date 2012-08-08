@@ -196,7 +196,7 @@ void ALE::Ale::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
 void ALE::Ale::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
   // applying interface displacements
-  if(DRT::Problem::Instance()->ProblemName()!="structure_ale")
+  if(DRT::Problem::Instance()->ProblemType()!=prb_struct_ale)
     interface_->InsertFSICondVector(idisp,dispnp_);
   else
     interface_->InsertAleWearCondVector(idisp,dispnp_);

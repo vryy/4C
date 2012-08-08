@@ -1816,7 +1816,7 @@ void STR::TimIntImpl::UpdateIterIncrementally
 
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
   // not in the case of TSI with contact
-  if (DRT::Problem::Instance()->ProblemName()!="tsi")
+  if (DRT::Problem::Instance()->ProblemType()!=prb_tsi)
     if (HaveContactMeshtying() && disi != Teuchos::null)
       cmtman_->GetStrategy().Recover(disi_);
 

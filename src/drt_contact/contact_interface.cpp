@@ -84,7 +84,7 @@ tsi_(false)
     wear_ = true;
 
   // set thermo-structure-interaction with contact  
-  if (DRT::Problem::Instance()->ProblemName()=="tsi")
+  if (DRT::Problem::Instance()->ProblemType()==prb_tsi)
     tsi_ = true;
   
   // check for redundant slave storage

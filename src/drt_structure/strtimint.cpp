@@ -330,7 +330,7 @@ STR::TimInt::TimInt
 
 
   // check for structural problem with ale
-  if(DRT::Problem::Instance()->ProblemName() == "structure_ale")
+  if(DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
     dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
 
 
@@ -465,8 +465,9 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
 
     // print messages for multifield problems (e.g FSI)
-    const string probtype = DRT::Problem::Instance()->ProblemName();
-    if (probtype != "structure" && !myrank_)
+    const PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    const string probname = DRT::Problem::Instance()->ProblemName();
+    if (probtype != prb_structure && !myrank_)
     {
       // warnings
 #ifdef CONTACTPSEUDO2D
@@ -477,12 +478,12 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
            << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << endl;
 #endif // #ifdef CONTACTPSEUDO2D
 
-      if (probtype!="tsi")
+      if (probtype!=prb_tsi)
         cout << RED << "WARNING: Contact and Meshtying are still experimental "
-             << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
+             << "for the chosen problem type \"" << probname << "\"!\n" << END_COLOR << endl;
 
       // errors
-      if (probtype!="tsi" and probtype!="structure_ale")
+      if (probtype!=prb_tsi and probtype!=prb_struct_ale)
       {
         if (soltype == INPAR::CONTACT::solution_lagmult && (!semismooth || shapefcn != INPAR::MORTAR::shape_dual))
           dserror("ERROR: Multifield problems with LM strategy for meshtying/contact only for dual+semismooth case!");

@@ -2262,7 +2262,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   
   // flags for thermo-structure-interaction with contact
   bool tsi = false;
-    if (DRT::Problem::Instance()->ProblemName()=="tsi") tsi=true;
+    if (DRT::Problem::Instance()->ProblemType()==prb_tsi) tsi=true;
   bool friction = false;     // friction 
   bool thermolagmult = true; // thermal contact with or without LM
 

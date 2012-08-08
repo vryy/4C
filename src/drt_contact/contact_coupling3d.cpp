@@ -187,7 +187,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm = Teuchos::null;
       Teuchos::RCP<Epetra_SerialDenseMatrix> aseg = Teuchos::null;
       Teuchos::RCP<Epetra_SerialDenseMatrix> bseg = Teuchos::null;
-      if (DRT::Problem::Instance()->ProblemName()=="tsi")
+      if (DRT::Problem::Instance()->ProblemType()==prb_tsi)
       {
         mdisssegs = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
         mdisssegm = Teuchos::rcp(new Epetra_SerialDenseVector(ncol));
@@ -214,7 +214,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       
       // assemble of mechanical dissipation to slave and master nodes
       // and matrix A and B
-      if (DRT::Problem::Instance()->ProblemName()=="tsi")
+      if (DRT::Problem::Instance()->ProblemType()==prb_tsi)
       {  
         const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
         if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)

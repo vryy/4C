@@ -418,7 +418,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter list and problemtype from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  std::string problemtype = DRT::Problem::Instance()->ProblemName();
+  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
   int dim = DRT::Problem::Instance()->NDim();
 
   // *********************************************************************
@@ -527,18 +527,18 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // thermal-structure-interaction contact
   // *********************************************************************
   
-  if (problemtype=="tsi" &&
+  if (problemtype==prb_tsi &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
       DRT::INPUT::IntegralValue<int>(input,"THERMOLAGMULT")==false)
     dserror("Thermal contact without Lagrange Multipliers only for standard shape functions");
 
-  if (problemtype=="tsi" &&
+  if (problemtype==prb_tsi &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
       DRT::INPUT::IntegralValue<int>(input,"THERMOLAGMULT")==true)
     dserror("Thermal contact with Lagrange Multipliers only for dual shape functions");
   
   // no parallel redistribution in for thermal-structure-interaction
-  if (problemtype=="tsi" && 
+  if (problemtype==prb_tsi &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");  
 
