@@ -499,6 +499,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/drt_validconditions.cpp
   src/drt_inpar/drt_validmaterials.cpp
   src/drt_inpar/drt_validparameters.cpp
+  src/drt_inpar/inpar_problemtype.cpp
 )
 set(OBJS_DRT_ARTNET
   src/drt_art_net/art_net_dyn_drt.cpp
