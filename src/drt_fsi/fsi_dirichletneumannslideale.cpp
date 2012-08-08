@@ -7,6 +7,7 @@
 #include "../drt_geometry/searchtree.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_lib/drt_globalproblem.H"

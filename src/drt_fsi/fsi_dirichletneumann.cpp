@@ -2,6 +2,7 @@
 
 
 #include "fsi_dirichletneumann.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "fsi_debugwriter.H"
 #include "../drt_lib/drt_globalproblem.H"
 

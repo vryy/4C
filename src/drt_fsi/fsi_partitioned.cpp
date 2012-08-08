@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #include "fsi_partitioned.H"
 #include "fsi_utils.H"
 
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 

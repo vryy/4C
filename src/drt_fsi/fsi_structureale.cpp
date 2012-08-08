@@ -17,6 +17,7 @@ Maintainer: Thomas Kloeppel
 
 #include "fsi_structureale.H"
 
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 

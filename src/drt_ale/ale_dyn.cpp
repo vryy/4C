@@ -14,35 +14,20 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 
-#include "../drt_io/io_control.H"
 #include "ale_dyn.H"
 #include "ale.H"
 #include "ale_lin.H"
 #include "ale_resulttest.H"
 
-#ifdef PARALLEL
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 
-#include <Epetra_Time.h>
-#include <Teuchos_RefCountPtr.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
-#include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_io/io.H"
-
-
-
-using namespace std;
-using namespace Teuchos;
-
+#include <Teuchos_RefCountPtr.hpp>
 
 
 void dyn_ale_drt()
@@ -80,13 +65,13 @@ void dyn_ale_drt()
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for ALE problems. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
-  RefCountPtr<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+  Teuchos::RCP<LINALG::Solver> solver =
+    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  RefCountPtr<ParameterList> params = rcp(new ParameterList());
+  Teuchos::RCP<ParameterList> params = Teuchos::rcp(new ParameterList());
   params->set<int>("numstep", adyn.get<int>("NUMSTEP"));
   params->set<double>("maxtime", adyn.get<double>("MAXTIME"));
   params->set<double>("dt", adyn.get<double>("TIMESTEP"));
@@ -105,7 +90,7 @@ void dyn_ale_drt()
   ale.Integrate();
 
   // do the result test
-  DRT::Problem::Instance()->AddFieldTest(rcp(new ALE::AleResultTest(ale)));
+  DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new ALE::AleResultTest(ale)));
   DRT::Problem::Instance()->TestAll(actdis->Comm());
 }
 

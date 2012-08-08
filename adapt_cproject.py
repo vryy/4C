@@ -2,6 +2,7 @@
 
 import os
 import sys
+import subprocess
 
 try:
     from lxml import etree
@@ -61,15 +62,19 @@ def getPaths(build_folder):
             pathlist.add(l.split("=")[1][0:-1])
         if (l.find("Trilinos_DIR:FILEPATH=") > -1):
             pathlist.add(l.split("=")[1][0:-1]+"/../../../include")
-    pathlist.add("/usr/include/openmpi/1.2.4-gcc")
-    pathlist.add("/usr/include/openmpi-x86_64")
+    # check whether a 64-bit machine is used
+    version = subprocess.Popen(["uname","-r"], stdout=subprocess.PIPE).communicate()[0]
+    if 'x86_64' in version:
+    	pathlist.add("/usr/include/openmpi-x86_64")
+    else:
+    	pathlist.add("/usr/include/openmpi/1.2.4-gcc")
     
     # add compiler paths
     pathlist.update(getCompilerPaths())
     
     return pathlist
 
-def getSymbols(fname):
+def getSymbols(fname,build_type):
     """Get all defines flags from do-configure file"""
     f = open(fname,"r")
     symbollist = set()
@@ -80,18 +85,21 @@ def getSymbols(fname):
                 flags = words[1].split("=")
                 flag = flags[0]
                 status = flags[1]
-                valid_flag = flag[0:2] == "D_" \
-                          or flag[0:5] == "DEBUG" \
-                          or flag[0:5] == "QHULL" \
-                          or flag[0:5] == "BINIO"
+                valid_flag = flag[0:2] == "D_"
                 if valid_flag == True and status == "ON":
                     symbollist.add(flag.split(":")[0])
+
+    if build_type == "DEBUG":
+    	symbollist.add("DEBUG")
+    # flags that are set in CMakeLists.txt
     symbollist.add("PARALLEL")
     symbollist.add("PARMETIS")
+    symbollist.add("QHULL")
+    symbollist.add("BINIO")
     symbollist.add("HAVE_FFTW")
     return symbollist
 
-def adapt(do_configure_file,build_folder):
+def adapt(do_configure_file,build_folder,build_type):
     """update .cproject file if existing"""
 
     if os.path.isfile(".cproject"): # if file exists
@@ -103,7 +111,7 @@ def adapt(do_configure_file,build_folder):
         pathlist = [x for x in pathset]
         pathlist.sort()
         #print pathlist
-        symbolset=getSymbols(do_configure_file)
+        symbolset=getSymbols(do_configure_file,build_type)
         symbollist = [x for x in symbolset]
         symbollist.sort()
         #print symbollist
@@ -148,4 +156,4 @@ def adapt(do_configure_file,build_folder):
         print "++ Update of .cproject file done"
 
 if __name__=='__main__':
-    adapt(sys.argv[1],sys.argv[2])
+    adapt(sys.argv[1],sys.argv[2],sys.argv[3])

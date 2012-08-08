@@ -23,9 +23,15 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_ale.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
+
+
+/// forward declarations
+namespace ADAPTER
+{
+  class FSIStructureWrapper;
+}
 
 
 namespace FSI
@@ -82,10 +88,7 @@ namespace FSI
     virtual void Update();
 
     /// calculate stresses, strains, energies
-    virtual void PrepareOutput()
-    {
-      StructureField()->PrepareOutput();
-    }
+    virtual void PrepareOutput();
 
     /// write output
     virtual void Output();

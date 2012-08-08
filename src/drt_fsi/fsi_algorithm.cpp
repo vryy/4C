@@ -88,6 +88,14 @@ void FSI::Algorithm::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FSI::Algorithm::PrepareOutput()
+{
+  StructureField()->PrepareOutput();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::Algorithm::Output()
 {
   // Note: The order is important here! In here control file entries are
