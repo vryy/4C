@@ -41,6 +41,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/micromaterial.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_comm/comm_utils.H"
+#include "../drt_inpar/inpar_problemtype.H"
 
 #include "../drt_io/io_control.H"
 
@@ -124,8 +125,16 @@ PROBLEM_TYP DRT::Problem::ProblemType() const
 /*----------------------------------------------------------------------*/
 std::string DRT::Problem::ProblemName() const
 {
-  static const char* problemnames[] = PROBLEMNAMES;
-  return problemnames[probtype_];
+  std::map<std::string,PROBLEM_TYP> map = DRT::StringToProblemTypeMap();
+  std::map<std::string,PROBLEM_TYP>::const_iterator i;
+
+  for (i = map.begin(); i != map.end();++i)
+  {
+    if (i->second == probtype_)
+      return i->first;
+  }
+  dserror("Could not determine valid problem name");
+  return "Undefined";
 }
 
 
