@@ -701,10 +701,10 @@ bool STR::TimIntImpl::Converged()
     convdis = normdisi_ < toldisi_;
     break;
   case INPAR::STR::convnorm_rel:
-    convdis = normdisi_/normchardis_ < toldisi_;
+  	convdis = normdisi_ < std::max(normchardis_*toldisi_,1e-15);
     break;
   case INPAR::STR::convnorm_mix:
-    convdis = ( (normdisi_ < toldisi_) or (normdisi_/normchardis_ < toldisi_) );
+  	convdis = ( (normdisi_ < toldisi_) or (normdisi_ < std::max(normchardis_*toldisi_,1e-15)) );
     break;
   default:
     dserror("Cannot check for convergence of residual displacements!");
@@ -718,10 +718,10 @@ bool STR::TimIntImpl::Converged()
     convfres = normfres_ < tolfres_;
     break;
   case INPAR::STR::convnorm_rel:
-    convfres = normfres_/normcharforce_ < tolfres_;
+  	convfres = normfres_ < std::max(tolfres_*normcharforce_,1e-15);
     break;
   case INPAR::STR::convnorm_mix:
-    convfres = ( (normfres_ < tolfres_) or (normfres_/normcharforce_ < tolfres_) );
+  	convfres = ( (normfres_ < tolfres_) or (normfres_ < std::max(tolfres_*normcharforce_,1e-15)) );
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
