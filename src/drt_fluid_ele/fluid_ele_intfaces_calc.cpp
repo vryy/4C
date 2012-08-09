@@ -51,14 +51,14 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
   {
     return FluidIntFaceImpl<DRT::Element::tri6>::Instance();
   }
-//  case DRT::Element::line2:
-//  {
-//    return FluidIntFaceImpl<DRT::Element::line2>::Instance();
-//  }
-//  case DRT::Element::line3:
-//  {
-//    return FluidIntFaceImpl<DRT::Element::line3>::Instance();
-//  }
+  case DRT::Element::line2:
+  {
+    return FluidIntFaceImpl<DRT::Element::line2>::Instance();
+  }
+  case DRT::Element::line3:
+  {
+    return FluidIntFaceImpl<DRT::Element::line3>::Instance();
+  }
 //  case DRT::Element::nurbs2:    // 1D nurbs boundary element
 //  {
 //    return FluidIntFaceImpl<DRT::Element::nurbs2>::Instance();
@@ -144,6 +144,16 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   const bool assemblemat = systemmatrix!=Teuchos::null;
   const bool assemblevec = systemvector!=Teuchos::null;
 
+  //--------------------------------------------------------
+  /// number of space dimensions of the FluidIntFace element
+  static const int facensd = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  /// number of space dimensions of the parent element
+  static const int nsd = facensd+1;
+
+  /// number of dof's per node
+  static const int numdofpernode = nsd + 1;
+
 
   //----------------------- create patchlm -----------------
 
@@ -174,8 +184,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
 
   // patch_lm for Velx,Vely,Velz, Pres field
-  vector<vector<int> >patch_components_lm(4);
-  vector<vector<int> >patch_components_lmowner(4);
+  vector<vector<int> >patch_components_lm(numdofpernode);
+  vector<vector<int> >patch_components_lmowner(numdofpernode);
 
   // modify the patch owner to the owner of the internal face element
   vector<int> patchlm_owner;
@@ -184,8 +194,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   for(unsigned i=0; i<lm_patch.size(); i++)
   {
     // i%4 yields the Velx,Vely,Velz,Pres field
-    patch_components_lm[(i%4)].push_back(lm_patch[i]);
-    patch_components_lmowner[(i%4)].push_back(owner);
+    patch_components_lm[(i%numdofpernode)].push_back(lm_patch[i]);
+    patch_components_lmowner[(i%numdofpernode)].push_back(owner);
 
     patchlm_owner.push_back(owner);
   }
@@ -193,10 +203,9 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   int numnodeinpatch = patch_components_lm[0].size();
 
 #ifdef DEBUG
-  if((int)(patch_components_lm[0].size()) != numnodeinpatch) dserror("patch_components_lm[0] has wrong size");
-  if((int)(patch_components_lm[1].size()) != numnodeinpatch) dserror("patch_components_lm[1] has wrong size");
-  if((int)(patch_components_lm[2].size()) != numnodeinpatch) dserror("patch_components_lm[2] has wrong size");
-  if((int)(patch_components_lm[3].size()) != numnodeinpatch) dserror("patch_components_lm[3] has wrong size");
+  for(int isd=0; isd < numdofpernode; isd++)
+  if((int)(patch_components_lm[isd].size()) != numnodeinpatch) dserror("patch_components_lm[%d] has wrong size", isd);
+
 #endif
 
   //------------- create and evaluate block element matrics -----------------
@@ -218,15 +227,21 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
   if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_uvwp)
   {
-    numblocks=4; // 4 blocks =  u-u block, v-v block, w-w block and p-p block
+    // 3D: 4 blocks =  u-u block, v-v block, w-w block and p-p block
+    // 2D: 3 blocks =  u-u block, v-v block and p-p block
+    numblocks=numdofpernode;
   }
   else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_up)
   {
-    numblocks=10; // 10 blocks = 3x3 u-u blocks + 1x1 p-p block
+    // 3D: 10 blocks = 3x3 u-u blocks + 1x1 p-p block
+    // 3D: 5 blocks  = 2x2 u-u blocks + 1x1 p-p block
+    numblocks=nsd*nsd+1; // 10 blocks = 3x3 u-u blocks + 1x1 p-p block
   }
   else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_full)
   {
-    numblocks=16; // 16 blocks = 4x4 u-p blocks
+    // 3D: 16 blocks = 4x4 uvwp blocks
+    // 2D: 9  blocks = 3x3 uvp blocks
+    numblocks=numdofpernode*numdofpernode;
   }
 
   else dserror("unknown matrix pattern");
@@ -239,9 +254,9 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     elemat_blocks[b].Shape(numnodeinpatch,numnodeinpatch);
   }
 
-  elevec_blocks.resize(4); // 4 vectors for u,v,w,p components
+  elevec_blocks.resize(numdofpernode); // 3D: 4 vectors for u,v,w,p components, 2D: 3 vectors for u,v,p
 
-  for(int b=0; b<4; b++)
+  for(int b=0; b<numdofpernode; b++)
   {
     elevec_blocks[b].Size(numnodeinpatch);
   }
@@ -268,29 +283,34 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     {
       if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_uvwp)
       {
-        for(int ij=0; ij<4; ij++)
+#if(1)
+        for(int ij=0; ij<numdofpernode; ij++)
         {
           systemmatrix->FEAssemble(-1, elemat_blocks[ij], patch_components_lm[ij], patch_components_lmowner[ij], patch_components_lm[ij]);
         }
+#else // assemble only pressure block
+        int ij=nsd;
+          systemmatrix->FEAssemble(-1, elemat_blocks[ij], patch_components_lm[ij], patch_components_lmowner[ij], patch_components_lm[ij]);
+#endif
       }
       else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_up)
       {
-        for(int i=0; i<3; i++)
+        for(int i=0; i<nsd; i++)
         {
-          for(int j=0; j<3; j++)
+          for(int j=0; j<nsd; j++)
           {
-            systemmatrix->FEAssemble(-1, elemat_blocks[i*3+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
+            systemmatrix->FEAssemble(-1, elemat_blocks[i*nsd+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
           }
         }
-        systemmatrix->FEAssemble(-1, elemat_blocks[9], patch_components_lm[3], patch_components_lmowner[3], patch_components_lm[3]);
+        systemmatrix->FEAssemble(-1, elemat_blocks[nsd*nsd], patch_components_lm[nsd], patch_components_lmowner[nsd], patch_components_lm[nsd]);
       }
       else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_full)
       {
-        for(int i=0; i<4; i++)
+        for(int i=0; i<numdofpernode; i++)
         {
-          for(int j=0; j<4; j++)
+          for(int j=0; j<numdofpernode; j++)
           {
-            systemmatrix->FEAssemble(-1, elemat_blocks[i*4+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
+            systemmatrix->FEAssemble(-1, elemat_blocks[i*numdofpernode+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
           }
         }
       }
@@ -310,7 +330,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     // do not exclude non-row nodes (modify the real owner to myowner)
     // after assembly the col vector it has to be exported to the row residual_ vector
     // using the 'Add' flag to get the right value for shared nodes
-    for(int i=0; i<4; i++)
+    for(int i=0; i<numdofpernode; i++)
     {
       LINALG::Assemble(*systemvector,elevec_blocks[i],patch_components_lm[i],patch_components_lmowner[i]);
     }

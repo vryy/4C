@@ -4227,6 +4227,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
   case INPAR::FLUID::channel2D:
   case INPAR::FLUID::shear_flow:
   case INPAR::FLUID::jeffery_hamel_flow:
+  case INPAR::FLUID::byfunct1:
   {
 
     // call loop over elements (assemble nothing)

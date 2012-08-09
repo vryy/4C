@@ -49,6 +49,7 @@ static inline void elementToCurrentCoordinatesInPlaceT(
 
 
 
+
 /*----------------------------------------------------------------------*
  | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
@@ -907,6 +908,106 @@ static void CurrentToLineElementCoordinates(
     dserror("please add your line element type here");
   }
 }
+
+
+
+/*----------------------------------------------------------------------*
+ | GM:      transforms a point in global coordinates        schott 07/12|
+ |          into local element coordinates                              |
+ *----------------------------------------------------------------------*/
+//template <DRT::Element::DiscretizationType DISTYPE>
+template<DRT::Element::DiscretizationType DISTYPE>
+static bool ComputeLocalCoordinates(
+    LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim, DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>&  xyze,
+    LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,1>&                  x,
+    LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,1>&                  xsi
+    )
+{
+  bool inelement = true;
+
+  const int nsd_ = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+  const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  const int maxiter = 20;
+  double residual = 1.0;
+
+  LINALG::Matrix<nsd_,nsd_> A;
+  LINALG::Matrix<nsd_,nsd_> A_inv;
+
+  LINALG::Matrix<nsd_,1> b;
+  LINALG::Matrix<nsd_,1> dx;
+
+  //initialize != 0
+  dx(0)=1.0;
+
+  LINALG::Matrix<numNodes,1> funct;
+  LINALG::Matrix<nsd_, numNodes> deriv1;
+
+
+  // initial guess
+  startingValueCurrentToElementCoords<DISTYPE>(xsi);
+
+  // update rhs b= -(x(xi)-x_point)
+  DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+
+  for (int isd = 0; isd < nsd_; ++isd)
+  {
+      b(isd) = x(isd);
+      for (int inode = 0; inode < numNodes; ++inode)
+          b(isd) -= xyze(isd,inode) * funct(inode);
+  }
+
+
+  // newton loop
+  int iter = 0;
+  while(residual > GEO::TOL12 && dx.Norm2()> GEO::TOL12)
+  {
+    DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
+
+    // get the jacobian
+    A.Clear();
+    for (int isd = 0; isd < nsd_; ++isd)
+      for (int jsd = 0; jsd < nsd_; ++jsd)
+        for (int inode = 0; inode < numNodes; ++inode)
+          A(isd,jsd) += xyze(isd,inode) * deriv1(jsd,inode);
+
+    const double det = A_inv.Invert(A);
+
+    if(fabs(det)< GEO::TOL14)
+    {
+      dserror("determinant is near zero %d", det);
+    }
+
+    dx.Multiply(A_inv,b);
+
+    // update of local coordinates
+    for(int i=0; i< nsd_; i++)
+      xsi(i,0) += dx(i);
+
+    // update rhs b= -(x(xi)-x_point)
+    DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
+    for (int isd = 0; isd < nsd_; ++isd)
+    {
+        b(isd) = x(isd);
+        for (int inode = 0; inode < numNodes; ++inode)
+            b(isd) -= xyze(isd,inode) * funct(inode);
+    }
+
+    residual = b.Norm2();
+    iter++;
+
+    if(iter >= maxiter || xsi.Norm2()>GEO::TOLPLUS8)
+    {
+      inelement = false;
+      break;
+    }
+  }
+
+  inelement = checkPositionWithinElementParameterSpace(xsi, DISTYPE);
+
+  return inelement;
+}
+
 
 
 } // namespace GEO

@@ -30,7 +30,10 @@ Maintainer: Benedikt Schott
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 
+#include "../drt_geometry/element_coordtrafo.H"
+
 #include "../drt_lib/drt_discret.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_cut/cut_position.H"
@@ -71,11 +74,54 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
     }
   }
+  // 3D:
+  case DRT::Element::quad8:
+  {
+
+    if(    surfele->ParentMasterElement()->Shape()==DRT::Element::hex20
+        && surfele->ParentSlaveElement()->Shape()== DRT::Element::hex20)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::quad8,DRT::Element::hex20,DRT::Element::hex20>::Instance();
+    }
+    else
+    {
+      dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
+    }
+  }
   // 2D:
   case DRT::Element::line2:
   {
-    dserror("Edgebased stabilization not implemented for 2D elements!");
-    break;
+    if(    surfele->ParentMasterElement()->Shape()==DRT::Element::quad4
+        && surfele->ParentSlaveElement()->Shape()== DRT::Element::quad4)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::line2,DRT::Element::quad4,DRT::Element::quad4>::Instance();
+    }
+    else if(    surfele->ParentMasterElement()->Shape()==DRT::Element::tri3
+             && surfele->ParentSlaveElement()->Shape()== DRT::Element::tri3)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::line2,DRT::Element::tri3,DRT::Element::tri3>::Instance();
+    }
+    else
+    {
+      dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
+    }
+  }
+  case DRT::Element::line3:
+  {
+    if(    surfele->ParentMasterElement()->Shape()==DRT::Element::quad8
+        && surfele->ParentSlaveElement()->Shape()== DRT::Element::quad8)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::line3,DRT::Element::quad8,DRT::Element::quad8>::Instance();
+    }
+    else if(    surfele->ParentMasterElement()->Shape()==DRT::Element::quad9
+             && surfele->ParentSlaveElement()->Shape()== DRT::Element::quad9)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::line3,DRT::Element::quad9,DRT::Element::quad9>::Instance();
+    }
+    else
+    {
+      dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
+    }
   }
   default:
     dserror("shape %d (%d nodes) not supported by internalfaces stabilization", surfele->Shape(), surfele->NumNode());
@@ -138,6 +184,7 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype,ndistype>::FluidInternalSurfaceStab()
+: intpoints_(distype)
 {
   // pointer to class FluidImplParameter (access to the general parameter)
   fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
@@ -215,8 +262,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   int slave_numdof  = lm_slaveToPatch.size();
   int face_numdof   = lm_faceToPatch.size();
 
-  if(master_numdof != 4*piel) dserror("wrong number of master dofs");
-  if(slave_numdof  != 4*niel) dserror("wrong number of slave dofs");
+  if(master_numdof != numdofpernode_*piel) dserror("wrong number of master dofs");
+  if(slave_numdof  != numdofpernode_*niel) dserror("wrong number of slave dofs");
 
   //---------------------------------------------------
   // create element matrices for each block of same component
@@ -224,13 +271,13 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   const int ndofinpatch = (int)patchlm.size();
 
   // element matrices in block structure master vs. slave
-  LINALG::Matrix<4*piel, 4*piel>  elematrix_mm(true);         // element matrix master-master block
-  LINALG::Matrix<4*piel, 4*niel>  elematrix_ms(true);         // element matrix master-slave block
-  LINALG::Matrix<4*niel, 4*piel>  elematrix_sm(true);         // element matrix slave-master block
-  LINALG::Matrix<4*niel, 4*niel>  elematrix_ss(true);         // element matrix slave-slave block
+  LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>  elematrix_mm(true);         // element matrix master-master block
+  LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>  elematrix_ms(true);         // element matrix master-slave block
+  LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>  elematrix_sm(true);         // element matrix slave-master block
+  LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>  elematrix_ss(true);         // element matrix slave-slave block
 
-  LINALG::Matrix<4*piel, 1>  elevector_m(true);          // element vector master block
-  LINALG::Matrix<4*niel, 1>  elevector_s(true);          // element vector slave block
+  LINALG::Matrix<numdofpernode_*piel, 1>  elevector_m(true);          // element vector master block
+  LINALG::Matrix<numdofpernode_*niel, 1>  elevector_s(true);          // element vector slave block
 
 
   //-----------------------------------------------------------------------
@@ -392,14 +439,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double max_vel_L2_norm = 0.0;
 
   // get the L_inf-norm of the parent's element velocity for stabilization
-  for(int r=0; r<3; r++)
+  for(int r=0; r<nsd_; r++)
   {
     for(int c=0; c<piel; c++)
     {
       if( fabs(pevelnp_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(pevelnp_(r,c));
     }
   }
-  for(int r=0; r<3; r++)
+  for(int r=0; r<nsd_; r++)
   {
     for(int c=0; c<niel; c++)
     {
@@ -408,30 +455,12 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   }
 
 
-  //--------------------------------------------------
-  // get gausspoints to integrate over face element
-
-  // get gauss rule
-  DRT::UTILS::GaussRule2D gaussrule=DRT::UTILS::intrule2D_undefined;
-  switch (distype)
-  {
-  case DRT::Element::quad4:
-  {
-    gaussrule = DRT::UTILS::intrule_quad_4point;
-    break;
-  }
-  default:
-    dserror("invalid discretization type for FluidInternalSurfaceStabilization");
-  }
-
-  // gaussian points on surface
-  DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
-
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (int iquad=0;iquad<intpoints.nquad;++iquad)
+
+  for(DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
 
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: gauss point loop" );
@@ -447,11 +476,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     if( use2ndderiv )
     {
-      fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, pele->Id(), nele->Id(), true);
+      fac = EvalShapeFuncAndDerivsAtIntPoint(iquad, pele->Id(), nele->Id(), true);
     }
     else
     {
-      fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, pele->Id(), nele->Id());
+      fac = EvalShapeFuncAndDerivsAtIntPoint(iquad, pele->Id(), nele->Id());
     }
 
 
@@ -465,7 +494,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     //                +-----
     //                node j
     //
-    for(int rr=0;rr<3;++rr)
+    for(int rr=0;rr<nsd_;++rr)
     {
       velintnp_(rr)=pfunct_(0)*pevelnp_(rr,0);
       for(int nn=1;nn<piel;++nn)
@@ -510,7 +539,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     //                 +-----
     //                 node j
     //
-    for(int rr=0;rr<3;++rr)
+    for(int rr=0;rr<nsd_;++rr)
     {
       velintaf_(rr)=pfunct_(0)*pevelaf_(rr,0);
       for(int nn=1;nn<piel;++nn)
@@ -533,9 +562,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     //
     // j : direction of derivative x/y/z
     //
-    for(int rr=0;rr<3;++rr)
+    for(int rr=0;rr<nsd_;++rr)
     {
-      for(int mm=0;mm<3;++mm)
+      for(int mm=0;mm<nsd_;++mm)
       {
         // parent element
         pvderxyaf_(rr,mm)=pderxy_(mm,0)*pevelaf_(rr,0);
@@ -556,7 +585,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     //-----------------------------------------------------
 
-    LINALG::Matrix<3,3> vderxyaf_diff(true);
+    LINALG::Matrix<nsd_,nsd_> vderxyaf_diff(true);
     vderxyaf_diff.Update(1.0, nvderxyaf_, -1.0, pvderxyaf_);
 
 
@@ -576,9 +605,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       //
       // jl : direction of derivative xx/yy/zz/xy/xz/yz
       //
-      for(int rr=0;rr<3;++rr)
+      for(int rr=0;rr<nsd_;++rr)
       {
-        for(int mm=0;mm<6;++mm)
+        for(int mm=0;mm<numderiv2_p;++mm)
         {
           // parent element
           pvderxy2af_(rr,mm)=pderxy2_(mm,0)*pevelaf_(rr,0);
@@ -586,7 +615,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
           {
             pvderxy2af_(rr,mm)+=pderxy2_(mm,nn)*pevelaf_(rr,nn);
           }
+        }
 
+        for(int mm=0;mm<numderiv2_n;++mm)
+        {
           // neighbor element
           nvderxy2af_(rr,mm)=nderxy2_(mm,0)*nevelaf_(rr,0);
           for(int nn=1;nn<niel;++nn)
@@ -683,7 +715,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 )
     {
 
-      LINALG::Matrix<3,1> conv_diff(true);
+      LINALG::Matrix<nsd_,1> conv_diff(true);
       conv_diff.Multiply(vderxyaf_diff,velintaf_);
 
 
@@ -738,10 +770,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
   int numblocks = elemat_blocks.size();
 
-  if(numblocks == 4)
+  if(numblocks == 4 or numblocks == 3)
   {
-    // reassemble u-u, v-v, w-w and p-p block
-    for(int ijdim = 0; ijdim < 4; ijdim++)
+    // 3D: reassemble u-u, v-v, w-w and p-p block
+    // 2D: reassemble u-u, v-v and p-p block
+    for(int ijdim = 0; ijdim < numblocks; ijdim++)
     {
       ReassembleMATBlock(ijdim,ijdim,
                          elemat_blocks[ijdim],
@@ -760,10 +793,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                          lm_slaveNodeToPatch);
     }
   }
-  else if(numblocks == 10)
+  else if(numblocks == 10 or numblocks == 5)
   {
-    // reassemble uvw blocks
-    for(int idim = 0; idim < 3; idim++)
+    // 3D: reassemble uvw blocks
+    // 2D: reassemble uv  blocks
+    for(int idim = 0; idim < nsd_; idim++)
     {
       ReassembleRHSBlock(idim,
                          elevec_blocks[idim],
@@ -772,11 +806,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                          lm_masterNodeToPatch,
                          lm_slaveNodeToPatch);
 
-      for(int jdim = 0; jdim < 3; jdim++)
+      for(int jdim = 0; jdim < nsd_; jdim++)
       {
         ReassembleMATBlock(idim,
                            jdim,
-                           elemat_blocks[idim*3+jdim],
+                           elemat_blocks[idim*nsd_+jdim],
                            elematrix_mm,
                            elematrix_ms,
                            elematrix_sm,
@@ -786,28 +820,30 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       }
     }
 
+
     // reassemble p-p block
-    ReassembleMATBlock(3,
-                       3,
-                       elemat_blocks[9],
+    ReassembleMATBlock(nsd_,
+                       nsd_,
+                       elemat_blocks[numblocks-1],
                        elematrix_mm,
                        elematrix_ms,
                        elematrix_sm,
                        elematrix_ss,
                        lm_masterNodeToPatch,
                        lm_slaveNodeToPatch);
-    ReassembleRHSBlock(3,
-                       elevec_blocks[3],
+    ReassembleRHSBlock(nsd_,
+                       elevec_blocks[nsd_],
                        elevector_m,
                        elevector_s,
                        lm_masterNodeToPatch,
                        lm_slaveNodeToPatch);
 
   }
-  else if(numblocks == 16)
+  else if(numblocks == 16 or numblocks == 9)
   {
-    // reassemble all u-p blocks
-    for(int idim = 0; idim < 4; idim++)
+    // 3D: reassemble all uvwp blocks
+    // 2D: reassemble all uvp blocks
+    for(int idim = 0; idim < numdofpernode_; idim++)
     {
       ReassembleRHSBlock(idim,
                          elevec_blocks[idim],
@@ -816,11 +852,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                          lm_masterNodeToPatch,
                          lm_slaveNodeToPatch);
 
-      for(int jdim=0; jdim < 4; jdim++)
+      for(int jdim=0; jdim < numdofpernode_; jdim++)
       {
         ReassembleMATBlock(idim,
                            jdim,
-                           elemat_blocks[idim*4+jdim],
+                           elemat_blocks[idim*numdofpernode_+jdim],
                            elematrix_mm,
                            elematrix_ms,
                            elematrix_sm,
@@ -846,28 +882,28 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::ReassembleMATBlock(
-    int                                               row_block,     ///< row block
-    int                                               col_block,     ///< column block
-    Epetra_SerialDenseMatrix&                         mat_block,     ///< matrix block
-    LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-    LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-    LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-    LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-    std::vector<int>&                                 lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-    std::vector<int>&                                 lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+     int                                                          row_block,     ///< row block
+     int                                                          col_block,     ///< column block
+     Epetra_SerialDenseMatrix&                                    mat_block,     ///< matrix block
+     LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&    elematrix_mm,  ///< element matrix master-master block
+     LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&    elematrix_ms,  ///< element matrix master-slave block
+     LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&    elematrix_sm,  ///< element matrix slave-master block
+     LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&    elematrix_ss,  ///< element matrix slave-slave block
+     std::vector<int>&                                            lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+     std::vector<int>&                                            lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
     )
 {
 
   // master row
   for (int vi=0; vi<piel; ++vi)
   {
-    int ridx = vi*4+row_block;
+    int ridx = vi*numdofpernode_+row_block;
     int rpatch =lm_masterNodeToPatch[vi];
 
     //master col
     for (int ui=0; ui<piel; ++ui)
     {
-      int cidx = ui*4+col_block;
+      int cidx = ui*numdofpernode_+col_block;
       int cpatch =lm_masterNodeToPatch[ui];
 
       mat_block(rpatch,cpatch) += elematrix_mm(ridx ,cidx);
@@ -876,13 +912,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Reasse
   // slave row
   for (int vi=0; vi<niel; ++vi)
   {
-    int ridx = vi*4+row_block;
+    int ridx = vi*numdofpernode_+row_block;
     int rpatch = lm_slaveNodeToPatch[vi];
 
     //master col
     for (int ui=0; ui<piel; ++ui)
     {
-      int cidx = ui*4+col_block;
+      int cidx = ui*numdofpernode_+col_block;
       int cpatch = lm_masterNodeToPatch[ui];
 
       mat_block(rpatch,cpatch) += elematrix_sm(ridx ,cidx);
@@ -891,13 +927,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Reasse
   // master row
   for (int vi=0; vi<piel; ++vi)
   {
-    int ridx = vi*4+row_block;
+    int ridx = vi*numdofpernode_+row_block;
     int rpatch = lm_masterNodeToPatch[vi];
 
     // slave col
     for (int ui=0; ui<niel; ++ui)
     {
-      int cidx = ui*4+col_block;
+      int cidx = ui*numdofpernode_+col_block;
       int cpatch = lm_slaveNodeToPatch[ui];
 
       mat_block(rpatch,cpatch) += elematrix_ms(ridx ,cidx);
@@ -906,13 +942,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Reasse
   // slave row
   for (int vi=0; vi<niel; ++vi)
   {
-    int ridx = vi*4+row_block;
+    int ridx = vi*numdofpernode_+row_block;
     int rpatch = lm_slaveNodeToPatch[vi];
 
     // slave col
     for (int ui=0; ui<niel; ++ui)
     {
-      int cidx = ui*4+col_block;
+      int cidx = ui*numdofpernode_+col_block;
       int cpatch = lm_slaveNodeToPatch[ui];
 
       mat_block(rpatch,cpatch) += elematrix_ss(ridx ,cidx);
@@ -931,19 +967,19 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::ReassembleRHSBlock(
-    int                            row_block,            ///< row block
-    Epetra_SerialDenseVector&      rhs_block,            ///< rhs block
-    LINALG::Matrix<4*piel, 1>&     elevector_m,          ///< element vector master block
-    LINALG::Matrix<4*niel, 1>&     elevector_s,          ///< element vector slave block
-    std::vector<int>&              lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-    std::vector<int>&              lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+    int                                         row_block,            ///< row block
+    Epetra_SerialDenseVector&                   rhs_block,            ///< rhs block
+    LINALG::Matrix<numdofpernode_*piel, 1>&     elevector_m,          ///< element vector master block
+    LINALG::Matrix<numdofpernode_*niel, 1>&     elevector_s,          ///< element vector slave block
+    std::vector<int>&                           lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+    std::vector<int>&                           lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
     )
 {
 
   // master row
   for (int vi=0; vi<piel; ++vi)
   {
-    int ridx = vi*4+row_block;
+    int ridx = vi*numdofpernode_+row_block;
     int rpatch =lm_masterNodeToPatch[vi];
 
     rhs_block(rpatch) += elevector_m(ridx);
@@ -951,7 +987,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Reasse
   // slave row
   for (int vi=0; vi<niel; ++vi)
   {
-    int ridx = vi*4+row_block;
+    int ridx = vi*numdofpernode_+row_block;
     int rpatch = lm_slaveNodeToPatch[vi];
 
     rhs_block(rpatch) += elevector_s(ridx);
@@ -970,8 +1006,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetElementData(
     FluidIntFace*              surfele,          ///< surface FluidIntFace element
-    Fluid*                    master_ele,       ///< master parent element
-    Fluid*                    slave_ele,        ///< slave  parent element
+    Fluid*                     master_ele,       ///< master parent element
+    Fluid*                     slave_ele,        ///< slave  parent element
     double &                   kinvisc,          ///< patch kinematic viscosity
     double &                   dens,             ///< patch density
     vector<double>&            mypvelaf,         ///< master velaf
@@ -993,61 +1029,60 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
   // extract intermediate velocities
   for(int i=0;i<piel;++i)
   {
-    const int fi=4*i;
+    const int fi=numdofpernode_*i;
 
-    pevelaf_(0,i) = mypvelaf[  fi];
-    pevelaf_(1,i) = mypvelaf[1+fi];
-    pevelaf_(2,i) = mypvelaf[2+fi];
+    for(int j=0; j<nsd_; ++j)
+      pevelaf_(j,i) = mypvelaf[j+fi];
+
   }
 
   // extract current velocities and pressure
   for(int i=0;i<piel;++i)
   {
-    const int fi=4*i;
+    const int fi=numdofpernode_*i;
 
-    pevelnp_(0,i) = mypvelnp[  fi];
-    pevelnp_(1,i) = mypvelnp[1+fi];
-    pevelnp_(2,i) = mypvelnp[2+fi];
+    for(int j=0; j<nsd_; ++j)
+      pevelnp_(j,i) = mypvelnp[j+fi];
 
-    peprenp_(  i) = mypvelnp[3+fi];
+    peprenp_(  i) = mypvelnp[nsd_+fi];
   }
 
   if (master_ele->IsAle())
   {
     for (int i=0;i<piel;++i)
     {
-      const int fi=4*i;
+      const int fi=numdofpernode_*i;
 
-      pedispnp_(0,i) = mypedispnp[  fi];
-      pedispnp_(1,i) = mypedispnp[1+fi];
-      pedispnp_(2,i) = mypedispnp[2+fi];
+      for(int j=0; j<nsd_; ++j)
+        pedispnp_(j,i) = mypedispnp[j+fi];
+
     }
 
     for (int i=0;i<iel;++i)
     {
-      const int fi=4*i;
+      const int fi=numdofpernode_*i;
 
-      edispnp_(0,i) = myedispnp[  fi];
-      edispnp_(1,i) = myedispnp[1+fi];
-      edispnp_(2,i) = myedispnp[2+fi];
+      for(int j=0; j<nsd_; ++j)
+        edispnp_(j,i) = myedispnp[j+fi];
+
     }
   }
 
   // extract node coords
   for(int i=0;i<piel;++i)
   {
-    pxyze_(0,i)=master_ele->Nodes()[i]->X()[0];
-    pxyze_(1,i)=master_ele->Nodes()[i]->X()[1];
-    pxyze_(2,i)=master_ele->Nodes()[i]->X()[2];
+    for(int j=0; j<nsd_; ++j)
+      pxyze_(j,i) = master_ele->Nodes()[i]->X()[j];
+
   }
 
   if (master_ele->IsAle())
   {
     for (int i=0;i<piel;++i)
     {
-      pxyze_(0,i) += pedispnp_(0,i);
-      pxyze_(1,i) += pedispnp_(1,i);
-      pxyze_(2,i) += pedispnp_(2,i);
+      for(int j=0; j<nsd_; ++j)
+        pxyze_(j,i) += pedispnp_(j,i);
+
     }
   }
 
@@ -1060,34 +1095,33 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
   // extract intermediate velocities
   for(int i=0;i<niel;++i)
   {
-    const int fi=4*i;
+    const int fi=numdofpernode_*i;
 
-    nevelaf_(0,i) = mynvelaf[  fi];
-    nevelaf_(1,i) = mynvelaf[1+fi];
-    nevelaf_(2,i) = mynvelaf[2+fi];
+    for(int j=0; j<nsd_; ++j)
+      nevelaf_(j,i) = mynvelaf[j+fi];
+
   }
 
   // extract current velocities and pressure
   for(int i=0;i<niel;++i)
   {
-    const int fi=4*i;
+    const int fi=numdofpernode_*i;
 
-    nevelnp_(0,i) = mynvelnp[  fi];
-    nevelnp_(1,i) = mynvelnp[1+fi];
-    nevelnp_(2,i) = mynvelnp[2+fi];
+    for(int j=0; j<nsd_; ++j)
+      nevelnp_(j,i) = mynvelnp[j+fi];
 
-    neprenp_(  i) = mynvelnp[3+fi];
+    neprenp_(  i) = mynvelnp[nsd_+fi];
   }
 
   if (slave_ele->IsAle())
   {
     for (int i=0;i<niel;++i)
     {
-      const int fi=4*i;
+      const int fi=numdofpernode_*i;
 
-      nedispnp_(0,i) = mynedispnp[  fi];
-      nedispnp_(1,i) = mynedispnp[1+fi];
-      nedispnp_(2,i) = mynedispnp[2+fi];
+      for(int j=0; j<nsd_; ++j)
+        nedispnp_(j,i) = mynedispnp[j+fi];
+
     }
 
   }
@@ -1095,18 +1129,18 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
   // extract node coords
   for(int i=0;i<niel;++i)
   {
-    nxyze_(0,i)=slave_ele->Nodes()[i]->X()[0];
-    nxyze_(1,i)=slave_ele->Nodes()[i]->X()[1];
-    nxyze_(2,i)=slave_ele->Nodes()[i]->X()[2];
+    for(int j=0; j<nsd_; ++j)
+      nxyze_(j,i) = slave_ele->Nodes()[i]->X()[j];
+
   }
 
   if (slave_ele->IsAle())
   {
     for (int i=0;i<niel;++i)
     {
-      nxyze_(0,i) += nedispnp_(0,i);
-      nxyze_(1,i) += nedispnp_(1,i);
-      nxyze_(2,i) += nedispnp_(2,i);
+      for(int j=0; j<nsd_; ++j)
+        nxyze_(j,i) += nedispnp_(j,i);
+
     }
   }
 
@@ -1174,18 +1208,18 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
   // extract node coords
   for(int i=0;i<iel;++i)
   {
-    xyze_(0,i)=surfele->Nodes()[i]->X()[0];
-    xyze_(1,i)=surfele->Nodes()[i]->X()[1];
-    xyze_(2,i)=surfele->Nodes()[i]->X()[2];
+    for(int j=0; j<nsd_; ++j)
+      xyze_(j,i) = surfele->Nodes()[i]->X()[j];
+
   }
 
   if (surfele->ParentMasterElement()->IsAle())
   {
     for (int i=0;i<iel;++i)
     {
-      xyze_(0,i) += edispnp_(0,i);
-      xyze_(1,i) += edispnp_(1,i);
-      xyze_(2,i) += edispnp_(2,i);
+      for(int j=0; j<nsd_; ++j)
+        xyze_(j,i) += edispnp_(j,i);
+
     }
   }
 
@@ -1203,11 +1237,10 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvalShapeFuncAndDerivsAtIntPoint(
-    DRT::UTILS::IntegrationPoints2D&  intpoints,     ///< reference to 2D integration points
-    int                               iquad,         ///< actual integration point
-    int                               master_eid,    ///< master parent element
-    int                               slave_eid,      ///< slave parent element
-    bool                              use2ndderiv
+    DRT::UTILS::GaussIntegration::iterator & iquad,         ///< actual integration point
+    int                                      master_eid,    ///< master parent element
+    int                                      slave_eid,     ///< slave parent element
+    bool                                     use2ndderiv    ///< flag to use 2nd order derivatives
 )
 {
 
@@ -1215,143 +1248,64 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
 
 
   // gaussian weight
-  const double wquad = intpoints.qwgt[iquad];
+  const double wquad = iquad.Weight();
 
   // gaussian point in boundary elements local coordinates
-  const double xi    = intpoints.qxg [iquad][0];
-  const double eta   = intpoints.qxg [iquad][1];
-
+  const double* gpcoord = iquad.Point();
+  for (int idim=0;idim<facensd_;idim++)
+  {
+     xsi_(idim) = gpcoord[idim];
+  }
 
   if(!(distype == DRT::Element::nurbs9))
   {
     // ------------------------------------------------
     // shape function derivs of boundary element at gausspoint
-    DRT::UTILS::shape_function_2D       (funct_,xi,eta,distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv_,xi,eta,distype);
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
   }
   else
   {
     dserror("not implemented for nurbs");
   }
 
-  LINALG::Matrix<3,1> x_gp(true);
+  LINALG::Matrix<nsd_,1> x_gp(true);
   x_gp.Multiply(xyze_, funct_);
 
   //---------------
-
   // compute local coordinates with respect to slave element
-  GEO::CUT::Position<ndistype> n_pos( nxyze_, x_gp );
-  n_pos.Compute();
-  const LINALG::Matrix<3,1> & nqxg = n_pos.LocalCoordinates();
+  LINALG::Matrix<nsd_,1> nqxg(true);
 
+  bool inelement_n = GEO::ComputeLocalCoordinates<ndistype>(nxyze_, x_gp, nqxg);
 
-  // gaussian point in neighbor elements local coordinates
-  const double nr     = nqxg(0);
-  const double ns     = nqxg(1);
-  const double nt     = nqxg(2);
+  if(!inelement_n) dserror("point does not lie in element");
+
 
   //---------------
-
   // compute local coordinates with respect to master element
-  GEO::CUT::Position<pdistype> p_pos( pxyze_, x_gp );
-  p_pos.Compute();
-  const LINALG::Matrix<3,1> & pqxg = p_pos.LocalCoordinates();
 
+  LINALG::Matrix<nsd_,1> pqxg(true);
+  bool inelement_p = GEO::ComputeLocalCoordinates<pdistype>(pxyze_, x_gp, pqxg);
 
-  // gaussian point in neighbor elements local coordinates
-  const double pr     = pqxg(0);
-  const double ps     = pqxg(1);
-  const double pt     = pqxg(2);
+  if(!inelement_p) dserror("point does not lie in element");
+
 
   // ------------------------------------------------
   // compute measure tensor for surface element and the infinitesimal
   // area element drs for the integration
-
-  /*
-      |                                              0 1 2
-      |                                             +-+-+-+
-      |       0 1 2              0...iel-1          | | | | 0
-      |      +-+-+-+             +-+-+-+-+          +-+-+-+
-      |      | | | | 1           | | | | | 0        | | | | .
-      |      +-+-+-+       =     +-+-+-+-+       *  +-+-+-+ .
-      |      | | | | 2           | | | | | 1        | | | | .
-      |      +-+-+-+             +-+-+-+-+          +-+-+-+
-      |                                             | | | | iel-1
-      |                                             +-+-+-+
-      |
-      |       dxyzdrs             deriv              xyze^T
-      |
-      |
-      |                                 +-            -+
-      |                                 | dx   dy   dz |
-      |                                 | --   --   -- |
-      |                                 | dr   dr   dr |
-      |     yields           dxyzdrs =  |              |
-      |                                 | dx   dy   dz |
-      |                                 | --   --   -- |
-      |                                 | ds   ds   ds |
-      |                                 +-            -+
-      |
-   */
-  dxyzdrs_.MultiplyNT(deriv_,xyze_);
-  /*
-      |
-      |      +-           -+    +-            -+   +-            -+ T
-      |      |             |    | dx   dy   dz |   | dx   dy   dz |
-      |      |  g11   g12  |    | --   --   -- |   | --   --   -- |
-      |      |             |    | dr   dr   dr |   | dr   dr   dr |
-      |      |             |  = |              | * |              |
-      |      |             |    | dx   dy   dz |   | dx   dy   dz |
-      |      |  g21   g22  |    | --   --   -- |   | --   --   -- |
-      |      |             |    | ds   ds   ds |   | ds   ds   ds |
-      |      +-           -+    +-            -+   +-            -+
-      |
-      | the calculation of g21 is redundant since g21=g12
-   */
-  metrictensor_.MultiplyNT(dxyzdrs_,dxyzdrs_);
-
-  /*
-                          +--------------+
-                         /               |
-           sqrtdetg =   /  g11*g22-g12^2
-                      \/
-   */
-
-  drs_= sqrt(metrictensor_(0,0)*metrictensor_(1,1)
-           - metrictensor_(0,1)*metrictensor_(1,0));
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>( xyze_,deriv_, metrictensor_, drs_, &n_ );
 
 
   // total integration factor
   const double fac = drs_*wquad;
-
-  // ------------------------------------------------
-  // compute normal
-  if(distype!=DRT::Element::nurbs9)
-  {
-    double length = 0.0;
-    n_(0) = (xyze_(1,1)-xyze_(1,0))*(xyze_(2,2)-xyze_(2,0))
-           -(xyze_(2,1)-xyze_(2,0))*(xyze_(1,2)-xyze_(1,0));
-    n_(1) = (xyze_(2,1)-xyze_(2,0))*(xyze_(0,2)-xyze_(0,0))
-           -(xyze_(0,1)-xyze_(0,0))*(xyze_(2,2)-xyze_(2,0));
-    n_(2) = (xyze_(0,1)-xyze_(0,0))*(xyze_(1,2)-xyze_(1,0))
-           -(xyze_(1,1)-xyze_(1,0))*(xyze_(0,2)-xyze_(0,0));
-
-    length = n_.Norm2();
-
-    for(int i=0;i<3;++i)
-    {
-      n_(i)/=length;
-    }
-  }
-  else dserror("not implemented for nurbs");
 
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
   if(!(pdistype == DRT::Element::nurbs27))
   {
-    DRT::UTILS::shape_function_3D       (pfunct_,pr,ps,pt,pdistype);
-    DRT::UTILS::shape_function_3D_deriv1(pderiv_,pr,ps,pt,pdistype);
+    DRT::UTILS::shape_function<pdistype>       (pqxg, pfunct_);
+    DRT::UTILS::shape_function_deriv1<pdistype>(pqxg, pderiv_);
   }
   else dserror("not implemented for nurbs");
 
@@ -1360,8 +1314,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
   // shape functions and derivs of corresponding parent at gausspoint
   if(!(ndistype == DRT::Element::nurbs27))
   {
-    DRT::UTILS::shape_function_3D       (nfunct_,nr,ns,nt,ndistype);
-    DRT::UTILS::shape_function_3D_deriv1(nderiv_,nr,ns,nt,ndistype);
+    DRT::UTILS::shape_function<ndistype>       (nqxg, nfunct_);
+    DRT::UTILS::shape_function_deriv1<ndistype>(nqxg, nderiv_);
   }
   else dserror("not implemented for nurbs");
 
@@ -1369,8 +1323,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
 
   if( use2ndderiv )
   {
-    DRT::UTILS::shape_function_3D_deriv2(pderiv2_,pr,ps,pt,pdistype);
-    DRT::UTILS::shape_function_3D_deriv2(nderiv2_,pr,ps,pt,ndistype);
+    DRT::UTILS::shape_function_deriv2<pdistype>(pqxg, pderiv2_);
+    DRT::UTILS::shape_function_deriv2<ndistype>(nqxg, nderiv2_);
   }
 
   //-----------------------------------------------------
@@ -1379,22 +1333,16 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
 
   for(int i=0;i<piel;++i)
   {
-    for(int rr=0;rr<3;++rr)
+    for(int rr=0;rr<nsd_;++rr)
     {
-      for(int mm=0;mm<3;++mm)
+      for(int mm=0;mm<nsd_;++mm)
       {
         pxjm_(rr,mm)+=pderiv_(rr,i)*pxyze_(mm,i);
       }
     }
   }
 
-  const double pdet =
-      pxjm_(0,0)*pxjm_(1,1)*pxjm_(2,2)+
-      pxjm_(0,1)*pxjm_(1,2)*pxjm_(2,0)+
-      pxjm_(0,2)*pxjm_(1,0)*pxjm_(2,1)-
-      pxjm_(0,2)*pxjm_(1,1)*pxjm_(2,0)-
-      pxjm_(0,0)*pxjm_(1,2)*pxjm_(2,1)-
-      pxjm_(0,1)*pxjm_(1,0)*pxjm_(2,2);
+  const double pdet = pxji_.Invert(pxjm_);
 
   // check for degenerated elements
   if (pdet < 0.0)
@@ -1408,95 +1356,23 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
 
   for(int i=0;i<niel;++i)
   {
-    for(int rr=0;rr<3;++rr)
+    for(int rr=0;rr<nsd_;++rr)
     {
-      for(int mm=0;mm<3;++mm)
+      for(int mm=0;mm<nsd_;++mm)
       {
         nxjm_(rr,mm)+=nderiv_(rr,i)*nxyze_(mm,i);
       }
     }
   }
 
-  const double ndet =
-      nxjm_(0,0)*nxjm_(1,1)*nxjm_(2,2)+
-      nxjm_(0,1)*nxjm_(1,2)*nxjm_(2,0)+
-      nxjm_(0,2)*nxjm_(1,0)*nxjm_(2,1)-
-      nxjm_(0,2)*nxjm_(1,1)*nxjm_(2,0)-
-      nxjm_(0,0)*nxjm_(1,2)*nxjm_(2,1)-
-      nxjm_(0,1)*nxjm_(1,0)*nxjm_(2,2);
+  const double ndet = nxji_.Invert(nxjm_);
+
 
   // check for degenerated elements
   if (ndet < 0.0)
   {
     dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", slave_eid, ndet);
   }
-
-
-  //-----------------------------------------------------
-  //
-  //             compute global first derivates
-  //
-  /*
-    Use the Jacobian and the known derivatives in element coordinate
-    directions on the right hand side to compute the derivatives in
-    global coordinate directions
-
-          +-                 -+     +-    -+      +-    -+
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |     | ---- |      | ---- |
-          |  dr    dr    dr   |     |  dx  |      |  dr  |
-          |                   |     |      |      |      |
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
-          |  ds    ds    ds   |     |  dy  |      |  ds  |
-          |                   |     |      |      |      |
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |     | ---- |      | ---- |
-          |  dt    dt    dt   |     |  dz  |      |  dt  |
-          +-                 -+     +-    -+      +-    -+
-
-   */
-
-  // inverse of jacobian (transposed)
-  /*
-          +-                 -+     +-                 -+ -1
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |     |  --    --    --   |
-          |  dx    dx    dx   |     |  dr    dr    dr   |
-          |                   |     |                   |
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |  =  |  --    --    --   |
-          |  dy    dy    dy   |     |  ds    ds    ds   |
-          |                   |     |                   |
-          |  dr    ds    dt   |     |  dx    dy    dz   |
-          |  --    --    --   |     |  --    --    --   |
-          |  dz    dz    dz   |     |  dt    dt    dt   |
-          +-                 -+     +-                 -+
-
-   */
-  // master element
-  pxji_(0,0) = (  pxjm_(1,1)*pxjm_(2,2) - pxjm_(2,1)*pxjm_(1,2))/pdet;
-  pxji_(1,0) = (- pxjm_(1,0)*pxjm_(2,2) + pxjm_(2,0)*pxjm_(1,2))/pdet;
-  pxji_(2,0) = (  pxjm_(1,0)*pxjm_(2,1) - pxjm_(2,0)*pxjm_(1,1))/pdet;
-  pxji_(0,1) = (- pxjm_(0,1)*pxjm_(2,2) + pxjm_(2,1)*pxjm_(0,2))/pdet;
-  pxji_(1,1) = (  pxjm_(0,0)*pxjm_(2,2) - pxjm_(2,0)*pxjm_(0,2))/pdet;
-  pxji_(2,1) = (- pxjm_(0,0)*pxjm_(2,1) + pxjm_(2,0)*pxjm_(0,1))/pdet;
-  pxji_(0,2) = (  pxjm_(0,1)*pxjm_(1,2) - pxjm_(1,1)*pxjm_(0,2))/pdet;
-  pxji_(1,2) = (- pxjm_(0,0)*pxjm_(1,2) + pxjm_(1,0)*pxjm_(0,2))/pdet;
-  pxji_(2,2) = (  pxjm_(0,0)*pxjm_(1,1) - pxjm_(1,0)*pxjm_(0,1))/pdet;
-
-  //slave element
-  nxji_(0,0) = (  nxjm_(1,1)*nxjm_(2,2) - nxjm_(2,1)*nxjm_(1,2))/ndet;
-  nxji_(1,0) = (- nxjm_(1,0)*nxjm_(2,2) + nxjm_(2,0)*nxjm_(1,2))/ndet;
-  nxji_(2,0) = (  nxjm_(1,0)*nxjm_(2,1) - nxjm_(2,0)*nxjm_(1,1))/ndet;
-  nxji_(0,1) = (- nxjm_(0,1)*nxjm_(2,2) + nxjm_(2,1)*nxjm_(0,2))/ndet;
-  nxji_(1,1) = (  nxjm_(0,0)*nxjm_(2,2) - nxjm_(2,0)*nxjm_(0,2))/ndet;
-  nxji_(2,1) = (- nxjm_(0,0)*nxjm_(2,1) + nxjm_(2,0)*nxjm_(0,1))/ndet;
-  nxji_(0,2) = (  nxjm_(0,1)*nxjm_(1,2) - nxjm_(1,1)*nxjm_(0,2))/ndet;
-  nxji_(1,2) = (- nxjm_(0,0)*nxjm_(1,2) + nxjm_(1,0)*nxjm_(0,2))/ndet;
-  nxji_(2,2) = (  nxjm_(0,0)*nxjm_(1,1) - nxjm_(1,0)*nxjm_(0,1))/ndet;
-
-
 
   //-----------------------------------------------------
   // compute global derivates at integration point
@@ -1514,11 +1390,11 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
   // master element
   for(int nn=0;nn<piel;++nn)
   {
-    for(int rr=0;rr<3;++rr)
+    for(int rr=0;rr<nsd_;++rr)
     {
       pderxy_(rr,nn)=pxji_(rr,0)*pderiv_(0,nn);
 
-      for(int mm=1;mm<3;++mm)
+      for(int mm=1;mm<nsd_;++mm)
       {
         pderxy_(rr,nn)+=pxji_(rr,mm)*pderiv_(mm,nn);
       }
@@ -1528,11 +1404,11 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
   // slave element
   for(int nn=0;nn<niel;++nn)
   {
-    for(int rr=0;rr<3;++rr)
+    for(int rr=0;rr<nsd_;++rr)
     {
       nderxy_(rr,nn)=nxji_(rr,0)*nderiv_(0,nn);
 
-      for(int mm=1;mm<3;++mm)
+      for(int mm=1;mm<nsd_;++mm)
       {
         nderxy_(rr,nn)+=nxji_(rr,mm)*nderiv_(mm,nn);
       }
@@ -1562,17 +1438,18 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostPenalty(
-            LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                    timefacfac,
-            double &                                          tau_grad,
-            bool &                                            ghost_penalty,
-            bool &                                            ghost_penalty_reconstruct,
-            bool &                                            use2ndderiv)
+            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
+            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
+            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
+            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
+            LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
+            LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
+            const double &                                                timefacfac,
+            double &                                                      tau_grad,
+            bool &                                                        ghost_penalty,
+            bool &                                                        ghost_penalty_reconstruct,
+            bool &                                                        use2ndderiv
+)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: GhostPenalty" );
@@ -1593,54 +1470,54 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
     // parent column
     for (int ui=0; ui<piel; ++ui)
     {
-      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+      for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
       {
-        int col = ui*4+ijdim;
+        int col = ui*numdofpernode_+ijdim;
 
         // v_parent * u_parent
         //parent row
         for (int vi=0; vi<piel; ++vi)
         {
-          elematrix_mm(vi*4+ijdim, col) += tau_timefacfac*p_normal_deriv(vi)*p_normal_deriv(ui);
+          elematrix_mm(vi*numdofpernode_+ijdim, col) += tau_timefacfac*p_normal_deriv(vi)*p_normal_deriv(ui);
         }
 
         // neighbor row
         for (int vi=0; vi<niel; ++vi)
         {
-          elematrix_sm(vi*4+ijdim, col) -= tau_timefacfac*n_normal_deriv(vi)*p_normal_deriv(ui);
+          elematrix_sm(vi*numdofpernode_+ijdim, col) -= tau_timefacfac*n_normal_deriv(vi)*p_normal_deriv(ui);
         }
       }
     }
 
     for (int ui=0; ui<niel; ++ui)
     {
-      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+      for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
       {
-        int col = ui*4+ijdim;
+        int col = ui*numdofpernode_+ijdim;
 
         // v_parent * u_parent
         //parent row
         for (int vi=0; vi<piel; ++vi)
         {
-          elematrix_ms(vi*4+ijdim, col) -= tau_timefacfac*p_normal_deriv(vi)*n_normal_deriv(ui);
+          elematrix_ms(vi*numdofpernode_+ijdim, col) -= tau_timefacfac*p_normal_deriv(vi)*n_normal_deriv(ui);
         }
 
         //neighbor row
         for (int vi=0; vi<niel; ++vi)
         {
-          elematrix_ss(vi*4+ijdim, col) += tau_timefacfac*n_normal_deriv(vi)*n_normal_deriv(ui);
+          elematrix_ss(vi*numdofpernode_+ijdim, col) += tau_timefacfac*n_normal_deriv(vi)*n_normal_deriv(ui);
         }
       }
 
     }
 
-    LINALG::Matrix<3,1> p_grad_u_n(true);
+    LINALG::Matrix<nsd_,1> p_grad_u_n(true);
     p_grad_u_n.Multiply(pvderxyaf_,n_);
-    LINALG::Matrix<3,1> n_grad_u_n(true);
+    LINALG::Matrix<nsd_,1> n_grad_u_n(true);
     n_grad_u_n.Multiply(nvderxyaf_,n_);
 
 
-    for(int idim = 0; idim <3; ++idim)
+    for(int idim = 0; idim <nsd_; ++idim)
     {
 
       double diff_grad_u_n = tau_timefacfac * (n_grad_u_n(idim)-p_grad_u_n(idim));
@@ -1648,13 +1525,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
       // v_parent (u_neighbor-u_parent)
       for (int vi=0; vi<piel; ++vi)
       {
-        elevector_m(vi*4+idim,0) +=  p_normal_deriv(vi)*diff_grad_u_n;
+        elevector_m(vi*numdofpernode_+idim,0) +=  p_normal_deriv(vi)*diff_grad_u_n;
       }
 
       // v_neighbor (u_neighbor-u_parent)
       for (int vi=0; vi<niel; ++vi)
       {
-        elevector_s(vi*4+idim,0) -=  n_normal_deriv(vi)*diff_grad_u_n;
+        elevector_s(vi*numdofpernode_+idim,0) -=  n_normal_deriv(vi)*diff_grad_u_n;
       }
     }
 
@@ -1663,7 +1540,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
   }// end if ghost_penalty
 
 
-
+  if(numderiv2_n != numderiv2_p) dserror("different dimensions for parent and master element");
 
 //  if(ghost_penalty && use2ndderiv)
 //  {
@@ -1673,23 +1550,23 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
 //    // parent column
 //    for (int ui=0; ui<piel; ++ui)
 //    {
-//      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+//      for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
 //      {
-//        int col = ui*4+ijdim;
+//        int col = ui*numdofpernode_+ijdim;
 //
-//        for(int k=0; k<6; k++) // 2nd order derivatives
+//        for(int k=0; k<numderiv2_p; k++) // 2nd order derivatives
 //        {
 //          // v_parent * u_parent
 //          //parent row
 //          for (int vi=0; vi<piel; ++vi)
 //          {
-//            elematrix_mm(vi*4+ijdim, col) += tau_timefacfac*pderxy2_(k,vi)*pderxy2_(k,ui);
+//            elematrix_mm(vi*numdofpernode_+ijdim, col) += tau_timefacfac*pderxy2_(k,vi)*pderxy2_(k,ui);
 //          }
 //
 //          // neighbor row
 //          for (int vi=0; vi<niel; ++vi)
 //          {
-//            elematrix_sm(vi*4+ijdim, col) -= tau_timefacfac*nderxy2_(k,vi)*pderxy2_(k,ui);
+//            elematrix_sm(vi*numdofpernode_+ijdim, col) -= tau_timefacfac*nderxy2_(k,vi)*pderxy2_(k,ui);
 //          }
 //
 //        }
@@ -1698,24 +1575,24 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
 //
 //    for (int ui=0; ui<niel; ++ui)
 //    {
-//      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+//      for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
 //      {
-//        int col = ui*4+ijdim;
+//        int col = ui*numdofpernode_+ijdim;
 //
 //
-//        for(int k=0; k<6; k++) // 2nd order derivatives
+//        for(int k=0; k<numderiv2_p; k++) // 2nd order derivatives
 //        {
 //          // v_parent * u_parent
 //          //parent row
 //          for (int vi=0; vi<piel; ++vi)
 //          {
-//            elematrix_ms(vi*4+ijdim, col) -= tau_timefacfac*pderxy2_(k,vi)*nderxy2_(k,ui);
+//            elematrix_ms(vi*numdofpernode_+ijdim, col) -= tau_timefacfac*pderxy2_(k,vi)*nderxy2_(k,ui);
 //          }
 //
 //          //neighbor row
 //          for (int vi=0; vi<niel; ++vi)
 //          {
-//            elematrix_ss(vi*4+ijdim, col) += tau_timefacfac*nderxy2_(k,vi)*nderxy2_(k,ui);
+//            elematrix_ss(vi*numdofpernode_+ijdim, col) += tau_timefacfac*nderxy2_(k,vi)*nderxy2_(k,ui);
 //          }
 //        }
 //
@@ -1724,23 +1601,23 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
 //    }
 //
 //
-//    for(int idim = 0; idim <3; ++idim)
+//    for(int idim = 0; idim <nsd_; ++idim)
 //    {
 //
-//      for(int k=0; k<6; k++) // 2nd order derivatives pvderxy2af_
+//      for(int k=0; k<numderiv2_p; k++) // 2nd order derivatives pvderxy2af_
 //      {
 //        double diff_2nderiv_u = tau_timefacfac * (nvderxy2af_(idim,k)-pvderxy2af_(idim,k));
 //
 //        // v_parent (u_neighbor-u_parent)
 //        for (int vi=0; vi<piel; ++vi)
 //        {
-//          elevector_m(vi*4+idim,0) +=  pderxy2_(k,vi)*diff_2nderiv_u;
+//          elevector_m(vi*numdofpernode_+idim,0) +=  pderxy2_(k,vi)*diff_2nderiv_u;
 //        }
 //
 //        // v_neighbor (u_neighbor-u_parent)
 //        for (int vi=0; vi<niel; ++vi)
 //        {
-//          elevector_s(vi*4+idim,0) -=  nderxy2_(k,vi)*diff_2nderiv_u;
+//          elevector_s(vi*numdofpernode_+idim,0) -=  nderxy2_(k,vi)*diff_2nderiv_u;
 //        }
 //      }
 //    }
@@ -1754,14 +1631,14 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressureEOS(
-            LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                    timefacfacpre,
-            double &                                          tau_p
+            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+            LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+            LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+            const double &                                                 timefacfacpre,
+            double &                                                       tau_p
 )
 {
 
@@ -1786,7 +1663,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
   double tau_timefacfacpre = tau_p*timefacfacpre;
 
   // grad(p_neighbor) - grad(p_parent)
-  LINALG::Matrix<3,1> prederxy_jump(true);
+  LINALG::Matrix<nsd_,1> prederxy_jump(true);
   prederxy_jump.Update(1.0, nprederxy_, -1.0, pprederxy_);
   prederxy_jump.Scale(tau_timefacfacpre);
 
@@ -1808,46 +1685,46 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
 
   for (int vi=0; vi<piel; ++vi)
   {
-    int row = vi*4+3;
+    int row = vi*numdofpernode_+nsd_;
 
     // q_master * p_master
     for (int ui=0; ui<piel; ++ui)
     {
-      elematrix_mm(row, ui*4+3) += pderiv_dyad_pderiv(vi,ui);
+      elematrix_mm(row, ui*numdofpernode_+nsd_) += pderiv_dyad_pderiv(vi,ui);
     }
 
     for (int ui=0; ui<niel; ++ui)
     {
       // q_master * p_slave
-      elematrix_ms(row, ui*4+3) -= pderiv_dyad_nderiv(vi,ui);
+      elematrix_ms(row, ui*numdofpernode_+nsd_) -= pderiv_dyad_nderiv(vi,ui);
     }
 
     // q_master (p_slave-p_master)
-    elevector_m(row,0) += (pderxy_(0,vi)*prederxy_jump(0) +
-                           pderxy_(1,vi)*prederxy_jump(1) +
-                           pderxy_(2,vi)*prederxy_jump(2)   );
+    for (int isd=0; isd<nsd_; ++isd)
+      elevector_m(row,0) += pderxy_(isd,vi)*prederxy_jump(isd);
+
   }
 
   for (int vi=0; vi<niel; ++vi)
   {
-    int row = vi*4+3;
+    int row = vi*numdofpernode_+nsd_;
 
     // q_slave * p_master
     for (int ui=0; ui<piel; ++ui)
     {
-      elematrix_sm(row,ui*4+3) -= pderiv_dyad_nderiv(ui,vi);
+      elematrix_sm(row,ui*numdofpernode_+nsd_) -= pderiv_dyad_nderiv(ui,vi);
     }
 
     // q_slave * p_slave
     for (int ui=0; ui<niel; ++ui)
     {
-      elematrix_ss(row, ui*4+3) += nderiv_dyad_nderiv(vi,ui);
+      elematrix_ss(row, ui*numdofpernode_+nsd_) += nderiv_dyad_nderiv(vi,ui);
     }
 
     // -q_slave (p_slave-p_master)
-    elevector_s(row,0) -=  (nderxy_(0,vi)*prederxy_jump(0) +
-                            nderxy_(1,vi)*prederxy_jump(1) +
-                            nderxy_(2,vi)*prederxy_jump(2)   );
+    for (int isd=0; isd<nsd_; ++isd)
+      elevector_s(row,0) -=  nderxy_(isd,vi)*prederxy_jump(isd);
+
   }
 
   return;
@@ -1858,15 +1735,16 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_streamline_EOS(
-            LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                    timefacfac,
-            double &                                          tau_div_streamline,
-            LINALG::Matrix<3,3>&                              vderxyaf_diff)
+            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+            LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+            LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+            const double &                                                 timefacfac,
+            double &                                                       tau_div_streamline,
+            LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff
+)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: div_streamline_EOS" );
@@ -1903,24 +1781,24 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
   double tau_timefacfac = tau_div_streamline * timefacfac;
 
 
-  for (int idim = 0; idim <3; ++idim) // combined components of u and v
+  for (int idim = 0; idim <nsd_; ++idim) // combined components of u and v
   {
-    for(int jdim = 0; jdim<3; ++jdim) // derivative components
+    for(int jdim = 0; jdim<nsd_; ++jdim) // derivative components
     {
       // master row
       for (int vi=0; vi<piel; ++vi)
       {
-        int row = vi*4+idim;
+        int row = vi*numdofpernode_+idim;
 
         // master col
         for (int ui=0; ui<piel; ++ui)
         {
-          elematrix_mm(row, ui*4+idim) += tau_timefacfac*pderxy_(jdim,vi)*pderxy_(jdim,ui);
+          elematrix_mm(row, ui*numdofpernode_+idim) += tau_timefacfac*pderxy_(jdim,vi)*pderxy_(jdim,ui);
         }
         // slave col
         for (int ui=0; ui<niel; ++ui)
         {
-          elematrix_ms(row, ui*4+idim) -= tau_timefacfac*pderxy_(jdim,vi)*nderxy_(jdim,ui);
+          elematrix_ms(row, ui*numdofpernode_+idim) -= tau_timefacfac*pderxy_(jdim,vi)*nderxy_(jdim,ui);
         }
 
         elevector_m(row, 0) += tau_timefacfac * pderxy_(jdim, vi)*vderxyaf_diff(idim, jdim);
@@ -1929,17 +1807,17 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
       // slave row
       for (int vi=0; vi<niel; ++vi)
       {
-        int row = vi*4+idim;
+        int row = vi*numdofpernode_+idim;
 
         // master col
         for (int ui=0; ui<piel; ++ui)
         {
-          elematrix_sm(row, ui*4+idim) -= tau_timefacfac*nderxy_(jdim,vi)*pderxy_(jdim,ui);
+          elematrix_sm(row, ui*numdofpernode_+idim) -= tau_timefacfac*nderxy_(jdim,vi)*pderxy_(jdim,ui);
         }
         // slave col
         for (int ui=0; ui<niel; ++ui)
         {
-          elematrix_ss(row, ui*4+idim) += tau_timefacfac*nderxy_(jdim,vi)*nderxy_(jdim,ui);
+          elematrix_ss(row, ui*numdofpernode_+idim) += tau_timefacfac*nderxy_(jdim,vi)*nderxy_(jdim,ui);
         }
 
         elevector_s(row, 0) -= tau_timefacfac * nderxy_(jdim, vi)*vderxyaf_diff(idim, jdim);
@@ -1956,14 +1834,15 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressureEOSnormal(
-            LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                    timefacfacpre,
-            double &                                          tau_p)
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+    LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+    LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+    const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
+    double &                                                       tau_p          ///< penalty parameter for pressure stabilization terms
+)
 {
 
   //--------------------------------------------------
@@ -1988,32 +1867,32 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
   LINALG::Matrix<niel,niel> nderiv_dyad_nderiv(true);
   nderiv_dyad_nderiv.MultiplyTN(nderxy_, nderxy_);
 
-  for(int idim=0; idim<3; idim++)
+  for(int idim=0; idim<nsd_; idim++)
   {
-    for(int jdim=0; jdim<3; jdim++)
+    for(int jdim=0; jdim<nsd_; jdim++)
     {
       for (int ui=0; ui<piel; ++ui)
       {
         for (int vi=0; vi<piel; ++vi)
         {
-          elematrix_mm(vi*4+3  ,ui*4+3) += timefacfacpre*pderxy_(idim,vi)*n_(idim)*n_(jdim)*pderxy_(idim,ui);
+          elematrix_mm(vi*numdofpernode_+nsd_  ,ui*numdofpernode_+nsd_) += timefacfacpre*pderxy_(idim,vi)*n_(idim)*n_(jdim)*pderxy_(idim,ui);
         }
 
         for (int vi=0; vi<niel; ++vi)
         {
-          elematrix_sm(vi*4+3  ,ui*4+3) -= timefacfacpre*nderxy_(idim,vi)*n_(idim)*n_(jdim)*pderxy_(idim,ui);
+          elematrix_sm(vi*numdofpernode_+nsd_  ,ui*numdofpernode_+nsd_) -= timefacfacpre*nderxy_(idim,vi)*n_(idim)*n_(jdim)*pderxy_(idim,ui);
         }
       }
       for (int ui=0; ui<niel; ++ui)
       {
         for (int vi=0; vi<piel; ++vi)
         {
-          elematrix_ms(vi*4+3  ,ui*4+3) -= timefacfacpre*pderxy_(idim,vi)*n_(idim)*n_(jdim)*nderxy_(idim,ui);
+          elematrix_ms(vi*numdofpernode_+nsd_  ,ui*numdofpernode_+nsd_) -= timefacfacpre*pderxy_(idim,vi)*n_(idim)*n_(jdim)*nderxy_(idim,ui);
         }
 
         for (int vi=0; vi<niel; ++vi)
         {
-          elematrix_ss(vi*4+3  ,ui*4+3) += timefacfacpre*nderxy_(idim,vi)*n_(idim)*n_(jdim)*nderxy_(idim,ui);
+          elematrix_ss(vi*numdofpernode_+nsd_  ,ui*numdofpernode_+nsd_) += timefacfacpre*nderxy_(idim,vi)*n_(idim)*n_(jdim)*nderxy_(idim,ui);
         }
       }
     }
@@ -2022,25 +1901,26 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
 
 
   // grad(p_neighbor) - grad(p_parent)
-  LINALG::Matrix<3,1> prederxy_jump(true);
+  LINALG::Matrix<nsd_,1> prederxy_jump(true);
   prederxy_jump.Update(1.0, nprederxy_, -1.0, pprederxy_);
 
-  double prederxy_jump_normal = prederxy_jump.Dot(n_);
+  double prederxy_jump_normal_fac = timefacfacpre*prederxy_jump.Dot(n_);
 
   // q_parent (p_neighbor-p_parent)
   for (int vi=0; vi<piel; ++vi)
   {
-    elevector_m(vi*4+3,0) += timefacfacpre * (pderxy_(0,vi)*n_(0) +
-                                              pderxy_(1,vi)*n_(1) +
-                                              pderxy_(2,vi)*n_(2)   )*prederxy_jump_normal;
+
+    for(int isd=0; isd<nsd_; isd++)
+      elevector_m(vi*numdofpernode_+nsd_,0) += prederxy_jump_normal_fac*pderxy_(isd,vi)*n_(isd);
+
   }
 
   // -q_neighbor (p_neighbor-p_parent)
   for (int vi=0; vi<niel; ++vi)
   {
-    elevector_s(vi*4+3,0) -= timefacfacpre * (nderxy_(0,vi)*n_(0) +
-                                              nderxy_(1,vi)*n_(1) +
-                                              nderxy_(2,vi)*n_(2)   )*prederxy_jump_normal;
+    for(int isd=0; isd<nsd_; isd++)
+      elevector_s(vi*numdofpernode_+nsd_,0) -= prederxy_jump_normal_fac*nderxy_(isd,vi)*n_(isd);
+
   }
 
 
@@ -2055,15 +1935,16 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EOS(
-            LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                    timefacfac,
-            double &                                          tau_div,
-            LINALG::Matrix<3,3>&                              vderxyaf_diff)
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+    LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+    LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+    const double &                                                 timefacfac,    ///< (time factor ) x (integration factor)
+    double &                                                       tau_div,       ///< combined penalty parameter for divergence stabilization terms
+    LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff  ///< velocity derivatives (neighbor-parent) element
+)
 {
 
 
@@ -2083,9 +1964,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
    */
 
   // v_parent * u_parent
-  for (int idim = 0; idim <3; ++idim) // components of u
+  for (int idim = 0; idim <nsd_; ++idim) // components of u
   {
-    for (int jdim = 0; jdim <3; ++jdim) // components of v
+    for (int jdim = 0; jdim <nsd_; ++jdim) // components of v
     {
       // parent column
       for (int ui=0; ui<piel; ++ui)
@@ -2093,14 +1974,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
         //parent row
         for (int vi=0; vi<piel; ++vi)
         {
-          elematrix_mm(vi*4+jdim  ,ui*4+idim) += tau_timefacfac*pderxy_(jdim,vi)*pderxy_(idim,ui);
+          elematrix_mm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfac*pderxy_(jdim,vi)*pderxy_(idim,ui);
 
         }
 
         //neighbor row
         for (int vi=0; vi<niel; ++vi)
         {
-          elematrix_sm(vi*4+jdim  ,ui*4+idim) -= tau_timefacfac*nderxy_(jdim,vi)*pderxy_(idim,ui);
+          elematrix_sm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfac*nderxy_(jdim,vi)*pderxy_(idim,ui);
         }
       }
 
@@ -2110,13 +1991,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
         //parent row
         for (int vi=0; vi<piel; ++vi)
         {
-          elematrix_ms(vi*4+jdim  ,ui*4+idim) -= tau_timefacfac*pderxy_(jdim,vi)*nderxy_(idim,ui);
+          elematrix_ms(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfac*pderxy_(jdim,vi)*nderxy_(idim,ui);
         }
 
         //neighbor row
         for (int vi=0; vi<niel; ++vi)
         {
-          elematrix_ss(vi*4+jdim  ,ui*4+idim) += tau_timefacfac*nderxy_(jdim,vi)*nderxy_(idim,ui);
+          elematrix_ss(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfac*nderxy_(jdim,vi)*nderxy_(idim,ui);
         }
       }
     }
@@ -2131,18 +2012,18 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
   // neighbor divergence
   double n_div = nvderxyaf_(0,0) + nvderxyaf_(1,1) + nvderxyaf_(2,2);
 
-  for (int idim = 0; idim <3; ++idim) // components of v
+  for (int idim = 0; idim <nsd_; ++idim) // components of v
   {
     // v_parent (u_neighbor-u_parent)
     for (int vi=0; vi<piel; ++vi)
     {
-      elevector_m(vi*4+idim,0) += tau_timefacfac * pderxy_(idim,vi)*(n_div - p_div);
+      elevector_m(vi*numdofpernode_+idim,0) += tau_timefacfac * pderxy_(idim,vi)*(n_div - p_div);
     }
 
     // -v_neighbor (u_neighbor-u_parent)
     for (int vi=0; vi<niel; ++vi)
     {
-      elevector_s(vi*4+idim,0) -= tau_timefacfac * nderxy_(idim,vi)*(n_div - p_div);
+      elevector_s(vi*numdofpernode_+idim,0) -= tau_timefacfac * nderxy_(idim,vi)*(n_div - p_div);
     }
   }
 
@@ -2156,16 +2037,17 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::streamline_EOS(
-            LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                    timefacfac,
-            double &                                          tau_streamline,
-            LINALG::Matrix<3,3>&                              vderxyaf_diff,
-            LINALG::Matrix<3,1>&                              conv_diff)
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&       elematrix_mm,  ///< element matrix master-master block
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&       elematrix_ms,  ///< element matrix master-slave block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&       elematrix_sm,  ///< element matrix slave-master block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&       elematrix_ss,  ///< element matrix slave-slave block
+    LINALG::Matrix<numdofpernode_*piel, 1>&                         elevector_m,   ///< element vector master block
+    LINALG::Matrix<numdofpernode_*niel, 1>&                         elevector_s,   ///< element vector slave block
+    const double &                                                  timefacfac,    ///< (time factor ) x (integration factor)
+    double &                                                        tau_streamline,///< combined penalty parameter for streamline stabilization terms
+    LINALG::Matrix<nsd_,nsd_>&                                      vderxyaf_diff, ///< velocity derivatives (neighbor-parent) element
+    LINALG::Matrix<nsd_,1>&                                         conv_diff      ///< convective velocity (neighbor-parent) element
+)
 {
   // newton flag, if convective stabilization shall be linearized
   // TODO: add input parameter
@@ -2186,7 +2068,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
          //
    */
 
-  for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+  for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
   {
     // parent column
     for (int ui=0; ui<piel; ++ui)
@@ -2196,14 +2078,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
       //parent row
       for (int vi=0; vi<piel; ++vi)
       {
-          elematrix_mm(vi*4+ijdim  ,ui*4+ijdim) += tau_timefacfac*p_conv_c(vi)*p_conv_c(ui);
+          elematrix_mm(vi*numdofpernode_+ijdim  ,ui*numdofpernode_+ijdim) += tau_timefacfac*p_conv_c(vi)*p_conv_c(ui);
       }
 
       // v_neighbor * u_parent
       //parent row
       for (int vi=0; vi<niel; ++vi)
       {
-          elematrix_sm(vi*4+ijdim  ,ui*4+ijdim) -= tau_timefacfac*n_conv_c(vi)*p_conv_c(ui);
+          elematrix_sm(vi*numdofpernode_+ijdim  ,ui*numdofpernode_+ijdim) -= tau_timefacfac*n_conv_c(vi)*p_conv_c(ui);
       }
     }
 
@@ -2213,14 +2095,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
       //parent row
       for (int vi=0; vi<piel; ++vi)
       {
-          elematrix_ms(vi*4+ijdim  ,ui*4+ijdim) -= tau_timefacfac*p_conv_c(vi)*n_conv_c(ui);
+          elematrix_ms(vi*numdofpernode_+ijdim  ,ui*numdofpernode_+ijdim) -= tau_timefacfac*p_conv_c(vi)*n_conv_c(ui);
       }
 
       // v_neighbor * u_neighbor
       //parent row
       for (int vi=0; vi<niel; ++vi)
       {
-          elematrix_ss(vi*4+ijdim  ,ui*4+ijdim) += tau_timefacfac*n_conv_c(vi)*n_conv_c(ui);
+          elematrix_ss(vi*numdofpernode_+ijdim  ,ui*numdofpernode_+ijdim) += tau_timefacfac*n_conv_c(vi)*n_conv_c(ui);
       }
     }
 
@@ -2228,13 +2110,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
     // v_parent (u_neighbor-u_parent)
     for (int vi=0; vi<piel; ++vi)
     {
-        elevector_m(vi*4+ijdim,0) += tau_timefacfac * (p_conv_c(vi)* (conv_diff(ijdim)));
+        elevector_m(vi*numdofpernode_+ijdim,0) += tau_timefacfac * (p_conv_c(vi)* (conv_diff(ijdim)));
     }
 
     // v_neighbor (u_neighbor-u_parent)
     for (int vi=0; vi<niel; ++vi)
     {
-        elevector_s(vi*4+ijdim,0) -= tau_timefacfac * (n_conv_c(vi)* (conv_diff(ijdim)));
+        elevector_s(vi*numdofpernode_+ijdim,0) -= tau_timefacfac * (n_conv_c(vi)* (conv_diff(ijdim)));
     }
   }
 
@@ -2258,9 +2140,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
     // |[ grad u ]| = derxyaf_diff
 
 
-    for(int idim=0; idim<3; ++idim) // dimensions of Du
+    for(int idim=0; idim<nsd_; ++idim) // dimensions of Du
     {
-      for (int jdim = 0; jdim <3; ++jdim) // combined components of u and v
+      for (int jdim = 0; jdim <nsd_; ++jdim) // combined components of u and v
       {
         // just parent column because of Du := Du_parent
         for (int ui=0; ui<piel; ++ui)
@@ -2269,14 +2151,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
           //parent row
           for (int vi=0; vi<piel; ++vi)
           {
-            elematrix_mm(vi*4+jdim  ,ui*4+idim) -= tau_timefacfac*  p_conv_c(vi) * vderxyaf_diff(jdim,idim) * pfunct_(ui);
+            elematrix_mm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfac*  p_conv_c(vi) * vderxyaf_diff(jdim,idim) * pfunct_(ui);
           }
 
           // v_neighbor * u_parent
           //neighbor row
           for (int vi=0; vi<niel; ++vi)
           {
-            elematrix_sm(vi*4+jdim  ,ui*4+idim) += tau_timefacfac*  n_conv_c(vi) * vderxyaf_diff(jdim,idim) * pfunct_(ui);
+            elematrix_sm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfac*  n_conv_c(vi) * vderxyaf_diff(jdim,idim) * pfunct_(ui);
           }
         }
 
@@ -2299,9 +2181,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
         //
      */
 
-    for(int idim=0; idim<3; ++idim) // dimensions of Du
+    for(int idim=0; idim<nsd_; ++idim) // dimensions of Du
     {
-      for (int jdim = 0; jdim <3; ++jdim) // combined components of u and v
+      for (int jdim = 0; jdim <nsd_; ++jdim) // combined components of u and v
       {
         // just parent column because of Du := Du_parent
         for (int ui=0; ui<piel; ++ui)
@@ -2310,14 +2192,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
           //parent row
           for (int vi=0; vi<piel; ++vi)
           {
-            elematrix_mm(vi*4+jdim  ,ui*4+idim) -= tau_timefacfac * conv_diff(jdim) * pderxy_(idim,vi) * pfunct_(ui);
+            elematrix_mm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfac * conv_diff(jdim) * pderxy_(idim,vi) * pfunct_(ui);
           }
 
           // v_neighbor * u_parent
           //neighbor row
           for (int vi=0; vi<niel; ++vi)
           {
-            elematrix_sm(vi*4+jdim  ,ui*4+idim) += tau_timefacfac * conv_diff(jdim) * nderxy_(idim,vi) * pfunct_(ui);
+            elematrix_sm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfac * conv_diff(jdim) * nderxy_(idim,vi) * pfunct_(ui);
           }
         }
 
@@ -2340,15 +2222,15 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
 //                    for (int ui=0; ui<piel; ++ui)
 //                    {
 //
-//                      for(int idim=0; idim<3; ++idim) // dimensions of Du
+//                      for(int idim=0; idim<nsd_; ++idim) // dimensions of Du
 //                      {
 //                        // v_parent * u_parent
 //                        //parent row
 //                        for (int vi=0; vi<piel; ++vi)
 //                        {
-//                          for (int jdim = 0; jdim <3; ++jdim) // combined components of u and v
+//                          for (int jdim = 0; jdim <nsd_; ++jdim) // combined components of u and v
 //                          {
-//                            elemat(vi*4+jdim  ,ui*4+idim) += tau_u_lin*fac*timefac*  conv_diff(jdim) * pderxy_(jdim,vi) * velintaf_(idim) * pfunct_(ui);
+//                            elemat(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_u_lin*fac*timefac*  conv_diff(jdim) * pderxy_(jdim,vi) * velintaf_(idim) * pfunct_(ui);
 //                          }
 //                        }
 //
@@ -2356,9 +2238,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::stream
 //                        //neighbor row
 //                        for (int vi=0; vi<niel; ++vi)
 //                        {
-//                          for (int jdim = 0; jdim <3; ++jdim) // combined components of u and v
+//                          for (int jdim = 0; jdim <nsd_; ++jdim) // combined components of u and v
 //                          {
-//                            elemat(noffset + vi*4+jdim  ,ui*4+idim) -= tau_u_lin*fac*timefac*  conv_diff(jdim) * nderxy_(jdim,vi) * velintaf_(idim) * pfunct_(ui);
+//                            elemat(noffset + vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_u_lin*fac*timefac*  conv_diff(jdim) * nderxy_(jdim,vi) * velintaf_(idim) * pfunct_(ui);
 //                          }
 //                        }
 //                      }
@@ -2378,8 +2260,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::compute_patch_hk(
             double &   patch_hk,
-            Fluid*    master,
-            Fluid*    slave   )
+            Fluid*     master,
+            Fluid*     slave   )
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: element length" );
@@ -2390,66 +2272,125 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
   //-----------------------------------------------------------------
   // compute element length w.r.t master element
 
-  // numbering of master's surfaces w.r.t parent element
+  // numbering of master's surfaces/lines w.r.t parent element
   vector< vector<int> > m_connectivity;
-  m_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
 
-  for(int p_surf=0; p_surf<master->NumSurface(); p_surf++)
-  {
-    unsigned int nnode_psurf = m_connectivity[p_surf].size(); // this number changes for pyramids or wedges
-
-    double h_e = 0.0;
-
-
-    switch (nnode_psurf)
-    {
-    case 3: //tri3 surface
-      diameter<3>(true, m_connectivity[p_surf], h_e);
-      break;
-    case 4: // quad4 surface
-      diameter<4>(true, m_connectivity[p_surf], h_e);
-      break;
-    default:
-      dserror("unknown number of nodes for surface of parent element");
-    };
-
-
-    // take the longest surface diameter
-    patch_hk = max(patch_hk, h_e);
-
-  }
-
-  //-----------------------------------------------------------------
-  // compute element length w.r.t slave element
-
-  // numbering of slave's surfaces w.r.t parent element
+  // numbering of slave's surfaces/lines w.r.t parent element
   vector< vector<int> > s_connectivity;
-  s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
 
-  for(int p_surf=0; p_surf<slave->NumSurface(); p_surf++)
+  if(nsd_ == 3)
   {
-    unsigned int nnode_psurf = s_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+    m_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
 
-    double h_e = 0.0;
-
-
-    switch (nnode_psurf)
+    for(int p_surf=0; p_surf<master->NumSurface(); p_surf++)
     {
-    case 3: // tri3 surface
-      diameter<3>(false, s_connectivity[p_surf], h_e);
-      break;
-    case 4: // quad4 surface
-      diameter<4>(false, s_connectivity[p_surf], h_e);
-      break;
-    default:
-      dserror("unknown number of nodes for surface of parent element");
-    };
+       unsigned int nnode_psurf = m_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+
+       double h_e = 0.0;
+
+       switch (nnode_psurf)
+       {
+       case 3: //tri3 surface
+         diameter2D<3>(true, m_connectivity[p_surf], h_e);
+         break;
+       case 4: // quad4 surface
+         diameter2D<4>(true, m_connectivity[p_surf], h_e);
+         break;
+       case 8: // quad8 surface
+         diameter2D<8>(true, m_connectivity[p_surf], h_e);
+         break;
+       default:
+         dserror("unknown number of nodes for surface of parent element");
+       };
+
+       // take the longest surface diameter
+       patch_hk = max(patch_hk, h_e);
+
+    }
+
+    s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
+
+    for(int p_surf=0; p_surf<slave->NumSurface(); p_surf++)
+    {
+      unsigned int nnode_psurf = s_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+
+      double h_e = 0.0;
 
 
-    // take the longest surface diameter
-    patch_hk = max(patch_hk, h_e);
+      switch (nnode_psurf)
+      {
+      case 3: // tri3 surface
+        diameter2D<3>(false, s_connectivity[p_surf], h_e);
+        break;
+      case 4: // quad4 surface
+        diameter2D<4>(false, s_connectivity[p_surf], h_e);
+        break;
+      case 8: // quad8 surface
+        diameter2D<8>(false, s_connectivity[p_surf], h_e);
+        break;
+      default:
+        dserror("unknown number of nodes for surface of parent element");
+      };
+
+      // take the longest surface diameter
+      patch_hk = max(patch_hk, h_e);
+    }
 
   }
+  else if(nsd_==2)
+  {
+     m_connectivity = DRT::UTILS::getEleNodeNumberingLines(pdistype);
+
+     for(int p_line=0; p_line<master->NumLine(); p_line++)
+     {
+        unsigned int nnode_pline = m_connectivity[p_line].size(); // this number changes for pyramids or wedges
+
+        double h_e = 0.0;
+
+        switch (nnode_pline)
+        {
+        case 2: //line2 face
+          diameter1D<2>(true, m_connectivity[p_line], h_e);
+          break;
+        case 3: //line3 face
+          diameter1D<3>(true, m_connectivity[p_line], h_e);
+          break;
+        default:
+          dserror("unknown number of nodes for line of parent element");
+        };
+
+        // take the longest line diameter
+        patch_hk = max(patch_hk, h_e);
+
+     }
+
+     s_connectivity = DRT::UTILS::getEleNodeNumberingLines(ndistype);
+
+     for(int p_line=0; p_line<slave->NumLine(); p_line++)
+     {
+       unsigned int nnode_pline = s_connectivity[p_line].size(); // this number changes for pyramids or wedges
+
+       double h_e = 0.0;
+
+
+       switch (nnode_pline)
+       {
+       case 2: // line2 face
+         diameter1D<2>(false, s_connectivity[p_line], h_e);
+         break;
+       case 3: // line3 face
+         diameter1D<3>(false, s_connectivity[p_line], h_e);
+         break;
+
+       default:
+         dserror("unknown number of nodes for line of parent element");
+       };
+
+       // take the longest line diameter
+       patch_hk = max(patch_hk, h_e);
+     }
+  }
+
 
 }
 

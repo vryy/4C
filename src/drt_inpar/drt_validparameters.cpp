@@ -2310,14 +2310,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "channel2D",
                                  "gravitation",
                                  "shear_flow",
-                                 "jeffery_hamel_flow"),
+                                 "jeffery_hamel_flow",
+                                 "byfunct1"),
                                tuple<int>(
                                    INPAR::FLUID::no_error_calculation,
                                    INPAR::FLUID::beltrami_flow,
                                    INPAR::FLUID::channel2D,
                                    INPAR::FLUID::gravitation,
                                    INPAR::FLUID::shear_flow,
-                                   INPAR::FLUID::jeffery_hamel_flow),
+                                   INPAR::FLUID::jeffery_hamel_flow,
+                                   INPAR::FLUID::byfunct1),
                                &fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",
@@ -4440,11 +4442,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &xfluid_general);
 
   setStringToIntegralParameter<int>("INTERFACE_DISP","interface_disp_zero","how to define the interface displacement",
-                               tuple<std::string>("interface_disp_by_fsi", "interface_disp_by_funct", "interface_disp_zero"),
+                               tuple<std::string>("interface_disp_by_fsi", "interface_disp_by_funct", "interface_disp_zero", "interface_disp_by_implementation"),
                                tuple<int>(
                                    INPAR::XFEM::interface_disp_by_fsi,     // define interface displacement by structure solution of fsi algo
                                    INPAR::XFEM::interface_disp_by_funct,   // define interface displacement by function
-                                   INPAR::XFEM::interface_disp_zero        // zero interface displacement function
+                                   INPAR::XFEM::interface_disp_zero,       // zero interface displacement function
+                                   INPAR::XFEM::interface_disp_by_implementation // interface displacement by implementation
                                    ),
                                &xfluid_general);
 

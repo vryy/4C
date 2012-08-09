@@ -251,7 +251,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     {
       if (nsd_ == 3)
       {
-         // get viscosity
+        // get viscosity
         if (mat->MaterialType() == INPAR::MAT::m_fluid)
         {
           const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
@@ -261,94 +261,94 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
         }
         else dserror("Material is not Newtonian Fluid");
 
-         const double a      = M_PI/4.0;
-         const double d      = M_PI/2.0;
+        const double a      = M_PI/4.0;
+        const double d      = M_PI/2.0;
 
-         // compute analytical pressure
-         p = -a*a/2.0 *
-             ( exp(2.0*a*xyzint(0))
-             + exp(2.0*a*xyzint(1))
-             + exp(2.0*a*xyzint(2))
-             + 2.0 * sin(a*xyzint(0) + d*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) * exp(a*(xyzint(1)+xyzint(2)))
-             + 2.0 * sin(a*xyzint(1) + d*xyzint(2)) * cos(a*xyzint(0) + d*xyzint(1)) * exp(a*(xyzint(2)+xyzint(0)))
-             + 2.0 * sin(a*xyzint(2) + d*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) * exp(a*(xyzint(0)+xyzint(1)))
-             )* exp(-2.0*visc_*d*d*t);
+        // compute analytical pressure
+        p = -a*a/2.0 *
+            ( exp(2.0*a*xyzint(0))
+                + exp(2.0*a*xyzint(1))
+                + exp(2.0*a*xyzint(2))
+                + 2.0 * sin(a*xyzint(0) + d*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) * exp(a*(xyzint(1)+xyzint(2)))
+                + 2.0 * sin(a*xyzint(1) + d*xyzint(2)) * cos(a*xyzint(0) + d*xyzint(1)) * exp(a*(xyzint(2)+xyzint(0)))
+                + 2.0 * sin(a*xyzint(2) + d*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) * exp(a*(xyzint(0)+xyzint(1)))
+            )* exp(-2.0*visc_*d*d*t);
 
-          // compute analytical velocities
-          u(0) = -a * ( exp(a*xyzint(0)) * sin(a*xyzint(1) + d*xyzint(2)) +
-                       exp(a*xyzint(2)) * cos(a*xyzint(0) + d*xyzint(1)) ) * exp(-visc_*d*d*t);
-          u(1) = -a * ( exp(a*xyzint(1)) * sin(a*xyzint(2) + d*xyzint(0)) +
-                       exp(a*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) ) * exp(-visc_*d*d*t);
-          u(2) = -a * ( exp(a*xyzint(2)) * sin(a*xyzint(0) + d*xyzint(1)) +
-                       exp(a*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) ) * exp(-visc_*d*d*t);
-        }
-        else dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
+        // compute analytical velocities
+        u(0) = -a * ( exp(a*xyzint(0)) * sin(a*xyzint(1) + d*xyzint(2)) +
+            exp(a*xyzint(2)) * cos(a*xyzint(0) + d*xyzint(1)) ) * exp(-visc_*d*d*t);
+        u(1) = -a * ( exp(a*xyzint(1)) * sin(a*xyzint(2) + d*xyzint(0)) +
+            exp(a*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) ) * exp(-visc_*d*d*t);
+        u(2) = -a * ( exp(a*xyzint(2)) * sin(a*xyzint(0) + d*xyzint(1)) +
+            exp(a*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) ) * exp(-visc_*d*d*t);
       }
-      break;
+      else dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
+    }
+    break;
     case INPAR::FLUID::shear_flow:
-      {
-        const double maxvel = 1.0;
-        const double hight = 1.0;
+    {
+      const double maxvel = 1.0;
+      const double hight = 1.0;
 
-        // y=0 is located in the middle of the domain
-        if (nsd_ == 2)
-        {
-          p = 1.0;
-          u(0) = xyzint(1)*maxvel + hight/2*maxvel;
-          u(1) = 0.0;
-        }
-        if (nsd_ == 3)
-        {
-          p = 0.0;
-          u(0) = xyzint(1)*maxvel + hight/2*maxvel;
-          u(1) = 0.0;
-          u(2) = 0.0;
-        }
+      // y=0 is located in the middle of the domain
+      if (nsd_ == 2)
+      {
+        p = 1.0;
+        u(0) = xyzint(1)*maxvel + hight/2*maxvel;
+        u(1) = 0.0;
       }
-      break;
+      if (nsd_ == 3)
+      {
+        p = 0.0;
+        u(0) = xyzint(1)*maxvel + hight/2*maxvel;
+        u(1) = 0.0;
+        u(2) = 0.0;
+      }
+    }
+    break;
     case INPAR::FLUID::gravitation:
-      {
-        const double gravity = 10.0;
-        const double hight = 1.0;
+    {
+      const double gravity = 10.0;
+      const double hight = 1.0;
 
-        // 2D: rectangle 1.0x1.0
-        // 3D: cube 1.0x1.0x1.0
-        // y=0 is located in the middle of the domain
-        if (nsd_ == 2)
-        {
-          p = -xyzint(1)*gravity + hight/2*gravity;
-          u(0) = 0.0;
-          u(1) = 0.0;
-        }
-        if (nsd_ == 3)
-        {
-          p = -xyzint(1)*gravity + hight/2*gravity;
-          u(0) = 0.0;
-          u(1) = 0.0;
-          u(2) = 0.0;
-        }
+      // 2D: rectangle 1.0x1.0
+      // 3D: cube 1.0x1.0x1.0
+      // y=0 is located in the middle of the domain
+      if (nsd_ == 2)
+      {
+        p = -xyzint(1)*gravity + hight/2*gravity;
+        u(0) = 0.0;
+        u(1) = 0.0;
       }
-      break;
+      if (nsd_ == 3)
+      {
+        p = -xyzint(1)*gravity + hight/2*gravity;
+        u(0) = 0.0;
+        u(1) = 0.0;
+        u(2) = 0.0;
+      }
+    }
+    break;
     case INPAR::FLUID::channel2D:
-      {
-        const double maxvel=1.25;
-        const double hight = 1.0;
-        const double visc = 1.0;
-        const double pressure_gradient = 10.0;
+    {
+      const double maxvel=1.25;
+      const double hight = 1.0;
+      const double visc = 1.0;
+      const double pressure_gradient = 10.0;
 
-        // u_max = 1.25
-        // y=0 is located in the middle of the channel
-        if (nsd_ == 2)
-        {
-          p = 1.0;
-          //p = -10*xyzint(0)+20;
-          u(0) = maxvel -((hight*hight)/(2.0*visc)*pressure_gradient*(xyzint(1)/hight)*(xyzint(1)/hight));
-          u(1) = 0.0;
-        }
-        else
-          dserror("3D analytical solution is not implemented yet");
+      // u_max = 1.25
+      // y=0 is located in the middle of the channel
+      if (nsd_ == 2)
+      {
+        p = 1.0;
+        //p = -10*xyzint(0)+20;
+        u(0) = maxvel -((hight*hight)/(2.0*visc)*pressure_gradient*(xyzint(1)/hight)*(xyzint(1)/hight));
+        u(1) = 0.0;
       }
-      break;
+      else
+        dserror("3D analytical solution is not implemented yet");
+    }
+    break;
     case INPAR::FLUID::jeffery_hamel_flow:
     {
       //LINALG::Matrix<3,1> physpos(true);
@@ -369,7 +369,56 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
       }
 
     }
-      break;
+    break;
+    case INPAR::FLUID::byfunct1:
+    {
+      const int func_no = 1;
+
+
+      // function evaluation requires a 3D position vector!!
+      double position[3];
+
+      if (nsd_ == 2)
+      {
+
+        position[0] = xyzint(0);
+        position[1] = xyzint(1);
+        position[2] = 0.0;
+      }
+      else if(nsd_ == 3)
+      {
+        position[0] = xyzint(0);
+        position[1] = xyzint(1);
+        position[2] = xyzint(2);
+      }
+      else dserror("invalid nsd %d", nsd_);
+
+      if(nsd_ == 2)
+      {
+        const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
+        const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
+        const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
+
+        u(0) = u_exact_x;
+        u(1) = u_exact_y;
+        p    = p_exact;
+      }
+      else if(nsd_==3)
+      {
+        const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
+        const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
+        const double u_exact_z = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
+        const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(3,position,t,NULL);
+
+        u(0) = u_exact_x;
+        u(1) = u_exact_y;
+        u(2) = u_exact_z;
+        p    = p_exact;
+      }
+      else dserror("invalid dimension");
+
+    }
+    break;
     default:
       dserror("analytical solution is not defined");
     }

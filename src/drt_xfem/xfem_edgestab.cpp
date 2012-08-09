@@ -120,6 +120,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   bool edge_based_stab = false;
   bool ghost_penalty   = false;
 
+  int num_edgestab = 0;      // how often to stabilize this face for edgebased stabilizations
+  int num_ghostpenalty = 0;  // how often to stabilize this face for ghost penalty stabilizations
+
   //------------------------------------------------------------------------------
   // simplest case: no element handles for both parent elements
   // two uncut elements / standard fluid case
@@ -127,6 +130,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   if( p_master_handle == NULL and p_slave_handle == NULL)
   {
     edge_based_stab = true;
+    num_edgestab++;
+
     ghost_penalty   = false;
 
     {
@@ -221,9 +226,14 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             //------------------------
 
             edge_based_stab = true;
+            num_edgestab++;
 
             // at least one element has to be cut
-            if(p_master_handle->IsCut() or p_slave_handle->IsCut()) ghost_penalty   = true;
+            if(p_master_handle->IsCut() or p_slave_handle->IsCut())
+            {
+              ghost_penalty   = true;
+              num_ghostpenalty++;
+            }
 
             //--------------------------------------------------------------------------------------------
 
@@ -252,7 +262,12 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         }
         else if((*f)->Position() == GEO::CUT::Point::oncutsurface)
         {
-          cout << "the position of this facet of face " << faceele->Id() << " is oncutsurface, how to stabilize??? surfid: " << endl;
+#ifdef DEBUG
+          cout << "the position of this facet of face " << faceele->Id() << " is oncutsurface, we do not stabilize it!!! " << endl;
+#endif
+          // if a facet lies oncutsurface, then there is only one neighbor, we do not stabilize this facet
+          // REMARK: in case of one part of the facet is physical and the other part lies on cutsurface,
+          //         then the physical part is stabilized via another facet lying on the same fluid element's side
         }
         else
         {
@@ -330,15 +345,24 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             //------------------------
 
             edge_based_stab = true;
+            num_edgestab++;
 
             // at least one element has to be cut
             if(p_master_handle != NULL)
             {
-              if(p_master_handle->IsCut()) ghost_penalty   = true;
+              if(p_master_handle->IsCut())
+              {
+                ghost_penalty   = true;
+                num_ghostpenalty++;
+              }
             }
             if(p_slave_handle != NULL)
             {
-              if(p_slave_handle->IsCut()) ghost_penalty   = true;
+              if(p_slave_handle->IsCut())
+              {
+                ghost_penalty   = true;
+                num_ghostpenalty++;
+              }
             }
 
             //--------------------------------------------------------------------------------------------
@@ -367,8 +391,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
   if(gmsh_discret_out)
   {
-    ghost_penalty_stab_.insert(pair<int,bool>(faceele->Id(),ghost_penalty));
-    edge_based_stab_.insert(pair<int,bool>(faceele->Id(),edge_based_stab));
+    ghost_penalty_stab_.insert(pair<int,int>(faceele->Id(),num_ghostpenalty));
+    edge_based_stab_.insert(pair<int,int>(faceele->Id(),num_edgestab));
   }
 
   //--------------------------------------------------------------------------------------------

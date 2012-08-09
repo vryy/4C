@@ -1,13 +1,14 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file timeInt_std_SemiLagrange.H
+\file xfluid_timeinnt_std_SemiLagrange.H
 
-\brief provides the SemiLagrange class
+\brief provides the SemiLagrangean class
 
 <pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
+
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -19,8 +20,18 @@ Maintainer: Martin Winklmaier
 #include "xfluid_timeInt_base.H"
 
 
+namespace DRT
+{
+  class Element;
+}
+
+
 namespace XFEM
 {
+
+  class XFLUID_TIMEINT_BASE;
+  class TimeIntData;
+
 
 /*!
   \brief this class is used in XFEM to compute new values for standard degrees of freedom
@@ -34,14 +45,14 @@ public:
 
   //! constructor
   explicit XFLUID_SemiLagrange(
-      XFEM::XFLUID_TIMEINT_BASE& timeInt,
-      const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,
-      INPAR::XFEM::XFluidTimeInt& timeIntType,
-      const RCP<Epetra_Vector> veln,
-      const double& dt,
-      const double& theta,
-      const RCP<COMBUST::FlameFront> flamefront,
-      bool initialize
+      XFEM::XFLUID_TIMEINT_BASE&                                     timeInt,          /// time integration base class object
+      const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
+      INPAR::XFEM::XFluidTimeInt&                                    timeIntType,      /// type of time integration
+      const RCP<Epetra_Vector>                                       veln,             /// velocity at time t^n
+      const double&                                                  dt,               /// time step size
+      const double&                                                  theta,            /// OST theta
+      bool                                                           initialize        /// is initialization?
+
   );
 
   //! destructor
@@ -61,45 +72,43 @@ private:
   //! disabled default constructor
   explicit XFLUID_SemiLagrange();
 
-  void getNodalDofSet(DRT::Element* ele,
-      LINALG::Matrix<3,1>& x ,
-      std::vector<int>& nds,
-      bool step_np);
+  //! determine point's dofset in element ele w.r.t old or new interface position
+  void getNodalDofSet(
+      DRT::Element*           ele,    /// pointer to element
+      LINALG::Matrix<3,1>&    x ,     /// global coordinates of point
+      std::vector<int>&       nds,    /// determine the points dofset w.r.t old/new interface position
+      bool                    step_np /// computation w.r.t old or new interface position?
+      );
 
   //! run a Newton loop in order to compute the exact Lagrangian origin for a node which changed interface side
   void NewtonLoop(
-      DRT::Element*& ele,
-      TimeIntData* data,
-      LINALG::Matrix<3,1>& xi,
-      LINALG::Matrix<3,1>& vel,
-      double& phi,
-      bool& eleFound,
-      bool& stdBackTracking
+      DRT::Element*&          ele,              /// pointer to element
+      TimeIntData*            data,             /// current data
+      LINALG::Matrix<3,1>&    xi,               /// local coordinates of point
+      LINALG::Matrix<3,1>&    vel,              /// velocity at current point
+      bool&                   elefound          /// is element found ?
   );
 
   //! perform one Newton iteration in order to compute the exact Lagrangian origin for a node which changed its interface side
   template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
   void NewtonIter(
-      DRT::Element*& ele,
-      TimeIntData* data,
-      LINALG::Matrix<3,1>& xi,
-      LINALG::Matrix<3,1>& vel,
-      LINALG::Matrix<3,1>& residuum,
-      LINALG::Matrix<3,1>& incr,
-      double& phi,
-      bool& elefound
+      DRT::Element*&          ele,              /// pointer to element to be updated
+      TimeIntData*            data,             /// current data to be updated
+      LINALG::Matrix<3,1>&    xi,               /// local coordinates w.r.t ele to be updated
+      LINALG::Matrix<3,1>&    residuum,         /// residual for semilagrangean backtracking to be updated
+      LINALG::Matrix<3,1>&    incr,             /// computed increment for lagrangean origin to be updated
+      bool&                   elefound          /// element found ?
   );
 
   //! determine velocity and pressure for nodes where the "normal" semi-lagrange startfinder failed
-  void getDataForNotConvergedNodes(
-  );
+  void getDataForNotConvergedNodes();
 
   //! call the back tracking which computes the final values
   void callBackTracking(
-      DRT::Element*& ele,
-      TimeIntData* data,
-      LINALG::Matrix<3,1>& xi,
-      const char* backTrackingType
+      DRT::Element*&        ele,                 /// pointer to element
+      TimeIntData*          data,                /// data
+      LINALG::Matrix<3,1>&  xi,                  /// local coordinates
+      const char*           backTrackingType     /// type of backTracking
   );
 
   template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
@@ -112,16 +121,15 @@ private:
   //! track back the Lagrangian origin to get final values
   template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
   void backTracking(
-      DRT::Element*& fittingele,
-      TimeIntData* data,
-      LINALG::Matrix<3,1>& xi,
-      const char* backTrackingType
+      DRT::Element*&        fittingele,          /// pointer to element
+      TimeIntData*          data,                /// data
+      LINALG::Matrix<3,1>&  xi,                  /// local coordinates
+      const char*           backTrackingType     /// type of backTrackingwVectors
   );
 
-  //! preparation of new iteration
   void newIteration_prepare(
       vector<RCP<Epetra_Vector> > newRowVectors
-  );
+      );
 
   //! gradients at a node
   void newIteration_nodalData(

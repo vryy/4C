@@ -104,10 +104,10 @@ public:
                                      );
 
   //! returns a map containing the ghost penalty stabilized internal face elements
-  std::map<int,bool> & GetGhostPenaltyMap(){return ghost_penalty_stab_;}
+  std::map<int,int> & GetGhostPenaltyMap(){return ghost_penalty_stab_;}
 
   //! returns a map containing the edge based stabilized internal face elements
-  std::map<int,bool> & GetEdgeBasedMap(){return edge_based_stab_;}
+  std::map<int,int> & GetEdgeBasedMap(){return edge_based_stab_;}
 
 
   private:
@@ -119,8 +119,8 @@ public:
   Teuchos::RCP<XFEM::FluidWizard> wizard_;    ///< fluid wizard
   Teuchos::RCP<DRT::Discretization> discret_; ///< discretization
 
-  std::map<int, bool> ghost_penalty_stab_;    /// map of face elements stabilized with ghost penalty
-  std::map<int, bool> edge_based_stab_;       /// map of face elements stabilized with edge based fluid stabilization
+  std::map<int, int> ghost_penalty_stab_;    /// map of face elements stabilized with ghost penalty
+  std::map<int, int> edge_based_stab_;       /// map of face elements stabilized with edge based fluid stabilization
 
 
 };

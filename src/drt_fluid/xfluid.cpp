@@ -59,6 +59,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
 
+#include "../drt_fluid/fluid_utils_infnormscaling.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H" // should go away
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
@@ -201,6 +202,14 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.discret_));
   //--------------------------------------------------------------------------------------
 
+
+
+  if (false/*xfluid_.params_->get<bool>("INFNORMSCALING")*/)
+  {
+    xfluid_.fluid_infnormscaling_ = rcp(new FLD::UTILS::FluidInfNormScaling(*velpressplitter_));
+  }
+
+
 }
 
 /*----------------------------------------------------------------------*
@@ -245,6 +254,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     discret.SetState("velaf",velaf_);
   else
     discret.SetState("velaf",velnp_);
+
+  //discret.SetState("veln",veln_);
+
 
   // set general vector values of boundarydis needed by elements
   cutdiscret.ClearState();
@@ -1743,7 +1755,7 @@ FLD::XFluid::XFluid(
 
   //gmsh
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", 1, 0, 0,actdis->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", step_, 0, 0,actdis->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     IO::GMSH::disToStream("DisBoundary", 0.0, boundarydis_,gmshfilecontent);
     IO::GMSH::disToStream("DisFluid", 0.0, discret_, gmshfilecontent);
@@ -1755,28 +1767,8 @@ FLD::XFluid::XFluid(
   boundary_output_->WriteMesh(0,0.0);
 
 
-
-  // -------------------------------------------------------------------
-  // create XFluidState object
-  // -------------------------------------------------------------------
-
-  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-  idispcol.PutScalar( 0.0 );
-
-  // create new XFluidState object
-  state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
-
-
-
-  // get dofrowmap for solid discretization
-  soliddofrowmap_ = soliddis_->DofRowMap();
-
-  solidvelnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
-  soliddispnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
-
-
   //--------------------------------------------------------
-  // FluidFluid-Boundary Vectors passes to element
+  // create interface fields
   // -------------------------------------------------------
   boundarydofrowmap_ = boundarydis_->DofRowMap();
   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
@@ -1790,8 +1782,60 @@ FLD::XFluid::XFluid(
 
 
   // set an initial interface velocity field
-  if(interface_vel_init_ == INPAR::XFEM::interface_vel_init_by_funct)
+  if(interface_vel_init_ == INPAR::XFEM::interface_vel_init_by_funct and step_ == 0)
     SetInitialInterfaceField();
+
+  // read the interface displacement and interface velocity for the old timestep which was written in Output
+  // we have to do this before ReadRestart() is called to get the right
+  // initial CUT corresponding to time t^n at which the last solution was written
+
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
+  {
+    cout << "ReadRestart for boundary discretization " << endl;
+
+    IO::DiscretizationReader boundaryreader(boundarydis_,restart);
+
+    time_ = boundaryreader.ReadDouble("time");
+    step_ = boundaryreader.ReadInt("step");
+
+    cout << "time: " << time_ << endl;
+    cout << "step: " << step_ << endl;
+
+
+    boundaryreader.ReadVector(iveln_,   "iveln_res");
+    boundaryreader.ReadVector(idispn_,  "idispn_res");
+
+    // REMARK: ivelnp_ and idispnp_ are set again for the new time step in PrepareSolve()
+    boundaryreader.ReadVector(ivelnp_,  "ivelnp_res");
+    boundaryreader.ReadVector(idispnp_, "idispnp_res");
+
+  }
+
+
+  // get dofrowmap for solid discretization
+  soliddofrowmap_ = soliddis_->DofRowMap();
+
+  solidvelnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
+  soliddispnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
+
+
+  // -------------------------------------------------------------------
+  // create XFluidState object
+  // -------------------------------------------------------------------
+
+  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+  idispcol.PutScalar( 0.0 );
+
+  // create new XFluidState object
+  // REMARK: for a step 0 we perform the cut based on idispn, the initial interface position
+  //         for a restart (step n+1 has to be solved first) we perform the initial cut
+  //         based on idispn (step n) (=data written after updating the interface fields in last time step n)
+  LINALG::Export(*idispn_,idispcol);
+
+  state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+
+
 
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
@@ -2382,7 +2426,6 @@ void FLD::XFluid::SolveStationaryProblem()
  *------------------------------------------------------------------------------------------------*/
 void FLD::XFluid::PrepareTimeStep()
 {
-  UpdateInterfaceFields();
 
   cout << "PrepareTimeStep (FLD::XFluid::PrepareTimeStep) " << endl;
 
@@ -2446,7 +2489,7 @@ void FLD::XFluid::PrepareSolve()
   INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUID_BOUNDARY");
   if( xfluid_mov_bound == INPAR::XFEM::XFluidMovingBoundary)
   {
-    SetInterfaceDisplacement(time_);
+    SetInterfaceDisplacement();
     ComputeInterfaceVelocities();
   }
 
@@ -2749,7 +2792,16 @@ void FLD::XFluid::NonlinearSolve()
             // ScaleLinearSystem();  // still experimental (gjb 04/10)
 #endif
 
+     // scale system prior to solver call
+     if (fluid_infnormscaling_!= Teuchos::null)
+       fluid_infnormscaling_->ScaleSystem(state_->sysmat_, *(state_->residual_));
+
       solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1);
+
+      // unscale solution
+      if (fluid_infnormscaling_!= Teuchos::null)
+        fluid_infnormscaling_->UnscaleSolution(state_->sysmat_, *(state_->incvel_),*(state_->residual_));
+
       solver_->ResetTolerance();
 
       // end time measurement for solver
@@ -2902,6 +2954,10 @@ void FLD::XFluid::TimeUpdate()
   state_->velnm_->Update(1.0,*state_->veln_ ,0.0);
   state_->veln_ ->Update(1.0,*state_->velnp_,0.0);
 
+
+  // update of interface fields (interface velocity and interface displacements)
+  UpdateInterfaceFields();
+
 } //XFluid::TimeUpdate()
 
 
@@ -2936,7 +2992,24 @@ void FLD::XFluid::CutAndSetStateVectors()
   idispcol.PutScalar( 0. );
 
   LINALG::Export(*idispnp_,idispcol);
-  state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+
+//  bool succesful = false;
+//  for(int count=0; count < 10; count++)
+//  {
+//    if(succesful) break; // break the for loop
+//
+//    try
+//    {
+//      cout << "Cut Try number " << count;
+      state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+//    }
+//    catch(std::runtime_error)
+//    {
+//      continue;
+//    }
+//
+//    succesful=true;
+//  }
 
   //---------------------------------------------------------------
 
@@ -3033,8 +3106,10 @@ void FLD::XFluid::CutAndSetStateVectors()
     // timint output for reconstruction methods
     {
 
+      int step_diff = 500;
+
       // output for all dofsets of nodes
-      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method", step_, 10, true, discret_->Comm().MyPID());
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method", step_, step_diff, true, discret_->Comm().MyPID());
       std::ofstream gmshfilecontent(filename.c_str());
       gmshfilecontent.setf(ios::scientific,ios::floatfield);
       gmshfilecontent.precision(16);
@@ -3143,8 +3218,6 @@ void FLD::XFluid::CutAndSetStateVectors()
       Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_ =  Teuchos::null;
       Teuchos::RCP<XFEM::XFLUID_STD> timeIntStd_ = Teuchos::null;
 
-      const RCP<COMBUST::FlameFront> flamefront = Teuchos::null;
-
       INPAR::XFEM::XFluidTimeInt xfemtimeint_ = INPAR::XFEM::Xf_TimeInt_SemiLagrange;
 
       if (totalitnumFRS_==0) // construct time int classes once every time step
@@ -3168,7 +3241,7 @@ void FLD::XFluid::CutAndSetStateVectors()
         {
         case INPAR::XFEM::Xf_TimeInt_SemiLagrange:
         {
-          // time integration data for standard dofs, semi-lagrangian approach
+          // time integration data for standard dofs, semi-lagrangean approach
           timeIntStd_ = rcp(new XFEM::XFLUID_SemiLagrange(
               *timeIntData,
               reconstr_method,
@@ -3176,7 +3249,6 @@ void FLD::XFluid::CutAndSetStateVectors()
               staten_->veln_,
               dta_,
               theta_,
-              flamefront,
               true));
           break;
         }
@@ -3187,7 +3259,7 @@ void FLD::XFluid::CutAndSetStateVectors()
         totalitnumFRS_++;
 
         timeIntStd_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
-        timeIntStd_->compute(newRowStateVectorsn); // call computation
+        timeIntStd_->compute(newRowStateVectorsn);    // call computation
 
       } //totalit
 
@@ -3592,7 +3664,7 @@ void FLD::XFluid::LiftDrag() const
       if (Step() <= 1)
       {
         f.open(fname.c_str(),std::fstream::trunc);
-        //f << header.str() << endl;
+        f << header.str() << endl;
       }
       else
       {
@@ -3691,7 +3763,7 @@ void FLD::XFluid::Output()
 {
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
 
-  const int step_diff = 10;
+  const int step_diff = 500;
   bool screen_out = gmsh_debug_out_screen_;
 
   // compute the current solid and boundary position
@@ -3843,14 +3915,14 @@ void FLD::XFluid::Output()
       for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
       {
         const DRT::Element* actele = xdiscret->lRowIntFace(i);
-        std::map<int,bool> & ghost_penalty_map = state_->EdgeStab()->GetGhostPenaltyMap();
+        std::map<int,int> & ghost_penalty_map = state_->EdgeStab()->GetGhostPenaltyMap();
 
-        map<int,bool>::iterator it = ghost_penalty_map.find(actele->Id());
+        map<int,int>::iterator it = ghost_penalty_map.find(actele->Id());
         if(it != ghost_penalty_map.end())
         {
-          bool ghost_penalty = it->second;
+          int ghost_penalty = it->second;
 
-          if(ghost_penalty) IO::GMSH::elementAtInitialPositionToStream(double((int)ghost_penalty),actele, gmshfilecontent);
+          if(ghost_penalty) IO::GMSH::elementAtInitialPositionToStream(double(ghost_penalty),actele, gmshfilecontent);
         }
         else dserror("face %d in map not found", actele->Id());
       }
@@ -3864,14 +3936,14 @@ void FLD::XFluid::Output()
       for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
       {
         const DRT::Element* actele = xdiscret->lRowIntFace(i);
-        std::map<int,bool> & edge_based_map = state_->EdgeStab()->GetEdgeBasedMap();
-        map<int,bool>::iterator it = edge_based_map.find(actele->Id());
+        std::map<int,int> & edge_based_map = state_->EdgeStab()->GetEdgeBasedMap();
+        map<int,int>::iterator it = edge_based_map.find(actele->Id());
 
         if(it != edge_based_map.end())
         {
-          bool edge_stab =it->second;
+          int edge_stab =it->second;
 
-          if(edge_stab) IO::GMSH::elementAtInitialPositionToStream(double((int)edge_stab),actele, gmshfilecontent);
+          if(edge_stab) IO::GMSH::elementAtInitialPositionToStream(double(edge_stab),actele, gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";
@@ -3923,10 +3995,12 @@ void FLD::XFluid::Output()
 
    if (step_%upres_ == 0)
    {
+
+
        fluid_output_->NewStep(step_,time_);
 
-       const Epetra_Map* dofrowmap = dofset_out_->DofRowMap(); // original fluid unknowns
-       const Epetra_Map* xdofrowmap = discret_->DofRowMap();  // fluid unknown for current cut
+       const Epetra_Map* dofrowmap  = dofset_out_->DofRowMap(); // original fluid unknowns
+       const Epetra_Map* xdofrowmap = discret_->DofRowMap();   // fluid unknown for current cut
 
 
        for (int i=0; i<discret_->NumMyRowNodes(); ++i)
@@ -3967,38 +4041,64 @@ void FLD::XFluid::Output()
                    (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
                }
            }
-           else cout << "decide which dofs are used for output!!!" << endl;
-	   //	     else
-	   //	     {
-	   //	       //cout << "some values available" << endl;
-	   //
-	   //	       //const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
-	   //	       const std::set<FieldEnr> dofset = entry->second;
-	   //
-	   //	       const LINALG::Matrix<3,1> actpos(xfemnode->X());
-	   //	       int idof = 0;
-	   //	       for(std::set<XFEM::PHYSICS::Field>::const_iterator field_out = fields_out.begin(); field_out != fields_out.end(); ++field_out)
-	   //	       {
-	   //	         for(std::set<FieldEnr>::const_iterator fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
-	   //	         {
-	   //	           const XFEM::PHYSICS::Field fielditer = fieldenr->getField();
-	   //	           if (fielditer == *field_out)
-	   //	           {
-	   //	             const double enrval = fieldenr->getEnrichment().EnrValue(actpos, *ih_, XFEM::Enrichment::approachUnknown);
-	   //	             const XFEM::DofKey<XFEM::onNode> dofkey(gid,*fieldenr);
-	   //	             const int origpos = nodalDofDistributionMap.find(dofkey)->second;
-	   //	             //cout << origpos << endl;
-	   //	             if (origpos < 0)
-	   //	               dserror("bug!");
-	   //	             if (gdofs[idof] < 0)
-	   //	               dserror("bug!");
-	   //	             (*outvec)[dofrowmap->LID(gdofs[idof])] += enrval * original_vector[xdofrowmap->LID(origpos)];
-	   //	           }
-	   //	         }
-	   //	         //cout << "LID " << dofrowmap->LID(gdofs[idof]) << " -> GID " << gdofs[idof] << endl;
-	   //	         idof++;
-	   //	       }
-	   //	     }
+           else if(gdofs_current.size() % gdofs_original.size() == 0) //multiple dofsets
+           {
+             // if there are multiple dofsets we write output for the standard dofset
+             GEO::CUT::Node* node = state_->wizard_->GetNode(xfemnode->Id());
+
+             GEO::CUT::Point* p = node->point();
+
+             const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> > & dofcellsets = node->DofCellSets();
+
+             int nds = 0;
+             bool is_std_set = false;
+
+             // find the standard dofset
+             for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator cellsets= dofcellsets.begin();
+                 cellsets!=dofcellsets.end();
+                 cellsets++)
+             {
+               // at least one vc has to contain the node
+               for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cellsets->begin(); sets!=cellsets->end(); sets++)
+               {
+                 // break the outer loop if at least one vc contains this point
+                 if(is_std_set == true) break;
+
+                 const GEO::CUT::plain_volumecell_set& set = *sets;
+
+                 for(GEO::CUT::plain_volumecell_set::const_iterator vcs=set.begin(); vcs!=set.end(); vcs++)
+                 {
+                   if((*vcs)->Contains(p))
+                   {
+                     // return if at least one vc contains this point
+                     is_std_set=true;
+                     break;
+                   }
+                 }
+               }
+               nds++;
+             }
+
+
+             size_t numdof = gdofs_original.size();
+             size_t offset = 0; // no offset in case of no std-dofset means take the first dofset for output
+
+             if(is_std_set)
+             {
+               offset = numdof*nds;   // offset to start the loop over dofs at the right nds position
+             }
+
+             // copy all values
+             for (std::size_t idof = 0; idof < numdof; ++idof)
+             {
+               (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[offset+idof])];
+             }
+
+
+             // if there are just ghost values, then we write output for the set with largest physical fluid volume
+           }
+           else dserror("unknown number of dofs for output");
+
        };
 
        // output (hydrodynamic) pressure for visualization
@@ -4030,13 +4130,16 @@ void FLD::XFluid::Output()
 
        boundary_output_->WriteVector("ivelnp", ivelnp_);
        boundary_output_->WriteVector("idispnp", idispnp_);
+       boundary_output_->WriteVector("itrueresnp", itrueresidual_);
 
        boundary_output_->WriteElementData();
 
        // write restart
        if (write_restart_data)
        {
-         boundary_output_->WriteVector("ivelnp_res", ivelnp_);
+         boundary_output_->WriteVector("iveln_res",   iveln_);
+         boundary_output_->WriteVector("idispn_res",  idispn_);
+         boundary_output_->WriteVector("ivelnp_res",  ivelnp_);
          boundary_output_->WriteVector("idispnp_res", idispnp_);
        }
 
@@ -4148,6 +4251,10 @@ void FLD::XFluid::SetInitialFlowField(
   const int startfuncno
   )
 {
+
+  // no set initial flow field for restart
+  if(step_ != 0) return;
+
 
   // initial field by (undisturbed) function (init==2)
   // or disturbed function (init==3)
@@ -4318,15 +4425,15 @@ void FLD::XFluid::SetInitialInterfaceField()
   }
 
   return;
-} // end SetInitialSolidField
+} // end SetInitialInterfaceField
 
 
 /*----------------------------------------------------------------------*
  |  set interface displacement at current time             schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::SetInterfaceDisplacement( double time )
+void FLD::XFluid::SetInterfaceDisplacement()
 {
-  cout << "\t set interface displacement at current time " << time << endl;
+  cout << "\t set interface displacement at current time " << time_ << endl;
 
   if( timealgo_ != INPAR::FLUID::timeint_stationary)
   {
@@ -4336,11 +4443,11 @@ void FLD::XFluid::SetInterfaceDisplacement( double time )
 
       if(interface_disp_func_no_ != -1)
       {
-        cout << "\t ... solid displacement by FUNCT " << interface_disp_func_no_ << " and CURVE " << interface_disp_curve_no_ << endl;
+        cout << "\t ... interface displacement by FUNCT " << interface_disp_func_no_ << " and CURVE " << interface_disp_curve_no_ << endl;
 
         double curvefac = 1.0;
 
-        if( interface_disp_curve_no_ > -1) curvefac = DRT::Problem::Instance()->Curve( interface_disp_curve_no_-1).f(time);
+        if( interface_disp_curve_no_ > -1) curvefac = DRT::Problem::Instance()->Curve( interface_disp_curve_no_-1).f(time_);
 
         // loop all nodes on the processor
         for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
@@ -4374,7 +4481,92 @@ void FLD::XFluid::SetInterfaceDisplacement( double time )
     }
     else if( interface_disp_ == INPAR::XFEM::interface_disp_by_fsi)
     {
-      dserror("do not call ComputeSolidDisplacement for fsi application!");
+      dserror("do not call SetInterfaceDisplacement for fsi application!");
+    }
+    else if( interface_disp_ == INPAR::XFEM::interface_disp_by_implementation)
+    {
+      cout << "\t ... interface displacement by IMPLEMENTATION " << endl;
+
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        const vector<int> nodedofset = boundarydis_->Dof(lnode);
+
+        if (nodedofset.size()!=0)
+        {
+
+          double time_offset = 0.35;
+
+          if(time_ > time_offset)
+          {
+          // rotation with constant angle velocity around point
+          LINALG::Matrix<3,1> center(true);
+
+          center(0) = 0.0;
+          center(1) = 0.0;
+          center(2) = 0.0;
+
+          const double* x_coord = lnode->X();
+
+          LINALG::Matrix<3,1> node_coord(true);
+          node_coord(0) = x_coord[0];
+          node_coord(1) = x_coord[1];
+          node_coord(2) = x_coord[2];
+
+          LINALG::Matrix<3,1> diff(true);
+          diff(0) = node_coord(0)-center(0);
+          diff(1) = node_coord(1)-center(1);
+          diff(2) = node_coord(2)-center(2);
+
+          // rotation matrix
+          double T=16.0; // time for one rotation
+
+          LINALG::Matrix<3,3> rot(true);
+          double arg=2.*M_PI*(time_-0.3)/T;
+
+          rot(0,0) = cos(arg);            rot(0,1) = -sin(arg);          rot(0,2) = 0.0;
+          rot(1,0) = sin(arg);            rot(1,1) = cos(arg);           rot(1,2) = 0.0;
+          rot(2,0) = 0.0;                 rot(2,1) = 0.0;                rot(2,2) = 1.0;
+
+//          double r= diff.Norm2();
+//
+//          rot.Scale(r);
+
+          LINALG::Matrix<3,1> x_new(true);
+          LINALG::Matrix<3,1> rotated(true);
+
+          rotated.Multiply(rot,diff);
+
+          x_new.Update(1.0,rotated,-1.0, diff);
+
+
+          for(int dof=0;dof<(int)nodedofset.size();++dof)
+          {
+            int gid = nodedofset[dof];
+
+            double initialval=0.0;
+            if(dof<3) initialval = x_new(dof);
+
+            idispnp_->ReplaceGlobalValues(1,&initialval,&gid);
+          }
+        }
+        }
+        else
+        {
+          for(int dof=0;dof<(int)nodedofset.size();++dof)
+          {
+            int gid = nodedofset[dof];
+
+            double initialval=0.0;
+
+            idispnp_->ReplaceGlobalValues(1,&initialval,&gid);
+          }
+        }
+
+      }
     }
     else dserror("unknown solid_disp type");
 
@@ -4419,6 +4611,11 @@ void FLD::XFluid::ComputeInterfaceVelocities()
       {
         cout << " (second order: YES) " << endl;
         thetaiface = 0.5;
+//        if(step_==1)
+//        {
+//          thetaiface = 1.0;
+//          cout << " changed theta_Interface to " << thetaiface << " in step " << step_ << endl;
+//        }
       }
       else
       {
@@ -4426,10 +4623,14 @@ void FLD::XFluid::ComputeInterfaceVelocities()
         thetaiface = 1.0;
       }
 
+//      cout << "idispn" << *idispn_ << endl;
+//      cout << "idispnp" << *idispnp_ << endl;
+
+
       ivelnp_->Update(1.0/(thetaiface*Dt()),*idispnp_,-1.0/(thetaiface*Dt()),*idispn_,0.0);
       ivelnp_->Update(-(1.0-thetaiface)/thetaiface,*iveln_,1.0);
 
-      cout << "ivelnp_ " << *ivelnp_ << endl;
+//      cout << "ivelnp_" << *ivelnp_ << endl;
 
     }
     else if(interface_vel_ == INPAR::XFEM::interface_vel_by_funct)
@@ -4438,6 +4639,9 @@ void FLD::XFluid::ComputeInterfaceVelocities()
       if(interface_vel_func_no_ != -1)
       {
         cout << "\t ... interface velocity by FUNCT " << interface_vel_func_no_ << endl;
+
+        double curvefac = 1.0;
+
 
         // loop all nodes on the processor
         for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
@@ -4454,6 +4658,8 @@ void FLD::XFluid::ComputeInterfaceVelocities()
               int gid = nodedofset[dof];
 
               double initialval=DRT::Problem::Instance()->Funct(interface_vel_func_no_-1).Evaluate(dof%4,lnode->X(),time_,NULL);
+
+              initialval *= curvefac;
               ivelnp_->ReplaceGlobalValues(1,&initialval,&gid);
             }
           } // end if
@@ -4637,6 +4843,9 @@ void FLD::XFluid::GenAlphaUpdateAcceleration()
 void FLD::XFluid::ReadRestart(int step)
 {
 
+  cout << "ReadRestart for fluid dis " << endl;
+
+
   //-------- fluid discretization
   //  ART_exp_timeInt_->ReadRestart(step);
   IO::DiscretizationReader reader(discret_,step);
@@ -4645,9 +4854,15 @@ void FLD::XFluid::ReadRestart(int step)
 
   reader.ReadVector(state_->velnp_,"velnp_res");
   reader.ReadVector(state_->velnm_,"velnm_res");
-  reader.ReadVector(state_->veln_,"veln_res");
+  reader.ReadVector(state_->veln_, "veln_res" );
   reader.ReadVector(state_->accnp_,"accnp_res");
-  reader.ReadVector(state_->accn_ ,"accn_res");
+  reader.ReadVector(state_->accn_ ,"accn_res" );
+
+  cout << "velnp_ " << *(state_->velnp_) << endl;
+  cout << "veln_ "  << *(state_->veln_)  << endl;
+  cout << "accnp_ " << *(state_->accnp_) << endl;
+  cout << "accn_ "  << *(state_->accn_)  << endl;
+
 
   // set element time parameter after restart:
   // Here it is already needed by AVM3 and impedance boundary condition!!
@@ -4664,16 +4879,35 @@ void FLD::XFluid::ReadRestart(int step)
   if (not (discret_->DofRowMap())->SameAs(state_->accn_->Map()))
     dserror("Global dof numbering in maps does not match");
 
-  //-------- boundary discretization
-  IO::DiscretizationReader boundaryreader(boundarydis_,step);
-
-  boundaryreader.ReadVector(ivelnp_,"ivelnp_res");
-  boundaryreader.ReadVector(idispnp_, "idispnp_res");
+//  //-------- boundary discretization
+//  IO::DiscretizationReader boundaryreader(boundarydis_,step);
+//
+//  boundaryreader.ReadVector(ivelnp_,"ivelnp_res");
+//  boundaryreader.ReadVector(idispnp_, "idispnp_res");
 
   if (not (boundarydis_->DofRowMap())->SameAs(ivelnp_->Map()))
     dserror("Global dof numbering in maps does not match");
   if (not (boundarydis_->DofRowMap())->SameAs(idispnp_->Map()))
     dserror("Global dof numbering in maps does not match");
+
+
+  // write gmsh-output for start fields
+  // reference solution output
+  if(gmsh_sol_out_)
+  {
+    int count = -1; // no counter for standard solution output
+
+    const Epetra_Map* colmap = discret_->DofColMap();
+    Teuchos::RCP<Epetra_Vector> output_col_vel = LINALG::CreateVector(*colmap,false);
+    Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
+
+    LINALG::Export(*state_->veln_,*output_col_vel);
+    LINALG::Export(*state_->accn_,*output_col_acc);
+
+    state_->GmshOutput( *discret_, *boundarydis_, "RESTART", step_, count , output_col_vel, output_col_acc );
+
+  }
+
 
 }
 

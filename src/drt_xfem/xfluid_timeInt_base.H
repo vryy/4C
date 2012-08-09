@@ -84,10 +84,11 @@ public:
   //! computation type due to input data (FGI,FRS)
   enum FGIType
   {
-    FRS1FGI1_, // first FRS iteration of first FGI
-    FRS1FGINot1_, // >first FRS iteration of first FGI
-    FRSNot1_ // >first FGI
+    FRS1FGI1_,      /// first FRS iteration of first FGI
+    FRS1FGINot1_,   /// first FRS iteration of first FGI
+    FRSNot1_        /// first FGI
   };
+
   FGIType FGIType_; // computation type due to input data (FGI,FRS)
 
   enum intersectionType
@@ -136,12 +137,12 @@ protected:
 
   //! check if the current point x2 at time t^n changed the side compared to x1
   bool ChangedSide(
-      DRT::Element* ele1,
-      LINALG::Matrix<3,1>& x1,
-      bool newTimeStep1,
-      DRT::Element* ele2,
-      LINALG::Matrix<3,1>& x2,
-      bool newTimeStep2
+      DRT::Element*           ele1,              /// first element where x1 lies in
+      LINALG::Matrix<3,1>&    x1,                /// global coordinates of point x1
+      bool                    newTimeStep1,      /// new/old timestep for point x1
+      DRT::Element*           ele2,              /// second element where x2 lies in
+      LINALG::Matrix<3,1>&    x2,                /// global coordinates of point x2
+      bool                    newTimeStep2       /// new/old timestep for point x2
   ) const
   {
     if(newTimeStep1 != newTimeStep2)
@@ -150,37 +151,47 @@ protected:
     }
     else
     {
-      bool newTimeStep = newTimeStep2;
-
-      return changedSideSameTime( newTimeStep, ele1, x1, ele2, x2);
+      return changedSideSameTime( newTimeStep1, ele1, x1, ele2, x2);
     }
 
     return true;
   }
 
 
-  //! check if the current point x2 at time t^n changed the side compared to x1
+  //! check if the current point x2 changed the side compared to x1
   bool changedSideSameTime(
-      bool newTimeStep,
-      DRT::Element* ele1,
-      LINALG::Matrix<3,1>& x1,
-      DRT::Element* ele2,
-      LINALG::Matrix<3,1>& x2
+      bool                    newTimeStep,       /// new/old timestep for both points x1 and x2
+      DRT::Element*           ele1,              /// first element where x1 lies in
+      LINALG::Matrix<3,1>&    x1,                /// global coordinates of point x1
+      DRT::Element*           ele2,              /// second element where x2 lies in
+      LINALG::Matrix<3,1>&    x2                 /// global coordinates of point x2
   ) const;
 
 
-  bool callSideEdgeIntersection(GEO::CUT::SideHandle* sh,
-      int sid,
-      LINALG::Matrix<3,1>& x1,
-      LINALG::Matrix<3,1>& x2) const;
+  //! check if both element are neighbors sharing at least one common node
+  bool Neighbors(
+      DRT::Element*           ele1,
+      DRT::Element*           ele2,
+      std::set<int> &         common_nodes
+  ) const;
 
+
+  //! check if edge between x1 and x2 cuts the side
+  bool callSideEdgeIntersection(
+      GEO::CUT::SideHandle*         sh,   /// side handle
+      int                           sid,  /// side id
+      LINALG::Matrix<3,1>&          x1,   /// coordinates of edge's start point
+      LINALG::Matrix<3,1>&          x2    /// coordinates of edge's end point
+  ) const;
+
+  //! check if edge between x1 and x2 cuts the side
   template <DRT::Element::DiscretizationType sidetype>
-  bool intersection(
-      GEO::CUT::SideHandle* sh,
-      int sid,
-      LINALG::Matrix<3,1>& x1,
-      LINALG::Matrix<3,1>& x2
-                   ) const;
+  bool callSideEdgeIntersectionT(
+      GEO::CUT::SideHandle*         sh,   /// side handle
+      int                           sid,  /// side id
+      LINALG::Matrix<3,1>&          x1,   /// coordinates of edge's start point
+      LINALG::Matrix<3,1>&          x2    /// coordinates of edge's end point
+  ) const;
 
   //! identify interface side of a point in combustion
   int interfaceSide(
@@ -237,21 +248,21 @@ protected:
       bool& pointInDomain
   ) const;
 
-  //! transformation of point x to local eta-coordinates of an integration cell
+  //! transformation of point x to local xi-coordinates of an integration cell
   void callXToXiCoords(
-      const DRT::Element* ele,
-      LINALG::Matrix<3,1>& x,
-      LINALG::Matrix<3,1>& xi,
-      bool& pointInDomain
+      const DRT::Element*    ele,           /// pointer to element
+      LINALG::Matrix<3,1>&   x,             /// global coordinates of element
+      LINALG::Matrix<3,1>&   xi,            /// determined local coordinates w.r.t ele
+      bool&                  pointInDomain  /// lies point in element ?
   ) const;
 
-  //! transformation of point x to local eta-coordinates of an integration cell
+  //! call the computation of local coordinates for a polytop with corners given by the coordinates
   void callXToXiCoords(
-      LINALG::SerialDenseMatrix& nodecoords,
-      DRT::Element::DiscretizationType DISTYPE,
-      LINALG::Matrix<3,1>& x,
-      LINALG::Matrix<3,1>& xi,
-      bool& pointInDomain
+      LINALG::SerialDenseMatrix&        nodecoords,    /// node coordinates of element
+      DRT::Element::DiscretizationType  DISTYPE,       /// discretization type
+      LINALG::Matrix<3,1>&              x,             /// global coordinates of element
+      LINALG::Matrix<3,1>&              xi,            /// determined local coordinates w.r.t ele
+      bool&                             pointInDomain  /// lies point in element ?
   ) const;
 
 
@@ -310,6 +321,7 @@ protected:
     //! constructor for basic data for standard computation
     TimeIntData(
         DRT::Node& node,
+        int nds_np,
         LINALG::Matrix<3,1> vel,
         vector<LINALG::Matrix<3,3> > velDeriv,
         vector<LINALG::Matrix<1,3> > presDeriv,
@@ -323,6 +335,7 @@ protected:
         type newtype
     ) :
       node_(node),
+      nds_np_(nds_np),
       vel_(vel),
       velDeriv_(velDeriv),
       presDeriv_(presDeriv),
@@ -455,12 +468,18 @@ protected:
      *----------------------------------------------*/
 
     DRT::Node 						node_; // node according to startpoint
+    int                   nds_np_; // nds (nodal dofset number) number at new interface position, for which SL-algo is called
     LINALG::Matrix<3,1> 			vel_; // velocity at point x (=x_Lagr(t^n+1))
     vector<LINALG::Matrix<3,3> > 	velDeriv_; // velocity gradient at point x (=x_Lagr(t^n+1))
     vector<LINALG::Matrix<1,3> > 	presDeriv_; // pressure gradient at point x (=x_Lagr(t^n+1))
     LINALG::Matrix<3,1> 			startpoint_; // startpoint approximation
     std::vector<int>       nds_; // startpoint approximation
+    std::vector<int>       last_valid_nds_; // last valid nds vector (used, when iteration of lagrangian origin moves inside the structure, of changes the side
+    int                    last_valid_ele_; // last valid element id (used, when iteration of lagrangian origin moves inside the structure, of changes the side
+    bool                   changedside_; // changed side compared to initial point
     LINALG::Matrix<3,1>       initialpoint_; // first startpoint approximation at the right side
+    int                       initial_eid_;  // element Id of element where the initialpoint lies in
+    bool                     accepted_; // accepted lagrangian origin
     double 							phiValue_; // phi-value according to the analysed node at time t^n+1
     int 							searchedProcs_; // searched procnumber if point lies in
     int 							counter_; // newton iteration counters for the points
@@ -473,7 +492,7 @@ protected:
     vector<LINALG::Matrix<1,4> > 	kinkValues_; // computed kink values for a node's kink enrichment dof
     state state_; // status for both the used special algorithm and the state within the algorithm
     type type_; // basic computation type due to FGI and FRS
-    projection proj_;
+    projection proj_;           /// projection of node on structural movement is on side/line/point/failed
 
   protected:
 
@@ -550,24 +569,24 @@ protected:
 
   //! clear all data having some state
   void clearState(
-      TimeIntData::state state
+      TimeIntData::state state /// state of time int to clear
   ) const;
 
   //! data at an arbitrary point lying in an element
   template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
-  void pointdataXFEM(
-      DRT::Element* element,
-      LINALG::Matrix<3,1>& xi,
-      LINALG::Matrix<3,3>& xji,
-      LINALG::Matrix<numnode,1>& shapeFcn,
-      LINALG::Matrix<3,numnode>& shapeFcnDerivXY,
-      bool compute_deriv
+  void evalShapeAndDeriv(
+      DRT::Element*                 element,           /// pointer to element
+      LINALG::Matrix<3,1>&          xi,                /// local coordinates of point w.r.t element
+      LINALG::Matrix<3,3>&          xji,               /// inverse of jacobian
+      LINALG::Matrix<numnode,1>&    shapeFcn,          /// shape functions at point
+      LINALG::Matrix<3,numnode>&    shapeFcnDerivXY,   /// derivatives of shape function w.r.t global coordiantes xyz
+      bool                          compute_deriv      /// shall derivatives and jacobian be computed
   ) const
   {
     const int* elenodeids = element->NodeIds();  // nodeids of element
     const int nsd = 3;                           // dimension
 
-    // clear data that should be filled
+    // clear data that shall be filled
     shapeFcn.Clear();
     shapeFcnDerivXY.Clear();
 
@@ -586,28 +605,29 @@ protected:
       }
 
 
-      LINALG::Matrix<3,numnode> shapeFcnDeriv; // shape function derivatives w.r.t local coordinates
+      // shape function derivatives w.r.t local coordinates
+      LINALG::Matrix<3,numnode> shapeFcnDeriv;
       DRT::UTILS::shape_function_3D_deriv1(shapeFcnDeriv,xi(0),xi(1),xi(2),DISTYPE);
 
-      LINALG::Matrix<nsd,nsd> xji(true);              // inverse of jacobian
       LINALG::Matrix<nsd,nsd> xjm(true);              // jacobi matrix
       xjm.MultiplyNT(shapeFcnDeriv,nodecoords);       // jacobian J = (dx/dxi)^T
+      xji.Clear();
       xji.Invert(xjm);                                // jacobian inverted J^(-1) = dxi/dx
 
-      shapeFcnDerivXY.Multiply(xji,shapeFcnDeriv);       // (dN/dx)^T = (dN/dxi)^T * J^(-T)
+      shapeFcnDerivXY.Multiply(xji,shapeFcnDeriv);    // (dN/dx)^T = (dN/dxi)^T * J^(-T)
 
     } // end if
 
     return;
-  }; // end template pointdataXFEM
+  }; // end template evalShapeAndDeriv
 
   //! compute local element coordinates and check whether the according point is inside the element
   template<DRT::Element::DiscretizationType DISTYPE>
   void XToXiCoords(
-      LINALG::SerialDenseMatrix& xyz_,
-      LINALG::Matrix<3,1>& x,
-      LINALG::Matrix<3,1>& xi,
-      bool& pointInCell
+      LINALG::SerialDenseMatrix& xyz_,        /// node coordinates of element
+      LINALG::Matrix<3,1>&       x,           /// global coordinates of point
+      LINALG::Matrix<3,1>&       xi,          /// determined local coordinates w.r.t ele
+      bool&                      pointInCell  /// lies point in element?
   ) const
   {
     const int nsd = 3; // dimension
@@ -621,6 +641,8 @@ protected:
 
     pointInCell = pos.WithinLimitsTol(newton_tol_); // check if point is in element
   };
+
+
 }; // class TimeInt
 
 
@@ -635,13 +657,12 @@ public:
 
   //! constructor
   explicit XFLUID_STD(
-      XFEM::XFLUID_TIMEINT_BASE& timeInt,
-      const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,
-      INPAR::XFEM::XFluidTimeInt& timeIntType,
-      const RCP<Epetra_Vector> veln,
-      const double& dta,
-      const RCP<COMBUST::FlameFront> flamefront,
-      bool initialize
+      XFEM::XFLUID_TIMEINT_BASE&                                       timeInt,            /// time integration base class object
+      const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&   reconstr_method,    /// reconstruction map for nodes and its dofsets
+      INPAR::XFEM::XFluidTimeInt&                                      timeIntType,        /// type of time integration
+      const RCP<Epetra_Vector>                                         veln,               /// velocity at time t^n
+      const double&                                                    dt,                 /// time step size
+      bool                                                             initialize          /// is initialization?
   );
 
   //! destructor
@@ -655,45 +676,44 @@ public:
       vector<RCP<Epetra_Vector> >& newRowVectorsn
   );
 
-  //! initialize data when called in a new FGI
-  void importNewFGIData(
-      const RCP<DRT::Discretization> discret,
-      const RCP<XFEM::DofManager> newdofman,
-      const RCP<COMBUST::FlameFront> flamefront,
-      const Epetra_Map& newdofrowmap,
-      const map<DofKey, DofGID>& newNodalDofRowDistrib
-  );
+//  //! initialize data when called in a new FGI
+//  void importNewFGIData(
+//      const RCP<DRT::Discretization> discret,
+//      const RCP<XFEM::DofManager> newdofman,
+//      const RCP<COMBUST::FlameFront> flamefront,
+//      const Epetra_Map& newdofrowmap,
+//      const map<DofKey, DofGID>& newNodalDofRowDistrib
+//  );
 
-  //! search for an element containing some point
+  //! identify an element containing a point and additional data
   void elementSearch(
-      DRT::Element*& ele,
-      LINALG::Matrix<3,1>& x,
-      LINALG::Matrix<3,1>& xi,
-//      LINALG::Matrix<3,1>& vel,
-      bool& elefound
+      DRT::Element*&        ele,   /// pointer to element if point lies in a found element
+      LINALG::Matrix<3,1>&  x,     /// global coordiantes of point
+      LINALG::Matrix<3,1>&  xi,    /// determined local coordinates w.r.t ele
+      bool&                 found  /// is element found?
   ) const;
 
-  //! call the interpolation of velocity and phi-value for a point in an element
+  //! interpolate velocity and derivatives for a point in an element
   void getGPValues(
-      DRT::Element* ele,
-      LINALG::Matrix<3,1>& xi,
-      std::vector<int>& nds,
-      bool step_np,
-      LINALG::Matrix<3,1>& vel,
-      LINALG::Matrix<3,3>& vel_deriv,
-      bool compute_deriv = true
+      DRT::Element*                 ele,                 /// pointer to element
+      LINALG::Matrix<3,1>&          xi,                  /// local coordinates of point w.r.t element
+      std::vector<int>&             nds,                 /// nodal dofset of point for elemental nodes
+      bool                          step_np,             /// computation w.r.t. old or new interface position
+      LINALG::Matrix<3,1>&          vel,                 /// determine velocity at point
+      LINALG::Matrix<3,3>&          vel_deriv,           /// determine velocity derivatives at point
+      bool                          compute_deriv=true   /// shall derivatives be computed?
   ) const;
 
-  //! interpolate the velocity for a point in an element
+  //! interpolate velocity and derivatives for a point in an element
   template<DRT::Element::DiscretizationType DISTYPE>
-  void getGPValues(
-      DRT::Element* ele,
-      LINALG::Matrix<3,1>& xi,
-      std::vector<int>& nds,
-      bool step_np,
-      LINALG::Matrix<3,1>& vel,
-      LINALG::Matrix<3,3>& vel_deriv,
-      bool compute_deriv = true
+  void getGPValuesT(
+      DRT::Element*                 ele,                 /// pointer to element
+      LINALG::Matrix<3,1>&          xi,                  /// local coordinates of point w.r.t element
+      std::vector<int>&             nds,                 /// nodal dofset of point for elemental nodes
+      bool                          step_np,             /// computation w.r.t. old or new interface position
+      LINALG::Matrix<3,1>&          vel,                 /// determine velocity at point
+      LINALG::Matrix<3,3>&          vel_deriv,           /// determine velocity derivatives at point
+      bool                          compute_deriv=true   /// shall derivatives be computed?
   ) const
   {
     Teuchos::RCP<const Epetra_Vector> vel_vec = Teuchos::null;
@@ -709,14 +729,16 @@ public:
     const int numdofpernode = nsd +1;
     const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement; // number of element nodes
 
-
-    LINALG::Matrix<numnode,1>    shapeFcn(true);       // shape function at point
-    LINALG::Matrix<nsd,numnode>  shapeFcnDeriv(true);  // xyz shape derivatives at point
-    LINALG::Matrix<nsd,nsd>      xji(true);            // inverse of jacobian
-
+    //-------------------------------------------------------
+    // initialization
+    LINALG::Matrix<numnode,1>    shapeFcn(true);       /// shape function at point
+    LINALG::Matrix<nsd,numnode>  shapeFcnDeriv(true);  /// xyz shape derivatives at point
+    LINALG::Matrix<nsd,nsd>      xji(true);            /// inverse of jacobian
 
     //-------------------------------------------------------
     // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+    if((int)(nds.size()) != numnode) dserror("size of nds-vector (%d) != numnode(%d)", nds.size(), numnode);
+
     std::vector<int> lm;
 
     for(int inode=0; inode< numnode; inode++)
@@ -732,12 +754,11 @@ public:
         lm.push_back(dofs[j]);
       }
     }
-    //-------------------------------------------------------
 
+    //-------------------------------------------------------
     // get element-wise velocity/pressure field
     LINALG::Matrix<nsd,numnode> evel(true);
     LINALG::Matrix<numnode,1>   epre(true);
-
 
     if(vel_vec == null)
       dserror("Cannot get state vector %s", state.c_str());
@@ -755,11 +776,9 @@ public:
       (epre)(inode,0) = mymatrix[nsd+(inode*numdofpernode)];
     }
 
-    cout << "element velocity " << evel << endl;
 
     //-------------------------------------------------------
-
-    pointdataXFEM<numnode,DISTYPE>(
+    evalShapeAndDeriv<numnode,DISTYPE>(
         ele,
         xi,
         xji,
@@ -769,23 +788,21 @@ public:
     );
 
     //-------------------------------------------------------
-
     // interpolate velocity and pressure values at starting point
     vel.Clear(); // set to zero
     vel.Multiply(evel, shapeFcn);
 
+    //double pres = 0.0;
+    //pres = epre.Dot(shapeFcn);
+
     if(compute_deriv)
     {
+      vel_deriv.Clear();
       vel_deriv.MultiplyNT(evel,shapeFcnDeriv);
     }
 
-    //-------------------------------------------------------
-
-
-
-
-
-  }; // end template getGPValues
+    return;
+  }; // end template getGPValuesT
 
 
 
@@ -901,11 +918,51 @@ protected:
   explicit XFLUID_STD();
 
   //! determine a first starting point approximation
-  // for points "x" which changed interface side
+  // for nodes "x" marked for semi-lagrangian algo
   void startpoints();
 
   //! project point on structural surface and track the projection back at t^n
   void ProjectAndTrackback(TimeIntData& data);
+
+  //! call and prepare the projection of point to side
+  void CallProjectOnSide(
+      DRT::Element*          side,                 ///< pointer to structural side element
+      LINALG::Matrix<3,1>&   newNodeCoords,        ///< node coordinates of point that has to be projected
+      int &                  proj_sid,             ///< id of side when projection lies on side
+      double &               min_dist,             ///< minimal distance, potentially updated
+      LINALG::Matrix<3,1>&   proj_x_np,            ///< projection of point on this side
+      LINALG::Matrix<2,1>&   proj_xi_side,         ///< local coordinates of projection of point w.r.t to this side
+      TimeIntData&           data                  ///< reference to data
+      );
+
+  //! call and prepare the projection of point to line
+  void CallProjectOnLine(
+      DRT::Element*                    side,                 ///< pointer to structural side element
+      DRT::Element*                    line,                 ///< pointer to structural line of side element
+      int                              line_count,           ///< local line id w.r.t side element
+      LINALG::Matrix<3,1>&             newNodeCoords,        ///< node coordinates of point that has to be projected
+      double &                         min_dist,             ///< minimal distance, potentially updated
+      LINALG::Matrix<3,1>&             proj_x_np,            ///< projection of point on this side
+      map<vector<int>, vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
+      map<vector<int>, vector<int> >&     proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
+      map<vector<int>, vector<int> >&     proj_nid_line,        ///< map<sorted nids, side Ids>
+      int &                            proj_sid,             ///< id of side that contains the projected point
+      TimeIntData&                     data                  ///< reference to data
+      );
+
+  //! call and prepare the projection of point to point (distance computation)
+  void CallProjectOnPoint(
+      DRT::Node*                     node,                 ///< pointer to node
+      LINALG::Matrix<3,1>&           newNodeCoords,        ///< node coordinates of point that has to be projected
+      double &                       min_dist,             ///< minimal distance, potentially updated
+      int &                          proj_nid_np,          ///< nid id of projected point on surface
+      LINALG::Matrix<3,1>&           proj_x_np,            ///< projection of point on this side
+      int &                          proj_sid,             ///< id of side that contains the projected point
+      map<vector<int>, vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
+      map<vector<int>, vector<int> >    proj_lineid,          ///< map<side ID, local line id>
+      map<vector<int>, vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
+      TimeIntData&                   data                  ///< reference to data
+      );
 
   //! project point from in normal direction onto corresponding side
   template<DRT::Element::DiscretizationType side_distype, const int numdof>
@@ -943,28 +1000,62 @@ protected:
   bool WithinLimits(LINALG::Matrix<3,1>& xsi_);
 
   //! check if local coordinates are within limits
-  template<DRT::Element::DiscretizationType side_distype, const int numdof>
   void ComputeStartPoint_Side(
+      DRT::Element*                side,           ///< pointer to side element
       Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
       const vector<int>&           lm,             ///< local map
-      LINALG::Matrix<3,1> &        x_side,         ///< projected point on side
       LINALG::Matrix<2,1> &        xi_side,        ///< local coordinates of projected point w.r.t side
       double &                     dist,            ///< distance from point to its projection
       LINALG::Matrix<3,1>&         proj_x_n,       ///< projected point at t^n
       LINALG::Matrix<3,1>&         start_point     ///< final start point
       );
 
-  //! check if local coordinates are within limits
-  template<DRT::Element::DiscretizationType line_distype, const int numdof>
+
   void ComputeStartPoint_Line(
-      Epetra_SerialDenseMatrix &   line_xyze,      ///< line's node coordinates
-      const vector<int>&           lm,             ///< local map
-      LINALG::Matrix<3,1> &        x_line,         ///< projected point on side
-      LINALG::Matrix<2,1> &        xi_line,        ///< local coordinates of projected point w.r.t line
+      DRT::Element*                side1,           ///< pointer to side element
+      Epetra_SerialDenseMatrix &   side1_xyze,      ///< side's node coordinates
+      DRT::Element*                side2,           ///< pointer to side element
+      Epetra_SerialDenseMatrix &   side2_xyze,      ///< side's node coordinates
+      const vector<int>&           lm1,             ///< local map
+      const vector<int>&           lm2,             ///< local map
       double &                     dist,           ///< distance from point to its projection
       LINALG::Matrix<3,1>&         proj_x_n,       ///< projected point at t^n
       LINALG::Matrix<3,1>&         start_point     ///< final start point
       );
+
+  void callgetNormalSide_tn(
+      DRT::Element*                side,           ///< pointer to side element
+      LINALG::Matrix<3,1>&         normal,         ///< normal vector w.r.t side
+      Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
+      const vector<int>&           lm,             ///< local map
+      LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
+      LINALG::Matrix<2,1> &        xi_side         ///< local coordinates of projected point w.r.t side
+  );
+
+  template<DRT::Element::DiscretizationType side_distype, const int numdof>
+  void getNormalSide_tn(
+      LINALG::Matrix<3,1>&         normal,         ///< normal vector w.r.t side
+      Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
+      const vector<int>&           lm,             ///< local map
+      LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
+      LINALG::Matrix<2,1> &        xi_side         ///< local coordinates of projected point w.r.t side
+      );
+
+  void call_get_projxn_Line(
+      DRT::Element*                    side,                 ///< pointer to structural side element
+      DRT::Element*                    line,                 ///< pointer to structural line of side element
+
+      LINALG::Matrix<3,1>&             proj_x_n,
+      double &                         xi_line
+      );
+
+  template<DRT::Element::DiscretizationType line_distype, const int numdof>
+  void get_projxn_Line(
+      Epetra_SerialDenseMatrix &   line_xyze,      ///< line's node coordinates
+      const vector<int>&           lm,             ///< local map
+      LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
+      double &                     xi_line         ///< local coordinates of projected point w.r.t line
+  );
 
   //! add side's or line's interface displacements and set current node coordinates
   template<DRT::Element::DiscretizationType distype, const int numdof>
@@ -986,7 +1077,7 @@ protected:
   set<int> oldEnrNodes_; // global ids of column nodes intersected by old interface at time n
   const double dt_; // time step size
 
-  RCP<COMBUST::FlameFront> flamefront_;
+//  RCP<COMBUST::FlameFront> flamefront_;
   RCP<Epetra_Vector> phinpi_; // phi^n+1,i in column map
 }; // class Startvalues
 

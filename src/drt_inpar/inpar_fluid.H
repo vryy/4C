@@ -168,7 +168,8 @@ namespace INPAR
       channel2D,
       gravitation,
       shear_flow,
-      jeffery_hamel_flow
+      jeffery_hamel_flow,
+      byfunct1
     };
 
     /// initial field

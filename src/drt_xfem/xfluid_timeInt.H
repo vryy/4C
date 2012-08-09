@@ -140,6 +140,12 @@ public:
       INPAR::XFEM::XFluidTimeInt     method
   );
 
+  /// find the standard dofset, return the dofset number of std dofset
+  int FindStdDofSet(
+      GEO::CUT::Node*                                                               node,          /// cut node
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cell_sets  /// dofcellsets of node
+  );
+
   /// is this node a standard or ghost node w.r.t current set
   bool Is_Std_CellSet(
       GEO::CUT::Node*                                  node,     /// cut node
@@ -165,7 +171,7 @@ public:
   );
 
   /// check if the node is within the space time side
-  template<DRT::Element::DiscretizationType space_time_distype>
+  template<DRT::Element::DiscretizationType side_distype, DRT::Element::DiscretizationType space_time_distype>
   bool WithinSpaceTimeSide(
       bool&                   within_space_time_side,    /// within the space time side
       GEO::CUT::SideHandle*   side_old,                  /// side w.r.t old interface

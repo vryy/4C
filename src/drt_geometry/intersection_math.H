@@ -31,6 +31,7 @@ namespace GEO
 
     //! tolerance used for residuals in Newton-methods
     const double                 TOL13 = 1e-13;
+    const double                 TOL12 = 1e-12;
 
     //! tolerance used for residuals in Newton-methods
     const double                 TOL10 = 1e-10;

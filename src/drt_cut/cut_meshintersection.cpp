@@ -309,7 +309,8 @@ void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::
 
             n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
 
-
+            // sort the dofsets for this node after FindDOFSetsNEW
+            n->SortDOFCellSets();
 
         } // end if n_gid >= 0
 
@@ -376,6 +377,8 @@ void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::
                             ele_vc_sets_outside,
                             nodaldofset_vc_sets_outside,
                             vcsets_nid_dofsetnumber_map_toComm_outside);
+
+
 
     }
 

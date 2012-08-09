@@ -14,7 +14,25 @@ namespace CUT
   class Cmp
   {
   public:
+    /// compare operator for plain_volumecell_sets
     bool operator()( plain_volumecell_set s1, plain_volumecell_set s2 );
+
+    /// compare operator for sets of plain_volumecell_sets
+    bool operator()( std::set<plain_volumecell_set, Cmp> set1, std::set<plain_volumecell_set, Cmp> set2);
+
+
+
+  private:
+
+    /// compare routine for sets of plain_volumecell_set
+    bool Compare(std::set<plain_volumecell_set, Cmp> set1, std::set<plain_volumecell_set, Cmp> set2 );
+
+    /// compare routine for plain_volumecell_sets
+    bool Compare(plain_volumecell_set s1, plain_volumecell_set s2 );
+
+    /// compare routine for volumecells based on point ids
+    bool Compare( VolumeCell* vc1, VolumeCell* vc2 );
+
 
   };
 
@@ -103,18 +121,23 @@ public:
   int NumDofSets() const { return DofSets().size();}
 #endif
 
+  void SortDOFCellSets();
+
 private:
 
   void BuildDOFCellSets( Point * p,
                          const std::vector<plain_volumecell_set> & cell_sets,
                          const plain_volumecell_set & cells,
                          const std::vector<plain_volumecell_set> & nodal_cells,
-                         plain_volumecell_set & done );
+                         plain_volumecell_set & done,
+                         bool isnodalcellset = false);
 
   void BuildDOFCellSets( Point * p,
                          const plain_volumecell_set & cells,
                          const plain_volumecell_set & nodal_cells,
                          plain_volumecell_set & done );
+
+
 
   int nid_;
   Point* point_;
@@ -126,6 +149,10 @@ private:
 
   /// stores for each set of dofs, that has to be created, all its volume_sets which has been connected over all adjacent elements
   std::vector<std::set<plain_volumecell_set, Cmp> > dof_cellsets_;
+
+  /// boolian if the first set in dof_cellsets_ is a std set or not, if it is then the first set must not be changed during sorting
+  /// elements without eh assume the first set as std set!
+  bool first_set_is_std_set_;
 };
 
 

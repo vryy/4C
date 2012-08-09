@@ -63,6 +63,11 @@ namespace XFEM
 
 namespace FLD
 {
+  namespace UTILS
+  {
+    class FluidInfNormScaling;
+  }
+
   class XFluid;
 
   /*!
@@ -378,7 +383,7 @@ namespace FLD
     void SetInitialInterfaceField();
 
     /// set the interface displacement
-    void SetInterfaceDisplacement( double time );
+    void SetInterfaceDisplacement();
 
     /// compute interface velocities from function
     void ComputeInterfaceVelocities();
@@ -531,6 +536,10 @@ namespace FLD
     /// return type of enforcing interface conditions
     const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
+
+    //-------------------------------------------------------------------------------
+    // possible inf-norm scaling of linear system / fluid matrix
+    RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
 
     //--------------- discretization and general algorithm parameters----------------
 

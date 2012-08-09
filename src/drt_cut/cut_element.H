@@ -515,6 +515,12 @@ public:
 
 };
 
+//typedef EntityIdLess<Element> ElementIdLess;
+//
+//inline int EntityId( const Element & e ) { return e.Id(); }
+
+
+
 
 }
 }

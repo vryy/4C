@@ -31,6 +31,7 @@ Maintainer: Benedikt Schott
 #include "fluid_ele_parameter.H"
 
 #include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
 
 namespace DRT
 {
@@ -156,6 +157,12 @@ namespace DRT
       /// number of parentnodes of neighbor element
       static const int niel = DRT::UTILS::DisTypeToNumNodePerEle<ndistype>::numNodePerElement;
 
+      /// number of second order derivatives for master element
+      static const int numderiv2_p = DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
+
+      /// number of second order derivatives for slave element
+      static const int numderiv2_n = DRT::UTILS::DisTypeToNumDeriv2<ndistype>::numderiv2;
+
 
 
       /*!
@@ -187,32 +194,32 @@ namespace DRT
 
       //! reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
       void ReassembleMATBlock(
-          int                                               row_block,     ///< row block
-          int                                               col_block,     ///< column block
-          Epetra_SerialDenseMatrix&                         mat_block,     ///< matrix block
-          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-          std::vector<int>&                                 lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-          std::vector<int>&                                 lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+          int                                                          row_block,     ///< row block
+          int                                                          col_block,     ///< column block
+          Epetra_SerialDenseMatrix&                                    mat_block,     ///< matrix block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&    elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&    elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&    elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&    elematrix_ss,  ///< element matrix slave-slave block
+          std::vector<int>&                                            lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+          std::vector<int>&                                            lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
       );
 
       //! reassemble rhs block from master/slave rhs to patch-node block for field (row)
       void ReassembleRHSBlock(
-          int                            row_block,            ///< row block
-          Epetra_SerialDenseVector&      rhs_block,            ///< rhs block
-          LINALG::Matrix<4*piel, 1>&     elevector_m,          ///< element vector master block
-          LINALG::Matrix<4*niel, 1>&     elevector_s,          ///< element vector slave block
-          std::vector<int>&              lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-          std::vector<int>&              lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+          int                                         row_block,            ///< row block
+          Epetra_SerialDenseVector&                   rhs_block,            ///< rhs block
+          LINALG::Matrix<numdofpernode_*piel, 1>&     elevector_m,          ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&     elevector_s,          ///< element vector slave block
+          std::vector<int>&                           lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+          std::vector<int>&                           lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
       );
 
       //! fill element vectors with extracted data
       void GetElementData(
           FluidIntFace*              surfele,          ///< surface FluidIntFace element
-          Fluid*                    master_ele,       ///< master parent element
-          Fluid*                    slave_ele,        ///< slave  parent element
+          Fluid*                     master_ele,       ///< master parent element
+          Fluid*                     slave_ele,        ///< slave  parent element
           double &                   kinvisc,          ///< patch kinematic viscosity
           double &                   dens,             ///< patch density
           vector<double>&            mypvelaf,         ///< master velaf
@@ -226,93 +233,92 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at integr. point
       double EvalShapeFuncAndDerivsAtIntPoint(
-          DRT::UTILS::IntegrationPoints2D&  intpoints,     ///< reference to 2D integration points
-          int                               iquad,         ///< actual integration point
-          int                               master_eid,    ///< master parent element
-          int                               slave_eid,     ///< slave parent element
-          bool                              use2ndderiv = false
+          DRT::UTILS::GaussIntegration::iterator & iquad,         ///< actual integration point
+          int                                      master_eid,    ///< master parent element
+          int                                      slave_eid,     ///< slave parent element
+          bool                                     use2ndderiv = false    ///< flag to use 2nd order derivatives
       );
 
       //! Provide ghost penalty assembly for xfluid case
       void GhostPenalty(
-          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                    timefacfac,    ///< (time factor) x (integration factor)
-          double &                                          tau_grad,      ///< penalty parameter for ghost penalty terms
-          bool &                                            ghost_penalty, ///< boolian if ghost penalty terms has to be assembled
-          bool &                                            ghost_penalty_reconstruct,
-          bool &                                            use2ndderiv
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
+          const double &                                                timefacfac,
+          double &                                                      tau_grad,
+          bool &                                                        ghost_penalty,
+          bool &                                                        ghost_penalty_reconstruct,
+          bool &                                                        use2ndderiv
       );
 
       //! Provide pressure (EOS) stabilization assembly for fluid
       void pressureEOS(
-          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                    timefacfacpre, ///< (time factor pressure) x (integration factor)
-          double &                                          tau_p          ///< penalty parameter for pressure stabilization terms
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+          const double &                                                 timefacfacpre,
+          double &                                                       tau_p
       );
 
       //! Provide divergence and streamline (EOS) stabilization assembly for fluid
       void div_streamline_EOS(
-          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                    timefacfac,          ///< (time factor ) x (integration factor)
-          double &                                          tau_div_streamline,  ///< combined penalty parameter for divergence and streamline stabilization terms
-          LINALG::Matrix<3,3>&                              vderxyaf_diff        ///< velocity derivatives (neighbor-parent) element
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+          const double &                                                 timefacfac,
+          double &                                                       tau_div_streamline,
+          LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff
       );
 
 
       //! Provide pressure (EOS) stabilization assembly for fluid (gradients in normal direction)
       void pressureEOSnormal(
-          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                    timefacfacpre, ///< (time factor pressure) x (integration factor)
-          double &                                          tau_p          ///< penalty parameter for pressure stabilization terms
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+          const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
+          double &                                                       tau_p          ///< penalty parameter for pressure stabilization terms
       );
 
 
       //! Provide divergence (EOS) stabilization assembly for fluid
       void div_EOS(
-          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                    timefacfac,    ///< (time factor ) x (integration factor)
-          double &                                          tau_div,       ///< penalty parameter for divergence stabilization terms
-          LINALG::Matrix<3,3>&                              vderxyaf_diff  ///< velocity derivatives (neighbor-parent) element
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+          const double &                                                 timefacfac,    ///< (time factor ) x (integration factor)
+          double &                                                       tau_div,       ///< combined penalty parameter for divergence stabilization terms
+          LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff  ///< velocity derivatives (neighbor-parent) element
       );
 
 
       //! Provide streamline (EOS) stabilization assembly for fluid
       void streamline_EOS(
-          LINALG::Matrix<4*piel, 4*piel>&                   elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<4*piel, 4*niel>&                   elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<4*niel, 4*piel>&                   elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<4*niel, 4*niel>&                   elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<4*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<4*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                    timefacfac,    ///< (time factor ) x (integration factor)
-          double &                                          tau_streamline,///< combined penalty parameter for streamline stabilization terms
-          LINALG::Matrix<3,3>&                              vderxyaf_diff, ///< velocity derivatives (neighbor-parent) element
-          LINALG::Matrix<3,1>&                              conv_diff      ///< convective velocity (neighbor-parent) element
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&       elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&       elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&       elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&       elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                         elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                         elevector_s,   ///< element vector slave block
+          const double &                                                  timefacfac,    ///< (time factor ) x (integration factor)
+          double &                                                        tau_streamline,///< combined penalty parameter for streamline stabilization terms
+          LINALG::Matrix<nsd_,nsd_>&                                      vderxyaf_diff, ///< velocity derivatives (neighbor-parent) element
+          LINALG::Matrix<nsd_,1>&                                         conv_diff      ///< convective velocity (neighbor-parent) element
       );
 
 
@@ -324,12 +330,12 @@ namespace DRT
 
       //! compute surface diameter w.r.t to parent master element or parent slave element (flag master=true/false)
       template <int numnode>
-      void diameter(     bool                master,           ///< master or slave parent element
-                         std::vector<int> &  connectivity,     ///< connectivity vector for parent element
-                         double &            h_e               ///< element length w.r.t parent element
+      void diameter2D(     bool                master,           ///< master or slave parent element
+                           std::vector<int> &  connectivity,     ///< connectivity vector for parent element
+                           double &            h_e               ///< element length w.r.t parent element
       )
       {
-        LINALG::Matrix<3,numnode> xyz_surf(true);
+        LINALG::Matrix<nsd_,numnode> xyz_surf(true);
 
         if(connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
 
@@ -339,9 +345,10 @@ namespace DRT
           for(int i=0;i<(int)numnode;++i)
           {
             int col = connectivity[i];
-            xyz_surf(0,i)=pxyze_(0, col);
-            xyz_surf(1,i)=pxyze_(1, col);
-            xyz_surf(2,i)=pxyze_(2, col);
+
+            for(int isd=0; isd<nsd_; isd++)
+              xyz_surf(isd,i)=pxyze_(isd, col);
+
           }
         }
         else // parent element is the slave element
@@ -350,14 +357,15 @@ namespace DRT
           for(int i=0;i<(int)numnode;++i)
           {
             int col = connectivity[i];
-            xyz_surf(0,i)=nxyze_(0, col);
-            xyz_surf(1,i)=nxyze_(1, col);
-            xyz_surf(2,i)=nxyze_(2, col);
+
+            for(int isd=0; isd<nsd_; isd++)
+              xyz_surf(isd,i)=nxyze_(isd, col);
+
           }
         }
 
 
-        if(numnode == 4) // quad4 surface
+        if(numnode == 4 or numnode == 8) // quad4 surface and take the corner points also for quad8 surfaces
         {
           double diam1 = 0.0;
           double diam2 = 0.0;
@@ -366,7 +374,7 @@ namespace DRT
           double line2 = 0.0;
           double line3 = 0.0;
 
-          for(int i=0; i<3; i++)
+          for(int i=0; i<nsd_; i++)
           {
 
             // diagonals
@@ -398,7 +406,7 @@ namespace DRT
           double line1 = 0.0;
           double line2 = 0.0;
 
-          for(int i=0; i<3; i++)
+          for(int i=0; i<nsd_; i++)
           {
             // no diagonals
 
@@ -422,6 +430,80 @@ namespace DRT
         return;
        }
 
+      //! compute surface diameter w.r.t to parent master element or parent slave element (flag master=true/false)
+      template <int numnode>
+      void diameter1D(     bool                master,           ///< master or slave parent element
+                           std::vector<int> &  connectivity,     ///< connectivity vector for parent element
+                           double &            h_e               ///< element length w.r.t parent element
+      )
+      {
+        LINALG::Matrix<nsd_,numnode> xyz_surf(true);
+
+        if(connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
+
+        if(master == true) // is parent element the master element?
+        {
+          // extract node coords
+          for(int i=0;i<(int)numnode;++i)
+          {
+            int col = connectivity[i];
+
+            for(int isd=0; isd<nsd_; isd++)
+              xyz_surf(isd,i)=pxyze_(isd, col);
+
+          }
+        }
+        else // parent element is the slave element
+        {
+          // extract node coords
+          for(int i=0;i<(int)numnode;++i)
+          {
+            int col = connectivity[i];
+
+            for(int isd=0; isd<nsd_; isd++)
+              xyz_surf(isd,i)=nxyze_(isd, col);
+
+          }
+        }
+
+
+        if(numnode == 2) // line 2 face
+        {
+          double diam1 = 0.0;
+
+          for(int i=0; i<nsd_; i++)
+          {
+
+            // diagonals
+            // line nodes (0,1) -> (0,1)
+            diam1 += (xyz_surf(i,1) - xyz_surf(i,0))*(xyz_surf(i,1) - xyz_surf(i,0));
+
+          }
+          diam1 = sqrt(diam1);
+          h_e = diam1;
+        }
+        else if(numnode == 3) // line3 face
+        {
+          double diam1 = 0.0;
+
+          for(int i=0; i<nsd_; i++)
+          {
+
+            // diagonals
+            // line nodes (0,2,1) -> (0,1)
+            diam1 += (xyz_surf(i,1) - xyz_surf(i,0))*(xyz_surf(i,1) - xyz_surf(i,0));
+
+          }
+          diam1 = sqrt(diam1);
+          h_e = diam1;
+        }
+        else dserror("unknown number of nodes");
+
+        if(h_e <= 0.0) dserror("negative or zero diameter for current face!");
+
+        return;
+       }
+
 
 
       //! pointer to parameter list
@@ -430,31 +512,31 @@ namespace DRT
       // nodal arrays
       // ------------
       //! node coordinates of parent (master) element
-      LINALG::Matrix<3,piel> pxyze_;
+      LINALG::Matrix<nsd_,piel> pxyze_;
       //! array of nodal velocities, intermediate time level
-      LINALG::Matrix<3,piel> pevelaf_;
+      LINALG::Matrix<nsd_,piel> pevelaf_;
       //! array of nodal velocities, new time level
-      LINALG::Matrix<3,piel> pevelnp_;
+      LINALG::Matrix<nsd_,piel> pevelnp_;
       //! array of nodal pressure, new time level
       LINALG::Matrix<piel,1> peprenp_;
       //! array of nodal grid displacements, parent element, new time level
-      LINALG::Matrix<3,piel> pedispnp_;
+      LINALG::Matrix<nsd_,piel> pedispnp_;
       //! array of nodal grid displacements, surface element, new time level
-      LINALG::Matrix<3,piel> edispnp_;
+      LINALG::Matrix<nsd_,piel> edispnp_;
 
       //! node coordinates of neighbor (slave) element
-      LINALG::Matrix<3,niel> nxyze_;
+      LINALG::Matrix<nsd_,niel> nxyze_;
       //! array of nodal velocities, intermediate time level
-      LINALG::Matrix<3,niel> nevelaf_;
+      LINALG::Matrix<nsd_,niel> nevelaf_;
       //! array of nodal velocities, new time level
-      LINALG::Matrix<3,niel> nevelnp_;
+      LINALG::Matrix<nsd_,niel> nevelnp_;
       //! array of nodal pressure, new time level
       LINALG::Matrix<niel,1> neprenp_;
       //! array of nodal grid displacements, parent element, new time level
-      LINALG::Matrix<3,niel> nedispnp_;
+      LINALG::Matrix<nsd_,niel> nedispnp_;
 
       //! node coordinates of boundary element
-      LINALG::Matrix<3, iel> xyze_;
+      LINALG::Matrix<nsd_, iel> xyze_;
 
       //! linearisation of convection, convective part for parent element
       LINALG::Matrix<piel,1> p_conv_c;
@@ -465,47 +547,47 @@ namespace DRT
       // shape functions and derivatives, mapping from reference element to actual geometry
       // ----------------------------------------------------------------------------------
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      LINALG::Matrix<3,3>    pxjm_;
+      LINALG::Matrix<nsd_,nsd_>    pxjm_;
       //! its inverse
-      LINALG::Matrix<3,3>    pxji_;
+      LINALG::Matrix<nsd_,nsd_>    pxji_;
       //! vector of shape functions, parent element
       LINALG::Matrix<piel,1> pfunct_;
       //! vector of shape function derivatives in reference coordinate system, parent element
-      LINALG::Matrix<3,piel> pderiv_;
+      LINALG::Matrix<nsd_,piel> pderiv_;
       //! vector of shape function derivatives in global coordinate system
-      LINALG::Matrix<3,piel> pderxy_;
+      LINALG::Matrix<nsd_,piel> pderxy_;
       //! vector of shape function (2nd) derivatives in reference coordinate system, parent element
-      LINALG::Matrix<6,piel> pderiv2_;
+      LINALG::Matrix<numderiv2_p,piel> pderiv2_;
       //! vector of shape function (2nd) derivatives in global coordinate system
-      LINALG::Matrix<6,piel> pderxy2_;
+      LINALG::Matrix<numderiv2_p,piel> pderxy2_;
 
       // ----------------------------------------------------------------------------------
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      LINALG::Matrix<3,3>    nxjm_;
+      LINALG::Matrix<nsd_,nsd_>    nxjm_;
       //! its inverse
-      LINALG::Matrix<3,3>    nxji_;
+      LINALG::Matrix<nsd_,nsd_>    nxji_;
       //! vector of shape functions, parent element
       LINALG::Matrix<niel,1> nfunct_;
       //! vector of shape function derivatives in reference coordinate system, parent element
-      LINALG::Matrix<3,niel> nderiv_;
+      LINALG::Matrix<nsd_,niel> nderiv_;
       //! vector of shape function derivatives in global coordinate system
-      LINALG::Matrix<3,niel> nderxy_;
+      LINALG::Matrix<nsd_,niel> nderxy_;
       //! vector of shape function (2nd) derivatives in reference coordinate system, parent element
-      LINALG::Matrix<6,niel> nderiv2_;
+      LINALG::Matrix<numderiv2_n,niel> nderiv2_;
       //! vector of shape function (2nd) derivatives in global coordinate system
-      LINALG::Matrix<6,niel> nderxy2_;
+      LINALG::Matrix<numderiv2_n,niel> nderxy2_;
 
 
       //! vector of shape functions, boundary element
       LINALG::Matrix<iel ,1> funct_;
       //! vector of shape function derivatives in reference coordinate system, boundary element
-      LINALG::Matrix<2, iel> deriv_;
+      LINALG::Matrix<facensd_, iel> deriv_;
       //! normal vector on surface element (outward pointing from parent element)
-      LINALG::Matrix<3,   1> n_;
+      LINALG::Matrix<nsd_,   1> n_;
       //! derivatives of surface in all reference directions
-      LINALG::Matrix<2,3>    dxyzdrs_;
+      LINALG::Matrix<facensd_,nsd_>    dxyzdrs_;
       //! the metric tensor
-      LINALG::Matrix<2,2>    metrictensor_;
+      LINALG::Matrix<facensd_,facensd_>    metrictensor_;
       //! the area of an infintesimal surface element
       double                 drs_;
 
@@ -514,26 +596,31 @@ namespace DRT
       // values of non geometrical quantities in gausspoints
       // ---------------------------------------------------
 
+      //! local coordinates w.r.t face
+      LINALG::Matrix<facensd_,1> xsi_;
+
       //! velocity in gausspoint, time n+af
-      LINALG::Matrix<3,1>    velintaf_;
+      LINALG::Matrix<nsd_,1>    velintaf_;
       //! velocity in gausspoint, time n+1
-      LINALG::Matrix<3,1>    velintnp_;
+      LINALG::Matrix<nsd_,1>    velintnp_;
       //! parent velocity derivatives in gausspoint, time n+af
-      LINALG::Matrix<3,3>    pvderxyaf_;
+      LINALG::Matrix<nsd_,nsd_>    pvderxyaf_;
       //! neighbor velocity derivatives in gausspoint, time n+af
-      LINALG::Matrix<3,3>    nvderxyaf_;
+      LINALG::Matrix<nsd_,nsd_>    nvderxyaf_;
       //! parent velocity (2nd) derivatives in gausspoint, time n+af
-      LINALG::Matrix<3,6>    pvderxy2af_;
+      LINALG::Matrix<nsd_,numderiv2_p>    pvderxy2af_;
       //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
-      LINALG::Matrix<3,6>    nvderxy2af_;
+      LINALG::Matrix<nsd_,numderiv2_n>    nvderxy2af_;
       //! pressure in gausspoint, time n+1
       double                 prenp_;
       //! parent pressure derivatives in gausspoint, time n+1
-      LINALG::Matrix<3,1>    pprederxy_;
+      LINALG::Matrix<nsd_,1>    pprederxy_;
       //! neighbor velocity derivatives in gausspoint, time n+1
-      LINALG::Matrix<3,1>    nprederxy_;
+      LINALG::Matrix<nsd_,1>    nprederxy_;
 
+    protected:
 
+      DRT::UTILS::GaussIntegration intpoints_;
 
     };
 

@@ -59,7 +59,8 @@ namespace INPAR
     {
       interface_disp_by_fsi,
       interface_disp_by_funct,
-      interface_disp_zero
+      interface_disp_zero,
+      interface_disp_by_implementation
     };
 
     /// which sided-mortaring is used to enforce the boundary condition
