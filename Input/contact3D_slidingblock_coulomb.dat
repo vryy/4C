@@ -67,9 +67,8 @@ ALPHA_F                         0.0
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        PetrovGalerkin
+SHAPEFCN                        Dual
 FRICTION                        Coulomb
-FRCOEFF                         0.1
 FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1000.0
@@ -170,9 +169,9 @@ DLINE                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF                           2
 //                              master
-E 4 - 1 Master Inactive
+E 4 - 1 Master Inactive FrCoeffOrBound 0.1
 //                              slave
-E 5 - 1 Slave Active
+E 5 - 1 Slave Active FrCoeffOrBound 0.1
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS

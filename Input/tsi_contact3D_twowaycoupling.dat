@@ -48,8 +48,6 @@ THERM_TEMPGRAD                  Initial                         // None, Current
 LINEAR_SOLVER                   3
 APPLICATION                     MortarContact
 FRICTION                        coulomb
-FRBOUND                         0.35
-FRCOEFF                         0.35
 FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  2000
@@ -357,9 +355,9 @@ DLINE                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slavesurface
-E 3 - 1 Slave Inactive
+E 3 - 1 Slave Inactive FrCoeffOrBound 0.35
 //                              mastersurface
-E 4 - 1 Master Inactive
+E 4 - 1 Master Inactive FrCoeffOrBound 0.35
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS

@@ -1306,8 +1306,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                  INPAR::CONTACT::friction_coulomb,INPAR::CONTACT::friction_coulomb),
       &scontact);
 
-  DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
-  DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
+  //DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
+  //DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
   setStringToIntegralParameter<int>("WEAR","None","Type of wear law",
       tuple<std::string>("None","none",

@@ -3044,8 +3044,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           if (ftype == INPAR::CONTACT::friction_tresca)
           {
             FriNode* frinode = static_cast<FriNode*>(cnode);
-            double frbound = Params().get<double>("FRBOUND");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
+
+            // CAREFUL: friction bound is now interface-local (popp 08/2012)
+            double frbound = interface_[i]->IParams().get<double>("FRBOUND");
 
             if(frinode->FriData().Slip() == false)
             {
@@ -3085,8 +3087,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           if (ftype == INPAR::CONTACT::friction_coulomb)
           {
             FriNode* frinode = static_cast<FriNode*>(cnode);
-            double frcoeff = Params().get<double>("FRCOEFF");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
+
+            // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
+            double frcoeff = interface_[i]->IParams().get<double>("FRCOEFF");
 
             if(frinode->FriData().Slip() == false)
             {
@@ -3416,7 +3420,9 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           if (ftype == INPAR::CONTACT::friction_tresca)
           {
             FriNode* frinode = static_cast<FriNode*>(cnode);
-            double frbound = Params().get<double>("FRBOUND");
+
+            // CAREFUL: friction bound is now interface-local (popp 08/2012)
+            double frbound = interface_[i]->IParams().get<double>("FRBOUND");
 
             if(frinode->FriData().Slip() == false)
             {
@@ -3456,7 +3462,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           if (ftype == INPAR::CONTACT::friction_coulomb)
           {
             FriNode* frinode = static_cast<FriNode*>(cnode);
-            double frcoeff = Params().get<double>("FRCOEFF");
+
+            // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
+            double frcoeff = interface_[i]->IParams().get<double>("FRCOEFF");
+
             if(frinode->FriData().Slip() == false)
             {
               // check (euclidean)-frbound <= 0

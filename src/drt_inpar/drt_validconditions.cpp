@@ -588,7 +588,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
       new StringConditionComponent(
         "Initialization","Inactive",
         Teuchos::tuple<std::string>("Inactive","Active"),
-        Teuchos::tuple<std::string>("Inactive","Active"))));
+        Teuchos::tuple<std::string>("Inactive","Active"),true)));
+
+  contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FrCoeffOrBound",true)));
+  contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("FrCoeffOrBound")));
 
   Teuchos::RCP<ConditionDefinition> linecontact =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE CONTACT CONDITIONS 2D",

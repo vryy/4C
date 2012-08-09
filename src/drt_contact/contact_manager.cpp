@@ -52,6 +52,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_inpar/drt_validparameters.H"
 
 
 /*----------------------------------------------------------------------*
@@ -241,13 +242,47 @@ discret_(discret)
         dserror("ERROR: CoManager: Unknown contact side qualifier!");
     }
 
+    // create interface local parameter list (copy)
+    Teuchos::ParameterList icparams = cparams;
+
+    // find out if interface-specific coefficients of friction are given
+    INPAR::CONTACT::FrictionType fric = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams,"FRICTION");
+    if (fric == INPAR::CONTACT::friction_tresca || fric == INPAR::CONTACT::friction_coulomb)
+    {
+      // read interface COFs
+      vector<double> frcoeff((int)currentgroup.size());
+      for (int j=0;j<(int)currentgroup.size();++j)
+        frcoeff[j] = currentgroup[j]->GetDouble("FrCoeffOrBound");
+
+      // check consistency of interface COFs
+      for (int j=1;j<(int)currentgroup.size();++j)
+        if (frcoeff[j] != frcoeff[0])
+          dserror("ERROR: Inconsistency in friction coefficients of interface %i",groupid1);
+
+      // check for infeasible value of COF
+      if (frcoeff[0]<0.0)
+        dserror("ERROR: Negative FrCoeff / FrBound on interface %i",groupid1);
+
+      // add COF locally to contact parameter list of this interface
+      if (fric == INPAR::CONTACT::friction_tresca)
+      {
+        icparams.setEntry("FRBOUND",static_cast<ParameterEntry>(frcoeff[0]));
+        icparams.setEntry("FRCOEFF",static_cast<ParameterEntry>(-1.0));
+      }
+      else if (fric == INPAR::CONTACT::friction_coulomb)
+      {
+        icparams.setEntry("FRCOEFF",static_cast<ParameterEntry>(frcoeff[0]));
+        icparams.setEntry("FRBOUND",static_cast<ParameterEntry>(-1.0));
+      }
+    }
+
     // create an empty interface and store it in this Manager
     // create an empty contact interface and store it in this Manager
     // (for structural contact we do NOT want redundant storage)
     // (the only exception is self contact where a redundant slave is needed)
     bool redundant = false;
     if (isself[0]) redundant = true;
-    interfaces.push_back(Teuchos::rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,cparams,isself[0],redundant)));
+    interfaces.push_back(Teuchos::rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,icparams,isself[0],redundant)));
 
     // get it again
     Teuchos::RCP<CONTACT::CoInterface> interface = interfaces[(int)interfaces.size()-1];
@@ -392,6 +427,28 @@ discret_(discret)
   if(Comm().MyPID()==0) std::cout << "done!" << endl;
   //**********************************************************************
 
+  // print friction information of interfaces
+  INPAR::CONTACT::FrictionType fric = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams,"FRICTION");
+  if (Comm().MyPID()==0)
+  {
+    for (int i=0; i<(int)interfaces.size();++i)
+    {
+      double checkfrcoeff = 0.0;
+      if (fric == INPAR::CONTACT::friction_tresca)
+      {
+        checkfrcoeff = interfaces[i]->IParams().get<double>("FRBOUND");
+        cout << endl << "Interface         " << i+1 << endl;
+        cout <<         "FrBound (Tresca)  " << checkfrcoeff << endl;
+      }
+      else if (fric == INPAR::CONTACT::friction_coulomb)
+      {
+        checkfrcoeff = interfaces[i]->IParams().get<double>("FRCOEFF");
+        cout << endl << "Interface         " << i+1 << endl;
+        cout <<         "FrCoeff (Coulomb) " << checkfrcoeff << endl;
+      }
+    }
+  }
+
   // print initial parallel redistribution
   for (int i=0; i<(int)interfaces.size();++i)
     interfaces[i]->PrintParallelDistribution(i+1);
@@ -400,11 +457,11 @@ discret_(discret)
   for (int i=0; i<(int)interfaces.size();++i)
     interfaces[i]->CreateSearchTree();
 
-  // print parameter list to screen
+  // show default parameters
   if (Comm().MyPID()==0)
   {
-    std::cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
-    std::cout << GetStrategy().Params() << endl;
+    cout << endl;
+    DRT::INPUT::PrintDefaultParameters(std::cout,GetStrategy().Params());
   }
 
   return;
@@ -463,14 +520,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
                                             input.get<double>("SEMI_SMOOTH_CT") == 0.0)
     dserror("Parameter ct = 0, must be greater than 0 for frictional contact");
-
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
-                                                   input.get<double>("FRBOUND") < 0.0)
-    dserror("No valid Tresca friction bound provided, must be >= 0");
-
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb &&
-                                                   input.get<double>("FRCOEFF") < 0.0)
-    dserror("No valid Coulomb friction coefficient provided, must be >= 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&

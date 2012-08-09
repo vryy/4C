@@ -161,7 +161,8 @@ namespace INPUT
   public:
 
     /// construct a separator component that does read a string without setting a variable
-    SeparatorConditionComponent(std::string separator);
+    SeparatorConditionComponent(std::string separator,
+                               bool optional = false);
 
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
@@ -171,6 +172,7 @@ namespace INPUT
 
   private:
     std::string separator_;
+    bool optional_;
   };
 
 

@@ -114,8 +114,10 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(DRT::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::INPUT::SeparatorConditionComponent::SeparatorConditionComponent(std::string separator)
-  : ConditionComponent("*SEPARATOR*"), separator_(separator)
+DRT::INPUT::SeparatorConditionComponent::SeparatorConditionComponent(std::string separator, bool optional)
+  : ConditionComponent("*SEPARATOR*"),
+    separator_(separator),
+    optional_(optional)
 {
 }
 
@@ -145,8 +147,18 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(DR
   std::string sep;
   (*condline) >> sep;
   if (sep!=separator_)
+  {
+    if (sep=="" && optional_)
+    {
+      // not given, fall back to default line
+      condline = PushBack(separator_,condline);
+    }
+    else
+    {
     dserror("word '%s' expected but found '%s' while reading '%s'",
             separator_.c_str(),sep.c_str(),def->SectionName().c_str());
+    }
+  }
   return condline;
 }
 

@@ -73,7 +73,6 @@ SHAPEFCN                        Dual                            // Dual Standard
 PENALTYPARAM                    20000
 PENALTYPARAMTAN                 20000
 FRICTION                        Coulomb                         // Coulomb
-FRCOEFF                         0.3
 FULL_LINEARIZATION              Yes
 MAX_BALANCE                     0
 SEMI_SMOOTH_NEWTON              yes
@@ -203,8 +202,8 @@ NDSURF                          4
 NDVOL                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF                           2
-E 2 - 1 Master Inactive
-E 3 - 1 Slave Inactive
+E 2 - 1 Master Inactive FrCoeffOrBound 0.3
+E 3 - 1 Slave Inactive FrCoeffOrBound 0.3
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS

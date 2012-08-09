@@ -78,7 +78,6 @@ APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SHAPEFCN                        Dual
 FRICTION                        Tresca
-FRBOUND                         1.0
 FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              No
 SEMI_SMOOTH_CT                  1.0
@@ -239,8 +238,8 @@ DLINE                           0
 DSURF                           0
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE                           2
-E 1 - 1 Slave Active
-E 7 - 1 Master
+E 1 - 1 Slave Active FrCoeffOrBound 1.0
+E 7 - 1 Master Inactive FrCoeffOrBound 1.0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D

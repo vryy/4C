@@ -80,7 +80,6 @@ APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SHAPEFCN                        Dual
 FRICTION                        Coulomb
-FRCOEFF                         0.9
 FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
@@ -229,8 +228,8 @@ DLINE                           0
 DPOINT                          0
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE                           2
-E 4 - 1 Slave Inactive
-E 6 - 1 Master Inactive
+E 4 - 1 Slave Inactive FrCoeffOrBound 0.9
+E 6 - 1 Master Inactive FrCoeffOrBound 0.9
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0
 -------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D

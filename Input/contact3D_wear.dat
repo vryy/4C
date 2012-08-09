@@ -62,8 +62,6 @@ MAXITER                         50
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 FRICTION                        coulomb
-FRBOUND                         0.4
-FRCOEFF                         0.2
 FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  200
@@ -223,9 +221,9 @@ DLINE                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slave
-E 2 - 1 Slave Active
+E 2 - 1 Slave Active FrCoeffOrBound 0.2
 //                              master
-E 3 - 1 Master Inactive
+E 3 - 1 Master Inactive FrCoeffOrBound 0.2
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
