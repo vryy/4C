@@ -284,7 +284,11 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   eleparams.set("conv_stab_fac", xfluid_.conv_stab_fac_);
   eleparams.set("conv_stab_scaling", xfluid_.conv_stab_scaling_);
 
+  eleparams.set("velgrad_interface_stab",xfluid_.velgrad_interface_stab_);
+
   eleparams.set("msh_l2_proj", xfluid_.msh_l2_proj_);
+
+  eleparams.set("GHOST_PENALTY_FAC",xfluid_.ghost_penalty_fac_);
 
   //----------------------------------------------------------------------
 
@@ -1785,6 +1789,8 @@ FLD::XFluidFluid::XFluidFluid(
   ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
   eos_gp_pattern_    = DRT::INPUT::IntegralValue<INPAR::XFEM::EOS_GP_Pattern>(params_xf_stab,"EOS_GP_PATTERN");
 
+  velgrad_interface_stab_ =  (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"VELGRAD_INTERFACE_STAB");
+
   // get general XFEM specific parameters
 
   monolithic_approach_= DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(params_->sublist("XFLUID DYNAMIC/GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
@@ -2523,22 +2529,31 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( ParameterList& params_xfem,
     bool msh_dlm_condensation = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"DLM_CONDENSATION");
     if(msh_dlm_condensation == false) dserror("INPUT CHECK: 'DLM_CONDENSATION', switch always to 'yes', just condensation implemented");
 
-
     // convective stabilization parameter (scaling factor and stabilization factor)
     if(conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
       std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << endl;
-    if(conv_stab_fac_ != 1.0 and (    conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_inflow
-                                   or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_abs_normal_vel) )
-    {
-      std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC is set to 1.0" << END_COLOR << endl;
-      conv_stab_fac_ = 1.0;
-    }
-    if(conv_stab_fac_ <= 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_const)
-      dserror("INPUT CHECK: 'CONV_STAB_SCALING = const' with CONV_STAB_FAC <= 0.0  has no effect");
 
-  } // proc 0
+    if((conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_inflow and conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_averaged)
+       and conv_stab_fac_ != 0.0)
+      dserror("ConvStabScaling_inflow and ConvStabScaling_averaged are  only valid methods for XFluidFluid");
+
+    if (velgrad_interface_stab_ and action_ != "coupling nitsche embedded sided" )
+      dserror("VELGRAD_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
+
+    cout << endl;
+    cout << "XFEM Stabilization parameters: " << endl;
+    cout << "                               " << endl;
+    cout << "                                 GHOST_PENALTY              : " << params_xf_stab.get<string>("GHOST_PENALTY_STAB")    << endl;
+    cout << "                                 GHOST_PENALTY_FAC          : " << ghost_penalty_fac_ << endl;
+    cout << "                                 INFLOW_CONV_STAB_STRATEGY  : " << params_xf_stab.get<string>("CONV_STAB_SCALING") << endl;
+    cout << "                                 INFLOW_CONV_STAB_FAC       : " << conv_stab_fac_ << endl;
+    cout << "                                 VELGRAD_INTERFACE_STAB     : " << params_xf_stab.get<string>("VELGRAD_INTERFACE_STAB")<< endl;
+    cout << "                                 NITSCHE_STAB_FAC           : " << visc_stab_fac_ << endl;
+    cout << "                                 VISC_STAB_HK               : " << params_xf_stab.get<string>("VISC_STAB_HK")  << endl;
+    cout << endl;
 
   return;
+  }
 }
 
 
@@ -3434,7 +3449,6 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
   const Teuchos::ParameterList& fdyn  = DRT::Problem::Instance()->FluidDynamicParams();
   INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
   int startfuncno = fdyn.get<int>("STARTFUNCNO");
-
   if (monolithicfluidfluidfsi_ or
       (not monolithicfluidfluidfsi_ and step_>1 and alefluid_))
   {
@@ -3463,10 +3477,13 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccncol,aledispcol);
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnpcol,aledispcol);
 
-//       //enforce incompressibility
-//       xfluidfluid_timeint_->PatchelementForIncompressibility(bgdis_,staten_->wizard_,state_->wizard_,state_->dbcmaps_);
+      //enforce incompressibility
+ //      xfluidfluid_timeint_->PatchelementForIncompressibility(bgdis_,staten_->wizard_,state_->wizard_,state_->dbcmaps_);
 //       // hier wizard in tn+1
-//       xfluidfluid_timeint_->EnforceIncompressibility(bgdis_,state_->wizard_,state_->velnp_);
+//       Teuchos::RCP<Epetra_Vector> velnpincomp = LINALG::CreateVector(*bgdis_->DofRowMap(),true);
+//       xfluidfluid_timeint_->EnforceIncompressibility(bgdis_,state_->wizard_,state_->velnp_,velnpincomp);
+      //  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "tttincomvel", 0,  step_,  velnpincomp, alevelnp_, aledispnp_);
+
 
     }
     // Note: if Xff_TimeInt_ProjIfMoved is chosen and the maps remain the same
@@ -3483,8 +3500,9 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
       state_->accnp_->Update(1.0,*staten_->accnp_,0.0);
     }
   }
-  else if(step_==1 and initfield != INPAR::FLUID::initfield_zero_field)
+  else if(step_==1 and initfield != INPAR::FLUID::initfield_zero_field){
     SetInitialFlowField(initfield,startfuncno);
+  }
 
   if (monotype_ == "fixedale_interpolation")
   {

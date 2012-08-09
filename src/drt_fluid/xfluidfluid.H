@@ -129,7 +129,6 @@ namespace FLD
 
       Teuchos::RCP<Epetra_Vector>    velnpoutput_;
 
-
       //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
       Teuchos::RCP<Epetra_Vector>    scaaf_;
       Teuchos::RCP<Epetra_Vector>    scaam_;
@@ -603,6 +602,9 @@ namespace FLD
     bool ghost_penalty_;
     double ghost_penalty_fac_;
     enum INPAR::XFEM::EOS_GP_Pattern eos_gp_pattern_;
+
+    /// penalty term for velocity gradients at the interface
+    bool velgrad_interface_stab_;
 
     //! @name XFEM coupling specific parameters
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     // embedded boundary/coupling method

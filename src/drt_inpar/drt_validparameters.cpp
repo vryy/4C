@@ -4536,14 +4536,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONV_STAB_FAC",       1.0, "define stabilization parameter for convective part of interface stabilization (inflow, inflow and outflow)",&xfluid_stab);
 
   setStringToIntegralParameter<int>("CONV_STAB_SCALING","abs_normal_vel","scaling factor for viscous interface stabilization (Nitsche, MSH)",
-                               tuple<std::string>("inflow", "abs_normal_vel", "const", "none"),
-                               tuple<int>(
-                                   INPAR::XFEM::ConvStabScaling_inflow,           // scaling with max(0,-u*n)
-                                   INPAR::XFEM::ConvStabScaling_abs_normal_vel,   // scaling with |u*n|
-                                   INPAR::XFEM::ConvStabScaling_const,            // scaling with 1.0=const
-                                   INPAR::XFEM::ConvStabScaling_none              // no convective stabilization
-                                   ),
+                                    tuple<std::string>("inflow", "abs_normal_vel", "const", "averaged" , "none"),
+                                    tuple<int>(
+                                      INPAR::XFEM::ConvStabScaling_inflow,           // scaling with max(0,-u*n)
+                                      INPAR::XFEM::ConvStabScaling_abs_normal_vel,   // scaling with |u*n|
+                                      INPAR::XFEM::ConvStabScaling_const,            // scaling with 1.0=const
+                                      INPAR::XFEM::ConvStabScaling_averaged,         // scaling with u*n
+                                      INPAR::XFEM::ConvStabScaling_none              // no convective stabilization
+                                      ),
                                &xfluid_stab);
+
+  BoolParameter("VELGRAD_INTERFACE_STAB","no","switch on/off penalty term for velocity gradients at the interface",&xfluid_stab);
 
   BoolParameter("GHOST_PENALTY_STAB","no","switch on/off ghost penalty interface stabilization",&xfluid_stab);
 

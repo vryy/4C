@@ -641,7 +641,7 @@ void SideImpl<distype, side_distype, numdof>::MSH_buildFinalCouplingMatrices(
  * build convective/inflow stabilization
  *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
-void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
+void SideImpl<distype, side_distype, numdof>::Stab_InflowCoercivity(
     Epetra_SerialDenseMatrix &          C_uu_,            ///< standard bg-bg-matrix
     Epetra_SerialDenseVector &          rhs_Cu_,          ///< standard bg-rhs
     const bool &                        coupling,         ///< assemble coupling terms (yes/no)
@@ -657,9 +657,12 @@ void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
     const LINALG::Matrix<nsd_,nen_> &   derxy_,           ///< bg deriv
     const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
     const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
-    const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP ///< Dirichlet velocity vector or prescribed jump vector
-)
+    const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
+    INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies
+    string                              coupl_method      ///< coupling method (NIT or MSH)
+  )
 {
+
 
   if(stabfac_conv > 0.0)
   {
@@ -690,6 +693,13 @@ void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
     LINALG::Matrix<side_nen_,nen_> side_funct_dyad_timefacfac(true);
     side_funct_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, funct_);
 
+    LINALG::Matrix<nen_,side_nen_> funct_side_dyad_timefacfac(true);
+    funct_side_dyad_timefacfac.MultiplyNT(funct_timefacfac, side_funct_);
+
+    LINALG::Matrix<side_nen_,side_nen_> side_side_dyad_timefacfac(true);
+    side_side_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, side_funct_);
+
+
 
     if(!coupling)
     {
@@ -710,13 +720,14 @@ void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
           stabfac_conv,
           coupling,       // assemble coupling terms (yes/no)
           normal         // normal vector
+
       );
     }
     else
     {
       //-----------------------------------------------------------------
-
-      NIT_Stab_InflowCoercivity(
+      if ( coupl_method == "Nitsche" ) // Nitsche xfluid sided
+        NIT_Stab_InflowCoercivity(
           C_uu_,                            ///< standard bg-bg-matrix
           rhs_Cu_,                          ///< standard bg-rhs
           velint,                           ///< velocity at integration point
@@ -726,12 +737,35 @@ void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
           funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
           side_funct_timefacfac,            ///< sidefunct^T * timefacfac
           side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+          side_side_dyad_timefacfac,
           kappa1,                           ///< mortaring weighting
           kappa2,                           ///< mortaring weighting
           stabfac_conv,                     ///< stabilization factor
           coupling,                         ///< assemble coupling terms (yes/no)
-          normal                            ///< normal vector
-      );
+          normal,                            ///< normal vector
+          conv_stab_scaling
+          );
+      else if( coupl_method == "MixedStressHybrid" )
+        MHS_Stab_InflowCoercivity(
+          C_uu_,                            ///< standard bg-bg-matrix
+          rhs_Cu_,                          ///< standard bg-rhs
+          velint,                           ///< velocity at integration point
+          ivelint,                          ///< interface velocity at integration point
+          ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
+          funct_timefacfac,                 ///< funct * timefacfac
+          funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
+          side_funct_timefacfac,            ///< sidefunct^T * timefacfac
+          side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+          funct_side_dyad_timefacfac,       ///< (funct^T * sidefunct) * timefacfac
+          side_side_dyad_timefacfac,
+          kappa1,                           ///< mortaring weighting
+          kappa2,                           ///< mortaring weighting
+          stabfac_conv,                     ///< stabilization factor
+          coupling,                         ///< assemble coupling terms (yes/no)
+          normal,                            ///< normal vector
+          conv_stab_scaling
+          );
+      else dserror("not supported coupling method");
     }
 
 
@@ -739,7 +773,6 @@ void SideImpl<distype, side_distype, numdof>::MSH_Stab_InflowCoercivity(
 
   return;
 }
-
 
 /*--------------------------------------------------------------------------------
  * build coupling matrices and assemble terms for Nitsche's (NIT) method
@@ -763,8 +796,9 @@ void SideImpl<distype, side_distype, numdof>::NIT_buildCouplingMatrices(
     const LINALG::Matrix<nsd_,nsd_> &   vderxy_,          ///< bg deriv^n
     const double &                      press,            ///< bg p^n
     const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
-    const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP ///< Dirichlet velocity vector or prescribed jump vector
-)
+    const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
+    INPAR::XFEM::ConvStabScaling        conv_stab_scaling
+  )
 {
 
   //--------------------------------------------
@@ -890,7 +924,8 @@ void SideImpl<distype, side_distype, numdof>::NIT_buildCouplingMatrices(
   // viscous stability term
   // REMARK: this term includes also inflow coercivity in case of XFSI with modified stabfac (see NIT_ComputeStabfac)
 
-  NIT_Stab_ViscCoercivity(  C_uu_,          // standard bg-bg-matrix
+  if (coupling == false)
+    NIT_Stab_ViscCoercivity(C_uu_,          // standard bg-bg-matrix
                             rhs_Cu_,        // standard bg-rhs
                             velint,
                             ivelint,
@@ -902,30 +937,7 @@ void SideImpl<distype, side_distype, numdof>::NIT_buildCouplingMatrices(
                             stabfac,
                             coupling,       // assemble coupling terms (yes/no)
                             normal         // normal vector
-  );
-
-
-  //-----------------------------------------------------------------
-  // inflow coercivity stability term, just for fluidfluidcoupling
-
-  if(stabfac_conv > 0.0)
-  NIT_Stab_InflowCoercivity(  C_uu_,          // standard bg-bg-matrix
-                              rhs_Cu_,        // standard bg-rhs
-                              velint,
-                              ivelint,                          ///< interface velocity at integration point
-                              ivelint_WDBC_JUMP,
-                              funct_timefacfac,
-                              funct_dyad_timefacfac,
-                              side_funct_timefacfac,            ///< sidefunct^T * timefacfac
-                              side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
-                              kappa1,                           ///< mortaring weighting
-                              kappa2,                           ///< mortaring weighting
-                              stabfac_conv,
-                              coupling,       // assemble coupling terms (yes/no)
-                              normal         // normal vector
-  );
-
-
+      );
 
 
 
@@ -1545,6 +1557,8 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
   const unsigned Vely = 1;
   const unsigned Velz = 2;
 
+  if( coupling ) dserror("NIT_Stab_ViscCoercivity should just be called for xfluid");
+
   // combined viscous and inflow stabilization for one-sided problems (XFSI)
   // gamma_combined = max(alpha*mu/hk, |u*n| )
    /*                      _        \        /                     i   _   \
@@ -1597,108 +1611,13 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
 
   }
 
-  if(coupling)
-  {
-    // - gamma*mu/h_K (v1, u2))
-    for(int ir=0; ir<nen_; ir++)
-    {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
-
-      for(int ic=0; ic<side_nen_; ic++)
-      {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
-
-        double tmp = side_funct_dyad_timefacfac(ic,ir)*stabfac;
-
-        C_uui_(idVelx, iVelx) -= tmp;
-        C_uui_(idVely, iVely) -= tmp;
-        C_uui_(idVelz, iVelz) -= tmp;
-      }
-
-      double tmp = funct_timefacfac(ir)*stabfac;
-
-      // -(stab * v, u)
-      rhs_Cu_(idVelx,0) += tmp*ivelint(Velx);
-      rhs_Cu_(idVely,0) += tmp*ivelint(Vely);
-      rhs_Cu_(idVelz,0) += tmp*ivelint(Velz);
-
-
-    }
-
-
-    // - gamma*mu/h_K (v2, u1))
-    for(int ir=0; ir<side_nen_; ir++)
-    {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
-
-      for(int ic=0; ic<nen_; ic++)
-      {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
-
-        double tmp = side_funct_dyad_timefacfac(ir,ic)*stabfac;
-
-        C_uiu_(idVelx, iVelx) -= tmp;
-        C_uiu_(idVely, iVely) -= tmp;
-        C_uiu_(idVelz, iVelz) -= tmp;
-      }
-
-      double tmp = side_funct_timefacfac(ir)*stabfac;
-
-      // +(stab * v2, u1)
-      rhC_ui_(idVelx,0) += tmp*velint(Velx);
-      rhC_ui_(idVely,0) += tmp*velint(Vely);
-      rhC_ui_(idVelz,0) += tmp*velint(Velz);
-
-    }
-
-    LINALG::Matrix<side_nen_,side_nen_> side_side_dyad_timefacfac(true);
-    side_side_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, side_funct_);
-
-    // + gamma*mu/h_K (v2, u2))
-    for(int ir=0; ir<side_nen_; ir++)
-    {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
-
-      for(int ic=0; ic<side_nen_; ic++)
-      {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
-
-        double tmp = side_side_dyad_timefacfac(ir,ic)*stabfac;
-
-        C_uiui_(idVelx, iVelx) += tmp;
-        C_uiui_(idVely, iVely) += tmp;
-        C_uiui_(idVelz, iVelz) += tmp;
-      }
-
-      double tmp = side_funct_timefacfac(ir)*stabfac;
-
-      // -(stab * v2, u2)
-      rhC_ui_(idVelx,0) -= tmp*ivelint(Velx);
-      rhC_ui_(idVely,0) -= tmp*ivelint(Vely);
-      rhC_ui_(idVelz,0) -= tmp*ivelint(Velz);
-
-    }
-  } // end coupling
-
   return;
 }// NIT_Stab_ViscCoercivity
 
 
 
 /*--------------------------------------------------------------------------------
- * evaluate stabilizing inflow term
+ * evaluate stabilizing inflow term  for Nitsche xfluid-sided (fluidfluidcoupling)
  *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
 void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
@@ -1711,11 +1630,13 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
     const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
     const LINALG::Matrix<side_nen_,1>&       side_funct_timefacfac,            ///< sidefunct^T * timefacfac
     const LINALG::Matrix<side_nen_,nen_>&    side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+    const LINALG::Matrix<side_nen_,side_nen_>&side_side_dyad_timefacfac,
     const double &                           kappa1,                           ///< mortaring weighting
     const double &                           kappa2,                           ///< mortaring weighting
     const double &                           stabfac_conv,                     ///< stabilization factor
     const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
-    const LINALG::Matrix<nsd_,1> &           normal                            ///< normal vector
+    const LINALG::Matrix<nsd_,1> &           normal,                           ///< normal vector
+    INPAR::XFEM::ConvStabScaling             conv_stab_scaling
 )
 {
 
@@ -1723,52 +1644,45 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
   const unsigned Vely = 1;
   const unsigned Velz = 2;
 
-  if(coupling == false) dserror("InflowCoercivity should not be called for fluidfluidcoupling");
+  if(coupling == false) dserror("InflowCoercivity should just be called for fluidfluidcoupling");
 
-  dserror("inflow stabilization term is implemented but please check the implementation again and test it");
-
-
-
-  // for fluidfluidcoupling
-  // convective infow stabilization for two-sided problems (XFF, XFFSI)
-  /*                                        \        /                                i   \
- |  [-1.0* (beta * n)] *  { v } , [ Du ]     | =  - |  [-1.0* (beta * n)] * { v }, [ u ]   |
-  \ ----stab_conv-----                      /        \ ----stab_conv-----                */
-
-  // {x} = k1*x1 + k2*x2
-
-  // + gamma*mu/h_K (k1*v1, u1))
-  for(int ir=0; ir<nen_; ir++)
+  if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow)
   {
-    int idVelx = ir*(nsd_+1) + 0;
-    int idVely = ir*(nsd_+1) + 1;
-    int idVelz = ir*(nsd_+1) + 2;
 
-    for(int ic=0; ic<nen_; ic++)
+    // one-sided inflow terms for fluidfluidcoupling
+
+    // Inflow term for background fluid
+
+     /*   i  b   b   b     e \
+    |  -(u. n ) v , u  -  u   |
+     \                      */
+
+    for(int ir=0; ir<nen_; ir++)
     {
-      int iVelx = ic*(nsd_+1)+0;
-      int iVely = ic*(nsd_+1)+1;
-      int iVelz = ic*(nsd_+1)+2;
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
 
-      double tmp = kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
 
-      C_uu_(idVelx, iVelx) += tmp;
-      C_uu_(idVely, iVely) += tmp;
-      C_uu_(idVelz, iVelz) += tmp;
+        double tmp = funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+        C_uu_(idVelx, iVelx) += tmp;
+        C_uu_(idVely, iVely) += tmp;
+        C_uu_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = funct_timefacfac(ir)*stabfac_conv;
+
+      // -(stab * v, u)
+      rhs_Cu_(idVelx,0) -= tmp*velint(Velx);
+      rhs_Cu_(idVely,0) -= tmp*velint(Vely);
+      rhs_Cu_(idVelz,0) -= tmp*velint(Velz);
     }
-
-    double tmp = kappa1*funct_timefacfac(ir)*stabfac_conv;
-
-    // -(stab * v, u)
-    rhs_Cu_(idVelx,0) -= tmp*velint(Velx);
-    rhs_Cu_(idVely,0) -= tmp*velint(Vely);
-    rhs_Cu_(idVelz,0) -= tmp*velint(Velz);
-
-  }
-
-  if(coupling)
-  {
-    // - gamma*mu/h_K (k1*v1, u2))
     for(int ir=0; ir<nen_; ir++)
     {
       int idVelx = ir*(nsd_+1) + 0;
@@ -1781,57 +1695,30 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
         int iVely = ic*(nsd_+1)+1;
         int iVelz = ic*(nsd_+1)+2;
 
-        double tmp = kappa1*side_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
+        double tmp = side_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
 
         C_uui_(idVelx, iVelx) -= tmp;
         C_uui_(idVely, iVely) -= tmp;
         C_uui_(idVelz, iVelz) -= tmp;
       }
 
-      double tmp = kappa1*funct_timefacfac(ir)*stabfac_conv;
+      double tmp = funct_timefacfac(ir)*stabfac_conv;
 
       // -(stab * v, u)
       rhs_Cu_(idVelx,0) += tmp*ivelint(Velx);
       rhs_Cu_(idVely,0) += tmp*ivelint(Vely);
       rhs_Cu_(idVelz,0) += tmp*ivelint(Velz);
-
-
     }
 
+    // Inflow term for embedded fluid
 
-    // gamma*mu/h_K (k2*v2, u1))
-    for(int ir=0; ir<side_nen_; ir++)
-    {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
-
-      for(int ic=0; ic<nen_; ic++)
-      {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
-
-        double tmp = kappa2*side_funct_dyad_timefacfac(ir,ic)*stabfac_conv;
-
-        C_uiu_(idVelx, iVelx) += tmp;
-        C_uiu_(idVely, iVely) += tmp;
-        C_uiu_(idVelz, iVelz) += tmp;
-      }
-
-      double tmp = kappa2*side_funct_timefacfac(ir)*stabfac_conv;
-
-      // +(stab * k2*v2, u1)
-      rhC_ui_(idVelx,0) -= tmp*velint(Velx);
-      rhC_ui_(idVely,0) -= tmp*velint(Vely);
-      rhC_ui_(idVelz,0) -= tmp*velint(Velz);
-
-    }
+    /*   i  b   e   e     b \
+   |   (u. n ) v , u  -  u   |
+    \                      */
 
     LINALG::Matrix<side_nen_,side_nen_> side_side_dyad_timefacfac(true);
     side_side_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, side_funct_);
 
-    // - gamma*mu/h_K (k2*v2, u2))
     for(int ir=0; ir<side_nen_; ir++)
     {
       int idVelx = ir*(nsd_+1) + 0;
@@ -1844,30 +1731,760 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
         int iVely = ic*(nsd_+1)+1;
         int iVelz = ic*(nsd_+1)+2;
 
-        double tmp = kappa2*side_side_dyad_timefacfac(ir,ic)*stabfac_conv;
+        double tmp = side_side_dyad_timefacfac(ir,ic)*(-1*stabfac_conv);
 
-        C_uiui_(idVelx, iVelx) -= tmp;
-        C_uiui_(idVely, iVely) -= tmp;
-        C_uiui_(idVelz, iVelz) -= tmp;
+        C_uiui_(idVelx, iVelx) += tmp;
+        C_uiui_(idVely, iVely) += tmp;
+        C_uiui_(idVelz, iVelz) += tmp;
       }
 
-      double tmp = kappa2*side_funct_timefacfac(ir)*stabfac_conv;
+      double tmp = side_funct_timefacfac(ir)*(-1*stabfac_conv);
 
-      // +(stab * k2*v2, u2)
-      rhC_ui_(idVelx,0) += tmp*ivelint(Velx);
-      rhC_ui_(idVely,0) += tmp*ivelint(Vely);
-      rhC_ui_(idVelz,0) += tmp*ivelint(Velz);
-
+      rhC_ui_(idVelx,0) -= tmp*ivelint(Velx);
+      rhC_ui_(idVely,0) -= tmp*ivelint(Vely);
+      rhC_ui_(idVelz,0) -= tmp*ivelint(Velz);
     }
-  } // end coupling
 
+    for(int ir=0; ir<side_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = side_funct_dyad_timefacfac(ir,ic)*(-1*stabfac_conv);
+
+        C_uiu_(idVelx, iVelx) -= tmp;
+        C_uiu_(idVely, iVely) -= tmp;
+        C_uiu_(idVelz, iVelz) -= tmp;
+      }
+
+      double tmp = side_funct_timefacfac(ir)*(-1*stabfac_conv);
+
+      rhC_ui_(idVelx,0) += tmp*velint(Velx);
+      rhC_ui_(idVely,0) += tmp*velint(Vely);
+      rhC_ui_(idVelz,0) += tmp*velint(Velz);
+    }
+
+  }
+
+  // for fluidfluidcoupling
+  // convective infow stabilization for two-sided problems (XFF, XFFSI)
+  /*                                        \        /                                i   \
+ |  [-1.0* (beta * n)] *  { v } , [ Du ]     | =  - |  [-1.0* (beta * n)] * { v }, [ u ]   |
+  \ ----stab_conv-----                      /        \ ----stab_conv-----                */
+
+  // {x} = k1*x1 + k2*x2
+
+  // + gamma*mu/h_K (k1*v1, u1)) ??
+
+  else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_averaged)
+  {
+   // - beta *n_b (k1*vb,ub)
+   for(int ir=0; ir<nen_; ir++)
+   {
+     int idVelx = ir*(nsd_+1) + 0;
+     int idVely = ir*(nsd_+1) + 1;
+     int idVelz = ir*(nsd_+1) + 2;
+
+     for(int ic=0; ic<nen_; ic++)
+     {
+       int iVelx = ic*(nsd_+1)+0;
+       int iVely = ic*(nsd_+1)+1;
+       int iVelz = ic*(nsd_+1)+2;
+
+       double tmp = -kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+       C_uu_(idVelx, iVelx) += tmp;
+       C_uu_(idVely, iVely) += tmp;
+       C_uu_(idVelz, iVelz) += tmp;
+     }
+
+     double tmp = -kappa1*funct_timefacfac(ir)*stabfac_conv;
+
+     // -(stab * v, u)
+     rhs_Cu_(idVelx,0) -= tmp*velint(Velx);
+     rhs_Cu_(idVely,0) -= tmp*velint(Vely);
+     rhs_Cu_(idVelz,0) -= tmp*velint(Velz);
+   }
+
+   // - gamma*mu/h_K (k1*v1, u2))
+
+   // + beta *n_b (k1*vb,ue)
+   for(int ir=0; ir<nen_; ir++)
+   {
+     int idVelx = ir*(nsd_+1) + 0;
+     int idVely = ir*(nsd_+1) + 1;
+     int idVelz = ir*(nsd_+1) + 2;
+
+     for(int ic=0; ic<side_nen_; ic++)
+     {
+       int iVelx = ic*(nsd_+1)+0;
+       int iVely = ic*(nsd_+1)+1;
+       int iVelz = ic*(nsd_+1)+2;
+
+       double tmp = kappa1*side_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
+
+       C_uui_(idVelx, iVelx) += tmp;
+       C_uui_(idVely, iVely) += tmp;
+       C_uui_(idVelz, iVelz) += tmp;
+     }
+
+     double tmp = kappa1*funct_timefacfac(ir)*stabfac_conv;
+
+     // -(stab * v, u)
+     rhs_Cu_(idVelx,0) -= tmp*ivelint(Velx);
+     rhs_Cu_(idVely,0) -= tmp*ivelint(Vely);
+     rhs_Cu_(idVelz,0) -= tmp*ivelint(Velz);
+   }
+
+   // gamma*mu/h_K (k2*v2, u1))
+   // - beta *n_b (k2*ve,ub)
+   for(int ir=0; ir<side_nen_; ir++)
+   {
+     int idVelx = ir*(nsd_+1) + 0;
+     int idVely = ir*(nsd_+1) + 1;
+     int idVelz = ir*(nsd_+1) + 2;
+
+     for(int ic=0; ic<nen_; ic++)
+     {
+       int iVelx = ic*(nsd_+1)+0;
+       int iVely = ic*(nsd_+1)+1;
+       int iVelz = ic*(nsd_+1)+2;
+
+       double tmp = -kappa2*side_funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+       C_uiu_(idVelx, iVelx) += tmp;
+       C_uiu_(idVely, iVely) += tmp;
+       C_uiu_(idVelz, iVelz) += tmp;
+     }
+
+     double tmp = -kappa2*side_funct_timefacfac(ir)*stabfac_conv;
+
+     // +(stab * k2*v2, u1)
+     rhC_ui_(idVelx,0) -= tmp*velint(Velx);
+     rhC_ui_(idVely,0) -= tmp*velint(Vely);
+     rhC_ui_(idVelz,0) -= tmp*velint(Velz);
+
+   }
+
+   // - gamma*mu/h_K (k2*v2, u2))
+   // beta *n_b (k2*ve, ue)
+   for(int ir=0; ir<side_nen_; ir++)
+   {
+     int idVelx = ir*(nsd_+1) + 0;
+     int idVely = ir*(nsd_+1) + 1;
+     int idVelz = ir*(nsd_+1) + 2;
+
+     for(int ic=0; ic<side_nen_; ic++)
+     {
+       int iVelx = ic*(nsd_+1)+0;
+       int iVely = ic*(nsd_+1)+1;
+       int iVelz = ic*(nsd_+1)+2;
+
+       double tmp = kappa2*side_side_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+       C_uiui_(idVelx, iVelx) += tmp;
+       C_uiui_(idVely, iVely) += tmp;
+       C_uiui_(idVelz, iVelz) += tmp;
+     }
+
+     double tmp = kappa2*side_funct_timefacfac(ir)*stabfac_conv;
+
+     // +(stab * k2*v2, u2)
+     rhC_ui_(idVelx,0) -= tmp*ivelint(Velx);
+     rhC_ui_(idVely,0) -= tmp*ivelint(Vely);
+     rhC_ui_(idVelz,0) -= tmp*ivelint(Velz);
+
+   }
+
+  }
+  else if (conv_stab_scaling != INPAR::XFEM::ConvStabScaling_none)
+    dserror ("ConvStabScaling_inflow and ConvStabScaling_averaged are  only valid methods for XFluidFluid");
 
   return;
 
 }// NIT_Stab_InflowCoercivity
 
+/*--------------------------------------------------------------------------------
+ * evaluate stabilizing inflow term  for Nitsche xfluid-sided (fluidfluidcoupling)
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType emb_distype>
+void EmbImpl<distype, emb_distype>::NIT2_Stab_InflowCoercivity(
+    Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
+    Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
+    const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
+    const LINALG::Matrix<nsd_,1>&            ivelint,                          ///< interface velocity at integration point
+    const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
+    const LINALG::Matrix<nen_,1>&            funct_timefacfac,                 ///< funct * timefacfac
+    const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
+    const LINALG::Matrix<emb_nen_,1>&        emb_funct_timefacfac,            ///< sidefunct^T * timefacfac
+    const LINALG::Matrix<emb_nen_,nen_>&     emb_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+    const LINALG::Matrix<emb_nen_,emb_nen_>& emb_emb_dyad_timefacfac,
+    const double &                           kappa1,                           ///< mortaring weighting
+    const double &                           kappa2,                           ///< mortaring weighting
+    const double &                           stabfac_conv,                     ///< stabilization factor
+    const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
+    const LINALG::Matrix<nsd_,1> &           normal,                           ///< normal vector
+    INPAR::XFEM::ConvStabScaling             conv_stab_scaling
+)
+{
+
+  const unsigned Velx = 0;
+  const unsigned Vely = 1;
+  const unsigned Velz = 2;
+
+  if(coupling == false) dserror("InflowCoercivity should just be called for fluidfluidcoupling");
+
+  if ( conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow )
+  {
+
+    // one-sided inflow terms for fluidfluidcoupling
+
+    // Inflow term for background fluid
+
+    /*   i  b   b   b     e \
+   |  -(u. n ) v , u  -  u   |
+    \                      */
+
+    for(int ir=0; ir<nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+        C_uu_(idVelx, iVelx) += tmp;
+        C_uu_(idVely, iVely) += tmp;
+        C_uu_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = funct_timefacfac(ir)*stabfac_conv;
+
+      // -(stab * v, u)
+      rhs_Cu_(idVelx,0) -= tmp*velint(Velx);
+      rhs_Cu_(idVely,0) -= tmp*velint(Vely);
+      rhs_Cu_(idVelz,0) -= tmp*velint(Velz);
+    }
+    for(int ir=0; ir<nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<emb_nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = emb_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
+
+        C_uui_(idVelx, iVelx) -= tmp;
+        C_uui_(idVely, iVely) -= tmp;
+        C_uui_(idVelz, iVelz) -= tmp;
+      }
+
+      double tmp = funct_timefacfac(ir)*stabfac_conv;
+
+      // -(stab * v, u)
+      rhs_Cu_(idVelx,0) += tmp*ivelint(Velx);
+      rhs_Cu_(idVely,0) += tmp*ivelint(Vely);
+      rhs_Cu_(idVelz,0) += tmp*ivelint(Velz);
+    }
+
+    // Inflow term for embedded fluid
+
+    /*   i  b   e   e     b \
+   |   (u. n ) v , u  -  u   |
+    \                      */
 
 
+    for(int ir=0; ir<emb_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<emb_nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = emb_emb_dyad_timefacfac(ir,ic)*(-1*stabfac_conv);
+
+        C_uiui_(idVelx, iVelx) += tmp;
+        C_uiui_(idVely, iVely) += tmp;
+        C_uiui_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = emb_funct_timefacfac(ir)*(-1*stabfac_conv);
+
+      rhC_ui_(idVelx,0) -= tmp*ivelint(Velx);
+      rhC_ui_(idVely,0) -= tmp*ivelint(Vely);
+      rhC_ui_(idVelz,0) -= tmp*ivelint(Velz);
+    }
+
+    for(int ir=0; ir<emb_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = emb_funct_dyad_timefacfac(ir,ic)*(-1*stabfac_conv);
+
+        C_uiu_(idVelx, iVelx) -= tmp;
+        C_uiu_(idVely, iVely) -= tmp;
+        C_uiu_(idVelz, iVelz) -= tmp;
+      }
+
+      double tmp = emb_funct_timefacfac(ir)*(-1*stabfac_conv);
+
+      rhC_ui_(idVelx,0) += tmp*velint(Velx);
+      rhC_ui_(idVely,0) += tmp*velint(Vely);
+      rhC_ui_(idVelz,0) += tmp*velint(Velz);
+    }
+  }
+  // for fluidfluidcoupling
+  // convective infow stabilization for two-sided problems (XFF, XFFSI)
+  /*                                        \        /                                i   \
+ |  [-1.0* (beta * n)] *  { v } , [ Du ]     | =  - |  [-1.0* (beta * n)] * { v }, [ u ]   |
+  \ ----stab_conv-----                      /        \ ----stab_conv-----                */
+
+  // {x} = k1*x1 + k2*x2
+
+  else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_averaged)
+  {
+    // - beta *n_b (k1*vb,ub)
+    for(int ir=0; ir<nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = -kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+        C_uu_(idVelx, iVelx) += tmp;
+        C_uu_(idVely, iVely) += tmp;
+        C_uu_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = -kappa1*funct_timefacfac(ir)*stabfac_conv;
+
+      // -(stab * v, u)
+      rhs_Cu_(idVelx,0) -= tmp*velint(Velx);
+      rhs_Cu_(idVely,0) -= tmp*velint(Vely);
+      rhs_Cu_(idVelz,0) -= tmp*velint(Velz);
+    }
+
+    // + beta *n_b (k1*vb,ue)
+    for(int ir=0; ir<nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<emb_nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = kappa1*emb_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
+
+        C_uui_(idVelx, iVelx) += tmp;
+        C_uui_(idVely, iVely) += tmp;
+        C_uui_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = kappa1*funct_timefacfac(ir)*stabfac_conv;
+
+      // -(stab * v, u)
+      rhs_Cu_(idVelx,0) -= tmp*ivelint(Velx);
+      rhs_Cu_(idVely,0) -= tmp*ivelint(Vely);
+      rhs_Cu_(idVelz,0) -= tmp*ivelint(Velz);
+    }
+
+    // - beta *n_b (k2*ve,ub)
+    for(int ir=0; ir<emb_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = -kappa2*emb_funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+        C_uiu_(idVelx, iVelx) += tmp;
+        C_uiu_(idVely, iVely) += tmp;
+        C_uiu_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = -kappa2*emb_funct_timefacfac(ir)*stabfac_conv;
+
+      // +(stab * k2*v2, u1)
+      rhC_ui_(idVelx,0) -= tmp*velint(Velx);
+      rhC_ui_(idVely,0) -= tmp*velint(Vely);
+      rhC_ui_(idVelz,0) -= tmp*velint(Velz);
+    }
+
+    // beta *n_b (k2*ve, ue)
+    for(int ir=0; ir<emb_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<emb_nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = kappa2*emb_emb_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+        C_uiui_(idVelx, iVelx) += tmp;
+        C_uiui_(idVely, iVely) += tmp;
+        C_uiui_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = kappa2*emb_funct_timefacfac(ir)*stabfac_conv;
+
+      // +(stab * k2*v2, u2)
+      rhC_ui_(idVelx,0) -= tmp*ivelint(Velx);
+      rhC_ui_(idVely,0) -= tmp*ivelint(Vely);
+      rhC_ui_(idVelz,0) -= tmp*ivelint(Velz);
+    }
+
+  }
+  else if (conv_stab_scaling != INPAR::XFEM::ConvStabScaling_none)
+    dserror ("ConvStabScaling_inflow and ConvStabScaling_averaged are  only valid methods for XFluidFluid");
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------
+ * evaluate stabilizing inflow term  for MHS (fluidfluidcoupling)
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
+void SideImpl<distype, side_distype, numdof>::MHS_Stab_InflowCoercivity(
+    Epetra_SerialDenseMatrix &               C_uu_,                            ///< standard bg-bg-matrix
+    Epetra_SerialDenseVector &               rhs_Cu_,                          ///< standard bg-rhs
+    const LINALG::Matrix<nsd_,1>&            velint,                           ///< velocity at integration point
+    const LINALG::Matrix<nsd_,1>&            ivelint,                          ///< interface velocity at integration point
+    const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
+    const LINALG::Matrix<nen_,1>&            funct_timefacfac,                 ///< funct * timefacfac
+    const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
+    const LINALG::Matrix<side_nen_,1>&       side_funct_timefacfac,            ///< sidefunct^T * timefacfac
+    const LINALG::Matrix<side_nen_,nen_>&    side_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+    const LINALG::Matrix<nen_,side_nen_>&    funct_side_dyad_timefacfac,       ///< (funct^T * sidefunct) * timefacfac
+    const LINALG::Matrix<side_nen_,side_nen_>& side_side_dyad_timefacfac,
+    const double &                           kappa1,                           ///< mortaring weighting
+    const double &                           kappa2,                           ///< mortaring weighting
+    const double &                           stabfac_conv,                     ///< stabilization factor
+    const bool &                             coupling,                         ///< assemble coupling terms (yes/no)
+    const LINALG::Matrix<nsd_,1> &           normal,                           ///< normal vector
+    INPAR::XFEM::ConvStabScaling             conv_stab_scaling
+)
+{
+
+  const unsigned Velx = 0;
+  const unsigned Vely = 1;
+  const unsigned Velz = 2;
+
+  if(coupling == false) dserror("InflowCoercivity should just be called for fluidfluidcoupling");
+
+  if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow)
+  {
+    // one-sided inflow terms for fluidfluidcoupling
+
+    // Inflow term for background fluid
+
+     /*   i  b   b   b     e \
+    |  -(u. n ) v , u  -  u   |
+     \                      */
+
+    for(int ir=0; ir<nen_; ir++)
+   {
+     int idVelx = ir*(nsd_+1) + 0;
+     int idVely = ir*(nsd_+1) + 1;
+     int idVelz = ir*(nsd_+1) + 2;
+
+     for(int ic=0; ic<nen_; ic++)
+     {
+       int iVelx = ic*(nsd_+1)+0;
+       int iVely = ic*(nsd_+1)+1;
+       int iVelz = ic*(nsd_+1)+2;
+
+       double tmp = funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+       C_uu_(idVelx, iVelx) += tmp;
+       C_uu_(idVely, iVely) += tmp;
+       C_uu_(idVelz, iVelz) += tmp;
+     }
+
+     double tmp = funct_timefacfac(ir)*stabfac_conv;
+
+     // -(stab * v, u)
+     rhs_Cu_(idVelx,0) -= tmp*velint(Velx);
+     rhs_Cu_(idVely,0) -= tmp*velint(Vely);
+     rhs_Cu_(idVelz,0) -= tmp*velint(Velz);
+   }
+
+   for(int ir=0; ir<nen_; ir++)
+   {
+     int idVelx = ir*(nsd_+1) + 0;
+     int idVely = ir*(nsd_+1) + 1;
+     int idVelz = ir*(nsd_+1) + 2;
+
+     for(int ic=0; ic<side_nen_; ic++)
+     {
+       int iVelx = ic*(nsd_)+0;
+       int iVely = ic*(nsd_)+1;
+       int iVelz = ic*(nsd_)+2;
+
+       double tmp = side_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
+
+       C_uui_(idVelx, iVelx) -= tmp;
+       C_uui_(idVely, iVely) -= tmp;
+       C_uui_(idVelz, iVelz) -= tmp;
+     }
+
+     double tmp = funct_timefacfac(ir)*stabfac_conv;
+
+     // -(stab * v, u)
+     rhs_Cu_(idVelx,0) += tmp*ivelint(Velx);
+     rhs_Cu_(idVely,0) += tmp*ivelint(Vely);
+     rhs_Cu_(idVelz,0) += tmp*ivelint(Velz);
+   }
+
+   // Inflow term for embedded fluid
+
+    /*   i  b   e   e     b \
+   |   (u. n ) v , u  -  u   |
+    \                      */
+
+   LINALG::Matrix<side_nen_,side_nen_> side_side_dyad_timefacfac(true);
+   side_side_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, side_funct_);
+
+   for(int ir=0; ir<side_nen_; ir++)
+   {
+     int idVelx = ir*(nsd_) + 0;
+     int idVely = ir*(nsd_) + 1;
+     int idVelz = ir*(nsd_) + 2;
+
+     for(int ic=0; ic<side_nen_; ic++)
+     {
+       int iVelx = ic*(nsd_)+0;
+       int iVely = ic*(nsd_)+1;
+       int iVelz = ic*(nsd_)+2;
+
+       double tmp = side_side_dyad_timefacfac(ir,ic)*(-1*stabfac_conv);
+
+       C_uiui_(idVelx, iVelx) += tmp;
+       C_uiui_(idVely, iVely) += tmp;
+       C_uiui_(idVelz, iVelz) += tmp;
+     }
+
+     double tmp = side_funct_timefacfac(ir)*(-1*stabfac_conv);
+
+     rhC_ui_(idVelx,0) -= tmp*ivelint(Velx);
+     rhC_ui_(idVely,0) -= tmp*ivelint(Vely);
+     rhC_ui_(idVelz,0) -= tmp*ivelint(Velz);
+   }
+
+   for(int ir=0; ir<side_nen_; ir++)
+   {
+     int idVelx = ir*(nsd_) + 0;
+     int idVely = ir*(nsd_) + 1;
+     int idVelz = ir*(nsd_) + 2;
+
+     for(int ic=0; ic<nen_; ic++)
+     {
+       int iVelx = ic*(nsd_+1)+0;
+       int iVely = ic*(nsd_+1)+1;
+       int iVelz = ic*(nsd_+1)+2;
+
+       double tmp = side_funct_dyad_timefacfac(ir,ic)*(-1*stabfac_conv);
+
+       C_uiu_(idVelx, iVelx) -= tmp;
+       C_uiu_(idVely, iVely) -= tmp;
+       C_uiu_(idVelz, iVelz) -= tmp;
+     }
+
+     double tmp = side_funct_timefacfac(ir)*(-1*stabfac_conv);
+
+     rhC_ui_(idVelx,0) += tmp*velint(Velx);
+     rhC_ui_(idVely,0) += tmp*velint(Vely);
+     rhC_ui_(idVelz,0) += tmp*velint(Velz);
+   }
+
+  }
+  // for fluidfluidcoupling
+  // convective infow stabilization for two-sided problems (XFF, XFFSI)
+  /*                                        \        /                                i   \
+ |  [-1.0* (beta * n)] *  { v } , [ Du ]     | =  - |  [-1.0* (beta * n)] * { v }, [ u ]   |
+  \ ----stab_conv-----                      /        \ ----stab_conv-----                */
+
+  // {x} = k1*x1 + k2*x2
+
+  // + gamma*mu/h_K (k1*v1, u1)) ??
+
+  else if (conv_stab_scaling == INPAR::XFEM::ConvStabScaling_averaged)
+  {
+    // - beta *n_b (k1*vb,ub)
+    for(int ir=0; ir<nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = -kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+        C_uu_(idVelx, iVelx) += tmp;
+        C_uu_(idVely, iVely) += tmp;
+        C_uu_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = -kappa1*funct_timefacfac(ir)*stabfac_conv;
+
+      // -(stab * v, u)
+      rhs_Cu_(idVelx,0) -= tmp*velint(Velx);
+      rhs_Cu_(idVely,0) -= tmp*velint(Vely);
+      rhs_Cu_(idVelz,0) -= tmp*velint(Velz);
+    }
+
+    // - gamma*mu/h_K (k1*v1, u2))
+
+    // + beta *n_b (k1*vb,ue)
+    for(int ir=0; ir<nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<side_nen_; ic++)
+      {
+        int iVelx = ic*(nsd_)+0;
+        int iVely = ic*(nsd_)+1;
+        int iVelz = ic*(nsd_)+2;
+
+        double tmp = kappa1*side_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
+
+        C_uui_(idVelx, iVelx) += tmp;
+        C_uui_(idVely, iVely) += tmp;
+        C_uui_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = kappa1*funct_timefacfac(ir)*stabfac_conv;
+
+      // -(stab * v, u)
+      rhs_Cu_(idVelx,0) -= tmp*ivelint(Velx);
+      rhs_Cu_(idVely,0) -= tmp*ivelint(Vely);
+      rhs_Cu_(idVelz,0) -= tmp*ivelint(Velz);
+    }
+
+    // gamma*mu/h_K (k2*v2, u1))
+    // - beta *n_b (k2*ve,ub)
+    for(int ir=0; ir<side_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_) + 0;
+      int idVely = ir*(nsd_) + 1;
+      int idVelz = ir*(nsd_) + 2;
+
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = -kappa2*side_funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+        C_uiu_(idVelx, iVelx) += tmp;
+        C_uiu_(idVely, iVely) += tmp;
+        C_uiu_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = -kappa2*side_funct_timefacfac(ir)*stabfac_conv;
+
+      // +(stab * k2*v2, u1)
+      rhC_ui_(idVelx,0) -= tmp*velint(Velx);
+      rhC_ui_(idVely,0) -= tmp*velint(Vely);
+      rhC_ui_(idVelz,0) -= tmp*velint(Velz);
+    }
+
+    // - gamma*mu/h_K (k2*v2, u2))
+    // beta *n_b (k2*ve, ue)
+    for(int ir=0; ir<side_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_) + 0;
+      int idVely = ir*(nsd_) + 1;
+      int idVelz = ir*(nsd_) + 2;
+
+      for(int ic=0; ic<side_nen_; ic++)
+      {
+        int iVelx = ic*(nsd_)+0;
+        int iVely = ic*(nsd_)+1;
+        int iVelz = ic*(nsd_)+2;
+
+        double tmp = kappa2*side_side_dyad_timefacfac(ir,ic)*stabfac_conv;
+
+        C_uiui_(idVelx, iVelx) += tmp;
+        C_uiui_(idVely, iVely) += tmp;
+        C_uiui_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = kappa2*side_funct_timefacfac(ir)*stabfac_conv;
+
+      // +(stab * k2*v2, u2)
+      rhC_ui_(idVelx,0) -= tmp*ivelint(Velx);
+      rhC_ui_(idVely,0) -= tmp*ivelint(Vely);
+      rhC_ui_(idVelz,0) -= tmp*ivelint(Velz);
+    }
+  }
+  else if (conv_stab_scaling != INPAR::XFEM::ConvStabScaling_none)
+    dserror ("ConvStabScaling_inflow and ConvStabScaling_averaged are  only valid methods for XFluidFluid");
+
+
+  return;
+
+}// MHS_Stab_InflowCoercivity
 
 /*--------------------------------------------------------------------------------
  * add embedded element displacements and set current element node coordinates
@@ -2006,13 +2623,16 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     double &                      kappa2,         // mortaring weighting
     double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
     double &                      stabfac_conv,   // Nitsche convective non-dimensionless stabilization factor
+    bool &                        velgrad_interface_stab, // penalty term for velocity gradients at the interface
+    double &                      velgrad_interface_fac,//velgrad_interface_stab stabilization factor
     LINALG::Matrix<nen_,1> &      funct_,         // bg shape functions
     LINALG::Matrix<nsd_,nen_> &   derxy_,         // bg deriv
     LINALG::Matrix<nsd_,nsd_> &   vderxy_,        // bg deriv^n
     double &                      press,          // bg p^n
     LINALG::Matrix<nsd_,1> &      velint,         // bg u^n
-    LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP // Dirichlet velocity vector or prescribed jump vector
-)
+    LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP, // Dirichlet velocity vector or prescribed jump vector
+    INPAR::XFEM::ConvStabScaling  conv_stab_scaling // Inflow term strategies
+  )
 {
 
   const unsigned Velx = 0;
@@ -2072,7 +2692,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
   emb_funct_dyad_k2_timefacfac.Update(kappa2, emb_funct_dyad_timefacfac, 0.0);
 
 
-  /*                  \       /          i      \
+           /*                  \       /          i      \
         + |  [ v ], + {Dp}*n    | = - | [ v ], { p }* n   |
            \                   /       \                */
 
@@ -3147,92 +3767,113 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 
 
 
-//  //-----------------------------------------------------------------
-//  // penalty term for velocity gradients at the interface
-//
-//  if(coupling)
-//  {
-//    double tau_timefacfac = 0.001*0.1 * timefacfac;
-//
-//    // get grad(u)*n
-//    LINALG::Matrix<emb_nen_,1> emb_normal_deriv(true);
-//    emb_normal_deriv.MultiplyTN(emb_derxy_,normal);
-//
-//    LINALG::Matrix<nen_,1> e_normal_deriv(true);
-//    e_normal_deriv.MultiplyTN(derxy_,normal);
-//
-//    // additional stability of gradients
-//    // parent column
-//    for (int ui=0; ui<emb_nen_; ++ui)
-//    {
-//      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
-//      {
-//        int col = ui*4+ijdim;
-//
-//        // v_parent * u_parent
-//        //parent row
-//        for (int vi=0; vi<emb_nen_; ++vi)
-//        {
-//          C_uiui_(vi*4+ijdim, col) += tau_timefacfac*emb_normal_deriv(vi)*emb_normal_deriv(ui);
-//        }
-//
-//        // neighbor row
-//        for (int vi=0; vi<nen_; ++vi)
-//        {
-//          C_uui_(vi*4+ijdim, col) -= tau_timefacfac*e_normal_deriv(vi)*emb_normal_deriv(ui);
-//        }
-//      }
-//    }
-//
-//    for (int ui=0; ui<nen_; ++ui)
-//    {
-//      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
-//      {
-//        int col = ui*4+ijdim;
-//
-//        // v_parent * u_parent
-//        //parent row
-//        for (int vi=0; vi<emb_nen_; ++vi)
-//        {
-//          C_uiu_(vi*4+ijdim, col) -= tau_timefacfac*emb_normal_deriv(vi)*e_normal_deriv(ui);
-//        }
-//
-//        //neighbor row
-//        for (int vi=0; vi<nen_; ++vi)
-//        {
-//          C_uu_(vi*4+ijdim, col) += tau_timefacfac*e_normal_deriv(vi)*e_normal_deriv(ui);
-//        }
-//      }
-//
-//    }
-//
-//    LINALG::Matrix<3,1> emb_grad_u_n(true);
-//    emb_grad_u_n.Multiply(emb_vderxy_,normal);
-//    LINALG::Matrix<3,1> e_grad_u_n(true);
-//    e_grad_u_n.Multiply(vderxy_,normal);
-//
-//
-//    for(int idim = 0; idim <3; ++idim)
-//    {
-//
-//      double diff_grad_u_n = tau_timefacfac * (e_grad_u_n(idim)-emb_grad_u_n(idim));
-//
-//      // v_parent (u_neighbor-u_parent)
-//      for (int vi=0; vi<emb_nen_; ++vi)
-//      {
-//        rhC_ui_(vi*4+idim,0) +=  emb_normal_deriv(vi)*diff_grad_u_n;
-//      }
-//
-//      // v_neighbor (u_neighbor-u_parent)
-//      for (int vi=0; vi<nen_; ++vi)
-//      {
-//        rhs_Cu_(vi*4+idim,0) -=  e_normal_deriv(vi)*diff_grad_u_n;
-//      }
-//    }
-//  }
+  //-----------------------------------------------------------------
+  // penalty term for velocity gradients at the interface
+
+  if(velgrad_interface_stab)
+  {
+    double tau_timefacfac = velgrad_interface_fac * timefacfac;
+
+    // get grad(u)*n
+    LINALG::Matrix<emb_nen_,1> emb_normal_deriv(true);
+    emb_normal_deriv.MultiplyTN(emb_derxy_,normal);
+
+    LINALG::Matrix<nen_,1> e_normal_deriv(true);
+    e_normal_deriv.MultiplyTN(derxy_,normal);
+
+    // additional stability of gradients
+    // parent column
+    for (int ui=0; ui<emb_nen_; ++ui)
+    {
+      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+      {
+        int col = ui*4+ijdim;
+
+        // v_parent * u_parent
+        //parent row
+        for (int vi=0; vi<emb_nen_; ++vi)
+        {
+          C_uiui_(vi*4+ijdim, col) += tau_timefacfac*emb_normal_deriv(vi)*emb_normal_deriv(ui);
+        }
+
+       // neighbor row
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          C_uui_(vi*4+ijdim, col) -= tau_timefacfac*e_normal_deriv(vi)*emb_normal_deriv(ui);
+        }
+      }
+    }
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      for (int ijdim = 0; ijdim <3; ++ijdim) // combined components of u and v
+      {
+       int col = ui*4+ijdim;
+
+        // v_parent * u_parent
+        //parent row
+        for (int vi=0; vi<emb_nen_; ++vi)
+        {
+          C_uiu_(vi*4+ijdim, col) -= tau_timefacfac*emb_normal_deriv(vi)*e_normal_deriv(ui);
+        }
+
+        //neighbor row
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          C_uu_(vi*4+ijdim, col) += tau_timefacfac*e_normal_deriv(vi)*e_normal_deriv(ui);
+        }
+      }
+
+    }
+
+    LINALG::Matrix<3,1> emb_grad_u_n(true);
+    emb_grad_u_n.Multiply(emb_vderxy_,normal);
+    LINALG::Matrix<3,1> e_grad_u_n(true);
+    e_grad_u_n.Multiply(vderxy_,normal);
 
 
-  return;
+    for(int idim = 0; idim <3; ++idim)
+    {
+
+      double diff_grad_u_n = tau_timefacfac * (e_grad_u_n(idim)-emb_grad_u_n(idim));
+
+      // v_parent (u_neighbor-u_parent)
+      for (int vi=0; vi<emb_nen_; ++vi)
+      {
+        rhC_ui_(vi*4+idim,0) +=  emb_normal_deriv(vi)*diff_grad_u_n;
+      }
+
+      // v_neighbor (u_neighbor-u_parent)
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        rhs_Cu_(vi*4+idim,0) -=  e_normal_deriv(vi)*diff_grad_u_n;
+      }
+    }
+  }
+
+
+   // Inflow stabilization term for fluidfluidcoupling
+   if(stabfac_conv > 0)
+     NIT2_Stab_InflowCoercivity(
+       C_uu_,                            ///< standard bg-bg-matrix
+       rhs_Cu_,                          ///< standard bg-rhs
+       velint,                           ///< velocity at integration point
+       emb_velint,                          ///< interface velocity at integration point
+       ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
+       funct_timefacfac,                 ///< funct * timefacfac
+       funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
+       emb_funct_timefacfac,            ///< sidefunct^T * timefacfac
+       emb_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+       emb_emb_dyad_timefacfac,
+       kappa1,                           ///< mortaring weighting
+       kappa2,                           ///< mortaring weighting
+       stabfac_conv,                     ///< stabilization factor
+       coupling,                         ///< assemble coupling terms (yes/no)
+       normal,                            ///< normal vector
+       conv_stab_scaling
+       );
+
+     return;
 }
 
 

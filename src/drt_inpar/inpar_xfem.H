@@ -99,6 +99,7 @@ namespace INPAR
       ConvStabScaling_inflow,
       ConvStabScaling_abs_normal_vel,
       ConvStabScaling_const,
+      ConvStabScaling_averaged,
       ConvStabScaling_none
     };
 

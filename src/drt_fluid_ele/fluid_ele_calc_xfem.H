@@ -153,13 +153,16 @@ private:
 
     //! compute stabilization factors for Nitsche's method
     void NIT_ComputeStabfac(
-        bool                              fluidfluidcoupling,
-        double &                 stabfac,              ///< stabilization factor 1
-        double &                 stabfac_conv,         ///< stabilization factor 2
-        const double             NIT_stab_fac,
-        INPAR::XFEM::ConvStabScaling       conv_stab_scaling,
-        const double                       conv_stab_fac,
-        const double             veln_normal
+        bool                            fluidfluidcoupling,
+        double &                        stabfac_visc,         ///< Nitsche stabilization factor
+        double &                        stabfac_conv,         ///< stabilization factor 2
+        const double                    NIT_stab_fac,
+        INPAR::XFEM::ConvStabScaling    conv_stab_scaling,
+        const double                    conv_stab_fac,
+        const double                    veln_normal,
+        const double                    gamma_ghost_penalty,
+        double &                        velgrad_interface_fac,
+        const double                    h_k
     );
 
     //! pre-compute the measure of the element's intersecting surface

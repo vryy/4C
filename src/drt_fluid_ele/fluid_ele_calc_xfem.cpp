@@ -109,6 +109,22 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
   double nitsche_stab_conv = params.get<double>("conv_stab_fac");
   INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
 
+  //-------------------------------------------
+  //       evaluate element length
+  //-------------------------------------------
+
+  // element length
+  double h_k = 0.0;
+  INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
+  if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
+  {
+    LINALG::Matrix<1,1> dummy(true);
+    h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
+  }
+  else dserror("unknown type of characteristic element length");
+
+  if( h_k <= 0.0 ) dserror("element length is <= 0.0");
+
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -450,15 +466,19 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
         double stabfac_visc = 0.0;
         double stabfac_conv = 0.0;
+        double velgrad_interface_fac = 0.0;
+        double gamma_ghost_penalty = 0.0;
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
                            stabfac_conv,               // stabfac 2 for additional stabilization term to set
                            0.0,                        // viscous Nitsche prefactor
                            conv_stab_scaling,          // type of scaling for convective stabilization term
-                           nitsche_stab_conv,          // stabilization factor for additional stabilization
-                           my::velint_.Dot(normal)     // velocity in normal direction
-                           );
+                           nitsche_stab_conv,          // stabilization factor for inflow stabilization
+                           my::velint_.Dot(normal),    // velocity in normal direction
+                           gamma_ghost_penalty,
+                           velgrad_interface_fac,
+                           h_k);
 
         //--------------------------------------------
         // evaluate additional inflow/convective stabilization terms
@@ -473,7 +493,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
 
 
-          si->MSH_Stab_InflowCoercivity(
+          si->Stab_InflowCoercivity(
               elemat1_epetra,          // standard bg-bg-matrix
               elevec1_epetra,          // standard bg-rhs
               fluidfluidcoupling,      // assemble coupling terms (yes/no)
@@ -489,11 +509,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
               my::derxy_,              // bg deriv
               my::vderxy_,             // bg deriv^n
               my::velint_,             // bg u^n
-              ivelint_WDBC_JUMP        // Dirichlet velocity vector or prescribed jump vector
-          );
-
+              ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector,
+              conv_stab_scaling,       // Inflow term strategies
+              "MixedStressHybrid"      // coupling method
+            );
 
         }
+
         if(!fluidfluidcoupling)
         {
           // case for one-sided weak Dirichlet
@@ -504,7 +526,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
           si->get_vel_WeakDBC(ivelint_WDBC_JUMP);
 
 
-          si->MSH_Stab_InflowCoercivity(
+          si->Stab_InflowCoercivity(
               elemat1_epetra,          // standard bg-bg-matrix
               elevec1_epetra,          // standard bg-rhs
               fluidfluidcoupling,      // assemble coupling terms (yes/no)
@@ -520,8 +542,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
               my::derxy_,              // bg deriv
               my::vderxy_,             // bg deriv^n
               my::velint_,             // bg u^n
-              ivelint_WDBC_JUMP        // Dirichlet velocity vector or prescribed jump vector
-          );
+              ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector
+              conv_stab_scaling,
+              "MixedStressHybrid"
+            );
         }
 #endif
 
@@ -1000,8 +1024,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   bool assemble_iforce = false;
   if(iforcecol != Teuchos::null) assemble_iforce = true;
 
-  double nitsche_stab      = params.get<double>("visc_stab_fac");
-  double nitsche_stab_conv = params.get<double>("conv_stab_fac");
+  double nitsche_stab        = params.get<double>("visc_stab_fac");
+  double nitsche_stab_conv   = params.get<double>("conv_stab_fac");
   INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
   INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
   INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
@@ -1011,6 +1035,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     compute_meas_surf = true;
     compute_meas_vol  = true;
   }
+
 
   //----------------------------------------------------------------------------
   //     pre-evaluate fluid volume measure and intersecting surface measure
@@ -1137,7 +1162,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   double kappa2 = 1.0-kappa1;
 
 
-  
+
   // evaluate shape function derivatives
   bool eval_deriv = true;
 
@@ -1311,16 +1336,51 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         double stabfac_visc = 0.0;
         double stabfac_conv = 0.0;
+        double velgrad_interface_fac = 0.0;
+        double gamma_ghost_penalty = 0.0;
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
                            stabfac_conv,               // stabfac 2 for additional stabilization term to set
                            NIT_stab_fac,               // viscous Nitsche prefactor
                            conv_stab_scaling,          // type of scaling for convective stabilization term
-                           nitsche_stab_conv,          // stabilization factor for additional stabilization
-                           my::velint_.Dot(normal)     // velocity in normal direction
-                           );
+                           nitsche_stab_conv,              // stabilization factor for additional stabilization
+                           my::velint_.Dot(normal),    // velocity in normal direction
+                           gamma_ghost_penalty,
+                           velgrad_interface_fac,
+                           h_k);
 
+
+        if(fluidfluidcoupling)
+        {
+
+          bool bg_mortaring = true; // one-sided background fluid mortaring (kappa1=1, kappa2=0)
+
+          //zero velocity jump for fluidfluidcoupling
+          LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
+
+
+          si->Stab_InflowCoercivity(
+              elemat1_epetra,          // standard bg-bg-matrix
+              elevec1_epetra,          // standard bg-rhs
+              fluidfluidcoupling,      // assemble coupling terms (yes/no)
+              bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+              normal,                  // normal vector
+              timefacfac,              // theta*dt
+              my::visceff_,            // viscosity in background fluid
+              0.0,                     // viscosity in embedded fluid
+              0.5,                     // mortaring weighting
+              0.5,                     // mortaring weighting
+              stabfac_conv,            // Nitsche convective non-dimensionless stabilization factor
+              my::funct_,              // bg shape functions
+              my::derxy_,              // bg deriv
+              my::vderxy_,             // bg deriv^n
+              my::velint_,             // bg u^n
+              ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector,
+              conv_stab_scaling,
+              "Nitsche"
+            );
+        }
 
         //--------------------------------------------
 
@@ -1350,7 +1410,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::vderxy_,             // bg deriv^n
               press,                   // bg p^n
               my::velint_,             // bg u^n
-              ivelint_WDBC_JUMP        // Dirichlet velocity vector or prescribed jump vector
+              ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector
+              conv_stab_scaling
           );
 
 
@@ -1383,8 +1444,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::vderxy_,             // bg deriv^n
               press,                   // bg p^n
               my::velint_,             // bg u^n
-              ivelint_WDBC_JUMP        // Dirichlet velocity vector or prescribed jump vector
-          );
+              ivelint_WDBC_JUMP,       // Dirichlet velocity vector or prescribed jump vector
+              conv_stab_scaling
+            );
         }
 
 
@@ -1455,9 +1517,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
   double nitsche_stab      = params.get<double>("visc_stab_fac");
   double nitsche_stab_conv = params.get<double>("conv_stab_fac");
-//  INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
-//  INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
+  INPAR::XFEM::ViscStabScaling visc_stab_scaling = params.get<INPAR::XFEM::ViscStabScaling>("visc_stab_scaling");
+  INPAR::XFEM::ConvStabScaling conv_stab_scaling = params.get<INPAR::XFEM::ConvStabScaling>("conv_stab_scaling");
   INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
+
+  bool velgrad_interface_stab = params.get<bool>("velgrad_interface_stab");
 
   if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
   {
@@ -1548,6 +1612,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   // element length
   double h_k = 0.0;
 
+  // scaling factors for stabilization terms
+  double visceff_max = my::visceff_;
+
   if(coupling_strategy != INPAR::XFEM::Embedded_Sided_Mortaring)
   {
     if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
@@ -1569,26 +1636,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   }
 
 
-  double kappa1 = 1.0;      // Xfluid-sided mortaring
+  double kappa1;
 
-  // scaling factors for stabilization terms
-  double visceff_max = my::visceff_;
-
-  double stabfac_scaling      = 0.0;  // scaling factor for standard Nitsche stabilization
-  double stabfac_conv_scaling = 0.0;  // scaling factor for convecitve Nitsche stabilization
-
-
-  if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Mortaring)
-  {
-
-    stabfac_scaling      = nitsche_stab * visceff_max / h_k;  // scaling factor for standard Nitsche stabilization
-    stabfac_conv_scaling = nitsche_stab_conv;            // scaling factor for convecitve Nitsche stabilization
-
-    if( h_k <= 0.0 ) dserror("element length is <= 0.0");
-
-    kappa1 = 1.0;
-  }
-  else if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Mortaring)
+  if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Mortaring)
   {
     kappa1 = 0.0;
   }
@@ -1598,15 +1648,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
     if( h_k <= 0.0 ) dserror("element length is <= 0.0");
 
-    stabfac_scaling      = nitsche_stab * visceff_max / h_k;  // scaling factor for standard Nitsche stabilization
-    stabfac_conv_scaling = nitsche_stab_conv;            // scaling factor for convecitve Nitsche stabilization
-
     kappa1 = 0.5;
   }
   else dserror("coupling strategy not known");
-
-
-
 
 
   //------------------------------
@@ -1713,11 +1757,26 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
       if(h_k < 1e-006) dserror("element length is smaller than 1e-006");
 
-      stabfac_scaling      = nitsche_stab * visceff_max / h_k;  // scaling factor for standard Nitsche stabilization
-      stabfac_conv_scaling = nitsche_stab_conv;            // scaling factor for convecitve Nitsche stabilization
     }
 
 
+    //------------------------------
+    // scaling factors for Nitsche's standard stabilization term
+    double NIT_stab_fac         = 1.0;
+
+    if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_visc_div_by_hk)
+    {
+      NIT_stab_fac = nitsche_stab * visceff_max / h_k;
+    }
+    else if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_inv_hk)
+    {
+      NIT_stab_fac = nitsche_stab / h_k;
+    }
+    else if(visc_stab_scaling == INPAR::XFEM::ViscStabScaling_const)
+    {
+      NIT_stab_fac = nitsche_stab;
+    }
+    else dserror("unknown scaling for viscous stabilization term");
 
 
     //--------------------------------------------
@@ -1822,15 +1881,25 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         //--------------------------------------------
         // compute stabilization factors
 
-        double stabfac      = 0.0;
         double stabfac_conv = 0.0;
+        double stabfac_visc = 0.0;
+        double velgrad_interface_fac = 0.0;
 
-//        NIT_ComputeStabfac(stabfac, stabfac_conv, stabfac_scaling, stabfac_conv_scaling, my::velint_.Dot(normal));
+        double gamma_ghost_penalty= 0.0;
+        if (velgrad_interface_stab)
+          gamma_ghost_penalty = params.get<double>("GHOST_PENALTY_FAC");
 
-        stabfac = stabfac_scaling;
-        stabfac_conv = stabfac_conv_scaling;
+        NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
+                           stabfac_visc,               // stabfac 1 for standard Nitsche term to set
+                           stabfac_conv,               // stabfac 2 for additional stabilization term to set
+                           NIT_stab_fac,               // viscous Nitsche prefactor
+                           conv_stab_scaling,          // type of scaling for convective stabilization term
+                           nitsche_stab_conv,          // stabilization factor for additional stabilization
+                           my::velint_.Dot(normal),    // velocity in normal direction
+                           gamma_ghost_penalty,
+                           velgrad_interface_fac,
+                           h_k);
 
-        //--------------------------------------------
 
         if(fluidfluidcoupling)
         {
@@ -1853,21 +1922,22 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
               my::visceff_,                // viscosity in embedded fluid
               kappa1,                  // mortaring weighting
               kappa2,                  // mortaring weighting
-              stabfac,                 // Nitsche non-dimensionless stabilization factor
+              stabfac_visc,            // Nitsche non-dimensionless stabilization factor
               stabfac_conv,            // Nitsche convective non-dimensionless stabilization factor
+              velgrad_interface_stab,  // yes: stabilization term for velocity gradients at the interface
+              velgrad_interface_fac,  // velgrad_interface_stab stabilization factor
               my::funct_,                  // bg shape functions
               my::derxy_,                  // bg deriv
               my::vderxy_,                 // bg deriv^n
               press,                   // bg p^n
               my::velint_,                 // bg u^n
-              ivelint_WDBC_JUMP         // Dirichlet velocity vector or prescribed jump vector
-          );
+              ivelint_WDBC_JUMP,         // Dirichlet velocity vector or prescribed jump vector
+              conv_stab_scaling          // Inflow term strategies
+            );
 
 
         }
         else  dserror(" no two sided mortaring for non-fluidfluidcoupling");
-
-
 
 
       } // end loop gauss points of boundary cell
@@ -1929,13 +1999,15 @@ void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     bool                            fluidfluidcoupling,
-    double &                        stabfac,              ///< stabilization factor 1
+    double &                        stabfac_visc,         ///< Nitsche stabilization factor
     double &                        stabfac_conv,         ///< stabilization factor 2
     const double                    NIT_stab_fac,         ///< stabilization factor for Nitsche term
     INPAR::XFEM::ConvStabScaling    conv_stab_scaling,
     const double                    nitsche_stab_conv,
-    const double                    veln_normal
-)
+    const double                    veln_normal,
+    const double                    gamma_ghost_penalty,
+    double &                        velgrad_interface_fac,
+    const double                    h_k)
 {
   // additional stabilization for convective stabilization
   double conv_stabfac = 0.0;
@@ -1954,6 +2026,11 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
   {
     //      const = conv_stab_fac
     conv_stabfac = 1.0;
+  }
+    else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_averaged)
+  {
+    //      const = conv_stab_fac
+    conv_stabfac = max(0.0,veln_normal);
   }
   else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_none)
   {
@@ -1977,12 +2054,14 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     */
 
     // final stabilization factors
-    stabfac      = max(NIT_stab_fac, nitsche_stab_conv*conv_stabfac);
+    stabfac_visc   = max(NIT_stab_fac, nitsche_stab_conv*conv_stabfac);
     stabfac_conv = 0.0;
     //=================================================================================
   }
   else //fluidfluidcoupling
   {
+    // stabilization parameter for velocity-gradients penalty term
+    velgrad_interface_fac = gamma_ghost_penalty*my::visc_*h_k;
 
     /*
     //      viscous_Nitsche-part
@@ -1991,7 +2070,7 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     //   \                                   /        \                               /
     */
 
-    stabfac      = NIT_stab_fac;
+    stabfac_visc   = NIT_stab_fac;
 
     /*
     //    /                                           \        /                        i               \
@@ -2000,9 +2079,7 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     //
     */
 
-    if(nitsche_stab_conv != 0.0) dserror("no special inflow stabilization implemented for xff");
     stabfac_conv = nitsche_stab_conv*conv_stabfac;
-
   }
 
   return;
@@ -2370,7 +2447,11 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
   )
 {
   LINALG::Matrix<(my::nsd_+1)*my::nen_,1> elevec1(elevec1_epetra,true);
+  LINALG::Matrix<my::nsd_+1,my::nen_>    tmpvel;
   int eid = ele->Id();
+
+  // get node coordinates and number of elements per node
+  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -2380,25 +2461,27 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
     // evaluate shape functions and derivatives at integration point
     my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
-    for(int ui=0; ui<my::nen_; ++ui)
-    {
-      for (int idim = 0; idim <my::nsd_; ++idim)
-      {
-        const int fui = (my::nsd_+1)*ui;
-        /* continuity term */
-        /*
-             /           \
-            |             |
-            | nabla o Du  |
-            |             |
-             \           /
-        */
+     // Summe über alle Knoten
+     for(int ui=0; ui<my::nen_; ++ui)
+     {
+       for (int idim = 0; idim <my::nsd_; ++idim)
+       {
+         // Bloecke ueber Knoten
+         const int fui = (my::nsd_+1)*ui;
+         /* continuity term */
+         /*
+              /           \
+             |             |
+             | nabla o Du  |
+             |             |
+              \           /
+         */
 
-        elevec1(fui+idim) += my::fac_*my::derxy_(idim,ui);
-      }
-    }
-
+         elevec1(fui+idim) += my::fac_*my::derxy_(idim,ui);
+       }
+     }
   }
+
   return;
 }
 
