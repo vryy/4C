@@ -47,9 +47,9 @@ EIGEN                           0
 RESULTSEVRY                     10
 RESTARTEVRY                     11
 NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
-TIMESTEP                        50
+TIMESTEP                        100
 NUMSTEP                         10
-MAXTIME                         500.0
+MAXTIME                         1000.0
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
@@ -72,42 +72,62 @@ GAMMA                           0.6764705
 ALPHA_M                         0.2352941
 ALPHA_F                         0.4117647
 ------------------------------------------------------------INVERSE ANALYSIS
-INV_ANALYSIS                    lung
-//Specimen                      8
-MC_X_0 -1083.380550 //displacment um
-MC_X_1                          0.003131
-MC_X_2                          2.284432
+INV_ANALYSIS    lung
 
-MC_Y_0 -179.586432 //displacment um
-MC_Y_1                          0.003748
-MC_Y_2                          1.260942
+MC_X_0   -1082.598603  //displacment um
+MC_X_1   0.001565
+MC_X_2   2.281617 
+ 
+MC_Y_0  -246.451141425
+MC_Y_1   0.00175792337564
+MC_Y_2   1.86011223957
+                 
+INV_ANA_TOL    10.
 
-INV_ALPHA                       10e-6
-INV_BETA                        10e-2
+INV_ANA_MAX_RUN 20
 
-INV_ANA_TOL                     1.
-INV_ANA_MAX_RUN                 10
+
+//INV_ANALYSIS                    lung
+////Specimen                      8
+//MC_X_0 -1083.380550 //displacment um
+//MC_X_1                          0.003131
+//MC_X_2                          2.284432
+//
+//MC_Y_0 -179.586432 //displacment um
+//MC_Y_1                          0.003748
+//MC_Y_2                          1.260942
+
+//INV_ALPHA                       10e-6
+//INV_BETA                        10e-2
+
+//INV_ANA_TOL                     1.
+//INV_ANA_MAX_RUN                 10
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 // ug / um^3
-MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 200 201 34 DENS 0.194e-6
-MAT 11 ELAST_CoupBlatzKo MUE 10. NUE .49 F 0.8
-MAT 12 ELAST_CoupLogNeoHooke MODE YN C1 10. C2 0.3
-MAT 21 ELAST_IsoNeoHooke MUE 10.
-MAT 200 ELAST_IsoQuad C 1.0
-MAT 201 ELAST_IsoCub C 1.0
-MAT 22 ELAST_IsoYeoh C1 1.0 C2 1.0 C3 1.0
-MAT 23 ELAST_IsoMooneyRivlin C1 1. C2 1.
-MAT 24 ELAST_IsoExpoPow K1 1. K2 1. C 2
+MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS  11 12 13 32 DENS 0.194e-6 GAMMA 1
+MAT 2  ELAST_CoupLogNeoHooke MODE YN C1 10. C2 0.3
+MAT 3 ELAST_CoupBlatzKo MUE 8. NUE .3 F 0.8
+MAT 11 ELAST_Iso1Pow C 10. D 1.
+MAT 12 ELAST_Iso1Pow C 5. D 2.
+MAT 13 ELAST_Iso1Pow C 1. D 3.
+MAT 14 ELAST_Iso1Pow C 1. D 4.
+MAT 15 ELAST_Iso1Pow C 1. D 5.
+MAT 16 ELAST_Iso1Pow C 1. D 6.
+MAT 17 ELAST_Iso1Pow C 1. D 7.
+MAT 20 ELAST_IsoMooneyRivlin C1 5. C2 1.
+MAT 21 ELAST_IsoExpoPow K1 1. K2 1. C 2
+MAT 22 ELAST_IsoYeoh  C1 5. C2 5.  C3 5.
 MAT 31 ELAST_VolPenalty EPSILON 1. GAMMA .01
-MAT 32 ELAST_VolOgden KAPPA 1.0 BETA -2
-MAT 34 ELAST_VolOgden KAPPA 1. BETA -2
+MAT 32 ELAST_VolOgden KAPPA 20. BETA -2
 MAT 33 ELAST_VolSussmanBathe KAPPA 1.0
+
+
 ----------------------------------------------------------------------CURVE1
-//Specimen                      8
-CURVE1 on EXPR FUNC 0007.250*(1-exp(-(0.002537*t)^6.160450))+0.002324*(1-exp(-(0.004203*t)^1.908044)) t1 0.0 t2 1000.0 // nN/um^2
+//av loading curve
+CURVE1 on EXPR FUNC 9.756226*(1-exp(-(0.001287*t)^5.663476))+0.747883*(1-exp(-(0.003496*t)^1.982052))  t1 0.0 t2 1000.0
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
