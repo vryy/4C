@@ -14,6 +14,7 @@ Maintainer: Martin Winklmaier
 
 #include "topopt_optimizer.H"
 #include "topopt_fluidAdjoint3_impl_parameter.H"
+#include "opti_GCMMA.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -44,18 +45,32 @@ params_(params)
   adjointvel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
 
   // topology density fields
-  dens_i_ = rcp(new Epetra_Vector(*optidis_->NodeRowMap(),false));
-  dens_ip_ = rcp(new Epetra_Vector(*optidis_->NodeRowMap(),false));
+  dens_ = rcp(new Epetra_Vector(*optidis_->NodeRowMap(),false));
 
   // value of the objective function
   obj_value_ = 0.0;
   // gradient of the objective function
   obj_grad_ = rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
 
+  /// number of constraints
+  num_constr_ = 1;
+  // value of the constraint(s);
+  constr_ = new double[num_constr_];
+  // gradient of the constraint(s)
+  constr_deriv_ = rcp(new Epetra_MultiVector(*optidis_->NodeRowMap(),num_constr_,false));
+
   // set initial density field if present
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
       optimizer_params.get<int>("INITFUNCNO"));
 
+  optimizer_ = rcp(new OPTI::GCMMA(
+      optidis_,
+      params_,
+      dens_,
+      num_constr_,
+      Teuchos::null,
+      Teuchos::null
+  ));
   return;
 }
 
@@ -63,9 +78,17 @@ params_(params)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void TOPOPT::Optimizer::ComputeObjective()
+void TOPOPT::Optimizer::ComputeValues()
 {
   obj_value_ = 0.0; // initialize with zero
+
+  // initialize
+  double* constr = constr_;
+  for (int i=0;i<num_constr_;i++)
+  {
+    *constr = 0.0;
+    constr++;
+  }
 
   // check if all data is present
   DataComplete();
@@ -75,16 +98,17 @@ void TOPOPT::Optimizer::ComputeObjective()
 
   Teuchos::ParameterList params;
 
-  params.set("action","compute_objective");
+  params.set("action","compute_values");
 
   params.set("objective_value",obj_value_);
+  params.set("constraint_values",constr_);
 
   params.set("fluidvel",fluidvel_);
   params.set("fluiddis",fluiddis_);
 
   optidis_->ClearState();
 
-  optidis_->SetState("density",dens_ip_);
+  optidis_->SetState("density",dens_);
   optidis_->Evaluate(params,Teuchos::null,Teuchos::null);
 
   optidis_->ClearState();
@@ -97,10 +121,11 @@ void TOPOPT::Optimizer::ComputeObjective()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void TOPOPT::Optimizer::ComputeGradient()
+void TOPOPT::Optimizer::ComputeGradients()
 {
   TEUCHOS_FUNC_TIME_MONITOR(" evaluate objective gradient");
   obj_grad_->PutScalar(0.0);
+  constr_deriv_->PutScalar(0.0);
 
   DataComplete();
 
@@ -109,7 +134,9 @@ void TOPOPT::Optimizer::ComputeGradient()
 
   Teuchos::ParameterList params;
 
-  params.set("action","compute_gradient");
+  params.set("action","compute_gradients");
+
+  params.set("constraints_derivations",constr_deriv_);
 
   params.set("fluidvel",fluidvel_);
   params.set("adjointvel",adjointvel_);
@@ -117,7 +144,7 @@ void TOPOPT::Optimizer::ComputeGradient()
 
   optidis_->ClearState();
 
-  optidis_->SetState("density",dens_ip_);
+  optidis_->SetState("density",dens_);
   optidis_->Evaluate(params,Teuchos::null,obj_grad_);
 
   optidis_->ClearState();
@@ -136,7 +163,7 @@ void TOPOPT::Optimizer::SetInitialDensityField(
   {
   case INPAR::TOPOPT::initdensfield_zero_field:
   {
-    dens_ip_->PutScalar(0.0);
+    dens_->PutScalar(0.0);
     break;
   }
   case INPAR::TOPOPT::initdensfield_field_by_function:
@@ -149,7 +176,7 @@ void TOPOPT::Optimizer::SetInitialDensityField(
 
       // evaluate component k of spatial function
       double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL); // scalar
-      int err = dens_ip_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
+      int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
       if (err != 0) dserror("dof not on proc");
     }
     break;
@@ -157,8 +184,6 @@ void TOPOPT::Optimizer::SetInitialDensityField(
   default:
     dserror("unknown initial field");
   }
-
-  dens_i_->Update(1.0,*dens_ip_,0.0);
 }
 
 
@@ -230,6 +255,8 @@ void TOPOPT::Optimizer::ImportFlowParams(
   opti_ele_params.set("dissipation_fac",fluidParams_->get<double>("DISSIPATION_FAC"));
   opti_ele_params.set("pres_drop_fac",fluidParams_->get<double>("PRESSURE_DROP_FAC"));
 
+  opti_ele_params.set("vol_bd",params_.sublist("TOPOLOGY OPTIMIZER").get<double>("VOLUME_BOUNDARY"));
+
   optidis_->Evaluate(opti_ele_params,Teuchos::null,Teuchos::null);
 }
 
@@ -267,6 +294,41 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
     RCP<Epetra_Vector> new_vel = rcp(new Epetra_Vector(*vel));
     adjointvel_->insert(pair<int,RCP<Epetra_Vector> >(step,new_vel));
   }
+}
+
+
+
+void TOPOPT::Optimizer::Iterate(
+    bool& doGradient
+)
+{
+  if (doGradient)
+  {
+    optimizer_->Iterate(
+        obj_value_,
+        obj_grad_,
+        constr_,
+        constr_deriv_,
+        doGradient
+    );
+  }
+  else
+  {
+    optimizer_->Iterate(
+        obj_value_,
+        Teuchos::null,
+        constr_,
+        Teuchos::null,
+        doGradient
+    );
+  }
+}
+
+
+
+bool TOPOPT::Optimizer::Converged()
+{
+  return optimizer_->Converged();
 }
 
 

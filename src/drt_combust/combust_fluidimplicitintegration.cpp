@@ -421,6 +421,7 @@ bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
     }
     case INPAR::COMBUST::xfemtimeint_semilagrange:
     case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
+    case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
       break;
     default:
       dserror("standard recomputation approach in XFEM time integration not implemented");
@@ -631,6 +632,8 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 
     if (step_ > 0) // initial stationary solution does not require reference solution update
     {
+      TEUCHOS_FUNC_TIME_MONITOR("   + xfem time integration");
+
       vector<RCP<Epetra_Vector> > newRowVectorsn; // solution vectors of old time step due to new interface
       newRowVectorsn.push_back(state_.veln_);
       newRowVectorsn.push_back(state_.accn_);
@@ -939,6 +942,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
             break;
           case INPAR::COMBUST::xfemtimeint_semilagrange:
           case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
+          case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
           {
             // time integration data for standard dofs, semi-lagrangian approach
             timeIntStd_ = rcp(new XFEM::SemiLagrange(
@@ -996,6 +1000,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
         case INPAR::COMBUST::xfemtimeint_donothing: break;
         case INPAR::COMBUST::xfemtimeint_semilagrange:
         case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
+        case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
         case INPAR::COMBUST::xfemtimeint_extrapolation:
         {
           timeIntStd_->importNewFGIData(
@@ -2024,46 +2029,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   residual_ = Teuchos::null;
   zeros_ = Teuchos::null;
   sysmat_ = Teuchos::null;
-
-#if 0
-  //TODO MARTIN: remove after testing
-  int myints[] = {16,20};
-  vector<int> nodegids(myints, myints+sizeof(myints)/sizeof(int));
-  const Epetra_Map dofrowmap = *discret_->DofRowMap();
-  ofstream dataout;
-  if (step_==0)
-    dataout.open("../output/test/enrichments.txt", ios::app);
-  if (step_==1)
-    dataout.open("../output/test/enrichments.txt", ios::trunc);
-  else if (step_ > 1)
-    dataout.open("../output/test/enrichments.txt", ios::app);
-
-  for (size_t i=0;i<nodegids.size();i++)
-  {
-    // set nodal velocities and pressures with help of the field set of node
-    const std::set<XFEM::FieldEnr>& fieldenrset(dofmanagerForOutput_->getNodeDofSet(nodegids[i]));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-        fieldenr != fieldenrset.end();++fieldenr)
-    {
-      const XFEM::DofKey newdofkey(i, *fieldenr);
-      const int newdofpos = state_.nodalDofDistributionMap_.find(newdofkey)->second;
-      if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-      {
-        if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-        {
-          if (i==0)
-            dataout << (*state_.velnp_)[dofrowmap.LID(newdofpos)] << ","; // minus-domain
-          else if (i==1)
-            dataout << (*state_.velnp_)[dofrowmap.LID(newdofpos)] << ";"; // plus-domain
-          else
-            dserror("change!");
-        }
-      }
-    }
-  } // end loop over nodes
-  dataout << endl;
-  dataout.close();
-#endif
 }
 
 

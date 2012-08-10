@@ -234,6 +234,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
   }
   else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
   {
+    dserror("normal vector erroneous");
     if (intersectionStatus(ele)==XFEM::TIMEINT::cut_) // compute jump and kink in bisected ele
     {
       // compute the kink and jump height at the interface in this element
@@ -731,7 +732,8 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
       numNewIntersectedEle++;
       double dist = 0.0; // minimal distance from node to interface segment of current element
       LINALG::Matrix<nsd,1> normal(true); // normal vector from node to interface segment of current element
-      SignedDistance(node,eles[iele]->Id(),dist,normal,false);
+      LINALG::Matrix<nsd,1> dummy(true);
+      SignedDistance(node,eles[iele]->Id(),dist,normal,dummy,false);
       double phiDiff = dist - (*phin_)[node->LID()]; // difference of the signed distances of the node to interface between this and last time step
 
       for (size_t ivector=0;ivector<newVectors_.size();ivector++) // loop over global vectors
@@ -745,6 +747,7 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
         }
         else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
         {
+          dserror("normal vector erroneous");
           // velocity entry
           for (int entry=0;entry<nsd;entry++)
             finalEnrichmentValues[ivector](entry) +=
@@ -815,7 +818,8 @@ void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
       numNewIntersectedEle++;
       double dist = 0.0; // currently dummy
       LINALG::Matrix<nsd,1> normal(true); // normal vector from node to interface segment of current element
-      SignedDistance(node,eles[iele]->Id(),dist,normal,false);
+      LINALG::Matrix<nsd,1> dummy(true);
+      SignedDistance(node,eles[iele]->Id(),dist,normal,dummy,false);
 
       for (size_t ivector=0;ivector<newVectors_.size();ivector++) // loop over global vectors
       {
@@ -829,6 +833,7 @@ void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
         }
         else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
         {
+          dserror("normal vector erroneous");
           // velocity entry
           for (int entry=0;entry<nsd;entry++)
             finalEnrichmentValues[ivector](0) +=

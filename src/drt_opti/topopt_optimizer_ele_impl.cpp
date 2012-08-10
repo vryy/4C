@@ -153,7 +153,7 @@ is_higher_order_ele_(false)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
+int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   DRT::Element*              ele,
   ParameterList&             params,
   DRT::Discretization&       optidis,
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
   vector<int>&               lm
 )
 {
-  return EvaluateObjective(
+  return EvaluateValues(
       ele,
       params,
       optidis,
@@ -175,7 +175,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
+int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   DRT::Element*                 ele,
   ParameterList&                params,
   DRT::Discretization&          optidis,
@@ -185,6 +185,8 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
 )
 {
   double& objective = params.get<double>("objective_value");
+
+  double* constraints = params.get<double*>("constraint_values");
 
   RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
 
@@ -220,11 +222,12 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
 
-  Objective(
+  Values(
       ele->Id(),
       efluidvels,
       edens,
       objective,
+      constraints,
       mat,
       intpoints
   );
@@ -236,16 +239,19 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateObjective(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TopOptImpl<distype>::Objective(
+void DRT::ELEMENTS::TopOptImpl<distype>::Values(
   const int eid,
   map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
   LINALG::Matrix<nen_,1>& edens,
   double& objective,
+  double* constraints,
   RCP<MAT::Material> mat,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
   double value = 0.0; // total unscaled entries at one gauss point
+
+  double& densint = constraints[0]; // integrated density
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -256,6 +262,9 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Objective(
     EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
     EvalPorosityAtIntPoint(edens);
+
+    // volume constraint
+    densint += fac_*(edens.Dot(funct_) - optiparams_->VolBd()); // TODO c missing
 
     // dissipation in objective present?
     if (optiparams_->ObjDissipationTerm())
@@ -315,7 +324,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Objective(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
+int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   DRT::Element*              ele,
   ParameterList&             params,
   DRT::Discretization&       optidis,
@@ -324,7 +333,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
   Epetra_SerialDenseVector&  elevec1_epetra
   )
 {
-  return EvaluateGradient(
+  return EvaluateGradients(
       ele,
       params,
       optidis,
@@ -339,7 +348,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
+int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   DRT::Element*                 ele,
   ParameterList&                params,
   DRT::Discretization&          optidis,
@@ -350,6 +359,9 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
 )
 {
   LINALG::Matrix<nen_,1> egrad(elevec1_epetra,true);
+
+  RCP<Epetra_MultiVector> constr_der = params.get<RCP<Epetra_MultiVector> >("constraints_derivations");
+  LINALG::Matrix<nen_,1>* econstr_der = new LINALG::Matrix<nen_,1>[1];
 
   RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
 
@@ -395,12 +407,13 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
 
-  Gradient(
+  Gradients(
       ele->Id(),
       efluidvels,
       eadjointvels,
       edens,
       egrad,
+      econstr_der,
       mat,
       intpoints
   );
@@ -412,12 +425,13 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradient(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TopOptImpl<distype>::Gradient(
+void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
   const int eid,
   map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
   map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
   LINALG::Matrix<nen_,1>& edens,
   LINALG::Matrix<nen_,1>& egrad,
+  LINALG::Matrix<nen_,1>* econstr_der,
   RCP<MAT::Material> mat,
   DRT::UTILS::GaussIntegration& intpoints
 )
@@ -716,7 +730,7 @@ is_higher_order_ele_(false)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryObjective(
+int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryValues(
   DRT::Element*              ele,
   ParameterList&             params,
   DRT::Discretization&       optidis,
@@ -734,7 +748,7 @@ int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryObjective(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryGradient(
+int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryGradients(
   DRT::Element*              ele,
   ParameterList&             params,
   DRT::Discretization&       optidis,

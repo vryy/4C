@@ -53,7 +53,7 @@ public:
     This class does not provide a definition for this function, it
     must be defined in TopOptImpl.
    */
-  virtual int EvaluateObjective(
+  virtual int EvaluateValues(
       DRT::Element*              ele,
       ParameterList&             params,
       DRT::Discretization&       optidis,
@@ -66,7 +66,7 @@ public:
     This class does not provide a definition for this function, it
     must be defined in TopOptImpl.
    */
-  virtual int EvaluateGradient(
+  virtual int EvaluateGradients(
       DRT::Element*              ele,
       ParameterList&             params,
       DRT::Discretization&       optidis,
@@ -132,7 +132,7 @@ public:
   virtual void Done();
 
   //! Evaluate objective value
-  virtual int EvaluateObjective(
+  virtual int EvaluateValues(
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
@@ -141,7 +141,7 @@ public:
   );
 
   //! Evaluate objective value
-  virtual int EvaluateObjective(
+  virtual int EvaluateValues(
       DRT::Element*                 ele,            //!< the element we are dealing with
       ParameterList&                params,         //!< the parameter list
       DRT::Discretization&          optidis, //!< the discretization the element is part of
@@ -151,7 +151,7 @@ public:
   );
 
   //! Evaluate gradient of objective
-  virtual int EvaluateGradient(
+  virtual int EvaluateGradients(
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
@@ -161,7 +161,7 @@ public:
   );
 
   //! Evaluate gradient of objective
-  virtual int EvaluateGradient(
+  virtual int EvaluateGradients(
       DRT::Element*                 ele,            //!< the element we are dealing with
       ParameterList&                params,         //!< the parameter list
       DRT::Discretization&          optidis, //!< the discretization the element is part of
@@ -188,22 +188,24 @@ private:
   /*========================================================================*/
 
   /// calculate objective value - main computation function
-  virtual void Objective(
+  virtual void Values(
     const int eid,
     map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
     LINALG::Matrix<nen_,1>& edens,
     double& objective,
+    double* constraints,
     RCP<MAT::Material> mat,
     DRT::UTILS::GaussIntegration& intpoints
   );
 
   /// Calculate gradient of objective - main computation function
-  virtual void Gradient(
+  virtual void Gradients(
     const int eid,
     std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
     std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
     LINALG::Matrix<nen_,1>& edens,
     LINALG::Matrix<nen_,1>& egrad,
+    LINALG::Matrix<nen_,1>* econstr_der,
     RCP<MAT::Material> mat,
     DRT::UTILS::GaussIntegration& intpoints
   );
@@ -327,7 +329,7 @@ public:
     This class does not provide a definition for this function, it
     must be defined in TopOptBoundaryImpl.
    */
-  virtual int EvaluateBoundaryObjective(
+  virtual int EvaluateBoundaryValues(
       DRT::Element*              ele,
       ParameterList&             params,
       DRT::Discretization&       optidis,
@@ -340,7 +342,7 @@ public:
     This class does not provide a definition for this function, it
     must be defined in TopOptBoundaryImpl.
    */
-  virtual int EvaluateBoundaryGradient(
+  virtual int EvaluateBoundaryGradients(
       DRT::Element*              ele,
       ParameterList&             params,
       DRT::Discretization&       optidis,
@@ -411,7 +413,7 @@ public:
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
   //! Evaluate objective value
-  virtual int EvaluateBoundaryObjective(
+  virtual int EvaluateBoundaryValues(
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
@@ -420,7 +422,7 @@ public:
   );
 
   //! Evaluate gradient of objective
-  virtual int EvaluateBoundaryGradient(
+  virtual int EvaluateBoundaryGradients(
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of

@@ -516,6 +516,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/physics.cpp
   src/drt_xfem/timeInt.cpp
   src/drt_xfem/timeInt_enr.cpp
+  src/drt_xfem/timeInt_std_extrapol.cpp
   src/drt_xfem/timeInt_std_extrapolation.cpp
   src/drt_xfem/timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xdofmapcreation_combust.cpp
@@ -945,7 +946,6 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 set(OBJS_DRT_TOPOPT
   src/drt_opti/topopt_algorithm.cpp
   src/drt_opti/topopt_dyn.cpp
-  src/drt_opti/topopt_optimizer.cpp
   src/drt_opti/topopt_utils.cpp
 )
 
@@ -961,6 +961,12 @@ set(OBJS_DRT_TOPOPT_ADJOINT
   src/drt_opti/topopt_fluidAdjointResulttest.cpp
   src/drt_opti/topopt_fluidAdjoint_timeint.cpp
 )
+
+set(OBJS_OPTI
+  src/drt_opti/topopt_optimizer.cpp
+  src/drt_opti/opti_GCMMA.cpp
+)
+
 set(OBJS_DRT_LOMA
   src/drt_loma/loma_algorithm.cpp
   src/drt_loma/loma_dyn.cpp
@@ -1498,6 +1504,7 @@ add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
+add_library(alg_opti ${OBJS_OPTI})
 
 set(SINGLEFIELD_LIBRARIES
   alg_ale
@@ -1513,6 +1520,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_thermo
   alg_contact
   alg_fluid_adjoint
+  alg_opti
   )
 
 # general framework
@@ -1786,6 +1794,7 @@ baci_test(combust_instat_timeIntSL_1Dduct_FGIFRS_reverse 1 "")
 baci_test(combust_instat_timeIntSL_1Dduct_FGIFRS_reverse 2 "")
 baci_test(combust_instat_timeIntSL_1Dduct_FGIFRS_redis 1 "")
 baci_test(combust_instat_timeIntSL_1Dduct_FGIFRS_redis 2 "")
+baci_test(combust_instat_timeIntSLProjNew_1Dduct 1 "")
 baci_test(combust_levelsetcut_horizontal 1 "")
 baci_test(combust_levelsetcut_horizontal 2 "")
 baci_test(combust_levelsetcut_vertical 1 "")

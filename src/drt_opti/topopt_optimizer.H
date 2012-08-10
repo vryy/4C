@@ -22,6 +22,7 @@ Maintainer: Martin Winklmaier
 
 /// forward declarations
 class Epetra_Map;
+class Epetra_MultiVector;
 class Epetra_Vector;
 
 namespace Teuchos
@@ -39,6 +40,10 @@ namespace DRT
   }
 }
 
+namespace OPTI
+{
+  class GCMMA;
+}
 
 namespace TOPOPT
 {
@@ -86,10 +91,10 @@ namespace TOPOPT
     virtual ~Optimizer(){};
 
     /// compute the value of the objective funtion
-    void ComputeObjective();
+    void ComputeValues();
 
     /// compute the gradient of the objective function
-    void ComputeGradient();
+    void ComputeGradients();
 
     /// import time integration parameters
     void ImportFlowParams(Teuchos::RCP<Teuchos::ParameterList>& fluidParams);
@@ -107,19 +112,24 @@ namespace TOPOPT
       adjointvel_->clear();
     }
 
+    void Iterate(
+        bool& dualVariable
+    );
+
+    bool Converged();
+
     Teuchos::RCP<const DRT::Discretization> OptiDis(){return optidis_;}
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return fluidvel_;} /// fluid velocity
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportAdjointData() const {return adjointvel_;} /// fluid velocity
-    Teuchos::RCP<const Epetra_Vector> DensityI() const {return dens_i_;}
-    Teuchos::RCP<const Epetra_Vector> DensityIp() const {return dens_ip_;}
+    Teuchos::RCP<const Epetra_Vector> Density() const {return dens_;}
     const double ObjectiveValue(bool compute = false)
     {
-      if (compute) ComputeObjective();
+      if (compute) ComputeValues();
       return obj_value_;
     }
     const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(bool compute)
     {
-      if (compute) ComputeGradient();
+      if (compute) ComputeGradients();
       return obj_grad_;
     }
     const Epetra_Map* RowMap();
@@ -129,8 +139,6 @@ namespace TOPOPT
 
     /// set the initial density field of the optimization variable
     void SetInitialDensityField(const INPAR::TOPOPT::InitialDensityField init,const int startfuncno);
-
-  private:
 
     /// check if all required data for an optimization step is present
     bool DataComplete() const;
@@ -155,12 +163,16 @@ namespace TOPOPT
     //@}
 
     //! @name fields for optimization
-    Teuchos::RCP<Epetra_Vector> dens_i_;/// old density in row map
-    Teuchos::RCP<Epetra_Vector> dens_ip_; /// new density in row map
+    Teuchos::RCP<Epetra_Vector> dens_; /// new density in row map
 
     double obj_value_; /// value of the objective (adjoint solution not required)
     Teuchos::RCP<Epetra_Vector> obj_grad_; /// gradient of the objective (with help of the adjoint solution)
 
+    double* constr_; /// values of the constraints
+    Teuchos::RCP<Epetra_MultiVector> constr_deriv_; /// derivatives of the constraints w.r.t. the optimization variables
+    int num_constr_; /// number of constraints
+
+    Teuchos::RCP<OPTI::GCMMA> optimizer_; /// optimizer
     //@}
 
   }; // end class Optimizer

@@ -35,13 +35,9 @@ TOPOPT::Algorithm::Algorithm(
 )
 : FluidTopOptCouplingAlgorithm(comm, topopt),
   topopt_(topopt),
-  myrank_(comm.MyPID()),
-  iter_(0),
-  max_iter_(topopt_.sublist("TOPOLOGY OPTIMIZER").get<int>("MAX_ITER")),
-  res_tol_(topopt_.get<double>("RESTOL")),
-  inc_tol_(topopt_.get<double>("INCTOL")),
-  conv_check_type_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::ConvCheck>(topopt_,"CONV_CHECK_TYPE")),
-  optimizer_(Optimizer())
+  optimizer_(Optimizer()),
+  objective_(1.0e10),
+  doGradient_(true)
 {
   // initialize system vector (without values)
   poro_ = rcp(new Epetra_Vector(*optimizer_->OptiDis()->NodeColMap(),false));
@@ -64,7 +60,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
   PrepareOptimization();
 
   // optimization process has not yet finished
-  while (OptimizationNotFinished())
+  while (OptimizationFinished() == false)
   {
     // prepare data for new optimization iteration
     PrepareFluidField();
@@ -72,17 +68,20 @@ void TOPOPT::Algorithm::OptimizationLoop()
     // solve the primary field
     DoFluidField();
 
-    // Transfer data from primary field to adjoint field
-    PrepareAdjointField();
+    if (doGradient_)
+    {
+      // Transfer data from primary field to adjoint field
+      PrepareAdjointField();
 
-    // solve the adjoint equations
-    DoAdjointField();
+      // solve the adjoint equations
+      DoAdjointField();
+    }
 
     // compute the gradient of the objective function
     PrepareOptimizationStep();
-//
-//    // update objective due to optimization approach
-//    DoOptimizationStep();
+
+    // update objective due to optimization approach
+    DoOptimizationStep();
 
 //    write output of optimization step
 //    Output();
@@ -111,67 +110,16 @@ void TOPOPT::Algorithm::PrepareOptimization()
 /*------------------------------------------------------------------------------------------------*
  | protected: check if optimization process has finished                         winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
-bool TOPOPT::Algorithm::OptimizationNotFinished()
+bool TOPOPT::Algorithm::OptimizationFinished()
 {
-  /*
-   * Usually it notfinished is initially set true and it is checked if
-   * convergence is reached
-   *
-   * Since here in optimization usually only the objective function is checked
-   * and the density increment usually not, it is done here the other way:
-   * setting notfinished false and checking whether convergence is not reached
-   *
-   * winklmaier 12/11
-   */
-  iter_++;
-  if (max_iter_<1) dserror("maximal number of optimization steps smaller than 1");
+  bool converged = optimizer_->Converged();
 
-  bool notFinished = false;
-
-  if (iter_==1)
-  {
-    notFinished = true;
-    // TODO initial output
-  }
-  else
-  {
-    if (iter_>max_iter_)
-    {
-      notFinished = false;
-      // TODO output
-    }
-    else // TODO check convergence also if maxiter reached?
-    {
-      if ((conv_check_type_==INPAR::TOPOPT::inc) or
-          (conv_check_type_==INPAR::TOPOPT::inc_and_res))
-      {
-        Epetra_Vector inc(*optimizer_->RowMap(),false);
-        inc.Update(1.0,*optimizer_->DensityIp(),-1.0,*optimizer_->DensityI(),0.0);
-
-        double incvelnorm;
-        inc.Norm2(&incvelnorm);
-
-        if (incvelnorm>inc_tol_)
-          notFinished = true;
-      }
-
-      if ((conv_check_type_==INPAR::TOPOPT::res) or
-          (conv_check_type_==INPAR::TOPOPT::inc_and_res))
-      {
-        if (fabs(objective_ip_-objective_i_)>res_tol_)
-          notFinished = true;
-      }
-      // TODO output
-    }
-  }
-
-
-  if (notFinished)
+  if (converged == false)
   {
     UpdatePorosity();
   }
 
-  return notFinished;
+  return converged;
 }
 
 
@@ -223,8 +171,11 @@ void TOPOPT::Algorithm::DoAdjointField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareOptimizationStep()
 {
-  optimizer_->ComputeObjective();
-  optimizer_->ComputeGradient();
+  optimizer_->ComputeValues();
+
+  if (doGradient_)
+    optimizer_->ComputeGradients();
+
   return;
 }
 
@@ -235,7 +186,7 @@ void TOPOPT::Algorithm::PrepareOptimizationStep()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoOptimizationStep()
 {
-  dserror("global topology optimization has no time loop");
+  optimizer_->Iterate(doGradient_);
   return;
 }
 
@@ -261,7 +212,7 @@ void TOPOPT::Algorithm::UpdatePorosity()
    *
    * winklmaier 12/11
    * */
-  RCP<const Epetra_Vector> density = optimizer_->DensityIp();
+  RCP<const Epetra_Vector> density = optimizer_->Density();
 
   // get the optimization material
   const MAT::PAR::TopOptDens* mat = NULL;

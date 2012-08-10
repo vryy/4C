@@ -3684,7 +3684,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::TOPOPT::initdensfield_field_by_function),
                                &topoptoptimizer);
   IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);
-
+  DoubleParameter("VOLUME_BOUNDARY",0.7,"maximal percentage of fluid volume in background domain",&topoptoptimizer);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptadjointfluiddyn = topoptcontrol.sublist("TOPOLOGY ADJOINT FLUID",false,
       "control parameters for the adjoint fluid of a topology optimization problem");
@@ -3787,6 +3787,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "SemiLagrange",
           "Extrapolation",
           "MixedSemiLagrangeExtrapolation",
+          "MixedSemiLagrangeExtrapolationNew",
           "MixedGhostvalSemiLagrange",
           "MixedGhostvalExtrapolation",
           "MixedGhostvalSemiLagrangeExtrapolation"),
@@ -3795,6 +3796,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::xfemtimeint_semilagrange,
               INPAR::COMBUST::xfemtimeint_extrapolation,
               INPAR::COMBUST::xfemtimeint_mixedSLExtrapol,
+              INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew,
               INPAR::COMBUST::xfemtimeint_mixedghostSL,
               INPAR::COMBUST::xfemtimeint_mixedghostExtrapol,
               INPAR::COMBUST::xfemtimeint_mixedghostSLExtrapol),

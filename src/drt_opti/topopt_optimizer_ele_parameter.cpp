@@ -56,7 +56,8 @@ DRT::ELEMENTS::TopOptParam::TopOptParam()
   max_timesteps_(-1),
   theta_(-1.0),
   theta_pre_(-1.0),
-  theta_div_(-1.0)
+  theta_div_(-1.0),
+  vol_bd_(-1.0)
 {
 }
 
@@ -119,6 +120,8 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
     dt_ = theta_ = theta_pre_ = theta_div_ = 1.0;
     max_timesteps_ = 1;
   }
+
+  vol_bd_ = params.get<double>("vol_bd");
 }
 
 

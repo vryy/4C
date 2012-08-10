@@ -64,7 +64,18 @@ public:
   virtual void compute(
       vector<RCP<Epetra_Vector> > newRowVectorsn,
       vector<RCP<Epetra_Vector> > newRowVectorsnp
-  );
+  )
+  {
+    dserror("Unused function! Use a function of the derived classes");
+  };
+
+  //! perform the computation
+  virtual void compute(
+      vector<RCP<Epetra_Vector> > newRowVectorsn
+  )
+  {
+    dserror("Unused function! Use a function of the derived classes");
+  };
 
   //! computation type due to input data (FGI,FRS)
   enum FGIType
@@ -192,6 +203,191 @@ protected:
       bool& pointInDomain
   ) const;
 
+
+  //! compute signed distance of a node to the interface part in an element
+  bool SignedDistance(
+      const DRT::Node* node,
+      const int elegid,
+      double& dist,
+      LINALG::Matrix<3,1>& normal,
+      LINALG::Matrix<3,1>& proj,
+      bool oldTimeStep = true
+  ) const;
+
+  //! compute normal vector of flame front patch
+  void ComputeNormalVectorToFlameFront(
+      const GEO::BoundaryIntCell&      patch,
+      const LINALG::SerialDenseMatrix& patchcoord,
+      LINALG::Matrix<3,1>&             normal
+  ) const;
+
+  void ComputeDistanceToEdge(
+      const LINALG::Matrix<3,1>&       node,
+      const GEO::BoundaryIntCell&      patch,
+      const LINALG::SerialDenseMatrix& patchcoord,
+      LINALG::Matrix<3,1>&             proj,
+      double&                          edgedist
+  ) const;
+
+//! compute distance to vertex of patch
+  void ComputeDistanceToPatch(
+      const LINALG::Matrix<3,1>&       node,
+      const GEO::BoundaryIntCell&      patch,
+      const LINALG::SerialDenseMatrix& patchcoord,
+      LINALG::Matrix<3,1>&             proj,
+      double&                          vertexdist
+  ) const;
+
+  //! find a facing flame front patch by projecton of node on boundary cell edges
+  void FindFacingPatchProjCellEdges(
+      const LINALG::Matrix<3,1>&       node,
+      const LINALG::SerialDenseMatrix& patch,
+      bool&                            facenode,
+      double&                          vertexdist
+  ) const;
+
+  //! find a facing flame front patch by projecton of node into boundary cell space
+  void FindFacingPatchProjCellSpace(
+      const LINALG::Matrix<3,1>&       node,
+      const GEO::BoundaryIntCell&      patch,
+      const LINALG::SerialDenseMatrix& patchcoord,
+      const LINALG::Matrix<3,1>&       normal,
+      bool&                            facenode,
+      double&                          patchdist
+  ) const;
+
+  //! project node into the boundary cell space (2D)
+  template<DRT::Element::DiscretizationType DISTYPE>
+  bool ProjectNodeOnPatch(
+      const LINALG::Matrix<3,1>&       node,
+      const GEO::BoundaryIntCell&      patch,
+      const LINALG::SerialDenseMatrix& patchcoord,
+      const LINALG::Matrix<3,1>&       normal,
+      LINALG::Matrix<2,1>&             eta,
+      double&                          alpha
+  ) const
+  {
+    // indicator for convergence of Newton-Raphson scheme
+    bool converged = false;
+    // number space dimensions for 3d combustion problems
+    const size_t nsd = 3;
+    // here, a triangular boundary integration cell is assumed (numvertices = 3)
+    const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+    // get coordinates of vertices of flame front patch
+    // remark: here we only get a view (bool true) on the SerialDenseMatrix returned by CellNodalPosXYZ()
+    LINALG::Matrix<nsd,numvertices> patchcoordfix(patchcoord.A(),true);
+
+    static LINALG::Matrix<numvertices,1> funct(true); // shape function
+    static LINALG::Matrix<2,numvertices> deriv(true); // local derivative of shape function
+    static LINALG::Matrix<nsd,1> projX(true); // projection coordinates
+    static LINALG::Matrix<nsd,2> gradprojX(true); // gradient at projection coordinates
+
+    //----------------------------------
+    // start values for iterative scheme
+    //----------------------------------
+    // start position (barycenter of triangular boundary cell)
+    eta(0) = 1.0/3.0;
+    eta(1) = 1.0/3.0;
+    // auxiliary variable
+    // remark: third unknown to close system of equations; arbitrary value
+    alpha = 0.0;
+
+    // function F (system of equations)
+    static LINALG::Matrix<nsd,1> f(true);
+    // gradient of function F (dF/deta(0), dF/deta(1), dF/dalpha)
+    static LINALG::Matrix<nsd,nsd> gradf(true);
+    // increment in Newton iteration (unknown to be solved for)
+    static LINALG::Matrix<nsd,1> incr(true);
+
+    // maximum number Newton iterations
+    size_t maxiter = 3;
+    // convergence tolerance
+    double conv = 0.0;
+
+    //------------------------------------------------------
+    // Newton-Raphson loop for non-linear projection problem
+    //------------------------------------------------------
+    for (size_t iter=0;iter<maxiter;++iter) // iteration loop
+    {
+      // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the patch
+      funct.Clear();
+      DRT::UTILS::shape_function_2D(funct,eta(0),eta(1),patch.Shape());
+      // evaluate derivatives of shape functions in boundary cell space at current position \eta_1,\eta_2 on the patch
+      deriv.Clear();
+      DRT::UTILS::shape_function_2D_deriv1(deriv,eta(0),eta(1),patch.Shape());
+
+      // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
+      // projX(i,j) = patchcoord(i,k)*funct(k,1)
+      projX.Clear();
+      projX.MultiplyNN(patchcoordfix,funct);
+
+      // evaluate gradient of projection X of node P at current position \eta_1,\eta_2 on the patch
+      // gradprojX(i,j) = patchcoord(i,k)*deriv(j,k)
+      gradprojX.Clear();
+      gradprojX.MultiplyNT(patchcoordfix,deriv);
+
+      //---------------------------------------------------
+      // build system of equations F and its gradient gradF
+      //---------------------------------------------------
+      f.Clear();
+      gradf.Clear();
+      incr.Clear();
+      for (size_t icoord=0;icoord<nsd;++icoord)
+      {
+        // evaluate function f
+        f(icoord) = projX(icoord) + alpha*normal(icoord) - node(icoord);
+        // evaluate gradient of function at current position on patch in boundary cell space
+        gradf(icoord,0) = gradprojX(icoord,0);
+        gradf(icoord,1) = gradprojX(icoord,1);
+        gradf(icoord,2) = normal(icoord);
+      }
+
+      // check convergence
+      conv = sqrt(f(0)*f(0)+f(1)*f(1)+f(2)*f(2));
+      //cout << "iteration " << iter << ": -> |f|=" << conv << endl;
+      if (conv <= 1.0E-12) break;
+
+      //----------------------------------------------------
+      // solve linear system of equations: gradF * incr = -F
+      //----------------------------------------------------
+      // F = F*-1.0
+      f.Scale(-1.0);
+      // solve A.X=B
+      LINALG::FixedSizeSerialDenseSolver<nsd,nsd,1> solver;
+      solver.SetMatrix(gradf);              // set A=gradF
+      solver.SetVectors(incr, f);           // set X=incr, B=F
+      solver.FactorWithEquilibration(true); // "some easy type of preconditioning" (Michael)
+      int err2 = solver.Factor();           // ?
+      int err = solver.Solve();             // incr = gradF^-1.F
+      if ((err != 0) || (err2!=0))
+        dserror("solving linear system in Newton-Raphson method for projection failed");
+
+      // update eta and alpha
+      eta(0) += incr(0);
+      eta(1) += incr(1);
+      alpha  += incr(2);
+      //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
+    } // end iteration loop
+    // change sign to preserve sign of G-function
+    alpha = -alpha;
+
+    // Newton iteration unconverged
+    if (conv > 1.0E-12)
+    {
+      alpha = 7777.7;
+      //        cout << "projection did not converge" << endl;
+      //dserror("projection did not converge!");
+    }
+    else
+    {
+      converged = true;
+      //cout << "convergence criterion " << conv << endl;
+      //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
+    }
+
+    return converged;
+  }; // end funtion ProjectNodeOnPatch
 
   /*!
   \brief This class holds data for a node that will get some new values,
@@ -436,9 +632,10 @@ protected:
   const int newton_max_iter_; // maximal iteration number of newton loop
   const double newton_tol_; // tolerance for newton algorithm
 
+public:
+
   RCP<vector<TimeIntData> > timeIntData_; // data-vector containing all data for computation with help of sub-class TimeIntData
 
-public:
   int numNodes(){return timeIntData_->size();};
 
 protected:
@@ -476,7 +673,7 @@ protected:
   //! data at an arbitrary point lying in an element
   template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
   void pointdataXFEM(
-      DRT::Element* element,
+      const DRT::Element* element,
       LINALG::Matrix<3,1>& xi,
       LINALG::Matrix<3,3>& xji,
       LINALG::Matrix<numnode,1>& shapeFcn,
@@ -484,7 +681,8 @@ protected:
       LINALG::Matrix<2*numnode,1>& enrShapeFcnPres,
       LINALG::Matrix<3,2*numnode>& enrShapeXYVelDeriv1,
       LINALG::Matrix<3,2*numnode>& enrShapeXYPresDeriv1,
-      bool newTimeStep
+      bool newTimeStep,
+      int side = 0
   ) const
   {
     const int* elenodeids = element->NodeIds();  // nodeids of element
@@ -545,15 +743,54 @@ protected:
     // the enrichment functions may depend on the point
     // therefore the computation of the enrichment functions is called here
     // the gauss point is contained in shapeFcn!
-    const XFEM::ElementEnrichmentValues enrvals(
-        *element,*eleDofManager,nodephi,
-        shapeFcn,shapeXYDeriv1,dummy2);
+    Teuchos::RCP<XFEM::ElementEnrichmentValues> enrvals = Teuchos::null;
+    switch (side)
+    {
+    case 0: // side by phi-value
+    {
+      enrvals = rcp(new XFEM::ElementEnrichmentValues(
+          *element,
+          *eleDofManager,
+          nodephi,
+          shapeFcn,
+          shapeXYDeriv1,
+          dummy2));
+      break;
+    }
+    case -1:
+  {
+      enrvals = rcp(new XFEM::ElementEnrichmentValues(
+          *element,
+          *eleDofManager,
+          XFEM::Enrichment::approachFromMinus,
+          nodephi,
+          shapeFcn,
+          shapeXYDeriv1,
+          dummy2));
+      break;
+  }
+    case 1:
+    {
+      enrvals = rcp(new XFEM::ElementEnrichmentValues(
+          *element,
+          *eleDofManager,
+          XFEM::Enrichment::approachFromPlus,
+          nodephi,
+          shapeFcn,
+          shapeXYDeriv1,
+          dummy2));
+      break;
+    }
+    default:
+      dserror("undefined side value");
+    }
+
 
     // enriched shape functions and derivatives for nodal parameters (dofs)
-    enrvals.ComputeModifiedEnrichedNodalShapefunction(
+    enrvals->ComputeModifiedEnrichedNodalShapefunction(
         XFEM::PHYSICS::Velx,shapeFcn,shapeXYDeriv1,dummy1,
         enrShapeFcnVel,enrShapeXYVelDeriv1,dummy2); // enrichment assumed to be equal for the 3 dimensions
-    enrvals.ComputeModifiedEnrichedNodalShapefunction(
+    enrvals->ComputeModifiedEnrichedNodalShapefunction(
         XFEM::PHYSICS::Pres,shapeFcn,shapeXYDeriv1,dummy1,
         enrShapeFcnPres,enrShapeXYPresDeriv1,dummy2);
   }; // end template pointdataXFEM
@@ -755,8 +992,18 @@ public:
   virtual void compute(
       vector<RCP<Epetra_Vector> > newRowVectorsn,
       vector<RCP<Epetra_Vector> > newRowVectorsnp
-  );
+  )
+  {
+    dserror("Unused function! Use a function of the derived classes");
+  };
 
+  //! perform the computation
+  virtual void compute(
+      vector<RCP<Epetra_Vector> > newRowVectors
+  )
+  {
+    dserror("Unused function! Use a function of the derived classes");
+  };
   //! initialize data when called in a new FGI
   void importNewFGIData(
       const RCP<DRT::Discretization> discret,
@@ -1130,10 +1377,11 @@ protected:
       }
       else
       {
+        LINALG::Matrix<3,1> dummy(true);
         // evaluate the minimal distance of the nodes to the interface segments in this element
         // this part is adopted from src/drt_combust/combust_reinitializer.cpp
         // more information can be found there in function 'signedDistanceFunction'
-        SignedDistance(currnode,element->Id(),dmin(inode),normal);
+        SignedDistance(currnode,element->Id(),dmin(inode),normal,dummy);
 
         numJumpEnr=0; // number of jump enrichments
         numKinkEnr=0; // number of kink enrichments
@@ -1287,188 +1535,6 @@ protected:
     else
       dserror("BUG! This function shall just handle bisected or touched minus elements!");
   };
-
-  //! compute signed distance of a node to the interface part in an element
-  void SignedDistance(
-      const DRT::Node* node,
-      const int elegid,
-      double& dist,
-      LINALG::Matrix<3,1>& normal,
-      bool oldTimeStep = true
-  ) const;
-
-  //! compute normal vector of flame front patch
-  void ComputeNormalVectorToFlameFront(
-      const GEO::BoundaryIntCell&      patch,
-      const LINALG::SerialDenseMatrix& patchcoord,
-      LINALG::Matrix<3,1>&             normal
-  ) const;
-
-  void ComputeDistanceToEdge(
-      const LINALG::Matrix<3,1>&       node,
-      const GEO::BoundaryIntCell&      patch,
-      const LINALG::SerialDenseMatrix& patchcoord,
-      double&                          edgedist
-  ) const;
-
-//! compute distance to vertex of patch
-  void ComputeDistanceToPatch(
-      const LINALG::Matrix<3,1>&       node,
-      const GEO::BoundaryIntCell&      patch,
-      const LINALG::SerialDenseMatrix& patchcoord,
-      double&                          vertexdist
-  ) const;
-
-  //! find a facing flame front patch by projecton of node on boundary cell edges
-  void FindFacingPatchProjCellEdges(
-      const LINALG::Matrix<3,1>&       node,
-      const LINALG::SerialDenseMatrix& patch,
-      bool&                            facenode,
-      double&                          vertexdist
-  ) const;
-
-  //! find a facing flame front patch by projecton of node into boundary cell space
-  void FindFacingPatchProjCellSpace(
-      const LINALG::Matrix<3,1>&       node,
-      const GEO::BoundaryIntCell&      patch,
-      const LINALG::SerialDenseMatrix& patchcoord,
-      const LINALG::Matrix<3,1>&       normal,
-      bool&                            facenode,
-      double&                          patchdist
-  ) const;
-
-  //! project node into the boundary cell space (2D)
-  template<DRT::Element::DiscretizationType DISTYPE>
-  bool ProjectNodeOnPatch(
-      const LINALG::Matrix<3,1>&       node,
-      const GEO::BoundaryIntCell&      patch,
-      const LINALG::SerialDenseMatrix& patchcoord,
-      const LINALG::Matrix<3,1>&       normal,
-      LINALG::Matrix<2,1>&             eta,
-      double&                          alpha
-  ) const
-  {
-    // indicator for convergence of Newton-Raphson scheme
-    bool converged = false;
-    // number space dimensions for 3d combustion problems
-    const size_t nsd = 3;
-    // here, a triangular boundary integration cell is assumed (numvertices = 3)
-    const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-
-    // get coordinates of vertices of flame front patch
-    // remark: here we only get a view (bool true) on the SerialDenseMatrix returned by CellNodalPosXYZ()
-    LINALG::Matrix<nsd,numvertices> patchcoordfix(patchcoord.A(),true);
-
-    static LINALG::Matrix<numvertices,1> funct(true); // shape function
-    static LINALG::Matrix<2,numvertices> deriv(true); // local derivative of shape function
-    static LINALG::Matrix<nsd,1> projX(true); // projection coordinates
-    static LINALG::Matrix<nsd,2> gradprojX(true); // gradient at projection coordinates
-
-    //----------------------------------
-    // start values for iterative scheme
-    //----------------------------------
-    // start position (barycenter of triangular boundary cell)
-    eta(0) = 1.0/3.0;
-    eta(1) = 1.0/3.0;
-    // auxiliary variable
-    // remark: third unknown to close system of equations; arbitrary value
-    alpha = 0.0;
-
-    // function F (system of equations)
-    static LINALG::Matrix<nsd,1> f(true);
-    // gradient of function F (dF/deta(0), dF/deta(1), dF/dalpha)
-    static LINALG::Matrix<nsd,nsd> gradf(true);
-    // increment in Newton iteration (unknown to be solved for)
-    static LINALG::Matrix<nsd,1> incr(true);
-
-    // maximum number Newton iterations
-    size_t maxiter = 3;
-    // convergence tolerance
-    double conv = 0.0;
-
-    //------------------------------------------------------
-    // Newton-Raphson loop for non-linear projection problem
-    //------------------------------------------------------
-    for (size_t iter=0;iter<maxiter;++iter) // iteration loop
-    {
-      // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the patch
-      funct.Clear();
-      DRT::UTILS::shape_function_2D(funct,eta(0),eta(1),patch.Shape());
-      // evaluate derivatives of shape functions in boundary cell space at current position \eta_1,\eta_2 on the patch
-      deriv.Clear();
-      DRT::UTILS::shape_function_2D_deriv1(deriv,eta(0),eta(1),patch.Shape());
-
-      // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
-      // projX(i,j) = patchcoord(i,k)*funct(k,1)
-      projX.Clear();
-      projX.MultiplyNN(patchcoordfix,funct);
-
-      // evaluate gradient of projection X of node P at current position \eta_1,\eta_2 on the patch
-      // gradprojX(i,j) = patchcoord(i,k)*deriv(j,k)
-      gradprojX.Clear();
-      gradprojX.MultiplyNT(patchcoordfix,deriv);
-
-      //---------------------------------------------------
-      // build system of equations F and its gradient gradF
-      //---------------------------------------------------
-      f.Clear();
-      gradf.Clear();
-      incr.Clear();
-      for (size_t icoord=0;icoord<nsd;++icoord)
-      {
-        // evaluate function f
-        f(icoord) = projX(icoord) + alpha*normal(icoord) - node(icoord);
-        // evaluate gradient of function at current position on patch in boundary cell space
-        gradf(icoord,0) = gradprojX(icoord,0);
-        gradf(icoord,1) = gradprojX(icoord,1);
-        gradf(icoord,2) = normal(icoord);
-      }
-
-      // check convergence
-      conv = sqrt(f(0)*f(0)+f(1)*f(1)+f(2)*f(2));
-      //cout << "iteration " << iter << ": -> |f|=" << conv << endl;
-      if (conv <= 1.0E-12) break;
-
-      //----------------------------------------------------
-      // solve linear system of equations: gradF * incr = -F
-      //----------------------------------------------------
-      // F = F*-1.0
-      f.Scale(-1.0);
-      // solve A.X=B
-      LINALG::FixedSizeSerialDenseSolver<nsd,nsd,1> solver;
-      solver.SetMatrix(gradf);              // set A=gradF
-      solver.SetVectors(incr, f);           // set X=incr, B=F
-      solver.FactorWithEquilibration(true); // "some easy type of preconditioning" (Michael)
-      int err2 = solver.Factor();           // ?
-      int err = solver.Solve();             // incr = gradF^-1.F
-      if ((err != 0) || (err2!=0))
-        dserror("solving linear system in Newton-Raphson method for projection failed");
-
-      // update eta and alpha
-      eta(0) += incr(0);
-      eta(1) += incr(1);
-      alpha  += incr(2);
-      //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
-    } // end iteration loop
-    // change sign to preserve sign of G-function
-    alpha = -alpha;
-
-    // Newton iteration unconverged
-    if (conv > 1.0E-12)
-    {
-      alpha = 7777.7;
-      //        cout << "projection did not converge" << endl;
-      //dserror("projection did not converge!");
-    }
-    else
-    {
-      converged = true;
-      //cout << "convergence criterion " << conv << endl;
-      //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
-    }
-
-    return converged;
-  }; // end funtion ProjectNodeOnPatch
 
 
   INPAR::COMBUST::XFEMTimeIntegrationEnr timeIntEnr_; // computation algorithm of the time integration for enrichment dofs

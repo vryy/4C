@@ -13,6 +13,7 @@ Maintainer: Martin Winklmaier
 
 
 #include "timeInt_std_extrapolation.H"
+#include "timeInt_std_extrapol.H"
 #include "timeInt_std_SemiLagrange.H"
 #include "../linalg/linalg_utils.H"
 
@@ -191,9 +192,6 @@ void XFEM::SemiLagrange::compute(
     clearState(TimeIntData::failedSL_);
   else
   {
-#ifdef PARALLEL
-    exportAlternativAlgoData(); // export data of failed nodes
-#endif
     getDataForNotConvergedNodes(); // compute final data for failed nodes
   }
 
@@ -217,6 +215,14 @@ void XFEM::SemiLagrange::compute(
     cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << endl;
 #endif
 #endif
+
+  // fill vectors with the data
+  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    if (data->state_!=TimeIntData::doneStd_)
+      dserror("All data should be set here, having status 'done'. Thus something is wrong!");
+  }
 } // end semiLagrangeExtrapolation
 
 
@@ -477,7 +483,17 @@ void XFEM::SemiLagrange::NewtonIter(
 void XFEM::SemiLagrange::getDataForNotConvergedNodes(
 )
 {
-  if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapol) // use Extrapolation as alternative
+#ifdef PARALLEL
+  if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew)
+    exportDataToNodeProc();
+  else
+    exportDataToStartpointProc(); // export data of failed nodes
+#endif
+
+  switch (timeIntType_)
+  {
+  case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
+  case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
   {
     RCP<XFEM::TIMEINT> timeIntData = rcp(new XFEM::TIMEINT(
         discret_,
@@ -491,13 +507,28 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
         newNodalDofRowDistrib_,
         pbcmap_));
 
-    RCP<XFEM::Extrapolation> extrapol = rcp(new XFEM::Extrapolation(
-        *timeIntData,
-        timeIntType_,
-        veln_,
-        dt_,
-        flamefront_,
-        false));
+    RCP<XFEM::STD> extrapol = Teuchos::null;
+
+    if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapol)
+    {
+      extrapol = rcp(new XFEM::Extrapolation(
+          *timeIntData,
+          timeIntType_,
+          veln_,
+          dt_,
+          flamefront_,
+          false));
+    }
+    else
+    {
+      extrapol = rcp(new XFEM::Extrapol(
+          *timeIntData,
+          timeIntType_,
+          veln_,
+          dt_,
+          flamefront_,
+          false));
+    }
 
     // set state for extrapolation
     resetState(TimeIntData::failedSL_,TimeIntData::extrapolateStd_);
@@ -524,8 +555,26 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
         extrapol->timeIntData_->begin(),
         extrapol->timeIntData_->end());
 
+    if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapol)
+      break;
+
+    if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew)
+    {
+      bool done = true;
+      for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+          data!=timeIntData_->end(); data++)
+      {
+        if (data->state_!=TimeIntData::doneStd_)
+          done = false;
+      }
+
+      if (done==true)
+        break;
+      else
+        exportDataToNodeProc();
+    }
   }
-  else
+  case INPAR::COMBUST::xfemtimeint_semilagrange:
   {
     const int nsd = 3; // 3 dimensions for a 3d fluid element
 
@@ -574,6 +623,11 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
       }
 
     } // end loop over nodes
+
+    break;
+  }
+  default:
+    dserror("Unknown XFEM time-integration scheme");
   }
 } // end getDataForNotConvergedNodes
 
@@ -1424,7 +1478,135 @@ bool XFEM::SemiLagrange::globalNewtonFinished(
 /*------------------------------------------------------------------------------------------------*
  * export alternative algo data to neighbour proc                                winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::SemiLagrange::exportAlternativAlgoData()
+void XFEM::SemiLagrange::exportDataToNodeProc()
+{
+  const int nsd = 3; // 3 dimensions for a 3d fluid element
+
+  // array of vectors which stores data for
+  // every processor in one vector
+  vector<vector<TimeIntData> > dataVec(numproc_);
+
+  // fill vectors with the data
+  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    if (data->state_==TimeIntData::failedSL_)
+      dataVec[data->node_.Owner()].push_back(*data);
+  }
+
+  clearState(TimeIntData::failedSL_);
+  timeIntData_->insert(timeIntData_->end(),
+      dataVec[myrank_].begin(),
+      dataVec[myrank_].end());
+
+  dataVec[myrank_].clear(); // clear the set data from the vector
+
+  // send data to the processor where the point lies (1. nearest higher neighbour 2. 2nd nearest higher neighbour...)
+  for (int dest=(myrank_+1)%numproc_;dest!=myrank_;dest=(dest+1)%numproc_) // dest is the target processor
+  {
+    // Initialization of sending
+    DRT::PackBuffer dataSend; // vector including all data that has to be send to dest proc
+
+    // Initialization
+    int source = myrank_-(dest-myrank_); // source proc (sends (dest-myrank_) far and gets from (dest-myrank_) earlier)
+    if (source<0)
+      source+=numproc_;
+    else if (source>=numproc_)
+      source -=numproc_;
+
+    // pack data to be sent
+    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+        data!=dataVec[dest].end(); data++)
+    {
+      if (data->state_==TimeIntData::failedSL_)
+      {
+        packNode(dataSend,data->node_);
+        DRT::ParObject::AddtoPack(dataSend,data->vel_);
+        DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
+        DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
+        DRT::ParObject::AddtoPack(dataSend,data->startGid_);
+        DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
+        DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
+      }
+    }
+
+    dataSend.StartPacking();
+
+    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+        data!=dataVec[dest].end(); data++)
+    {
+      if (data->state_==TimeIntData::failedSL_)
+      {
+        packNode(dataSend,data->node_);
+        DRT::ParObject::AddtoPack(dataSend,data->vel_);
+        DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
+        DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
+        DRT::ParObject::AddtoPack(dataSend,data->startGid_);
+        DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
+        DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
+      }
+    }
+
+    // clear the no more needed data
+    dataVec[dest].clear();
+
+    vector<char> dataRecv;
+    sendData(dataSend,dest,source,dataRecv);
+
+    // pointer to current position of group of cells in global string (counts bytes)
+    vector<char>::size_type posinData = 0;
+
+    // unpack received data
+    while (posinData < dataRecv.size())
+    {
+      double coords[nsd] = {0.0};
+      DRT::Node node(0,(double*)coords,0);
+      LINALG::Matrix<nsd,1> vel;
+      vector<LINALG::Matrix<nsd,nsd> > velDeriv;
+      vector<LINALG::Matrix<1,nsd> > presDeriv;
+      LINALG::Matrix<nsd,1> startpoint;
+      double phiValue;
+      vector<int> startGid;
+      vector<int> startOwner;
+      int newtype;
+
+      unpackNode(posinData,dataRecv,node);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,vel);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,velDeriv);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,presDeriv);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,startpoint);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,startGid);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,startOwner);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,newtype);
+
+      timeIntData_->push_back(TimeIntData(
+          node,
+          vel,
+          velDeriv,
+          presDeriv,
+          startpoint,
+          phiValue,
+          startGid,
+          startOwner,
+          (TimeIntData::type)newtype)); // startOwner is current proc
+    } // end loop over number of nodes to get
+
+    // processors wait for each other
+    discret_->Comm().Barrier();
+  } // end loop over processors
+} // end exportDataToStartpointProc
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * export alternative algo data to neighbour proc                                winklmaier 06/10 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::SemiLagrange::exportDataToStartpointProc()
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
 
@@ -1558,7 +1740,7 @@ void XFEM::SemiLagrange::exportAlternativAlgoData()
     // processors wait for each other
     discret_->Comm().Barrier();
   } // end loop over processors
-} // end exportAlternativAlgoData
+} // end exportDataToStartpointProc
 
 
 

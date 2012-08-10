@@ -50,23 +50,10 @@ pbcmap_(pbcmap),
 myrank_(discret_->Comm().MyPID()),
 numproc_(discret_->Comm().NumProc()),
 newton_max_iter_(10),
-newton_tol_(1.0e-10)
+newton_tol_(1.0e-08)
 {
   return;
 } // end constructor
-
-
-
-/*------------------------------------------------------------------------------------------------*
- * out of order!                                                                 winklmaier 10/11 *
- *------------------------------------------------------------------------------------------------*/
-void XFEM::TIMEINT::compute(
-    vector<RCP<Epetra_Vector> > newRowVectorsn,
-    vector<RCP<Epetra_Vector> > newRowVectorsnp
-)
-{
-  dserror("Unused function! Use a function of the derived classes");
-} // end function compute
 
 
 
@@ -78,9 +65,9 @@ void XFEM::TIMEINT::type(
     int iterMax
 )
 {
-  if (iter==1)								FGIType_=FRS1FGI1_;
-  else if (iterMax==1 or iter%iterMax==1)		FGIType_=FRS1FGINot1_;
-  else										FGIType_=FRSNot1_;
+  if (iter==1)                              FGIType_=FRS1FGI1_;
+  else if (iterMax==1 or iter%iterMax==1)   FGIType_=FRS1FGINot1_;
+  else                                      FGIType_=FRSNot1_;
 } // end function type
 
 
@@ -589,19 +576,6 @@ flamefront_(flamefront)
 
 
 /*------------------------------------------------------------------------------------------------*
- * out of order!                                                                 winklmaier 10/11 *
- *------------------------------------------------------------------------------------------------*/
-void XFEM::STD::compute(
-    vector<RCP<Epetra_Vector> > newRowVectorsn,
-    vector<RCP<Epetra_Vector> > newRowVectorsnp
-)
-{
-  dserror("Unused function! Use a function of the derived classes");
-}
-
-
-
-/*------------------------------------------------------------------------------------------------*
  * initialize data when called in a new FGI                                      winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::STD::importNewFGIData(
@@ -807,37 +781,36 @@ void XFEM::STD::setFinalData(
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
-    if (data->state_!=TimeIntData::doneStd_)
-      dserror("when data is set, all computation has to be done");
-
-    vector<LINALG::Matrix<nsd,1> >& velValues(data->velValues_); // velocities of the node
-    vector<double>& presValues(data->presValues_); // pressures of the node
-
-    const int gnodeid = data->node_.Id(); // global node id
-
-    map<int,int>::iterator currstartpoint = usedStartpoints.find(gnodeid); // current start point
-    if (currstartpoint==usedStartpoints.end()) // standard case and "standard alternative" case
+    if (data->state_==TimeIntData::doneStd_)
     {
-      usedStartpoints.insert(pair<int,int>(gnodeid,1));
-      numStartpoints = 1;
-    }
-    else
-    {
-      currstartpoint->second +=1;
-      numStartpoints = currstartpoint->second;
-    }
+      vector<LINALG::Matrix<nsd,1> >& velValues(data->velValues_); // velocities of the node
+      vector<double>& presValues(data->presValues_); // pressures of the node
 
-    // set nodal velocities and pressures with help of the field set of node
-    const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gnodeid));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-        fieldenr != fieldenrset.end();++fieldenr) // loop over field enr set
-    {
-      const DofKey newdofkey(gnodeid, *fieldenr);
-      const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
+      const int gnodeid = data->node_.Id(); // global node id
 
-      if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+      map<int,int>::iterator currstartpoint = usedStartpoints.find(gnodeid); // current start point
+      if (currstartpoint==usedStartpoints.end()) // standard case and "standard alternative" case
       {
-        /*
+        usedStartpoints.insert(pair<int,int>(gnodeid,1));
+        numStartpoints = 1;
+      }
+      else
+      {
+        currstartpoint->second +=1;
+        numStartpoints = currstartpoint->second;
+      }
+
+      // set nodal velocities and pressures with help of the field set of node
+      const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gnodeid));
+      for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+          fieldenr != fieldenrset.end();++fieldenr) // loop over field enr set
+      {
+        const DofKey newdofkey(gnodeid, *fieldenr);
+        const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
+
+        if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+        {
+          /*
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
           cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](0) << endl;
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
@@ -846,30 +819,31 @@ void XFEM::STD::setFinalData(
           cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](2) << endl;
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
           cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << presValues[0] << endl;
-         */
+           */
 
-        // loop over vectors to be set (either all vectors or only the vectors at t^n+1)
-        for (size_t index=0;index<vectorSize(data->type_);index++)
-        {
-          double value = (*newVectors_[index])[newdofrowmap_.LID(newdofpos)];
-          if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-            newValue = ((numStartpoints-1.0)/numStartpoints)*value
-            + velValues[index](0)/numStartpoints;
-          else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-            newValue = ((numStartpoints-1.0)/numStartpoints)*value
-            + velValues[index](1)/numStartpoints;
-          else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-            newValue = ((numStartpoints-1.0)/numStartpoints)*value
-            + velValues[index](2)/numStartpoints;
-          else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-            newValue = ((numStartpoints-1.0)/numStartpoints)*value
-            + presValues[index]/numStartpoints;
+          // loop over vectors to be set (either all vectors or only the vectors at t^n+1)
+          for (size_t index=0;index<vectorSize(data->type_);index++)
+          {
+            double value = (*newVectors_[index])[newdofrowmap_.LID(newdofpos)];
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+              newValue = ((numStartpoints-1.0)/numStartpoints)*value
+              + velValues[index](0)/numStartpoints;
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+              newValue = ((numStartpoints-1.0)/numStartpoints)*value
+              + velValues[index](1)/numStartpoints;
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+              newValue = ((numStartpoints-1.0)/numStartpoints)*value
+              + velValues[index](2)/numStartpoints;
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+              newValue = ((numStartpoints-1.0)/numStartpoints)*value
+              + presValues[index]/numStartpoints;
 
-          (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = newValue; // set the value
+            (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = newValue; // set the value
+          }
         }
-      }
-    } // end loop over fieldenr
-    data->type_ = TimeIntData::standard_; // predictor is done, so next time standard
+      } // end loop over fieldenr
+      data->type_ = TimeIntData::standard_; // predictor is done, so next time standard
+    }
   } // end loop over nodes
 } // end setFinalData
 
@@ -1006,9 +980,8 @@ void XFEM::STD::exportFinalData()
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
-    if (data->state_!=TimeIntData::doneStd_)
-      dserror("All data should be set here, having status 'done'. Thus something is wrong!");
-    dataVec[data->node_.Owner()].push_back(*data);
+    if (data->state_==TimeIntData::doneStd_)
+      dataVec[data->node_.Owner()].push_back(*data);
   }
 
   timeIntData_->clear();
@@ -1375,11 +1348,12 @@ void XFEM::ENR::getCritCutElements(
  * find a facing flame front patch by projecton of                               winklmaier 08/10 *
  * node into boundary cells of current element                                                    *
  *----------------------------------------------------------------------------------------------- */
-void XFEM::ENR::SignedDistance(
+bool XFEM::TIMEINT::SignedDistance(
     const DRT::Node* node,
     const int elegid,
     double& dist,
     LINALG::Matrix<3,1>& normal,
+    LINALG::Matrix<3,1>& proj,
     bool oldTimeStep
 ) const
 {
@@ -1401,6 +1375,9 @@ void XFEM::ENR::SignedDistance(
     phi = phinp_;
   }
 
+  if (intersectionStatus(discret_->gElement(elegid),oldTimeStep)==XFEM::TIMEINT::uncut_)
+    dserror("call this function only for intersected elements");
+
   //-----------------------------------------------------------
   // compute smallest distance to the flame front for this node
   //-----------------------------------------------------------
@@ -1410,6 +1387,9 @@ void XFEM::ENR::SignedDistance(
   double edgedist = 6666.6; // default value
   // smallest distance to flame front
   double mindist = 5555.5; // default value
+
+  LINALG::Matrix<nsd,1> projedge(true);
+  LINALG::Matrix<nsd,1> projvertex(true);
 
   // number of flamefront patches for this element
   const std::vector<GEO::BoundaryIntCell> patches = ih->ElementBoundaryIntCells(elegid);
@@ -1449,18 +1429,22 @@ void XFEM::ENR::SignedDistance(
     {
       // overwrite smallest distance if computed patch distance is smaller
       if (fabs(patchdist) < fabs(mindist))
+      {
+        proj = nodecoord;
+        proj.Update(patchdist,normal,1.0);
         mindist = patchdist;
+      }
     }
 
     //-------------------------------------------------------------
     // compute smallest distance to edges of this flame front patch
     //-------------------------------------------------------------
-    ComputeDistanceToEdge(nodecoord,patch,patchcoord,edgedist);
+    ComputeDistanceToEdge(nodecoord,patch,patchcoord,projedge,edgedist);
 
     //----------------------------------------------------------------
     // compute smallest distance to vertices of this flame front patch
     //----------------------------------------------------------------
-    ComputeDistanceToPatch(nodecoord,patch,patchcoord,vertexdist);
+    ComputeDistanceToPatch(nodecoord,patch,patchcoord,projvertex,vertexdist);
   }
 
   if (fabs(edgedist) < fabs(mindist)) // case 2a
@@ -1470,6 +1454,8 @@ void XFEM::ENR::SignedDistance(
       mindist = -edgedist;
     else
       mindist = edgedist;
+
+    proj = projedge;
   }
 
   if (fabs(vertexdist) < fabs(mindist))
@@ -1479,19 +1465,22 @@ void XFEM::ENR::SignedDistance(
       mindist = -vertexdist;
     else
       mindist = vertexdist;
+
+    proj = projvertex;
   }
+
   if (mindist == 5555.5) // in touched-minus elements this case can happen
   {
     if (intersectionStatus(discret_->gElement(elegid),oldTimeStep) != TIMEINT::numerical_cut_)
       dserror ("computation of minimal distance failed");
 
     dist = (*phi)[node->LID()];
-    return;
+    return false;
   }
   else
   {
     dist = mindist;
-    return;
+    return true;
   }
 }
 
@@ -1501,7 +1490,7 @@ void XFEM::ENR::SignedDistance(
  | private: find a facing flame front patch by projecton of node into boundary cell space         |
  |                                                                                    henke 12/09 |
  *----------------------------------------------------------------------------------------------- */
-void XFEM::ENR::FindFacingPatchProjCellSpace(
+void XFEM::TIMEINT::FindFacingPatchProjCellSpace(
     const LINALG::Matrix<3,1>&       node,
     const GEO::BoundaryIntCell&      patch,
     const LINALG::SerialDenseMatrix& patchcoord,
@@ -1601,10 +1590,11 @@ void XFEM::ENR::FindFacingPatchProjCellSpace(
 /*------------------------------------------------------------------------------------------------*
  | private: compute distance to edge of patch                                         henke 08/09 |
  *----------------------------------------------------------------------------------------------- */
-void XFEM::ENR::ComputeDistanceToEdge(
+void XFEM::TIMEINT::ComputeDistanceToEdge(
     const LINALG::Matrix<3,1>&       node,
     const GEO::BoundaryIntCell&      patch,
     const LINALG::SerialDenseMatrix& patchcoord,
+    LINALG::Matrix<3,1>&             proj,
     double&                          edgedist
 ) const
 {
@@ -1622,6 +1612,8 @@ void XFEM::ENR::ComputeDistanceToEdge(
   static LINALG::Matrix<3,1> vertex1tonode(true);
   // distance vector from first vertex to second vertex
   static LINALG::Matrix<3,1> vertex1tovertex2(true);
+
+  LINALG::Matrix<3,1> tmpproj(true);
 
   // compute distance to all vertices of patch
   for(size_t ivert = 0; ivert<numvertices; ++ivert)
@@ -1657,15 +1649,17 @@ void XFEM::ENR::ComputeDistanceToEdge(
 
     if( (lotfusspointdist >= 0.0) and (lotfusspointdist <= normvertex1tovertex2) ) // lotfusspoint on edge
     {
-      LINALG::Matrix<3,1> lotfusspoint(true);
-      lotfusspoint.Update(1.0,vertex1,lotfusspointdist,vertex1tovertex2);
+      tmpproj.Update(1.0,vertex1,lotfusspointdist,vertex1tovertex2);
       LINALG::Matrix<3,1> nodetolotfusspoint(true);
-      nodetolotfusspoint.Update(1.0,lotfusspoint,-1.0,node);
+      nodetolotfusspoint.Update(1.0,tmpproj,-1.0,node);
 
       // determine length of vector from node to lot fuss point
       edgedisttmp = nodetolotfusspoint.Norm2();
       if (edgedisttmp < edgedist)
+      {
         edgedist = edgedisttmp;
+        proj = tmpproj;
+      }
     }
   }
 
@@ -1676,10 +1670,11 @@ void XFEM::ENR::ComputeDistanceToEdge(
 /*------------------------------------------------------------------------------------------------*
  | private: compute distance to vertex of patch                                       henke 08/09 |
  *----------------------------------------------------------------------------------------------- */
-void XFEM::ENR::ComputeDistanceToPatch(
+void XFEM::TIMEINT::ComputeDistanceToPatch(
     const LINALG::Matrix<3,1>&       node,
     const GEO::BoundaryIntCell&      patch,
     const LINALG::SerialDenseMatrix& patchcoord,
+    LINALG::Matrix<3,1>&             proj,
     double&                          vertexdist
 ) const
 {
@@ -1708,7 +1703,10 @@ void XFEM::ENR::ComputeDistanceToPatch(
     // compute L2-norm of distance vector
     vertexdisttmp = dist.Norm2();
     if (vertexdisttmp < vertexdist)
+    {
+      proj = vertex;
       vertexdist = vertexdisttmp;
+    }
   }
 
   return;
@@ -1719,7 +1717,7 @@ void XFEM::ENR::ComputeDistanceToPatch(
 /*------------------------------------------------------------------------------------------------*
  | private: compute normal vector to flame front patch                                henke 08/09 |
  *----------------------------------------------------------------------------------------------- */
-void XFEM::ENR::ComputeNormalVectorToFlameFront(
+void XFEM::TIMEINT::ComputeNormalVectorToFlameFront(
     const GEO::BoundaryIntCell&      patch,
     const LINALG::SerialDenseMatrix& patchcoord,
     LINALG::Matrix<3,1>&             normal

@@ -60,6 +60,8 @@ public:
   double ThetaPre() {return theta_pre_;}
   double ThetaDiv() {return theta_div_;}
 
+  double VolBd() {return vol_bd_;}
+
 private:
 
   /// @name flow material parameters
@@ -112,6 +114,8 @@ private:
   double theta_div_;
 
   //@}
+
+  double vol_bd_; /// maximal percentage of fluid in background domain
 
   // private constructor
   TopOptParam();

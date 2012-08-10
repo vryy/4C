@@ -318,8 +318,8 @@ private:
   {
     none,
     set_general_optimization_parameter,
-    compute_objective,
-    compute_gradient
+    compute_values,
+    compute_gradients
   };
 
   //! the element discretization type (shape)
@@ -596,8 +596,8 @@ private:
   {
     none,
     set_general_optimization_parameter,
-    compute_objective,
-    compute_gradient
+    compute_values,
+    compute_gradients
   };
 
   // don't want = operator

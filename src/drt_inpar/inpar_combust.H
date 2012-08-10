@@ -57,6 +57,7 @@ namespace INPAR
       xfemtimeint_semilagrange,
       xfemtimeint_extrapolation,
       xfemtimeint_mixedSLExtrapol,
+      xfemtimeint_mixedSLExtrapolNew,
       xfemtimeint_mixedghostSL,
       xfemtimeint_mixedghostExtrapol,
       xfemtimeint_mixedghostSLExtrapol

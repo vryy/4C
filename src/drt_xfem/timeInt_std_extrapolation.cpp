@@ -57,6 +57,14 @@ void XFEM::Extrapolation::compute(
   exportFinalData();
 #endif
   setFinalData();
+
+  // fill vectors with the data
+  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    if (data->state_!=TimeIntData::doneStd_)
+      dserror("All data should be set here, having status 'done'. Thus something is wrong!");
+  }
 } // end compute
 
 
@@ -84,6 +92,14 @@ void XFEM::Extrapolation::compute(vector<RCP<Epetra_Vector> > newRowVectors)
   exportFinalData();
 #endif
   setFinalData();
+
+  // fill vectors with the data
+  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    if (data->state_!=TimeIntData::doneStd_)
+      dserror("All data should be set here, having status 'done'. Thus something is wrong!");
+  }
 }// end compute
 
 

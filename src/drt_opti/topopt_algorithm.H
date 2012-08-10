@@ -69,7 +69,7 @@ namespace TOPOPT
     void PrepareOptimization();
 
     /// check if the optimization process has finished
-    bool OptimizationNotFinished();
+    bool OptimizationFinished();
 
     /// prepare the computation of a new fluid field
     void PrepareFluidField();
@@ -97,28 +97,20 @@ namespace TOPOPT
 
     /// update optimization procedure
     void Update();
+
   private:
 
     /// topology optimization input parameter list
     const Teuchos::ParameterList& topopt_;
-
-    /// parallel stuff
-    const int myrank_;
-
-    /// convergence check
-    int iter_;
-    const int max_iter_;
-    const double res_tol_;
-    const double inc_tol_;
-    INPAR::TOPOPT::ConvCheck conv_check_type_;
 
     /// pseudo-porosity function for topology optimization
     Teuchos::RCP<Epetra_Vector> poro_;
     Teuchos::RCP<TOPOPT::Optimizer>& optimizer_;
 
     /// objective fields
-    double objective_ip_; // objective at new iteration in row map
-    double objective_i_; // objective at old iteration in row map
+    double objective_; /// objective at new iteration in row map
+
+    bool doGradient_; /// compute gradient(s) in current optimization step
   };
 
 } // namespace TOPOPT

@@ -29,10 +29,10 @@ DRT::ELEMENTS::TopOpt::ActionType DRT::ELEMENTS::TopOpt::convertStringToActionTy
   DRT::ELEMENTS::TopOpt::ActionType act = TopOpt::none;
   if (action == "set_general_optimization_parameter")
     act = TopOpt::set_general_optimization_parameter;
-  else if (action == "compute_objective")
-    act = TopOpt::compute_objective;
-  else if (action == "compute_gradient")
-    act = TopOpt::compute_gradient;
+  else if (action == "compute_values")
+    act = TopOpt::compute_values;
+  else if (action == "compute_gradients")
+    act = TopOpt::compute_gradients;
   else
     dserror("(%s) Unknown type of action for Fluid",action.c_str());
 
@@ -68,9 +68,9 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
     optiparam->SetGeneralOptimizationParameter(params);
     break;
   }
-  case compute_objective:
+  case compute_values:
   {
-    return DRT::ELEMENTS::TopOptImplInterface::Impl(this)->EvaluateObjective(
+    return DRT::ELEMENTS::TopOptImplInterface::Impl(this)->EvaluateValues(
         this,
         params,
         optidis,
@@ -79,9 +79,9 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
     );
     break;
   }
-  case compute_gradient:
+  case compute_gradients:
   {
-    return DRT::ELEMENTS::TopOptImplInterface::Impl(this)->EvaluateGradient(
+    return DRT::ELEMENTS::TopOptImplInterface::Impl(this)->EvaluateGradients(
         this,
         params,
         optidis,
@@ -132,10 +132,10 @@ DRT::ELEMENTS::TopOptBoundary::ActionType DRT::ELEMENTS::TopOptBoundary::convert
   DRT::ELEMENTS::TopOptBoundary::ActionType act = TopOptBoundary::none;
   if (action == "set_general_optimization_parameter")
     act = TopOptBoundary::set_general_optimization_parameter;
-  else if (action == "compute_objective")
-    act = TopOptBoundary::compute_objective;
-  else if (action == "compute_gradient")
-    act = TopOptBoundary::compute_gradient;
+  else if (action == "compute_values")
+    act = TopOptBoundary::compute_values;
+  else if (action == "compute_gradients")
+    act = TopOptBoundary::compute_gradients;
   else
     dserror("(%s) Unknown type of action for Fluid",action.c_str());
 
@@ -185,9 +185,9 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
     RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
     optiparam->SetGeneralOptimizationParameter(params);
   }
-  case compute_objective:
+  case compute_values:
   {
-    return DRT::ELEMENTS::TopOptBoundaryImplInterface::Impl(this)->EvaluateBoundaryObjective(
+    return DRT::ELEMENTS::TopOptBoundaryImplInterface::Impl(this)->EvaluateBoundaryValues(
         this,
         params,
         optidis,
@@ -196,9 +196,9 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
     );
     break;
   }
-  case compute_gradient:
+  case compute_gradients:
   {
-    return DRT::ELEMENTS::TopOptBoundaryImplInterface::Impl(this)->EvaluateBoundaryGradient(
+    return DRT::ELEMENTS::TopOptBoundaryImplInterface::Impl(this)->EvaluateBoundaryGradients(
         this,
         params,
         optidis,
