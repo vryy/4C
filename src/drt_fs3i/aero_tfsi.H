@@ -30,6 +30,7 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #include "fs3i.H"
+#include "Epetra_MpiComm.h"
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
