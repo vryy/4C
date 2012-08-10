@@ -109,9 +109,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
-  // input parameters
-  bool fulllin = DRT::INPUT::IntegralValue<int>(Params(),"FULL_LINEARIZATION");
-
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
   kteff->Complete();
@@ -223,20 +220,17 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     /* (2) Add contact stiffness terms to kteff                         */
     /********************************************************************/
 
-    if (fulllin)
+    // transform if necessary
+    if (ParRedist())
     {
-      // transform if necessary
-      if (ParRedist())
-      {
-        lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
-        linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
-      }
-
-      kteff->UnComplete();
-      kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
-      kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
-      kteff->Complete();
+      lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+      linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
     }
+
+    kteff->UnComplete();
+    kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
+    kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
+    kteff->Complete();
   
     /********************************************************************/
     /* (3) Split kteff into 3x3 matrix blocks                           */
@@ -738,12 +732,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       }
 
       //---------------------------------------------------------- FOURTH LINE
-      if (aset)
-      {
-        if (!fulllin) nmatrix_ = MORTAR::MatrixRowTransform(nmatrix_,pgsdofrowmap_);
-        if (!fulllin) nmhata   = MORTAR::MatrixRowTransform(nmhata,pgsdofrowmap_);
-        if (fulllin)  smatrix_ = MORTAR::MatrixRowTransform(smatrix_,pgsdofrowmap_);
-      }
+      if (aset) smatrix_ = MORTAR::MatrixRowTransform(smatrix_,pgsdofrowmap_);
 
       //----------------------------------------------------------- FIFTH LINE
       if (stickset)
@@ -796,13 +785,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     if (iset && aset) kteffnew->Add(*kiamod,false,1.0,1.0);
 
     //-------------------------------------------------------- FOURTH LINE
-    // add matrices n and nmhata to kteffnew
-    // this is only done for the "NO full linearization" case
-    if (!fulllin && aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
-    if (!fulllin && aset) kteffnew->Add(*nmhata,false,1.0,1.0);
-
-    // add full linearization terms to kteffnew
-    if (fulllin && aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
+    // add a submatrices to kteffnew
+    if (aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
 
     //--------------------------------------------------------- FIFTH LINE
     // add st submatrices to kteffnew
@@ -1067,9 +1051,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
-  // input parameters
-  bool fulllin = DRT::INPUT::IntegralValue<int>(Params(),"FULL_LINEARIZATION");
-
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
   kteff->Complete();
@@ -1177,20 +1158,17 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     /* (2) Add contact stiffness terms to kteff                           */
     /**********************************************************************/
 
-    if (fulllin)
+    // transform if necessary
+    if (ParRedist())
     {
-      // transform if necessary
-      if (ParRedist())
-      {
-        lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
-        linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
-      }
-
-      kteff->UnComplete();
-      kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
-      kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
-      kteff->Complete();
+      lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+      linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
     }
+
+    kteff->UnComplete();
+    kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
+    kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
+    kteff->Complete();
 
     /**********************************************************************/
     /* (3) Split kteff into 3x3 block matrix                              */
@@ -1464,7 +1442,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     LINALG::SplitMatrix2x2(smatrix_,gactiven_,tempmap,gmdofrowmap_,gsdofrowmap_,smatrixm,smatrixs,tempmtx1,tempmtx2);
     LINALG::SplitMatrix2x2(pmatrix_,gactivet_,tempmap,gmdofrowmap_,gsdofrowmap_,pmatrixm,pmatrixs,tempmtx1,tempmtx2);
     Teuchos::RCP<LINALG::SparseMatrix> smatrixmadd, pmatrixmadd;
-    if (fulllin && aset)
+    if (aset)
     {
       smatrixmadd  = LINALG::MLMultiply(*smatrixs,false,*mhatmatrix_,false,false,false,true);
       pmatrixmadd = LINALG::MLMultiply(*pmatrixs,false,*mhatmatrix_,false,false,false,true);
@@ -1625,10 +1603,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
       }
 
       //---------------------------------------------------------- FOURTH LINE
-      if (!fulllin && aset)
-        nmatrix_ = MORTAR::MatrixRowTransform(nmatrix_,pgsdofrowmap_);
-
-      if (fulllin && aset)
+      if (aset)
       {
         smatrixs    = MORTAR::MatrixRowTransform(smatrixs,pgsdofrowmap_);
         smatrixm    = MORTAR::MatrixRowTransform(smatrixm,pgsdofrowmap_);
@@ -1644,7 +1619,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
         if (iset) kaimod = MORTAR::MatrixRowTransform(kaimod,pgsdofrowmap_);
       }
 
-      if (fulllin && aset)
+      if (aset)
       {
         pmatrixs    = MORTAR::MatrixRowTransform(pmatrixs,pgsdofrowmap_);
         pmatrixm    = MORTAR::MatrixRowTransform(pmatrixm,pgsdofrowmap_);
@@ -1679,12 +1654,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     if (iset && aset) kteffnew->Add(*kiamod,false,1.0,1.0);
 
     //---------------------------------------------------------- FOURTH LINE
-    // add nmatrix to kteffnew
-    // this is only done for the "NO full linearization" case
-    if (!fulllin && aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
-
-    // add full linearization terms to kteffnew
-    if (fulllin && aset)
+    // add a submatrices to kteffnew
+    if (aset)
     {
       kteffnew->Add(*smatrixm,false,1.0,1.0);
       kteffnew->Add(*smatrixmadd,false,1.0,1.0);
@@ -1698,8 +1669,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     if (aset && iset) kteffnew->Add(*kaimod,false,1.0,1.0);
     if (aset) kteffnew->Add(*kaamod,false,1.0,1.0);
 
-    // add full linearization terms to kteffnew
-    if (fulllin && aset)
+    if (aset)
     {
       kteffnew->Add(*pmatrixm,false,-1.0,1.0);
       kteffnew->Add(*pmatrixmadd,false,-1.0,1.0);
@@ -1787,20 +1757,17 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     /* (2) Add contact stiffness terms to kteff                           */
     /**********************************************************************/
 
-    if (fulllin)
+    // transform if necessary
+    if (ParRedist())
     {
-      // transform if necessary
-      if (ParRedist())
-      {
-        lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
-        linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
-      }
-
-      kteff->UnComplete();
-      kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
-      kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
-      kteff->Complete();
+      lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+      linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
     }
+
+    kteff->UnComplete();
+    kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
+    kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
+    kteff->Complete();
     
     /**********************************************************************/
     /* (3) Split kteff into 3x3 matrix blocks                             */
@@ -2214,12 +2181,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
       }
 
       //---------------------------------------------------------- FOURTH LINE
-      if (aset)
-      {
-        if (!fulllin) nmatrix_ = MORTAR::MatrixRowTransform(nmatrix_,pgsdofrowmap_);
-        if (!fulllin) nmhata   = MORTAR::MatrixRowTransform(nmhata,pgsdofrowmap_);
-        if (fulllin)  smatrix_ = MORTAR::MatrixRowTransform(smatrix_,pgsdofrowmap_);
-      }
+      if (aset) smatrix_ = MORTAR::MatrixRowTransform(smatrix_,pgsdofrowmap_);
 
       //----------------------------------------------------------- FIFTH LINE
       if (aset)
@@ -2228,7 +2190,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
         kammod = MORTAR::MatrixRowTransform(kammod,pgsdofrowmap_);
         kaamod = MORTAR::MatrixRowTransform(kaamod,pgsdofrowmap_);
         if (iset) kaimod = MORTAR::MatrixRowTransform(kaimod,pgsdofrowmap_);
-        if (fulllin) pmatrix_ = MORTAR::MatrixRowTransform(pmatrix_,pgsdofrowmap_);
+        pmatrix_ = MORTAR::MatrixRowTransform(pmatrix_,pgsdofrowmap_);
       }
     }
 
@@ -2260,13 +2222,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     if (iset && aset) kteffnew->Add(*kiamod,false,1.0,1.0);
 
     //---------------------------------------------------------- FOURTH LINE
-    // add matrices n and nmhata to kteffnew
-    // this is only done for the "NO full linearization" case
-    if (!fulllin && aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
-    if (!fulllin && aset) kteffnew->Add(*nmhata,false,1.0,1.0);
-
-    // add full linearization terms to kteffnew
-    if (fulllin && aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
+    // add a submatrices to kteffnew
+    if (aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
 
     //----------------------------------------------------------- FIFTH LINE
     // add a submatrices to kteffnew
@@ -2274,9 +2231,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     if (aset) kteffnew->Add(*kammod,false,1.0,1.0);
     if (aset && iset) kteffnew->Add(*kaimod,false,1.0,1.0);
     if (aset) kteffnew->Add(*kaamod,false,1.0,1.0);
-
-    // add full linearization terms to kteffnew
-    if (fulllin && aset) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
+    if (aset) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
 
     // FillComplete kteffnew (square)
     kteffnew->Complete();

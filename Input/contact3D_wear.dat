@@ -62,7 +62,6 @@ MAXITER                         50
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 FRICTION                        coulomb
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  200
 SEMI_SMOOTH_CT                  200

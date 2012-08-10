@@ -78,7 +78,6 @@ APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SHAPEFCN                        Dual
 FRICTION                        Tresca
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              No
 SEMI_SMOOTH_CT                  1.0
 SEARCH_ALGORITHM                BruteForceEleBased

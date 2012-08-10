@@ -74,7 +74,6 @@ STRATEGY                        Penalty
 SHAPEFCN                        Standard
 PENALTYPARAM                    90000
 FRICTION                        None
-FULL_LINEARIZATION              Yes
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 ---------------------------------------------------------------FLUID DYNAMIC

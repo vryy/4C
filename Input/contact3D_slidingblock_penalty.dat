@@ -71,7 +71,6 @@ SHAPEFCN                        Standard
 PENALTYPARAM                    100000
 PENALTYPARAMTAN                 100000
 FRICTION                        Coulomb
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 SEMI_SMOOTH_CT                  1.0

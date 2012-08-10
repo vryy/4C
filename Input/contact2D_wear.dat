@@ -80,7 +80,6 @@ SHAPEFCN                        Dual
 FRICTION                        Coulomb
 WEAR                            Archard
 WEARCOEFF                       1e-6
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  10
 SEMI_SMOOTH_CT                  10

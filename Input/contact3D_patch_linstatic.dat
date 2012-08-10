@@ -70,7 +70,6 @@ APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SHAPEFCN                        Dual
 FRICTION                        None
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              No
 COUPLING_AUXPLANE               Yes
 ---------------------------------------------------------------FLUID DYNAMIC

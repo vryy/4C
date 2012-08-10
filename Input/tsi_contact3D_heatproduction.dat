@@ -49,7 +49,6 @@ THERM_TEMPGRAD                  Initial                         // None, Current
 LINEAR_SOLVER                   3
 APPLICATION                     MortarContact
 FRICTION                        coulomb
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  2000
 SEMI_SMOOTH_CT                  2000

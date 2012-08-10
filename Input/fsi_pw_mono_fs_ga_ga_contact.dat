@@ -111,7 +111,6 @@ APPLICATION                     MortarContact
 STRATEGY                        Penalty
 SHAPEFCN                        Standard
 PENALTYPARAM                    1.0e8
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 SEARCH_ALGORITHM                Binarytree

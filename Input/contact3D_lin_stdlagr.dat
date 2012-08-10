@@ -75,7 +75,6 @@ STRATEGY                        Lagrange
 SHAPEFCN                        Standard
 SYSTEM                          SaddlePointCoupled
 FRICTION                        None
-FULL_LINEARIZATION              Yes
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 COUPLING_AUXPLANE               Yes

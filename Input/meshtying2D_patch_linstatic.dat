@@ -72,7 +72,6 @@ STRATEGY                        Lagrange
 SHAPEFCN                        Standard
 SYSTEM                          SaddlePointCoupled
 FRICTION                        None
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              No
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3

@@ -70,7 +70,6 @@ SHAPEFCN                        Standard
 PENALTYPARAM                    1.0e2
 SYSTEM                          spcoupled
 LAGMULT_QUAD                    lin_lin
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0e3
 SEMI_SMOOTH_CT                  1.0

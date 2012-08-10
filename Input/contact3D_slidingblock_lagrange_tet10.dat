@@ -71,7 +71,6 @@ STRATEGY                        lagrange
 SHAPEFCN                        dual
 COUPLING_AUXPLANE               Yes
 LAGMULT_QUAD                    quad_quad
-FULL_LINEARIZATION              Yes
 SEMI_SMOOTH_NEWTON              Yes
 PENALTYPARAM                    1000
 PENALTYPARAMTAN                 1000

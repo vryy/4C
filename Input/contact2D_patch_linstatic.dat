@@ -71,7 +71,6 @@ STRATEGY                        Lagrange
 SHAPEFCN                        Dual
 SYSTEM                          Condensed
 FRICTION                        None
-FULL_LINEARIZATION              No
 SEMI_SMOOTH_NEWTON              No
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3

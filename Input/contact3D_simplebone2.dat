@@ -73,7 +73,6 @@ SHAPEFCN                        Dual                            // Dual Standard
 PENALTYPARAM                    20000
 PENALTYPARAMTAN                 20000
 FRICTION                        Coulomb                         // Coulomb
-FULL_LINEARIZATION              Yes
 MAX_BALANCE                     0
 SEMI_SMOOTH_NEWTON              yes
 SEMI_SMOOTH_CN                  1000.0
