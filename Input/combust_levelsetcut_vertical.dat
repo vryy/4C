@@ -20,29 +20,29 @@ domain integration cells belonging to plus and minus domain must only be created
 check if left and right elements for each cut get the correct cut status (uncut (u), touched (t), bisected (b))
 
 6x20 elements, enriched nodes (+)
-x=-1 x=0 x=1
-|---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---+---+---|---
-| | | | | | | | | | | | | | | | b | | b | | |
-|---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---+---+---|---|
-| | | | b | | u | t | t | t | t | t | t | t | t | u | t | u | t | u | |
-|---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---|---+---|---|
-| | | | b | | u | t | t | t | t | t | t | t | t | u | u | t | u | t | |
-|---|---|---+---+---|---+---|---+---|---+---|---+---|---+---|---+---+---+---+---|
-| | | | | | | | | | | | | | | | | b | | b | |
-|---|---|---+---+---|---+---|---+---|---+---|---+---|---+---|---+---+---+---+---|
-* * * * * * * *
-1 2 3 4 5 6 7 8
+x=-1                                    x=0                                     x=1
+ |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---+---+---|---
+ |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   | b |   | b |   |   |
+ |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---+---+---|---|
+ |   |   |   | b |   | u | t | t | t | t | t | t | t | t | u | t | u | t | u |   |
+ |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---|---+---|---|
+ |   |   |   | b |   | u | t | t | t | t | t | t | t | t | u | u | t | u | t |   |
+ |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---|---+---+---+---+---|
+ |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   | b |   | b |   |
+ |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---|---+---+---+---+---|
+               *        *        *       *       *        *      *       *
+               1        2        3       4       5        6      7       8
 cut number (1-8) / interface position (*) / left element / right element / explanation
-1 / x = -0.6+1.0E-4 / uncut (u) / bisected (b) / regular cut right element
-2 / x = -0.4-1.0E-5 / bisected->touched / uncut / small plus volume in left element -> throw away volume + keep boundary cell
-3 / x = -0.2-1.0E-12 / touched (t) / touched / interface almost (left) on element boundary (within point tolerance)
-4 / x = 0.0 / touched / touched / interface exactly on element boundary
-5 / x = 0.2+1.0E-12 / touched / touched / interface almost (right) on element boundary (within point tolerance)
-6 / x = 0.4+1.0E-5 / uncut / bisected->touched / small minus volume in right element -> throw away volume + take boundary cell from large plus volume
-7 / x = 0.6-y*0.0001 / bisected->touched / touched->uncut / upper row: almost vertical cut (node in middle plane is cut) -> elements touched in one node become uncut
-/ touched->uncut / bisected->touched / lower row:
-8 / x = 0.6-y*0.0001 / bisected->touched / bisected->uncut / upper row: almost vertical cut shifted up -> bisected (corner cut off,small volume) element becomes uncut
-/ uncut / bisected->touched / lower row:
+1 / x = -0.6+1.0E-4   / uncut (u)         / bisected (b)      / regular cut right element 
+2 / x = -0.4-1.0E-5   / bisected->touched / uncut             / small plus volume in left element -> throw away volume + keep boundary cell
+3 / x = -0.2-1.0E-12  / touched (t)       / touched           / interface almost (left) on element boundary (within point tolerance)
+4 / x = 0.0           / touched           / touched           / interface exactly on element boundary
+5 / x = 0.2+1.0E-12   / touched           / touched           / interface almost (right) on element boundary (within point tolerance)
+6 / x = 0.4+1.0E-5    / uncut             / bisected->touched / small minus volume in right element -> throw away volume + take boundary cell from large plus volume
+7 / x = 0.6-y*0.0001  / bisected->touched / touched->uncut    / upper row: almost vertical cut (node in middle plane is cut) -> elements touched in one node become uncut
+                      / touched->uncut    / bisected->touched / lower row:
+8 / x = 0.6-y*0.0001  / bisected->touched / bisected->uncut   / upper row: almost vertical cut shifted up -> bisected (corner cut off,small volume) element becomes uncut
+                      / uncut             / bisected->touched / lower row:  
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        120
 NODES                           294

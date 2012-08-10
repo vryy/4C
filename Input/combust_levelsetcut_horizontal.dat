@@ -12,21 +12,21 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 description test case:
 - check if cut algorithm and enrichment strategy work together properly
-check functionality for a almost horizontal cut close to element boundaries
+- check functionality for a almost horizontal cut close to element boundaries
 - only the nodes marked enriched (+) must be enriched
--> check Gmsh file 'numdof_coupled_system.pos'
-domain integration cells belonging to plus and minus domain must only be created for bisected elements
--> check Gmsh file 'domains.pos'
-check if upper and lower elements for each position get the correct cut status (uncut, touched, bisected)
+  -> check Gmsh file 'numdof_coupled_system.pos'
+- domain integration cells belonging to plus and minus domain must only be created for bisected elements
+  -> check Gmsh file 'domains.pos'
+- check if upper and lower elements for each position get the correct cut status (uncut, touched, bisected)
 
 6x20 elements, enriched nodes (+)
-x=-1 x=0 x=1
-+---+---+---+---+---+---+---+---+---|---|---|---|---|---|---|---|---|---|---|---|
-| b | b | b | b | b | b | b | b | t | t | t | u | u | u | u | u | u | u | u | u |
-+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-| u | u | u | u | u | u | u | u | u | t | t | t | b | b | b | b | b | b | b | b |
-|---|---|---|---|---|---|---|---|---|---|---|---+---+---+---+---+---+---+---+---+
-1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+x=-1                                    x=0                                     x=1
+ +---+---+---+---+---+---+---+---+---|---|---|---|---|---|---|---|---|---|---|---|
+ | b | b | b | b | b | b | b | b | t | t | t | u | u | u | u | u | u | u | u | u |
+ +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ | u | u | u | u | u | u | u | u | u | t | t | t | b | b | b | b | b | b | b | b |
+ |---|---|---|---|---|---|---|---|---|---|---|---+---+---+---+---+---+---+---+---+
+   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        120
 NODES                           294
