@@ -158,7 +158,7 @@ EXODUS::Mesh::Mesh(const string exofilename)
     /* Read NodeSet property names ***********************************************
      * They are assigned by ICEM and provide recognition */
     int num_props;
-    double fdum;
+    float fdum;
     char cdum; //dummy argument
     error = ex_inquire (exoid_, EX_INQ_NS_PROP, &num_props, &fdum, &cdum);
     // allocate memory for NodeSet property names
@@ -873,7 +873,7 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
   int num_qa_rec;
   char* qa_record[MAX_STR_LENGTH][4]; // should be MAX_QA_REC][4], but this is nowhere defined!;
   char cdum; //dummy variable
-  double fdum;
+  float fdum;
   /* read QA records */
   ex_inquire (exoid_, EX_INQ_QA, &num_qa_rec, &fdum, &cdum);/* write QA records */
   for (int i=0; i<num_qa_rec; i++)
