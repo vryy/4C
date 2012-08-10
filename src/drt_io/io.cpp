@@ -694,12 +694,18 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
   std::string valuename = name + ".values";
   double* data = vec->Values();
   const hsize_t size = vec->MyLength() * vec->NumVectors();
-  int length = 1;
-  if (size==0)
-    length = 0;
-  const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),length,&size,data);
-  if (make_status < 0)
-    dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+  if (size != 0)
+  {
+    const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,data);
+    if (make_status < 0)
+      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+  }
+  else
+  {
+    const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),0,&size,data);
+    if (make_status < 0)
+      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+  }
 
   std::string idname;
 
@@ -730,12 +736,18 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
     const hsize_t mapsize = vec->MyLength();
     idname = name + ".ids";
     int* ids = vec->Map().MyGlobalElements();
-    int length = 1;
-    if (size==0)
-      length = 0;
-    const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),length,&mapsize,ids);
-    if (make_status < 0)
-      dserror("Failed to create dataset in HDF-resultfile");
+    if (size != 0)
+    {
+      const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&mapsize,ids);
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile");
+    }
+    else
+    {
+      const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),0,&mapsize,ids);
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile");
+    }
 
     idname = groupname.str()+idname;
 
@@ -796,9 +808,18 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
   std::string valuename = name + ".values";
   const hsize_t size = vec.size();
   const char* data = &vec[0];
-  const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),1,&size,data);
-  if (make_status < 0)
-    dserror("Failed to create dataset in HDF-resultfile");
+  if (size != 0)
+  {
+    const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),1,&size,data);
+    if (make_status < 0)
+      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+  }
+  else
+  {
+    const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),0,&size,data);
+    if (make_status < 0)
+      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+  }
 
   std::string idname;
 
@@ -934,7 +955,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   // only procs with row elements need to write data
   Teuchos::RCP<std::vector<char> > elementdata = dis_->PackMyElements();
   hsize_t dim = static_cast<hsize_t>(elementdata->size());
-  if (elementdata->size() != 0)
+  if (dim != 0)
   {
     const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
     if (element_status < 0)
@@ -950,7 +971,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   // only procs with row nodes need to write data
   Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
   dim = static_cast<hsize_t>(nodedata->size());
-  if (nodedata->size() != 0)
+  if (dim != 0)
   {
     const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
     if (node_status < 0)
@@ -1178,12 +1199,18 @@ void IO::DiscretizationWriter::WriteKnotvector() const
     // an appropriate name has to be provided
     std::string valuename = name + ".values";
     const hsize_t size = doublevec->size();
-    int length = 1;
-    if (size==0)
-      length = 0;
-    const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),length,&size,&((*doublevec)[0]));
-    if (make_status < 0)
-      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+    if (size != 0)
+    {
+      const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,&((*doublevec)[0]));
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+    }
+    else
+    {
+      const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),0,&size,&((*doublevec)[0]));
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+    }
 
     // do I need the following naming stuff?
     std::ostringstream groupname;
