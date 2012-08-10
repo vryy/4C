@@ -101,6 +101,28 @@ const Epetra_Comm& MORTAR::Coupling2d::Comm() const
 }
 
 /*----------------------------------------------------------------------*
+ |  Rough check if elements are near (with normals)           popp 11/10|
+ *----------------------------------------------------------------------*/
+bool MORTAR::Coupling2d::RoughCheckOrient()
+{
+  // we first need the master element center
+  double loccenter[2] = {0.0, 0.0};
+
+  // compute the unit normal vector at the slave element center
+  double nsc[3] = {0.0, 0.0, 0.0};
+  SlaveElement().ComputeUnitNormalAtXi(loccenter,nsc);
+
+  // compute the unit normal vector at the master element center
+  double nmc[3] = {0.0, 0.0, 0.0};
+  MasterElement().ComputeUnitNormalAtXi(loccenter,nmc);
+
+  // check orientation of the two normals
+  double dot = nsc[0]*nmc[0]+nsc[1]*nmc[1]+nsc[2]*nmc[2];
+  if (dot < -1.0e-12) return true;
+  else                return false;
+}
+
+/*----------------------------------------------------------------------*
  |  Project slave / master element pair (public)              popp 04/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling2d::Project()
@@ -110,6 +132,12 @@ bool MORTAR::Coupling2d::Project()
   hasproj_[1] = false;   // slave 1 end node
   hasproj_[2] = false;   // master 0 end node
   hasproj_[3] = false;   // master 1 end node
+
+  // rough check of orientation of element centers
+  // if slave and master element center normals form an
+  // angle > 90° the pair will not be considered further
+  bool orient = RoughCheckOrient();
+  if (!orient) return false;
 
   // get slave and master element nodes
   DRT::Node** mysnodes = SlaveElement().Nodes();

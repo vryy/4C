@@ -77,6 +77,7 @@ bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
       f=EvaluateFNodalNormal(node,ele,eta);
       if (abs(f) < MORTARCONVTOL) break;
       df=EvaluateGradFNodalNormal(node,ele,eta);
+      if (abs(df)<1.0e-12) dserror("ERROR: Singular Jacobian for projection");
       eta[0]+=(-f)/df;
     }
 
@@ -132,6 +133,7 @@ bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
       f=EvaluateFElementNormal(node,ele,eta);
       if (abs(f) < MORTARCONVTOL) break;
       df=EvaluateGradFElementNormal(node,ele,eta);
+      if (abs(df)<1.0e-12) dserror("ERROR: Singular Jacobian for projection");
       eta[0]+=(-f)/df;
     }
 
@@ -206,7 +208,8 @@ bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
       EvaluateGradFElementNormal3D(df,node,ele,eta,alpha);
 
       // solve deta = - inv(df) * f
-      df.Invert();
+      double jacdet = df.Invert();
+      if (abs(jacdet)<1.0e-12) dserror("ERROR: Singular Jacobian for projection");
 
       // update eta and alpha
       eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
@@ -284,6 +287,7 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
       f=EvaluateFGaussPoint(gpx,gpn,ele,eta);
       if (abs(f) < MORTARCONVTOL) break;
       df=EvaluateGradFGaussPoint(gpn,ele,eta);
+      if (abs(df)<1.0e-12) dserror("ERROR: Singular Jacobian for projection");
       eta[0]+=(-f)/df;
     }
 
@@ -385,7 +389,8 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
       EvaluateGradFGaussPoint3D(df,gpx,gpn,ele,eta,alpha);
 
       // solve deta = - inv(df) * f
-      df.Invert();
+      double jacdet = df.Invert();
+      if (abs(jacdet)<1.0e-12) dserror("ERROR: Singular Jacobian for projection");
 
       // update eta and alpha
       eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
@@ -450,7 +455,8 @@ bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
       EvaluateGradFGaussPointAuxn3D(df,globgp,auxn,ele,eta,alpha);
 
       // solve deta = - inv(df) * f
-      df.Invert();
+      double jacdet = df.Invert();
+      if (abs(jacdet)<1.0e-12) dserror("ERROR: Singular Jacobian for projection");
 
       // update eta and alpha
       eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
