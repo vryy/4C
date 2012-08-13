@@ -12,12 +12,14 @@ Maintainer: Michael Gee
 #ifndef SO_NSTET5_H
 #define SO_NSTET5_H
 
+//#include "Sacado.hpp"
+
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
 
 //#define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
-#define ALPHA_NSTET5       0.01    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
+#define ALPHA_NSTET5       0.2    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 
 
 
@@ -229,6 +231,8 @@ class NStet5 : public DRT::Element
 public:
 
   friend class NStet5Type;
+  //typedef Sacado::Fad::DFad<double> FAD;
+  //typedef Sacado::Fad::DFad< Sacado::Fad::DFad<double> > FADFAD;
 
   /*!
   \brief Standard Constructor

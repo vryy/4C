@@ -27,12 +27,13 @@ Maintainer: Michael Gee
 
 #include "so_nstet5.H"
 
+using namespace std;
+
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 03/12|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet5::InitElement()
 {
-  //printf("DRT::ELEMENTS::NStet5::InitElement %d\n",Id());
   LINALG::Matrix<4,3> xrefe;
   LINALG::Matrix<4,3+1> J;
   {
@@ -51,11 +52,12 @@ void DRT::ELEMENTS::NStet5::InitElement()
       midX_[2] += x[2];
     }
     for (int i=0; i<3; ++i) midX_[i] /= 4;
+    
     V_ = J.Determinant()/6.0;
     if (V_==0.0)     dserror("Element volume is zero");
     else if (V_<0.0) dserror("Element volume is negative");
   }
-
+  
   //------------------------------------------------------------------subtets
   /* structure of nxyz_:
   **             [   dN_1     dN_1     dN_1   ]
@@ -78,7 +80,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
   LINALG::FixedSizeSerialDenseSolver<4,4,3> solver;
   for (int i=0; i<4; ++i)
   {
-    // master tet has node numbering [0 1 2 3]
+    // master tet has node numbering [0 1 2 3]    
 
     // subtets have node numberings  [0 1 2 4]
     //                               [1 3 2 4]
@@ -103,7 +105,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
     subV_[i] = J.Determinant()/6.0;
     if (subV_[i]==0.0)     dserror("NSTET5 %d Subelement %d volume is zero %10.6e",Id(),i,subV_[i]);
     else if (subV_[i]<0.0) dserror("NSTET5 %d Subelement %d volume is negative %10.6e",Id(),i,subV_[i]);
-
+    
     // spatial derivatives of shape functions
     tmp.MultiplyTN(xrefe,deriv);
     for (int j=0; j<4; j++) J(0,j)=1;
@@ -191,8 +193,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
     {
-      //printf("calc_struct_nlnstiffmass\n");
-      //printf("calc_struct_nlnstifflmass\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -200,7 +200,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       nstet5nlnstiffmass(lm,mydisp,&elemat1,&elemat2,&elevec1,
                         NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      if (act==calc_struct_nlnstifflmass)
+      if (act==calc_struct_nlnstifflmass) 
         nstet5lumpmass(&elemat2);
     }
     break;
@@ -209,7 +209,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
     {
-      //printf("calc_struct_nlnstiff\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -226,7 +225,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
     // internal force vector only
     case calc_struct_internalforce:
     {
-      //printf("calc_struct_internalforce\n");
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -247,7 +245,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        //printf("calc_struct_stress\n");
         //------------------------------- compute element stress from stabilization
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
@@ -275,11 +272,13 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
           const int lid = nodestress->Map().LID(gid);
           if (lid==-1) dserror("Cannot find matching nodal stresses/strains");
           for (int j=0; j<6; ++j)
-          {
+          { 
             stress(0,j) += (*(*nodestress)(j))[lid];
             strain(0,j) += (*(*nodestrain)(j))[lid];
-          }
+            
+	  }
         }
+        
         for (int j=0; j<6; ++j)
         {
           stress(0,j) /= numnode;
@@ -287,6 +286,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(ParameterList& params,
         }
 
         //-------------------------------------------------------- add element stress
+                 
         for (int j=0; j<6; ++j)
         {
           stress(0,j) += elestress(0,j);
@@ -451,7 +451,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
 {
   if (elestrain) (*elestrain) = 0.0;
   if (elestress) (*elestress) = 0.0;
-
+      
 
   for (int sub=0; sub<4; ++sub) // loop subelements
   {
@@ -544,7 +544,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
 
       // define stuff we need to do the split
-      LINALG::Matrix<6,6> cmatdev;
+      LINALG::Matrix<6,6> cmatdev; 
       LINALG::Matrix<6,1> stressdev;
 
       // do just the deviatoric components
@@ -562,7 +562,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       cmat.Scale(ALPHA_NSTET5);
       glstrainbar = glstrain;
     }
-#endif
+#endif    
 
     //---------------------------------------------- output of stress and strain
     {
@@ -625,6 +625,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       case INPAR::STR::stress_2pk:
       {
         if (elestress == NULL) dserror("no stress data available");
+
         for (int i = 0; i<6; ++i)
           (*elestress)(0,i) += (SubV(sub)/Vol() * stress(i)); // ALPHA_NSTET already in stress
       }
@@ -660,7 +661,8 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         (*elestress)(0,2) += (SubV(sub)/Vol() * cauchystress(2,2));
         (*elestress)(0,3) += (SubV(sub)/Vol() * cauchystress(0,1));
         (*elestress)(0,4) += (SubV(sub)/Vol() * cauchystress(1,2));
-        (*elestress)(0,5) += (SubV(sub)/Vol() * cauchystress(0,2));
+        (*elestress)(0,5) += (SubV(sub)/Vol() * cauchystress(0,2));        
+        
       }
       break;
       case INPAR::STR::stress_none:
@@ -669,7 +671,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         dserror("requested stress type not available");
       }
     }
-
+    
     //----------------------------------------------- internal force and tangent
     // update internal force vector
     if (force)
@@ -684,7 +686,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         (*force)(SubLM(sub)[i]*3+2) += subforce(i*3+2);
       }
     } // if (force)
-
+  
     // update stiffness matrix
     if (stiffmatrix)
     {
@@ -728,11 +730,11 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
           (*stiffmatrix)(SubLM(sub)[i]*3+2,SubLM(sub)[j]*3+2) += substiffmatrix(i*3+2,j*3+2);
         }
     } // if (stiffmatrix)
-
+    
     if (massmatrix)
     {
       LINALG::Matrix<12,12> submassmatrix; submassmatrix = 0.0;
-
+      
       // for mass matrix use a 4 gauss points integration:
       // ( 1 gauss point is not enough!)
       const double alpha  = (5.0 + 3.0*sqrt(5.0))/20.0;
@@ -775,7 +777,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         }
     } // if (massmatrix)
   } // for (int sub=0; sub<4; ++sub) loop subelements
-
+  
 
   return;
 } // DRT::ELEMENTS::NStet5::nstet5nlnstiffmass

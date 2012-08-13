@@ -45,7 +45,7 @@ bool DRT::ELEMENTS::NStet5::ReadElement(const std::string& eletype,
     //kintype_ = sonstet5_nonlinear;
   }
   else dserror ("Reading SO_NSTET5 element failed KINEM unknown");
-
+  
   return true;
 }
 
