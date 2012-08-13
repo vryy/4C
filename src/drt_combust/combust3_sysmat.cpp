@@ -1177,7 +1177,7 @@ void SysmatNeumannInflow(
       case DRT::Element::tri3:
         COMBUST::Nitsche_SysmatNeumannInflow<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
             assembler, ele, elesurf, dofman, *cell,
-            DRT::UTILS::intrule_tri_3point, xyze,
+            DRT::UTILS::intrule_tri_37point, xyze,
             evelaf, ephi,
             numparamvelx, newton,
             material,
@@ -1187,7 +1187,7 @@ void SysmatNeumannInflow(
       case DRT::Element::quad4:
         COMBUST::Nitsche_SysmatNeumannInflow<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
             assembler, ele, elesurf, dofman, *cell,
-            DRT::UTILS::intrule_quad_4point, xyze,
+            DRT::UTILS::intrule_quad_25point, xyze,
             evelaf, ephi,
             numparamvelx, newton,
             material,
