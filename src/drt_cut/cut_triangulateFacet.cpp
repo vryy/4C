@@ -52,9 +52,13 @@ void GEO::CUT::TriangulateFacet::SplitFacet()
     std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
 
     if( geoType=="convex" || geoType=="1ptConcave" )
+    {
       SplitConvex_1ptConcave_Facet( ptConcavity );
+    }
     else
+    {
       SplitGeneralFacet( ptConcavity );
+    }
   }
 }
 
@@ -281,7 +285,7 @@ void GEO::CUT::TriangulateFacet::SplitGeneralFacet( std::vector<int> ptConcavity
       }
       else
       {
-        firstPt++;
+        firstPt = (firstPt+1)%num;
         secondPt = (firstPt+1)%num;
       }
       if(std::find(ptConcavity.begin(), ptConcavity.end(), secondPt) != ptConcavity.end())
@@ -293,6 +297,7 @@ void GEO::CUT::TriangulateFacet::SplitGeneralFacet( std::vector<int> ptConcavity
       newCell.push_back(ptlist_[secondPt]);
       newCell.push_back(ptlist_[thirdPt]);    // tri cell is now formed
 
+      // if 3rd point is not a concave point, then Quad can be formed
       if(std::find(ptConcavity.begin(), ptConcavity.end(), thirdPt) == ptConcavity.end())
       {
         fourthPt = (thirdPt+1)%num;
@@ -353,7 +358,7 @@ void GEO::CUT::TriangulateFacet::SplitGeneralFacet( std::vector<int> ptConcavity
           Split4nodeFacet( newCell, true );
 
           // erase internal points of cell to form new polygon
-          // when an element is deleted, all other elements are renumbered
+          // when a point is deleted, all other points are renumbered
           // if-else condition to make sure correct points are deleted
           if( thirdPt==0 )
           {
