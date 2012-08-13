@@ -284,6 +284,19 @@ bool FS3I::PartFS3I_2WC::ConvergenceCheck(int itnum)
 
   // scatra convergence check
   scatrastopnonliniter = ScatraConvergenceCheck(itnum);
+  
+  // warn if itemax is reached without convergence of FSI solver,
+  // but proceed to next timestep
+  if ((itnum == itmax_) and (fluidstopnonliniter == false))
+  {
+    fluidstopnonliniter=true;
+    if (comm.MyPID() == 0)
+    {
+      printf("\n");
+      printf(">>>>>> FSI solver not converged in itemax steps!\n");
+      printf("\n");
+    }
+  }
 
   if (fluidstopnonliniter == true and scatrastopnonliniter == true) return true;
   else                                                              return false;
