@@ -516,7 +516,6 @@ set(OBJS_INTERSECTION
   src/drt_xfem/physics.cpp
   src/drt_xfem/timeInt.cpp
   src/drt_xfem/timeInt_enr.cpp
-  src/drt_xfem/timeInt_std_extrapol.cpp
   src/drt_xfem/timeInt_std_extrapolation.cpp
   src/drt_xfem/timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xdofmapcreation_combust.cpp
