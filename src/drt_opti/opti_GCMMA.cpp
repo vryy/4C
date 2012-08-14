@@ -33,8 +33,8 @@ discret_(discret),
 params_(params),
 outer_iter_(0),
 inner_iter_(0),
-max_outer_iter_(100),
-max_inner_iter_(100),
+max_outer_iter_(1),
+max_inner_iter_(1),
 m_(numConstraints),
 n_(x->MyLength()),
 x_(rcp(new Epetra_Vector(*x))),
@@ -164,24 +164,24 @@ void OPTI::GCMMA::Iterate(
   // initialization of old values
   if (outer_iter_ == 0)
   {
-    // TODO test case
-    if (x_->Map().NumMyElements()%3!=0)
-      dserror("cannot be tested");
-
-    int l = x_->Map().NumMyElements()/3;
-    double val[3];
-
-    for(int i=0;i<l;i++)
-    {
-      double alphai = (3*(i+1)-2*l)*M_PI/(6*l);
-
-      val[0] = cos(alphai + M_PI/12);
-      val[1] = sin(alphai + M_PI/12);
-      val[2] = sin(2*alphai + M_PI/6);
-
-      int indices[] = {i,i+l,i+2*l};
-      x_->ReplaceMyValues(3,(double*)val,(int*)indices); // lnodeid = ldofid
-    }
+//    // TODO test case
+//    if (x_->Map().NumMyElements()%3!=0)
+//      dserror("cannot be tested");
+//
+//    int l = x_->Map().NumMyElements()/3;
+//    double val[3];
+//
+//    for(int i=0;i<l;i++)
+//    {
+//      double alphai = (3*(i+1)-2*l)*M_PI/(6*l);
+//
+//      val[0] = cos(alphai + M_PI/12);
+//      val[1] = sin(alphai + M_PI/12);
+//      val[2] = sin(2*alphai + M_PI/6);
+//
+//      int indices[] = {i,i+l,i+2*l};
+//      x_->ReplaceMyValues(3,(double*)val,(int*)indices); // lnodeid = ldofid
+//    }
 
 
 
@@ -231,7 +231,6 @@ void OPTI::GCMMA::Iterate(
   constr_[0] -= l + 1.0e-5;
 
 
-
   if (inner_iter_==0) // new outer iteration
   {
     outer_iter_++;
@@ -245,7 +244,7 @@ void OPTI::GCMMA::Iterate(
 
     PrepareInnerIter();
   }
-
+return; // TODO remove
   InitSubSolve();
 
   SubSolve();
@@ -502,10 +501,12 @@ bool OPTI::GCMMA::Converged()
   // no check in first iteration
   if (outer_iter_==0)
     return false;
+  else
+    return true; // TODO remove
 
   // check only new outer iterations
   if (inner_iter_!=0)
-    return false;
+    return true; // TODO this shall be false
 
   // compute residual for original variables x
   Teuchos::RCP<Epetra_Vector> resX = rcp(new Epetra_Vector(*obj_deriv_));

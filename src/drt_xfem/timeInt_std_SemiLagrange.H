@@ -21,7 +21,7 @@ Maintainer: Martin Winklmaier
 
 namespace XFEM
 {
-  class Extrapolation;
+  class ExtrapolationOld;
 
 /*!
   \brief this class is used in XFEM to compute new values for standard degrees of freedom

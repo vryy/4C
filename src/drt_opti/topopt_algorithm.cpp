@@ -86,8 +86,8 @@ void TOPOPT::Algorithm::OptimizationLoop()
 //    write output of optimization step
 //    Output();
 
-    // Update data for new optimization step
-    Update();
+//    // Update data for new optimization step
+//    Update();
   }
 
 

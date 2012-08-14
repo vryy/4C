@@ -13,7 +13,6 @@ Maintainer: Martin Winklmaier
 
 
 #include "timeInt_std_extrapolation.H"
-#include "timeInt_std_extrapol.H"
 #include "timeInt_std_SemiLagrange.H"
 #include "../linalg/linalg_utils.H"
 
@@ -511,7 +510,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
 
     if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapol)
     {
-      extrapol = rcp(new XFEM::Extrapolation(
+      extrapol = rcp(new XFEM::ExtrapolationOld(
           *timeIntData,
           timeIntType_,
           veln_,
@@ -521,7 +520,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
     }
     else
     {
-      extrapol = rcp(new XFEM::Extrapol(
+      extrapol = rcp(new XFEM::ExtrapolationNew(
           *timeIntData,
           timeIntType_,
           veln_,

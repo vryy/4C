@@ -959,7 +959,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
           case INPAR::COMBUST::xfemtimeint_extrapolation:
           {
             // time integration data for standard dofs, extrapolation approach
-            timeIntStd_ = rcp(new XFEM::Extrapolation(
+            timeIntStd_ = rcp(new XFEM::ExtrapolationOld(
                 *timeIntData,
                 xfemtimeint_,
                 veln,

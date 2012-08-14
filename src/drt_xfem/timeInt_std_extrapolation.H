@@ -26,12 +26,12 @@ namespace XFEM
   \brief this class is used to extrapolate for critical interface-near nodes
 
  */
-class Extrapolation : public STD
+class ExtrapolationOld : public STD
 {
 public:
 
   //! constructor
-  explicit Extrapolation(
+  explicit ExtrapolationOld(
       XFEM::TIMEINT& timeInt,
       INPAR::COMBUST::XFEMTimeIntegration timeIntType,
       const RCP<Epetra_Vector> veln,
@@ -41,7 +41,7 @@ public:
   );
 
   //! destructor
-  ~Extrapolation()
+  ~ExtrapolationOld()
   {
     return;
   }
@@ -60,13 +60,13 @@ public:
 private:
 
   //! disabled copy constructor
-  explicit Extrapolation(const XFEM::Extrapolation& extrapolation);
+  explicit ExtrapolationOld(const XFEM::ExtrapolationOld& extrapolation);
 
   //! disabled assignment operator
-  Extrapolation operator = (const Extrapolation& old);
+  ExtrapolationOld operator = (const ExtrapolationOld& old);
 
   //! disabled default constructor
-  explicit Extrapolation();
+  explicit ExtrapolationOld();
 
   //! extrapolate values for nodes where the semi-lagrange algorithm failed
   void extrapolationMain(TimeIntData* data);
@@ -99,6 +99,89 @@ private:
       vector<double>& presValues
   );
 
+}; // class Startvalues
+
+
+
+/*!
+  \brief this class is used to extrapolate for critical interface-near nodes
+
+ */
+class ExtrapolationNew : public STD
+{
+public:
+
+  //! constructor
+  explicit ExtrapolationNew(
+      XFEM::TIMEINT& timeInt,
+      INPAR::COMBUST::XFEMTimeIntegration timeIntType,
+      const RCP<Epetra_Vector> veln,
+      const double& dt,
+      const RCP<COMBUST::FlameFront> flamefront,
+      bool initialize
+  );
+
+  //! destructor
+  ~ExtrapolationNew()
+  {
+    return;
+  }
+
+  //! call the computation
+  void compute(
+      vector<RCP<Epetra_Vector> > newRowVectorsn,
+      vector<RCP<Epetra_Vector> > newRowVectorsnp
+  );
+
+  //! call the computation
+  void compute(vector<RCP<Epetra_Vector> > newRowVectors);
+
+  friend class SemiLagrange; // Extrapol can be called by SemiLagrange class
+
+private:
+
+  //! disabled copy constructor
+  explicit ExtrapolationNew(const XFEM::ExtrapolationNew& Extrapol);
+
+  //! disabled assignment operator
+  ExtrapolationNew operator = (const ExtrapolationNew& old);
+
+  //! disabled default constructor
+  explicit ExtrapolationNew();
+
+  //! extrapolate values for nodes where the semi-lagrange algorithm failed
+  void ExtrapolationMain(TimeIntData* data);
+
+  //! bisection algorithm of the Extrapol approach
+  void EvalPoints(
+      TimeIntData* data,
+      const DRT::Element*& ele,
+      LINALG::Matrix<3,1>& midpoint,
+      LINALG::Matrix<3,1>& ximidpoint,
+      LINALG::Matrix<3,1>& startpoint,
+      LINALG::Matrix<3,1>& xistartpoint,
+      bool& failed
+  );
+
+
+  //! bisection algorithm of the extrapolation approach
+  void callInterpolation(
+      const DRT::Element* ele,
+      LINALG::Matrix<3,1>& xi,
+      vector<LINALG::Matrix<3,1> >& velValues,
+      vector<double>& presValues,
+      int side
+  );
+
+  //! bisection algorithm of the extrapolation approach
+  template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
+  void interpolation(
+      const DRT::Element* ele,
+      LINALG::Matrix<3,1>& xi,
+      vector<LINALG::Matrix<3,1> >& velValues,
+      vector<double>& presValues,
+      int side
+  );
 }; // class Startvalues
 } // namespace XFEM
 #endif /*STARTVALUES_H_*/
