@@ -1619,16 +1619,24 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           rhs_[k] += densnp_[k]*reatemprhs_[k];
         }
 
-
-        // compute matrix and rhs
-        CalMatAndRHS(emat,erhs,fac,fssgd,timefac,dt,alphaF,k);
-
         if (scatratype == INPAR::SCATRA::scatratype_poro)
         {
+          Epetra_SerialDenseMatrix tempmat(emat.M(),emat.N());
+          Epetra_SerialDenseVector tempvec(erhs.Length());
+
+          // compute matrix and rhs
+          CalMatAndRHS(tempmat,tempvec,fac,fssgd,timefac,dt,alphaF,k);
+
           //modify the elment matrix and rhs for scalar transport through porous media
           //NOTE: no stabilization terms implemented
-          CalMatAndRHS_PoroScatraMod(emat,erhs,fac,timefac,k,ele->Id(),iquad);
+          CalMatAndRHS_PoroScatraMod(tempmat,tempvec,fac,timefac,k,ele->Id(),iquad);
+
+          emat += tempmat;
+          erhs += tempvec;
         }
+        else
+          // compute matrix and rhs (standard case)
+          CalMatAndRHS(emat,erhs,fac,fssgd,timefac,dt,alphaF,k);
       } // loop over each scalar
     }
   } // integration loop
@@ -6889,21 +6897,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
   LINALG::Matrix<3,1>  gradporosity = structmat->GetGradPorosityAtGP(iquad);
 
   const double timefacfac = timefac * fac;
+
   //----------------------------------------------------------------
   // 1) Modification of emat due to the homogenized equation employed for
   //    the poro-scatra problem.The standard equation is multiplied by the
   //    porosity, and some other terms must be added.
   //----------------------------------------------------------------
 
-  for (int vi=0; vi<nen_; ++vi)
-  {
-   const int fvi = vi*numdofpernode_+k;
-    for (int ui=0; ui<nen_; ++ui)
-    {
-      const int fui = ui*numdofpernode_+k;
-      emat(fvi,fui) *= porosity;
-    }
-  }
+  emat.Scale(porosity);
 
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -6931,20 +6932,22 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
   //    porosity, and some other terms must be added.
   //----------------------------------------------------------------
 
+  erhs.Scale(porosity);
+
   // compute scalar at integration point
   const double phi = funct_.Dot(ephinp_[k]);
 
   double tmp = 0.0;
-  for (int i=0; i<nsd_; i++)  // Loop needed to do the dot product, as gradporosity is a pointer to double, not a vector...
+  for (int i=0; i<nsd_; i++)
   {
-  tmp += phi*convelint_(i,0)*(gradporosity(i)) - diffus_[k]*gradphi_(i,0)*gradporosity(i);
-   }
+    tmp += phi*convelint_(i,0)*(gradporosity(i)) - diffus_[k]*gradphi_(i,0)*gradporosity(i);
+  }
   for (int vi=0; vi<nen_; ++vi)
-    {
-      const int fvi = vi*numdofpernode_+k;
-      erhs[fvi] *= porosity;
-      erhs[fvi] -= funct_(vi)* timefacfac*( phi*dporodt + tmp);
-    }
+  {
+    const int fvi = vi*numdofpernode_+k;
+    erhs[fvi] -= funct_(vi)* timefacfac*( phi*dporodt + tmp);
+  }
+
   return;
 } //ScaTraImpl::CalMatAndRHS_Poroscatra
 
