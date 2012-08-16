@@ -210,18 +210,39 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fluiddyn  = problem->FluidDynamicParams();
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
-  // check time-integration scheme (including parameter theta itself)
-  // -> currently only one-step-theta scheme supported
+  // check consistency of time-integration schemes in input file
+  // (including parameter theta itself in case of one-step-theta scheme)
+  // and rule out unsupported versions of generalized-alpha time-integration
+  // scheme (as well as other inappropriate schemes) for fluid subproblem
   INPAR::SCATRA::TimeIntegrationScheme scatratimealgo = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
   INPAR::FLUID::TimeIntegrationScheme fluidtimealgo = fsi_->FluidField().TimIntScheme();
   INPAR::STR::DynamicType structtimealgo = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdyn,"DYNAMICTYP");
-  if (scatratimealgo != INPAR::SCATRA::timeint_one_step_theta or
-      fluidtimealgo  != INPAR::FLUID::timeint_one_step_theta or
-      structtimealgo != INPAR::STR::dyna_onesteptheta)
-    dserror("Partitioned FS3I computations are limited to using one-step-theta time-integration scheme only, for the time being.");
-  if (scatradyn.get<double>("THETA") != fluiddyn.get<double>("THETA") or
-      scatradyn.get<double>("THETA") != structdyn.sublist("ONESTEPTHETA").get<double>("THETA"))
+  if (fluidtimealgo  == INPAR::FLUID::timeint_one_step_theta)
+  {
+    if (scatratimealgo != INPAR::SCATRA::timeint_one_step_theta or
+        structtimealgo != INPAR::STR::dyna_onesteptheta)
+      dserror("Partitioned FS3I computations should feature consistent time-integration schemes for the subproblems; in this case, a one-step-theta scheme is intended to be used for the fluid subproblem, and different schemes are intended to be used for the structure and/or scalar transport subproblems!");
+
+    if (scatradyn.get<double>("THETA") != fluiddyn.get<double>("THETA") or
+        scatradyn.get<double>("THETA") != structdyn.sublist("ONESTEPTHETA").get<double>("THETA"))
     dserror("Parameter(s) theta for one-step-theta time-integration scheme defined in one or more of the individual fields do(es) not match for partitioned FS3I computation.");
+  }
+  else if (fluidtimealgo  == INPAR::FLUID::timeint_afgenalpha)
+  {
+    if (scatratimealgo != INPAR::SCATRA::timeint_gen_alpha or
+        structtimealgo != INPAR::STR::dyna_genalpha)
+      dserror("Partitioned FS3I computations should feature consistent time-integration schemes for the subproblems; in this case, a (alpha_f-based) generalized-alpha scheme is intended to be used for the fluid subproblem, and different schemes are intended to be used for the structure and/or scalar transport subproblems!");
+  }
+  else if (fluidtimealgo  == INPAR::FLUID::timeint_npgenalpha or
+           fluidtimealgo  == INPAR::FLUID::timeint_gen_alpha)
+  {
+      dserror("Partitioned FS3I computations do not support n+1-based generalized-alpha time-integration schemes for the fluid subproblem!");
+  }
+  else if (fluidtimealgo  == INPAR::FLUID::timeint_bdf2 or
+           fluidtimealgo  == INPAR::FLUID::timeint_stationary)
+  {
+      dserror("Partitioned FS3I computations do not support stationary of BDF2 time-integration schemes for the fluid subproblem!");
+  }
 
   // check that incremental formulation is used for scalar transport field,
   // according to structure and fluid field
