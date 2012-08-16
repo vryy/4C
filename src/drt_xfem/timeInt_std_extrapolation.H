@@ -111,6 +111,14 @@ class ExtrapolationNew : public STD
 {
 public:
 
+  enum Cases
+  {
+    extrapol,
+    project,
+    failed,
+    undefined
+  };
+
   //! constructor
   explicit ExtrapolationNew(
       XFEM::TIMEINT& timeInt,
@@ -153,14 +161,13 @@ private:
   void ExtrapolationMain(TimeIntData* data);
 
   //! bisection algorithm of the Extrapol approach
-  void EvalPoints(
+  Cases EvalPoints(
       TimeIntData* data,
       const DRT::Element*& ele,
       LINALG::Matrix<3,1>& midpoint,
       LINALG::Matrix<3,1>& ximidpoint,
       LINALG::Matrix<3,1>& startpoint,
-      LINALG::Matrix<3,1>& xistartpoint,
-      bool& failed
+      LINALG::Matrix<3,1>& xistartpoint
   );
 
 

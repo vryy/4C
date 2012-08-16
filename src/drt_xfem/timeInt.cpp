@@ -50,7 +50,7 @@ pbcmap_(pbcmap),
 myrank_(discret_->Comm().MyPID()),
 numproc_(discret_->Comm().NumProc()),
 newton_max_iter_(10),
-newton_tol_(1.0e-03)
+newton_tol_(1.0e-06)
 {
   return;
 } // end constructor

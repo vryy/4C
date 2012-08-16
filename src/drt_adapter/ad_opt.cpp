@@ -50,7 +50,11 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // -------------------------------------------------------------------
   // create instance of the optimization class (call the constructor)
   // -------------------------------------------------------------------
-  optimizer_ = rcp(new TOPOPT::Optimizer(optidis,fluiddis,prbdyn));
+  optimizer_ = rcp(new TOPOPT::Optimizer(
+      optidis,
+      fluiddis,
+      prbdyn
+  ));
 
   return;
 

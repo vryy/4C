@@ -759,10 +759,9 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
 
 //    cout << "searching node = endpoint = " << endpoint << endl;
   // identify final element and local coordinates of startpoint and midpoint for Extrapol
-  bool failed = false;
-  EvalPoints(data,ele,midpoint,ximidpoint,startpoint,xistartpoint,failed);
+  Cases extrapolcase = EvalPoints(data,ele,midpoint,ximidpoint,startpoint,xistartpoint);
 
-  if (!failed)
+  if (extrapolcase==extrapol)
   {
     //    cout << endl << "startpoint is " << startpoint;
     //    cout << "midpoint is " << midpoint;
@@ -814,6 +813,24 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
     data->presValues_ = presendpoint;
     data->state_ = TimeIntData::doneStd_;
   }
+  else if (extrapolcase==project)
+  {
+    // get the velocities and the pressures at the start- and midpoint
+    vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+    vector<double> presmidpoint(oldVectors_.size(),0.0);
+
+    int side = interfaceSide(data->phiValue_);
+    callInterpolation(ele,ximidpoint,velmidpoint,presmidpoint,side);
+
+    data->startOwner_ = vector<int>(1,myrank_);
+    data->velValues_ = velmidpoint;
+    data->presValues_ = presmidpoint;
+    data->state_ = TimeIntData::doneStd_;
+  }
+  else if (extrapolcase==failed)
+    data->state_ = TimeIntData::failedSL_;
+  else
+    dserror("extrapolation failed with unknown state");
 }
 
 
@@ -821,17 +838,16 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
 /*------------------------------------------------------------------------------------------------*
  * perform a bisection on the line startpoint-endpoint                           winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::ExtrapolationNew::EvalPoints(
+XFEM::ExtrapolationNew::Cases XFEM::ExtrapolationNew::EvalPoints(
     TimeIntData* data,
     const DRT::Element*& ele,
     LINALG::Matrix<3,1>& midpoint,
     LINALG::Matrix<3,1>& ximidpoint,
     LINALG::Matrix<3,1>& startpoint,
-    LINALG::Matrix<3,1>& xistartpoint,
-    bool& failed
+    LINALG::Matrix<3,1>& xistartpoint
 )
 {
-  failed = true;
+  Cases extrapolcase = undefined;
 
   LINALG::Matrix<3,1> endpoint(data->node_.X());
 
@@ -865,7 +881,11 @@ void XFEM::ExtrapolationNew::EvalPoints(
     }
   }
 
-  if (found)
+  if (!found)
+  {
+    extrapolcase = failed; // not working
+  }
+  else
   {
     bool pointInDomain = false;
     callXToXiCoords(ele,midpoint,ximidpoint,pointInDomain);
@@ -891,11 +911,29 @@ void XFEM::ExtrapolationNew::EvalPoints(
       callXToXiCoords(ele,startpoint,xistartpoint,pointInDomain);
     }
 
-    if (pointInDomain)
-      failed = false;
-    //    cout << "searching node = endpoint = " << endpoint << endl;
-    // identify final element and local coordinates of startpoint and midpoint for Extrapol
+    if (!pointInDomain)
+      extrapolcase = failed;
+    else
+    {
+      const int* elenodeids = ele->NodeIds();
+
+      Epetra_SerialDenseVector nodephi(ele->NumNode()); // nodal phivalues
+      for (int nodeid=0;nodeid<ele->NumNode();nodeid++) // loop over element nodes
+        nodephi(nodeid) = (*phin_)[discret_->gNode(elenodeids[nodeid])->LID()];
+
+      Epetra_SerialDenseVector funct(ele->NumNode()); // nodal phivalues
+      DRT::UTILS::shape_function_3D(funct, xistartpoint(0),xistartpoint(1),xistartpoint(2),ele->Shape()); // evaluate shape functions at xi
+
+      double phivalue = funct.Dot(nodephi);
+
+      if (interfaceSideCompare(phivalue,data->phiValue_))
+        extrapolcase = extrapol;
+      else
+        extrapolcase = project;
+    }
   }
+
+  return extrapolcase;
 } // end EvalPoints
 
 

@@ -21,8 +21,6 @@ Maintainer: Martin Winklmaier
 
 namespace XFEM
 {
-  class ExtrapolationOld;
-
 /*!
   \brief this class is used in XFEM to compute new values for standard degrees of freedom
   for nodes which change their interface side between two consecutive time steps.
