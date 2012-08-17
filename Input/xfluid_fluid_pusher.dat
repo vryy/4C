@@ -79,9 +79,9 @@ REYNOLDS-STRESS                 no_reynolds
 SECONDORDER                     Yes
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    Yes
-GMSH_DISCRET_OUT                Yes
-GMSH_CUT_OUT                    Yes
+GMSH_SOL_OUT                    No
+GMSH_DISCRET_OUT                No
+GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
@@ -1141,6 +1141,6 @@ NODE 220 COORD 0.37600000000000e+00 -3.000000000000000e-01 -3.000000000000000e-0
 FLUID DIS 1 NODE 118 POSITION velx NAME velx VALUE 0.0e00 TOLERANCE 1e-12
 FLUID DIS 1 NODE 118 POSITION vely NAME vely VALUE 0.0e00 TOLERANCE 1e-12
 FLUID DIS 1 NODE 118 POSITION velz NAME velz VALUE 0.0e00 TOLERANCE 1e-12
-FLUID DIS 1 NODE 118 POSITION pressure NAME pressure VALUE 1.03417939006242143e+01 TOLERANCE 1e-11
+FLUID DIS 1 NODE 118 POSITION pressure NAME pressure VALUE 1.03417939006242143e+01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
