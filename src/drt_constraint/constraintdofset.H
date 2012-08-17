@@ -103,7 +103,12 @@ public:
 
   virtual int FirstGID()
   {
-    return dofrowmap_->MinAllGID();
+    int lmin = dofrowmap_->MinMyGID();
+    if(dofrowmap_->NumMyElements() == 0)
+      lmin = INT_MAX;
+    int gmin = INT_MAX;
+    dofrowmap_->Comm().MinAll(&lmin,&gmin,1);
+    return gmin;
   };
 
   //@}

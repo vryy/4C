@@ -110,7 +110,15 @@ int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
   // Get highest GID used so far and add one
   const int count = MaxGIDinList(dis->Comm()) + 1;
 
-  dofrowmap_=rcp(new Epetra_Map(ndofs,count,dis->Comm()));
+  // dofrowmap with index base = count, which is undesired
+  Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp(new Epetra_Map(ndofs,count,dis->Comm()));
+
+  std::vector<int> gids;
+  for(int i=0;i<dofrowmap->NumMyElements();i++)
+    gids.push_back(dofrowmap->GID(i));
+
+  // dofrowmap with index base = 0
+  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,gids.size(),&gids[0],0,dis->Comm()));
 
   return count;
 }
