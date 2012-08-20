@@ -924,7 +924,7 @@ void SideImpl<distype, side_distype, numdof>::NIT_buildCouplingMatrices(
   // viscous stability term
   // REMARK: this term includes also inflow coercivity in case of XFSI with modified stabfac (see NIT_ComputeStabfac)
 
-  if (coupling == false)
+  //if (coupling == false)
     NIT_Stab_ViscCoercivity(C_uu_,          // standard bg-bg-matrix
                             rhs_Cu_,        // standard bg-rhs
                             velint,
@@ -1557,8 +1557,6 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
   const unsigned Vely = 1;
   const unsigned Velz = 2;
 
-  if( coupling ) dserror("NIT_Stab_ViscCoercivity should just be called for xfluid");
-
   // combined viscous and inflow stabilization for one-sided problems (XFSI)
   // gamma_combined = max(alpha*mu/hk, |u*n| )
    /*                      _        \        /                     i   _   \
@@ -1610,6 +1608,102 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
     }
 
   }
+
+  // fluidfluid Coupling
+  if(coupling)
+  {
+    // - gamma*mu/h_K (v1, u2))
+    for(int ir=0; ir<nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<side_nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = side_funct_dyad_timefacfac(ic,ir)*stabfac;
+
+        C_uui_(idVelx, iVelx) -= tmp;
+        C_uui_(idVely, iVely) -= tmp;
+        C_uui_(idVelz, iVelz) -= tmp;
+      }
+
+      double tmp = funct_timefacfac(ir)*stabfac;
+
+      // -(stab * v, u)
+      rhs_Cu_(idVelx,0) += tmp*ivelint(Velx);
+      rhs_Cu_(idVely,0) += tmp*ivelint(Vely);
+      rhs_Cu_(idVelz,0) += tmp*ivelint(Velz);
+
+
+    }
+
+
+    // - gamma*mu/h_K (v2, u1))
+    for(int ir=0; ir<side_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = side_funct_dyad_timefacfac(ir,ic)*stabfac;
+
+        C_uiu_(idVelx, iVelx) -= tmp;
+        C_uiu_(idVely, iVely) -= tmp;
+        C_uiu_(idVelz, iVelz) -= tmp;
+      }
+
+      double tmp = side_funct_timefacfac(ir)*stabfac;
+
+      // +(stab * v2, u1)
+      rhC_ui_(idVelx,0) += tmp*velint(Velx);
+      rhC_ui_(idVely,0) += tmp*velint(Vely);
+      rhC_ui_(idVelz,0) += tmp*velint(Velz);
+
+    }
+
+    LINALG::Matrix<side_nen_,side_nen_> side_side_dyad_timefacfac(true);
+    side_side_dyad_timefacfac.MultiplyNT(side_funct_timefacfac, side_funct_);
+
+    // + gamma*mu/h_K (v2, u2))
+    for(int ir=0; ir<side_nen_; ir++)
+    {
+      int idVelx = ir*(nsd_+1) + 0;
+      int idVely = ir*(nsd_+1) + 1;
+      int idVelz = ir*(nsd_+1) + 2;
+
+      for(int ic=0; ic<side_nen_; ic++)
+      {
+        int iVelx = ic*(nsd_+1)+0;
+        int iVely = ic*(nsd_+1)+1;
+        int iVelz = ic*(nsd_+1)+2;
+
+        double tmp = side_side_dyad_timefacfac(ir,ic)*stabfac;
+
+        C_uiui_(idVelx, iVelx) += tmp;
+        C_uiui_(idVely, iVely) += tmp;
+        C_uiui_(idVelz, iVelz) += tmp;
+      }
+
+      double tmp = side_funct_timefacfac(ir)*stabfac;
+
+      // -(stab * v2, u2)
+      rhC_ui_(idVelx,0) -= tmp*ivelint(Velx);
+      rhC_ui_(idVely,0) -= tmp*ivelint(Vely);
+      rhC_ui_(idVelz,0) -= tmp*ivelint(Velz);
+
+    }
+  } // end coupling
 
   return;
 }// NIT_Stab_ViscCoercivity
