@@ -2507,9 +2507,10 @@ void CONTACT::CoAbstractStrategy::VisualizeGmsh(const int step, const int iter)
 /*----------------------------------------------------------------------*
  | collect maps for preconditioner (AMG)                   wiesner 01/12|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap)
+void CONTACT::CoAbstractStrategy::CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap )
 {
   InnerDofMap = gndofrowmap_;   // global internal dof row map
+  ActiveDofMap = gactivedofs_;  // global active slave dof row map
 
   // check if parallel redistribution is used
   // if parallel redistribution is activated, then use (original) maps before redistribution

@@ -141,7 +141,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     \brief provides maps needed for contact/meshtying specific multigrid preconditioners
 
     */
-    void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap);
+    void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap );
 
     /*!
     \brief Return Lagrange multiplier vector (t_n+1)

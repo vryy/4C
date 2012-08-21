@@ -528,20 +528,20 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     {
       if (contactsolver_->Params().isSublist("MueLu (Contact) Parameters"))
       {
-        std::cout << "This is a contact solver" << std::endl;
         Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact) Parameters");
-
         RCP<Epetra_Map> masterDofMap;
         RCP<Epetra_Map> slaveDofMap;
         RCP<Epetra_Map> innerDofMap;
+        RCP<Epetra_Map> activeDofMap;
         // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
         Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
         Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
         if(cstrat == Teuchos::null) dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
-        cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap);
+        cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
         mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
         mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
         mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
+        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
 
         //std::cout << contactsolver_->Params() << std::endl;
       }
