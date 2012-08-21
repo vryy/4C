@@ -22,6 +22,7 @@ Maintainer: Tobias Wiesner
 #ifdef HAVE_MueLu
 
 #include "../drt_lib/drt_dserror.H"
+#include "linalg_utils.H"
 
 #include <MueLu_ConfigDefs.hpp>
 
@@ -136,15 +137,46 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     std::cout << "*** EXPORT nullspace: END ***" << std::endl;
 #endif
 
+#if 0
+    // DO NOT COMMIT THIS STUFF
+    LINALG::PrintMatrixInMatlabFormat("F.out",*A,true);
+
+    std::ofstream os;
+
+    // open file for writing
+    os.open("bF.out",std::fstream::trunc);
+    os << "%%MatrixMarket matrix array real general" << std::endl;
+    os << b->Map().NumGlobalElements() << " " << 1 << std::endl;
+
+        int NumMyElements1 = b->Map().NumMyElements();
+        int MaxElementSize1 = b->Map().MaxElementSize();
+        int* MyGlobalElements1 = b->Map().MyGlobalElements();
+        int* FirstPointInElementList1(NULL);
+        if (MaxElementSize1!=1) FirstPointInElementList1 = b->Map().FirstPointInElementList();
+        double ** A_Pointers = b->Pointers();
+
+        for (int i=0; i<NumMyElements1; i++)
+        {
+            os << std::setw(30) << std::setprecision(16) <<  A_Pointers[0][i];    // print out values of 1. vector (only Epetra_Vector supported, no Multi_Vector)
+            os << endl;
+        }
+        os << flush;
+
+      // close file
+      os.close();
+
+      dserror("exit");
+    // END DO NOT COMMIT THIS STUFF
+#endif
 
     // append user-given factories (for export of aggregates, debug info etc...)
-    Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",/*UCAggFact.get()*/ NULL, /*dropFact.get()*/ NULL));
+    //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",/*UCAggFact.get()*/ NULL, /*dropFact.get()*/ NULL));
     //Teuchos::RCP<MueLu::ContactInfoFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > contactInfoFact = Teuchos::rcp(new MueLu::ContactInfoFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("info_level%LEVELID_proc%PROCID.vtk",Teuchos::null,Teuchos::null/*nspFact*/));
-    std::vector<Teuchos::RCP<FactoryBase> > vec;
-    vec.push_back(aggExpFact);
+    //std::vector<Teuchos::RCP<FactoryBase> > vec;
+    //vec.push_back(aggExpFact);
 
     // Setup MueLu Hierarchy
-    MLParameterListInterpreter mueLuFactory(mllist_, vec);
+    MLParameterListInterpreter mueLuFactory(mllist_/*, vec*/);
     Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
     H->GetLevel(0)->Set("A", mueluOp);
     mueLuFactory.SetupHierarchy(*H);
