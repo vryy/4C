@@ -91,14 +91,12 @@ void LINALG::SOLVER::MueLuContactPreconditioner::Setup( bool create,
     // so we can reuse the preconditioner
     Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
-
     // see whether we use standard ml or our own mlapi operator
     //const bool domuelupreconditioner = mllist_.get<bool>("LINALG::MueLu_Preconditioner",false);
 
     // wrap Epetra_CrsMatrix to Xpetra::Operator for use in MueLu
     Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
     Teuchos::RCP<Xpetra::Operator<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsOperator<SC,LO,GO,NO,LMO>(mueluA));
-
 
     // prepare nullspace vector for MueLu
     int numdf = mllist_.get<int>("PDE equations",-1);

@@ -31,10 +31,12 @@
 #include <MueLu_TrilinosSmoother.hpp>
 #include <MueLu_SmootherPrototype_decl.hpp>
 
+#include <MueLu_IfpackSmoother.hpp>
 #include <MueLu_CoalesceDropFactory.hpp>
 //#include <MueLu_UCAggregationFactory.hpp>
 #include <MueLu_ExperimentalAggregationFactory.hpp>
 #include <MueLu_TentativePFactory.hpp>
+#include <MueLu_SaPFactory.hpp>
 #include <MueLu_PgPFactory.hpp>
 #include <MueLu_GenericRFactory.hpp>
 #include <MueLu_TransPFactory.hpp>
@@ -292,19 +294,20 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
 
   // transfer operators (PG-AMG)
-  Teuchos::RCP<PFactory> PFact = Teuchos::rcp(new TentativePFactory(UCAggFact,Teuchos::null,Teuchos::null,Teuchos::null));
-  Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new TransPFactory(PFact) );
-  /*Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory(UCAggFact,Teuchos::null,Teuchos::null,Teuchos::null));
-  Teuchos::RCP<PFactory> PFact  = Teuchos::rcp( new PgPFactory(PtentFact) );
-  Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new GenericRFactory(PFact) );*/
+  /*Teuchos::RCP<PFactory> PFact = Teuchos::rcp(new TentativePFactory(UCAggFact,Teuchos::null,Teuchos::null,Teuchos::null));
+  Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new TransPFactory(PFact) );*/
+  Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory(UCAggFact,Teuchos::null,Teuchos::null,Teuchos::null));
+  Teuchos::RCP<PFactory> PFact  = Teuchos::rcp( new PgPFactory(PtentFact,slaveDcAFact) );
+  //Teuchos::RCP<SaPFactory> PFact  = Teuchos::rcp( new SaPFactory(PtentFact,slaveDcAFact) );
+  //Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new TransPFactory(PFact) );
+  Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new GenericRFactory(PFact) );
 
   // define nullspace factory AFTER tentative PFactory (that generates the nullspace for the coarser levels)
   // use same nullspace factory for all multigrid levels
   // therefor we have to create one instance of NullspaceFactory and use it
   // for all FactoryManager objects (note: here, we have one FactoryManager object per level)
-  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PFact /* TODO tentativePFactory */));
-  nspFact->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
-  //Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PtentFact /* TODO tentativePFactory */));
+  //Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PFact /* TODO tentativePFactory */));
+  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PtentFact /* TODO tentativePFactory */));
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
   Teuchos::RCP<RAPFactory> AcFact = Teuchos:: rcp( new RAPFactory(PFact, RFact) );
@@ -320,11 +323,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
   // transfer maps to coarser grids
 
-  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("ActiveDofMap", PFact, MueLu::NoFactory::getRCP()));
+  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("ActiveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
   AcFact->AddTransferFactory(cmTransFact);
-  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact2 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("MasterDofMap", PFact, MueLu::NoFactory::getRCP()));
+  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact2 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("MasterDofMap", PtentFact, MueLu::NoFactory::getRCP()));
   AcFact->AddTransferFactory(cmTransFact2);
-  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", PFact, MueLu::NoFactory::getRCP()));
+  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
   AcFact->AddTransferFactory(cmTransFact3);
 
   Teuchos::RCP<MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps> > aggStatFact = Teuchos::rcp(new MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps>("coarseAggStat",UCAggFact));
@@ -354,10 +357,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     Teuchos::ParameterList pp(params);
     //pp.set("smoother: pre or post","pre");
 
-    //Teuchos::RCP<SmootherFactory> SmooFactFine = MueLu::MLParameterListInterpreter<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetSmootherFactory(pp, i, slaveDcAFact);
+    Teuchos::RCP<SmootherFactory> SmooFactFine = GetContactSmootherFactory(pp, i, slaveDcAFact);
 
     //////////////////////////////////////
-    Teuchos::RCP<SmootherPrototype> smooProto;
+    /*Teuchos::RCP<SmootherPrototype> smooProto;
     std::string ifpackType;
     Teuchos::ParameterList ifpackList;
     Teuchos::RCP<SmootherFactory> SmooFactFine;
@@ -365,10 +368,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     ifpackType = "RELAXATION";
     ifpackList.set<int>("relaxation: sweeps", 1);
     ifpackList.set("relaxation: damping factor", 0.6);
-    ifpackList.set("relaxation: type", "Jacobi");
+    ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
 
     smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, slaveDcAFact) );
-    SmooFactFine = Teuchos::rcp( new SmootherFactory(smooProto) );
+    SmooFactFine = Teuchos::rcp( new SmootherFactory(smooProto) );*/
 
     //////////////////////////////////////
 
@@ -381,7 +384,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     vecManager[i]->SetFactory("DofsPerNode", dropFact);
     vecManager[i]->SetFactory("A", AcFact);       // same RAP factory
     vecManager[i]->SetFactory("P", PFact);    // same prolongator and restrictor factories
-    vecManager[i]->SetFactory("Ptent", PFact);    // same prolongator and restrictor factories
+    vecManager[i]->SetFactory("Ptent", PtentFact);    // same prolongator and restrictor factories
     vecManager[i]->SetFactory("R", RFact);    // same prolongator and restrictor factories
     vecManager[i]->SetFactory("Nullspace", nspFact); // use same nullspace factory throughout all multigrid levels
   }
@@ -406,7 +409,91 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   return hierarchy;
 }
 
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPreconditioner2::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
 
+  char levelchar[11];
+  sprintf(levelchar,"(level %d)",level);
+  std::string levelstr(levelchar);
+
+  if(paramList.isSublist("smoother: list " + levelstr)==false)
+    return Teuchos::null;
+  TEUCHOS_TEST_FOR_EXCEPTION(paramList.isSublist("smoother: list " + levelstr)==false, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no ML smoother parameter list for level. error.");
+
+  std::string type = paramList.sublist("smoother: list " + levelstr).get<std::string>("smoother: type");
+  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no ML smoother type for level. error.");
+
+  const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
+  Teuchos::RCP<SmootherPrototype> smooProto;
+  std::string ifpackType;
+  Teuchos::ParameterList ifpackList;
+  Teuchos::RCP<SmootherFactory> SmooFact;
+
+  if(type == "Jacobi") {
+    if(smolevelsublist.isParameter("smoother: sweeps"))
+      ifpackList.set<int>("relaxation: sweeps", smolevelsublist.get<int>("smoother: sweeps"));
+    if(smolevelsublist.get<double>("smoother: damping factor"))
+      ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
+    ifpackType = "RELAXATION";
+    ifpackList.set("relaxation: type", "Jacobi");
+    //smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
+  } else if(type == "Gauss-Seidel") {
+    if(smolevelsublist.isParameter("smoother: sweeps"))
+      ifpackList.set<int>("relaxation: sweeps", smolevelsublist.get<int>("smoother: sweeps"));
+    if(smolevelsublist.get<double>("smoother: damping factor"))
+      ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
+    ifpackType = "RELAXATION";
+    ifpackList.set("relaxation: type", "Gauss-Seidel");
+    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
+  } else if (type == "symmetric Gauss-Seidel") {
+    if(smolevelsublist.isParameter("smoother: sweeps"))
+      ifpackList.set<int>("relaxation: sweeps", smolevelsublist.get<int>("smoother: sweeps"));
+    if(smolevelsublist.get<double>("smoother: damping factor"))
+      ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
+    ifpackType = "RELAXATION";
+    ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
+    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
+  } else if (type == "Chebyshev") {
+    ifpackType = "CHEBYSHEV";
+    if(smolevelsublist.isParameter("smoother: sweeps"))
+      ifpackList.set("chebyshev: degree", smolevelsublist.get<int>("smoother: sweeps"));
+    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
+    // TODO what about the other parameters
+  } else if(type == "IFPACK") {
+#ifdef HAVE_MUELU_IFPACK
+    // TODO change to TrilinosSmoother as soon as Ifpack2 supports all preconditioners from Ifpack
+    ifpackType = paramList.sublist("smoother: list " + levelstr).get<std::string>("smoother: ifpack type");
+    if(ifpackType == "ILU") {
+      ifpackList.set<int>("fact: level-of-fill", (int)smolevelsublist.get<double>("smoother: ifpack level-of-fill"));
+      ifpackList.set("partitioner: overlap", smolevelsublist.get<int>("smoother: ifpack overlap"));
+      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList,smolevelsublist.get<int>("smoother: ifpack overlap"),AFact);
+    }
+    else
+      TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown ML smoother type " + type + " (IFPACK) not supported by MueLu. Only ILU is supported.");
+#else // HAVE_MUELU_IFPACK
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: MueLu compiled without Ifpack support");
+#endif // HAVE_MUELU_IFPACK
+  } else {
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown ML smoother type " + type + " not supported by MueLu.");
+  }
+
+  // create smoother factory
+  SmooFact = Teuchos::rcp( new SmootherFactory(smooProto) );
+
+  // check if pre- and postsmoothing is set
+  std::string preorpost = "both";
+  if(smolevelsublist.isParameter("smoother: pre or post")) preorpost = smolevelsublist.get<std::string>("smoother: pre or post");
+
+  if (preorpost == "pre") {
+    SmooFact->SetSmootherPrototypes(smooProto, Teuchos::null);
+  } else if(preorpost == "post") {
+    SmooFact->SetSmootherPrototypes(Teuchos::null, smooProto);
+  }
+
+  return SmooFact;
+}
 
 #endif
 
