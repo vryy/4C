@@ -2619,7 +2619,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
   Epetra_MultiVector crosslinksperbinrotrow(*ddcorrrowmap_,3 , true);
   DDCorrFunction(crosslinksperbinrow, crosslinksperbinrotrow, &newcentershift);
 
-  // calculation of filament element orientation in sperical coordinates, sorted into histogram
+  // calculation of filament element orientation in spherical coordinates, sorted into histogram
   Epetra_Vector phibinsrow(*ddcorrrowmap_, true);
   Epetra_Vector thetabinsrow(*ddcorrrowmap_, true);
   Epetra_Vector costhetabinsrow(*ddcorrrowmap_, true);
@@ -2895,7 +2895,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
       {
         switch(i)
         {
-          // shperical volume
+          // spherical volume
           case 0:
           {
             bool leaveloop = false;
@@ -3707,7 +3707,7 @@ void STATMECH::StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol,
         }
       }
       vectorjp.Scale(1.0/vectorjp.Norm2());
-      // check angle between old and n_j and n_(j+1)
+      // check angle between old n_j and n_(j+1)
       double vecvecangle = acos(vectorjp.Dot((*vectorj)));
       if(vecvecangle < tolangle)
       {
@@ -3771,7 +3771,7 @@ void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksper
    * strongly localized density peaks. Layers tend to span over at least one direction of the periodic boundary volume.
    * If this stage is reached, the cutoff will not affect the layer, i.e. its crosslinkers at all, since there is no material
    * in the corners of the boundary volume anymore.
-   * Ergo, we wait until this stadium is reached and then start to evaluate (done via Matlab, not directly implemented).
+   * Ergo, we wait until this state is reached and then start to evaluate (done via Matlab, not directly implemented).
    * For homogeneous networks, of course, things are different. However, we do not need to worry about it since we have
    * equally distributed filament directions and hence no need to rotate neither the coordinate system nor the entire volume.
    */
@@ -4147,7 +4147,7 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "a");
       std::stringstream internalforce;
-      internalforce << scientific << setprecision(15) << distance.Norm2()-l0<<"  "<< fint.Norm2() <<endl;
+      internalforce << scientific << setprecision(15) << (distance.Norm2()-l0)/l0<<"  "<< fint(0)<<" "<<fint(1)<<" "<<fint(2) <<endl;
 
       fprintf(fp, internalforce.str().c_str());
       fclose(fp);
