@@ -78,6 +78,93 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+  
+/*-------------------------------------------------------------------------------*
+          Evaluate routine for cut elements of XFEM  (public)
+*-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*                         ele,
+                                                       DRT::Discretization &                             discretization,
+                                                       const std::vector<int> &                          lm,
+                                                       Teuchos::ParameterList&                           params,
+                                                       Teuchos::RCP<MAT::Material> &                     mat,
+                                                       Epetra_SerialDenseMatrix&                         elemat1_epetra,
+                                                       Epetra_SerialDenseMatrix&                         elemat2_epetra,
+                                                       Epetra_SerialDenseVector&                         elevec1_epetra,
+                                                       Epetra_SerialDenseVector&                         elevec2_epetra,
+                                                       Epetra_SerialDenseVector&                         elevec3_epetra,
+                                                       const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                                                       std::string&                                      VCellGaussPts,
+                                                       const GEO::CUT::plain_volumecell_set &            cells,
+                                                       bool                                              offdiag )
+{
+  int err=0;
+
+  if( VCellGaussPts!="DirectDivergence" ) // standard "Tessellation" or "MomentFitting" method
+  {
+    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
+    {
+      const DRT::UTILS::GaussIntegration intcell = *i;
+      err = my::Evaluate( ele, discretization, lm, params, mat,
+                     elemat1_epetra, elemat2_epetra,
+                     elevec1_epetra, elevec2_epetra, elevec3_epetra,
+                     intcell, offdiag );
+      if(err)
+        return err;
+    }
+  }
+  else  // DirectDivergence approach
+  {
+
+    LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elemat1(elemat1_epetra,true);
+    //LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat2(elemat2_epetra,true);
+    LINALG::Matrix<(my::nsd_+1)*my::nen_,            1> elevec1(elevec1_epetra,true);
+
+    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
+    {
+      const DRT::UTILS::GaussIntegration intcell = *i;
+      GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
+
+      //----------------------------------------------------------------------
+      //integration over the main gauss points to get the required integral
+      //----------------------------------------------------------------------
+      int mainPtno = 0;
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
+      {
+        Epetra_SerialDenseMatrix elematTemp1((my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_); //Sudhakar : Is this efficient?
+        Epetra_SerialDenseMatrix elematTemp2((my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_);
+        Epetra_SerialDenseVector elevecTemp1((my::nsd_+1)*my::nen_);
+
+        // get internal Gaussian rule for every main Gauss point
+        DRT::UTILS::GaussIntegration gint = vc->GetInternalRule( mainPtno );
+        mainPtno++;
+
+        //----------------------------------------------------------------------
+        //integration over the internal gauss points - to get modified integrand
+        //----------------------------------------------------------------------
+
+        err = my::Evaluate( ele, discretization, lm, params, mat,
+                        elematTemp1, elematTemp2,
+                        elevecTemp1, elevec2_epetra, elevec3_epetra,
+                        gint, offdiag );
+
+
+        if(err)
+          return err;
+
+        LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elem1(elematTemp1,true);
+        LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elem2(elematTemp2,true);
+        LINALG::Matrix<(my::nsd_+1)*my::nen_,            1> elev1(elevecTemp1,true);
+
+        elemat1.Update(iquad.Weight(), elem1, 1.0);
+        //elemat2.Update(1.0, elem2, 1.0);
+        elevec1.Update(iquad.Weight(), elev1, 1.0);
+      }
+    }
+  }
+
+  return err;
+}
 
 
 /*--------------------------------------------------------------------------------

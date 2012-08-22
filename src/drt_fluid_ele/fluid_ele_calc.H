@@ -171,7 +171,8 @@ namespace ELEMENTS
                              const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
                              std::string&                                      VCellGaussPts,
                              const GEO::CUT::plain_volumecell_set &            cells,
-                             bool                                              offdiag = false);
+                             bool                                              offdiag = false
+    ) {dserror("Implemented in derived xfem class!"); return 1;}
 
     /*!
       \brief calculate dissipation of various terms (evaluation of turbulence models)
@@ -241,11 +242,11 @@ namespace ELEMENTS
       ) {dserror("Implemented in derived xfem class!"); return;}
 
     virtual void ElementXfemInterfaceNIT2(
-                                       DRT::ELEMENTS::Fluid * 																					 ele,
-                                       DRT::Discretization & 																						 dis,
-                                       const std::vector<int> & 																				 lm,
-                                       DRT::Discretization & 																						 cutdis,
-                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & 		 bcells,
+                                       DRT::ELEMENTS::Fluid *   ele,
+                                       DRT::Discretization &    dis,
+                                       const std::vector<int> & lm,
+                                       DRT::Discretization &    cutdis,
+                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
                                        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
                                        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
                                        Teuchos::ParameterList&                                           params,
