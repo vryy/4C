@@ -1064,7 +1064,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   }
   //------------------------------------- set other belos parameters
   beloslist.set("Num Blocks",inparams.get<int>("AZSUB"));
-  beloslist.set("Block Size", 2);
+  //beloslist.set("Block Size", 1); // TODO blocksize
+  beloslist.set("Orthogonalization",/*"DGKS"*/ /* ICGS,*/ "IMGS");
   beloslist.set("Maximum Iterations",inparams.get<int>("AZITER"));
   //beloslist.set("Adaptive Block Size",true);
   int outputfrequency = inparams.get<int>("AZOUTPUT");
@@ -1074,7 +1075,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   else if (verbosity > 4) beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails);
   else if (verbosity > 2) beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
   else if (verbosity > 0) beloslist.set("Verbosity", Belos::Errors);
-  beloslist.set("Output Style",Belos::Brief);
+  //beloslist.set("Output Style",Belos::Brief);
   beloslist.set("Convergence Tolerance",inparams.get<double>("AZTOL"));
   //-------------------------------- set parameters for Ifpack if used
   if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
