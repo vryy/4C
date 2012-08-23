@@ -53,6 +53,7 @@
 #ifndef MUELU_MYTRILINOSSMOOTHER_DECL_HPP_
 #define MUELU_MYTRILINOSSMOOTHER_DECL_HPP_
 
+#ifdef HAVE_MueLu
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -166,6 +167,8 @@ namespace MueLu {
   }; // class MyTrilinosSmoother
 
 } // namespace MueLu
+
+#endif // HAVE_MueLu
 
 #define MUELU_MYTRILINOSSMOOTHER_SHORT
 #endif /* MUELU_MYTRILINOSSMOOTHER_DECL_HPP_ */
