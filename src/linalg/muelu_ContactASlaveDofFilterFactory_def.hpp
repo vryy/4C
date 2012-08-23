@@ -56,24 +56,6 @@ namespace MueLu {
     // extract the original matrix A
     RCP<OOperator> Ain = currentLevel.Get< RCP<OOperator> >("A", AFact_.get());
 
-    /*RCP<Vector> blockVectorRowMap = VectorFactoryClass::Build(Ain->getRowMap());
-    blockVectorRowMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not a master or slave dof*/
-
-    // use master map as source map (since all GIDs are uniquely owned by its corresponding proc
-    // use column map of current matrix Ain as target map
-    // define Xpetra::Import object
-/*
-    RCP<Vector> blockVectorMaster = VectorFactoryClass::Build(mastermap); blockVectorMaster->putScalar(0);
-    RCP<Vector> blockVectorSlave  = VectorFactoryClass::Build(slavemap);  blockVectorSlave->putScalar(1);
-    mapextractor->InsertVector(blockVectorMaster, 0, blockVectorRowMap);
-    mapextractor->InsertVector(blockVectorSlave,  1, blockVectorRowMap);*/
-
-
-    /*RCP<const Import> importer = ImportFactory::Build(Ain->getRowMap(), Ain->getColMap());
-    RCP<Vector> blockVectorColMap = VectorFactoryClass::Build(Ain->getColMap());
-    blockVectorColMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not a master or slave dof
-    blockVectorColMap->doImport(*blockVectorRowMap,*importer,Xpetra::INSERT);*/
-
     // create new empty Operator
     RCP<CrsOOperator> Aout = rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
 
