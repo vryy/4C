@@ -219,6 +219,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
   reader.ReadGidSection("--SEARCH TREE", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
+  reader.ReadGidSection("--XFLUID DYNAMIC", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC/GENERAL", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--LOMA CONTROL", *list);
