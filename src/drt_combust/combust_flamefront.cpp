@@ -2101,6 +2101,12 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
 
       double avcurv = -sumcurv / sumele;
 
+      if (fabs(avcurv)<1.0E-9) // spurious velocities for almost planar surfaces observed
+      {                        // -> set curvature to zero
+        avcurv=0.0;
+        cout << "small curvature value < 1.0e-9 set to zero" << endl;
+      }
+
       const int nodelid = rowcurv.Map().LID(gid);
       if (nodelid < 0)
         dserror("could not insert values for curvature");
