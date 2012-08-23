@@ -912,6 +912,12 @@ void RHS_SurfaceTension2DIntegrals(
     {
       // compute curvature at gausspoint
       COMBUST::CalcCurvature<DISTYPE>(posXiDomain,xyze,grad_ephi_smoothed,curvature);
+
+      if (fabs(curvature)<1.0E-9) // spurious velocities for almost planar surfaces observed
+      {                           // -> set curvature to zero
+        curvature=0.0;
+        cout << "small curvature value < 1.0e-9 set to zero" << endl;
+      }
     }
 
 
