@@ -139,6 +139,7 @@ namespace LOMA
     /// (preliminary) maximum number of iterations and tolerance for outer iteration
     int     itmax_;
     int     itmaxpre_;
+    int     itmaxbs_;
     double  ittol_;
 
     /// flag for constant thermodynamic pressure

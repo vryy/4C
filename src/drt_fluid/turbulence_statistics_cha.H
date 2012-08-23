@@ -121,12 +121,8 @@ public:
   to caculate mean values of multifractal subgrid-scales modeling
   parameters
   */
-  void StoreScatraDiscret(RCP<DRT::Discretization> scatradis)
-  {
-    scatradiscret_ = scatradis;
-    GetSchmidtNumber();
-    return;
-  };
+  void StoreScatraDiscret(RCP<DRT::Discretization> scatradis);
+
 
   /*!
   \brief Compute the in-plane mean values of first and second order
@@ -334,17 +330,6 @@ protected:
   };
 
 private:
-
-  //! get Schmidt number form scatra
-  void GetSchmidtNumber()
-  {
-    ParameterList paramselescatra;
-    paramselescatra.set<int>("action",SCATRA::get_material_parameters);
-    paramselescatra.set<int>("scatratype",INPAR::SCATRA::scatratype_turbpassivesca);
-    scatradiscret_->Evaluate(paramselescatra,null,null,null,null,null);
-    scnum_ = paramselescatra.get<double>("scnum");
-    return;
-  };
 
   //! direction normal to homogenous plane
   int                              dim_;

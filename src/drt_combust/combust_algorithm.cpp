@@ -3052,8 +3052,9 @@ void COMBUST::Algorithm::Redistribute()
           cout << "Redistributing General Mean Statistics Manager                      ... " << flush;
 
 //        // redistribute with redistributed standard fluid dofset
-//        FluidField().TurbulenceStatisticManager()->GetTurbulenceStatisticsGeneralMean()
-//            ->Redistribute(FluidField().DofSet(), FluidField().Discretization());
+        if ( FluidField().TurbulenceStatisticManager()->GetTurbulenceStatisticsGeneralMean()!=Teuchos::null)
+          FluidField().TurbulenceStatisticManager()->GetTurbulenceStatisticsGeneralMean()
+              ->Redistribute(FluidField().DofSet(), FluidField().Discretization());
 
         if(Comm().MyPID()==0)
           cout << "done" << endl;

@@ -44,8 +44,6 @@ namespace MAT
       const double diffusivity_;
       /// reaction coefficient
       const double reacoeff_;
-      /// Schmidt number
-      const double scnum_;
 
       //@}
 
@@ -131,8 +129,6 @@ private:
     double Diffusivity() const { return params_->diffusivity_; }
     /// reaction coefficient
     double ReaCoeff() const { return params_->reacoeff_; }
-    /// Schmidt number
-    double ScNum() const { return params_->scnum_;}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

@@ -47,6 +47,7 @@
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/structporo.H"
+#include "../drt_mat/newtonianfluid.H"
 
 // include define flags for turbulence models under development
 #include "../drt_fluid/fluid_turbulence_defines.H"
@@ -860,14 +861,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       params.set("thermodynamic pressure",actmat->ThermPress());
     }
     else params.set("thermodynamic pressure",0.0);
-
-    if (material->MaterialType() == INPAR::MAT::m_scatra)
-    {
-      const Teuchos::RCP<const MAT::ScatraMat>& actmat
-        = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
-      params.set("scnum",actmat->ScNum());
-    }
-    else params.set("scnum",-1.0);
 
     break;
   }
@@ -2032,11 +2025,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     densgradfac_[0] = 0.0;
 
     // in case of multifrcatal subgrid-scales, read Schmidt number
-    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales or sgvel_)
+    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales or sgvel_
+        or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
     {
-      double scnum = actmat->ScNum();
-      visc_ = scnum * diffus_[0];
-    }
+      //access fluid discretization
+      RCP<DRT::Discretization> fluiddis = null;
+      fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+      //get corresponding fluid element (it has the same global ID as the scatra element)
+      DRT::Element* fluidele = fluiddis->gElement(ele->Id());
+      if (fluidele == NULL)
+        dserror("Fluid element %i not on local processor", ele->Id());
+
+      // get fluid material
+      RCP<MAT::Material> fluidmat = fluidele->Material();
+      if(fluidmat->MaterialType() != INPAR::MAT::m_fluid)
+        dserror("Invalid fluid material for passive scalar transport in turbulent flow!");
+
+      const Teuchos::RCP<const MAT::NewtonianFluid>& actfluidmat = Teuchos::rcp_dynamic_cast<const MAT::NewtonianFluid>(fluidmat);
+
+      // get constant dynamic viscosity
+      visc_ = actfluidmat->Viscosity();
+      densn_[0] = actfluidmat->Density();
+      densnp_[0] = actfluidmat->Density();
+      densam_[0] = actfluidmat->Density();
+
+      if (densam_[0] != 1.0 or densnp_[0] != 1.0 or densn_[0] != 1.0)
+         dserror("Check your diffusivity! Dynamic diffusivity required!");
+     }
+ //   }
   }
   else if (material->MaterialType() == INPAR::MAT::m_ion)
   {

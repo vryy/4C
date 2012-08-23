@@ -2881,6 +2881,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::smagorinsky_small
                                    ),
                                &fdyn_turbu);
+  BoolParameter("OUTMEAN","No","Flag to (de)activate averaged paraview output",&fdyn_turbu);
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for smagorinsky model
@@ -3552,6 +3553,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&lomacontrol);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&lomacontrol);
   IntParameter("ITEMAX",10,"Maximum number of outer iterations",&lomacontrol);
+  IntParameter("ITEMAX_BEFORE_SAMPLING",1,"Maximum number of outer iterations before samling (for turbulent flows only)",&lomacontrol);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&lomacontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);

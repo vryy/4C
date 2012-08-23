@@ -906,6 +906,23 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       }
     }
 
+    // get material parameters at integration point
+    if (fldpara_->MatGp())
+    {
+      GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+
+      // calculate all-scale or fine-scale subgrid viscosity at integration point
+      visceff_ = visc_;
+      if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+      {
+        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
+        // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
+        visceff_ += sgvisc_;
+      }
+      else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
+        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
+    }
+
     // potential evaluation of coefficient of multifractal subgrid-scales at integration point
     if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
     {
@@ -928,23 +945,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       mffsvelint_.Clear();
       mffsvderxy_.Clear();
       mffsvdiv_ = 0.0;
-    }
-
-    // get material parameters at integration point
-    if (fldpara_->MatGp())
-    {
-      GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
-
-      // calculate all-scale or fine-scale subgrid viscosity at integration point
-      visceff_ = visc_;
-      if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
-      {
-        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
-        // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
-        visceff_ += sgvisc_;
-      }
-      else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
-        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
     }
 
     // calculate stabilization parameter at integration point

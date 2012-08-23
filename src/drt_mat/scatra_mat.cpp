@@ -23,8 +23,7 @@ MAT::PAR::ScatraMat::ScatraMat(
   )
 : Parameter(matdata),
   diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
-  reacoeff_(matdata->GetDouble("REACOEFF")),
-  scnum_(matdata->GetDouble("SCNUM"))
+  reacoeff_(matdata->GetDouble("REACOEFF"))
 {
 }
 

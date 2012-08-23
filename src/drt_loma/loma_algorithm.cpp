@@ -44,6 +44,8 @@ LOMA::Algorithm::Algorithm(
   // (preliminary) maximum number of iterations and tolerance for outer iteration
   ittol_    = prbdyn.get<double>("CONVTOL");
   itmaxpre_ = prbdyn.get<int>("ITEMAX");
+  // maximum number of iterations before sampling (turbulent flow only)
+  itmaxbs_ = prbdyn.get<int>("ITEMAX_BEFORE_SAMPLING");
 
   // flag for constant thermodynamic pressure
   consthermpress_ = prbdyn.get<string>("CONSTHERMPRESS");
@@ -306,11 +308,34 @@ void LOMA::Algorithm::OuterLoop()
            Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),Step(),stepmax_);
   }
 
+//  // maximum number of iterations tolerance for outer iteration
+//  // currently default for turbulent channel flow: only one iteration before sampling
+//  if (special_flow_ == "loma_channel_flow_of_height_2" && Step() < samstart_ )
+//       itmax_ = 1;
+//  else itmax_ = itmaxpre_;
+  
   // maximum number of iterations tolerance for outer iteration
-  // currently default for turbulent channel flow: only one iteration before sampling
-  if (special_flow_ == "loma_channel_flow_of_height_2" && Step() < samstart_ )
-       itmax_ = 1;
-  else itmax_ = itmaxpre_;
+  // reduced number of iterations for turbulent flow: only before sampling
+  if (special_flow_ != "no" && Step() < samstart_ )
+  {
+    itmax_ = itmaxbs_;
+    if (Comm().MyPID() == 0 and (Step() == 1 or (turbinflow_ and Step() == (numinflowsteps_+1))))
+    {
+      std::cout << "\n+--------------------------------------------------------------------------------------------+" << std::endl;
+      std::cout << "Special turbulent variable-density flow: reduced number of iterations before sampling: " << itmax_ << std::endl;
+      std::cout << "+--------------------------------------------------------------------------------------------+\n" << std::endl;
+    }
+  }
+  else
+  {
+    itmax_ = itmaxpre_;
+    if (Comm().MyPID() == 0 and special_flow_ != "no" and Step() == samstart_)
+    {
+      std::cout << "\n+--------------------------------------------------------------------------------------------+" << std::endl;
+      std::cout << "Special turbulent variable-density flow: maximum number of iterations allowed: " << itmax_ << std::endl;
+      std::cout << "+--------------------------------------------------------------------------------------------+\n" << std::endl;
+    }
+  }
 
   // evaluate fluid predictor step (currently not performed)
   //FluidField().Predictor();
