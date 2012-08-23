@@ -53,6 +53,8 @@
 #ifndef MUELU_MYTRILINOSSMOOTHER_DEF_HPP_
 #define MUELU_MYTRILINOSSMOOTHER_DEF_HPP_
 
+#ifdef HAVE_MueLu
+
 #include "MueLu_MyTrilinosSmoother_decl.hpp"
 
 #include "Xpetra_Map.hpp"
@@ -167,5 +169,7 @@ namespace MueLu {
   }
 
 } // namespace MueLu
+
+#endif // HAVE_MueLu
 
 #endif /* MUELU_MYTRILINOSSMOOTHER_DEF_HPP_ */

@@ -50,6 +50,8 @@
  *      Author: wiesner
  */
 
+#ifdef HAVE_MueLu
+
 #include "MueLu_ExplicitInstantiation.hpp"
 
 #include "MueLu_MyTrilinosSmoother_def.hpp"
@@ -81,3 +83,5 @@ typedef Stokhos::StandardStorage<int,double> Storage;
 typedef Sacado::PCE::OrthogPoly<double,Storage> pce_type;
 template class MueLu::MyTrilinosSmoother<pce_type, int, int, Kokkos::DefaultNode::DefaultNodeType, Kokkos::DefaultKernels<void, int, Kokkos::DefaultNode::DefaultNodeType>::SparseOps>;
 #endif
+
+#endif // HAVE_MueLu
