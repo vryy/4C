@@ -190,8 +190,6 @@ namespace COMBUST
   {
     // number space dimensions for 3d combustion element
     const size_t nsd = 3;
-    double curvature_temp=0.0;
-    double threshold=1.0E-9;
 
     // number of nodes of element
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -284,17 +282,13 @@ namespace COMBUST
     }
     else
     {
-      curvature_temp = -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
+      curvature = -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
           + grad_phi(1)*grad_phi(1)*grad_phi2(1)
           + grad_phi(2)*grad_phi(2)*grad_phi2(2)  )
           -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
               + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
               + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8)) )
               +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );
-      if (abs(curvature_temp)<threshold)
-        curvature=0.0;
-      else
-        curvature=curvature_temp;
     }
 
     return;
