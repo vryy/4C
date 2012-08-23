@@ -317,6 +317,24 @@ public:
   ) const;
 
   /*!
+  \brief compute flame area and output it to file
+
+  */
+  void OutputFlameArea(
+      const int     step,
+      const double  time
+  ) const;
+
+  /*!
+  \brief compute amplitude of instability and output it to file
+
+  */
+  void OutputInstabAmplitude(
+      const int     step,
+      const double  time
+  ) const;
+
+  /*!
    * \brief plot a vector field to a Gmsh postprocessing file
    *
    * @param vectorfield      vector with solution values

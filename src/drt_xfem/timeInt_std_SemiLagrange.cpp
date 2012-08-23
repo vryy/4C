@@ -27,12 +27,12 @@ XFEM::SemiLagrange::SemiLagrange(
     const double& dt,
     const double& theta,
     const RCP<COMBUST::FlameFront> flamefront,
-    const double& flamespeed,
+    const double& veljump,
     bool initialize
 ) :
 STD(timeInt,timeIntType,veln,dt,flamefront,initialize),
 theta_default_(theta),
-flamespeed_(flamespeed)
+veljump_(veljump)
 {
   return;
 } // end constructor
@@ -516,6 +516,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
           veln_,
           dt_,
           flamefront_,
+          veljump_,
           false));
     }
     else

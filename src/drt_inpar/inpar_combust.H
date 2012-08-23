@@ -98,6 +98,7 @@ namespace INPAR
       initfield_field_by_function,
       initfield_disturbed_field_by_function,
       initfield_flame_vortex_interaction,
+      initfield_darrieus_landau_instability,
       initfield_beltrami_flow
     };
 

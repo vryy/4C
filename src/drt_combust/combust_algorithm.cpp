@@ -28,6 +28,7 @@ Maintainer: Florian Henke
 #include "../drt_io/io_gmsh.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+//#include "../drt_lib/standardtypes_cpp.H" // required to use mathematical constants such as PI
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -675,9 +676,9 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
       // get value of corresponding velocity component
       double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(icomp,lnode->X(),FluidField().Time(),NULL);
 
-//      // scaling for stretching fluid example // schott
-//      cout <<"Scaling with time-curve!!!!" << endl;
-//      value *= cos(PI*FluidField().Time()/500.0);
+      // scaling for stretching fluid example // schott
+      //cout <<"Scaling with time-curve!!!!" << endl;
+      //value *= cos(PI*FluidField().Time()/500.0);
       //value = 0.0;
 
       // insert velocity value into node-based vector

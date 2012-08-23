@@ -3840,12 +3840,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "field_by_function",
           "disturbed_function_by_function",
           "flame_vortex_interaction",
+          "darrieus_landau_instability",
           "beltrami_flow"),
           tuple<int>(
               INPAR::COMBUST::initfield_zero_field,
               INPAR::COMBUST::initfield_field_by_function,
               INPAR::COMBUST::initfield_disturbed_field_by_function,
               INPAR::COMBUST::initfield_flame_vortex_interaction,
+              INPAR::COMBUST::initfield_darrieus_landau_instability,
               INPAR::COMBUST::initfield_beltrami_flow),
               &combustcontrolfluid);
   setStringToIntegralParameter<int>("NITSCHE_ERROR","nitsche_error_none","To which analyt. solution do we compare?",

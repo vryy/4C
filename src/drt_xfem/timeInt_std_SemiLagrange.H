@@ -39,7 +39,7 @@ public:
       const double& dt,
       const double& theta,
       const RCP<COMBUST::FlameFront> flamefront,
-      const double& flamespeed,
+      const double& veljump,
       bool initialize
   );
 
@@ -156,7 +156,7 @@ private:
 
   // constants
   const double theta_default_; // factor of one-step theta scheme
-  double flamespeed_; // absolute flame velocity without fluid influence
+  const double veljump_; // absolute flame velocity without fluid influence
 }; // class Startvalues
 } // namespace XFEM
 #endif /*TIMEINT_SEMILAGRANGE_H_*/

@@ -20,11 +20,15 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 XFEM::EnrichmentProjection::EnrichmentProjection(
     XFEM::TIMEINT& timeInt,
+    const double& veljump,
     INPAR::COMBUST::XFEMTimeIntegrationEnr timeIntEnr,
     INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrType
-) : ENR(timeInt,timeIntEnr,timeIntEnrType)
+) : ENR(timeInt,timeIntEnr,timeIntEnrType),
+veljump_(veljump)
 {
+#ifndef COMBUST_SETJUMP
   callOldValues(); // compute the old enrichment data
+#endif
   return;
 } // end constructor
 
@@ -474,6 +478,7 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
       vector<LINALG::Matrix<1,nsd+1> > currKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // currently computed jump and kink value
       vector<LINALG::Matrix<1,nsd+1> > averageKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // jump and kink values for current node
 
+#ifndef COMBUST_SETJUMP
       // compute average jump and kink value around node if elements are enriched
       int numOldIntersectedEle=0; // index for number of bisected elements at old interface position
       for (int iele=0;iele<numeles;iele++)
@@ -502,7 +507,6 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
           averageJumpsAndKinks[ivector].Scale(1.0/static_cast<double>(numOldIntersectedEle));
           averageKinks[ivector].Scale(1.0/static_cast<double>(numOldIntersectedEle));
         }
-
         computeJumpEnrichmentValues(currnode,averageJumpsAndKinks);
         computeKinkEnrichmentValues(currnode,averageKinks);
       } // end if old bisected element around new enriched node
@@ -516,6 +520,10 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
             vector<LINALG::Matrix<1,4> >(newVectors_.size(),LINALG::Matrix<1,4>(true)));
         timeIntData_->push_back(data);
       }
+#else
+      setJumpEnrichmentValues(currnode);
+      setKinkEnrichmentValues(currnode);
+#endif
     } // end if node is enriched
   } // end loop over row nodes
 }// end function computeNewEnrichments
@@ -864,6 +872,155 @@ void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
       for (size_t index=0;index<vectorSize(TimeIntData::predictor_);index++)
         (*newVectors_[index])[lid] = finalEnrichmentValues[index](0,indexKinkEnr);
       indexKinkEnr++;
+    } // end if enrichment type jump enrichment
+  } // end loop over fieldenr
+}
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * compute and set values for jump enriched dofs for the new interface position  winklmaier 08/10 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::EnrichmentProjection::setJumpEnrichmentValues(
+    const DRT::Node* node
+)
+{
+  // get the global id for current node
+  const int gid = node->Id();
+
+  // get local processor id according to global node id
+  const int nodelid = (*gradphi_).Map().LID(gid);
+  if (nodelid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),gid);
+
+  const int numcol = (*gradphi_).NumVectors();
+  if( numcol != 3) dserror("number of columns in Epetra_MultiVector is not 3");
+
+  //-------------------------------------------------------------
+  // get (smoothed) gradient of the G-function field at this node
+  //-------------------------------------------------------------
+  LINALG::Matrix<3,1> mygradphi(true);
+
+  // loop over dimensions (= number of columns in multivector)
+  for(int col=0; col< numcol; col++)
+  {
+    // get columns vector of multivector
+    double* globalcolumn = (*gradphi_)[col];
+    // set smoothed gradient entry of phi into column of global multivector
+    mygradphi(col) = globalcolumn[nodelid];
+  }
+
+  //------------------------------------
+  // compute smoothed unit normal vector
+  // n = - grad phi / |grad phi|
+  //------------------------------------
+  // smoothed normal vector at this node
+  LINALG::Matrix<3,1> nvec = mygradphi;
+  // compute norm of smoothed normal vector
+  const double ngradphi = mygradphi.Norm2();
+
+  // divide vector by its norm to get unit normal vector
+  if (fabs(ngradphi < 1.0E-12))// 'ngradnorm' == 0.0
+  {
+    // length of smoothed normal is zero at this node -> node must be on a singularity of the
+    // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
+    // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
+    //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
+    std::cout << "\n/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << std::endl;
+    nvec.PutScalar(0.0);
+  }
+  else
+  {
+    nvec.Scale(-1.0/ngradphi);
+  }
+
+  LINALG::Matrix<3,1> veljump(true);
+  veljump.Update(veljump_,nvec);
+
+  double wallfac = 1.0;
+#ifdef ORACLES
+  //--------------------------------------------------------
+  // check physical coordinates of node
+  // remark: we want to blend the flame speed close to walls
+  //--------------------------------------------------------
+
+  //    wall
+  // 1.0 |     ______
+  //     |    /
+  // 0.0 |___/ ,
+  //     |     H/6
+  const double wallzone = 0.0299/6.0;
+  if (node->X()[0] > 0.0) // inside combustion chamber
+  {
+    if ( (0.0653-abs(node->X()[1])) < wallzone or // close to top or bottom wall
+                       node->X()[0] < wallzone )  // close to step
+    {
+      // wall factor is 0 at the wall and 1 at H/6 or further away from the wall
+      wallfac = 6.0/0.0299 * std::min(0.0653-abs(node->X()[1]),node->X()[0]);
+      if (wallfac < 0.1) // cut off the last 10% to guarantee a zero jump at the wall
+        wallfac = 0.0;
+    }
+  }
+#endif
+  veljump.Scale(wallfac);
+
+  // set nodal velocities and pressures with help of the field set of node
+  const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(node->Id()));
+  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+      fieldenr != fieldenrset.end();++fieldenr)
+  {
+    if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+    {
+      const DofKey newdofkey(node->Id(), *fieldenr);
+      const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
+      const int lid = newdofrowmap_.LID(newdofpos);
+
+      // velocity set for old and new time step
+      for (size_t i=0;i<vectorSize(TimeIntData::predictor_);i=i+2)
+      {
+        if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+          (*newVectors_[i])[lid] = -0.5*veljump(0);
+        else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+          (*newVectors_[i])[lid] = -0.5*veljump(1);
+        else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+          (*newVectors_[i])[lid] = -0.5*veljump(2);
+      }
+
+      // acceleration set to zero for old and new time step
+      for (size_t i=1;i<vectorSize(TimeIntData::predictor_);i=i+2)
+      {
+        if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+          (*newVectors_[i])[lid] = 0.0;
+        else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+          (*newVectors_[i])[lid] = 0.0;
+        else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+          (*newVectors_[i])[lid] = 0.0;
+      }
+    } // end if enrichment type jump enrichment
+  } // end loop over fieldenr
+}
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * compute and set values for kink enriched dofs for the new interface position  winklmaier 08/10 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::EnrichmentProjection::setKinkEnrichmentValues(
+    const DRT::Node* node
+)
+{
+  // set nodal velocities and pressures with help of the field set of node
+  const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(node->Id()));
+  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+      fieldenr != fieldenrset.end();++fieldenr)
+  {
+    if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeKink)
+    {
+      const DofKey newdofkey(node->Id(), *fieldenr);
+      const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
+      const int lid = newdofrowmap_.LID(newdofpos);
+
+      for (size_t index=0;index<vectorSize(TimeIntData::predictor_);index++)
+        (*newVectors_[index])[lid] = 0.0;
     } // end if enrichment type jump enrichment
   } // end loop over fieldenr
 }

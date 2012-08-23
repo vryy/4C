@@ -38,6 +38,7 @@ Maintainer: Florian Henke
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
@@ -356,6 +357,46 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     samstart_ = modelparams->get<int>("SAMPLING_START",1);
     samstop_  = modelparams->get<int>("SAMPLING_STOP",1);
   }
+#ifdef FLAME_VORTEX
+  if (myrank_ == 0)
+  {
+    //---------------------------------
+    // open file for flame surface area
+    //---------------------------------
+    std::ostringstream tmpfilename;
+    const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+
+    tmpfilename << filebase << "." << "flame_area" << ".txt";
+    std::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+
+    const std::string filename = tmpfilename.str();
+    std::ofstream gmshfilecontent(filename.c_str());
+    gmshfilecontent << "# total flame area for each time step\n";
+    gmshfilecontent << "#" << setw(6) << "step" << "  " << setw(6) << setprecision(6) << "time" << "  " << setprecision(13) << "flame area" << "\n\n";
+  }
+#endif
+
+#ifdef DL_INSTAB
+  if (myrank_ == 0)
+  {
+    //---------------------------------
+    // open file for flame surface area
+    //---------------------------------
+    std::ostringstream tmpfilename;
+    const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+
+    tmpfilename << filebase << "." << "amplitude" << ".txt";
+    std::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+
+    const std::string filename = tmpfilename.str();
+    std::ofstream gmshfilecontent(filename.c_str());
+    gmshfilecontent << "# amplitude on middle line for each time step\n";
+    gmshfilecontent << "#" << setw(6) << "step" << "  " << setw(6) << setprecision(6) << "time";
+    gmshfilecontent << "  " << setprecision(13) << "amplitude left";
+    gmshfilecontent << "  " << setprecision(13) << "amplitude middle";
+    gmshfilecontent << "  " << setprecision(13) << "amplitude" << "\n\n";
+  }
+#endif
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -899,6 +940,19 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     {
       if (totalitnumFRS_==0) // construct time int classes once every time step
       {
+#ifdef ORACLES
+        const double dens_minus = 1.296;
+        const double dens_plus = 0.166;
+#endif
+#ifdef FLAME_VORTEX
+        const double dens_minus = 1.161;
+        const double dens_plus = 0.157;
+#else
+        const double dens_minus = 1.0;
+        const double dens_plus = 1.0;
+#endif
+        const double mflux = flamespeed_*dens_minus;
+        const double veljump = -mflux*(1.0/dens_minus - 1.0/dens_plus);
         if ((xfemtimeint_!=INPAR::COMBUST::xfemtimeint_donothing) or
             ((xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_donothing) and (xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_quasistatic)))
         {
@@ -928,6 +982,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
             // enrichment time integration data
             timeIntEnr_ = rcp(new XFEM::EnrichmentProjection(
                 *timeIntData,
+                veljump,
                 xfemtimeint_enr_,
                 timeIntEnrComp));
             break;
@@ -952,7 +1007,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
                 dta_,
                 theta_,
                 flamefront,
-                flamespeed_,
+                veljump,
                 true));
             break;
           }
@@ -965,6 +1020,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
                 veln,
                 dta_,
                 flamefront,
+                veljump,
                 true));
             break;
           }
@@ -1082,6 +1138,9 @@ void FLD::CombustFluidImplicitTimeInt::StoreFlameFront(
     interfacehandle_ = flamefront->InterfaceHandle();
     phinp_ = flamefront->Phinp();
 
+    // initial call (UpdateDofSet==false):
+    // store flame front without extending the dofset to XFEM-layout
+    // remark: this is required to set the initial fluid field relying on an inital interface
     if (UpdateDofSet)
       IncorporateInterface(flamefront);
   }
@@ -2433,6 +2492,14 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 #endif
   }
 
+#ifdef FLAME_VORTEX
+  OutputFlameArea(step_,time_);
+#endif
+
+#ifdef DL_INSTAB
+  OutputInstabAmplitude(step_,time_);
+#endif
+
   // --------------------------
   // dump turbulence statistics
   // --------------------------
@@ -3234,6 +3301,398 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
 
 /*------------------------------------------------------------------------------------------------*
+ | write flame area to a file                                                         henke 06/12 |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
+    const int    step,
+    const double time
+    ) const
+{
+  //-------------------------
+  // write flame surface area
+  //-------------------------
+  if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
+  {
+
+    double globflamearea = 0.0;
+    double locflamearea = 0.0;
+
+    for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
+    {
+      const DRT::Element* ele = discret_->lRowElement(iele);
+
+      // output only for bisected elements
+      if (interfacehandle_->ElementSplit(ele->Id()))
+      {
+        size_t numnode = ele->NumNode();
+#ifndef COMBUST_HEX20
+        if (numnode != 8) dserror("flame area output only available for hex8 elements!");
+#endif
+
+        // get node coordinates for this element
+        LINALG::SerialDenseMatrix xyze(3,numnode);
+        GEO::fillInitialPositionArray(ele,xyze);
+
+        //--------------------------------------------------------------------
+        // interpolate values from element to Gaussian points of boundary cell
+        //--------------------------------------------------------------------
+        const GEO::BoundaryIntCells& boundaryintcells = interfacehandle_->ElementBoundaryIntCells(ele->Id());
+        for (GEO::BoundaryIntCells::const_iterator cell = boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
+        {
+          // here, a triangular boundary integration cell is assumed (numvertices = 3)
+          if (cell->Shape() == DRT::Element::tri3)
+          {
+            const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+            //else if
+            //const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+
+            // choose an (arbitrary) number of Gaussian points for the output
+            DRT::UTILS::GaussRule2D intrule2D = DRT::UTILS::intrule_tri_3point;
+            DRT::UTILS::IntegrationPoints2D intpoints(intrule2D);
+
+            // loop over Gaussian points
+            for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+            {
+              // compute area of boundary integration cell
+              {
+                LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
+                const LINALG::Matrix<3,numvertices> cellXiDomain(cellXiDomaintmp);
+
+                const LINALG::Matrix<2,1> gpinEta2D(intpoints.qxg[iquad]);
+
+                // jacobian for coupled transformation
+                // get derivatives dxi_3D/deta_2D
+                static LINALG::Matrix<2,numvertices> deriv_eta2D;
+                DRT::UTILS::shape_function_2D_deriv1(deriv_eta2D,gpinEta2D(0,0),gpinEta2D(1,0),DRT::Element::tri3);
+
+                // calculate dxi3Ddeta2D
+                static LINALG::Matrix<3,2> dXi3Ddeta2D;
+                dXi3Ddeta2D.Clear();
+                for (int i = 0; i < 3; i++)   // dimensions
+                  for (int j = 0; j < 2; j++) // derivatives
+                    for (int k = 0; k < (int)numvertices; k++)
+                      dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
+
+                // transform Gauss point to xi3D space (element parameter space)
+                static LINALG::Matrix<3,1> gpinXi3D;
+                gpinXi3D.Clear();
+                // coordinates of this integration point in element coordinates \xi^domain
+                GEO::mapEtaBToXiD(*cell, gpinEta2D, gpinXi3D);
+
+                const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                static LINALG::Matrix<3,numnode> deriv_xi3D;
+                DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DRT::Element::hex8);
+
+
+                // calculate dx3Ddxi3D
+                static LINALG::Matrix<3,3> dX3DdXi3D;
+                dX3DdXi3D.Clear();
+                for (int i = 0; i < 3; i++)   // dimensions
+                  for (int j = 0; j < 3; j++) // derivatives
+                    for (int k = 0; k < (int)numnode; k++)
+                      dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
+
+                // get the coupled Jacobian dx3Ddeta2D
+                static LINALG::Matrix<3,2> dx3Ddeta2D;
+                dx3Ddeta2D.Clear();
+                for (int i = 0; i < 3; i++)   // dimensions
+                  for (int j = 0; j < 2; j++) // derivatives
+                    for (int k = 0; k < 3; k++)
+                      dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
+
+                // get deformation factor
+                static LINALG::Matrix<2,2> Jac_tmp; // J^T*J
+                Jac_tmp.Clear();
+                Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
+
+                if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
+
+                const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
+
+                const double fac = intpoints.qwgt[iquad]*deform_factor;
+                //cout << "fac " << fac << endl;
+                locflamearea += fac; // *1.0
+              }
+            }
+          }
+          else if (cell->Shape() == DRT::Element::quad4)
+          {
+            const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+            //else if
+            //const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+
+            // choose an (arbitrary) number of Gaussian points for the output
+            DRT::UTILS::GaussRule2D intrule2D = DRT::UTILS::intrule_quad_4point;
+            DRT::UTILS::IntegrationPoints2D intpoints(intrule2D);
+
+            // loop over Gaussian points
+            for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+            {
+              // compute area of boundary integration cell
+              {
+                LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
+                const LINALG::Matrix<3,numvertices> cellXiDomain(cellXiDomaintmp);
+
+                const LINALG::Matrix<2,1> gpinEta2D(intpoints.qxg[iquad]);
+
+                // jacobian for coupled transformation
+                // get derivatives dxi_3D/deta_2D
+                static LINALG::Matrix<2,numvertices> deriv_eta2D;
+                DRT::UTILS::shape_function_2D_deriv1(deriv_eta2D,gpinEta2D(0,0),gpinEta2D(1,0),DRT::Element::quad4);
+
+                // calculate dxi3Ddeta2D
+                static LINALG::Matrix<3,2> dXi3Ddeta2D;
+                dXi3Ddeta2D.Clear();
+                for (int i = 0; i < 3; i++)   // dimensions
+                  for (int j = 0; j < 2; j++) // derivatives
+                    for (int k = 0; k < (int)numvertices; k++)
+                      dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
+
+                // transform Gauss point to xi3D space (element parameter space)
+                static LINALG::Matrix<3,1> gpinXi3D;
+                gpinXi3D.Clear();
+                // coordinates of this integration point in element coordinates \xi^domain
+                GEO::mapEtaBToXiD(*cell, gpinEta2D, gpinXi3D);
+
+                const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                static LINALG::Matrix<3,numnode> deriv_xi3D;
+                DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DRT::Element::hex8);
+
+
+                // calculate dx3Ddxi3D
+                static LINALG::Matrix<3,3> dX3DdXi3D;
+                dX3DdXi3D.Clear();
+                for (int i = 0; i < 3; i++)   // dimensions
+                  for (int j = 0; j < 3; j++) // derivatives
+                    for (int k = 0; k < (int)numnode; k++)
+                      dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
+
+                // get the coupled Jacobian dx3Ddeta2D
+                static LINALG::Matrix<3,2> dx3Ddeta2D;
+                dx3Ddeta2D.Clear();
+                for (int i = 0; i < 3; i++)   // dimensions
+                  for (int j = 0; j < 2; j++) // derivatives
+                    for (int k = 0; k < 3; k++)
+                      dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
+
+                // get deformation factor
+                static LINALG::Matrix<2,2> Jac_tmp; // J^T*J
+                Jac_tmp.Clear();
+                Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
+
+                if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
+
+                const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
+
+                const double fac = intpoints.qwgt[iquad]*deform_factor;
+                //cout << "fac " << fac << endl;
+                locflamearea += fac; // *1.0
+              }
+            }
+          }
+          else
+            dserror("Not implemented for this cell type");
+        }
+      }
+    }
+
+    // sum over all procs
+    discret_->Comm().SumAll(&locflamearea,&globflamearea,1);
+
+    if (myrank_ == 0)
+    {
+      //-------------------------
+      // write flame area to file
+      //-------------------------
+      std::ostringstream tmpfilename;
+      const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+
+      tmpfilename << filebase << "." << "flame_area" << ".txt";
+      std::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+
+      const std::string filename = tmpfilename.str();
+
+      // output to log-file
+      Teuchos::RCP<std::ofstream> log;
+      log = Teuchos::rcp(new std::ofstream(filename.c_str(),ios::app));
+      (*log) <<  " "  << setw(6) << step_ << "  " << setw(6) << setprecision(6) << time_ << "  " << setprecision(13) << globflamearea;
+      (*log) << &endl;
+      log->flush();
+
+      std::cout << " done" << endl;
+    }
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ | write amplitude of Darrieus Landau instability to a file                           henke 06/12 |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::OutputInstabAmplitude(
+    const int    step,
+    const double time
+    ) const
+{
+  //----------------
+  // write amplitude
+  //----------------
+  if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
+  {
+    if (myrank_ != 0)
+      dserror("output of Darrieus Landau instability only serial!");
+
+    double amplitudemiddle = 0.0;
+    double amplitudeleft = 0.0;
+    double amplitude;
+
+    const double pi = 3.141592653590;
+    LINALG::Matrix<3,1> xyz(true);
+
+    double smallest1Gvalmiddle = 2.0*pi/5.0;
+    double smallest2Gvalmiddle  = 2.0*pi/5.0;
+    double smallest1Yvalmiddle  = 0.0;
+    double smallest2Yvalmiddle  = 0.0;
+
+    double smallest1Gvalleft = 2.0*pi/5.0;
+    double smallest2Gvalleft = 2.0*pi/5.0;
+    double smallest1Yvalleft = 0.0;
+    double smallest2Yvalleft = 0.0;
+
+    double Yvalbottommiddle  = 0.0;
+    double Gvalbottommiddle  = 2.0*pi/5.0;
+    double Yvaltopmiddle     = 0.0;
+    double Gvaltopmiddle     = 2.0*pi/5.0;
+
+    double Yvalbottomleft = 0.0;
+    double Gvalbottomleft = 2.0*pi/5.0;
+    double Yvaltopleft = 0.0;
+    double Gvaltopleft = 2.0*pi/5.0;
+
+    //--------------------------------
+    // loop all nodes on the processor
+    //--------------------------------
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+      // get node coordinates
+      for(int idim=0;idim<3;idim++)
+        xyz(idim)=lnode->X()[idim];
+
+      if ((fabs(xyz(0)-(2.0*pi/10.0)) < 1e-6) and (xyz(2)>0)) // node on middle line
+      {
+        // get phi value for this node
+        const int lid = phinp_->Map().LID(lnode->Id());
+        const double gfuncval = (*phinp_)[lid];
+
+        if (fabs(gfuncval) < fabs(smallest1Gvalmiddle))
+        {
+          smallest2Gvalmiddle  = smallest1Gvalmiddle ;
+          smallest2Yvalmiddle  = smallest1Yvalmiddle ;
+          smallest1Gvalmiddle  = gfuncval;
+          smallest1Yvalmiddle  = xyz(1);
+        }
+        else if (fabs(gfuncval) < fabs(smallest2Gvalmiddle ))
+        {
+          smallest2Gvalmiddle  = gfuncval;
+          smallest2Yvalmiddle  = xyz(1);
+        }
+        else
+        {
+          // do nothing, G-value does not belong to the smallest values
+        }
+      }
+      if ((fabs(xyz(0)-0.0) < 1e-6) and (xyz(2)>0)) // node on left periodic boundary
+      {
+        // get phi value for this node
+        const int lid = phinp_->Map().LID(lnode->Id());
+        const double gfuncval = (*phinp_)[lid];
+
+        if (fabs(gfuncval) < fabs(smallest1Gvalleft))
+        {
+          smallest2Gvalleft = smallest1Gvalleft;
+          smallest2Yvalleft = smallest1Yvalleft;
+          smallest1Gvalleft = gfuncval;
+          smallest1Yvalleft = xyz(1);
+        }
+        else if (fabs(gfuncval) < fabs(smallest2Gvalleft))
+        {
+          smallest2Gvalleft = gfuncval;
+          smallest2Yvalleft = xyz(1);
+        }
+        else
+        {
+          // do nothing, G-value does not belong to the smallest values
+        }
+      }
+    }
+
+    if (smallest2Yvalmiddle  < smallest1Yvalmiddle )
+    {
+      Yvalbottommiddle = smallest2Yvalmiddle;
+      Gvalbottommiddle = smallest2Gvalmiddle;
+      Yvaltopmiddle    = smallest1Yvalmiddle;
+      Gvaltopmiddle    = smallest1Gvalmiddle;
+    }
+    else
+    {
+      Yvalbottommiddle = smallest1Yvalmiddle;
+      Gvalbottommiddle = smallest1Gvalmiddle;
+      Yvaltopmiddle    = smallest2Yvalmiddle;
+      Gvaltopmiddle    = smallest2Gvalmiddle;
+    }
+
+    if (smallest2Yvalleft  < smallest1Yvalleft )
+    {
+      Yvalbottomleft = smallest2Yvalleft;
+      Gvalbottomleft = smallest2Gvalleft;
+      Yvaltopleft    = smallest1Yvalleft;
+      Gvaltopleft    = smallest1Gvalleft;
+    }
+    else
+    {
+      Yvalbottomleft = smallest1Yvalleft;
+      Gvalbottomleft = smallest1Gvalleft;
+      Yvaltopleft    = smallest2Yvalleft;
+      Gvaltopleft    = smallest2Gvalleft;
+    }
+
+    amplitudemiddle = (Yvaltopmiddle  + Yvalbottommiddle *fabs(Gvaltopmiddle )/fabs(Gvalbottommiddle ))/(1 + fabs(Gvaltopmiddle )/fabs(Gvalbottommiddle ));
+    amplitudeleft = (Yvaltopleft + Yvalbottomleft *fabs(Gvaltopleft )/fabs(Gvalbottomleft ))/(1 + fabs(Gvaltopleft )/fabs(Gvalbottomleft ));
+    amplitude = amplitudemiddle-amplitudeleft;
+
+    if (myrank_ == 0)
+    {
+      //-------------------------
+      // write flame area to file
+      //-------------------------
+      std::ostringstream tmpfilename;
+      const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+
+      tmpfilename << filebase << "." << "amplitude" << ".txt";
+      std::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+
+      const std::string filename = tmpfilename.str();
+
+      // output to log-file
+      Teuchos::RCP<std::ofstream> log;
+      log = Teuchos::rcp(new std::ofstream(filename.c_str(),ios::app));
+      (*log) <<  " "  << setw(6) << step_ << "  " << setw(6) << setprecision(6) << time_;
+      (*log) << "  " << setw(15) << setprecision(13) << amplitudeleft;
+      (*log) << "  " << setw(15) << setprecision(13) << amplitudemiddle;
+      (*log) << "  " << setw(15) << setprecision(13) << amplitude;
+      (*log) << &endl;
+      log->flush();
+
+      std::cout << " done" << endl;
+    }
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
@@ -3712,12 +4171,12 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
   //------------------------------------------
   switch(initfield)
   {
-  case INPAR::FLUID::initfield_zero_field:
+  case INPAR::COMBUST::initfield_zero_field:
   {
     // nothing to do
     break;
   }
-  case INPAR::FLUID::initfield_beltrami_flow:
+  case INPAR::COMBUST::initfield_beltrami_flow:
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -4067,6 +4526,142 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
     break;
   }
+  //----------------------------------------------------------------------------------------------
+  // flame-vortex interaction problem: two counter-rotating vortices (2-D) moving the  flame front
+  //----------------------------------------------------------------------------------------------
+  case INPAR::COMBUST::initfield_darrieus_landau_instability:
+  {
+    // number space dimensions
+    const int nsd = 3;
+    // error indicator
+    int err = 0;
+
+    // define vectors for velocity field, node coordinates and coordinates of left and right vortices
+    LINALG::Matrix<nsd,1> vel(true);
+    double pres = 0.0;
+    LINALG::Matrix<nsd,1> xyz(true);
+    LINALG::Matrix<nsd,1> xyz0_left(true);
+    LINALG::Matrix<nsd,1> xyz0_right(true);
+
+    // get laminar burning velocity (flame speed)
+    if (flamespeed_ != 1.0) dserror("flame speed should be 1.0 for the 'Darrieus-Landau-instability' case");
+
+    //------------------------
+    // get material parameters
+    //------------------------
+    // arbitrarily take first node on this proc
+    DRT::Node* lnode = discret_->lRowNode(0);
+    // get list of adjacent elements of the first node
+    DRT::Element** elelist = lnode->Elements();
+    // get material from first (arbitrary!) element adjacent to this node
+    const Teuchos::RCP<MAT::Material> material = elelist[0]->Material();
+#ifdef DEBUG
+    // check if we really got a list of materials
+    dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
+#endif
+    // get material list for this element
+    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+
+    // get burnt material (first material in material list)
+    Teuchos::RCP<const MAT::Material> matptr0 = matlist->MaterialById(matlist->MatID(0));
+    // get unburnt material (second material in material list)
+    Teuchos::RCP<const MAT::Material> matptr1 = matlist->MaterialById(matlist->MatID(1));
+#ifdef DEBUG
+    dsassert(matptr0->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+    dsassert(matptr1->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+#endif
+    const MAT::NewtonianFluid* mat0 = static_cast<const MAT::NewtonianFluid*>(matptr0.get());
+    const MAT::NewtonianFluid* mat1 = static_cast<const MAT::NewtonianFluid*>(matptr1.get());
+
+    // get the densities
+    const double dens_b = mat0->Density();
+    if (dens_b != 0.2) dserror("burnt density should be 0.2 for the 'Darrieus-Landau-instability' case");
+    const double dens_u = mat1->Density();
+    if (dens_u != 1.0) dserror("unburnt density should be 1.0 for the 'Darrieus-Landau-instability' case");
+    double dens = dens_u;
+    // for "pure fluid" computation: rhob = rhou = 1.161
+    //const double dens_b = dens_u;
+
+    // get map of global velocity vectors (DofRowMap)
+    const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
+    //const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+//cout << *dofrowmap << endl;
+//cout << *(standarddofset_->DofRowMap()) << endl;
+//cout << (state_.velnp_->Map()) << endl;
+
+    //--------------------------------
+    // loop all nodes on the processor
+    //--------------------------------
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+      // get node coordinates
+      for(int idim=0;idim<nsd;idim++)
+        xyz(idim)=lnode->X()[idim];
+
+      // get phi value for this node
+      const int lid = phinp_->Map().LID(lnode->Id());
+      const double gfuncval = (*phinp_)[lid];
+
+      //----------------------------------------
+      // set density with respect to flame front
+      //----------------------------------------
+      if (gfuncval >= 0.0) // plus/burnt domain -> burnt material
+      {
+        dens = dens_b;
+        pres = 0.0;
+      }
+      else // minus/unburnt domain -> unburnt material
+      {
+        dens = dens_u;
+        pres = flamespeed_*flamespeed_*dens_u*dens_u*(1.0/dens_u - 1.0/dens_b);
+      }
+      //----------------------------------------------
+      // compute components of initial velocity vector
+      //----------------------------------------------
+      vel(0) = 0.0;
+      vel(1) = flamespeed_*dens_u/dens;
+      // 2D problem -> vel_z = 0.0
+      vel(2) = 0.0;
+      // velocity profile without vortices
+      //vel(1) = sl*densu/dens;
+
+      // access standard FEM dofset (3 x vel + 1 x pressure) to get dof IDs for this node
+      const vector<int> nodedofs = (*standarddofset_).Dof(lnode);
+      //const vector<int> nodedofs = discret_->Dof(lnode);
+      //for (int i=0;i<standardnodedofset.size();i++)
+      //{
+      //  cout << "component " << i << " standarddofset dofid " << stdnodedofset[i] << endl;
+      //}
+
+      //-----------------------------------------
+      // set components of initial velocity field
+      //-----------------------------------------
+      for(int idim=0;idim<nsd+1;idim++)
+      {
+        const int gid = nodedofs[idim];
+        //local node id
+        int lid = dofrowmap->LID(gid);
+        if(idim==3){ // pressure dof
+          err += state_.velnp_->ReplaceMyValues(1,&pres,&lid);
+          err += state_.veln_ ->ReplaceMyValues(1,&pres,&lid);
+          err += state_.velnm_->ReplaceMyValues(1,&pres,&lid);
+        }
+        else{ // velocity dof
+          err += state_.velnp_->ReplaceMyValues(1,&vel(idim),&lid);
+          err += state_.veln_ ->ReplaceMyValues(1,&vel(idim),&lid);
+          err += state_.velnm_->ReplaceMyValues(1,&vel(idim),&lid);
+        }
+      }
+    } // end loop nodes lnodeid
+
+    if (err!=0) dserror("dof not on proc");
+
+    break;
+  }
   default:
     dserror("type of initial field not available");
   }
@@ -4107,6 +4702,41 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
         {
           (*state_.veln_)[dofrowmap.LID(dofpos)] = 3.7122420382165605;
           (*state_.velnp_)[dofrowmap.LID(dofpos)] = 3.7122420382165605;
+        }
+      } // end if jump enrichment
+    } // end loop over fieldenr
+  } // end loop over element nodes
+  cout0_ << "done" << std::endl;
+#endif
+
+#ifdef DL_INSTAB
+  cout0_ << "---  set initial enrichment field for Darrieus-Landau instability example... " << std::flush;
+
+  // initial field modification for flame_vortex_interaction
+  for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
+  {
+    DRT::Node* lnode = discret_->lRowNode(nodeid);
+    const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
+    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+        fieldenr != fieldenrset.end();++fieldenr)
+    {
+      const XFEM::DofKey dofkey(lnode->Id(), *fieldenr);
+      const int dofpos = state_.nodalDofDistributionMap_.find(dofkey)->second;
+      if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+      {
+        if (fieldenr->getField() == XFEM::PHYSICS::Velx);
+          // nothing to do in flame_vortex example
+        else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+        {
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = 4.5;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 4.5;
+        }
+        else if (fieldenr->getField() == XFEM::PHYSICS::Velz);
+          // nothing to do in flame_vortex example
+        else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+        {
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = 4.5;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 4.5;
         }
       } // end if jump enrichment
     } // end loop over fieldenr
@@ -4706,18 +5336,19 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(*params_, "eval err for analyt sol");
+  INPAR::COMBUST::InitialField calcerr = DRT::INPUT::get<INPAR::COMBUST::InitialField>(*params_, "eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
   {
-  case INPAR::FLUID::initfield_zero_field:
-  case INPAR::FLUID::initfield_field_by_function:
-  case INPAR::FLUID::initfield_disturbed_field_from_function:
-  case INPAR::FLUID::initfield_flame_vortex_interaction:
+  case INPAR::COMBUST::initfield_zero_field:
+  case INPAR::COMBUST::initfield_field_by_function:
+  case INPAR::COMBUST::initfield_disturbed_field_by_function:
+  case INPAR::COMBUST::initfield_flame_vortex_interaction:
+  case INPAR::COMBUST::initfield_darrieus_landau_instability:
     // do nothing --- no analytical solution available
     break;
-  case INPAR::FLUID::initfield_beltrami_flow:
+  case INPAR::COMBUST::initfield_beltrami_flow:
   {
     // create the parameters for the discretization
     ParameterList eleparams;

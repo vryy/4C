@@ -37,6 +37,7 @@ public:
       const RCP<Epetra_Vector> veln,
       const double& dt,
       const RCP<COMBUST::FlameFront> flamefront,
+      const double& veljump,
       bool initialize
   );
 
@@ -71,6 +72,11 @@ private:
   //! extrapolate values for nodes where the semi-lagrange algorithm failed
   void extrapolationMain(TimeIntData* data);
 
+  ///
+  void setJump(
+      TimeIntData* data
+  );
+
   //! bisection algorithm of the extrapolation approach
   void bisection(
       TimeIntData* data,
@@ -98,6 +104,8 @@ private:
       vector<LINALG::Matrix<3,1> >& velValues,
       vector<double>& presValues
   );
+
+  double veljump_;
 
 }; // class Startvalues
 

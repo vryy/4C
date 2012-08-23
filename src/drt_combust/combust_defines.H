@@ -32,6 +32,7 @@ Maintainer: Florian Henke
 //#define COMBUST_SIGMA_BASED  // turn on/off sigma stress-based method
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
 //#define COMBUST_SXFEM
+//#define COMBUST_SETJUMP
 //------------------------------------------
 // combustion domain integral terms standard
 //------------------------------------------
@@ -124,6 +125,7 @@ Maintainer: Florian Henke
 //#define COMBUST_TESTCOUETTEFLOWDECOUPLED // velocity jump for combust_stat_inclined_couette_decoupled.dat
 //#define COLLAPSE_FLAME
 //#define FLAME_VORTEX
+//#define DL_INSTAB
 //#define ORACLES
 //#define COMBUST_TWO_FLAME_FRONTS
 //#define COMBUST_BUNSENBURNER

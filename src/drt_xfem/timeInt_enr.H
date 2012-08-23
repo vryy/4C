@@ -34,6 +34,7 @@ public:
   //! constructor
   explicit EnrichmentProjection(
       XFEM::TIMEINT& timeInt,
+      const double& veljump,
       INPAR::COMBUST::XFEMTimeIntegrationEnr timeIntEnr,
       INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrType
   );
@@ -50,10 +51,7 @@ public:
       vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
 
-  map<int,vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues()
-        {
-    return &eleJumpsAndKinks_;
-        }
+  map<int,vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues(){return &eleJumpsAndKinks_;}
 
 protected:
 
@@ -109,11 +107,23 @@ protected:
       vector<LINALG::Matrix<1,4> > kinks
   );
 
+  void setJumpEnrichmentValues(
+      const DRT::Node* node
+  );
+
+  void setKinkEnrichmentValues(
+      const DRT::Node* node
+  );
+
 #ifdef PARALLEL
   //! export enrichment data to the neighbour processor
   void exportEnrichmentData(
   );
 #endif
+
+  // velocity jump
+  const double veljump_;
+
 }; // class EnrichmentProjection
 } // namespace XFEM
 
