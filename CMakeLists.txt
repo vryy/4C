@@ -1110,6 +1110,7 @@ set(OBJS_LINALG
   src/linalg/solver_mlpreconditioner.cpp
   src/linalg/solver_muelupreconditioner.cpp
   src/linalg/solver_muelucontactpreconditioner.cpp
+  src/linalg/solver_muelucontactpreconditioner2.cpp
   src/linalg/solver_tekopreconditioner.cpp
   src/linalg/solver_belossolver.cpp
   src/linalg/solver_aztecsolver.cpp
@@ -1118,6 +1119,9 @@ set(OBJS_LINALG
   src/linalg/muelu_ContactAFilterFactory.cpp
   src/linalg/muelu_ContactTransferFactory.cpp
   src/linalg/muelu_ContactInfoFactory.cpp
+  src/linalg/muelu_ContactASlaveDofFilterFactory.cpp
+  src/linalg/muelu_ContactMapTransferFactory.cpp
+  src/linalg/MueLu_MyTrilinosSmoother.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
