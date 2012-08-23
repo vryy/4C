@@ -12,6 +12,7 @@ flows.
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/scatra_mat.H"
 
 #define NODETOL 1e-9
 // turn on if problems with mean values in planes occur
@@ -103,9 +104,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   scalesimilarity_=false;
   multifractal_=false;
 
-  if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
-      ==
-      "CLASSICAL_LES")
+  if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES"
+      and (!inflowchannel_)) //write model-related output only for pure turbulent channel flow
   {
     // check if we want to compute averages of Smagorinsky
     // constants, effective viscosities etc
@@ -1174,18 +1174,18 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         (*log_MF) << "# Statistics for turbulent incompressible channel flow (parameter multifractal subgrid scales)\n\n";
       }
     }
-  }
+    
+    // additional output of residuals and subscale quantities
+    if (subgrid_dissipation_)
+    {
+      std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_res.append(".res_statistics");
 
-  // additional output of residuals and subscale quantities
-  if (subgrid_dissipation_)
-  {
-    std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s_res.append(".res_statistics");
-
-    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
-    (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
-    (*log_res) << "# All values are first averaged over the integration points in an element \n";
-    (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+      (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
+      (*log_res) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+    }
   }
 
   // clear statistics
@@ -3963,7 +3963,11 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_res.append(".res_statistics");
 
-      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::app));
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+      
+      (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
+      (*log_res) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
@@ -4253,7 +4257,11 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_res.append(".res_statistics");
 
-      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::app));
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+      
+      (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
+      (*log_res) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
@@ -4755,4 +4763,24 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
 }// TurbulenceStatisticsCha::ClearStatistics
 
 
+void FLD::TurbulenceStatisticsCha::StoreScatraDiscret(RCP<DRT::Discretization> scatradis)
+{
+  scatradiscret_ = scatradis;
 
+  // get diffusivity from material definition --- for computation
+  // of additional mfs-statistics
+   int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra);
+   if (id==-1)
+     dserror("Could not find scatra material");
+   else
+   {
+     const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+     const MAT::PAR::ScatraMat* actmat = static_cast<const MAT::PAR::ScatraMat*>(mat);
+
+     double diffus = actmat->diffusivity_;
+     // calculate Schmidt number
+     // visc is the kinematic viscosity here
+     scnum_ = diffus / (visc_ * dens_);
+   }
+  return;
+};
