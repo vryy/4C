@@ -4133,13 +4133,31 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
       // calculate the current length of the truss element (should be close to the x-difference in the 2D-case)
       std::vector<int> dofnode0 = discret_->Dof(node0);
       std::vector<int> dofnode1 = discret_->Dof(node1);
-      LINALG::Matrix<3, 1> distance;
 
-      for(int j=0; j<(int)distance.M(); j++)
+      // nodal coordinates
+      LINALG::SerialDenseMatrix coord(3,2,true);
+      // indicator for cuts due to periodic BCs
+      LINALG::SerialDenseMatrix cut(3,1,true);
+
+      for(int j=0; j<coord.M(); j++)
       {
-        distance(j) = node0->X()[j] + disrow[discret_->DofRowMap()->LID(dofnode0[j])];
-        distance(j) -= node1->X()[j] + disrow[discret_->DofRowMap()->LID(dofnode1[j])];
+        coord(j,0) = node0->X()[j] + disrow[discret_->DofRowMap()->LID(dofnode0[j])];
+        coord(j,1) = node1->X()[j] + disrow[discret_->DofRowMap()->LID(dofnode1[j])];
       }
+
+      // check if truss element is cut by  periodic boundary conditions (assumption: l<PeriodLength/2) and unshift
+      for (int dof=0; dof<coord.M(); dof++)
+      {
+        if (fabs(coord(dof,1)-periodlength_->at(dof)-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
+          coord(dof,1) -= periodlength_->at(dof);
+        if (fabs(coord(dof,1)+periodlength_->at(dof) - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
+          coord(dof,1) += periodlength_->at(dof);
+      }
+
+      // get the distance vector
+      LINALG::Matrix<3,1> distance;
+      for(int j=0; j<(int)distance.M(); j++)
+        distance(j) = coord(j,1)-coord(j,0);
 
       // retrieve reference length of the truss
       double l0 = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->L0();
