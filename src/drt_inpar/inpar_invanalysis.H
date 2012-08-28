@@ -30,6 +30,13 @@ namespace INPAR
       inv_lung,          // sophies lung inverse analysis
       inv_generalized    // generalized inverse analysis
     };
+    /// Update strategy for regularization parameter mu
+    enum RegStratUpdate
+      {
+       reg_update_grad,          // Update based on gradient of objective function
+       reg_update_res,          //  Update based on objective function
+      };
+
   }  // namespace STR
 
 }  // namespace INPAR

@@ -150,8 +150,18 @@ private:
 
   double error_;
   double error_o_;
+  // Gradient based error measure
+  double error_grad_;
+  double error_grad_o_;
   double tol_;
 
+  // Update Stratgy for mu
+  enum INV_REG_UPDATE_STRATEGY
+    {
+      grad_based,
+      res_based
+    };
+  INV_REG_UPDATE_STRATEGY reg_update_;
   string filename_;
 
   double kappa_multi_;

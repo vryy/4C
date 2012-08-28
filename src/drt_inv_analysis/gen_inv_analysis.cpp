@@ -59,6 +59,7 @@ Maintainer: Michael Gee
 #include <iostream>
 #include "../drt_lib/drt_discret.H"
 #include "../drt_comm/comm_utils.H"
+#include "../drt_inpar/inpar_invanalysis.H"
 
 
 
@@ -198,11 +199,32 @@ steps 25 nnodes 5
   // error: diference of the measured to the calculated curve
   error_  = 1.0E6;
   error_o_= 1.0E6;
+  // 
+  error_grad_  = 1.0E6;
+  error_grad_o_= 1.0E6;
 
   // trainings parameter
   mu_ = iap.get<double>("INV_INITREG");
-
   kappa_multi_=1.0;
+  
+  // update strategy for mu
+  switch(DRT::INPUT::IntegralValue<INPAR::STR::RegStratUpdate>(iap,"UPDATE_REG"))
+   {
+     case INPAR::STR::reg_update_grad:
+     {
+      reg_update_ = grad_based;
+     }
+     break;
+     case INPAR::STR::reg_update_res:
+     {
+       reg_update_ = res_based;
+     }
+     break;
+     default:
+       dserror("Unknown update strategy for regularization parameter! Fix your input file");
+   }
+
+
 
   // list of materials for each problem instance that should be fitted
 
@@ -319,6 +341,8 @@ void STR::GenInvAnalysis::Integrate()
     numb_run_++;
     discret_->Comm().Broadcast(&error_o_,1,0);
     discret_->Comm().Broadcast(&error_,1,0);
+    discret_->Comm().Broadcast(&error_grad_o_,1,0);
+    discret_->Comm().Broadcast(&error_grad_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
 
   } while (error_>tol_ && numb_run_<max_itter);
@@ -470,6 +494,8 @@ void STR::GenInvAnalysis::NPIntegrate()
     numb_run_++;
     gcomm->Broadcast(&error_o_,1,0);
     gcomm->Broadcast(&error_,1,0);
+    gcomm->Broadcast(&error_grad_o_,1,0);
+    gcomm->Broadcast(&error_grad_,1,0);
     gcomm->Broadcast(&numb_run_,1,0);
 
   } while (error_>tol_ && numb_run_<max_itter);
@@ -530,18 +556,50 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   solver.SolveToRefinedSolution(true);
   solver.Solve();
 
-  for (int i=0;i<np_;i++)
-    p_[i] += delta_p[i];
-
   // dependent on the # of steps
+  error_grad_o_ = error_grad_;
   error_o_ = error_;
+  // update res based error
   error_   = rcurve.Norm2()/sqrt(nmp_);
+  // Gradient based update of mu based on
+  //Kelley, C. T., Liao, L. Z., Qi, L., Chu, M. T., Reese, J. P., & Winton, C. (2009)
+  //Projected pseudotransient continuation. SIAM Journal on Numerical Analysis, 46(6), 3071.
+  if(reg_update_ == grad_based)
+  {
+    //get jacobian:
+    Epetra_SerialDenseVector Ji(np_);
+    for (int i=0; i<np_; i++)
+      for (int j=0; j<nmp_; j++)
+        Ji[i]+= rcurve[j]*J(j,i);
 
-  if (!numb_run_) error_o_ = error_;
+    error_grad_ = Ji.Norm2();
 
+    if (!numb_run_) error_grad_o_ = error_grad_;
+    //Adjust training parameter based on gradient
+    // check for a descent step in general
+    if (error_ < error_o_)
+    {
+      //update mu_ only if error in df/dp decreases
+      if (error_grad_ < error_grad_o_)
+        mu_ *= (error_grad_/error_grad_o_);
+      // update parameters
+      for (int i=0;i<np_;i++)
+          p_[i] += delta_p[i];
+    }
+    else
+      cout << "WARNING: MAT Params not updated! No descent direction" << endl;
+  }
+  else
+  // res_based update
+  {
+    // update params no matter what
+    for (int i=0;i<np_;i++)
+      p_[i] += delta_p[i];
+    if (!numb_run_) error_o_ = error_;
 
-  //Adjust training parameter
-  mu_ *= (error_/error_o_);
+    //Adjust training parameter based on residuum of objective function ()
+    mu_ *= (error_/error_o_);
+  }
 
   // return cmatrix to previous size and zero out
   cmatrix.Shape(nmp_,np_+1);

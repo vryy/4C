@@ -13,6 +13,7 @@ Maintainer: Sophie Rausch
 
 
 #include "inv_analysis.H"
+#include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_discret.H"
@@ -105,6 +106,18 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   // error: diference of the measured to the calculated curve
   error_  = 1.0E6;
   error_o_= 1.5E6;
+
+
+  switch(DRT::INPUT::IntegralValue<INPAR::STR::RegStratUpdate>(iap,"UPDATE_REG"))
+   {
+     case INPAR::STR::reg_update_res:
+     {
+      // dummy different strategies are only implemented in generalized inv ana  reg_update_ = res_based;
+     }
+     break;
+     default:
+       dserror("Only RES based update strategy implemented for old inverse analysis switch to inv_generalized to use other update strategies");
+   }
 
   // trainings parameter
   mu_  = 1.;

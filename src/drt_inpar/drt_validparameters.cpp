@@ -1184,6 +1184,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // initial regularization parameter
   DoubleParameter("INV_INITREG",1.0,"initial regularization parameter",&iap);
 
+  // strategy to update regularization parameter
+  setStringToIntegralParameter<int>("UPDATE_REG","RES","Update strategy for regularization parameter ",
+                                    tuple<std::string>("RES","res",
+                                                        "GRAD","grad"),
+                                    tuple<int>(
+                                        INPAR::STR::reg_update_res,INPAR::STR::reg_update_res,
+                                        INPAR::STR::reg_update_grad,INPAR::STR::reg_update_grad
+                                  ),
+                                 &iap);
+
 
   setNumericStringParameter("MONITORFILE","none.monitor",
                             "filename of file containing measured displacements",
@@ -1270,6 +1280,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("OUTPUT_ELEMENT_IDS","-1",
                               "Set ID's of Output Elements, default is -1 which is none",
                               &mlmcp);
+  // For testing
+  setStringToIntegralParameter<int>("USEDETVALUE","No",
+                                     "Instead of doing proper MC simulation use DETVALUE for the stochastic parameter",
+                                     yesnotuple,yesnovalue,&mlmcp);
+  DoubleParameter("DETVALUE",4.61,"Use this value for all elements",&mlmcp);
 
   /*----------------------------------------------------------------------*/
   /* parameters for meshtying and contact */
