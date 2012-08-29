@@ -73,6 +73,38 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
                                              std::vector<double>& RefPlaneEqn,
                                              plain_facet_set::const_iterator& IteratorRefFacet )
 {
+#if 1 // use non-cut facet as reference facet
+  const plain_facet_set & facete = volcell_->Facets();
+
+  bool IsRefFacet = false;
+  std::vector<std::vector<double> > eqnAllFacets(facete.size());
+
+  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+  {
+    Facet *fe = *i;
+    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+
+    FacetIntegration faee1(fe,elem1_,position_,false,false);
+
+    std::vector<double> RefPlaneTemp = faee1.equation_plane(cornersLocal);
+    eqnAllFacets[i-facete.begin()] = RefPlaneTemp;
+
+    if( fabs(RefPlaneTemp[0])>1e-10 )
+    {
+      if( IsRefFacet==false && !fe->OnCutSide() )
+      {
+        RefPlaneEqn = RefPlaneTemp;
+        IteratorRefFacet = i;
+        IsRefFacet = true;
+      }
+      else
+      {
+        facetIterator.push_back(i);
+      }
+    }
+  }
+#endif
+#if 0 // use a cut facet as the reference facet --> may result in internal gauss points falling outside the element
   const plain_facet_set & facete = volcell_->Facets();
 
   bool IsRefFacet = false,RefOnCut=false;
@@ -155,6 +187,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     }
   }
 //  std::cout<<"number of facets after erasing = "<<facetIterator.size()<<"\n";
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------*
@@ -270,7 +303,7 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
   volMom(0) = volcell_->Volume();
   std::cout<<"comparison of volume prediction\n";
   std::cout<<std::setprecision(15)<<volGlobal<<"\t"<<volMom(0)<<"\n";
-  if( fabs(volGlobal-volMom(0))>1e-8 )
+  if( fabs(volGlobal-volMom(0))>1e-6 )
     dserror("volume prediction is wrong"); //unblockkkk
 #endif
 
