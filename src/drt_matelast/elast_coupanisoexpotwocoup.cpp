@@ -152,7 +152,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* lined
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(
     const LINALG::Matrix<6,1> rcg,
     LINALG::Matrix<6,6>& cmat,
-    LINALG::Matrix<6,1>& stress
+    LINALG::Matrix<6,1>& stress,
+    Teuchos::ParameterList& params
 )
 {
   double I4 = 0.0;
