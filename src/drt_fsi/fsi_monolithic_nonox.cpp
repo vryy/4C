@@ -88,7 +88,7 @@ void FSI::MonolithicNoNOX::Newton()
   firstcall_ = true;
 
   // equilibrium iteration loop (loop over k)
-  while ( ((not Converged()) and (iter_ <= itermax_)) or (iter_ ==  1) )
+  while ( (iter_ ==  1) or((not Converged()) and (iter_ <= itermax_)) )
   {
     // compute residual forces #rhs_ and tangent #tang_
     // build linear system stiffness matrix and rhs/force
