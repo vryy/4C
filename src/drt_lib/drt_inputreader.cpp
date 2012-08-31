@@ -946,9 +946,8 @@ void DatFileReader::ReadDat()
     //comm_->Broadcast(&inputfile_[0],arraysize,0);
 
     const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm_);
-cout<<"before MPI_Bcast"<<endl;
+
     MPI_Bcast(&inputfile_[0], arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
-cout<<"after MPI_Bcast"<<endl;
 #else
     dserror("How did you get here? Go away!");
 #endif
