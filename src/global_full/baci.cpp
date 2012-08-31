@@ -164,8 +164,8 @@ int main(int argc, char *argv[])
     }
   }
   else {
-    /* Here we turn the NaN and inf numbers of. No need to calculate
-     * those. If those appear the calculation needs much (!) more
+    /* Here we turn the NaN and INF numbers off. No need to calculate
+     * those. If those appear, the calculation needs much (!) more
      * time. Better stop immediately if some illegal operation occurs. */
 #ifdef TRAP_FE
 
@@ -194,16 +194,6 @@ int main(int argc, char *argv[])
 #pragma STDC FENV_ACCESS ON
     /*fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
     fesettrapenable(FE_INVALID | FE_DIVBYZERO);
-#endif
-
-#ifdef HPUXITA
-#pragma STDC FENV_ACCESS ON
-    fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
-#endif
-
-#ifdef HPUX11
-#pragma STDC FENV_ACCESS ON
-    fesettrapenable(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);
 #endif
 
 #endif /* TRAP_FE */

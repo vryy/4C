@@ -28,10 +28,15 @@ Maintainer: Ulrich Kuettler
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
 #endif
+#include <boost/lexical_cast.hpp>
 
 #include <Epetra_Time.h>
 #include <iterator>
 #include <sstream>
+
+#ifdef TRAP_FE
+#include <fenv.h>
+#endif /* TRAP_FE */
 
 
 /*----------------------------------------------------------------------*/
@@ -760,12 +765,33 @@ void DatFileReader::AddEntry(std::string key, std::string value, Teuchos::Parame
     }
   }
 
+#ifdef TRAP_FE
+#ifdef LINUX_MUENCH
+  // somehow the following test whether we have a double or not
+  // creates always an internal floating point exception (FE_INVALID). An alternative
+  // implementation using boost::lexical_cast<double> does not solve this problem!
+  // Better temporarily disable this floating point exception in the following,
+  // so that we can go on.
+  feclearexcept(FE_INVALID);
+  /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+  fedisableexcept(FE_INVALID);
+#endif
+#endif
+
   { // try to find a double
     std::stringstream ssd;
     double dv;
 
     ssd << value;
     ssd >> dv;
+
+#ifdef TRAP_FE
+#ifdef LINUX_MUENCH
+  feclearexcept(FE_INVALID);
+  /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+  feenableexcept(FE_INVALID | FE_DIVBYZERO);
+#endif
+#endif
 
     if (ssd.eof())
     {
@@ -920,8 +946,9 @@ void DatFileReader::ReadDat()
     //comm_->Broadcast(&inputfile_[0],arraysize,0);
 
     const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm_);
-
+cout<<"before MPI_Bcast"<<endl;
     MPI_Bcast(&inputfile_[0], arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
+cout<<"after MPI_Bcast"<<endl;
 #else
     dserror("How did you get here? Go away!");
 #endif
