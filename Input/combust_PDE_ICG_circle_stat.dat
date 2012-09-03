@@ -45,7 +45,6 @@ NITSCHE_VELOCITY                100000
 NITSCHE_PRESSURE                100000
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 SMOOTHED_BOUNDARY_INTEGRATION   yes
-XFEMINTEGRATION                 Tetrahedra
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No
 REINITFUNCNO                    -1
