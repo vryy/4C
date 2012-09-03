@@ -414,7 +414,7 @@ protected:
   bool CheckForKinkedVisual(int eleid);
 
   //! \brief gmsh output of (periodic boundary) box around "boxcenter" with edgelength "length"
-  void GmshOutputBox(double color, LINALG::Matrix<3,1>* boxcenter, std::vector<double>& dimension, const std::ostringstream *filename);
+  void GmshOutputBox(double color, LINALG::Matrix<3,1>* boxcenter, std::vector<double>& dimension, const std::ostringstream *filename, bool barrier=true);
 
   //! \brief gmsh output for crosslink molecule diffusion
   void GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow);

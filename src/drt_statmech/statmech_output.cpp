@@ -560,9 +560,6 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
    * all the nodal position; parallel output is now possible with the restriction that the nodes(processors) in question
    * are of the same machine*/
-
-	GmshPrepareVisualization(disrow);
-
   //we need displacements also of ghost nodes and hence export displacement vector to column map format
   Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(disrow, discol);
@@ -740,6 +737,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   // plot crosslink molecule diffusion and (partial) bonding
   GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
   // finish data section of this view by closing curly brackets
+
   if (discret_->Comm().MyPID() == 0)
   {
     fp = fopen(filename.str().c_str(), "a");
@@ -761,7 +759,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
       }
       // plot the cog
       std::vector<double> dimension(3,0.05);
-      GmshOutputBox(0.75, &cog_, dimension, &filename);
+      GmshOutputBox(0.75, &cog_, dimension, &filename, false);
       gmshfileend << "SP(" << scientific;
       gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
 
@@ -774,7 +772,6 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
     fprintf(fp, gmshfileend.str().c_str());
     fclose(fp);
   }
-
   // return simultaneously (not sure if really needed)
   discret_->Comm().Barrier();
 
@@ -985,7 +982,10 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
 /*----------------------------------------------------------------------*
  | plot the periodic boundary box                  (public) mueller 7/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* boxcenter, std::vector<double>& dimension, const std::ostringstream *filename)
+void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* boxcenter,
+                                              std::vector<double>& dimension,
+                                              const std::ostringstream *filename,
+                                              bool barrier)
 {
   // plot the periodic box in case of periodic boundary conditions (first processor)
   if (periodlength_->at(0) > 0.0 && discret_->Comm().MyPID() == 0)
@@ -1054,7 +1054,8 @@ void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matr
     fclose(fp);
   }
   // wait for Proc 0 to catch up to the others
-  discret_->Comm().Barrier();
+  if(barrier)
+    discret_->Comm().Barrier();
 }// STATMECH::StatMechManager::GmshOutputBoundaryBox
 
 /*----------------------------------------------------------------------*
@@ -4168,7 +4169,6 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
       // retrieve reference length of the truss
       double l0 = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->L0();
 
-      double springforce = 0.0;
       if(distance.Norm2()<l0 && fint(0)>0)
         fint(0) *= -1.0;
 
