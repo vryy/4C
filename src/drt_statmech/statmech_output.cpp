@@ -3902,6 +3902,9 @@ void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksper
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
 {
+  if(!DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
+      dserror("For Loom related output, activate LOOMSETUP in your input file!");
+
   Epetra_Vector discol(*discret_->DofColMap(),true);
   LINALG::Export(disrow,discol);
   std::map<int, LINALG::Matrix<3, 1> > currentpositions;
@@ -4098,6 +4101,9 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
 {
+  if(!DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
+    dserror("For Loom related output, activate LOOMSETUP in your input file!");
+
   for(int i=0; i<discret_->NumMyRowElements(); i++)
   {
     DRT::Element* element = discret_->lRowElement(i);
@@ -4162,20 +4168,24 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
       // retrieve reference length of the truss
       double l0 = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->L0();
 
+      double springforce = 0.0;
+      if(distance.Norm2()<l0 && fint(0)>0)
+        fint(0) *= -1.0;
+
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "a");
       std::stringstream internalforce;
-      internalforce << scientific << setprecision(15) << (distance.Norm2()-l0)/l0<<"  "<< fint(0)<<" "<<fint(1)<<" "<<fint(2) <<endl;
+      internalforce << scientific << setprecision(15) << (distance.Norm2()-l0)/l0<<"  "<< fint(0) <<endl;
 
       fprintf(fp, internalforce.str().c_str());
       fclose(fp);
 
-      // every 20000 steps (in the 2 vertical filament case only), change the stiffness of the truss
-      if(step % 20000 == 0 && (*filamentnumber_)[filamentnumber_->MyLength()-1]==2)
-      {
-        double csecnp = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->CSec()/1.1;
-        dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->SetCrossSec(csecnp);
-      }
+//      // every 20000 steps (in the 2 vertical filament case only), change the stiffness of the truss
+//      if(step % 20000 == 0 && (*filamentnumber_)[filamentnumber_->MyLength()-1]==2)
+//      {
+//        double csecnp = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->CSec()/1.1;
+//        dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->SetCrossSec(csecnp);
+//      }
     }
   }
   return;
