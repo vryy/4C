@@ -798,7 +798,21 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           double scalarprod = tangent[0]*edispincr[node*numdf] + tangent[1]*edispincr[node*numdf+1];
           if (aletype==INPAR::FSI::ALEprojection_rot_zsphere)
           {
-            double circ = sqrt(1.0-pow(xcn(node,2)/maxcoord,2));
+            double circ(0.0);
+            const double val = (1.0-pow(xcn(node,2)/maxcoord,2.0));
+            if (val<0.0) // negative doubles can happen due to round-off errors
+            {
+              if (val> - EPS10) // seems to be a round-off error, we proceed assuming val=0.0
+              {
+                circ=0.0;
+              }
+              else // severe error
+                dserror("Do not use sqrt() with a negative number");
+            }
+            else
+            {
+              circ = sqrt(val);
+            }
             if (circ>tol)
               elevector3[0] +=  funct[node] * intpoints.qwgt[gp] * scalarprod * detA / circ;
           }
@@ -867,7 +881,21 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
       if (aletype==INPAR::FSI::ALEprojection_rot_zsphere)
       {
-        double circ = sqrt(1.0-pow(xcn(node,2)/maxcoord,2));
+        double circ(0.0);
+        const double val = (1.0-pow(xcn(node,2)/maxcoord,2.0));
+        if (val<0.0) // negative doubles can happen due to round-off errors
+        {
+          if (val> - EPS10) // seems to be a round-off error, we proceed assuming val=0.0
+          {
+            circ=0.0;
+          }
+          else // severe error
+            dserror("Do not use sqrt() with a negative number");
+        }
+        else
+        {
+          circ = sqrt(val);
+        }
         if (circ>tol)
         {
           for (int dof=0; dof<2;dof++)
