@@ -821,6 +821,7 @@ void XFEM::STD::setFinalData(
           cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << presValues[0] << endl;
            */
 
+
           // loop over vectors to be set (either all vectors or only the vectors at t^n+1)
           for (size_t index=0;index<vectorSize(data->type_);index++)
           {

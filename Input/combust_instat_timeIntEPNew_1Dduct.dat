@@ -45,7 +45,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------COMBUSTION CONTROL
 CONVTOL                         1e-05
-ITEMAX                          5
+ITEMAX                          1
 MAXTIME                         0.5
 NUMSTEP                         5
 RESTARTEVRY                     100000
@@ -56,13 +56,13 @@ UPRES                           1
 COMBUSTTYPE                     Premixed_Combustion             // Two_Phase_Flow // Two_Phase_Flow_Jumps //
 VELOCITY_JUMP_TYPE              vel_jump_premixed_combustion
 FLUX_JUMP_TYPE                  flux_jump_premixed_combustion
-ITE_MAX_FRS                     2
-LAMINAR_FLAMESPEED              1.0
+ITE_MAX_FRS                     1
+LAMINAR_FLAMESPEED              2.0
 MARKSTEIN_LENGTH                0.0
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 SMOOTHED_BOUNDARY_INTEGRATION   Yes
 XFEMINTEGRATION                 Cut
-XFEMTIMEINT                     ExtrapolationOld                // DoNothing //
+XFEMTIMEINT                     ExtrapolationNew//MixedSemiLagrange
 XFEMTIMEINT_ENR                 Projection                      // QuasiStatic // DoNothing //
 INITSTATSOL                     Yes                             // No //
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -99,6 +99,7 @@ MAXTIME                         0.36
 NUMSTEP                         18
 TIMESTEP                        0.02
 NEUMANNINFLOW                   no
+GMSH_OUTPUT                     yes
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 TDS                             quasistatic
@@ -164,7 +165,7 @@ CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0 // sin curv
 -------------------------------------------FUNCT1 // inflow profile velocity
 FUNCT1 EXPR 0 0.0 0 FUNCTION (1-y*y)*5
 ------------------------------------------FUNCT2 // initial G-function field
-FUNCT2 EXPR 0 0.0 0 FUNCTION x+0.33
+FUNCT2 EXPR 0 0.0 0 FUNCTION x-0.33
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -199,23 +200,23 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // inflow lines
-E 1 - 4 1 1 1 0 2.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // outflow lines
 E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // inflow points
-E 3 - 4 1 1 1 0 2.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 3 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // outflow points
 E 4 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           5
 // line inflow top
-E 1 - 4 1 1 1 0 2.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line inflow front
-E 2 - 4 1 1 1 0 2.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 2 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line inflow bottom
-E 3 - 4 1 1 1 0 2.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 3 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // line inflow back
-E 4 - 4 1 1 1 0 2.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 4 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // edges side walls
 E 5 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -225,7 +226,7 @@ E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // surface bottom
 E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
 // surface inflow
-E 3 - 4 1 1 1 0 2.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 3 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0 
 // surface outflow
 E 4 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
 // surface front
@@ -667,20 +668,20 @@ NODE 44 COORD 5.00000000000000000e-01 5.0000000000000000e-02 5.0000000000000000e
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 5 POSITION velx NAME velx VALUE 2.0e+00 TOLERANCE 1e-13
+FLUID DIS 1 NODE 5 POSITION velx NAME velx VALUE 1.0e+00 TOLERANCE 1e-13
 FLUID DIS 1 NODE 5 POSITION vely NAME vely VALUE 0.0e+00 TOLERANCE 1e-13
 FLUID DIS 1 NODE 5 POSITION velz NAME velz VALUE 0.0e+00 TOLERANCE 1e-13
-FLUID DIS 1 NODE 37 POSITION velx NAME velx VALUE 1.5e+00 TOLERANCE 1e-13
+FLUID DIS 1 NODE 37 POSITION velx NAME velx VALUE 0.0e+00 TOLERANCE 1e-13
 FLUID DIS 1 NODE 37 POSITION vely NAME vely VALUE 0.0e+00 TOLERANCE 1e-13
 FLUID DIS 1 NODE 37 POSITION velz NAME velz VALUE 0.0e+00 TOLERANCE 1e-13
-FLUID DIS 1 NODE 1 POSITION pressure NAME pressure VALUE 6.15e+00 TOLERANCE 1e-12
-FLUID DIS 1 NODE 5 POSITION pressure NAME pressure VALUE 5.65e+00 TOLERANCE 1e-12
-FLUID DIS 1 NODE 9 POSITION pressure NAME pressure VALUE 5.15e+00 TOLERANCE 1e-12
-FLUID DIS 1 NODE 13 POSITION pressure NAME pressure VALUE 4.65e+00 TOLERANCE 1e-12
-FLUID DIS 1 NODE 17 POSITION pressure NAME pressure VALUE 4.15e+00 TOLERANCE 1e-12
-FLUID DIS 1 NODE 21 POSITION pressure NAME pressure VALUE 3.65e+00 TOLERANCE 1e-12
-FLUID DIS 1 NODE 25 POSITION pressure NAME pressure VALUE 3.15e+00 TOLERANCE 1e-12
-FLUID DIS 1 NODE 29 POSITION pressure NAME pressure VALUE 3.0e+00 TOLERANCE 1e-12
+FLUID DIS 1 NODE 1 POSITION pressure NAME pressure VALUE 6.35e+00 TOLERANCE 1e-12
+FLUID DIS 1 NODE 5 POSITION pressure NAME pressure VALUE 5.85e+00 TOLERANCE 1e-12
+FLUID DIS 1 NODE 9 POSITION pressure NAME pressure VALUE 5.35e+00 TOLERANCE 1e-12
+FLUID DIS 1 NODE 13 POSITION pressure NAME pressure VALUE 4.85e+00 TOLERANCE 1e-12
+FLUID DIS 1 NODE 17 POSITION pressure NAME pressure VALUE 6.0e+00 TOLERANCE 1e-12
+FLUID DIS 1 NODE 21 POSITION pressure NAME pressure VALUE 5.0e+00 TOLERANCE 1e-13
+FLUID DIS 1 NODE 25 POSITION pressure NAME pressure VALUE 4.0e+00 TOLERANCE 1e-13
+FLUID DIS 1 NODE 29 POSITION pressure NAME pressure VALUE 3.0e+00 TOLERANCE 1e-13
 FLUID DIS 1 NODE 33 POSITION pressure NAME pressure VALUE 2.0e+00 TOLERANCE 1e-13
 FLUID DIS 1 NODE 37 POSITION pressure NAME pressure VALUE 1.0e+00 TOLERANCE 1e-13
 FLUID DIS 1 NODE 41 POSITION pressure NAME pressure VALUE 0.0e+00 TOLERANCE 1e-13

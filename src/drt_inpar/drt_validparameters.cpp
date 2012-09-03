@@ -3802,7 +3802,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>(
           "DoNothing",
           "SemiLagrange",
-          "Extrapolation",
+          "ExtrapolationOld",
+          "ExtrapolationNew",
           "MixedSemiLagrangeExtrapolation",
           "MixedSemiLagrangeExtrapolationNew",
           "MixedGhostvalSemiLagrange",
@@ -3811,7 +3812,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           tuple<int>(
               INPAR::COMBUST::xfemtimeint_donothing,
               INPAR::COMBUST::xfemtimeint_semilagrange,
-              INPAR::COMBUST::xfemtimeint_extrapolation,
+              INPAR::COMBUST::xfemtimeint_extrapolationold,
+              INPAR::COMBUST::xfemtimeint_extrapolationnew,
               INPAR::COMBUST::xfemtimeint_mixedSLExtrapol,
               INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew,
               INPAR::COMBUST::xfemtimeint_mixedghostSL,

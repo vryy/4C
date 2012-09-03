@@ -144,10 +144,6 @@ private:
   void exportDataToStartpointProc(
   );
 
-  //! export data to node processor when Semi-Lagrange algorithm failed
-  void exportDataToNodeProc(
-  );
-
   //! export data to neighbour proc in Newton loop
   void exportIterData(
       bool& procfinished

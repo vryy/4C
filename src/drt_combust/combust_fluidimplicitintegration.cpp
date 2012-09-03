@@ -455,7 +455,8 @@ bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
     switch (xfemtimeint_)
     {
     case INPAR::COMBUST::xfemtimeint_donothing:
-    case INPAR::COMBUST::xfemtimeint_extrapolation:
+    case INPAR::COMBUST::xfemtimeint_extrapolationold:
+    case INPAR::COMBUST::xfemtimeint_extrapolationnew:
     {
       finished = true; // the above standard value computations don't require -> iterations
       break;
@@ -1011,7 +1012,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
                 true));
             break;
           }
-          case INPAR::COMBUST::xfemtimeint_extrapolation:
+          case INPAR::COMBUST::xfemtimeint_extrapolationold:
           {
             // time integration data for standard dofs, extrapolation approach
             timeIntStd_ = rcp(new XFEM::ExtrapolationOld(
@@ -1021,6 +1022,18 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
                 dta_,
                 flamefront,
                 veljump,
+                true));
+            break;
+          }
+          case INPAR::COMBUST::xfemtimeint_extrapolationnew:
+          {
+            // time integration data for standard dofs, extrapolation approach
+            timeIntStd_ = rcp(new XFEM::ExtrapolationNew(
+                *timeIntData,
+                xfemtimeint_,
+                veln,
+                dta_,
+                flamefront,
                 true));
             break;
           }
@@ -1057,7 +1070,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
         case INPAR::COMBUST::xfemtimeint_semilagrange:
         case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
         case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
-        case INPAR::COMBUST::xfemtimeint_extrapolation:
+        case INPAR::COMBUST::xfemtimeint_extrapolationold:
+        case INPAR::COMBUST::xfemtimeint_extrapolationnew:
         {
           timeIntStd_->importNewFGIData(
               discret_,

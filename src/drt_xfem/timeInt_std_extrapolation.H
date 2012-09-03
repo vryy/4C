@@ -197,6 +197,12 @@ private:
       vector<double>& presValues,
       int side
   );
+
+#ifdef PARALLEL
+  //! export data to startpoint processor when Semi-Lagrange algorithm failed
+  void exportDataToNodeProc(
+  );
+#endif
 }; // class Startvalues
 } // namespace XFEM
 #endif /*STARTVALUES_H_*/
