@@ -44,11 +44,9 @@ fi
 ############################################################
 # use LNM Trilinos Q2/2012 (d)
 if [ "$OS_VERSION" == "FC16" ]; then
-	INCLUDE_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/include"
-	LIB_INSTALL_DIR="/lnm/lib/Q1_2012/fc16/openmpi-gcc/lib"
-	Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/fc16_openmpi_dbg/"
-	echo "experimental Trilinos not available for FC16 yet! Kindly ask Tobias for compiling it!"
-	exit
+	INCLUDE_INSTALL_DIR="/lnm/lib/Q2_2012/fc16/openmpi-gcc/include"
+	LIB_INSTALL_DIR="/lnm/lib/Q2_2012/fc16/openmpi-gcc/lib"
+	Trilinos_PREFIX="/lnm/lib/Q2_2012/trilinos/fc16_openmpi_release/"
 else
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q2_2012/fc8/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q2_2012/fc8/openmpi-gcc/lib"
