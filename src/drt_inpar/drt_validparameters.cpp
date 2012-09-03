@@ -659,6 +659,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("Polynomial","Nurbs"),
                                tuple<int>(1,0),
                                &type);
+  IntParameter("RANDSEED",-1,"Set the random seed. If < 0 use current time.",&type);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& ps = list->sublist("PATIENT SPECIFIC",false,"");

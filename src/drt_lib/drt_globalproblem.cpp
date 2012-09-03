@@ -281,6 +281,13 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
       dserror("Restart flags in input file and command line are non-zero and different!");
   }
 
+  // 3) set random seed
+  {
+    int rs = type.get<int>("RANDSEED");
+    if (rs < 0)
+      rs = time(NULL) + 42*GetNPGroup()->GroupId();
+    srand( rs );
+  }
 }
 
 /*----------------------------------------------------------------------*/
