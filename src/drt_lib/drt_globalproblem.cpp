@@ -282,11 +282,12 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   }
 
   // 3) set random seed
+  // time is in seconds, therefore we add the global processor id to obtain a unique seed on each proc
   {
     int rs = type.get<int>("RANDSEED");
     if (rs < 0)
-      rs = time(NULL) + 42*GetNPGroup()->GroupId();
-    srand( rs );
+      rs = (int)time(NULL) + 42*DRT::Problem::Instance(0)->GetNPGroup()->GlobalComm()->MyPID();
+    srand( (unsigned int)rs );
   }
 }
 
