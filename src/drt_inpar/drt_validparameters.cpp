@@ -1370,9 +1370,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("UZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for augmented / Uzawa solution strategy",&scontact);
   DoubleParameter("UZAWACONSTRTOL",1.0e-8,"Tolerance of constraint norm for augmented / Uzawa solution strategy",&scontact);
 
-  setStringToIntegralParameter<int>("FULL_LINEARIZATION","Yes","If chosen full linearization of contact is applied",
-                               yesnotuple,yesnovalue,&scontact);
-
   setStringToIntegralParameter<int>("SEMI_SMOOTH_NEWTON","Yes","If chosen semi-smooth Newton concept is applied",
                                yesnotuple,yesnovalue,&scontact);
 
