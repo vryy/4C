@@ -560,6 +560,9 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
    * all the nodal position; parallel output is now possible with the restriction that the nodes(processors) in question
    * are of the same machine*/
+
+	GmshPrepareVisualization(disrow);
+
   //we need displacements also of ghost nodes and hence export displacement vector to column map format
   Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(disrow, discol);
