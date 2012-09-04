@@ -272,7 +272,7 @@ public:
     );
 
   /// return nested parallelism group
-  Teuchos::RCP<COMM_UTILS::NestedParGroup> GetNPGroup(){ return npgroup_; }
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> GetNPGroup();
 
   //@}
 

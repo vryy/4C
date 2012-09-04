@@ -100,7 +100,8 @@ void DRT::Problem::Done()
 /*----------------------------------------------------------------------*/
 DRT::Problem::Problem() :
   probtype_(prb_none),
-  restartstep_(0)
+  restartstep_(0),
+  npgroup_(Teuchos::null)
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
 }
@@ -324,6 +325,7 @@ void DRT::Problem::NPGroup(
   NP_TYPE npType
   )
 {
+  if (npgroup_ != Teuchos::null) dserror("NPGroup was already set.");
   npgroup_ = Teuchos::rcp(new COMM_UTILS::NestedParGroup(groupId,
                                                          ngroup,
                                                          lpidgpid,
@@ -334,6 +336,13 @@ void DRT::Problem::NPGroup(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<COMM_UTILS::NestedParGroup> DRT::Problem::GetNPGroup()
+{
+  if (npgroup_ == Teuchos::null) dserror("No NPGroup allocated yet.");
+  return npgroup_;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

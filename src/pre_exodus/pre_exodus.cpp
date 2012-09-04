@@ -36,6 +36,7 @@ its parameters and conditions.
 #include "../drt_lib/drt_conditiondefinition.H"
 #include "../drt_lib/drt_elementdefinition.H"
 #include "../drt_lib/drt_parobjectregister.H"
+#include "../drt_comm/comm_utils.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"
 #include "pre_exodus_writedat.H"
@@ -57,18 +58,18 @@ int main(
 {
 
 // communication
-#ifdef PARALLEL
   MPI_Init(&argc,&argv);
 
-  int myrank = 0;
-  int nproc  = 1;
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-  MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-  if ((nproc>1) && (myrank==0)) dserror("Using more than one processor is not supported.");
-  RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-#else
-  RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
-#endif
+  // create a problem instance
+  DRT::Problem* problem = DRT::Problem::Instance();
+  // create "dummy" NP group which only sets the correct communicators
+  COMM_UTILS::CreateComm(0,NULL);
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetNPGroup()->GlobalComm().get(), false);
+
+  try
+  {
+    if ((comm->NumProc()>1))
+      dserror("Using more than one processor is not supported.");
 
   string exofile;
   string bcfile;
@@ -127,12 +128,6 @@ int main(
 
   // print parobject types (needed for making automatic object registration working)
   My_CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
-
-  // create a problem instance
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  try
-  {
 
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = My_CLP.parse(argc,argv);
