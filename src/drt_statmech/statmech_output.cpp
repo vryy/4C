@@ -4171,9 +4171,16 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
 
       // retrieve reference length of the truss
       double l0 = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->L0();
-
-      if(distance.Norm2()<l0 && fint(0)>0)
-        fint(0) *= -1.0;
+      if(distance.Norm2()<l0)
+      {
+        if(fint(0)>0.0)
+          fint(0) *= -1.0;
+      }
+      else
+      {
+        if(fint(0)<0.0)
+          fint(0) *= -1.0;
+      }
 
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "a");
