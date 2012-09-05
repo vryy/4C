@@ -11,21 +11,16 @@ Maintainer: Florian Henke
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifdef PARALLEL
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
-
-#include "../drt_lib/drt_utils_createdis.H"
 #include "combust_dyn.H"
 #include "combust_utils.H"
 #include "combust_algorithm.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
-#include "../drt_lib/drt_globalproblem.H"
-
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -34,11 +29,7 @@ Maintainer: Florian Henke
 void combust_dyn()
 {
   // create a communicator
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   //------------------------------------------------------------------------------------------------
   // print COMBUST-Logo on screen
@@ -146,8 +137,13 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // validate the results
   //------------------------------------------------------------------------------------------------
-    // summarize the performance measurements
-  Teuchos::TimeMonitor::summarize();
+  // summarize the performance measurements
+#ifdef TRILINOS_DEV
+  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
+  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+#else
+  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
+#endif
 
   // perform the result test
   DRT::Problem::Instance()->AddFieldTest(combust_->FluidField().CreateFieldTest());

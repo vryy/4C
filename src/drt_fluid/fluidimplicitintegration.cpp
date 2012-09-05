@@ -25,14 +25,6 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 
 #include "fluidimplicitintegration.H"
 #include "time_integration_scheme.H"
-#include "../linalg/linalg_ana.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_io/io.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "fluid_utils.H"
 #include "fluidresulttest.H"
 #include "fluidimpedancecondition.H"
@@ -44,11 +36,20 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "fluid_windkessel_optimization.H"
 #include "fluid_meshtying.H"
 #include "drt_transfer_turb_inflow.H"
+#include "fluid_utils_infnormscaling.H"
+#include "../linalg/linalg_ana.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_mapextractor.H"
+#include "../drt_io/io.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/ad_opt.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include "../drt_opti/topopt_optimizer.H"
-#include "fluid_utils_infnormscaling.H"
 
 #ifdef D_ARTNET
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -714,7 +715,12 @@ void FLD::FluidImplicitTimeInt::Integrate()
   // print the results of time measurements
   if (DRT::Problem::Instance()->ProblemType() != prb_fluid_topopt)
   {
-    TimeMonitor::summarize();
+#ifdef TRILINOS_DEV
+    Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(discret_->Comm());
+    Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+#else
+    Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
+#endif
   }
 
   return;

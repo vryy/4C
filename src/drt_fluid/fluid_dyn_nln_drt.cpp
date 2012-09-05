@@ -48,11 +48,7 @@ Maintainer: Peter Gamnitzer
 void dyn_fluid_drt(const int restart)
 {
   // create a communicator
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   // access to some parameter lists
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
@@ -118,12 +114,8 @@ void dyn_fluid_drt(const int restart)
 //-------------------------------------------------------------------------
 void fluid_fluid_drt(const int restart)
 {
-   // create a communicator
-  #ifdef PARALLEL
-    RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
-  #else
-    Epetra_SerialComm comm;
-  #endif
+  // create a communicator
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -262,7 +254,6 @@ void fluid_fluid_drt(const int restart)
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 
-#if defined(PARALLEL)
   vector<int> bgeleids;          // ele ids
   for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
   {
@@ -292,7 +283,6 @@ void fluid_fluid_drt(const int restart)
 
   bgfluiddis->FillComplete();
 
-#endif
   //-------------------------------------------------------------------------
 
   // ----------------------------------------------------------------------------
@@ -312,7 +302,6 @@ void fluid_fluid_drt(const int restart)
   embfluiddis->ReplaceDofSet(newdofset,true);
   embfluiddis->FillComplete();
 
-#if defined(PARALLEL)
   vector<int> eleids;          // ele ids
   for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
   {
@@ -341,7 +330,6 @@ void fluid_fluid_drt(const int restart)
   embfluiddis->ExportColumnElements(*embnewcoleles);
 
   embfluiddis->FillComplete();
-#endif
   //------------------------------------------------------------------------------
 
   // access to some parameter lists
