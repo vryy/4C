@@ -49,7 +49,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
                                              std::vector<double>& RefPlaneEqn,
                                              plain_facet_set::const_iterator& IteratorRefFacet )
 {
-#if 1 // use non-cut facet as reference facet
+#if 1 // modified reference facet selection so that all points are within parent element
   const plain_facet_set & facete = volcell_->Facets();
 
   bool IsRefFacet = false,RefOnCutSide=false;
@@ -144,7 +144,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     double facetz = eqnAllFacets[iter-facete.begin()][2];
     double facetRhs = eqnAllFacets[iter-facete.begin()][3];
 
-    if( fabs(RefPlaneEqn[3])>1e-10 ) // planes for which ax+by+cz=d
+    if( fabs(RefPlaneEqn[3])>1e-10 && fabs(facetRhs)>1e-10 ) // planes for which ax+by+cz=d
     {
       if( fabs(RefPlaneEqn[0]/RefPlaneEqn[3]-facetx/facetRhs)<1e-8 &&
           fabs(RefPlaneEqn[1]/RefPlaneEqn[3]-facety/facetRhs)<1e-8 &&
@@ -221,7 +221,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     double facetz = eqnAllFacets[iter-facete.begin()][2];
     double facetRhs = eqnAllFacets[iter-facete.begin()][3];
 
-    if( fabs(RefPlaneEqn[3])>1e-10 ) // planes for which ax+by+cz=d
+    if( fabs(RefPlaneEqn[3])>1e-10 && fabs(facetRhs)>1e-10 ) // planes for which ax+by+cz=d
     {
       if( fabs(RefPlaneEqn[0]/RefPlaneEqn[3]-facetx/facetRhs)<1e-8 &&
           fabs(RefPlaneEqn[1]/RefPlaneEqn[3]-facety/facetRhs)<1e-8 &&
@@ -242,7 +242,6 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
       }
     }
   }
-//  std::cout<<"number of facets after erasing = "<<facetIterator.size()<<"\n";
 #endif
 }
 
@@ -401,5 +400,4 @@ void GEO::CUT::DirectDivergence::IntegrateSpecificFuntions( const DRT::UTILS::Ga
     }
     TotalInteg += integVal*weiFacet;
   }
-  //std::cout<<"integration of z = "<<TotalInteg<<"\n";
 }
