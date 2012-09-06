@@ -1698,6 +1698,15 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& timen,
                 int jrandom = jorder[j];
                 // get the nodal LIDs
                 int nodeLID = nodecolmap.LID((int)(*crosslinkerbond_)[jrandom][irandom]);
+
+                // in case of a loom setup, we want the vertical filaments to be free of linkers. Hence, we choose the node on the vertical filament to let go of the linker
+                // note: jrandom is either 0 or 1. Hence, "!".
+                if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP") && (*filamentnumber_)[nodeLID]==0)
+                {
+                  jrandom = (!jrandom);
+                  nodeLID = nodecolmap.LID((int)(*crosslinkerbond_)[jrandom][irandom]);
+                }
+
                 // enter the crosslinker element ID into the deletion list
                 delcrosselement[irandom] = (*crosslink2element_)[irandom];
 
