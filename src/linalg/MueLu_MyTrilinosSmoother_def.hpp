@@ -63,6 +63,7 @@
 
 #include "MueLu_Level.hpp"
 #include "MueLu_TrilinosSmoother.hpp"
+#include "MueLu_IfpackSmoother.hpp"
 #include "MueLu_Exceptions.hpp"
 
 namespace MueLu {
@@ -90,8 +91,12 @@ namespace MueLu {
 
     //std::cout << "slaveDofMap: " << slaveDofMap->getGlobalNumElements() << std::endl;
 
-
-    s_ = rcp(new TrilinosSmoother(type_, paramList_, overlap_, AFact_));
+    if(type_ == "ILU") {
+      std::cout << "FOUND ILU smoother" << std::endl;
+      s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(type_, paramList_,overlap_,AFact_);
+    } else {
+      s_ = rcp(new TrilinosSmoother(type_, paramList_, overlap_, AFact_));
+    }
 
 
     TEUCHOS_TEST_FOR_EXCEPTION(s_ == Teuchos::null, Exceptions::RuntimeError, "");
@@ -127,12 +132,26 @@ namespace MueLu {
       else {
         // gid is not stored on current processor for (overlapping) map of X
         // this should not be the case
-        std::cout << "GID not stored in X on current processor" << std::endl;
+        std::cout << "GID not stored in variable X on current processor" << std::endl;
       }
-      //Btemp->replaceGlobalValue(gid,0,0.0);
-      //X.replaceGlobalValue(gid,0,0.0);
     }
     s_->Apply(X, *Btemp, InitialGuessIsZero);
+
+    // overwrite values in X
+    /*for(size_t it = 0; it < sz; it++) {
+      GlobalOrdinal gid = map_->getGlobalElement(Teuchos::as<LocalOrdinal>(it));
+      if(X.getMap()->isNodeGlobalElement(gid)) {
+        LocalOrdinal xlid = X.getMap()->getLocalElement(gid);        //
+        Teuchos::ArrayRCP<const Scalar> data = X.getDataNonConst(0); // extract data
+        Btemp->replaceGlobalValue(gid,0,data[xlid]);
+        X.replaceGlobalValue(gid,0,data[xlid]); // not necessary
+      }
+      else {
+        // gid is not stored on current processor for (overlapping) map of X
+        // this should not be the case
+        std::cout << "GID not stored in variable X on current processor" << std::endl;
+      }
+    }*/
   }
 
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
