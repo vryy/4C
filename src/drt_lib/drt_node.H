@@ -57,6 +57,11 @@ namespace DRT
 
 // forward declarations
 class Element;
+class Discretisation;
+namespace MESHFREE
+{
+  class MeshfreeDiscretization;
+}
 
 class NodeType : public DRT::ParObjectType
 {
@@ -88,7 +93,7 @@ public:
   \brief The Discretization is a friend of Node
   */
   friend class Discretization;
-
+  friend class MESHFREE::MeshfreeDiscretization;
 
   //@}
 
@@ -287,7 +292,7 @@ protected:
 
   Resizes the element ptr vector and adds ptr at the end of vector
   */
-  virtual void AddElementPtr(DRT::Element* eleptr)
+  virtual inline void AddElementPtr(DRT::Element* eleptr)
   { const int size = element_.size(); element_.resize(size+1);
     element_[size] = eleptr; return;}
 

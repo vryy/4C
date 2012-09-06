@@ -40,6 +40,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_problemtype.H"
 
@@ -178,6 +179,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--DISCRETISATION", *list);
   reader.ReadGidSection("--PROBLEM SIZE", *list);
   reader.ReadGidSection("--PROBLEM TYP", *list);
+  reader.ReadGidSection("--MESHFREE", *list);
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
   reader.ReadGidSection("--PATIENT SPECIFIC", *list);
@@ -926,7 +928,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_fluid:
   {
-    if(distype == "Nurbs")
+    if(distype == "Meshfree")
+    {
+      fluiddis = rcp(new DRT::MESHFREE::MeshfreeDiscretization("fluid",reader.Comm(),MeshfreeParams()));
+    }
+    else if(distype == "Nurbs")
     {
       fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
     }
@@ -955,7 +961,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_scatra:
   {
     // create empty discretizations
-    if(distype == "Nurbs")
+    if(distype == "Meshfree")
+    {
+      fluiddis = rcp(new DRT::MESHFREE::MeshfreeDiscretization("fluid",reader.Comm(),MeshfreeParams()));
+      scatradis = rcp(new DRT::MESHFREE::MeshfreeDiscretization("scatra",reader.Comm(),MeshfreeParams()));
+    }
+    else if(distype == "Nurbs")
     {
       fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
       scatradis = rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
@@ -1034,7 +1045,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
   case prb_structure:
   {
-    if(distype == "Nurbs")
+    if(distype == "Meshfree")
+    {
+      dserror("Meshfree structure not implemented, yet.");
+      structdis = rcp(new DRT::MESHFREE::MeshfreeDiscretization("structure",reader.Comm(),MeshfreeParams()));
+    }
+    else if(distype == "Nurbs")
     {
       structdis = rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
     }
@@ -1215,7 +1231,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 //  case prb_elch:
   {
 #ifdef D_ARTNET
-    if(distype != "Nurbs")
+    if(distype == "Polynomial")
     {
       // create empty discretizations
       arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
@@ -1224,7 +1240,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
 #endif
 #ifdef D_RED_AIRWAYS
-    if(distype != "Nurbs")
+    if(distype == "Polynomial")
     {
       airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
       AddDis("airway", airwaydis);

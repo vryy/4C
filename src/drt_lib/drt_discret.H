@@ -1759,17 +1759,6 @@ private:
   Discretization(const DRT::Discretization& old);
 
   /*!
-  \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
-
-  Resets all maps and sets flags filled_ and havedof_ to false.
-
-  \param killdofs (in): if true reset existing dofsets in discretization
-
-  \note This is a collective call
-  */
-  virtual void Reset(bool killdofs = true);
-
-  /*!
   \brief Build noderowmap_ (Filled()==true NOT prerequisite)
 
   Build the parallel layout of nodes in this
@@ -1838,6 +1827,34 @@ private:
   virtual void BuildElementToElementPointers();
 
   /*!
+  \brief Build the geometry of lines for a certain line condition
+
+  */
+  virtual void BuildLinesinCondition(const string name,RCP<DRT::Condition> cond);
+
+  /*!
+  \brief Build the geometry of surfaces for a certain surface condition
+
+  */
+  virtual void BuildSurfacesinCondition(const string name,RCP<DRT::Condition> cond);
+
+  /*!
+  \brief Build the geometry of volumes for a certain volume condition
+
+  */
+  virtual void BuildVolumesinCondition(const string name,RCP<DRT::Condition> cond);
+
+  /*!
+  \brief Build the geometry of surfaces belonging to the structure-fluid
+  volume coupling condition -> this is special since an associated volume
+  conditions also needs to be considered
+  */
+  void FindAssociatedEleIDs(RefCountPtr<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name);
+
+
+protected:
+
+  /*!
   \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
 
   Assign nodes and elements their no. of degrees of freedom as aquired
@@ -1869,32 +1886,16 @@ private:
   virtual void BoundaryConditionsGeometry();
 
   /*!
-  \brief Build the geometry of lines for a certain line condition
+  \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
 
+  Resets all maps and sets flags filled_ and havedof_ to false.
+
+  \param killdofs (in): if true reset existing dofsets in discretization
+
+  \note This is a collective call
   */
-  virtual void BuildLinesinCondition(const string name,RCP<DRT::Condition> cond);
-
-  /*!
-  \brief Build the geometry of surfaces for a certain surface condition
-
-  */
-  virtual void BuildSurfacesinCondition(const string name,RCP<DRT::Condition> cond);
-
-  /*!
-  \brief Build the geometry of volumes for a certain volume condition
-
-  */
-  virtual void BuildVolumesinCondition(const string name,RCP<DRT::Condition> cond);
-
-  /*!
-  \brief Build the geometry of surfaces belonging to the structure-fluid
-  volume coupling condition -> this is special since an associated volume
-  conditions also needs to be considered
-  */
-  void FindAssociatedEleIDs(RefCountPtr<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name);
-
-
-protected:
+  // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization (nis) Jan12
+  virtual void Reset(bool killdofs = true);
 
   // internal data
   string                                name_;              // name of this discretization

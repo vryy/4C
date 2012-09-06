@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem_enums.H"
+#include "../drt_inpar/inpar_meshfree.H"
 #include "../drt_inpar/inpar_ale.H"
 #include "../drt_inpar/inpar_artnet.H"
 #include "../drt_inpar/inpar_solver.H"
@@ -656,10 +657,45 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMFIELD",1,"",&type); // unused. to be deleted
   IntParameter("RESTART",0,"",&type);
   setStringToIntegralParameter<int>("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
-                               tuple<std::string>("Polynomial","Nurbs"),
-                               tuple<int>(1,0),
-                               &type);
+                                    tuple<std::string>("Polynomial","Nurbs","Meshfree"),
+                                    tuple<int>(1,0,2),
+                                    &type);
   IntParameter("RANDSEED",-1,"Set the random seed. If < 0 use current time.",&type);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& meshfree = list->sublist("MESHFREE",false,"");
+  setStringToIntegralParameter<int>("TYPE","MaxEnt","Type of meshfree discretisation.",
+                                    tuple<std::string>("MaxEnt"),
+                                    tuple<int>(INPAR::MESHFREE::maxent),
+                                    &meshfree);
+  setStringToIntegralParameter<int>("NODEKNOTASSIGNMENT","procwise","Type of assignment of nodes to cells/knots.",
+                                    tuple<std::string>("procwise","blockwise"),
+                                    tuple<int>(INPAR::MESHFREE::procwise,
+                                               INPAR::MESHFREE::blockwise),
+                                    &meshfree);
+  BoolParameter("BUBNOV","No","Bubnov-Galerkin approx, i.e. weight=test function",&meshfree);
+  BoolParameter("PARTITION_OF_UNITY","Yes","Enforcement of partition of unity constraint",&meshfree);
+  DoubleParameter("NEGATIVITY",0.0,"Decides if and to which degree negativity is allowed",&meshfree);
+  DoubleParameter("T_VARIANCE",1,"Variance of the basis solution function prior.",&meshfree);
+  DoubleParameter("NEWTON_TOL",1e-6,"Tolerance at which Newton is considered to be converged.",&meshfree);
+  DoubleParameter("NEWTON_MAX",100,"Maximum number of Newton steps.",&meshfree);
+  DoubleParameter("T_RANGE_TOL",1,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
+  setStringToIntegralParameter<int>("T_PRIOR","Gauss","Defines the prior type of the basis solution function.",
+                                    tuple<std::string>("Gauss"),
+                                    tuple<int>(INPAR::MESHFREE::p_gauss),
+                                    &meshfree);
+  setStringToIntegralParameter<int>("T_SKEW","None","Defines the skewness type of the basis solution function prior.",
+                                    tuple<std::string>("None","0815"),
+                                    tuple<int>(INPAR::MESHFREE::p_sym,
+                                               INPAR::MESHFREE::p_0815),
+                                    &meshfree);
+  setStringToIntegralParameter<int>("T_COMPLIANCE","linear","Defines the compliance type enforced for max-ent scheme of the basis solution functions.",
+                                    tuple<std::string>("linear","stream","freespace"),
+                                    tuple<int>(INPAR::MESHFREE::c_linear,
+                                               INPAR::MESHFREE::c_stream,
+                                               INPAR::MESHFREE::c_freesp),
+                                    &meshfree);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& ps = list->sublist("PATIENT SPECIFIC",false,"");

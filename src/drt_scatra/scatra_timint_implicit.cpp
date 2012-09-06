@@ -2319,6 +2319,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   else
     discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 
+//  (SystemMatrix()->EpetraMatrix())->Print(cout); // kn nis
+
   discret_->ClearState();
 
   //----------------------------------------------------------------------

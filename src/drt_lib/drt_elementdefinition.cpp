@@ -88,6 +88,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   //PrintElementLines(stream,"CONDIF2");
   //PrintElementLines(stream,"CONDIF3");
   PrintElementLines(stream,"TRANSP");
+  PrintElementLines(stream,"METRANSP");
 
   PrintSectionHeader(stream,"ALE ELEMENTS");
   PrintElementLines(stream,"ALE2");

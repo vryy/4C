@@ -6,6 +6,7 @@
 #include "drt_parobjectregister.H"
 
 #include "../drt_nurbs_discret/drt_control_point.H"
+#include "../drt_meshfree_discret/drt_meshfree_node.H"
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
@@ -19,6 +20,7 @@
 #include "../drt_torsion2/torsion2.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_scatra/scatra_element.H"
+#include "../drt_meshfree_discret/meshfree_scatra_cell.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_combust/combust3.H"
 #include "../drt_ale2/ale2.H"
@@ -119,6 +121,7 @@ std::string DRT::ParObjectList()
     << DRT::ConditionObjectType::Instance().Name() << " "
     << DRT::NodeType::Instance().Name() << " "
     << DRT::NURBS::ControlPointType::Instance().Name() << " "
+    << DRT::MESHFREE::MeshfreeNodeType::Instance().Name() << " "
     << DRT::ELEMENTS::Beam2Type::Instance().Name() << " "
     << DRT::ELEMENTS::Beam2rType::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3Type::Instance().Name() << " "
@@ -133,10 +136,8 @@ std::string DRT::ParObjectList()
 #ifdef D_SHELL8
     << DRT::ELEMENTS::Shell8Type::Instance().Name() << " "
 #endif
-    
     << DRT::ELEMENTS::Wall1Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::Wall1NurbsType::Instance().Name() << " "
-    
 #ifdef D_FLUID3
     << DRT::ELEMENTS::Combust3Type::Instance().Name() << " "
     << DRT::ELEMENTS::FluidType::Instance().Name() << " "
@@ -175,7 +176,6 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::So_tet4ScatraType::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet4ThermoType::Instance().Name() << " "
     << DRT::ELEMENTS::So_weg6Type::Instance().Name() << " "
-
 #ifdef D_ARTNET //_1D_ARTERY_
     << DRT::ELEMENTS::ArteryType::Instance().Name() << " "
     << MAT::Cnst_1d_artType::Instance().Name() << " "
@@ -232,9 +232,8 @@ std::string DRT::ParObjectList()
     << CONTACT::CoElementType::Instance().Name() << " "
     << DRT::ELEMENTS::ConstraintElement2Type::Instance().Name() << " "
     << DRT::ELEMENTS::ConstraintElement3Type::Instance().Name() << " "
-#if defined(D_FLUID3)
     << DRT::ELEMENTS::TransportType::Instance().Name() << " "
-#endif
+    << DRT::ELEMENTS::MeshfreeTransportType::Instance().Name() << " "
 #ifdef D_THERMO
     << DRT::ELEMENTS::ThermoType::Instance().Name() << " "
 #endif

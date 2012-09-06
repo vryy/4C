@@ -49,20 +49,19 @@ enum Action {
  *///                                                             nis Mar12
 /*--------------------------------------------------------------------------*/
 enum BoundaryAction {
-  bd_calc_normal_vectors,                 //calc_normal_vectors,
-  bd_calc_elch_electrode_kinetics,        //calc_elch_electrode_kinetics,
-  bd_calc_loma_therm_press,               //calc_therm_press,
-  bd_integrate_shape_functions,           //integrate_shape_functions_boundary,
-  bd_calc_Neumann_inflow,                 //calc_Neumann_inflow,
-  bd_calc_convective_heat_transfer,       //calc_convective_heat_transfer,
-  bd_calc_weak_Dirichlet,                 //WeakDirichlet,
-  bd_calc_surface_permeability,           //calc_surface_permeability,
-  bd_calc_TG_outflow,                     //levelset_TaylorGalerkin_boundary,
-  bd_reinitialize_levelset,               //reinitialize_levelset_boundary,
-  bd_add_convective_mass_flux             //add_convective_mass_flux
-}; // enum BoundaryAction
-
-
+// new action                     // PRE_BACI_CLEANING NAME:
+  bd_integrate_shape_functions,     //integrate_shape_functions,
+  bd_calc_normal_vectors,           //calc_normal_vectors,
+  bd_calc_weak_Dirichlet,           //WeakDirichlet,
+  bd_calc_Neumann_inflow,           //calc_Neumann_inflow,
+  bd_add_convective_mass_flux,      //add_convective_mass_flux
+  bd_calc_convective_heat_transfer, //calc_convective_heat_transfer,
+  bd_calc_elch_electrode_kinetics,  //calc_elch_electrode_kinetics,
+  bd_calc_loma_therm_press,         //calc_therm_press,
+  bd_calc_surface_permeability,     //calc_surface_permeability,
+  bd_calc_TG_outflow,               //levelset_TaylorGalerkin_boundary,
+  bd_reinitialize_levelset          //reinitialize_levelset_boundary,
+}; // enum SCATRA::BoundaryAction
 } // namespace SCATRA
 
 #endif // SCATRA_ELE_ACTION_H

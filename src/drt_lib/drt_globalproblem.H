@@ -281,8 +281,18 @@ public:
   /// @name Input parameter sections
   /// direct access to parameters from input file sections
 
-  const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
+//<<<<<<< .mine
 //  const Teuchos::ParameterList& DiscretisationParams() const { return getParameterList()->sublist("DISCRETISATION"); }
+//  const Teuchos::ParameterList& ProblemTypeParams() const { return getParameterList()->sublist("PROBLEM TYP"); }
+//  const Teuchos::ParameterList& ProblemSizeParams() const { return getParameterList()->sublist("PROBLEM SIZE"); }
+//=======
+//>>>>>>> .r16680
+  const Teuchos::ParameterList& MeshfreeParams() const { return getParameterList()->sublist("MESHFREE"); }
+  const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
+//<<<<<<< .mine
+//=======
+////  const Teuchos::ParameterList& DiscretisationParams() const { return getParameterList()->sublist("DISCRETISATION"); }
+//>>>>>>> .r16680
   const Teuchos::ParameterList& DesignDescriptionParams() const { return getParameterList()->sublist("DESIGN DESCRIPTION"); }
   const Teuchos::ParameterList& PatSpecParams() const { return getParameterList()->sublist("PATIENT SPECIFIC"); }
   const Teuchos::ParameterList& StructuralDynamicParams() const { return getParameterList()->sublist("STRUCTURAL DYNAMIC"); }

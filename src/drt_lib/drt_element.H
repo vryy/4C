@@ -64,6 +64,11 @@ namespace INPUT
 class LineDefinition;
 }
 
+namespace MESHFREE
+{
+class Cell;
+}
+
 
 // forward declarations
 class Discretization;
@@ -86,6 +91,8 @@ class Element : public DRT::ParObject
 public:
 
   //! @name Enums and Friends
+
+  friend class MESHFREE::Cell;
 
   /*!
    \brief Element shape type

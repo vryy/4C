@@ -5,6 +5,8 @@
 #include "drt_nodereader.H"
 #include "drt_globalproblem.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
+#include "../drt_meshfree_discret/drt_meshfree_discret.H"
+#include "../drt_meshfree_discret/drt_meshfree_node.H"
 
 #include <Epetra_Time.h>
 
@@ -149,9 +151,36 @@ void NodeReader::Read()
               break;
             }
         }
+        // this node is a Nurbs control point
+        else if (tmp=="KNOT")
+        {
+          double coords[3];
+          int nodeid;
+          file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
+          nodeid--;
+          if (tmp!="COORD") dserror("failed to read node %d",nodeid);
+          std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
+          for (unsigned i=0; i<diss.size(); ++i)
+          {
+            // create node and add to discretization
+            Teuchos::RCP<DRT::Node> node = rcp(new DRT::Node(nodeid,coords,myrank));
+            Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> knot = rcp(new DRT::MESHFREE::MeshfreeNode(nodeid,coords,myrank));
+            diss[i]->AddNode(node);
+            // hyper hack ?
+            rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(diss[i])->AddKnot(knot);
+          }
+          ++bcount;
+          if (block != nblock-1) // last block takes all the rest
+            if (bcount==bsize)   // block is full
+            {
+              ++filecount;
+              break;
+            }
+        }
+        // this node is a Nurbs control point
         else if (tmp=="CP")
         {
-          // read control points for isogeometric analysis
+          // read control points for isogeometric analysis (Nurbs)
           double coords[3];
           double weight;
 
@@ -187,7 +216,7 @@ void NodeReader::Read()
 
     double t2 = time.ElapsedTime();
     if (!myrank && !reader_.MyOutputFlag())
-      printf("reading %10.5e secs",t2-t1); 
+      printf("reading %10.5e secs",t2-t1);
 
     // export block of nodes to other processors as reflected in rownodes,
     // changes ownership of nodes
@@ -200,7 +229,7 @@ void NodeReader::Read()
     double t3 = time.ElapsedTime();
     if (!myrank && !reader_.MyOutputFlag())
     {
-      printf(" / distrib %10.5e secs\n",t3-t2); 
+      printf(" / distrib %10.5e secs\n",t3-t2);
       fflush(stdout);
     }
 

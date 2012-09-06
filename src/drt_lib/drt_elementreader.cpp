@@ -14,6 +14,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 
+#include "../drt_meshfree_discret/drt_meshfree_cell.H"
 
 #include "drt_elementreader.H"
 #include "standardtypes_cpp.H"
@@ -258,7 +259,7 @@ void ElementReader::Partition()
 
   if (!myrank)
   {
-    printf("numele %d nblock %d bsize %d\n",numele,nblock,bsize); 
+    printf("numele %d nblock %d bsize %d\n",numele,nblock,bsize);
     fflush(stdout);
   }
   Epetra_Time timer(*comm_);
@@ -267,7 +268,7 @@ void ElementReader::Partition()
   for (int block=0; block<nblock; ++block)
   {
     double t1 = timer.ElapsedTime();
-    vector<int> gidlist; 
+    vector<int> gidlist;
     if (!endofsection && 0==myrank)
     {
       gidlist.reserve(bsize);
@@ -322,6 +323,12 @@ void ElementReader::Partition()
 
               ele->SetNodeIds(distype,linedef);
               ele->ReadElement(eletype,distype,linedef);
+              Teuchos::RCP<DRT::MESHFREE::Cell> cell = rcp_dynamic_cast<DRT::MESHFREE::Cell>(ele);
+              if (cell!=Teuchos::null)
+              {
+                // we have a meshfree shadow or dummy element
+                cell->SetKnotIds(distype,linedef);
+              }
             }
             else
             {
@@ -358,7 +365,7 @@ void ElementReader::Partition()
     } // if (0==myrank)
 
     double t2 = timer.ElapsedTime();
-    if (!myrank) 
+    if (!myrank)
       printf("ele block %d reading %10.5e secs / ",block,t2-t1);
 
     // export junk of elements to other processors as reflected in the linear
@@ -367,8 +374,8 @@ void ElementReader::Partition()
     // this also works but is slower
     //dis_->ExportRowElements(*roweles_);
     double t3 = timer.ElapsedTime();
-    if (!myrank) 
-    {                  
+    if (!myrank)
+    {
       printf("distrib time %10.5e secs\n",t3-t2);
       fflush(stdout);
     }
@@ -380,7 +387,7 @@ void ElementReader::Partition()
   vector<int> nids;
   numnodes = (int)nodes_.size();
   comm_->Broadcast(&numnodes,1,0);
-  
+
   // We want to be able to read empty fields. If we have such a beast
   // just skip the partitioning.
   if (numnodes)

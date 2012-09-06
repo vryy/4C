@@ -299,7 +299,7 @@ void DRT::Discretization::BuildNodeToElementPointers()
 }
 
 /*----------------------------------------------------------------------*
- |  set degrees of freedom (public)                          mwgee 03/07|
+ |  set degrees of freedom (protected)                       mwgee 03/07|
  *----------------------------------------------------------------------*/
 int DRT::Discretization::AssignDegreesOfFreedom(int start)
 {
