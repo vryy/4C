@@ -8,8 +8,10 @@ namespace GEO
 {
 namespace CUT
 {
-
-/// element local coordinates of a point
+/*!
+\brief Class to check whether a point lies inside an element, and also to
+compute local coordinates of a point with respect to the element
+ */
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement
 >
@@ -41,14 +43,31 @@ public:
     Scale();
   }
 
+  /*!
+  \brief Computes local coordinates of the point and returns true if it is within the element
+  Uses tolerance set in cut_tolerance.H
+   */
   bool Compute();
 
+  /*!
+  \brief Computes local coordinates of the point and returns true if it is within the element
+   */
   bool ComputeTol(double Tol);
 
+  /*!
+  \brief Returns true if local coordinates of the point is within range defined for the element.
+  Uses tolerance set in cut_tolerance.H
+   */
   bool WithinLimits();
 
+  /*!
+  \brief Returns true if local coordinates of the point is within range defined for the element
+   */
   bool WithinLimitsTol(double Tol);
 
+  /*!
+  \brief Returns local coordinates of the point
+   */
   const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
 private:

@@ -912,6 +912,12 @@ void GEO::CUT::VolumeCell::GenerateInternalGaussRule()
     Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
                          DRT::UTILS::CollectedGaussPoints( 0 ) );
 
+    //x-coordinate of main Gauss point is projected in the reference plane
+    double xbegin = (RefEqnPlane_[3]-RefEqnPlane_[1]*etaFacet(1,0)-
+                    RefEqnPlane_[2]*etaFacet(2,0))/RefEqnPlane_[0];
+
+    double jac = fabs(xbegin-etaFacet(0,0))*0.5; // jacobian for 1D transformation rule
+
     // -----------------------------------------------------------------------------
     // project internal gauss point from interval (-1,1) to the actual interval
     // -----------------------------------------------------------------------------
@@ -919,11 +925,6 @@ void GEO::CUT::VolumeCell::GenerateInternalGaussRule()
     {
       const LINALG::Matrix<1,1> eta( iqu.Point() );
       double weight = iqu.Weight();
-
-      //x-coordinate of main Gauss point is projected in the reference plane
-      double xbegin = (RefEqnPlane_[3]-RefEqnPlane_[1]*etaFacet(1,0)-
-                      RefEqnPlane_[2]*etaFacet(2,0))/RefEqnPlane_[0];
-      double jac = fabs(xbegin-etaFacet(0,0))*0.5; // jacobian for 1D transformation rule
 
       double xmid = 0.5*(xbegin+etaFacet(0,0));
       intpt(0,0) = (xmid-xbegin)*eta(0,0)+xmid;    // location of internal gauss points
@@ -994,68 +995,10 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   if( posi==0 )
     dserror( "undefined position for the volumecell" );
 
-//if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
-//as this vc will never be computed in xfem algorithm
+  //if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
+  //as this vc will never be computed in xfem algorithm
   if(posi==-2 && include_inner==false)
     return;
-
-#if 0
-  if(1)//elem->Id()==645
-  {
-    std::cout<<"the corner coordinates of the element\n";
-    const std::vector<Side*> &ele_sides = elem->Sides();
-    for(std::vector<Side*>::const_iterator i=ele_sides.begin();i!=ele_sides.end();i++)
-    {
-      std::cout<<"side\n";
-      Side*sss = *i;
-      const std::vector<Node*> &nnn = sss->Nodes();
-      for(std::vector<Node*>::const_iterator j=nnn.begin();j!=nnn.end();j++)
-      {
-        Node *nn = *j;
-        double chh[3];
-        nn->Coordinates( chh );
-        LINALG::Matrix<3,1> glo,loc;
-        glo(0,0) = chh[0];
-        glo(1,0) = chh[1];
-        glo(2,0) = chh[2];
-        elem->LocalCoordinates(glo,loc);
-    //          std::cout<<glo(0,0)<<"\t"<<glo(1,0)<<"\t"<<glo(2,0)<<"\t";
-        std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
-  //                       std::cout<<chh[0]<<"\t"<<chh[1]<<"\t"<<chh[2]<<std::endl;
-      }
-    }
-    dserror("done");
-  }
-#endif
-
-#if 0
-  /*const plain_facet_set & facete = Facets();
-  std::cout<<"the volumecell = "<<this->ParentElement()->Id()<<"\n";
-  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-  {
-    Facet *fe = *i;
-    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem);
-    std::cout<<"face\n";
-    for( std::vector<std::vector<double> >::iterator m=cornersLocal.begin();m!=cornersLocal.end();m++ )
-    {
-      std::vector<double> coo = *m;
-      std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
-    }
-  }*/
-
-  /*****************************************/
-  /*LINALG::Matrix<3,1> a,k;
-  a(0,0) = -2;
-  a(1,0) = 1;
-  a(2,0) = 1;
-
-  elem->GlobalCoordinates(a,k);
-  std::string is = this->IsThisPointInside(k);
-  std::cout<<"The point is = "<<is<<"\n";*/
-  /*****************************************/
-  //dserror("done");
-
-#endif
 
   DirectDivergence dd(this,elem,posi,mesh);
 

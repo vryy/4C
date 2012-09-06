@@ -40,7 +40,6 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 
     if(fnc==1)
     {
-      std::cout<<"volume = "<<rhs_mom(0)<<"\n";
       if(rhs_mom.InfNorm()>1e-5 && rhs_mom(0)<0.0)
         dserror("negaive volume in base function integration. is ordering of vertices right?");
     }
@@ -839,7 +838,9 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 #endif
 
 		const double maxError = err.InfNorm();
+#ifdef DEBUGCUTLIBRARY
 		std::cout<<"max error = "<<maxError<<"\n";
+#endif
 		if(maxError<1e-10 || numeach==13)
 			break;
 		else

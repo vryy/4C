@@ -51,6 +51,17 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
 
     if( mm==3 )
     {
+      // though inline points are deleted, skipping an intermediate point for concave facet
+      // can still result in inline points
+      if( geoType != "convex")
+      {
+        if( KERNEL::IsOnLine( pts[0],pts[1],pts[2] ) )
+        {
+          mm--;
+          continue;
+        }
+      }
+
       eqn_plane = KERNEL::EqnPlane( pts[0], pts[1], pts[2] );
       return eqn_plane;
     }
@@ -907,7 +918,8 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
 
 
     /***************************************************************************************/
-    divCells.clear();
+    // change splitting cells into triangulated cells
+    /*divCells.clear();
 
     for ( std::vector<std::vector<Point*> >::const_iterator j=split1.begin();
                                                             j!=split1.end(); ++j )
@@ -922,8 +934,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
         std::cout<<"number of sides = "<<tri.size();
         dserror("Splitting created neither tri3 or quad4");
       }
-    }
-    std::cout<<"I am changed\n"; //blockkk
+    }*/
     /***************************************************************************************/
   }
 }

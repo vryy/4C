@@ -353,7 +353,17 @@ bool GEO::CUT::KERNEL::PtInsideQuad( std::vector<Point*> quad, Point* check )
 
   int concsize = concavePts.size();
   if( concsize > 1 )
+  {
+    std::cout<<"The points of the failing Quad are\n";
+    for( unsigned i=0;i<4;i++ )
+    {
+      Point* pt = quad[i];
+      double x[3];
+      pt->Coordinates(x);
+      std::cout<<x[0]<<"\t"<<x[1]<<"\t"<<x[2]<<"\n";
+    }
     dserror( "Quad has more than 1 concave pt --> Selfcut" );
+  }
 
   int indStart = 0;
   if( concsize==1 )
@@ -399,7 +409,33 @@ bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints,
   else if( fabs(eqn[1])>fabs(eqn[2]) && fabs(eqn[1])>fabs(eqn[0]) )
     projPlane = "y";
   else
-    projPlane = "z";
+  {
+    if( fabs(eqn[0])==fabs(eqn[1]) )
+    {
+      if( fabs(eqn[0]) > fabs(eqn[2]) )
+        projPlane = "x";
+      else
+        projPlane = "z";
+    }
+    else if( fabs(eqn[1])==fabs(eqn[2]) )
+    {
+      if( fabs(eqn[1]) > fabs(eqn[0]) )
+        projPlane = "y";
+      else
+        projPlane = "x";
+    }
+    else if( fabs(eqn[0])==fabs(eqn[2]) )
+    {
+      if( fabs(eqn[0]) > fabs(eqn[1]) )
+        projPlane = "z";
+      else
+        projPlane = "y";
+    }
+    else
+    {
+      projPlane = "z";
+    }
+  }
 
   int ind1=0,ind2=0;
   if( projPlane=="x" )

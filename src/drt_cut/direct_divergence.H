@@ -52,6 +52,9 @@ namespace GEO
                          std::vector<double>& RefPlaneEqn,
                          plain_facet_set::const_iterator& IteratorRefFacet );
 
+        /*!
+        \brief Geometry of volumecell, reference facet and main gauss points for gmsh output.
+         */
         void DivengenceCellsGMSH( plain_facet_set::const_iterator& IteratorRefFacet,
                                   std::vector<plain_facet_set::const_iterator>& facetIterator,
                                   const DRT::UTILS::GaussIntegration & gpv );
