@@ -253,14 +253,14 @@ if (Trilinos_FOUND)
     ${LIBRARIES}
     )
 
-  if (HAVE_MueLu)
+  #if (HAVE_MueLu)
     # ugly hacks for MueLu
     # move muelu-utils to end of library list. it seems that otherwise Teuchos-dependencies cannot be resolved by linker
-    set(LIBRARIES
-      ${LIBRARIES}
-      muelu-utils
-      )
-  endif (HAVE_MueLu)
+    #set(LIBRARIES
+    #  ${LIBRARIES}
+    #  muelu-utils
+    #  )
+  #endif (HAVE_MueLu)
     
 # define of which library we are using - for compatibility checks
 #if (Trilinos_VERSION STREQUAL "10.1d") 
@@ -1127,7 +1127,6 @@ set(OBJS_LINALG
   src/linalg/solver_mlpreconditioner.cpp
   src/linalg/solver_muelupreconditioner.cpp
   src/linalg/solver_muelucontactpreconditioner.cpp
-  src/linalg/solver_muelucontactpreconditioner2.cpp
   src/linalg/solver_tekopreconditioner.cpp
   src/linalg/solver_belossolver.cpp
   src/linalg/solver_aztecsolver.cpp
@@ -1519,6 +1518,7 @@ add_library(drt_adapter ${OBJS_DRT_ADAPT})
 add_library(alg_ale ${OBJS_DRT_ALEALG})
 add_library(alg_artnet ${OBJS_DRT_ARTNET})
 add_library(alg_combust ${OBJS_DRT_COMBUST})
+#add_library(alg_contact SHARED ${OBJS_DRT_CONTACT})
 add_library(alg_contact ${OBJS_DRT_CONTACT})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
@@ -1552,6 +1552,7 @@ set(SINGLEFIELD_LIBRARIES
 add_library(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
 #add_library(drt_meshfree ${OBJS_DRT_MESHFREE_DISCRET})
 add_library(drt_constraint ${OBJS_DRT_CONSTRAINT})
+#add_library(drt_mortar SHARED ${OBJS_DRT_MORTAR})
 add_library(drt_mortar ${OBJS_DRT_MORTAR})
 
 # material definitions
@@ -1603,6 +1604,7 @@ add_library(post_drt_common ${OBJS_POST_DRT_COMMON})
 add_library(filter_common ${OBJS_FILTER_COMMON})
 
 # linear algebra objects
+#add_library(linalg SHARED ${OBJS_LINALG})
 add_library(linalg ${OBJS_LINALG})
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)

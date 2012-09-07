@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file solver_mlpreconditioner2.H
+\file solver_mlpreconditioner.H
 
 <pre>
 Maintainer: Tobias Wiesner
@@ -10,8 +10,8 @@ Created on: Jan 11, 2012
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifndef SOLVER_MUELUCONTACTPRECONDITIONER2_H_
-#define SOLVER_MUELUCONTACTPRECONDITIONER2_H_
+#ifndef SOLVER_MUELUCONTACTPRECONDITIONER_H_
+#define SOLVER_MUELUCONTACTPRECONDITIONER_H_
 
 #ifdef HAVE_MueLu
 
@@ -19,7 +19,6 @@ Created on: Jan 11, 2012
 
 
 #include <MueLu_Hierarchy.hpp> // for MueLu
-#include <MueLu_SmootherFactory.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
@@ -38,11 +37,11 @@ namespace LINALG
       Set of single-matrix algebraic multi-grid preconditioners
       for contact/meshtying problems
      */
-    class MueLuContactPreconditioner2 : public PreconditionerType
+    class MueLuContactPreconditioner : public PreconditionerType
     {
     public:
 
-      MueLuContactPreconditioner2( FILE * outfile, Teuchos::ParameterList & mllist );
+      MueLuContactPreconditioner( FILE * outfile, Teuchos::ParameterList & mllist );
 
       virtual void Setup( bool create,
                           Epetra_Operator * matrix,
@@ -55,12 +54,8 @@ namespace LINALG
 
     private:
 
-      //! function interprets ML parameter lists for creating contact level smoothers
-      //! \note contact smoothers only work with relaxation based smoothers (i.e. Jacobi, GS and SGS). no special handling for Ifpack based smoothers like ILU. So, expect poor behaviour when using ILU.
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
-
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
-
+      
       // private Setup routine for MueLu Multigrid hierarchy
       Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Operator> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
 
@@ -79,4 +74,4 @@ namespace LINALG
 #endif // HAVE_MueLu
 
 
-#endif /* SOLVER_MUELUCONTACTPRECONDITIONER2_H_ */
+#endif /* SOLVER_MUELUCONTACTPRECONDITIONER_H_ */

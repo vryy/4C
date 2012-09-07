@@ -19,6 +19,7 @@ Created on: Jan 11, 2012
 
 
 #include <MueLu_Hierarchy.hpp> // for MueLu
+#include <MueLu_SmootherFactory.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
@@ -54,8 +55,11 @@ namespace LINALG
 
     private:
 
+      //! function interprets ML parameter lists for creating contact level smoothers
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
+
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
-      
+
       // private Setup routine for MueLu Multigrid hierarchy
       Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Operator> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
 
