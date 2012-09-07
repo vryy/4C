@@ -46,9 +46,9 @@ DRT::MESHFREE::MaxEntProblem::MaxEntProblem(Teuchos::ParameterList const & param
   // negativity weight of basis function; 0=non-negative
   const double neg      = params.get<double>("NEGATIVITY");
 
-  dual1d_ = Teuchos::rcp(new DualProblem<1>::DualProblem(pu,neg,this));
-  dual2d_ = Teuchos::rcp(new DualProblem<2>::DualProblem(pu,neg,this));
-  dual3d_ = Teuchos::rcp(new DualProblem<3>::DualProblem(pu,neg,this));
+  dual1d_ = Teuchos::rcp(new DualProblem<1>(pu,neg,this));
+  dual2d_ = Teuchos::rcp(new DualProblem<2>(pu,neg,this));
+  dual3d_ = Teuchos::rcp(new DualProblem<3>(pu,neg,this));
 };
 
 /*--------------------------------------------------------------------------*
