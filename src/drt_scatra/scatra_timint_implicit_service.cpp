@@ -62,6 +62,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool w
   }
   case INPAR::SCATRA::flux_total_boundary:
   case INPAR::SCATRA::flux_diffusive_boundary:
+  case INPAR::SCATRA::flux_convective_boundary:
   {
     // calculate normal flux vector field only for the user-defined boundary conditions:
     vector<std::string> condnames;
@@ -205,8 +206,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
   if (writeflux_==INPAR::SCATRA::flux_convective_boundary)
   {
-    // zero out residual vector -> we do not need this info
-    residual_->PutScalar(0.0);
+    // zero out trueresidual vector -> we do not need this info
+    trueresidual_->PutScalar(0.0);
   }
   else
   {
@@ -298,7 +299,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   {
     if (myrank_==0)
       cout<<"Convective flux contribution is added to trueresidual_ vector.\n"
-      "Be sure not to address the same boundary part twice!\n";
+      "Be sure not to address the same boundary part twice!\n Two flux calculation boundaries "
+      "should also not share a common node!"<<endl;
 
     // now we evaluate the conditions and separate via ConditionID
     for (unsigned int i=0; i < condnames.size(); i++)

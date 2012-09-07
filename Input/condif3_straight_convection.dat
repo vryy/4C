@@ -61,7 +61,7 @@ VELFUNCNO                       1
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
-WRITEFLUX                       No
+WRITEFLUX                       convectiveflux_boundary// totalflux_boundary
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
@@ -240,6 +240,10 @@ DLINE                           0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 // DOBJECT PBC_ID ORIENTATION
 DSURF                           0
+--------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
+DSURF                           2
+E 2 - Best wishes // for flux calculation on these boundaries
+E 4 - Good luck
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 643 DNODE 1
 NODE 1 DNODE 2
@@ -4778,7 +4782,6 @@ NODE 1331 COORD 1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+0
 999 TRANSP HEX8 1328 1325 1317 1323 1322 1318 1299 1312 MAT 1
 1000 TRANSP HEX8 1331 1328 1323 1329 1330 1322 1312 1324 MAT 1
 -------------------------------------------------------------------MATERIALS
-//                              MAT_condif
 MAT 1 MAT_scatra DIFFUSIVITY 0.01
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
@@ -4795,7 +4798,10 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 5.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 922 POSITION phi NAME phi VALUE 9.803921569e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 784 POSITION phi NAME phi VALUE 9.996155325e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 922 POSITION phi NAME phi VALUE 9.803921569e-01 TOLERANCE 1e-10
+SCATRA DIS 1 NODE 784 POSITION phi NAME phi VALUE 9.996155325e-01 TOLERANCE 1e-10
+SCATRA DIS 1 NODE 1   POSITION fluxx NAME fluxz VALUE 0.000000000000000 TOLERANCE 1e-10
+SCATRA DIS 1 NODE 1   POSITION fluxx NAME fluxz VALUE 0.000000000000000 TOLERANCE 1e-10
+SCATRA DIS 1 NODE 1   POSITION fluxz NAME fluxz VALUE 5.000000000000000 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END
