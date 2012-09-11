@@ -193,14 +193,47 @@ void ADAPTER::FluidFluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> 
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
-  // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
-  //
-  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
-  //
+  /*
+   * Delta d(n+1,i+1) = fac * [Delta u(n+1,i+1) + 2 * u(n)]
+   *
+   *             / = dt / 2   if interface time integration is second order
+   * with fac = |
+   *             \ = dt       if interface time integration is first order
+   */
   double timescale = 1./TimeScaling();
   fcx->Update(xfluidfluid_->Dt(),*veln,timescale);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::VelocityToDisplacement(
+    Teuchos::RCP<Epetra_Vector> fcx,
+    Teuchos::RCP<Epetra_Vector> ddgpre,
+    Teuchos::RCP<Epetra_Vector> dugpre
+)
+{
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().SameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().SameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
+#endif
+
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+
+  /*
+   * Delta d(n+1,i+1) = fac * [ Delta u(n+1,i+1) + Delta u(predicted)]
+   *
+   *                  + dt * u(n) - Delta d_structure(predicted)
+   *
+   *             / = dt / 2   if interface time integration is second order
+   * with fac = |
+   *             \ = dt       if interface time integration is first order
+   */
+  const double ts = 1.0/TimeScaling();
+  fcx->Update(xfluidfluid_->Dt(), *veln, ts, *dugpre, ts);
+  fcx->Update(-1.0, *ddgpre, 1.0);
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

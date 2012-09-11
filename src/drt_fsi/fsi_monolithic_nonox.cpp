@@ -47,7 +47,6 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
     = DRT::INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsidyn,"NORMCOMBI_RESFINC");
   tolinc_ =  fsidyn.get<double>("CONVTOL");
   tolfres_ = fsidyn.get<double>("CONVTOL");
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -214,14 +213,14 @@ void FSI::MonolithicNoNOX::LinearSolve()
   else
     iterinc_->PutScalar(0.0);
 
-  LINALG::ApplyDirichlettoSystem(
-    sparse,
-    iterinc_,
-    rhs_,
-    Teuchos::null,
-    zeros_,
-    *CombinedDBCMap()
-    );
+//   LINALG::ApplyDirichlettoSystem(
+//     sparse,
+//     iterinc_,
+//     rhs_,
+//     Teuchos::null,
+//     zeros_,
+//     *CombinedDBCMap()
+//     );
 
   // get UMFPACK...
 
@@ -238,7 +237,6 @@ void FSI::MonolithicNoNOX::LinearSolve()
 void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
    TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
-
    Teuchos::RCP<const Epetra_Vector> sx;
    Teuchos::RCP<const Epetra_Vector> fx;
    Teuchos::RCP<const Epetra_Vector> ax;
@@ -274,7 +272,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
      //cout0_  << "structure time: " << ts.ElapsedTime() << endl;
    }
 
-  {
+   {
      // ALE field expects the sum of all increments and not the
      // latest increment. It adds the sum of all increments to the
      // displacement of the last time step. So we need to build the
@@ -282,7 +280,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
      Epetra_Time ta(Comm());
      AleField().Evaluate(ax);
-  }
+   }
 
    // transfer the current ale mesh positions to the fluid field
    Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
@@ -388,6 +386,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIter()
 void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
 {
   cout << "CONVTOL: " << tolfres_ << endl;
+
   // open outstringstream
   std::ostringstream oss;
 
