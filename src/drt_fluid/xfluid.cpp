@@ -1718,7 +1718,7 @@ FLD::XFluid::XFluid(
   }
 
   // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
-  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis_,true));
+  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
 

@@ -33,7 +33,7 @@ namespace DRT
   sub-discretization, its dofs are assigned according to the dofs of the source.
 
   */
-  class TransparentDofSet : public DRT::DofSet
+  class TransparentDofSet : public virtual DRT::DofSet
   {
   public:
 
@@ -111,7 +111,7 @@ namespace DRT
       DRT::Exporter  & exporter,
       MPI_Request    & request);
 
-  private:
+  protected:
 
     RCP<DRT::Discretization> sourcedis_; ///< source discretization
 

@@ -143,14 +143,20 @@ public:
 
   void GmshOutput(const Teuchos::RCP<DRT::Discretization>        bgdis);
 
-  void PatchelementForIncompressibility(const Teuchos::RCP<DRT::Discretization>     bgdis,
-                                        XFEM::FluidWizard                  wizard_n,
-                                        XFEM::FluidWizard                  wizard_np,
-                                        Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+  void PatchelementForIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
+                                        Teuchos::RCP<XFEM::FluidWizard>          wizard_n,
+                                        Teuchos::RCP<XFEM::FluidWizard>          wizard_np,
+                                        Teuchos::RCP<LINALG::MapExtractor>       dbcmaps);
 
-  void EnforceIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                                XFEM::FluidWizard               wizard,
-                                Teuchos::RCP<Epetra_Vector>     initialvel);
+  /// build an incompressibility discretization
+  void PrepareIncompDiscret(const Teuchos::RCP<DRT::Discretization>     bgdis,
+                            Teuchos::RCP<XFEM::FluidWizard>             wizard_np);
+
+
+  void EvaluateIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
+                                 Teuchos::RCP<XFEM::FluidWizard>          wizard);
+
+  void SolveIncompOptProb(Teuchos::RCP<Epetra_Vector>     initialvel);
 
 
   /// Transfer data in the round robin communication pattern
@@ -194,6 +200,7 @@ public:
   private:
 
   Teuchos::RCP<DRT::Discretization> embdis_; // embedded  discretization
+  Teuchos::RCP<DRT::Discretization> incompdis_; // incompressibility  discretization
 
   /// maps needed for xfem time integration
   std::map<int, std::vector<int> > stdnoden_;
@@ -226,14 +233,11 @@ public:
 
   enum INPAR::XFEM::XFluidFluidTimeInt timeintapproach_;
 
-  // elements of the incompressibility patch
-  std::vector<int> incompelementidsAllproc_;
+  Teuchos::RCP<Epetra_Vector> C_; // incompressibility vector
 
-  // Incompressibilitypatch dofrowmap
-  // map of all dofs of incompressibility patch
-  Teuchos::RCP<const Epetra_Map>  incompressibilitydofrowmap_;
-  // map of all velcoity-dofs of incompressibility patch (no pressure)
-  Teuchos::RCP<const Epetra_Map>  incompressibilityveldofrowmap_;
+  // incompressibility elements and nodes
+  std::set<int> incompnodeids_set_;
+  std::set<int> incompelementids_set_;
 
   Teuchos::ParameterList        params_;
 

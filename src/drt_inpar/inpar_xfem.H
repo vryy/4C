@@ -125,7 +125,8 @@ namespace INPAR
     {
       Xff_TimeInt_FullProj,
       Xff_TimeInt_ProjIfMoved,
-      Xff_TimeInt_KeepGhostValues
+      Xff_TimeInt_KeepGhostValues,
+      Xff_TimeInt_IncompProj
     };
 
     /// xfluid time integration approach

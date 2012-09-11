@@ -13,6 +13,7 @@ Maintainer: Shadan Shahmiri
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
+#include <EpetraExt_MatrixMatrix.h>
 #include "xfluidfluid_timeInt.H"
 #include "xfem_fluidwizard.H"
 #include "../linalg/linalg_utils.H"
@@ -22,6 +23,7 @@ Maintainer: Shadan Shahmiri
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_dofset_transparent_independent.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_cut/cut_boundingbox.H"
 #include "../drt_cut/cut_elementhandle.H"
@@ -34,6 +36,7 @@ Maintainer: Shadan Shahmiri
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
+#include "../drt_fluid/fluid_utils.H"
 
 #include <iostream>
 
@@ -274,7 +277,9 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
                                                                             Teuchos::RCP<Epetra_Vector>           embstatevn,
                                                                             Teuchos::RCP<Epetra_Vector>           aledispn)
 {
-  if (timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj or timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved)
+  if (timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj or
+      timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved or
+      timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
     SetNewBgStatevectorFullProjection(bgdis, bgstatevn, bgstatevnp, embstatevn, aledispn);
   else if(timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues)
     SetNewBgStatevectorKeepGhostValues(bgdis, bgstatevn, bgstatevnp, embstatevn, aledispn);
@@ -316,7 +321,6 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
     if ((iterstn != stdnoden_.end() and iterstnp != stdnodenp_.end()) or
         (iterstn != stdnoden_.end() and iterenp != enrichednodenp_.end()))
     {
-      int numsets = bgdis->NumDof(bgnode)/4;
       vector<int> gdofsn = iterstn->second;
 
       //TODO!! die richtige dofs von bgstatevn rauspicke, wenn mehrere
@@ -326,8 +330,9 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
       if (iterstn->second.size()>4)
         cout << RED_LIGHT << "BUG: more standard sets!!!! "<< "Node GID " << bgnode->Id() << END_COLOR << endl;
 
-      if (numsets > 1)
-        cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+//      int numsets = bgdis->NumDof(bgnode)/4;
+//      if (numsets > 1)
+//         cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
 
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
 
@@ -359,9 +364,9 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
       LINALG::Matrix<4,1>    interpolatedvec(true);
       interpolated_vecs.push_back(interpolatedvec);
 
-      int numsets = bgdis->NumDof(bgnode)/4;
-      if( numsets > 1 )
-        cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+//      int numsets = bgdis->NumDof(bgnode)/4;
+//       if( numsets > 1 )
+//         cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " <<   bgnode->Id() << END_COLOR << endl;
 
     }
     //do nothing:
@@ -484,8 +489,8 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
     // number of dof-sets
     int numsets = bgdis->NumDof(bgnode)/4;
 
-    if( numsets > 1 )
-      cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+//    if( numsets > 1 )
+//      cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
     int offset = 0;
 
     // if interpolated values are available
@@ -708,8 +713,8 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
       if (iterstn->second.size()>4)
         cout << RED_LIGHT << "BUG: more standard sets!!!! "<< "Node GID " << bgnode->Id() << END_COLOR << endl;
 
-      if (numsets > 1)
-        cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+//       if (numsets > 1)
+//         cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
 
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
 
@@ -740,8 +745,8 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
 
       int numsets = bgdis->NumDof(bgnode)/4;
 
-      if( numsets > 1 )
-        cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+//      if( numsets > 1 )
+//        cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
 
     }
     //keep the ghost dofs:
@@ -1287,36 +1292,27 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutput(const RCP<DRT::Discretization>
 // have the full dofs again.
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RCP<DRT::Discretization>     bgdis,
-                                                                        XFEM::FluidWizard                  wizard_n,
-                                                                        XFEM::FluidWizard                  wizard_np,
-                                                                        Teuchos::RCP<LINALG::MapExtractor> dbcmaps)
+                                                                        RCP<XFEM::FluidWizard>             wizard_n,
+                                                                        RCP<XFEM::FluidWizard>             wizard_np,
+                                                                        Teuchos::RCP<LINALG::MapExtractor> dbcmaps )
 {
-  ///////////////////////////////////////////////////
-  // finde den patch at time t_n
+  //---------------------------------------------
+  // find the patch at time t_n
 
-  // some temporary variables to build the patch
-  std::vector<int> incompdofs;
-  std::vector<int> incompdofs_vel;
-  std::vector<int> incompdofs_vel_without_dirichlet;
+  // delete the elements and nodes of the last time step
+  incompnodeids_set_.clear();
+  incompelementids_set_.clear();
 
-  std::set<int> incompdofs_set;
-  std::set<int> incompdofs_vel_set;
-  std::set<int> incompdofs_vel_without_dirichlet_set;
-
-  std::set<int> incompelementids_set;
-  std::vector<int> incompelementids;
-
-  std::set<int> incompnodeids_set;
 
   // call loop over elements
-  const int numele = bgdis->NumMyColElements();
+  const int numele = bgdis->NumMyRowElements();
   for (int i=0; i<numele; ++i)
   {
     DRT::Element* actele = bgdis->lRowElement(i);
     int numnodes = actele->NumNode();
 
     // get the element handle of actele at time tn
-    GEO::CUT::ElementHandle * e = wizard_n.GetElement( actele );
+    GEO::CUT::ElementHandle * e = wizard_n->GetElement( actele );
 
     const DRT::Node* const* nodesofele = actele->Nodes();
 
@@ -1336,7 +1332,7 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
       if (e->IsCut() and (numnodeswithdofs == numnodes))
       {
         //insert the element
-        incompelementids_set.insert(actele->Id());
+        incompelementids_set_.insert(actele->Id());
 
         //get the nodes adjust to this element
         const int* nodeids = actele->NodeIds();
@@ -1346,51 +1342,22 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
           const int nodegid = nodeids[inode];
 
           //insert the node
-          incompnodeids_set.insert(nodegid);
-
-          //get the dofs of the node
-          const std::vector<int> mydofs(bgdis->Dof(bgdis->gNode(nodegid)));
-
-          // insert the dofs
-          for (size_t k=0; k<mydofs.size(); ++k)
-          {
-            incompdofs_set.insert(mydofs.at(k));
-          }
-
-          // insert just the velocity dofs
-          int numsets = mydofs.size()/4;
-
-          incompdofs_vel_set.insert(mydofs.at((numsets-1)+0));
-          incompdofs_vel_set.insert(mydofs.at((numsets-1)+1));
-          incompdofs_vel_set.insert(mydofs.at((numsets-1)+2));
+          incompnodeids_set_.insert(nodegid);
         }
       }
     }
   }
 
-  // debug output
-//   for(set<int>::iterator iter = incompelementids_set.begin(); iter!= incompelementids_set.end();
-//       iter++)
-//   {
-//     set<int>::const_iterator iterpatchele = incompelementids_set.find(*iter);
-//     cout << "all eles vorher" << *iter << endl;
-//     DRT::Node ** elenodes = bgdis->gElement(*iter)->Nodes();
-//     for(int inode=0; inode<bgdis->gElement(*iter)->NumNode(); ++inode)
-//     {
-//       cout << bgdis->NumDof(elenodes[inode]) << endl;
-//     }
-//   }
-
-  ////////////////////////////////////////////////////
+  //------------------------------------------------
   //  check if all projected nodes are included
   for(set<int>::iterator iter = projectednodeids_.begin(); iter!= projectednodeids_.end();
       iter++)
   {
-    set<int>::const_iterator iterpatchnodes = incompnodeids_set.find(*iter);
+    set<int>::const_iterator iterpatchnodes = incompnodeids_set_.find(*iter);
 
-    if (iterpatchnodes == incompnodeids_set.end())
+    if (iterpatchnodes == incompnodeids_set_.end())
     {
-      cout << "STOP!! Nodes found which were in projected set but not in incompressibility patch!" << *iter << endl;
+      cout << "STOP!! Nodes found which were in projected set but not in incompressibility patch! " << *iter << endl;
 
       //get all adjacent elements of this node
       int numberOfElements = bgdis->gNode(*iter)->NumElement();
@@ -1418,32 +1385,18 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
         // if all nodes of this elements have dofs add it to incomp patch
         if (numnodeswithdofs == numberOfNodes )
         {
-          incompelementids_set.insert(ele_adj->Id());
+          incompelementids_set_.insert(ele_adj->Id());
           cout << "element found " << ele_adj->Id() << endl;
 
           //get the nodes of this element
           const int* nodeids = ele_adj->NodeIds();
 
-          for(int inode=0; inode<ele_adj->NumNode(); ++inode)
+          for (int inode=0; inode<ele_adj->NumNode(); ++inode)
           {
             const int nodegid = nodeids[inode];
 
             //insert the node
-            incompnodeids_set.insert(nodegid);
-
-            //get the dofs of the node
-            const std::vector<int> mydofs(bgdis->Dof(bgdis->gNode(nodegid)));
-
-            // insert the dofs
-            for (size_t k=0; k<mydofs.size(); ++k)
-              incompdofs_set.insert(mydofs.at(k));
-
-            // insert just the velocity dofs
-            int numsets = mydofs.size()/4;
-            incompdofs_vel_set.insert(mydofs.at((numsets-1)+0));
-            incompdofs_vel_set.insert(mydofs.at((numsets-1)+1));
-            incompdofs_vel_set.insert(mydofs.at((numsets-1)+2));
-
+            incompnodeids_set_.insert(nodegid);
           }
           // break the element loop, we've already found one element for this node
           break;
@@ -1452,63 +1405,34 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
     }
   }
 
-  ////////////////////////////////////
+  //------------------------------------------
   //check it again..
   for(set<int>::iterator iter = projectednodeids_.begin(); iter!= projectednodeids_.end();
       iter++)
   {
-    set<int>::const_iterator iterpatchnodes = incompnodeids_set.find(*iter);
+    set<int>::const_iterator iterpatchnodes = incompnodeids_set_.find(*iter);
 
-    if (iterpatchnodes == incompnodeids_set.end())
+    if (iterpatchnodes == incompnodeids_set_.end())
       dserror("BUG!! Nodes found which were in projected set but not in incompressibility patch!",*iter);
   }
 
-// debug output
-//   for(set<int>::iterator iter = incompelementids_set.begin(); iter!= incompelementids_set.end();
-//       iter++)
-//   {
-//     set<int>::const_iterator iterpatchele = incompelementids_set.find(*iter);
-//     cout << "all eles" << *iter << endl;
-//     DRT::Node ** elenodes = bgdis->gElement(*iter)->Nodes();
-//     for(int inode=0; inode<bgdis->gElement(*iter)->NumNode(); ++inode)
+
+//  debug output
+//     for(set<int>::iterator iter = incompelementids_set_.begin(); iter!= incompelementids_set_.end();
+//         iter++)
 //     {
-//       cout << bgdis->NumDof(elenodes[inode]) << endl;
+//       set<int>::const_iterator iterpatchele = incompelementids_set_.find(*iter);
+//       cout << "all eles" << *iter << endl;
+//       DRT::Node ** elenodes = bgdis->gElement(*iter)->Nodes();
+//       for(int inode=0; inode<bgdis->gElement(*iter)->NumNode(); ++inode)
+//       {
+//         cout <<  "bgnode id " <<elenodes[inode]->Id() ;
+//         cout << " dofs " << bgdis->NumDof(elenodes[inode]) << endl;
+//       }
 //     }
-//   }
-
-  incompdofs_vel_without_dirichlet_set = incompdofs_vel_set;
-  // throw the Dirichlet values out of incompdofs_vel map
-  for(std::set<int>::iterator it=incompdofs_vel_set.begin(); it!=incompdofs_vel_set.end(); ++it)
-  {
-    if(dbcmaps->CondMap()->MyGID(*it))
-      incompdofs_vel_without_dirichlet_set.erase(*it);
-  }
 
 
-  ///////////////////////////////////////
-  // convert the sets to vectors
-  std::copy(incompelementids_set.begin(), incompelementids_set.end(), std::back_inserter(incompelementids));
-  std::copy(incompdofs_set.begin(), incompdofs_set.end(), std::back_inserter(incompdofs));
-  std::copy(incompdofs_vel_without_dirichlet_set.begin(), incompdofs_vel_without_dirichlet_set.end(), std::back_inserter(incompdofs_vel));
-
-  // Gather all informations from all processors
-  vector<int> incompdofsAllproc;
-  vector<int> incompveldofsAllproc;
-
-  //information how many processors work at all
-  vector<int> allproc(bgdis->Comm().NumProc());
-
-  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0; i<bgdis->Comm().NumProc(); ++i) allproc[i] = i;
-
-  //gathers information of all processors
-  LINALG::Gather<int>(incompdofs,incompdofsAllproc,(int)bgdis->Comm().NumProc(),&allproc[0],bgdis->Comm());
-  LINALG::Gather<int>(incompdofs_vel,incompveldofsAllproc,(int)bgdis->Comm().NumProc(),&allproc[0],bgdis->Comm());
-  LINALG::Gather<int>(incompelementids,incompelementidsAllproc_,(int)bgdis->Comm().NumProc(),&allproc[0],bgdis->Comm());
-
-  incompressibilitydofrowmap_ = rcp(new Epetra_Map(-1, incompdofsAllproc.size(), &incompdofsAllproc[0], 0, bgdis->Comm()));
-  incompressibilityveldofrowmap_ = rcp(new Epetra_Map(-1, incompveldofsAllproc.size(), &incompveldofsAllproc[0], 0, bgdis->Comm()));
-
+  //---------------------------------
   // Gmsh debug output
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("incom_patch", step_, 5, 0, bgdis->Comm().MyPID());
@@ -1519,10 +1443,9 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
       for (int i=0; i<bgdis->NumMyColElements(); ++i)
       {
         DRT::Element* actele = bgdis->lColElement(i);
-//         GEO::CUT::ElementHandle * e = wizard_n.GetElement( actele );
-        set<int>::const_iterator iter = incompelementids_set.find(actele->Id());
-
-        if ( iter != incompelementids_set.end())
+//         GEO::CUT::ElementHandle * e = wizard_n->GetElement( actele );
+        set<int>::const_iterator iter = incompelementids_set_.find(actele->Id());
+        if ( iter != incompelementids_set_.end())
           IO::GMSH::elementAtInitialPositionToStream(1.0, actele, gmshfilecontent);
         else
           IO::GMSH::elementAtInitialPositionToStream(0.0, actele, gmshfilecontent);
@@ -1530,23 +1453,154 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
       gmshfilecontent << "};\n";
     }
   }
-
 }
+
+// -------------------------------------------------------------------
+// build an incompressibility discretization
+// -------------------------------------------------------------------
+void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discretization>     bgdis,
+                                                            RCP<XFEM::FluidWizard>             wizard_np)
+{
+
+  // generate an empty boundary discretisation
+  incompdis_ = rcp(new DRT::Discretization((string)"incompressibility discretisation",
+                                           rcp(bgdis->Comm().Clone())));
+
+  std::set<int> incompelementids_set_all;
+  std::set<int> incompnodeids_set_all;
+
+   // Gather all informations from all processors
+  vector<int> incompdofsAllproc;
+  vector<int> incompveldofsAllproc;
+
+  // information how many processors work at all
+  vector<int> allproc(bgdis->Comm().NumProc());
+
+  // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  for (int i=0; i<bgdis->Comm().NumProc(); ++i) allproc[i] = i;
+
+  LINALG::Gather<int>(incompelementids_set_,incompelementids_set_all,(int)bgdis->Comm().NumProc(),&allproc[0],bgdis->Comm());
+  LINALG::Gather<int>(incompnodeids_set_,incompnodeids_set_all,(int)bgdis->Comm().NumProc(),&allproc[0],bgdis->Comm());
+
+
+  // determine sets of col und row nodes
+  set<int> adjacent_row;
+  set<int> adjacent_col;
+
+
+  // loop all column elements and label all row nodes next to a MHD node
+  for (int i=0; i<bgdis->NumMyColElements(); ++i)
+  {
+    DRT::Element* actele = bgdis->lColElement(i);
+
+    // get the node ids of this elements
+    const int  numnode = actele->NumNode();
+    const int* nodeids = actele->NodeIds();
+
+    bool found=false;
+
+    set<int>::const_iterator iter = incompelementids_set_all.find(actele->Id());
+    if ( iter != incompelementids_set_all.end()) found=true;
+
+    if(found==true)
+    {
+      // loop nodeids
+      for(int rr=0;rr<numnode;++rr)
+      {
+        int gid=nodeids[rr];
+
+        if ((bgdis->NodeRowMap())->LID(gid)>-1)
+        {
+          adjacent_row.insert(gid);
+        }
+        adjacent_col.insert(gid);
+      }
+    }
+  }
+
+  // add nodes to incompressibility discretisation
+  for(std::set<int>::iterator id = adjacent_row.begin();
+      id!=adjacent_row.end(); ++id)
+  {
+    DRT::Node* actnode=bgdis->gNode(*id);
+
+    RCP<DRT::Node> incompnode =rcp(actnode->Clone());
+
+    incompdis_->AddNode(incompnode);
+  }
+
+
+  // loop all row elements and add all elements with a MHD node
+  for (int i=0; i<bgdis->NumMyRowElements(); ++i)
+  {
+    DRT::Element* actele = bgdis->lRowElement(i);
+
+    bool found=false;
+
+    // check if incompressibility element
+    set<int>::const_iterator iter = incompelementids_set_all.find(actele->Id());
+    if ( iter != incompelementids_set_all.end()) found=true;
+
+    // yes, we have a MHD condition
+    if(found==true)
+    {
+      RCP<DRT::Element> incompele =rcp(actele->Clone());
+
+      incompdis_->AddElement(incompele);
+    }
+  }
+
+  //incompelementids_set_ needs a full NodeRowMap and a NodeColMap
+  RefCountPtr<Epetra_Map> newrownodemap;
+  RefCountPtr<Epetra_Map> newcolnodemap;
+
+  vector<int> rownodes;
+
+  // convert std::set to std::vector
+  for(set<int>::iterator id = adjacent_row.begin();
+      id!=adjacent_row.end();
+      ++id)
+  {
+    rownodes.push_back(*id);
+  }
+
+  // build noderowmap for new distribution of nodes
+  newrownodemap = rcp(new Epetra_Map(-1,
+                                     rownodes.size(),
+                                     &rownodes[0],
+                                     0,
+                                     incompdis_->Comm()));
+
+
+  vector<int> colnodes;
+  for(set<int>::iterator id = adjacent_col.begin();
+      id!=adjacent_col.end();
+      ++id)
+  {
+    colnodes.push_back(*id);
+  }
+
+  // build nodecolmap for new distribution of nodes
+  newcolnodemap = rcp(new Epetra_Map(-1,
+                                     colnodes.size(),
+                                     &colnodes[0],
+                                     0,
+                                     incompdis_->Comm()));
+
+  incompdis_->Redistribute(*newrownodemap,*newcolnodemap,false,false,false);
+  RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentIndependentDofSet(bgdis,true,wizard_np));
+  incompdis_->ReplaceDofSet(newdofset); // do not call this with true!!
+  incompdis_->FillComplete();
+}
+
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::Discretization>  bgdis,
-                                                                XFEM::FluidWizard               wizard,
-                                                                Teuchos::RCP<Epetra_Vector>     initialvel)
+void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const RCP<DRT::Discretization>  bgdis,
+                                                                 RCP<XFEM::FluidWizard>          wizard)
 {
-  // Map extractor of incompressibility patch
-  LINALG::MapExtractor   incompmapextr = LINALG::MapExtractor(*bgdis->DofRowMap(),incompressibilityveldofrowmap_);
 
-
-  //the original velocity vector which we want to improve
-  Teuchos::RCP<Epetra_Vector> vel_org = LINALG::CreateVector(*incompressibilityveldofrowmap_,true);
-  vel_org = incompmapextr.ExtractCondVector(initialvel);
-
+  C_ = LINALG::CreateVector(*incompdis_->DofRowMap(),true);
 
   // Problem definition:
   //
@@ -1560,44 +1614,34 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
   //
   // equal to: cT.u_p* = 0
 
-
-  ////////////////////////////////
+  //---------------------------------------
   // Find the vector c:
-  Teuchos::RCP<Epetra_Vector> C = LINALG::CreateVector(*incompressibilitydofrowmap_,true);
-  Teuchos::RCP<Epetra_Vector> C_vel = LINALG::CreateVector(*incompressibilityveldofrowmap_,true);
+  //
+  //   __   _                  __   _                 __   _
+  //   \   |  dN_A             \   |  dN_A            \   |  dN_A
+  // ( /   |  ---- dOmega_e1,  /   |  ---- dOmega_e1, /   |  ---- dOmega_e1, ...)
+  //   -- -   dx               -- -   dy              -- -   dz
+  //   A                       A                      A
+
   DRT::Element::LocationArray la( 1 );
 
-  // loop over column elements of continuity patch
-  const int numcolele = bgdis->NumMyColElements();
+  // loop over column elements of bgdis
+  const int numcolele = incompdis_->NumMyColElements();
   for (int i=0; i<numcolele; ++i)
   {
-    DRT::Element* actele = bgdis->lColElement(i);
-
-    // check if it is a conti patch element
-    bool patchelement = true;
-    size_t count = 0;
-    for ( vector<int>::iterator it=incompelementidsAllproc_.begin(); it != incompelementidsAllproc_.end(); it++ )
-    {
-      count++;
-      // if patch element
-      if (*it == actele->Id())
-        break;
-      else if(count == incompelementidsAllproc_.size())
-        patchelement = false;
-    }
-
-
-    if (patchelement == false) continue;
+    DRT::Element* actele = incompdis_->lColElement(i);
 
     Teuchos::RCP<MAT::Material> mat = actele->Material();
     DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
 
-    GEO::CUT::ElementHandle * e = wizard.GetElement( actele );
+    GEO::CUT::ElementHandle * e = wizard->GetElement( actele );
+
     Epetra_SerialDenseVector C_elevec;
     // xfem element
     if ( e!=NULL )
     {
 #ifdef DOFSETS_NEW
+
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
       std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
@@ -1610,241 +1654,311 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
 
       int set_counter = 0;
 
+      if (cell_sets.size() == 0)
+      {
+        cout << "Warning: Element " << actele->Id() << " has all it's volume-cells in void. Check if all nodes are "<<
+          "included in other elements." << endl;
+        continue;
+      }
+
       for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
            s!=cell_sets.end();
            s++)
       {
-        //       GEO::CUT::plain_volumecell_set & cells = *s;
+        //GEO::CUT::plain_volumecell_set & cells = *s;
         const std::vector<int> & nds = nds_sets[set_counter];
 
         // get element location vector, dirichlet flags and ownerships
-        actele->LocationVector(*bgdis,nds,la,false);
+        actele->LocationVector(*incompdis_,nds,la,false);
 
         // number of dofs for background element
-        // ndof contains all dofs of velocity and pressure. (we need just velocity)
-        const size_t ndof   = la[0].lm_.size();
+        // ndof contains all dofs of velocity and pressure. (we need just the velocity)
+        const size_t ndof  = la[0].lm_.size();
         C_elevec.Reshape(ndof,1);
-
 
         for( unsigned cellcount=0;cellcount!=cell_sets[set_counter].size();cellcount++ )
         {
           // call element method
-          DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
-                                                                                           *bgdis,
-                                                                                           la[0].lm_,
-                                                                                           C_elevec,
-                                                                                           intpoints_sets[set_counter][cellcount]);
+          DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
+                                                                                                         *incompdis_,
+                                                                                                         la[0].lm_,
+                                                                                                         C_elevec,
+                                                                                                         intpoints_sets[set_counter][cellcount]);
+
+
         }
-        set_counter++; //Shadan: make sure this is to be uncommented
+        set_counter += 1;
       }
+
 #else
-      GEO::CUT::plain_volumecell_set cells;
-      std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      std::vector<std::vector<double> > refEqns;
-      std::string VolumeCellGaussPointBy =  params_.sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
-      e->VolumeCellGaussPoints( cells, intpoints, refEqns, VolumeCellGaussPointBy);//modify gauss type
-
-      int count = 0;
-      for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        GEO::CUT::VolumeCell * vc = *i;
-        if ( vc->Position()==GEO::CUT::Point::outside )
-        {
-          // one set of dofsets
-          std::vector<int>  ndstest;
-          for (int t=0;t<8; ++t)
-            ndstest.push_back(0);
-
-          actele->LocationVector(*bgdis,ndstest,la,false);
-
-          const size_t ndof   = la[0].lm_.size();   // number of dofs for background element
-          C_elevec.Reshape(ndof,1);
-
-
-          // call element method
-          DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
-                                                                                             *bgdis,
-                                                                                             la[0].lm_,
-                                                                                             C_elevec,
-                                                                                             intpoints[count]);
-        }
-      }
-
-      // if we have only one volume cell and it is inside (at void domain) we
-      // need to handle it like a not-xfem element
-      if ( cells.size()==1 )
-      {
-        GEO::CUT::VolumeCell * vc = *cells.begin();
-        if ( vc->Position()==GEO::CUT::Point::inside )
-        {
-          // one set of dofsets
-          std::vector<int>  ndstest;
-          for (int t=0;t<8; ++t)
-            ndstest.push_back(0);
-
-          actele->LocationVector(*bgdis,ndstest,la,false);
-
-          const size_t ndof   = la[0].lm_.size();   // number of dofs for background element
-          C_elevec.Reshape(ndof,1);
-
-
-          // call element method
-          DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
-                                                                                             *bgdis,
-                                                                                             la[0].lm_,
-                                                                                             C_elevec);
-        }
-      }
-
+      dserror("Just Dofset new implemented!!");
 #endif
     }
-    // no xfem element
     else
     {
       // get element location vector, dirichlet flags and ownerships
-      actele->LocationVector(*bgdis,la,false);
+      actele->LocationVector(*incompdis_,la,false);
 
-      const size_t ndof   = la[0].lm_.size();
+      const size_t ndof = la[0].lm_.size();
+
       C_elevec.Reshape(ndof,1);
 
-      DRT::ELEMENTS::FluidFactory::ProvideImpl(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
-                                                                                         *bgdis,
-                                                                                         la[0].lm_,
-                                                                                         C_elevec);
-
+      DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
+                                                                                                     *incompdis_,
+                                                                                                     la[0].lm_,
+                                                                                                     C_elevec);
 
     }
-    LINALG::Assemble(*C, C_elevec, la[0].lm_, la[0].lmowner_);
+    LINALG::Assemble(*C_, C_elevec, la[0].lm_, la[0].lmowner_);
   }
+}
 
+// -------------------------------------------------------------------
+// Solve the incompressibility Optimitzation problem
+// -------------------------------------------------------------------
+
+void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_Vector>   initialvel)
+{
+  // ----------------------
+  // Prepare the C vector:
   // The vector C still includes the pressure degrees of freedom which are
   // zero. So we need to eliminate them from C so that the vector C has just
   // the velocity degrees of freedom -> C_vel
+  LINALG::MapExtractor      velpressplitter;
+  int numdim = 3;
+  FLD::UTILS::SetupFluidSplit(*incompdis_, numdim, 1,velpressplitter);
+  Teuchos::RCP<Epetra_Vector> C_vel = velpressplitter.ExtractOtherVector(C_);
 
-  // C_vel should on all processors then this will work in parallel
-  for (int iter=0; iter<C->MyLength();++iter)
+  // ----------------------
+  // Create needed C_vel-dofmaps
+  vector<int> C_vel_dofids;
+
+  for(int i=0; i<C_vel->MyLength(); ++i)
   {
-     int Cgid = C->Map().GID(iter);
-     if (C_vel->Map().MyGID(Cgid))
-       (*C_vel)[C_vel->Map().LID(Cgid)] = (*C)[C->Map().LID(Cgid)];
+    C_vel_dofids.push_back(C_vel->Map().GID(i));
   }
 
+  // build dofrowmap for velocity dofs
+  RefCountPtr<Epetra_Map> veldofrowmap = rcp(new Epetra_Map(-1,
+                                                            C_vel_dofids.size(),
+                                                            &C_vel_dofids[0],
+                                                            0,
+                                                            incompdis_->Comm()));
 
-  ////////////////////////////////////////////////////////////////
-  // Transform the constraint cT.u* = 0 to (Qc)T.Qu* = 0
-  // First with appropiate Givens Rotationen we annul all of the
-  // entires of c but the first entry and ... Then we do the same
-  // for all entries of c besides c_2 and so on.
-  // next := entry to eliminate, next_us := entry to make next to zero
-  // The vector we find at last is Qc
-  //
+  Teuchos::RCP<Epetra_Vector> C_vel_copy =  LINALG::CreateVector(*veldofrowmap,true);
+  C_vel_copy->Update(1.0, *C_vel, 0.0);
 
-  int next = 0;
-  int next_us = 0;
-  double TOL = 1.0e-16;
-
+  // -----------------------
   // Initialize Q as identity matrix
-  Teuchos::RCP<Epetra_CrsMatrix> Q = rcp(new Epetra_CrsMatrix(Copy,*incompressibilityveldofrowmap_,C_vel->MyLength()));
+  int maxnumberofentries = C_vel->MyLength()*C_vel->MyLength();
 
+  Teuchos::RCP<Epetra_CrsMatrix> Q = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*veldofrowmap,maxnumberofentries,false));
   double ones = 1.0;
   for(int i=0; i<C_vel->MyLength(); ++i)
   {
-    int myGID = incompressibilityveldofrowmap_->GID(i);
-    Q->InsertGlobalValues(myGID,1,&ones,&myGID);
+    int myGID = C_vel->Map().GID(i);
+    int err = Q->InsertGlobalValues(myGID,1,&ones,&myGID);
+    if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
   }
-
   Q->FillComplete();
+
   Teuchos::RCP<LINALG::SparseMatrix> Q_spr = rcp(new LINALG::SparseMatrix(Q));
   Q_spr->Complete();
 
+  // ------------------------
+  // Transform the constraint cT.u* = 0 to (Qc)T.Qu* = 0
+  //
+  // With appropiate Givens Rotations we annul all of the entires of c
+  // but the last entry. First we start with the first entry (next).
+  // The entry "next" will be annulated through the second
+  // entry (next_us). We do the same for all entries of c until all entries
+  // of c are zero beside the last entry.
+  //
+  // next := entry to eliminate, next_us := entry to make next to zero
+  //
+  // The vector we find at last is Qc
 
-  int mylengthminus = C_vel->MyLength()-1;
-  while (next < mylengthminus)
+
+  int pair = veldofrowmap->NumMyElements()-1;
+  int maxpair;
+  incompdis_->Comm().MaxAll(&pair, &maxpair, 1);
+
+  int next_us = 0;
+  double TOL = 1.0e-14;
+  int maxgid = C_vel->Map().MaxMyGID();
+
+  // the loop over all pairs of C_vel
+  for (int next=0; next<maxpair; ++next)
   {
-    // find the next entry which has to be eliminated and is not zero
-    while (-TOL<(*C_vel)[next] && (*C_vel)[next]<TOL)
-      next++;
-
-    next_us = next+1;
-    while (-TOL<(*C_vel)[next_us] && (*C_vel)[next_us]<TOL)
-      next_us++;
-
-    if(next_us < C_vel->MyLength())
+    // build the rotation matrix for current next and next_us
+    Teuchos::RCP<Epetra_CrsMatrix> Q_i = rcp(new Epetra_CrsMatrix(Copy,*veldofrowmap,2));
+    // first build Q_i as an identity matrix
+    double myval = 1.0;
+    for(int j=0; j<C_vel->MyLength(); ++j)
     {
-      double Nenner = sqrt((*C_vel)[next]*(*C_vel)[next]+(*C_vel)[next_us]*(*C_vel)[next_us]);
-      Nenner = 1/Nenner;
+      int myGID = C_vel->Map().GID(j);
+      Q_i->InsertGlobalValues(myGID,1,&myval,&myGID);
+    }
 
-      // c = x_i/(sqrt(x_i^2+x_j^2))
-      // s = x_j/(sqrt(x_i^2+x_j^2))
-      double cphi = Nenner*(*C_vel)[next];
-      double sphi = Nenner*(*C_vel)[next_us];
+    if (next < ((C_vel->MyLength())-1))
+    {
+      // if the next values is not zero find next+1 and do the givens,
+      // otherwiese Q_i remains an idendity matrix
+      if ( abs((*C_vel)[next]) > TOL )
+      {
+        next_us = next+1;
+        while ( abs((*C_vel)[next_us]) < TOL )
+        {
+          next_us++;
+        }
 
+        if ( next_us <= maxgid )
+        {
+          // cout << "next yy "<< next << " " << (*C_vel)[next] << endl;
+          // cout << "next_us yy "<< next_us << " " <<  (*C_vel)[next_us] << endl;
 
-      // Update of C_vel (which is after every update Qc)
-      /* _     _
-        | s  -c || x_i |    | s*x_i-c*x_j |   |      0      |
-        |       ||     |  = |             | = |             |
-        | c   s || x_j |    | c*x_i+s*x_j |   | c*x_i+s*x_j |
-         -     -
-        x_i: next
-        x_j: next_us
-      */
+          double Nenner = sqrt((*C_vel)[next]*(*C_vel)[next]+
+                               (*C_vel)[next_us]*(*C_vel)[next_us]);
+          Nenner = 1/Nenner;
 
-      (*C_vel)[next]  = 0.0;
-      (*C_vel)[next_us] = cphi*(*C_vel)[next] + sphi*(*C_vel)[next_us];
+          double cphi = Nenner*(*C_vel)[next_us];
+          double sphi = Nenner*(*C_vel)[next];
 
-      // Update Q = Qn..Q3*Q2*Q1
+          int nextGID = veldofrowmap->GID(next);
+          int next_usGID = veldofrowmap->GID(next_us);
 
+          double sphi_min = -sphi;
+          Q_i->ReplaceGlobalValues(nextGID,1,&cphi,&nextGID);
+          Q_i->InsertGlobalValues(nextGID,1,&sphi_min,&next_usGID);
+          Q_i->InsertGlobalValues(next_usGID,1,&sphi,&nextGID);
+          Q_i->ReplaceGlobalValues(next_usGID,1,&cphi,&next_usGID);
+        }
+      }
+    }
+    // do nothing or wait until all processors are finished
+    else { }
+
+    incompdis_->Comm().Barrier();
+    Q_i->FillComplete(*veldofrowmap,*veldofrowmap);
+
+    Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = rcp(new LINALG::SparseMatrix(Q_i));
+    Q_i_spr->Complete(*veldofrowmap,*veldofrowmap);
+
+    // Update of C_vel (which is after every update Qc)
+    /* _     _
+       | s  -c || x_i |    | s*x_i-c*x_j |   |      0      |
+       |       ||     |  = |             | = |             |
+       | c   s || x_j |    | c*x_i+s*x_j |   | c*x_i+s*x_j |
+       -     -
+       x_i: next
+       x_j: next_us
+    */
+
+    Teuchos::RCP<Epetra_Vector> C_vel_test =  LINALG::CreateVector(*veldofrowmap,true);
+    (Q_i_spr->EpetraMatrix())->Multiply(false,*C_vel,*C_vel_test);
+    C_vel->Update(1.0,*C_vel_test,0.0);
+
+    // build the final Q  = Qn..Q3*Q2*Q1
+    Teuchos::RCP<LINALG::SparseMatrix> Q_final = rcp(new LINALG::SparseMatrix(*veldofrowmap,C_vel->MyLength(),false,true));
+    Q_final = Multiply(*Q_i_spr,false,*Q_spr,false,false,false);
+
+    // save this old Q_final
+    Q_spr = Q_final;
+  }
+
+  incompdis_->Comm().Barrier();
+
+  //-----------------------------------------------------
+  // Commuinate the last entry of C_vel of each processor
+
+  // build an allreduced vector of all last entries of C_vel
+  vector<int> C_vellast;
+  vector<int> C_vellast_All;
+
+  if ((maxgid>-1) and ((*C_vel)[veldofrowmap->LID(maxgid)]>TOL))
+    C_vellast.push_back(maxgid);
+
+  //information how many processors work at all
+  vector<int> allproc(incompdis_->Comm().NumProc());
+
+  LINALG::Gather<int>(C_vellast,C_vellast_All,(int)incompdis_->Comm().NumProc(),
+                      &allproc[0],incompdis_->Comm());
+
+  // build dofrowmap of last entries
+  RefCountPtr<Epetra_Map> lastdofrowmap = rcp(new Epetra_Map(-1,
+                                                             C_vellast_All.size(),
+                                                             &C_vellast_All[0],
+                                                             0,
+                                                             incompdis_->Comm()));
+
+  const Epetra_Map lastallreduced = *LINALG::AllreduceOverlappingEMap(*lastdofrowmap);
+  Teuchos::RCP<Epetra_Vector> C_vel_last =  LINALG::CreateVector(lastallreduced,true);
+  int mylastGID = lastallreduced.MaxMyGID();
+  LINALG::Export(*C_vel,*C_vel_last);
+
+  // cout << "C_vellast " << *C_vel_last << endl;
+  // cout << "length " << C_vel_last->MyLength() << endl;
+
+  // loop over all processors
+  if (C_vel_last->MyLength() > 1)
+  {
+    for(int pr=0; pr<incompdis_->Comm().NumProc()-1; ++pr)
+    {
       // build the rotation matrix for current next and next_us
-      Teuchos::RCP<Epetra_CrsMatrix> Q_i = rcp(new Epetra_CrsMatrix(Copy,*incompressibilityveldofrowmap_,2));
-
+      Teuchos::RCP<Epetra_CrsMatrix> Q_i = rcp(new Epetra_CrsMatrix(Copy,*veldofrowmap,2));
       // first build Q_i as an identity matrix
       double myval = 1.0;
       for(int j=0; j<C_vel->MyLength(); ++j)
       {
-        int myGID = incompressibilityveldofrowmap_->GID(j);
+        int myGID = C_vel->Map().GID(j);
         Q_i->InsertGlobalValues(myGID,1,&myval,&myGID);
       }
 
-      int nextGID = incompressibilityveldofrowmap_->GID(next);
-      int next_usGID = incompressibilityveldofrowmap_->GID(next_us);
+      if(C_vel_last->Map().MyLID(pr+1))
+      {
+        double next_val = (*C_vel_last)[pr];
+        double nextus_val = (*C_vel_last)[pr+1];
 
-      // set the rotation values of Q_i
-      double cphi_min = -cphi;
-      Q_i->ReplaceGlobalValues(nextGID,1,&sphi,&nextGID);
-      Q_i->InsertGlobalValues(nextGID,1,&cphi_min,&next_usGID);
-      Q_i->InsertGlobalValues(next_usGID,1,&cphi,&nextGID);
-      Q_i->ReplaceGlobalValues(next_usGID,1,&sphi,&next_usGID);
+        // cout << "val " << next_val << " " << nextus_val << endl;
 
-      Q_i->FillComplete(*incompressibilityveldofrowmap_,*incompressibilityveldofrowmap_);
+        double Nenner = sqrt(next_val*next_val+nextus_val*nextus_val);
+        Nenner = 1/Nenner;
 
-      // build a sparse matrix out of Q_i
-      Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = rcp(new LINALG::SparseMatrix(Q_i));
-      Q_i_spr->Complete(*incompressibilityveldofrowmap_,*incompressibilityveldofrowmap_);
+        double cphi = Nenner*nextus_val;
+        double sphi = Nenner*next_val;
 
-      // build the final Q  = Qn..Q3*Q2*Q1
-      Teuchos::RCP<LINALG::SparseMatrix> Q_final = rcp(new LINALG::SparseMatrix(*incompressibilityveldofrowmap_,C_vel->MyLength(),false,true));
-      Q_final = MLMultiply(*Q_i_spr,false,*Q_spr,false,false,false);
-      // save this old Q_final
-      Q_spr = Q_final;
+        int nextGID = lastallreduced.GID(pr);
+        int next_usGID = lastallreduced.GID(pr+1);
+        mylastGID = lastallreduced.GID(pr+1);
+
+        double sphi_min = -sphi;
+        Q_i->ReplaceGlobalValues(nextGID,1,&cphi,&nextGID);
+        Q_i->InsertGlobalValues(nextGID,1,&sphi_min,&next_usGID);
+        Q_i->InsertGlobalValues(next_usGID,1,&sphi,&nextGID);
+        Q_i->ReplaceGlobalValues(next_usGID,1,&cphi,&next_usGID);
+        Q_i->FillComplete(*veldofrowmap,*veldofrowmap);
+
+
+        Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = rcp(new LINALG::SparseMatrix(Q_i));
+        Q_i_spr->Complete(*veldofrowmap,*veldofrowmap);
+
+        Teuchos::RCP<Epetra_Vector> C_vel_test =  LINALG::CreateVector(*veldofrowmap,true);
+        (Q_i_spr->EpetraMatrix())->Multiply(false,*C_vel,*C_vel_test);
+        C_vel->Update(1.0,*C_vel_test,0.0);
+
+        // build the final Q  = Qn..Q3*Q2*Q1
+        Teuchos::RCP<LINALG::SparseMatrix> Q_final = rcp(new LINALG::SparseMatrix(*veldofrowmap,C_vel->MyLength(),false,true));
+        Q_final = Multiply(*Q_i_spr,false,*Q_spr,false,false,false);
+
+        // save this old Q_final
+        Q_spr = Q_final;
+      }
     }
-    else
-      break;
   }
 
-  //string sysmat = "/home/shahmiri/work_tmp/sysmat";
-  //Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrixmatlab = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
-  //LINALG::PrintMatrixInMatlabFormat(sysmat,*Q_spr->EpetraMatrix(),true);
-
-
-//   int maxnumberofentries = 1000;
-//   int numofnonzeros = 1000;
-//   vector<double> Q_Zeile(maxnumberofentries, 0.0);
-//   vector<int> indices(maxnumberofentries, 0);
-//   (Q_spr->EpetraMatrix())->ExtractMyRowCopy(next,1000,numofnonzeros,&Q_Zeile[0]);
-
-
-  ////////////////////////////////////////////////////////////////
+  //------------------------------------------------------------
+  // Update the initial velocity vector:
+  //
   // find u* from Qu* != Qu
   // Note: From (Qc)T.Qu* = 0  we know that Qu*(next) is zero
   //
@@ -1862,24 +1976,44 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompressibility(const RCP<DRT::D
   //               | Qu_next|       |        nextn|| Qu_next|
   //
 
+  // the original velocity vector which we want to improve
+  Teuchos::RCP<Epetra_Vector> vel_org = LINALG::CreateVector(*veldofrowmap,true);
+  LINALG::Export(*initialvel,*vel_org);
+
   // Qu
-  Teuchos::RCP<Epetra_Vector> Qunext = LINALG::CreateVector(*incompressibilityveldofrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> Qunext = LINALG::CreateVector(*veldofrowmap,true);
   (Q_spr->EpetraMatrix())->Multiply(false,*vel_org,*Qunext);
 
   // we need the last entry of Qu (Qu_next)
-  for (int i=0; i<Qunext->MyLength();++i)
+  for (int i=0; i<Qunext->MyLength(); ++i)
   {
-    int mygid = Qunext->Map().GID(i);
-    int nextgid = Qunext->Map().GID(next);
-    if ( mygid != nextgid)
-      (*Qunext)[Qunext->Map().LID(mygid)] = 0.0;
+     int mygid = Qunext->Map().GID(i);
+     if ( mygid != mylastGID)
+       (*Qunext)[Qunext->Map().LID(mygid)] = 0.0;
   }
 
-  Teuchos::RCP<Epetra_Vector> QTQu = LINALG::CreateVector(*incompressibilityveldofrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> QTQu = LINALG::CreateVector(*veldofrowmap,true);
   (Q_spr->EpetraMatrix())->Multiply(true,*Qunext,*QTQu);
 
-  Teuchos::RCP<Epetra_Vector> u_incomp = LINALG::CreateVector(*incompressibilityveldofrowmap_,true);
-  u_incomp->Update(1.0, *vel_org, -1.0, *QTQu, 0.0);
+  Teuchos::RCP<Epetra_Vector> u_incomp = LINALG::CreateVector(*veldofrowmap,true);
+  u_incomp->Update(1.0, *vel_org, 0.0);
+  u_incomp->Update(-1.0, *QTQu, 1.0);
+
+  //incompressibility check before solving the optimization problem
+  double sum = 0.0;
+  vel_org->Dot(*C_vel_copy, &sum);
+
+  double sum_opt = 0.0;
+  u_incomp->Dot(*C_vel_copy, &sum_opt);
+
+  if (myrank_ == 0)
+  {
+    cout << " Incompressibility Check.. " << endl;
+    cout << " Original:  "  << sum << ",  After solving optimization problem: "  << sum_opt << endl;
+  }
+
+  LINALG::Export(*(u_incomp),*(initialvel));
+
 }
 
 // // -------------------------------------------------------------------

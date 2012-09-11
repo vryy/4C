@@ -4533,11 +4533,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // xfluidfluid time integration approach
   setStringToIntegralParameter<int>("XFLUIDFLUID_TIMEINT","Xff_TimeInt_FullProj","The xfluidfluid-timeintegration approach",
-                                    tuple<std::string>("Xff_TimeInt_FullProj", "Xff_TimeInt_ProjIfMoved","Xff_TimeInt_KeepGhostValues"),
+                                    tuple<std::string>("Xff_TimeInt_FullProj", "Xff_TimeInt_ProjIfMoved","Xff_TimeInt_KeepGhostValues","Xff_TimeInt_IncompProj"),
                                     tuple<int>(
-                                      INPAR::XFEM::Xff_TimeInt_FullProj   ,    //always project nodes from embedded to background nodes
-                                      INPAR::XFEM::Xff_TimeInt_ProjIfMoved,     //project nodes just if the status of background nodes changed
-                                      INPAR::XFEM::Xff_TimeInt_KeepGhostValues  //always keep the ghost values of the background discretization
+                                      INPAR::XFEM::Xff_TimeInt_FullProj   ,      //always project nodes from embedded to background nodes
+                                      INPAR::XFEM::Xff_TimeInt_ProjIfMoved,      //project nodes just if the status of background nodes changed
+                                      INPAR::XFEM::Xff_TimeInt_KeepGhostValues,  //always keep the ghost values of the background discretization
+                                      INPAR::XFEM::Xff_TimeInt_IncompProj        //after projecting nodes do a incompressibility projection
                                       ),
                                     &xfluid_general);
 

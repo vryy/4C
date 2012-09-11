@@ -260,6 +260,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   cutdiscret.SetState("idispnp",xfluid_.idispnp_);
 
+
   // set scheme-specific element parameters and vector values
   if (xfluid_.timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
@@ -479,10 +480,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             couplingmatrices[2].Reshape(ndof_i,1);     //rhC_ui
 
           }
-
           const size_t nui = patchelementslm.size();
           Epetra_SerialDenseMatrix  Cuiui(nui,nui);
-
           if (xfluid_.action_ == "coupling stress based")
             impl->ElementXfemInterfaceMSH(    ele,
                                               discret,
@@ -852,6 +851,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
     // and assembles into EpetraFECrs matrix
     // this is baci-unusual but more efficient in all XFEM applications
+
     for (int i=0; i<numrowintfaces; ++i)
     {
       DRT::Element* actface = xdiscret->lRowIntFace(i);
@@ -883,7 +883,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   //-------------------------------------------------------------------------------
   // export the rhs coupling vector to a row vector
-  Epetra_Vector rhC_ui_tmp(rhC_ui_->Map(),false);
+  Epetra_Vector rhC_ui_tmp(rhC_ui_->Map(),true);
   Epetra_Export exporter_rhC_ui_col(rhC_ui_col->Map(),rhC_ui_tmp.Map());
   int err3 = rhC_ui_tmp.Export(*rhC_ui_col,exporter_rhC_ui_col,Add);
   if (err3) dserror("Export using exporter returned err=%d",err3);
@@ -891,11 +891,12 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   //-------------------------------------------------------------------------------
   // need to export residual_col to systemvector1 (residual_)
-  Epetra_Vector res_tmp(residual_->Map(),false);
+  Epetra_Vector res_tmp(residual_->Map(),true);
   Epetra_Export exporter(strategy.Systemvector1()->Map(),res_tmp.Map());
   int err2 = res_tmp.Export(*strategy.Systemvector1(),exporter,Add);
   if (err2) dserror("Export using exporter returned err=%d",err2);
   residual_->Update(1.0,res_tmp,1.0);
+
 
   //-------------------------------------------------------------------------------
   // finalize the complete matrix
@@ -1011,7 +1012,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     //------------------------------------------------------------
     // need to export ale_residual_col to systemvector1 (aleresidual_)
-    Epetra_Vector res_tmp(xfluid_.aleresidual_->Map(),false);
+    Epetra_Vector res_tmp(xfluid_.aleresidual_->Map(),true);
     Epetra_Export exporter(ale_residual_col->Map(),res_tmp.Map());
     int err2 = res_tmp.Export(*ale_residual_col,exporter,Add);
     if (err2) dserror("Export using exporter returned err=%d",err2);
@@ -1036,6 +1037,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                                                         (*rhC_ui_)[rhC_ui_->Map().LID(rhsdgid)];
     else dserror("cut dof not on ale discret available");
   }
+
 
 }
 
@@ -1820,15 +1822,24 @@ FLD::XFluidFluid::XFluidFluid(
     break;
   case INPAR::XFEM::BoundaryTypeNitsche:
     element_name = "BELE3_4"; // use 4 dofs
-    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNitsche" << END_COLOR << endl;
+    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNitsche, ";
     if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Mortaring)
       std::cout << RED_LIGHT << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << END_COLOR << endl;
     if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Mortaring)
+    {
       action_ = "coupling nitsche two sided";
+      std::cout << YELLOW_LIGHT << "Coupling Nitsche Two-Sided" << END_COLOR << endl;
+    }
     if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Mortaring)
+    {
       action_ = "coupling nitsche xfluid sided";
+      std::cout << YELLOW_LIGHT << "Coupling Nitsche Xfluid-Sided" << END_COLOR << endl;
+    }
     if(coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Mortaring)
+    {
       action_ = "coupling nitsche embedded sided";
+      std::cout << YELLOW_LIGHT << "Coupling Nitsche Embedded-Sided" << END_COLOR << endl;
+    }
     break;
   case INPAR::XFEM::BoundaryTypeNeumann:
     dserror ("XFEM interface method: BoundaryTypeNeumann not available for Xfluidfluid");
@@ -2024,7 +2035,7 @@ FLD::XFluidFluid::XFluidFluid(
   // make the dofset of boundarydis be a subset of the embedded dis
   RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(embdis_,boundarydis_);
   embdis_->Redistribute(*(embdis_->NodeRowMap()), *newcolnodemap);
-  RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentIndependentDofSet(embdis_));
+  RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentIndependentDofSet(embdis_,false,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset); // do not call this with true!!
   boundarydis_->FillComplete();
 
@@ -2078,7 +2089,6 @@ FLD::XFluidFluid::XFluidFluid(
   alevelnp_ = LINALG::CreateVector(*aledofrowmap_,true);
   aleveln_  = LINALG::CreateVector(*aledofrowmap_,true);
   alevelnm_ = LINALG::CreateVector(*aledofrowmap_,true);
-
 
   // we need the displacement vector of an ALE element if alefluid_ or when we do not use Xfluid-sided-mortaring
   if(alefluid_ || coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
@@ -2142,7 +2152,6 @@ FLD::XFluidFluid::XFluidFluid(
     alezeros_->PutScalar(0.0); // just in case of change
   }
 
-
   //--------------------------------------------------------
   // FluidFluid-Boundary Vectros passes to element
   // -------------------------------------------------------
@@ -2170,12 +2179,14 @@ FLD::XFluidFluid::XFluidFluid(
   }
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
+
   if ( not bgdis_->Filled() or not actdis->HaveDofs() )
     bgdis_->FillComplete();
 
   if (alefluid_)
     xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->wizard_, step_,
                                                                               xfem_timeintapproach_,*params_));
+
 }
 
 // -------------------------------------------------------------------
@@ -2527,15 +2538,17 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( ParameterList& params_xfem,
 
     // condensation of distributed Lagrange multiplier for MSH
     bool msh_dlm_condensation = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"DLM_CONDENSATION");
-    if(msh_dlm_condensation == false) dserror("INPUT CHECK: 'DLM_CONDENSATION', switch always to 'yes', just condensation implemented");
+    if (msh_dlm_condensation == false) dserror("INPUT CHECK: 'DLM_CONDENSATION', switch always to 'yes', just condensation implemented");
 
     // convective stabilization parameter (scaling factor and stabilization factor)
-    if(conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
+    if (conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
       std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << endl;
 
-    if((conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_inflow and conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_averaged)
-       and conv_stab_fac_ != 0.0)
-      dserror("ConvStabScaling_inflow and ConvStabScaling_averaged are  only valid methods for XFluidFluid");
+    if (conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none and conv_stab_fac_ != 0.0)
+      dserror("For ConvStabScaling_none the conv_stab_fac should be zero!");
+    else if (conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_inflow and conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_averaged
+              and conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none and conv_stab_fac_ != 0.0)
+      dserror("ConvStabScaling_inflow and ConvStabScaling_averaged are  only valid methods for XFluidFluid!");
 
     if (velgrad_interface_stab_ and action_ != "coupling nitsche embedded sided" )
       dserror("VELGRAD_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
@@ -2679,7 +2692,6 @@ void FLD::XFluidFluid::NonlinearSolve()
 //        cout << endl;
 //      }
 //    }
-
 
   while (stopnonliniter==false)
   {
@@ -3454,7 +3466,8 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
   {
     if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj or
         xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues or
-        (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and (not samemaps_)) )
+        (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and (not samemaps_)) or
+         xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
     {
       // export the vectors to the column distribution map
       Teuchos::RCP<Epetra_Vector> alevelnpcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
@@ -3477,13 +3490,27 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccncol,aledispcol);
       xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnpcol,aledispcol);
 
-      //enforce incompressibility
- //      xfluidfluid_timeint_->PatchelementForIncompressibility(bgdis_,staten_->wizard_,state_->wizard_,state_->dbcmaps_);
-//       // hier wizard in tn+1
-//       Teuchos::RCP<Epetra_Vector> velnpincomp = LINALG::CreateVector(*bgdis_->DofRowMap(),true);
-//       xfluidfluid_timeint_->EnforceIncompressibility(bgdis_,state_->wizard_,state_->velnp_,velnpincomp);
-      //  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "tttincomvel", 0,  step_,  velnpincomp, alevelnp_, aledispnp_);
+      //-------------------------
+      // Enforce incompressibility
+      //  if(0)
+      if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
+      {
+        // find the incompressibility patch
+        xfluidfluid_timeint_->PatchelementForIncompressibility(bgdis_,staten_->wizard_,state_->wizard_,state_->dbcmaps_);
 
+        // prepare the incompressibility discretization and evaluate
+        // incompressibility condition
+        xfluidfluid_timeint_->PrepareIncompDiscret(bgdis_,state_->wizard_);
+        xfluidfluid_timeint_->EvaluateIncompressibility(bgdis_,state_->wizard_);
+
+        //solve the optimization problem for the state vectors
+        xfluidfluid_timeint_->SolveIncompOptProb(state_->velnp_);
+        xfluidfluid_timeint_->SolveIncompOptProb(state_->veln_);
+        xfluidfluid_timeint_->SolveIncompOptProb(state_->velnm_);
+
+        //state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "incomvel",
+        //0,  step_,  state_->velnp_, alevelnp_, aledispnp_);
+      }
 
     }
     // Note: if Xff_TimeInt_ProjIfMoved is chosen and the maps remain the same
