@@ -383,6 +383,7 @@ static inline void updateRHSForNWE(
 
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes,1> funct;
+    funct.Clear();
     DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
 
     for (int isd = 0; isd < 3; ++isd)
@@ -412,7 +413,14 @@ static inline bool currentToVolumeElementCoordinatesT(
     LINALG::Matrix<3,1>&                          xsi              ///< (r,s,t)
     )
 {
+  //REMARK: This function seemed to deliver wrong results!
+  // It seems that some matrices (especially dx) were not cleared at the beginning!
+  // we fixed this at 11.09.2012
+  // if you want to use this function you can remove the dserror, but please check carefully if it works properly
+
   dserror("This function seems to deliver wrong results! Check carefully before use or use a different function, e.g. GEO::CUT::Position");
+
+
   const int dim = 3;
   bool nodeWithinElement = true;
   const int maxiter = 20;
@@ -421,6 +429,10 @@ static inline bool currentToVolumeElementCoordinatesT(
   static LINALG::Matrix<3,3> A;
   static LINALG::Matrix<3,1> b;
   static LINALG::Matrix<3,1> dx;
+
+  A.Clear();
+  b.Clear();
+  dx.Clear();
 
   // initial guess
   startingValueCurrentToElementCoords<DISTYPE>(xsi);
@@ -931,17 +943,17 @@ static bool ComputeLocalCoordinates(
   const int maxiter = 20;
   double residual = 1.0;
 
-  LINALG::Matrix<nsd_,nsd_> A;
-  LINALG::Matrix<nsd_,nsd_> A_inv;
+  LINALG::Matrix<nsd_,nsd_> A(true);
+  LINALG::Matrix<nsd_,nsd_> A_inv(true);
 
-  LINALG::Matrix<nsd_,1> b;
-  LINALG::Matrix<nsd_,1> dx;
+  LINALG::Matrix<nsd_,1> b(true);
+  LINALG::Matrix<nsd_,1> dx(true);
 
   //initialize != 0
   dx(0)=1.0;
 
-  LINALG::Matrix<numNodes,1> funct;
-  LINALG::Matrix<nsd_, numNodes> deriv1;
+  LINALG::Matrix<numNodes,1> funct(true);
+  LINALG::Matrix<nsd_, numNodes> deriv1(true);
 
 
   // initial guess
