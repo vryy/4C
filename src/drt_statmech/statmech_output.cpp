@@ -4185,7 +4185,7 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "a");
       std::stringstream internalforce;
-      internalforce << scientific << setprecision(15) << (distance.Norm2()-l0)/l0<<"  "<< fint(0) <<endl;
+      internalforce << scientific << setprecision(15) << distance.Norm2()<< "  " << (distance.Norm2()-l0)/l0<<"  "<< fint(0) <<endl;
 
       fprintf(fp, internalforce.str().c_str());
       fclose(fp);
