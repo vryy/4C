@@ -2544,7 +2544,7 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( ParameterList& params_xfem,
     if (conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
       std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << endl;
 
-    if (conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none and conv_stab_fac_ != 0.0)
+    if (conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none and conv_stab_fac_ != 0.0)
       dserror("For ConvStabScaling_none the conv_stab_fac should be zero!");
     else if (conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_inflow and conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_averaged
               and conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none and conv_stab_fac_ != 0.0)
