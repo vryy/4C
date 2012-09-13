@@ -1849,49 +1849,86 @@ FLD::XFluid::XFluid(
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate errors compared to an analytical solution   shahmiri 02/12 |
+ |  Evaluate errors compared to an analytical solution     schott 09/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 {
-  /*     _______________
-        | GP
-        |---
-      \ |\  (u-u_exact)^2
-       \|---
-        |               */
+  // this functions provides a general implementation for calculating error norms between computed solutions
+  // and an analytical solution which is implemented or given by a function in the input file
 
+  // how is the analytical solution available (implemented of via function?)
   INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
 
-  int numscalars = 4;
-
-  Epetra_SerialDenseVector cpuscalars(numscalars);
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-    Teuchos::rcp(new Epetra_SerialDenseVector(numscalars));
-
-  switch(calcerr)
-  {
-  case INPAR::FLUID::no_error_calculation:
-    // do nothing --- no analytical solution available
-    return;
-    break;
-  case INPAR::FLUID::beltrami_flow:
-  case INPAR::FLUID::channel2D:
-  case INPAR::FLUID::shear_flow:
+  if(calcerr != INPAR::FLUID::no_error_calculation)
   {
 
-    // call loop over elements (assemble nothing)
+    //TODO: decide between absolute and relative errors
+
+    // TODO: for xfluidfluid: evaluate errors w.r.t both domains
+
+    // set the time to evaluate errors
+    //
+
+    // define the norms that have to be computed
+
+    //-------------------------------------------------------------------------------------------------------------------
+    // domain error norms w.r.t incompressible Navier-Stokes equations
+    //
+    // standard domain errors
+    // 1.   || u - u_h ||_L2(Omega)              =   standard L2-norm for velocity
+    // 2.   || grad( u - u_h ) ||_L2(Omega)      =   standard H1-seminorm for velocity
+    // 3.   || u - u_h ||_H1(Omega)              =   standard H1-norm for velocity
+    //                                           =   sqrt( || u - u_h ||^2_L2(Omega) + || grad( u - u_h ) ||^2_L2(Omega) )
+    // 4.   || p - p_h ||_L2(Omega)              =   standard L2-norm for for pressure
+    //
+    // viscosity-scaled domain errors
+    // 5.   || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)      =   visc-scaled H1-seminorm for velocity
+    //                                                     =   nu^(+1/2) * || grad( u - u_h ) ||_L2(Omega) (for homogeneous visc)
+    // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for for pressure
+    //                                                     =   nu^(-1/2) * || p - p_h ||_L2(Omega) (for homogeneous visc)
+    //
+    //-------------------------------------------------------------------------------------------------------------------
+    // interface/boundary error norms at the XFEM-interface, boundary
+    // w.r.t Nitsche's method to enforce interface/boundary conditions
+    //
+    // 1.   || nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition
+    // 2.   || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
+    // 3.   || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+    //
+    //-------------------------------------------------------------------------------------------------------------------
+    // errors introduced by stabilizations (edge-based fluid stabilizations and ghost-penalty stabilizations)
+    //
+    // ...
+    //-------------------------------------------------------------------------------------------------------------------
+
+    // number of norms that have to be calculated
+    int num_dom_norms    = 8;
+    int num_interf_norms = 8;
+    int num_stab_norms   = 3;
+
+    Epetra_SerialDenseVector cpu_dom_norms(num_dom_norms);
+    Epetra_SerialDenseVector cpu_interf_norms(num_interf_norms);
+    Epetra_SerialDenseVector cpu_stab_norms(num_stab_norms);
+
+    Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms    = Teuchos::rcp(new Epetra_SerialDenseVector(num_dom_norms));
+    Teuchos::RCP<Epetra_SerialDenseVector> glob_interf_norms = Teuchos::rcp(new Epetra_SerialDenseVector(num_interf_norms));
+    Teuchos::RCP<Epetra_SerialDenseVector> glob_stab_norms   = Teuchos::rcp(new Epetra_SerialDenseVector(num_stab_norms));
+
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("u and p at time n+1 (converged)",state_->velnp_);
+    discret_->SetState("u and p at time n+1 (converged)", state_->velnp_);
 
+    // evaluate domain error norms and interface/boundary error norms at XFEM-interface
+    // loop row elements
     const int numrowele = discret_->NumMyRowElements();
     for (int i=0; i<numrowele; ++i)
     {
-      // define element vector
-      // elescalars[0]:deltavel, elescalars[1]:deltap,
-      // elescalars[2]:analytical vel, elescalars[3]:analytical pres
-      Epetra_SerialDenseVector elescalars(numscalars);
+
+      // local element-wise squared error norms
+      Epetra_SerialDenseVector ele_dom_norms(num_dom_norms);
+      Epetra_SerialDenseVector ele_interf_norms(num_interf_norms);
+
 
       // pointer to current element
       DRT::Element* actele = discret_->lRowElement(i);
@@ -1902,6 +1939,8 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 
       GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
       DRT::Element::LocationArray la( 1 );
+
+      DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
 
       // xfem element
       if ( e!=NULL )
@@ -1919,11 +1958,13 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 
         int set_counter = 0;
 
+
         // loop over volume cells
         for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
-             s!=cell_sets.end();
-             s++)
+            s!=cell_sets.end();
+            s++)
         {
+          GEO::CUT::plain_volumecell_set & cells = *s;
           const std::vector<int> & nds = nds_sets[set_counter];
 
           // get element location vector, dirichlet flags and ownerships
@@ -1931,15 +1972,77 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 
           for( unsigned cellcount=0;cellcount!=cell_sets[set_counter].size();cellcount++)
           {
-            DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
-                                                                                      elescalars,intpoints_sets[set_counter][cellcount]);
+            //------------------------------------------------------------
+            // Evaluate domain integral errors
+            impl->ComputeError(ele,
+                *params_,
+                mat,
+                *discret_,
+                la[0].lm_,
+                ele_dom_norms,
+                intpoints_sets[set_counter][cellcount]
+            );
 
             // sum up (on each processor)
-            cpuscalars += elescalars;
+            cpu_dom_norms += ele_dom_norms;
+
+
+            //------------------------------------------------------------
+            // Evaluate interface integral errors
+            // do cut interface condition
+
+            // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
+            std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
+            std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
+
+            for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+            {
+              GEO::CUT::VolumeCell * vc = *i;
+              if ( vc->Position()==GEO::CUT::Point::outside )
+              {
+                  vc->GetBoundaryCells( bcells );
+              }
+            }
+
+            if ( bcells.size() > 0 )
+            {
+                TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
+
+                // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+                // original Axel's transformation
+                e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#else
+                // new Benedikt's transformation
+                e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#endif
+
+                // needed for fluid-fluid Coupling
+                std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
+                Epetra_SerialDenseMatrix  Cuiui(1,1);
+
+                if(BoundIntType() == INPAR::XFEM::BoundaryTypeSigma or
+                   BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
+                {
+                  impl->ComputeErrorInterface(
+                      ele,
+                      *discret_,
+                      la[0].lm_,
+                      mat,
+                      ele_interf_norms,
+                      *boundarydis_,
+                      bcells,
+                      bintpoints,
+                      side_coupling,
+                      *params_,
+                      cells);
+                }
+            } // bcells
           }
 
           set_counter += 1;
         }
+
 #else
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
@@ -1952,114 +2055,217 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           GEO::CUT::VolumeCell * vc = *s;
           if ( vc->Position()==GEO::CUT::Point::outside )
           {
-//             // one set of dofs
-//             std::vector<int>  ndstest;
-//             for (int t=0;t<8; ++t)
-//               ndstest.push_back(0);
+            //             // one set of dofs
+            //             std::vector<int>  ndstest;
+            //             for (int t=0;t<8; ++t)
+            //               ndstest.push_back(0);
 
             const std::vector<int> & nds = vc->NodalDofSet();
             actele->LocationVector(*discret_,nds,la,false);
             //actele->LocationVector(*discret_,ndstest,la,false);
 
-            DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,*params_, mat, *discret_, la[0].lm_,
-                                                                                             elescalars,intpoints[count]);
+            impl->ComputeError(ele,
+                *params_,
+                mat,
+                *discret_,
+                la[0].lm_,
+                ele_dom_norms,
+                intpoints[count]
+            );
 
             // sum up (on each processor)
-            cpuscalars += elescalars;
+            cpu_dom_norms += ele_dom_norms;
           }
           count += 1;
         }
 
 #endif
+
+        // sum up (on each processor)
+        cpu_interf_norms += ele_interf_norms;
       }
-      // no xfem element
+      // standard (no xfem) element
       else
       {
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
+
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(*discret_,la,false);
-         DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele, *params_, mat, *discret_, la[0].lm_,
-                                                                                     elescalars);
-         // sum up (on each processor)
-         cpuscalars += elescalars;
+
+        DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,
+            *params_,
+            mat,
+            *discret_,
+            la[0].lm_,
+            ele_dom_norms);
+
+        // sum up (on each processor)
+        cpu_dom_norms += ele_dom_norms;
+
+        // no interface norms on non-xfem elements
       }
     }//end loop over fluid elements
-  }
-  break;
-  default:
-    dserror("Cannot calculate error. Unknown type of analytical test problem");
-  }
 
-  // reduce
-  for (int i=0; i<numscalars; ++i) (*scalars)(i) = 0.0;
-  discret_->Comm().SumAll(cpuscalars.Values(), scalars->Values(), numscalars);
+    //--------------------------------------------------------
+    // reduce and sum over all procs
+    for (int i=0; i<num_dom_norms; ++i) (*glob_dom_norms)(i) = 0.0;
+    discret_->Comm().SumAll(cpu_dom_norms.Values(), glob_dom_norms->Values(), num_dom_norms);
 
-  double velerr = 0.0;
-  double preerr = 0.0;
+    for (int i=0; i<num_interf_norms; ++i) (*glob_interf_norms)(i) = 0.0;
+    discret_->Comm().SumAll(cpu_interf_norms.Values(), glob_interf_norms->Values(), num_interf_norms);
 
-  // integrated analytic solution in order to compute relative error
-  double velint = 0.0;
-  double pint = 0.0;
 
-  // for the L2 norm, we need the square root
-  velerr = sqrt((*scalars)[0]);
-  preerr = sqrt((*scalars)[1]);
+    // standard domain errors
+    double dom_err_vel_L2      = 0.0;            //  || u - u_h ||_L2(Omega)              =   standard L2-norm for velocity
+    double dom_err_vel_H1_semi = 0.0;            //  || grad( u - u_h ) ||_L2(Omega)      =   standard H1-seminorm for velocity
+    double dom_err_vel_H1      = 0.0;            //  || u - u_h ||_H1(Omega)              =   standard H1-norm for velocity
+    double dom_err_pre_L2      = 0.0;            //  || p - p_h ||_L2(Omega)              =   standard L2-norm for for pressure
 
-  // analytical vel_mag and p_mag
-  velint= sqrt((*scalars)[2]);
-  pint = sqrt((*scalars)[3]);
+    // viscosity-scaled domain errors
+    double dom_err_vel_H1_semi_nu_scaled = 0.0;  //  || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)      =   visc-scaled H1-seminorm for velocity
+    double dom_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for for pressure
 
-  if (myrank_ == 0)
-  {
+    // interface errors
+    double interf_err_Honehalf    = 0.0;         //  || nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition
+    double interf_err_Hmonehalf_u = 0.0;         //  || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  broken H-1/2 Sobolev norm for normal flux (velocity part)
+    double interf_err_Hmonehalf_p = 0.0;         //  || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  broken H-1/2 Sobolev norm for normal flux (pressure part)
+
+
+    dom_err_vel_L2             = sqrt((*glob_dom_norms)[0]);
+    dom_err_vel_H1_semi        = sqrt((*glob_dom_norms)[1]);
+    dom_err_vel_H1             = sqrt((*glob_dom_norms)[2]);
+    dom_err_pre_L2             = sqrt((*glob_dom_norms)[3]);
+
+    dom_err_vel_H1_semi_nu_scaled = sqrt((*glob_dom_norms)[4]);
+    dom_err_pre_L2_nu_scaled      = sqrt((*glob_dom_norms)[5]);
+
+    interf_err_Honehalf           = sqrt((*glob_interf_norms)[0]);
+    interf_err_Hmonehalf_u        = sqrt((*glob_interf_norms)[1]);
+    interf_err_Hmonehalf_p        = sqrt((*glob_interf_norms)[2]);
+
+    if (myrank_ == 0)
     {
-      cout.precision(8);
-      cout << endl << "----relative L_2 error norm for analytical solution Nr. " <<
-        DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") <<
-        " ----------" << endl;
-      cout << "| velocity:  " << velerr/velint << endl;
-      cout << "| pressure:  " << preerr/pint << endl;
-      cout << "--------------------------------------------------------------------" << endl << endl;
-    }
+      {
+        cout.precision(8);
+        cout << endl << "---- error norm for analytical solution Nr. "
+             <<  DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error")
+             <<  " ----------" << endl;
+        cout << "-------------- domain error norms -----------------------"       << endl;
+        cout << "|| u - u_h ||_L2(Omega)                          =  " << dom_err_vel_L2                     << endl;
+        cout << "|| grad( u - u_h ) ||_L2(Omega)                  =  " << dom_err_vel_H1_semi                << endl;
+        cout << "|| u - u_h ||_H1(Omega)                          =  " << dom_err_vel_H1                     << endl;
+        cout << "|| p - p_h ||_L2(Omega)                          =  " << dom_err_pre_L2                     << endl;
+        cout << "---------viscosity-scaled domain error norms ------------"       << endl;
+        cout << "|| nu^(+1/2) grad( u - u_h ) ||_L2(Omega)        =  " << dom_err_vel_H1_semi_nu_scaled      << endl;
+        cout << "|| nu^(-1/2) (p - p_h) ||_L2(Omega)              =  " << dom_err_pre_L2_nu_scaled           << endl;
+        cout << "---------------------------------------------------------"       << endl;
+        cout << "-------------- interface/boundary error norms -----------"       << endl;
+        cout << "|| nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  " << interf_err_Honehalf                << endl;
+        cout << "|| nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u             << endl;
+        cout << "|| nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p             << endl;
+        cout << "---------------------------------------------------------"       << endl;
+      }
 
-    // append error of the last time step to the error file
-    if ((step_==stepmax_) or (time_==maxtime_))// write results to file
-    {
+      // append error of the last time step to the error file
+      if ((step_==stepmax_) or (time_==maxtime_))// write results to file
+      {
+        ostringstream temp;
+        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string fname = simulation+".xfem_abserror";
+
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << "#| " << simulation << "\n";
+        f << "#| Step"
+          << " | Time"
+          << " | || u - u_h ||_L2(Omega)"
+          << " | || grad( u - u_h ) ||_L2(Omega)"
+          << " | || u - u_h ||_H1(Omega)"
+          << " | || p - p_h ||_L2(Omega)"
+          << " | || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)"
+          << " | || nu^(-1/2) (p - p_h) ||_L2(Omega)"
+          << " | || nu^(+1/2) (u - u*) ||_H1/2(Gamma)"
+          << " | || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)"
+          << " | || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)"
+          << " |\n";
+        f << step_ << " "
+          << time_ << " "
+          << dom_err_vel_L2 << " "
+          << dom_err_vel_H1_semi << " "
+          << dom_err_vel_H1 << " "
+          << dom_err_pre_L2 << " "
+          << dom_err_vel_H1_semi_nu_scaled << " "
+          << dom_err_pre_L2_nu_scaled << " "
+          << interf_err_Honehalf << " "
+          << interf_err_Hmonehalf_u << " "
+          << interf_err_Hmonehalf_p << " "
+          <<"\n";
+        f.flush();
+        f.close();
+      }
+
       ostringstream temp;
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
-      const std::string fname = simulation+".relerror";
+      const std::string fname = simulation+"_time.xfem_abserror";
 
-      std::ofstream f;
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      f << "#| " << simulation << "\n";
-      f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-      f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
-      f.flush();
-      f.close();
-    }
+      if(step_==1)
+      {
+        std::ofstream f;
+        f.open(fname.c_str());
 
-    ostringstream temp;
-    const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    const std::string fname = simulation+"_time.relerror";
+        f << "#| Step"
+          << " | Time"
+          << " | || u - u_h ||_L2(Omega)"
+          << " | || grad( u - u_h ) ||_L2(Omega)"
+          << " | || u - u_h ||_H1(Omega)"
+          << " | || p - p_h ||_L2(Omega)"
+          << " | || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)"
+          << " | || nu^(-1/2) (p - p_h) ||_L2(Omega)"
+          << " | || nu^(+1/2) (u - u*) ||_H1/2(Gamma)"
+          << " | || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)"
+          << " | || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)"
+          << " |\n";
+        f << step_ << " "
+          << time_ << " "
+          << dom_err_vel_L2 << " "
+          << dom_err_vel_H1_semi << " "
+          << dom_err_vel_H1 << " "
+          << dom_err_pre_L2 << " "
+          << dom_err_vel_H1_semi_nu_scaled << " "
+          << dom_err_pre_L2_nu_scaled << " "
+          << interf_err_Honehalf << " "
+          << interf_err_Hmonehalf_u << " "
+          << interf_err_Hmonehalf_p << " "
+          <<"\n";
 
-    if(step_==1)
-    {
-      std::ofstream f;
-      f.open(fname.c_str());
-      f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-      f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
-      f.flush();
-      f.close();
-    }
-    else
-    {
-      std::ofstream f;
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
-      f.flush();
-      f.close();
-    }
+        f.flush();
+        f.close();
+      }
+      else
+      {
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << step_ << " "
+          << time_ << " "
+          << dom_err_vel_L2 << " "
+          << dom_err_vel_H1_semi << " "
+          << dom_err_vel_H1 << " "
+          << dom_err_pre_L2 << " "
+          << dom_err_vel_H1_semi_nu_scaled << " "
+          << dom_err_pre_L2_nu_scaled << " "
+          << interf_err_Honehalf << " "
+          << interf_err_Hmonehalf_u << " "
+          << interf_err_Hmonehalf_p << " "
+          <<"\n";
+
+        f.flush();
+        f.close();
+      }
+    } // myrank = 0
+
   }
 
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2309,7 +2515,6 @@ void FLD::XFluid::Integrate()
 void FLD::XFluid::TimeLoop()
 {
   printf("start TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
-
   while (step_<stepmax_ and time_<maxtime_)
   {
     // -----------------------------------------------------------------

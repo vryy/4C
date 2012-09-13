@@ -98,6 +98,10 @@ namespace DRT
             const vector<int>&           lm            ///< local map
             ) = 0;
 
+        virtual void getivelint(
+            LINALG::Matrix<nsd_,1>& ivelint  ///< interface velocity at embedded side
+            ) = 0;
+
         //! evaluate shape function, derivatives, normal and transformation w.r.t side element at gaussian point
         virtual void Evaluate(
             const LINALG::Matrix<nsd_-1,1>  & eta,     ///< local coordinates w.r.t side element

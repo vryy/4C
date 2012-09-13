@@ -2360,7 +2360,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "gravitation",
                                  "shear_flow",
                                  "jeffery_hamel_flow",
-                                 "byfunct1"),
+                                 "byfunct1",
+                                 "beltrami_stat_stokes",
+                                 "beltrami_stat_navier_stokes"),
                                tuple<int>(
                                    INPAR::FLUID::no_error_calculation,
                                    INPAR::FLUID::beltrami_flow,
@@ -2368,7 +2370,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::gravitation,
                                    INPAR::FLUID::shear_flow,
                                    INPAR::FLUID::jeffery_hamel_flow,
-                                   INPAR::FLUID::byfunct1),
+                                   INPAR::FLUID::byfunct1,
+                                   INPAR::FLUID::beltrami_stat_stokes,
+                                   INPAR::FLUID::beltrami_stat_navier_stokes),
                                &fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",

@@ -30,6 +30,11 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_calc_xfem.H"
 
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_function.H"
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -83,20 +88,20 @@ namespace ELEMENTS
           Evaluate routine for cut elements of XFEM  (public)
 *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*                         ele,
-                                                       DRT::Discretization &                             discretization,
-                                                       const std::vector<int> &                          lm,
-                                                       Teuchos::ParameterList&                           params,
-                                                       Teuchos::RCP<MAT::Material> &                     mat,
-                                                       Epetra_SerialDenseMatrix&                         elemat1_epetra,
-                                                       Epetra_SerialDenseMatrix&                         elemat2_epetra,
-                                                       Epetra_SerialDenseVector&                         elevec1_epetra,
-                                                       Epetra_SerialDenseVector&                         elevec2_epetra,
-                                                       Epetra_SerialDenseVector&                         elevec3_epetra,
-                                                       const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                                                       std::string&                                      VCellGaussPts,
-                                                       const GEO::CUT::plain_volumecell_set &            cells,
-                                                       bool                                              offdiag )
+int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*                         ele,
+                                            DRT::Discretization &                             discretization,
+                                            const std::vector<int> &                          lm,
+                                            Teuchos::ParameterList&                           params,
+                                            Teuchos::RCP<MAT::Material> &                     mat,
+                                            Epetra_SerialDenseMatrix&                         elemat1_epetra,
+                                            Epetra_SerialDenseMatrix&                         elemat2_epetra,
+                                            Epetra_SerialDenseVector&                         elevec1_epetra,
+                                            Epetra_SerialDenseVector&                         elevec2_epetra,
+                                            Epetra_SerialDenseVector&                         elevec3_epetra,
+                                            const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                                            std::string&                                      VCellGaussPts,
+                                            const GEO::CUT::plain_volumecell_set &            cells,
+                                            bool                                              offdiag )
 {
   int err=0;
 
@@ -164,6 +169,820 @@ int DRT::ELEMENTS::FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*
   }
 
   return err;
+}
+
+
+/// error computation
+template <DRT::Element::DiscretizationType distype>
+int FluidEleCalcXFEM<distype>::ComputeError(
+                         DRT::ELEMENTS::Fluid*         ele,
+                         Teuchos::ParameterList&       params,
+                         Teuchos::RCP<MAT::Material>&  mat,
+                         DRT::Discretization&          discretization,
+                         std::vector<int>&             lm,
+                         Epetra_SerialDenseVector&     ele_dom_norms)
+{
+  // integrations points and weights
+  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+  // degree 5
+  const DRT::UTILS::GaussIntegration intpoints(distype, 5);
+  return ComputeError( ele, params, mat,
+                       discretization, lm,
+                       ele_dom_norms, intpoints);
+}
+
+template <DRT::Element::DiscretizationType distype>
+int FluidEleCalcXFEM<distype>::ComputeError(
+                         DRT::ELEMENTS::Fluid*                ele,
+                         Teuchos::ParameterList&              params,
+                         Teuchos::RCP<MAT::Material>&         mat,
+                         DRT::Discretization&                 discretization,
+                         std::vector<int>&                    lm,
+                         Epetra_SerialDenseVector&            ele_dom_norms, // squared element domain norms
+                         const DRT::UTILS::GaussIntegration & intpoints)
+{
+  // analytical solution
+  LINALG::Matrix<my::nsd_,1>         u_analyt(true);
+  LINALG::Matrix<my::nsd_,my::nsd_>  grad_u_analyt(true);
+  double p_analyt = 0.0;
+
+  // error
+  LINALG::Matrix<my::nsd_,1>        u_err(true);
+  LINALG::Matrix<my::nsd_,my::nsd_> grad_u_err(true);
+  double p_err = 0.0;
+
+  const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
+
+  const double t = my::fldpara_->Time();
+
+
+  //----------------------------------------------------------------------------
+  //   Extract velocity/pressure from global vectors
+  //----------------------------------------------------------------------------
+
+  // fill the local element vector/matrix with the global values
+  LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
+  LINALG::Matrix<my::nen_,1>        epreaf(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelaf, &epreaf, "u and p at time n+1 (converged)" );
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(my::isNurbs_)
+  {
+//    // access knots and weights for this element
+//    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+//
+//    // if we have a zero sized element due to a interpolated point -> exit here
+//    if(zero_size)
+//      return(0);
+    dserror("compute error not implemented for nurbs");
+  } // Nurbs specific stuff
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<my::nsd_,my::nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+    // get new node positions for isale
+    my::xyze_ += edispnp;
+  }
+
+//------------------------------------------------------------------
+//                       INTEGRATION LOOP
+//------------------------------------------------------------------
+
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+
+    // get velocity at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    my::velint_.Multiply(evelaf,my::funct_);
+
+    // get velocity derivatives at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    my::vderxy_.MultiplyNT(evelaf,my::derxy_);
+
+    // get pressure at integration point
+    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    double preint = my::funct_.Dot(epreaf);
+
+    // get coordinates at integration point
+    LINALG::Matrix<my::nsd_,1> xyzint(true);
+    xyzint.Multiply(my::xyze_,my::funct_);
+
+    // get viscosity
+    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    {
+      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+
+      // get constant kinematic viscosity
+      my::visc_ = actmat->Viscosity()/actmat->Density();
+    }
+    else dserror("Material is not Newtonian Fluid");
+
+
+    AnalyticalReference(
+             calcerr,          ///< which reference solution
+             u_analyt,         ///< exact velocity
+             grad_u_analyt,    ///< exact velocity gradient
+             p_analyt,         ///< exact pressure
+             xyzint,           ///< xyz position of gaussian point
+             t
+   );
+
+    // compute difference between analytical solution and numerical solution
+    p_err = preint - p_analyt;
+    u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
+    grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
+
+
+    // standard domain errors
+    // 1.   || u - u_h ||_L2(Omega)              =   standard L2-norm for velocity
+    // 2.   || grad( u - u_h ) ||_L2(Omega)      =   standard H1-seminorm for velocity
+    // 3.   || u - u_h ||_H1(Omega)              =   standard H1-norm for velocity
+    //                                           =   sqrt( || u - u_h ||^2_L2(Omega) + || grad( u - u_h ) ||^2_L2(Omega) )
+    // 4.   || p - p_h ||_L2(Omega)              =   standard L2-norm for for pressure
+    //
+    // viscosity-scaled domain errors
+    // 5.   || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)      =   visc-scaled H1-seminorm for velocity
+    //                                                     =   nu^(+1/2) * || grad( u - u_h ) ||_L2(Omega) (for homogeneous visc)
+    // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for for pressure
+    //                                                     =   nu^(-1/2) * || p - p_h ||_L2(Omega) (for homogeneous visc)
+
+    double u_err_squared      = 0.0;
+    double grad_u_err_squared = 0.0;
+    double p_err_squared      = 0.0;
+
+    // evaluate squared errors at gaussian point
+    for (int isd=0;isd<my::nsd_;isd++)
+    {
+      u_err_squared += u_err(isd)*u_err(isd)*my::fac_;
+
+      for(int jsd=0; jsd<my::nsd_;jsd++)
+      {
+        grad_u_err_squared += grad_u_err(isd,jsd)*grad_u_err(isd,jsd)*my::fac_;
+      }
+
+    }
+
+    p_err_squared = p_err*p_err*my::fac_;
+
+    // standard domain errors
+    ele_dom_norms[0] += u_err_squared;
+    ele_dom_norms[1] += grad_u_err_squared;
+    ele_dom_norms[2] += u_err_squared + grad_u_err_squared;
+    ele_dom_norms[3] += p_err_squared;
+
+    // viscosity-scaled domain errors
+    ele_dom_norms[4] += my::visc_ * grad_u_err_squared;
+    ele_dom_norms[5] += 1.0/my::visc_ * p_err_squared;
+
+
+  } // loop gaussian points
+
+  return 0;
+}
+
+template <DRT::Element::DiscretizationType distype>
+void FluidEleCalcXFEM<distype>::AnalyticalReference(
+    const int                               calcerr,     ///< which reference solution
+    LINALG::Matrix<my::nsd_,1> &            u,           ///< exact jump vector (coupled)
+    LINALG::Matrix<my::nsd_,my::nsd_> &     grad_u,      ///< exact velocity gradient
+    double &                                p,           ///< exact pressure
+    LINALG::Matrix<my::nsd_,1> &            xyzint,      ///< xyz position of gaussian point
+    const double &                          t            ///< time
+)
+{
+  // Compute analytical solution
+  switch(calcerr)
+  {
+  case INPAR::FLUID::beltrami_stat_stokes:
+  case INPAR::FLUID::beltrami_stat_navier_stokes:
+  {
+
+    // function evaluation requires a 3D position vector!!
+    double position[3];
+
+    if(my::nsd_ == 3)
+    {
+      position[0] = xyzint(0);
+      position[1] = xyzint(1);
+      position[2] = xyzint(2);
+    }
+    else dserror("invalid nsd %d", my::nsd_);
+
+    // evaluate velocity and pressure
+    RCP<DRT::UTILS::Function> function = Teuchos::null;
+
+    // evaluate the velocity gradient
+    RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
+
+    // evaluate velocity and pressure
+    // evaluate the velocity gradient
+    if(calcerr == INPAR::FLUID::beltrami_stat_stokes)
+    {
+      function      = rcp(new DRT::UTILS::BeltramiStatStokesUP());
+      function_grad = rcp(new DRT::UTILS::BeltramiStatStokesGradU());
+    }
+    else if(calcerr == INPAR::FLUID::beltrami_stat_navier_stokes)
+    {
+      // we use the same analytical solution for the navier-stokes equations
+      // remark: just the rhs is different
+      function      = rcp(new DRT::UTILS::BeltramiStatStokesUP());
+      function_grad = rcp(new DRT::UTILS::BeltramiStatStokesGradU());
+    }
+
+    if(my::nsd_==3)
+    {
+      u(0) = function->Evaluate(0,position,t,NULL);
+      u(1) = function->Evaluate(1,position,t,NULL);
+      u(2) = function->Evaluate(2,position,t,NULL);
+      p = function->Evaluate(3,position,t,NULL);
+    }
+    else dserror("case 'beltrami_stat' is a 3D specific case");
+
+
+    if(my::nsd_==3)
+    {
+      grad_u(0,0) = function_grad->Evaluate(0,position,t,NULL); // u,x
+      grad_u(0,1) = function_grad->Evaluate(1,position,t,NULL); // u,y
+      grad_u(0,2) = function_grad->Evaluate(2,position,t,NULL); // u,z
+
+      grad_u(1,0) = function_grad->Evaluate(3,position,t,NULL); // v,x
+      grad_u(1,1) = function_grad->Evaluate(4,position,t,NULL); // v,y
+      grad_u(1,2) = function_grad->Evaluate(5,position,t,NULL); // v,z
+
+      grad_u(2,0) = function_grad->Evaluate(6,position,t,NULL); // w,x
+      grad_u(2,1) = function_grad->Evaluate(7,position,t,NULL); // w,y
+      grad_u(2,2) = function_grad->Evaluate(8,position,t,NULL); // w,z
+    }
+    else dserror("case 'beltrami_stat' is a 3D specific case");
+
+  }
+  break;
+  case INPAR::FLUID::beltrami_flow:
+  {
+    if (my::nsd_ == 3)
+    {
+
+      const double a      = M_PI/4.0;
+      const double d      = M_PI/2.0;
+
+      // compute analytical pressure
+      p = -a*a/2.0 *
+          ( exp(2.0*a*xyzint(0))
+              + exp(2.0*a*xyzint(1))
+              + exp(2.0*a*xyzint(2))
+              + 2.0 * sin(a*xyzint(0) + d*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) * exp(a*(xyzint(1)+xyzint(2)))
+              + 2.0 * sin(a*xyzint(1) + d*xyzint(2)) * cos(a*xyzint(0) + d*xyzint(1)) * exp(a*(xyzint(2)+xyzint(0)))
+              + 2.0 * sin(a*xyzint(2) + d*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) * exp(a*(xyzint(0)+xyzint(1)))
+          )* exp(-2.0*my::visc_*d*d*t);
+
+      // compute analytical velocities
+      u(0) = -a * ( exp(a*xyzint(0)) * sin(a*xyzint(1) + d*xyzint(2)) +
+          exp(a*xyzint(2)) * cos(a*xyzint(0) + d*xyzint(1)) ) * exp(-my::visc_*d*d*t);
+      u(1) = -a * ( exp(a*xyzint(1)) * sin(a*xyzint(2) + d*xyzint(0)) +
+          exp(a*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) ) * exp(-my::visc_*d*d*t);
+      u(2) = -a * ( exp(a*xyzint(2)) * sin(a*xyzint(0) + d*xyzint(1)) +
+          exp(a*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) ) * exp(-my::visc_*d*d*t);
+    }
+    else dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
+  }
+  break;
+  case INPAR::FLUID::shear_flow:
+  {
+    const double maxvel = 1.0;
+    const double hight = 1.0;
+
+    // y=0 is located in the middle of the domain
+    if (my::nsd_ == 2)
+    {
+      p = 1.0;
+      u(0) = xyzint(1)*maxvel + hight/2*maxvel;
+      u(1) = 0.0;
+    }
+    if (my::nsd_ == 3)
+    {
+      p = 0.0;
+      u(0) = xyzint(1)*maxvel + hight/2*maxvel;
+      u(1) = 0.0;
+      u(2) = 0.0;
+    }
+  }
+  break;
+  case INPAR::FLUID::gravitation:
+  {
+    const double gravity = 10.0;
+    const double hight = 1.0;
+
+    // 2D: rectangle 1.0x1.0
+    // 3D: cube 1.0x1.0x1.0
+    // y=0 is located in the middle of the domain
+    if (my::nsd_ == 2)
+    {
+      p = -xyzint(1)*gravity + hight/2*gravity;
+      u(0) = 0.0;
+      u(1) = 0.0;
+    }
+    if (my::nsd_ == 3)
+    {
+      p = -xyzint(1)*gravity + hight/2*gravity;
+      u(0) = 0.0;
+      u(1) = 0.0;
+      u(2) = 0.0;
+    }
+  }
+  break;
+  case INPAR::FLUID::channel2D:
+  {
+    const double maxvel=1.25;
+    const double hight = 1.0;
+    const double visc = 1.0;
+    const double pressure_gradient = 10.0;
+
+    // u_max = 1.25
+    // y=0 is located in the middle of the channel
+    if (my::nsd_ == 2)
+    {
+      p = 1.0;
+      //p = -10*xyzint(0)+20;
+      u(0) = maxvel -((hight*hight)/(2.0*visc)*pressure_gradient*(xyzint(1)/hight)*(xyzint(1)/hight));
+      u(1) = 0.0;
+    }
+    else
+      dserror("3D analytical solution is not implemented yet");
+  }
+  break;
+  case INPAR::FLUID::jeffery_hamel_flow:
+  {
+    //LINALG::Matrix<3,1> physpos(true);
+    //GEO::elementToCurrentCoordinates(distype, xyzint, xsi_, physpos);
+
+    // function evaluation requires a 3D position vector!!
+    double position[3];
+    position[0] = xyzint(0);
+    position[1] = xyzint(1);
+    position[2] = 0.0;
+
+    if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
+    {
+      const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,t,NULL);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,t,NULL);
+      u(0) = u_exact_x;
+      u(1) = u_exact_y;
+    }
+
+  }
+  break;
+  case INPAR::FLUID::byfunct1:
+  {
+    const int func_no = 1;
+
+
+    // function evaluation requires a 3D position vector!!
+    double position[3];
+
+    if (my::nsd_ == 2)
+    {
+
+      position[0] = xyzint(0);
+      position[1] = xyzint(1);
+      position[2] = 0.0;
+    }
+    else if(my::nsd_ == 3)
+    {
+      position[0] = xyzint(0);
+      position[1] = xyzint(1);
+      position[2] = xyzint(2);
+    }
+    else dserror("invalid nsd %d", my::nsd_);
+
+    if(my::nsd_ == 2)
+    {
+      const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
+      const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
+
+      u(0) = u_exact_x;
+      u(1) = u_exact_y;
+      p    = p_exact;
+    }
+    else if(my::nsd_==3)
+    {
+      const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
+      const double u_exact_z = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
+      const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(3,position,t,NULL);
+
+      u(0) = u_exact_x;
+      u(1) = u_exact_y;
+      u(2) = u_exact_z;
+      p    = p_exact;
+
+//      u(0) = 5.0+30.0*position[1];
+//      u(1) = 0.0;
+//      u(2) = 0.0;
+//
+//      p = 4.0;
+//
+//      grad_u(0,0) = 0.0;       grad_u(0,1) = 30.0;       grad_u(0,2) = 0.0;
+//      grad_u(1,0) = 0.0;       grad_u(1,1) =  0.0;       grad_u(1,2) = 0.0;
+//      grad_u(2,0) = 0.0;       grad_u(2,1) =  0.0;       grad_u(2,2) = 0.0;
+
+    }
+    else dserror("invalid dimension");
+
+  }
+  break;
+  default:
+    dserror("analytical solution is not defined");
+  }
+}
+
+
+/*--------------------------------------------------------------------------------
+ * compute interface error norms
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
+    DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+    DRT::Discretization &                                               dis,               ///< background discretization
+    const std::vector<int> &                                            lm,                ///< element local map
+    Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+    Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
+    DRT::Discretization &                                               cutdis,            ///< cut discretization
+    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+    std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+    Teuchos::ParameterList&                                             params,            ///< parameter list
+    const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
+)
+{
+
+  const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
+
+  const double t = my::fldpara_->Time();
+
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+
+  // get element-wise velocity/pressure field
+  LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
+  LINALG::Matrix<my::nen_,1> epreaf(true);
+  my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "u and p at time n+1 (converged)");
+
+
+  //----------------------------------------------------------------------------
+  //      surface integral --- build Cuiui, Cuui, Cuiu and Cuu matrix and rhs
+  //----------------------------------------------------------------------------
+
+  DRT::Element::LocationArray cutla( 1 );
+
+  LINALG::Matrix<3,1> normal;
+  LINALG::Matrix<3,1> x_side;
+
+  bool fluidfluidcoupling = false;
+
+  // side coupling implementation between background element and each cut side (map<sid, side_impl)
+  std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
+  Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si;
+
+  // find all the intersecting elements of actele
+  std::set<int> begids;
+  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+       bc!=bcells.end(); ++bc )
+  {
+    int sid = bc->first;
+    begids.insert(sid);
+  }
+
+  // map of boundary element gids and coupling matrices, [0]: Cuiui matrix
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
+
+  // lm vector of all intersecting boundary elements that intersect the current background element
+  std::vector<int> patchelementslmv;
+  std::vector<int> patchelementslmowner;
+
+  // create location vectors for intersecting boundary elements and reshape coupling matrices
+  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling, "Nitsche");
+
+
+  //-----------------------------------------------------------------------------------
+  //         evaluate element length, stabilization factors and average weights
+  //-----------------------------------------------------------------------------------
+
+  // element length
+  double h_k = 0.0;
+
+  // take a volume based element length
+  LINALG::Matrix<1,1> dummy(true);
+  h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
+
+
+  // evaluate shape function derivatives
+  bool eval_deriv = true;
+
+
+  //-----------------------------------------------------------------------------------
+  //         initialize analytical solution vectors and error variables
+  //-----------------------------------------------------------------------------------
+
+  // analytical solution
+  LINALG::Matrix<my::nsd_,1>         u_analyt(true);
+  LINALG::Matrix<my::nsd_,my::nsd_>  grad_u_analyt(true);
+  double p_analyt = 0.0;
+
+  // error
+  LINALG::Matrix<my::nsd_,1>        u_err(true);
+  LINALG::Matrix<my::nsd_,my::nsd_> grad_u_err(true);
+  double p_err = 0.0;
+
+  LINALG::Matrix<my::nsd_,1> flux_u_err(true);
+  LINALG::Matrix<my::nsd_,1> flux_p_err(true);
+
+
+  //--------------------------------------------
+  // loop intersecting sides
+  //--------------------------------------------
+  // map of side-element id and Gauss points
+  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
+        i!=bintpoints.end();
+        ++i )
+  {
+    int sid = i->first;
+    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
+
+    // get side's boundary cells
+    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
+    if ( j==bcells.end() )
+      dserror( "missing boundary cell" );
+
+    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
+    if ( bcs.size()!=cutintpoints.size() )
+      dserror( "boundary cell integration rules mismatch" );
+
+    // side and location vector
+    DRT::Element * side = cutdis.gElement( sid );
+    side->LocationVector(cutdis,cutla,false);
+
+    // side geometry
+    const int numnodes = side->NumNode();
+    DRT::Node ** nodes = side->Nodes();
+    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
+    for ( int i=0; i<numnodes; ++i )
+    {
+      const double * x = nodes[i]->X();
+      std::copy( x, x+3, &side_xyze( 0, i ) );
+    }
+
+    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
+
+    std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
+
+    if ( side_matrices.size()==3 )
+      fluidfluidcoupling = true;
+
+    // create side impl
+    if(fluidfluidcoupling)
+    {
+      // coupling matrices between background element and one! side
+      Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
+      Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
+      Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
+
+      // coupling matrices between one side and itself
+      std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
+      std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
+      Epetra_SerialDenseMatrix & eleCuiui = Cuiui_matrices[0];
+
+      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleCuiui,side_xyze);
+    }
+    else
+    {
+      si = DRT::ELEMENTS::XFLUID::SideInterface<distype>::Impl(side,side_xyze);
+    }
+
+    side_impl[sid] = si;
+
+    // get velocity at integration point of boundary dis
+    si->eivel(cutdis,"ivelnp",cutla[0].lm_);
+
+    // set displacement of side
+    si->addeidisp(cutdis,"idispnp",cutla[0].lm_);
+
+
+    //--------------------------------------------
+    // loop boundary cells w.r.t current cut side
+    //--------------------------------------------
+    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
+          i!=cutintpoints.end();
+          ++i )
+    {
+      const DRT::UTILS::GaussIntegration & gi = *i;
+      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
+
+      //--------------------------------------------
+      // loop gausspoints w.r.t current boundary cell
+      //--------------------------------------------
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+      {
+        double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
+
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
+
+        LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
+
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+
+        si->Evaluate(eta,x_side,normal,drs);
+
+        // find element local position of gauss point at interface
+        GEO::CUT::Position<distype> pos( my::xyze_, x_side );
+        pos.Compute();
+        rst = pos.LocalCoordinates();
+
+#else
+        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+
+        // compute transformation factor, normal vector and global Gauss point coordiantes
+        if(bc->Shape() != DRT::Element::dis_none) // Tessellation approach
+        {
+          ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
+        }
+        else // MomentFitting approach
+        {
+          drs = 1.0;
+          normal = bc->GetNormalVector();
+          const double* gpcord = iquad.Point();
+          for (int idim=0;idim<3;idim++)
+          {
+            x_gp_lin(idim,0) = gpcord[idim];
+          }
+        }
+
+        // find element local position of gauss point
+        GEO::CUT::Position<distype> pos( my::xyze_, x_gp_lin );
+        pos.Compute();
+        rst = pos.LocalCoordinates();
+
+        // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
+        LINALG::Matrix<2,1> xi_side(true);
+        si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+ #endif
+
+        const double surf_fac = drs*iquad.Weight();
+
+
+
+        //--------------------------------------------
+        // evaluate shape functions (and derivatives)
+
+        if(eval_deriv)
+        {
+          EvalFuncAndDeriv( rst );
+        }
+        else
+        {
+          DRT::UTILS::shape_function<distype>( rst, my::funct_ );
+        }
+
+
+        // get velocity at integration point
+        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        my::velint_.Multiply(evelaf,my::funct_);
+
+        // get velocity derivatives at integration point
+        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        my::vderxy_.MultiplyNT(evelaf,my::derxy_);
+
+        // get pressure at integration point
+        // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        double press = my::funct_.Dot(epreaf);
+
+//        //--------------------------------------------
+//        // compute stabilization factors
+//
+//        double stabfac_visc = 0.0;
+//        double stabfac_conv = 0.0;
+//        double velgrad_interface_fac = 0.0;
+//        double gamma_ghost_penalty = 0.0;
+//
+//        NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
+//                           stabfac_visc,               // stabfac 1 for standard Nitsche term to set
+//                           stabfac_conv,               // stabfac 2 for additional stabilization term to set
+//                           NIT_stab_fac,               // viscous Nitsche prefactor
+//                           conv_stab_scaling,          // type of scaling for convective stabilization term
+//                           nitsche_stab_conv,              // stabilization factor for additional stabilization
+//                           my::velint_.Dot(normal),    // velocity in normal direction
+//                           gamma_ghost_penalty,
+//                           velgrad_interface_fac,
+//                           h_k);
+
+
+        LINALG::Matrix<my::nsd_,1>        u_analyt(true);      // boundary condition to enforce (xfsi), interfacial jump to enforce (fluidfluid)
+        LINALG::Matrix<my::nsd_,my::nsd_> grad_u_analyt(true);
+        p_analyt = 0.0;
+
+
+        AnalyticalReference(
+                     calcerr,          ///< which reference solution
+                     u_analyt,         ///< exact velocity (onesided), exact jump vector (coupled)
+                     grad_u_analyt,    ///< exact velocity gradient
+                     p_analyt,         ///< exact pressure
+                     x_side,           ///< xyz position of gaussian point which lies on the real side, projected from linearized interface
+                     t                 ///< time t
+                     );
+
+        //--------------------------------------------
+        if(fluidfluidcoupling)
+        {
+
+          // zero velocity jump for fluidfluidcoupling
+          LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
+
+          LINALG::Matrix<my::nsd_,1> ivelint(true);
+          si->getivelint(ivelint);
+
+          u_err.Update(1.0, my::velint_, -1.0, ivelint, 0.0); // u_backgr - u_emb
+          u_err.Update(-1.0, ivelint_WDBC_JUMP, 1.0);         // u_backgr - u_emb - u_jump
+
+        }
+        if(!fluidfluidcoupling)
+        {
+
+          // prescribed velocity vector at weak Dirichlet boundary
+          LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
+          si->get_vel_WeakDBC(ivelint_WDBC_JUMP);
+
+          LINALG::Matrix<my::nsd_,1> check_diff(true);
+          check_diff.Update(1.0, u_analyt, -1.0, ivelint_WDBC_JUMP);
+
+
+
+          if(check_diff.Norm2() > 1e-12)
+          {
+//            cout.precision(12);
+//            cout << "u_analyt" << u_analyt << endl;
+//            cout << "ivelint_WDBC_JUMP" <<  ivelint_WDBC_JUMP << endl;
+            //dserror("do you want to enforce other boundary conditions than the analytical domain solution?");
+          }
+
+          u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
+        }
+
+
+        grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
+        p_err = press - p_analyt;
+
+        flux_u_err.Multiply(grad_u_err,normal);
+        flux_p_err.Update(p_err,normal,0.0);
+
+
+        // interface errors
+        // 1.   || nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition
+        // 2.   || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
+        // 3.   || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+
+        double u_err_squared      = 0.0;
+        double flux_u_err_squared = 0.0;
+        double flux_p_err_squared = 0.0;
+
+        // evaluate squared errors at gaussian point
+        for (int isd=0;isd<my::nsd_;isd++)
+        {
+          u_err_squared += u_err(isd)*u_err(isd)*surf_fac;
+          flux_u_err_squared += flux_u_err(isd)*flux_u_err(isd)*surf_fac;
+          flux_p_err_squared += flux_p_err(isd)*flux_p_err(isd)*surf_fac;
+        }
+
+        // interface errors
+        ele_interf_norms[0] += 1.0/h_k * my::visc_ * u_err_squared;
+        ele_interf_norms[1] += h_k     * my::visc_ * flux_u_err_squared;
+        ele_interf_norms[2] += h_k     / my::visc_ * flux_p_err_squared;
+
+      } // end loop gauss points of boundary cell
+    } // end loop boundary cells of side
+
+    //if(assemble_iforce) AssembleInterfaceForce(iforcecol, cutdis, cutla[0].lm_, iforce);
+
+  } // end loop cut sides
+
+  return 0;
 }
 
 

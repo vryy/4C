@@ -169,7 +169,9 @@ namespace INPAR
       gravitation,
       shear_flow,
       jeffery_hamel_flow,
-      byfunct1
+      byfunct1,
+      beltrami_stat_stokes,
+      beltrami_stat_navier_stokes
     };
 
     /// initial field

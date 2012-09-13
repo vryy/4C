@@ -305,6 +305,82 @@ namespace UTILS {
   };
 
 
+
+  /// special implementation for 3d stationary beltrami flow (rhs) for pure stokes equation
+  class BeltramiStatStokesRHS : public Function
+  {
+  public:
+
+    BeltramiStatStokesRHS(int mat_id);
+
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(3);
+      };
+
+  private:
+    double viscosity_;
+
+  };
+
+  /// special implementation for 3d stationary beltrami flow (rhs) for navier-stokes equation
+  class BeltramiStatNavierStokesRHS : public Function
+  {
+  public:
+
+    BeltramiStatNavierStokesRHS(int mat_id);
+
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(3);
+      };
+
+  private:
+    double viscosity_;
+
+  };
+
+
   /// special implementation for (randomly) disturbed 3d turbulent
   /// boundary-layer profile
   /// (currently fixed for low-Mach-number flow through a backward-facing step,
@@ -687,6 +763,32 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("BOCHEV-RHS")
     ;
 
+  DRT::INPUT::LineDefinition beltramistatstokesup;
+  beltramistatstokesup
+    .AddNamedInt("FUNCT")
+    .AddTag("BELTRAMI-STAT-STOKES-UP")
+    ;
+
+  DRT::INPUT::LineDefinition beltramistatstokesgradu;
+  beltramistatstokesgradu
+    .AddNamedInt("FUNCT")
+    .AddTag("BELTRAMI-STAT-STOKES-GRADU")
+    ;
+
+  DRT::INPUT::LineDefinition beltramistatstokesrhs;
+  beltramistatstokesrhs
+    .AddNamedInt("FUNCT")
+    .AddTag("BELTRAMI-STAT-STOKES-RHS")
+    .AddNamedInt("MAT")
+    ;
+
+  DRT::INPUT::LineDefinition beltramistatnavierstokesrhs;
+  beltramistatnavierstokesrhs
+    .AddNamedInt("FUNCT")
+    .AddTag("BELTRAMI-STAT-NAVIER-STOKES-RHS")
+    .AddNamedInt("MAT")
+    ;
+
   DRT::INPUT::LineDefinition turbboulayer;
   turbboulayer
     .AddNamedInt("FUNCT")
@@ -808,6 +910,10 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(kimmoin);
   lines->Add(bochevup);
   lines->Add(bochevrhs);
+  lines->Add(beltramistatstokesup);
+  lines->Add(beltramistatstokesgradu);
+  lines->Add(beltramistatstokesrhs);
+  lines->Add(beltramistatnavierstokesrhs);
   lines->Add(turbboulayer);
   lines->Add(turbboulayerbfs);
   lines->Add(turbboulayeroracles);
@@ -974,6 +1080,34 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("BOCHEV-RHS"))
       {
         functions_.push_back(rcp(new BochevRHSFunction()));
+      }
+      else if (function->HaveNamed("BELTRAMI-STAT-STOKES-UP") or
+               function->HaveNamed("BELTRAMI-STAT-NAVIER-STOKES-UP"))
+      {
+        functions_.push_back(rcp(new BeltramiStatStokesUP()));
+      }
+      else if (function->HaveNamed("BELTRAMI-STAT-STOKES-GRADU") or
+               function->HaveNamed("BELTRAMI-STAT-NAVIER-STOKES-GRADU"))
+      {
+        functions_.push_back(rcp(new BeltramiStatStokesGradU()));
+      }
+      else if (function->HaveNamed("BELTRAMI-STAT-STOKES-RHS"))
+      {
+        // read material
+        int mat_id = -1;
+        function->ExtractInt("MAT",mat_id);
+        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-STAT-STOKES-RHS");
+
+        functions_.push_back(rcp(new BeltramiStatStokesRHS(mat_id)));
+      }
+      else if (function->HaveNamed("BELTRAMI-STAT-NAVIER-STOKES-RHS"))
+      {
+        // read material
+        int mat_id = -1;
+        function->ExtractInt("MAT",mat_id);
+        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-STAT-NAVIER-STOKES-RHS");
+
+        functions_.push_back(rcp(new BeltramiStatNavierStokesRHS(mat_id)));
       }
       else if (function->HaveNamed("TURBBOULAYER"))
       {
@@ -1285,6 +1419,205 @@ double DRT::UTILS::BochevRHSFunction::Evaluate(int index, const double* xp, doub
   default:
     return 1.0;
   }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::BeltramiStatStokesUP::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  //double visc = 1.0;
+
+  double x = xp[0];
+  double y = xp[1];
+  double z = xp[2];
+
+  double a = PI/4.0;
+  double b = PI/4.0;
+  double c= a*a + b*b + a*b;
+
+  double K1 = exp(a*(x-z) + b*(y-z)); // =K4
+  double K2 = exp(a*(z-y) + b*(x-y)); // =K5
+  double K3 = exp(a*(y-x) + b*(z-x)); // =K6
+
+
+  switch (index)
+  {
+  case 0:
+    return b*K1-a*K2;
+  case 1:
+    return b*K3-a*K1;
+  case 2:
+    return b*K2-a*K3;
+  case 3:
+    return  c*( 1.0/K3 + 1.0/K2 + 1.0/K1 );
+  default:
+    dserror("wrong index %d", index);
+  }
+
+  return 1.0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::BeltramiStatStokesGradU::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  //double visc = 1.0;
+
+  double x = xp[0];
+  double y = xp[1];
+  double z = xp[2];
+
+  double a = PI/4.0;
+  double b = PI/4.0;
+
+  double K1 = exp(a*(x-z) + b*(y-z)); // =K4
+  double K2 = exp(a*(z-y) + b*(x-y)); // =K5
+  double K3 = exp(a*(y-x) + b*(z-x)); // =K6
+
+
+  switch (index)
+  {
+  case 0: // u,x
+    return a*b*(K1-K2);
+  case 1: // u,y
+    return b*b*K1+a*(a+b)*K2;
+  case 2: // u,z
+    return -b*(a+b)*K1-a*a*K2;
+  case 3: // v,x
+    return  -b*(a+b)*K3-a*a*K1;
+  case 4: // v,y
+    return a*b*K3-a*b*K1;
+  case 5: // v,z
+    return b*b*K3+a*(a+b)*K1;
+  case 6: // w,x
+    return b*b*K2+a*(a+b)*K3;
+  case 7: // w,y
+    return -b*(a+b)*K2-a*a*K3;
+  case 8: // w,z
+    return a*b*(K2-K3);
+  default:
+    dserror("wrong index %d", index);
+  }
+
+  return 1.0;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                            mueller  04/10|
+ *----------------------------------------------------------------------*/
+DRT::UTILS::BeltramiStatStokesRHS::BeltramiStatStokesRHS(int mat_id) :
+Function(),
+viscosity_(-999.0e99)
+{
+
+  // get material parameters for fluid
+  Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid)
+    dserror("Material %d is not a fluid",mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::BeltramiStatStokesRHS::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+
+  double x = xp[0];
+  double y = xp[1];
+  double z = xp[2];
+
+  double a = PI/4.0;
+  double b = PI/4.0;
+  double c= a*a + b*b + a*b;
+
+  double K1 = exp(a*(x-z) + b*(y-z)); // =K4
+  double K2 = exp(a*(z-y) + b*(x-y)); // =K5
+  double K3 = exp(a*(y-x) + b*(z-x)); // =K6
+
+  switch (index)
+  {
+  case 0:
+    return c*( (a+b)/K3 - b/K2 - a/K1 - 2.*viscosity_*(b*K1-a*K2) );
+  case 1:
+    return c*( -a/K3 + (a+b)/K2 - b/K1 - 2.*viscosity_*(b*K3-a*K1) );
+  case 2:
+    return c*( -b/K3 - a/K2 + (a+b)/K1 - 2.*viscosity_*(b*K2-a*K3) );
+  default:
+    dserror("wrong index %d", index);
+  }
+
+  return 1.0;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                            mueller  04/10|
+ *----------------------------------------------------------------------*/
+DRT::UTILS::BeltramiStatNavierStokesRHS::BeltramiStatNavierStokesRHS(int mat_id) :
+Function(),
+viscosity_(-999.0e99)
+{
+
+  // get material parameters for fluid
+  Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid)
+    dserror("Material %d is not a fluid",mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::BeltramiStatNavierStokesRHS::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+
+  double x = xp[0];
+  double y = xp[1];
+  double z = xp[2];
+
+  double a = PI/4.0;
+  double b = PI/4.0;
+  double c= a*a + b*b + a*b;
+
+  double K1 = exp(a*(x-z) + b*(y-z)); // =K4
+  double K2 = exp(a*(z-y) + b*(x-y)); // =K5
+  double K3 = exp(a*(y-x) + b*(z-x)); // =K6
+
+  double t1 = b*K1-a*K2;
+  double t2 = b*K3-a*K1;
+  double t3 = b*K2-a*K3;
+
+  double conv_x = t1 * (     a*b*K1 -     a*b*K2) + t2 * (     b*b*K1 + a*(a+b)*K2) + t3 * (-b*(a+b)*K1 -     a*a*K2);
+  double conv_y = t1 * (-b*(a+b)*K3 -     a*a*K1) + t2 * (     a*b*K3 -     a*b*K1) + t3 * (     b*b*K3 + a*(a+b)*K1);
+  double conv_z = t1 * (     b*b*K2 + a*(a+b)*K3) + t2 * (-b*(a+b)*K2 -     a*a*K3) + t3 * (     a*b*K2 -     a*b*K3);
+
+
+  switch (index)
+  {
+  case 0:
+    return c*( (a+b)/K3 - b/K2 - a/K1 - 2.*viscosity_*(b*K1-a*K2) ) + conv_x;
+  case 1:
+    return c*( -a/K3 + (a+b)/K2 - b/K1 - 2.*viscosity_*(b*K3-a*K1) ) + conv_y;
+  case 2:
+    return c*( -b/K3 - a/K2 + (a+b)/K1 - 2.*viscosity_*(b*K2-a*K3) ) + conv_z;
+  default:
+    dserror("wrong index %d", index);
+  }
+
+  return 1.0;
 }
 
 

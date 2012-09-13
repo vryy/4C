@@ -92,6 +92,36 @@ public:
                              const GEO::CUT::plain_volumecell_set &            cells,
                              bool                                              offdiag = false);
 
+    /// error computation
+    virtual int ComputeError(DRT::ELEMENTS::Fluid*         ele,
+                             Teuchos::ParameterList&       params,
+                             Teuchos::RCP<MAT::Material>&  mat,
+                             DRT::Discretization&          discretization,
+                             std::vector<int>&             lm,
+                             Epetra_SerialDenseVector&     ele_dom_norms);
+
+    virtual int ComputeError(DRT::ELEMENTS::Fluid*                ele,
+                             Teuchos::ParameterList&              params,
+                             Teuchos::RCP<MAT::Material>&         mat,
+                             DRT::Discretization&                 discretization,
+                             std::vector<int>&                    lm,
+                             Epetra_SerialDenseVector&            ele_dom_norms,
+                             const DRT::UTILS::GaussIntegration & intpoints);
+
+    virtual int ComputeErrorInterface(
+        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+        DRT::Discretization &                                               dis,               ///< background discretization
+        const std::vector<int> &                                            lm,                ///< element local map
+        Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+        Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
+        DRT::Discretization &                                               cutdis,            ///< cut discretization
+        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+        Teuchos::ParameterList&                                             params,            ///< parameter list
+        const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
+    );
+
     /// add mixed/stress/hybrid (MSH) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceMSH(
         DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
@@ -145,7 +175,7 @@ public:
       );
 
     ///
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *              ele,            ///< fluid element
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *               ele,            ///< fluid element
                                          DRT::Discretization &                dis,            ///< discretization
                                          const std::vector<int> &             lm,             ///< local map
                                          Epetra_SerialDenseVector&            elevec1_epetra, ///< element vector
@@ -153,13 +183,22 @@ public:
       );
 
     ///
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *     ele,                ///< fluid element
+    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *      ele,                ///< fluid element
                                          DRT::Discretization &       dis,                ///< discretization
                                          const std::vector<int> &    lm,                 ///< local map
                                          Epetra_SerialDenseVector&   elevec1_epetra      ///< element vector
       );
 
 private:
+    //! evaluate analytical reference solution
+    void AnalyticalReference(
+        const int                               calcerr,     ///< which reference solution
+        LINALG::Matrix<my::nsd_,1> &            u,           ///< exact jump vector (coupled)
+        LINALG::Matrix<my::nsd_,my::nsd_> &     grad_u,      ///< exact velocity gradient
+        double &                                p,           ///< exact pressure
+        LINALG::Matrix<my::nsd_,1> &            xyzint,      ///< xyz position of gaussian point
+        const double &                          t            ///< time
+        );
 
     //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
     void NIT_BuildPatchCuiui(

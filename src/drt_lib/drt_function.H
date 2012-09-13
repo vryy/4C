@@ -149,7 +149,72 @@ namespace UTILS {
     /// all functions defined. The functions may be vector valued!
     std::vector<Teuchos::RCP<Function> > functions_;
   };
+
+
+  /// special implementation for 3d stationary beltrami flow (velocity, pressure)
+  class BeltramiStatStokesUP : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(4);
+      };
+
+  };
+
+  /// special implementation for 3d stationary beltrami flow (gradient of velocity)
+  class BeltramiStatStokesGradU : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
+
+    */
+    virtual int NumberComponents()
+      {
+        return(9);
+      };
+
+  };
+
 }
+
 }
 
 

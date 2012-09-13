@@ -111,6 +111,20 @@ void SideImpl<distype, side_distype, numdof>::eivel(
 
 
 /*--------------------------------------------------------------------------------
+ * extract/set side's interface velocity
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType side_distype, const int numdof>
+void SideImpl<distype, side_distype, numdof>::getivelint(
+    LINALG::Matrix<nsd_,1>& ivelint  ///< interface velocity at embedded side
+    )
+{
+  // interface velocity vector in gausspoint
+  ivelint.Multiply(eivel_,side_funct_);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------
  * evaluate shape function, derivatives, normal and transformation w.r.t
  * side element at gaussian point
  *--------------------------------------------------------------------------------*/
