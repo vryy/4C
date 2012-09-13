@@ -373,6 +373,7 @@ void FSI::Monolithic::PrepareTimeloop()
   {
     (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
+           << "# Time step | elapsed time | nonlinear iterations | res-norm | linear iterations\n"
            << "#\n"
       ;
   }
@@ -477,10 +478,10 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   if (Comm().MyPID()==0)
   {
     (*log_) << Step()
-            << " " << timer.totalElapsedTime()
-            << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
-            << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
-            << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
+            << "\t" << timer.totalElapsedTime()
+            << "\t" << nlParams.sublist("Output").get("Nonlinear Iterations",0)
+            << "\t" << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
+            << "\t" << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
       ;
     (*log_) << std::endl;
     lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
