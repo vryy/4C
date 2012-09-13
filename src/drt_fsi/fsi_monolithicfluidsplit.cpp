@@ -272,7 +272,6 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     // some often re-used vectors
     Teuchos::RCP<Epetra_Vector> rhs   = Teuchos::null;
-//    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::null;
 
     // Different contributions/terms to the rhs are separated by the following comment line
     // ---------- structural interface DOFs
