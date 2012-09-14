@@ -55,7 +55,6 @@ COUPMETHOD   conforming
 SECONDORDER  Yes //No
 COUPVARIABLE Force //Displacement
 -----------------------------------------------------FLUID DYNAMIC
-LINEAR_SOLVER                   1
 INITIALFIELD     field_by_function //zero_field
 STARTFUNCNO      1
 TIMEINTEGR       One_Step_Theta

@@ -751,6 +751,10 @@ Teuchos::ParameterList& DatFileReader::FindSublist(std::string name, Teuchos::Pa
 /*----------------------------------------------------------------------*/
 void DatFileReader::AddEntry(std::string key, std::string value, Teuchos::ParameterList& list)
 {
+  // safety check: Is there a duplicate of the same parameter?
+  if (list.isParameter(key))
+    dserror("Duplicate parameter %s in sublist %s",key.c_str(),list.name().c_str());
+
   { // try to find an int
     std::stringstream ssi;
     int iv;

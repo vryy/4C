@@ -140,7 +140,6 @@ AZOMEGA                         1.0                             // damping facto
 AZGRAPH                         1                               // unused
 AZPOLY                          1                               // polynomial order for Neumann
 AZSCAL                          infnorm                         // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

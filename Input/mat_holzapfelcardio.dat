@@ -52,9 +52,6 @@ ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      Statics

@@ -52,7 +52,6 @@ MAXTIME                         5000.0
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
-TOLDISP                         1.0E-07
 MAXITER                         50
 MINITER                         1
 TIMEADAPT                       0

@@ -146,7 +146,6 @@ AZGRAPH                         1                               // unused
 AZPOLY                          1                               // polynomial order for Neumann
 IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                            // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 DWINDTAU                        2.5                             // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                5000                            // ML stop coarsening when coarse ndof smaller then this
@@ -181,7 +180,6 @@ AZGRAPH                         1                               // unused
 AZPOLY                          1                               // polynomial order for Neumann
 IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                            // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 DWINDTAU                        2.5                             // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                5000                            // ML stop coarsening when coarse ndof smaller then this

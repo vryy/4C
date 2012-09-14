@@ -115,9 +115,6 @@ ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
-NORM_RESF                       Abs
-NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              Or
 DAMPING                         Material
 DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta

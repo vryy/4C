@@ -40,7 +40,6 @@ ALPHA_F                         0.666666666666660
 GAMMA                           0.666666666666667
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
-GAMMA                           1
 GRIDVEL                         1
 INITIALFIELD                    zero_field
 ITEMAX                          20
@@ -1281,10 +1280,10 @@ NODE 441 COORD 5.00000000e-01 4.99999851e-01 0.00000000e+00
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 101 POSITION velx NAME velx VALUE 2.220919721e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 101 POSITION velx NAME velx VALUE 2.22611482919135989e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 101 POSITION vely NAME vely VALUE 0.000000000e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 101 POSITION pressure NAME pressure VALUE 7.973772959e-03 TOLERANCE 1e-9
-FLUID DIS 1 NODE 21 POSITION tractionx NAME tractionx VALUE 2.878072505e-01 TOLERANCE 1e-9
-FLUID DIS 1 NODE 21 POSITION tractiony NAME tractiony VALUE -3.379139377e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 101 POSITION pressure NAME pressure VALUE 8.02826379807533054e-03 TOLERANCE 1e-9
+FLUID DIS 1 NODE 21 POSITION tractionx NAME tractionx VALUE 2.85245876318843627e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 21 POSITION tractiony NAME tractiony VALUE -3.09288191892822306e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

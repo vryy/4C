@@ -84,7 +84,6 @@ AZDROP                          0.0                             // drop toleranc
 IFPACKFILL                      1.0                             // fill-in for ILUT
 IFPACKGFILL                     0                               // graph fill for ILU
 AZTOL                           1.0E-9                          // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 AZSUB                           40                              // size of krylov space for gmres
 AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners

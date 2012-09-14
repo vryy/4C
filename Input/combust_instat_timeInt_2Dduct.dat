@@ -125,7 +125,6 @@ SCATRATYPE                      Undefined
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
-NUMSTEP                         10
 MAXTIME                         20.0
 NUMSTEP                         20
 RESTARTEVRY                     20
