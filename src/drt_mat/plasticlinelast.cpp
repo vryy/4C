@@ -19,7 +19,7 @@
 
        extend to linear isotropic hardening
         - yield stress no longer constant, depends on level of accumulated
-          plastic strain, i.e. \f$ \sigma_y \,=\, \sigma_y(\bar{\strain}_p)\f$
+          plastic strain, i.e. \f$ \sigma_y \,=\, \sigma_y(\bar{\epsilon}_p)\f$
 
        example input line:
        MAT 1 MAT_Struct_PlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
