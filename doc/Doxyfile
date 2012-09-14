@@ -553,70 +553,7 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = index.doc \
-                         ../src/drt_adapter \
-                         ../src/drt_ale \
-                         ../src/drt_ale2 \
-                         ../src/drt_ale3 \
-                         ../src/drt_art_net \
-                         ../src/drt_beam2 \
-                         ../src/drt_beam2r \
-                         ../src/drt_beam3 \
-                         ../src/drt_beam3ii \
-                         ../src/drt_beamcontact \
-                         ../src/drt_bele3 \
-                         ../src/drt_combust \
-                         ../src/drt_comm \
-                         ../src/drt_constraint \
-                         ../src/drt_contact \
-                         ../src/drt_cut \
-                         ../src/drt_elch \
-                         ../src/drt_fem_general \
-                         ../src/drt_fluid \
-                         ../src/drt_fluid_ele \
-                         ../src/drt_fs3i \
-                         ../src/drt_fsi \
-                         ../src/drt_geometry \
-                         ../src/drt_inpar \
-                         ../src/drt_inv_analysis \
-                         ../src/drt_io \
-                         ../src/drt_lib \
-                         ../src/drt_loma \
-                         ../src/drt_mat \
-                         ../src/drt_matelast \
-                         ../src/drt_mlmc \
-                         ../src/drt_mortar \
-                         ../src/drt_nurbs_discret \
-                         ../src/drt_opti \
-                         ../src/drt_patspec \
-                         ../src/drt_poroelast \
-                         ../src/drt_potential \
-                         ../src/drt_red_airways \
-                         ../src/drt_s8 \
-                         ../src/drt_scatra \
-                         ../src/drt_so3 \
-                         ../src/drt_statmech \
-                         ../src/drt_stru_ale \
-                         ../src/drt_stru_multi \
-                         ../src/drt_structure \
-                         ../src/drt_surfstress \
-                         ../src/drt_thermo \
-                         ../src/drt_torsion2 \
-                         ../src/drt_torsion3 \
-                         ../src/drt_truss2 \
-                         ../src/drt_truss3 \
-                         ../src/drt_tsi \
-                         ../src/drt_w1 \
-                         ../src/drt_xfem \
-                         ../src/filter_common \
-                         ../src/global_full \
-                         ../src/linalg \
-                         ../src/post_drt_common \
-                         ../src/post_ensight \
-                         ../src/post_generic \
-                         ../src/post_gid \
-                         ../src/post_monitor \
-                         ../src/pre_exodus
-
+                         ../src
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
@@ -641,7 +578,7 @@ FILE_PATTERNS          = *.H \
 # should be searched for input files as well. Possible values are YES and NO. 
 # If left blank NO is used.
 
-RECURSIVE              = NO
+RECURSIVE              = YES
 
 # The EXCLUDE tag can be used to specify files and/or directories that should 
 # excluded from the INPUT source files. This way you can easily exclude a 
@@ -1296,7 +1233,9 @@ PREDEFINED             = __cplusplus \
                          RESULTTEST \
                          BINIO \
                          D_FLUID \
-                         D_EXODUS
+                         D_EXODUS \
+                         HAVE_MueLu \
+                         HAVE_Teko
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
