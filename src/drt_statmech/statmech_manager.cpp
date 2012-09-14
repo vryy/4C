@@ -468,7 +468,7 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt, double& timeco
   // note: default value sufficiently large to crash the simulation in the event of maldefinition
   double dtnew = statmechparams_.get<double>("DELTA_T_NEW",1.0);
   double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
-  double eps = 1.0e-12;
+  double eps = 1.0e-10;
   if((timeconverged>=starttime || fabs(timeconverged-starttime)<eps) && dtnew>0.0)
     dt = dtnew;
   return;

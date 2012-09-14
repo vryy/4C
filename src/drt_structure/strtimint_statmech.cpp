@@ -1666,7 +1666,7 @@ void STR::TimIntStatMech::StatMechPrepareStep()
       if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"GMSHOUTPUT"))
       {
         std::ostringstream filename;
-          filename << "./GmshOutput/networkInit.pos";
+          filename << "./GmshOutput/network000000.pos";
         statmechman_->GmshOutput(*((*dis_)(0)),filename,step_);
       }
     }
