@@ -1616,10 +1616,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "viscoelasticity",
                                                     "densitydensitycorr",
                                                     "octree",
-                                                    "avgdistloom",
-                                                    "coverageloom",
-                                                    "distandcoverloom",
-                                                    "attractionloom"),
+                                                    "loom"),
                                  //translating input strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
                                             INPAR::STATMECH::statout_endtoendlog,
@@ -1629,10 +1626,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::statout_viscoelasticity,
                                             INPAR::STATMECH::statout_densitydensitycorr,
                                             INPAR::STATMECH::statout_octree,
-                                            INPAR::STATMECH::statout_avgdistloom,
-                                            INPAR::STATMECH::statout_coverageloom,
-                                            INPAR::STATMECH::statout_distandcoverloom,
-                                            INPAR::STATMECH::statout_attractionloom),
+                                            INPAR::STATMECH::statout_loom),
                                  &statmech);
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<int>("FRICTION_MODEL","none","friction model for polymer dynamics",
