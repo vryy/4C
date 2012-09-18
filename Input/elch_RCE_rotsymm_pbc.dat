@@ -429,7 +429,7 @@ DLINE                           0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           1
 //                              completeinnerwall
-E 7 - Butler-Volmer-Yang1997 species 1 pot -0.05 curve 2 alpha_a 1.5 alpha_c 0.5 i0 -4.0 gamma 0.5 refcon 0.003 dlcap 0.0
+E 7 - pot -0.05 curve 2 numscal 3 stoich -1 0 0 e- 2 Butler-Volmer-Yang1997 alpha_a 1.5 alpha_c 0.5 i0 -4.0 gamma 0.5 refcon 0.003 dlcap 0.0
 --------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
 DSURF                           0
 ------------------------------------------DESIGN IMPULS RATE SURF CONDITIONS

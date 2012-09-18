@@ -118,13 +118,19 @@ namespace INPUT
       \param name Name of the corresponding variable in the DRT::Condition
       \param defaultvalue Default value of this variable
       \param datfilevalues Possible values in the dat file
-      \param condvalues Corresponding values stored in the DRT::Condition
+      \param condvalues Corresponding values stored in the DRT::Condition (std::string or enum =^ int)
       \param optional Whether this string is optional in the dat file
     */
     StringConditionComponent(std::string name,
                              std::string defaultvalue,
                              const Teuchos::Array<std::string>& datfilevalues,
-                             const Teuchos::Array<std::string>& condvalues,
+                             const Teuchos::Array<std::string>& stringcondvalues,
+                             bool optional=false);
+
+    StringConditionComponent(std::string name,
+                             std::string defaultvalue,
+                             const Teuchos::Array<std::string>& datfilevalues,
+                             const Teuchos::Array<int>& intcondvalues,
                              bool optional=false);
 
     virtual void DefaultLine(std::ostream& stream);
@@ -136,8 +142,11 @@ namespace INPUT
   private:
     std::string defaultvalue_;
     Teuchos::Array<std::string> datfilevalues_;
-    Teuchos::Array<std::string> condvalues_;
+    Teuchos::Array<std::string> stringcondvalues_;
+    Teuchos::Array<int> intcondvalues_;
+    const bool stringtostring_;
     bool optional_;
+
   };
 
 
@@ -328,7 +337,7 @@ namespace INPUT
 
     /*! construct a condition component tailored for Dirichlet and Neumann with flexible
      vector length for onoff, val, curve and funct
-    
+
       The number of dofs and corresponding vectors are expected from the dat-file
 
       \param name variable name in DRT::Condition
@@ -336,12 +345,12 @@ namespace INPUT
      */
     DirichletNeumannBundle
     (
-      std::string name, 
+      std::string name,
       Teuchos::RCP<IntConditionComponent> intcomp,
       std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp,
       std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp
     );
-    
+
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
     virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
@@ -349,13 +358,162 @@ namespace INPUT
                                                  Teuchos::RCP<DRT::Condition> condition);
 
   private:
+    //Todo: Are these variable used?
     int numintvectcomp_;
     int numrealvectcomp_;
     Teuchos::RCP<IntConditionComponent> intcomp_;
     std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp_;
     std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp_;
   };
-  
+
+  /// int and real vector boundary condition specific condition component
+  /*!
+    \see ConditionDefinition
+
+    \author ehrl
+    \date 09/12
+   */
+  class IntRealBundle : public ConditionComponent
+  {
+  public:
+
+    /*! construct a condition component tailored for a defined number of condition components
+     * (int and/or real) separated by an optional separator
+     * generalized DirichletNeumannBundle
+
+      The number of condition components and corresponding vectors are expected from the dat-file
+      and the drt_validconditions.cpp
+
+      Attention: number of type real is passed to int vector -> numbers after dot are ignored
+                 number of type int is passed to real vector -> number is interpreded as a real
+
+      \param name variable name in DRT::Condition
+      \param intcomp expected number of condition components per Int/Real-VectorConditionComponent
+      \param intsepcomp vector defining an optional separator for the different IntVectorConditionComponents
+             (optional: Teuchos::null -> no separator)
+      \param intvectcomp vector containing various IntVectorConditionComponents:
+             - number of IntVectorConditionComponents in intvectcomp is defined in drt_validconditions.cpp
+             - number of condition components in a IntVectorConditionComponent is defined by intcom
+             - if you do not want to have any IntVectorConditionComponent:
+               pass an empty "std:vector<Teuchos::RCP<IntVectorConditionComponent> > object" to the constructor
+      \param realsepcomp vector defining an optional separator for the different RealVectorConditionComponents
+             (optional: Teuchos::null -> no separator)
+      \param realvectcomp vector containing various RealVectorConditionComponents:
+             - number of RealVectorConditionComponents in realvectcomp is defined in drt_validconditions.cpp
+             - number of condition components in a RealVectorConditionComponent is defined by intcom
+             - if you do not want to have any RealVectorConditionComponent:
+               pass an empty "std:vector<Teuchos::RCP<RealVectorConditionComponent> > object" to the constructor
+     */
+
+    IntRealBundle
+    (
+      std::string name,
+      Teuchos::RCP<IntConditionComponent> intcomp,
+      std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp,
+      std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp,
+      std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp,
+      std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp
+    );
+
+    virtual void DefaultLine(std::ostream& stream);
+    virtual void Print(std::ostream& stream, const DRT::Condition* cond);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
+
+  private:
+    //! handles the number of condition components per Int/Real-VectorConditionComponent
+    Teuchos::RCP<IntConditionComponent> intcomp_;
+    //! vector defining a separator (optional: Teuchos::null -> no separator)
+    //! for the different IntVectorConditionComponents
+    std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp_;
+    //! vector containing IntVectorConditionComponents
+    std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp_;
+    //! vector defining a separator (optional: Teuchos::null -> no separator)
+    //! for the different RealVectorConditionComponents
+    std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp_;
+    //! vector containing RealVectorConditionComponents
+    std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp_;
+
+  };
+
+
+  class CondCompBundle : public ConditionComponent
+  {
+  public:
+
+    /*! construct a condition component handling the a condition component bundle associated to a special model
+
+      \param name variable name in DRT::Condition
+      \param condcomp vector containing condition components associated to a model
+      \param model specification of model type (enum->int) as a security check:
+             elements of the vector<CondCompBundle> need to have the same order as the enum defining your model
+     */
+    CondCompBundle
+    (
+      std::string name,
+      std::vector<Teuchos::RCP<ConditionComponent> > condcomp,
+      int model
+    );
+
+    virtual void DefaultLine(std::ostream& stream);
+    virtual void Print(std::ostream& stream, const DRT::Condition* cond);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
+
+    const int Model(){return model_;};
+
+  private:
+
+    std::vector<Teuchos::RCP<ConditionComponent> > condcomp_;
+    const int model_;
+  };
+
+
+  /// Boundary condition for model dependent BC parameters
+  /*!
+    \see ConditionDefinition
+
+    \author Ehrl
+    \date 09/12
+   */
+  class CondCompBundleSelector : public ConditionComponent
+  {
+  public:
+
+    /*! construct a selector for a model dependent condition component bundle
+
+      \param name variable name in DRT::Condition
+      \param stringcomp type of model
+                        model type have to be defined as an enum (strings are not supported)
+      \param condcomp vector containing a list of BC parameter assigned to different models
+     */
+    CondCompBundleSelector
+    (
+      std::string name,
+      Teuchos::RCP<StringConditionComponent> stringcomp,
+      std::vector<Teuchos::RCP<CondCompBundle> > condcomp
+    );
+
+    virtual void DefaultLine(std::ostream& stream);
+    virtual void Print(std::ostream& stream, const DRT::Condition* cond);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
+
+  private:
+
+    //! handling of the model type
+    Teuchos::RCP<StringConditionComponent> stringcomp_;
+    //! vector containing a list of BC parameter assigned to different models
+    std::vector<Teuchos::RCP<CondCompBundle> > condcomp_;
+  };
+
+  //--------------------------------------------------------------------------------------------------
+
+
+  //--------------------------------------------------------------
 
   /// definition of a valid condition in baci input
   /*!

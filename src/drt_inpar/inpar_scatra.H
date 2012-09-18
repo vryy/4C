@@ -229,6 +229,18 @@ namespace INPAR
       consistency_l2_projection_lumped
     };
 
+    /// type of method for improving consistency of stabilized methods
+    enum Kinetics
+    {
+      butler_volmer,
+      butler_volmer_yang1997,
+      tafel,
+      linear,
+      butler_volmer_newman,
+      butler_volmer_bard,
+      zero
+    };
+
   }  // namespace SCATRA
 
 }  // namespace INPAR

@@ -219,16 +219,14 @@ public:
        Epetra_SerialDenseMatrix& emat,  ///< element-matrix
        Epetra_SerialDenseVector& erhs,  ///< element-rhs
        const vector<double>&   ephinp,  ///< actual conc. and pot. values
-       Teuchos::RCP<const MAT::Material> material,  ///< the material
-       const int            speciesid,  ///< id of reactive species (1,2,...)
-       const std::string     kinetics,  ///< desired electrode kinetics model
+       double                 timefac,
+       Teuchos::RCP<const MAT::Material>  material,  ///< the material
+       Teuchos::RCP<DRT::Condition>       cond,      ///< the condition
+       const int                 nume,  ///< number of transfered electrons
+       const std::vector<int>  stoich,  ///< stoichometry of the reaction
+       const int             kinetics,  ///< desired electrode kinetics model
        const double              pot0,  ///< actual electrode potential on metal side
-       const double            alphaa,  ///< anodic factor in Butler-Volmer model
-       const double            alphac,  ///< cathodic factor in Butler-Volmer model
-       const double                i0,  ///< exchange current density
        const double               frt,  ///< factor F/RT
-       const double             gamma,  ///< exponent for concentration dependency
-       const double            refcon,  ///< reference concentration of reactive ion species
        const bool              iselch,  ///< problemtype elch or scatra
        const INPAR::SCATRA::ScaTraType scatratype   ///< scatra problem type
        );
@@ -237,21 +235,16 @@ public:
     void ElectrodeStatus(
         const DRT::Element*        ele,  ///< the actual boundary element
         ParameterList&          params,  ///< the parameter list
+        Teuchos::RCP<DRT::Condition>  cond,  ///< the condition
         const vector<double>&   ephinp,  ///< current conc. and potential values
         const vector<double>& ephidtnp,  ///< time derivative vector evaluated at t_{n+1}
-        const std::string     kinetics,  ///< desired electrode kinetics model
-        const int            speciesid,  ///< id of reactive species (1,2,...)
+        const int             kinetics,  ///< desired electrode kinetics model
+        const std::vector<int>  stoich,  ///< stoichometry of the reaction
+        const int                 nume,  ///<  number of transfered electrons
         const double              pot0,  ///< actual electrode potential on metal side at t_{n+1}
-        const double       pot0histint,  ///< electrode potential on metal side at t_n
-        const double            alphaa,  ///< anodic factor in Butler-Volmer model
-        const double            alphac,  ///< cathodic factor in Butler-Volmer model
-        const double                i0,  ///< exchange current density
         const double               frt,  ///< factor F/RT
-        const double             gamma,  ///< exponent for concentration dependency
-        const double            refcon,  ///< reference concentration of reactive ion species
         const bool              iselch,  ///< problemtype elch or scatra
-        const double           timefac,  ///< factor due to time discretization
-        const double     dlcapacitance   ///< capacitance of electric double-layer
+        const double           timefac   ///< factor due to time discretization
     );
 
     //! evaluate surface/interface permeability

@@ -106,8 +106,8 @@ E 1 - default // for flux calculation on these two boundaries
 E 2 - default
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
-E 2 - Tafel species 1 pot -0.0125 curve none alpha_a 1.5 alpha_c 0.5 i0 -4.0 gamma 0.0 refcon 0.1 dlcap 0.0
-E 1 - linear species 1 pot 0.0 curve none alpha_a 1.5 alpha_c 0.5 i0 -4.0 gamma 0.0 refcon 0.1 dlcap 0.0
+E 2 - pot -0.0125 curve none numscal 3 stoich -1 0 0 e- 2 Tafel alpha 0.5 i0 -4.0 gamma 0.0 refcon 0.1 dlcap 0.0
+E 1 - pot 0.0 curve none numscal 3 stoich -1 0 0 e- 2 linear alpha_a 1.5 i0 -4.0 gamma 0.0 refcon 0.1 dlcap 0.0
 -----------------------------------------------------------FLUID KNOTVECTORS
 -------------------------------------------------------------ALE KNOTVECTORS
 -------------------------------------------------------TRANSPORT KNOTVECTORS

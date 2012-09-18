@@ -40,30 +40,62 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::ConditionComponent::PushBack(std::st
   return out;
 }
 
+/* -----------------------------------------------------------------------------------------------*
+ | Class StringConditionComponent                                                       ehrl 09/12|
+ * -----------------------------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
+ | StringConditionComponent::Constructor()                              |
  *----------------------------------------------------------------------*/
 DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
                                                                std::string defaultvalue,
                                                                const Teuchos::Array<std::string>& datfilevalues,
-                                                               const Teuchos::Array<std::string>& condvalues,
+                                                               const Teuchos::Array<std::string>& stringcondvalues,
                                                                bool optional)
   : ConditionComponent(name),
     defaultvalue_(defaultvalue),
     datfilevalues_(datfilevalues),
-    condvalues_(condvalues),
+    stringcondvalues_(stringcondvalues),
+    intcondvalues_(Teuchos::tuple<int>(-1)),
+    stringtostring_(true),
     optional_(optional)
 {
   if (std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_)==datfilevalues_.end())
   {
     dserror("invalid default value '%s'", defaultvalue_.c_str());
   }
-  if (datfilevalues_.size()!=condvalues_.size())
+  if (datfilevalues_.size()!=stringcondvalues_.size())
   {
     dserror("dat file values must match condition values");
   }
 }
 
+
+/*----------------------------------------------------------------------*
+| StringConditionComponent::Constructor()                     ehrl 09/12|
+*----------------------------------------------------------------------*/
+DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
+                                                              std::string defaultvalue,
+                                                              const Teuchos::Array<std::string>& datfilevalues,
+                                                              const Teuchos::Array<int>& intcondvalues,
+                                                              bool optional)
+ : ConditionComponent(name),
+   defaultvalue_(defaultvalue),
+   datfilevalues_(datfilevalues),
+   stringcondvalues_(Teuchos::tuple<std::string>("notdefined")),
+   intcondvalues_(intcondvalues),
+   stringtostring_(false),
+   optional_(optional)
+{
+ if (std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_)==datfilevalues_.end())
+ {
+   dserror("invalid default value '%s'", defaultvalue_.c_str());
+ }
+ if (datfilevalues_.size()!=intcondvalues_.size())
+ {
+   dserror("dat file values must match condition values");
+ }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -106,7 +138,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(DRT::
               value.c_str(),Name().c_str(),def->SectionName().c_str());
   }
   unsigned pos = &*i - &datfilevalues_[0];
-  condition->Add(Name(),condvalues_[pos]);
+  // choose, if we have an array based on string or int
+  if(stringtostring_)
+    condition->Add(Name(),stringcondvalues_[pos]);
+  else
+    condition->Add(Name(),intcondvalues_[pos]);
 
   return condline;
 }
@@ -431,7 +467,7 @@ void DRT::INPUT::RealVectorConditionComponent::SetLength(int length)
 
 DRT::INPUT::DirichletNeumannBundle::DirichletNeumannBundle
 (
-  std::string name, 
+  std::string name,
   Teuchos::RCP<IntConditionComponent> intcomp,
   std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp,
   std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp
@@ -473,10 +509,10 @@ void DRT::INPUT::DirichletNeumannBundle::Print(std::ostream& stream, const DRT::
 Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(ConditionDefinition* def,
                                              Teuchos::RCP<std::stringstream> condline,
                                              Teuchos::RCP<DRT::Condition> condition)
-{ 
+{
   intcomp_->Read(def,condline,condition);
   int length = condition->GetInt(intcomp_->Name());
-  
+
   intvectcomp_[0]->SetLength(length);
   intvectcomp_[0]->Read(def,condline,condition);
   realvectcomp_[0]->SetLength(length);
@@ -485,13 +521,277 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(Conditi
   intvectcomp_[1]->Read(def,condline,condition);
   intvectcomp_[2]->SetLength(length);
   intvectcomp_[2]->Read(def,condline,condition);
-  
+
   return condline;
+}
+
+/* -----------------------------------------------------------------------------------------------*
+ | Class IntRealBundle                                                                  ehrl 09/12|
+ * -----------------------------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | IntRealBundle::Constructor()                               ehrl 09/12|
+ *----------------------------------------------------------------------*/
+DRT::INPUT::IntRealBundle::IntRealBundle
+(
+  std::string name,
+  Teuchos::RCP<IntConditionComponent> intcomp,
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp,
+  std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp,
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp,
+  std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp
+)
+  : ConditionComponent(name),
+    intcomp_(intcomp),
+    intsepcomp_(intsepcomp),
+    intvectcomp_(intvectcomp),
+    realsepcomp_(realsepcomp),
+    realvectcomp_(realvectcomp)
+{};
+
+/*----------------------------------------------------------------------*
+ | CondCompBundle::DefaultLine()                              ehrl 09/12|
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::IntRealBundle::DefaultLine(std::ostream& stream)
+{
+  dserror("After all, the function DefaultLine is used!! Please, contact A. Ehrl");
+
+  intcomp_->DefaultLine(stream);
+  stream << " ";
+
+  // handling of different int vectors including an optional separator
+  for(unsigned int i=0; i<intvectcomp_.size(); ++i)
+  {
+    if(intsepcomp_[i]!=Teuchos::null)
+    {
+      intsepcomp_[i]->DefaultLine(stream);
+      stream << " ";
+    }
+    intvectcomp_[i]->DefaultLine(stream);
+  }
+
+  // handling of different real vectors including an optional separator
+  for(unsigned int i=0; i<realvectcomp_.size(); ++i)
+  {
+    if(realsepcomp_[i]!=Teuchos::null)
+    {
+      realsepcomp_[i]->DefaultLine(stream);
+      stream << " ";
+    }
+    realvectcomp_[i]->DefaultLine(stream);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | CondCompBundle::Print()                                    ehrl 09/12|
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::IntRealBundle::Print(std::ostream& stream, const DRT::Condition* cond)
+{
+  intcomp_->Print(stream,cond);
+  stream << " ";
+
+  // handling of different int vectors including an optional separator
+  for(unsigned int i=0; i<intvectcomp_.size(); ++i)
+  {
+    if(intsepcomp_[i]!=Teuchos::null)
+    {
+      intsepcomp_[i]->Print(stream,cond);
+      stream << " ";
+    }
+    intvectcomp_[i]->Print(stream,cond);
+  }
+
+  // handling of different real vectors including an optional separator
+  for(unsigned int i=0; i<realvectcomp_.size(); ++i)
+  {
+    if(realsepcomp_[i]!=Teuchos::null)
+    {
+      realsepcomp_[i]->Print(stream,cond);
+      stream << " ";
+    }
+    realvectcomp_[i]->Print(stream,cond);
+  }
+
+  return;
+};
+
+/*----------------------------------------------------------------------*
+ | CondCompBundle::Read()                                     ehrl 09/12|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<std::stringstream> DRT::INPUT::IntRealBundle::Read(ConditionDefinition* def,
+                                             Teuchos::RCP<std::stringstream> condline,
+                                             Teuchos::RCP<DRT::Condition> condition)
+{
+  // Read general length of int and real vectors
+  // All vectors have the same length specified by this value
+  intcomp_->Read(def,condline,condition);
+
+  // get length based on stored Name()
+  int length = condition->GetInt(intcomp_->Name());
+
+  // handling of different int vectors including an optional separator
+  for(unsigned int i=0; i<intvectcomp_.size(); ++i)
+  {
+    if(intsepcomp_[i]!=Teuchos::null)
+      intsepcomp_[i]->Read(def,condline,condition);
+
+    // set length of the i-th vector component
+    intvectcomp_[i]->SetLength(length);
+    intvectcomp_[i]->Read(def,condline,condition);
+  }
+
+  // handling of different real vectors including an optional separator
+  for(unsigned int i=0; i<realvectcomp_.size(); ++i)
+  {
+    if(realsepcomp_[i]!=Teuchos::null)
+      realsepcomp_[i]->Read(def,condline,condition);
+
+    // set length of the i-th vector component
+    realvectcomp_[i]->SetLength(length);
+    realvectcomp_[i]->Read(def,condline,condition);
+  }
+
+  return condline;
+}
+
+/* -----------------------------------------------------------------------------------------------*
+ | Class CondCompBundle                                                                 ehrl 09/12|
+ * -----------------------------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | CondCompBundle::Constructor()                              ehrl 09/12|
+ *----------------------------------------------------------------------*/
+DRT::INPUT::CondCompBundle::CondCompBundle(
+                            std::string name,
+                            std::vector<Teuchos::RCP<ConditionComponent> > condcomp,
+                            int model)
+  : ConditionComponent(name),
+    condcomp_(condcomp),
+    model_(model)
+{}
+
+
+/*----------------------------------------------------------------------*
+ | CondCompBundle::DefaultLine()                              ehrl 09/12|
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::CondCompBundle::DefaultLine(std::ostream& stream)
+{
+  dserror("After all, the function DefaultLine is used!! Please, contact A. Ehrl");
+
+  // default line of selected condition component bundle
+  for (unsigned int i=0; condcomp_.size();++i)
+  {
+    condcomp_[i]->DefaultLine(stream);
+    stream << " ";
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | CondCompBundle::Print()                                    ehrl 09/12|
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::CondCompBundle::Print(std::ostream& stream, const DRT::Condition* cond)
+{
+  // printing of selected condition component bundle
+  for (unsigned int i=0; i<condcomp_.size();++i)
+  {
+    condcomp_[i]->Print(stream,cond);
+    stream << " ";
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | CondCompBundle::Read()                                     ehrl 09/12|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundle::Read(ConditionDefinition* def,
+                                             Teuchos::RCP<std::stringstream> condline,
+                                             Teuchos::RCP<DRT::Condition> condition)
+{
+  // reading of selected condition component bundle
+  for (unsigned int i=0; i<condcomp_.size();++i)
+    condcomp_[i]->Read(def,condline,condition);
+
+  return condline;
+}
+
+/* -----------------------------------------------------------------------------------------------*
+ | Class CondCompBundleSelector                                                         ehrl 09/12|
+ * -----------------------------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | CondCompBundleSelector::Constructor()                      ehrl 09/12|
+ *----------------------------------------------------------------------*/
+DRT::INPUT::CondCompBundleSelector::CondCompBundleSelector(
+                            std::string name,
+                            Teuchos::RCP<StringConditionComponent> stringcomp,
+                            std::vector<Teuchos::RCP<CondCompBundle> > condcomp)
+  : ConditionComponent(name),
+    stringcomp_(stringcomp),
+    condcomp_(condcomp)
+{}
+
+/*----------------------------------------------------------------------*
+ | CondCompBundleSelector::DefaultLine()                      ehrl 09/12|
+ *----------------------------------------------------------------------*/
+void DRT::INPUT::CondCompBundleSelector::DefaultLine(std::ostream& stream)
+{
+  dserror("After all, the function DefaultLine is used!! Please, contact A. Ehrl");
+
+  //Attention: default value defined here may not be identical to the printed condition component bundle
+  stringcomp_->DefaultLine(stream);
+  stream << " ";
+  // print first condition component bundle (default bundle)
+  condcomp_[0]->DefaultLine(stream);
+  return;
 }
 
 
 /*----------------------------------------------------------------------*
+ | CondCompBundleSelector::Print()                            ehrl 09/12|
  *----------------------------------------------------------------------*/
+void DRT::INPUT::CondCompBundleSelector::Print(std::ostream& stream, const DRT::Condition* cond)
+{
+  //Attention: default value defined here may not be identical to the printed condition component bundle
+  stringcomp_->Print(stream,cond);
+  stream << " ";
+  // print first condition component bundle (default bundle)
+  condcomp_[0]->Print(stream, cond);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | CondCompBundleSelector::Read()                             ehrl 09/12|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundleSelector::Read(ConditionDefinition* def,
+                                             Teuchos::RCP<std::stringstream> condline,
+                                             Teuchos::RCP<DRT::Condition> condition)
+{
+  stringcomp_->Read(def,condline,condition);
+  // get model (number is associated with a enum)
+  const int model = condition->GetInt(stringcomp_->Name());
+
+  // check if model defined in the condition match model defined in CondCompBundle
+  // savety check, if models in condcomp_ are ordered in the same way as the enum defined by you
+  if(model != condcomp_[model]->Model())
+    dserror("The model defined in your dat-file does not match the model type stored for the CondCompBundle.\n"
+        "Probably, the order of the CondCompBundle in std::vector<CondCompBundle> does not match \n"
+        "the model order defined in the enum!!");
+
+  // read associated parameters
+  condcomp_[model]->Read(def,condline,condition);
+
+  return condline;
+}
+
+/* -----------------------------------------------------------------------------------------------*
+ | Class ConditionDefinition                                                                      |
+ * -----------------------------------------------------------------------------------------------*/
+
 DRT::INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname,
                                                      std::string conditionname,
                                                      std::string description,
