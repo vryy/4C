@@ -87,7 +87,6 @@ IALE                            Pseudo_Structure
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicfluidsplit
-PREDICTOR                       d(n)
 ENERGYCHECK                     yes
 TOLENCHECK                      1.0
 RELAX                           0.825

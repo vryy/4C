@@ -65,16 +65,16 @@ START_THETA                     1.00
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
-TDS                             quasistatic                     // quasistatic time_dependent
+STABTYPE                        residual_based                  
+TDS                             quasistatic                     
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
-TRANSIENT                       no_transient                    // no_transient yes_transient
-SUPG                            yes_supg                        // no_supg yes_supg
-PSPG                            yes_pspg                        // no_pspg yes_pspg
-VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-CSTAB                           cstab_qs                        // no_cstab cstab_qs cstab_td
-CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
-REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
+TRANSIENT                       no_transient                    
+SUPG                            yes_supg                        
+PSPG                            yes_pspg                        
+VSTAB                           no_vstab                        
+CSTAB                           cstab_qs                        
+CROSS-STRESS                    no_cross                        
+REYNOLDS-STRESS                 no_reynolds                     
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 TIMESTEP                        0.1
@@ -90,7 +90,6 @@ IALE                            Pseudo_Structure
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicfluidsplit
-PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
 ENERGYCHECK                     yes
 TOLENCHECK                      1.0
 RELAX                           0.825
