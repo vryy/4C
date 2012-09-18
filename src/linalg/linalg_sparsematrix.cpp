@@ -925,15 +925,19 @@ void LINALG::SparseMatrix::ApplyDirichlet(
       if (dbct[i]!=1.0)
       {
         int numentries;
-        int err = sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
 #ifdef DEBUG
-        if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+        int err = sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
+        if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+#else
+        sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
 #endif
         // this is also ok for FE matrices, because fill complete was called on sysmat and the globalAssemble
         // method was called already
-        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
 #ifdef DEBUG
+        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
         if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#else
+        Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
 #endif
       }
       else
@@ -966,7 +970,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(
         double *values;
         int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
 #ifdef DEBUG
-        if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+        if (err<0) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
 #endif
         // zero row
         memset(&values[indexOffset[i]], 0,
@@ -1053,15 +1057,19 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
       if (not dbctoggle.MyGID(row))
       {
         int numentries;
-        int err = sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
 #ifdef DEBUG
-        if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+        int err = sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
+        if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+#else
+        sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
 #endif
         // this is also ok for FE matrices, because fill complete was called on sysmat and the globalAssemble
         // method was called already
-        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
 #ifdef DEBUG
+        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
         if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#else
+        Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
 #endif
       }
       else
@@ -1094,9 +1102,11 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
         int *indexOffset;
         int *indices;
         double *values;
-        int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
 #ifdef DEBUG
-        if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+        int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
+        if (err<0) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+#else
+        sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
 #endif
         // zero row
         memset(&values[indexOffset[i]], 0,
@@ -1105,9 +1115,11 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
         if (diagonalblock)
         {
           double one = 1.0;
-          err = sysmat_->SumIntoMyValues(i,1,&one,&i);
 #ifdef DEBUG
+          err = sysmat_->SumIntoMyValues(i,1,&one,&i);
           if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#else
+          sysmat_->SumIntoMyValues(i,1,&one,&i);
 #endif
         }
       }
@@ -1163,13 +1175,18 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
       if (not dbctoggle.MyGID(row))
       {
         int numentries;
+#ifdef DEBUG
         int err = sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
-#ifdef DEBUG
-        if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+        if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+#else
+        sysmat_->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
 #endif
-        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
+
 #ifdef DEBUG
+        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
         if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#else
+        Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
 #endif
       }
       else
@@ -1220,9 +1237,11 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
         int *indexOffset;
         int *indices;
         double *values;
-        int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
 #ifdef DEBUG
+        int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
         if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+#else
+        sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
 #endif
         // zero row
         memset(&values[indexOffset[i]], 0,
@@ -1230,13 +1249,18 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 
         if (diagonalblock)
         {
+#ifdef DEBUG
           err = trafo->EpetraMatrix()->ExtractMyRowCopy(i,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
-#ifdef DEBUG
           if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+#else
+          trafo->EpetraMatrix()->ExtractMyRowCopy(i,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
 #endif
-          err = sysmat_->SumIntoMyValues(i,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
+
 #ifdef DEBUG
+          err = sysmat_->SumIntoMyValues(i,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
           if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#else
+          sysmat_->SumIntoMyValues(i,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
 #endif
         }
       }
