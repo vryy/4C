@@ -25,6 +25,8 @@ Maintainer: Volker Gravemeier
 
 #include "turbulence_statistics_bfs.H"
 
+//#define COMBINE_SAMPLES
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Standard Constructor (public)
@@ -1543,6 +1545,10 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
     (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at low Mach number (first- and second-order moments)";
     (*log) << "\n\n";
+#ifdef COMBINE_SAMPLES
+    (*log) << "# Statistics are perpared for combinations after restart!!!";
+    (*log) << "\n\n";
+#endif
     (*log) << "# Caution: The following statistics have to be used carefully:\n";
     (*log) << "#          rhoumean, uTmean, rhovmean, vTmean, rhou'T', rhov'T'\n";
     (*log) << "#          there are not any reference values for rhoumean, uTmean, rhovmean, vTmean and rhou'T'\n";
@@ -1627,7 +1633,12 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
       (*log) << "#        x2";
       (*log) << "                 umean               vmean               wmean               pmean             rhomean               Tmean            rhoumean        rhouTmean            rhovmean        rhovTmean";
       (*log) << "               urms                vrms                wrms                prms               rhorms                Trms";
+#ifndef COMBINE_SAMPLES
       (*log) << "                u'v'                u'w'                v'w'             rhou'T'             rhov'T'\n";
+#else
+      (*log) << "                u'v'                u'w'                v'w'             rhou'T'             rhov'T'";
+      (*log) << "                uu                vv                ww             pp         TT             rhorho\n";
+#endif
 
       for (unsigned j=0; j<x2coordinates_->size(); ++j)
       {
@@ -1638,15 +1649,18 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
 
         double x2rho   = (*x2sumrho_)(i,j)/numsamp_;
         double x2T     = (*x2sumT_)(i,j)/numsamp_;
-        double x2rhou  = (*x2sumrhou_)(i,j)/numsamp_;
-        double x2uT = (*x2sumuT_)(i,j)/numsamp_;
-        double x2rhov  = (*x2sumrhov_)(i,j)/numsamp_;
-        double x2vT = (*x2sumvT_)(i,j)/numsamp_;
 
         double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
         double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
         double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
         double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
+
+#ifdef COMBINE_SAMPLES
+        double x2usq  = (*x2sumsqu_)(i,j)/numsamp_;
+        double x2vsq  = (*x2sumsqv_)(i,j)/numsamp_;
+        double x2wsq  = (*x2sumsqw_)(i,j)/numsamp_;
+        double x2psq  = (*x2sumsqp_)(i,j)/numsamp_;
+#endif
 
         // as T and rho are constant in the inflow section
         // <T(rho)^2>-<T(rho)>*<T(rho)> should be zero
@@ -1661,9 +1675,28 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         if (abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-12)
             x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
 
+#ifdef COMBINE_SAMPLES
+        double x2rhosq = (*x2sumsqrho_)(i,j)/numsamp_;
+        double x2Tsq   = (*x2sumsqT_)(i,j)/numsamp_;
+
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
         double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
         double x2vw   = (*x2sumvw_)(i,j)/numsamp_-x2v*x2w;
+
+        double x2rhou  = (*x2sumrhou_)(i,j)/numsamp_-x2u*x2rho;
+        double x2uT = (*x2sumuT_)(i,j)/numsamp_-x2u*x2T;
+        double x2rhov  = (*x2sumrhov_)(i,j)/numsamp_-x2v*x2rho;
+        double x2vT = (*x2sumvT_)(i,j)/numsamp_-x2v*x2T;
+#else
+        double x2uv   = (*x2sumuv_)(i,j)/numsamp_; //-x2u*x2v;
+        double x2uw   = (*x2sumuw_)(i,j)/numsamp_; //-x2u*x2w;
+        double x2vw   = (*x2sumvw_)(i,j)/numsamp_; //-x2v*x2w;
+
+        double x2rhou  = (*x2sumrhou_)(i,j)/numsamp_; //-x2u*x2rho;
+        double x2uT = (*x2sumuT_)(i,j)/numsamp_; //-x2u*x2T;
+        double x2rhov  = (*x2sumrhov_)(i,j)/numsamp_; //-x2v*x2rho;
+        double x2vT = (*x2sumvT_)(i,j)/numsamp_; //-x2v*x2T;
+#endif
 
         double x2rhouppTpp = x2rho*(x2uT-x2u*x2T);
         double x2rhovppTpp = x2rho*(x2vT-x2v*x2T);
@@ -1690,6 +1723,14 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         (*log) << "   " << setw(17) << setprecision(10) << x2vw;
         (*log) << "   " << setw(17) << setprecision(10) << x2rhouppTpp;
         (*log) << "   " << setw(17) << setprecision(10) << x2rhovppTpp;
+#ifdef COMBINE_SAMPLES
+        (*log) << "   " << setw(17) << setprecision(10) << x2usq;
+        (*log) << "   " << setw(17) << setprecision(10) << x2vsq;
+        (*log) << "   " << setw(17) << setprecision(10) << x2wsq;
+        (*log) << "   " << setw(17) << setprecision(10) << x2psq;
+        (*log) << "   " << setw(17) << setprecision(10) << x2Tsq;
+        (*log) << "   " << setw(17) << setprecision(10) << x2rhosq;
+#endif
         (*log) << "\n";
       }
     }
@@ -1803,8 +1844,6 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
         double x2p  = (*x2sump_)(i,j)/numsamp_;
 
         double x2T  = (*x2sumT_)(i,j)/numsamp_;
-        double x2uT = (*x2sumuT_)(i,j)/numsamp_;
-        double x2vT = (*x2sumvT_)(i,j)/numsamp_;
 
         double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
         double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
@@ -1824,6 +1863,10 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
         double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
         double x2vw   = (*x2sumvw_)(i,j)/numsamp_-x2v*x2w;
+
+        double x2uT = (*x2sumuT_)(i,j)/numsamp_-x2u*x2T;
+        double x2vT = (*x2sumvT_)(i,j)/numsamp_-x2v*x2T;
+
 
         (*log) <<  " "  << setw(17) << setprecision(10) << (*x2coordinates_)[j];
         (*log) << "   " << setw(17) << setprecision(10) << x2u;
