@@ -153,7 +153,7 @@ public:
   double Cl(){return Cl_;};
   /// multifractal subgrid-scales
   double Csgs(){return Csgs_;};
-  double CsgsPhi(){return Csgs_phi_;};
+  double CsgsPhi(){double tmp = 0.0; if(not adapt_Csgs_phi_) tmp = Csgs_phi_; else tmp = Csgs_phi_*meanCai_; return tmp;};
   double Alpha(){return alpha_;};
   bool CalcN(){return CalcN_;};
   double N(){return N_;};
@@ -165,6 +165,8 @@ public:
   bool BGp(){return B_gp_;};
   double Beta(){return beta_;};
   double MfsIsConservative(){return mfs_is_conservative_;};
+  double AdaptCsgsPhi(){return adapt_Csgs_phi_;};
+  void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
 
   //! some loma specific parameters
   //! flag for material update
@@ -283,6 +285,8 @@ private:
   bool B_gp_;
   double beta_;
   bool mfs_is_conservative_;
+  bool adapt_Csgs_phi_;
+  double meanCai_;
 
   //! some loma specific parameters
   //! flag for material update

@@ -668,6 +668,10 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
 {
+  // special preparations for multifractal subgrid-scale model
+  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+    RecomputeMeanCsgsB();
+  
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
 
@@ -2478,6 +2482,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     PrintTimeStepInfo();
   else
     PrintPseudoTimeStepInfoReinit();
+
+  // special preparations for multifractal subgrid-scale model
+  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+    RecomputeMeanCsgsB();
 
   if (myrank_ == 0)
   {

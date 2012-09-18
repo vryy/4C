@@ -40,7 +40,8 @@ enum Action {
   calc_elch_initial_potential,     // calc_initial_potential_field,
   calc_TG_mat_and_rhs,             // levelset_TaylorGalerkin,
   reinitialize_levelset,           // reinitialize_levelset,
-  calc_error_reinit                // calc_error_reinit,
+  calc_error_reinit,               // calc_error_reinit,
+  calc_mean_Cai                    // calc_mean_Cai (multifractal subgrid-scales)
 }; // enum Action
 
 /*--------------------------------------------------------------------------*/

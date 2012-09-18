@@ -745,6 +745,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         BD_gp = true;
         else
           dserror("Unknown evaluation point!");
+        if (DRT::INPUT::IntegralValue<int>(mfslist,"ADAPT_CSGS_PHI") and nwl)
+        {
+          double meanCai = mfslist.get<double>("meanCai");
+          Csgs_sgphi *= meanCai;
+        }
       }
     }
 
@@ -1148,6 +1153,259 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const double frt = params.get<double>("frt");
 
     CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
+
+    break;
+  }
+  // calculate mean Cai of multifractal subgrid-scale modeling approach
+  case SCATRA::calc_mean_Cai:
+  {
+    // get nodel velocites
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
+    // get phi for material parameters
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null)
+      dserror("Cannot get state vector 'hist' and/or 'phinp'");
+    vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+    // fill all element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      }
+    }
+    // set thermodynamic pressure
+    if (scatratype == INPAR::SCATRA::scatratype_loma)
+      thermpressnp_ = params.get<double>("thermodynamic pressure");
+    
+    turbmodel_ = INPAR::FLUID::no_model;
+    // set flag for turbulence model
+    if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Smagorinsky")
+      turbmodel_ = INPAR::FLUID::smagorinsky;
+    if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
+      turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+    if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+      turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+
+    // get parameters for multifractal subgrid-scales
+    ParameterList& mfslist = params.sublist("MULTIFRACTAL SUBGRID SCALES");
+    // get near-wall limit
+    bool nwl = DRT::INPUT::IntegralValue<int>(mfslist,"NEAR_WALL_LIMIT");
+    // get evaluation of B
+    bool BD_gp = false;
+    if (mfslist.get<string>("EVALUATION_B") == "element_center")
+      BD_gp = false;
+    else if (mfslist.get<string>("EVALUATION_B") == "integration_point")
+      BD_gp = true;
+    // get reference length
+    INPAR::FLUID::RefLength reflength = INPAR::FLUID::cube_edge;
+    if (mfslist.get<string>("REF_LENGTH") == "cube_edge")
+      reflength = INPAR::FLUID::cube_edge;
+    else if (mfslist.get<string>("REF_LENGTH") == "sphere_diameter")
+      reflength = INPAR::FLUID::sphere_diameter;
+    else if (mfslist.get<string>("REF_LENGTH") == "streamlength")
+      reflength = INPAR::FLUID::streamlength;
+    else if (mfslist.get<string>("REF_LENGTH") == "gradient_based")
+      reflength = INPAR::FLUID::gradient_based;
+    else if (mfslist.get<string>("REF_LENGTH") == "metric_tensor")
+      reflength = INPAR::FLUID::metric_tensor;
+    else dserror("Unknown length!");
+
+    // set parameters for stabilization (required for evaluation of material)
+    ParameterList& stablist = params.sublist("STABILIZATION");
+    // set flags for potential evaluation of tau and material law at int. point
+    const INPAR::SCATRA::EvalTau tauloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
+    tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
+    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
+    if (BD_gp and (not tau_gp_ or not mat_gp_)) dserror("expected evaluation of mat and tau at integration point for B at integartion point");
+
+    double Cai = 0.0;
+    double vol = 0.0;
+    // calculate Cai and volume, do not include elements of potential inflow section
+    if ((DRT::INPUT::IntegralValue<int>(mfslist,"ADAPT_CSGS_PHI") and nwl) and (not SCATRA::InflowElement(ele)))
+    {
+      // use one-point Gauss rule to do calculations at the element center
+      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+      vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0,ele->Id());
+      
+      // adopt integrations points and weights for gauss point evaluation of B
+      if (BD_gp)
+      {
+        DRT::UTILS::IntPointsAndWeights<nsd_> gauss_intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        intpoints = gauss_intpoints;
+      }
+      
+      
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+        const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+        // get material
+        GetMaterialParams(ele,scatratype,0);
+
+        // get velocity at integration point
+        convelint_.Multiply(econvelnp_,funct_);
+
+        // calculate characteristic element length
+        double hk = 1.0e+10;
+        // cf. stabilization parameters
+        switch (reflength)
+        {
+          case INPAR::FLUID::streamlength:
+          {
+            // a) streamlength due to Tezduyar et al. (1992)
+            // get norm of velocity
+            const double vel_norm = convelint_.Norm2();
+            // normed velocity vector
+            LINALG::Matrix<nsd_,1> velino(true);
+            if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convelint_);
+            else
+            {
+              velino.Clear();
+              velino(0,0) = 1.0;
+            }
+            LINALG::Matrix<nen_,1> tmp;
+            tmp.MultiplyTN(derxy_,velino);
+            const double val = tmp.Norm1();
+            hk = 2.0/val;
+
+            break;
+          }
+          case INPAR::FLUID::sphere_diameter:
+          {
+            // b) volume-equivalent diameter
+            hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+            break;
+          }
+          case INPAR::FLUID::cube_edge:
+          {
+            // c) qubic element length
+            hk = pow(vol,(1.0/nsd_));
+
+            break;
+          }
+          case INPAR::FLUID::metric_tensor:
+          {
+            /*          +-           -+   +-           -+   +-           -+
+                      |             |   |             |   |             |
+                      |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+                G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+                 ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                      |    i     j  |   |    i     j  |   |    i     j  |
+                      +-           -+   +-           -+   +-           -+
+            */
+            LINALG::Matrix<3,3> G;
+
+            for (int nn=0;nn<3;++nn)
+            {
+              for (int rr=0;rr<3;++rr)
+              {
+                G(nn,rr) = xij_(nn,0)*xij_(rr,0);
+                for (int mm=1;mm<3;++mm)
+                {
+                  G(nn,rr) += xij_(nn,mm)*xij_(rr,mm);
+                }
+              }
+            }
+
+            /*          +----
+                       \
+              G : G =   +   G   * G
+              -   -    /     ij    ij
+              -   -   +----
+                       i,j
+           */
+           double normG = 0;
+           for (int nn=0;nn<3;++nn)
+           {
+             for (int rr=0;rr<3;++rr)
+             {
+               normG+=G(nn,rr)*G(nn,rr);
+             }
+           }
+           hk = pow(normG,-0.25);
+
+           break;
+        }
+        case INPAR::FLUID::gradient_based:
+        {
+          LINALG::Matrix<nsd_,nsd_> convderxy;
+          convderxy.MultiplyNT(econvelnp_,derxy_);
+          LINALG::Matrix<3,1> normed_velgrad;
+
+          for (int rr=0;rr<3;++rr)
+          {
+            normed_velgrad(rr)=sqrt(convderxy(0,rr)*convderxy(0,rr)
+                                    +
+                                    convderxy(1,rr)*convderxy(1,rr)
+                                    +
+                                    convderxy(2,rr)*convderxy(2,rr));
+          }
+          double norm=normed_velgrad.Norm2();
+
+          // normed gradient
+          if (norm>1e-6)
+          {
+            for (int rr=0;rr<3;++rr)
+            {
+              normed_velgrad(rr)/=norm;
+            }
+          }
+          else
+          {
+            normed_velgrad(0) = 1.;
+            for (int rr=1;rr<3;++rr)
+            {
+              normed_velgrad(rr)=0.0;
+            }
+          }
+
+          // get length in this direction
+          double val = 0.0;
+          for (int rr=0;rr<nen_;++rr) /* loop element nodes */
+          {
+            val += fabs( normed_velgrad(0)*derxy_(0,rr)
+                        +normed_velgrad(1)*derxy_(1,rr)
+                        +normed_velgrad(2)*derxy_(2,rr));
+          } /* end of loop over element nodes */
+
+          hk = 2.0/val;
+
+          break;
+        }
+        default:
+          dserror("Unknown length");
+        } // switch reflength
+        if (hk == 1.0e+10)
+         dserror("Something went wrong!");
+
+        // estimate norm of strain rate
+        double strainnorm = GetStrainRate(econvelnp_);
+        strainnorm /= sqrt(2.0);
+
+        // get Re from strain rate
+        double Re_ele_str = strainnorm * hk * hk * densnp_[0] / visc_;
+        if (Re_ele_str < 0.0) dserror("Something went wrong!");
+        // ensure positive values
+        if (Re_ele_str < 1.0)
+          Re_ele_str = 1.0;
+
+        // calculate corrected Cai
+        //           -3/16
+        //  =(1 - (Re)   )
+        //
+        Cai += (1-pow(Re_ele_str,-3.0/16.0)) * fac;
+      }
+    }
+
+    // hand down the Cai and volume contribution to the time integration algorithm
+    params.set<double>("Cai_int",Cai);
+    params.set<double>("ele_vol",vol);
 
     break;
   }

@@ -98,6 +98,8 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   B_gp_(false),
   beta_(0.0),
   mfs_is_conservative_(false),
+  adapt_Csgs_phi_(false),
+  meanCai_(0.0),
   update_mat_(false),
   conti_supg_(INPAR::FLUID::convective_stab_none),
   conti_cross_(INPAR::FLUID::cross_stress_stab_none),
@@ -521,6 +523,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
       // get parameters of model
       Csgs_ = turbmodelparamsmfs.get<double>("CSGS");
       Csgs_phi_ = turbmodelparamsmfs.get<double>("CSGS_PHI");
+      adapt_Csgs_phi_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"ADAPT_CSGS_PHI");
 
       if (turbmodelparamsmfs.get<string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
        alpha_ = 3.0;

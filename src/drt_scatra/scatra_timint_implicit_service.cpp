@@ -2608,3 +2608,96 @@ const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggl
   dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
   return dirichtoggle;
 } // ScaTraTimIntImpl::DirichletToggle
+
+
+/*========================================================================*/
+// turbulence and related
+/*========================================================================*/
+
+/*-------------------------------------------------------------------------*
+ | calculate mean CsgsB to estimate CsgsD                                  |
+ | for multifractal subgrid-scale model                    rasthofer 08/12 |
+ *-------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
+{
+  if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"),"ADAPT_CSGS_PHI"))
+  {
+    // mean Cai
+    double meanCai = 0.0;
+
+    // variables required for calculation
+    // local sums
+    double local_sumCai = 0.0;
+    double local_sumVol = 0.0;
+    // global sums
+    double global_sumCai = 0.0;
+    double global_sumVol = 0.0;
+    
+    // define element matrices and vectors --- dummies
+    Epetra_SerialDenseMatrix emat1;
+    Epetra_SerialDenseMatrix emat2;
+    Epetra_SerialDenseVector evec1;
+    Epetra_SerialDenseVector evec2;
+    Epetra_SerialDenseVector evec3;
+   
+    // generate a parameterlist for communication and control
+    ParameterList myparams;
+    // action for elements
+    myparams.set<int>("action",SCATRA::calc_mean_Cai);
+    myparams.set<int>("scatratype",scatratype_);
+    // add convective velocity
+    AddMultiVectorToParameterList(myparams,"convective velocity field",convel_);
+    // add turbulence and mutifracatl subgrid-scales parameters
+    myparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
+    myparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
+    // parameters for stabilization (required for evaluation of material)
+    myparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+    // add element parameters according to time-integration scheme
+    AddSpecificTimeIntegrationParameters(myparams);
+
+    // loop all elements on this proc (excluding ghosted ones)
+    for (int nele=0;nele<discret_->NumMyRowElements();++nele)
+    {
+      // get the element
+      DRT::Element* ele = discret_->lRowElement(nele);
+
+      // get element location vector, dirichlet flags and ownerships
+      vector<int> lm;
+      vector<int> lmowner;
+      vector<int> lmstride;
+      ele->LocationVector(*discret_,lm,lmowner,lmstride);
+
+      // call the element evaluate method to integrate functions
+      int err = ele->Evaluate(myparams,*discret_,lm,
+                            emat1,emat2,
+                            evec1,evec2,evec2);
+      if (err) dserror("Proc %d: Element %d returned err=%d",myrank_,ele->Id(),err);
+   
+      // get contributions of this element and add it up
+      local_sumCai += myparams.get<double>("Cai_int");
+      local_sumVol += myparams.get<double>("ele_vol");   
+    }
+  
+    // gather contibutions of all procs
+    discret_->Comm().SumAll(&local_sumCai,&global_sumCai,1);
+    discret_->Comm().SumAll(&local_sumVol,&global_sumVol,1);
+
+    // calculate mean Cai
+    meanCai = global_sumCai/global_sumVol;
+  
+    //std::cout << "Proc:  " << myrank_ << "  local vol and Cai   " 
+    //<< local_sumVol << "   " << local_sumCai << "  global vol and Cai   " 
+    //<< global_sumVol << "   " << global_sumCai << "  mean   " << meanCai << std::endl;
+
+    if (myrank_ == 0)
+    {
+      std::cout << "\n+--------------------------------------------------------------------------------------------+" << std::endl;
+      std::cout << "Multifractal subgrid scales: adaption of CsgsD from near-wall limit of CsgsB:  " << setprecision (8) << meanCai << std::endl;
+      std::cout << "+--------------------------------------------------------------------------------------------+\n" << std::endl;
+    }
+
+    extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").set<double>("meanCai",meanCai);
+  }
+
+  return;
+}

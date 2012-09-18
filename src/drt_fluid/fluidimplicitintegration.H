@@ -966,6 +966,16 @@ private:
 
   */
   void SetElementLomaParameter();
+  
+  //! @name Special method for turbulent variable-density flow at low Mach number with multifractal subgrid-scale modeling
+  /*!
+
+  \brief adpation of CsgsD to CsgsB
+         Since CsgsB depends on the resolution if the near-wall limit is included,
+         CsgsD is adapted accordingly by using the mean value of the near-wall  correction.
+
+  */
+  void RecomputeMeanCsgsB();
 
 }; // class FluidImplicitTimeInt
 

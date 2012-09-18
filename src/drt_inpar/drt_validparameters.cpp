@@ -3056,6 +3056,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Modelparameter of multifractal subgrid-scales for scalar transport.",
     &fdyn_turbmfs);
 
+  BoolParameter("ADAPT_CSGS_PHI","No","Flag to (de)activate adaption of CsgsD to CsgsB.",&fdyn_turbmfs);
+
   DoubleParameter(
     "C_DIFF",
     1.0,

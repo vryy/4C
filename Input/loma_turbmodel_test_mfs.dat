@@ -69,6 +69,7 @@ SAMPLING_START                  5001
 SAMPLING_STOP                   10000
 DUMPING_PERIOD                  500
 FSSUGRVISC                      No
+SUBGRID_DISSIPATION             Yes
 ---------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 C_SMAGORINSKY                   0.0555555555555556
 C_TURBPRANDTL                   0.9
@@ -83,8 +84,11 @@ C_NU                            0.1
 NEAR_WALL_LIMIT                 yes
 EVALUATION_B                    element_center
 BETA                            0.0
-CSGS_PHI                        0.15
+CSGS_PHI                        0.25
+ADAPT_CSGS_PHI                  yes
 C_DIFF                          0.1
+CONVFORM                        convective
+LOMA_CONTI                      yes
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
 SOLVERTYPE nonlinear //linear_incremental
@@ -125,6 +129,7 @@ CONVTOL                         1.0E-6
 UPRES                           50000
 RESTARTEVRY                     5
 CONSTHERMPRESS                  No_mass
+SGS_MATERIAL_UPDATE             yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -49089,15 +49094,15 @@ NODE 15625 COORD 3.1415926535000001e+00 1.0000000000000000e+00 -2.09439510250000
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3531 POSITION velx NAME velx VALUE 1.06167922443110267e+01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 3531 POSITION vely NAME vely VALUE -2.58890075325390658e-06 TOLERANCE 1e-8
-FLUID DIS 1 NODE 3531 POSITION velz NAME velz VALUE 4.12714211768769085e-09 TOLERANCE 1e-8
-FLUID DIS 1 NODE 3531 POSITION pressure NAME pressure VALUE -3.49530055413929761e-04 TOLERANCE 1e-6
-SCATRA DIS 1 NODE 3531 POSITION phi NAME phi VALUE 1.00345760078371615e+00 TOLERANCE 1e-8
-FLUID DIS 1 NODE 8438 POSITION velx NAME velx VALUE 2.03242652283910203e+01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 8438 POSITION vely NAME vely VALUE 2.33923594248856408e-07 TOLERANCE 1e-8
-FLUID DIS 1 NODE 8438 POSITION velz NAME velz VALUE 2.28060733018843258e-07 TOLERANCE 1e-8
-FLUID DIS 1 NODE 8438 POSITION pressure NAME pressure VALUE -1.37711365738063692e-04 TOLERANCE 1e-6
+FLUID DIS 1 NODE 3531 POSITION velx NAME velx VALUE 1.06167902219336376e+01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 3531 POSITION vely NAME vely VALUE 3.21329161433005579e-06 TOLERANCE 1e-8
+FLUID DIS 1 NODE 3531 POSITION velz NAME velz VALUE 1.05054497708693156e-07 TOLERANCE 1e-8
+FLUID DIS 1 NODE 3531 POSITION pressure NAME pressure VALUE -4.38870431595499741e-04 TOLERANCE 1e-6
+SCATRA DIS 1 NODE 3531 POSITION phi NAME phi VALUE 1.00345757576214223e+00 TOLERANCE 1e-8
+FLUID DIS 1 NODE 8438 POSITION velx NAME velx VALUE 2.03242626991887754e+01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 8438 POSITION vely NAME vely VALUE 6.68471862123446997e-06 TOLERANCE 1e-8
+FLUID DIS 1 NODE 8438 POSITION velz NAME velz VALUE 1.71793886561043542e-07 TOLERANCE 1e-8
+FLUID DIS 1 NODE 8438 POSITION pressure NAME pressure VALUE -1.29277741797158112e-04 TOLERANCE 1e-6
 SCATRA DIS 1 NODE 8438 POSITION phi NAME phi VALUE 1.00000000899979113e+00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

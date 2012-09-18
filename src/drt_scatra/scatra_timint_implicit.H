@@ -721,6 +721,13 @@ protected:
   /*--- query and output ---------------------------------------------------*/
 
   /*========================================================================*/
+  //! @name turbulence and related
+  /*========================================================================*/
+  
+  //! calculate mean CsgsB to estimate CsgsD for multifractal subgrid-scale model
+  void RecomputeMeanCsgsB();
+
+  /*========================================================================*/
   //! @name functions used for reinitialization of level sets
   /*========================================================================*/
 

@@ -468,6 +468,8 @@ private:
     calc_turbscatra_statistics,
     calc_dissipation,
     calc_model_params_mfsubgr_scales,
+    calc_mean_Cai,
+    set_mean_Cai,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
     get_gas_constant,
@@ -704,24 +706,34 @@ private:
     \return void
 
    */
-template<int iel>
-void f3_calc_smag_const_LijMij_and_MijMij(RCP<Epetra_MultiVector>& filtered_vel,
-                                          RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
-                                          RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
-                                          double&                  LijMij,
-                                          double&                  MijMij,
-                                          double&                  xcenter,
-                                          double&                  ycenter,
-                                          double&                  zcenter);
+   template<int iel>
+   void f3_calc_smag_const_LijMij_and_MijMij(RCP<Epetra_MultiVector>& filtered_vel,
+                                             RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
+                                             RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
+                                             double&                  LijMij,
+                                             double&                  MijMij,
+                                             double&                  xcenter,
+                                             double&                  ycenter,
+                                             double&                  zcenter);
 
-/*!
-   \brief compute parameters of multifractal subgrid-scale model
-*/
-template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
-void f3_get_mf_params(ParameterList&      params,
-                      RCP<MAT::Material>  mat,
+   /*!
+       \brief compute parameters of multifractal subgrid-scale model
+   */
+   template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
+   void f3_get_mf_params(ParameterList&      params,
+                         RCP<MAT::Material>  mat,
+                         vector<double>&     vel,
+                         vector<double>&     fsvel);
+
+   /*!
+     \brief compute parameters of multifractal subgrid-scale model
+   */
+   template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
+   void f3_get_mf_nwc(double&             Cai,
+                      double&             vol,
                       vector<double>&     vel,
-                      vector<double>&     fsvel);
+                      vector<double>&     sca,
+                      const double&       thermpress);
 
   /*!
     \brief Calculate node normals using the volume integral in Wall (7.13).
