@@ -54,8 +54,9 @@ int LINALG::LinalgProjectedOperator::Apply(
   // if necessary, project out matrix kernel
   if(project_)
   {
-    int ierr2=0;
-    ierr2 = projector_->ApplyPT(Y);
+    //int ierr2=0;
+    /*ierr2 = */
+    projector_->ApplyPT(Y);
   }
 
   return(ierr);
