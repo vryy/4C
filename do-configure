@@ -19,6 +19,13 @@ fi
 # detect operating system
 if [[ "`uname -r | grep 2.6.29.6`" ]] || [[ "`uname -r | grep fc8`" ]]; then
 	echo "Detected Fedora 8"
+	echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!"
+	echo "!!       You are using an outdated system.       !!"
+	echo "!! It's highly recommended to update your system !!"
+	echo "!! to Fedora 16 soon. There's no support for FC8 !!"
+	echo "!! machines any more.                            !!" 
+	echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!"
+	read -p "Press [Enter] to proceed..."
 	OS_VERSION="FC8"
 	CMAKE_COMMAND=/lnm/programs/cmake-2.8.2/bin/cmake
 	CUBIT_PATH=/lnm/programs/cubit-13.2/bin
