@@ -3956,7 +3956,6 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
     {
       case loom_singlefil:
       {
-        cout<<"single filament case"<<endl;
         for(int i=0; i<filamentnumber_->MyLength(); i++)
         {
           if((int)(*bspotstatus_)[i]>-1)
@@ -4053,29 +4052,26 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
           for(int i=0; i<(int)evalnodepositions.size(); i++)
           {
             // vector storing nearest neighbor positions
-            for(int j=i-maxnearneighbors; j<i+maxnearneighbors+1; j++)
+            for(int j=i+1; j<i+maxnearneighbors+1; j++)
             {
-              if(j!=i)
-              {
-                int jindex = j;
-                if(j<0)
-                  jindex += (int)evalnodepositions.size();
-                else if(j>(int)evalnodepositions.size()-1)
-                  jindex -= evalnodepositions.size();
+              int jindex = j;
+              if(j<0)
+                jindex += (int)evalnodepositions.size();
+              else if(j>(int)evalnodepositions.size()-1)
+                jindex -= evalnodepositions.size();
 
-                map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(i));
-                map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at(jindex));
-                LINALG::Matrix<3,1> diff = (pos1->second);
-                diff -= (pos0->second);
-                dist2nodes = diff.Norm2();
-                // distance of node pairs separated by periodic boundaries
-                if(j<0 || j>(int)evalnodepositions.size())
-                  dist2nodes = periodlength-dist2nodes;
-                distances<<std::scientific<<std::setprecision(15)<<dist2nodes<<" ";
-              }
+              map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(i));
+              map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at(jindex));
+              LINALG::Matrix<3,1> diff = (pos1->second);
+              diff -= (pos0->second);
+              dist2nodes = diff.Norm2();
+              // distance of node pairs separated by periodic boundaries
+              if(j<0 || j>(int)evalnodepositions.size())
+                dist2nodes = periodlength-dist2nodes;
+              distances<<std::scientific<<std::setprecision(15)<<dist2nodes<<" ";
             }
-            if(maxnearneighbors<3) // note: hard coded "6" because of hard coded maximal maxneighbors = 3
-              for(int j=0; j<6-2*maxnearneighbors; j++)
+            if(maxnearneighbors<3) // note: hard coded "3" because of hard coded maximal maxneighbors = 3
+              for(int j=0; j<3-maxnearneighbors; j++)
                 distances<<-99<<" ";
             distances<<endl;
           }
