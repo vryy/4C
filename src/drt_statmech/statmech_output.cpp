@@ -3886,7 +3886,6 @@ void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksper
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
 {
-  cout<<"entered LoomOutput"<<endl;
   if(!DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
       dserror("For Loom related output, activate LOOMSETUP in your input file!");
 
@@ -4004,7 +4003,6 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
     // do the following stuff only if we have actual crosslinker elements along the horizontal filament
     if(!nodeIDs.empty() || loomtype == loom_singlefil)
     {
-      cout<<"entered !nodeIDs section"<<endl;
       // get the nodes at which we want to measure neighbour distances
       // note: we assume nodeIDs.at(1)>=evalnodes.at(firstvfil-1).
       // "-1" because evalnodes only stores one node per VERTICAL filament.
@@ -4014,10 +4012,6 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
         for(int i=0; i<(int)evalnodes.size(); i++)
           evalnodes.at(i) += vnodeoffset;
       }
-
-      cout<<"evalnodes.size() = "<<(int)evalnodes.size()<<endl;
-      for(int i=0; i<(int)evalnodes.size(); i++)
-        cout<<evalnodes[i]<<endl;
 
       // sort nodes from smallest to largest x-coordinate
       if((int)evalnodes.size()>1)
@@ -4055,7 +4049,6 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
           int maxnearneighbors = (int)(ceil((double(evalnodepositions.size())/2.0)))-1;
           if(maxnearneighbors>3)
             maxnearneighbors = 3;
-          cout<<"   maxneighbors = "<<maxnearneighbors<<endl;
           // calculate nearest neighbor to 3rd nearest neighbor distances
           for(int i=0; i<(int)evalnodepositions.size(); i++)
           {
@@ -4089,7 +4082,6 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
         }
         else // two vertical filament case
         {
-          cout<<"2 nodes"<<endl;
           LINALG::Matrix<3,1> diff = evalnodepositions[1];
           diff -= evalnodepositions[0];
           dist2nodes = diff.Norm2();
