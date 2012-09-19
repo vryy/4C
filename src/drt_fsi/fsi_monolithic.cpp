@@ -462,8 +462,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   noxstatus_ = solver->solve();
 
   if (noxstatus_ != NOX::StatusTest::Converged)
-    if (Comm().MyPID()==0)
-      utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
+    dserror("Nonlinear solver failed to converge!");
 
   // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
   // (i.e. condensed forces onto the structure) needed for rhs in next time step

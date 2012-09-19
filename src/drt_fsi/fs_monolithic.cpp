@@ -214,8 +214,7 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     NOX::StatusTest::StatusType status = solver->solve();
 
     if (status != NOX::StatusTest::Converged)
-      if (Comm().MyPID()==0)
-        utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
+      dserror("Nonlinear solver failed to converge!");
 
     // cleanup
     //mat_->Zero();

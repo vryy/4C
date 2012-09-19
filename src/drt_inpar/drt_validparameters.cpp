@@ -1050,7 +1050,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_newtonuzawalin,
                                  INPAR::STR::soltech_newtonuzawanonlin,
                                  INPAR::STR::soltech_noxnewtonlinesearch,
-                                 INPAR::STR::soltech_noxgeneral),
+                                 INPAR::STR::soltech_noxgeneral,
+                                 INPAR::STR::soltech_nonlinamg),
                                &sdyn);
 
   setStringToIntegralParameter<int>("CONTROLTYPE","load","load, disp, arc1, arc2 control",
@@ -4191,11 +4192,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<std::string>(
                                       "No",
                                       "Yes",
+                                      "no",
+                                      "yes",
+                                      "NO",
+                                      "YES",
                                       "Interface",
                                       "Preconditioner",
                                       "All"
                                       ),
                                     tuple<int>(
+                                      0,
+                                      1,
+                                      0,
+                                      1,
                                       0,
                                       1,
                                       1,
@@ -4397,7 +4406,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FSI::ALEprojection_rot_zsphere),
                                  &fsidyn);
 
-  setStringToIntegralParameter<int> ("DIVPROJECTION", "no", "Project velocity into divergence-free subspace",
+  setStringToIntegralParameter<int> ("DIVPROJECTION", "no", "Project velocity into divergence-free subspace for partitioned fsi",
                                      yesnotuple,yesnovalue,&fsidyn);
 
   /*----------------------------------------------------------------------*/
