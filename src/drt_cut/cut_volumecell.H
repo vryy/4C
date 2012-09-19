@@ -198,7 +198,10 @@ public:
    */
   DRT::UTILS::GaussIntegration GetInternalRule( int facetIntNo ){ return intGP_[facetIntNo]; }
 
-  std::set<int> VolumeCellPoints();
+  /*!
+  \brief Return Ids of all the points associated with this volumecell
+   */
+  std::set<int> VolumeCellPointIds();
 
   /*!
   \brief Chcek whether this point is inside, outside or on boundary of this this volumecell.

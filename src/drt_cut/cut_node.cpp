@@ -487,8 +487,8 @@ bool GEO::CUT::Cmp::Compare( VolumeCell* vc1, VolumeCell* vc2 )
 {
   // compare the point ids of the two volumecells
 
-  std::set<int> vc1points = vc1->VolumeCellPoints();
-  std::set<int> vc2points = vc2->VolumeCellPoints();
+  std::set<int> vc1points = vc1->VolumeCellPointIds();
+  std::set<int> vc2points = vc2->VolumeCellPointIds();
 
 
   if (vc1 == vc2)

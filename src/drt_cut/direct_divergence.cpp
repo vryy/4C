@@ -100,8 +100,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
           x4 = (RefPlaneTemp[3]-RefPlaneTemp[2]*z2-RefPlaneTemp[1]*y2)/RefPlaneTemp[0];
 
           //TODO: This is specific to hex8 background element. Extend this for other elements also
-          if( fabs(fabs(x1)-1.0) < 1e-8 && fabs(fabs(x2)-1.0) < 1e-8  &&
-              fabs(fabs(x3)-1.0) < 1e-8 && fabs(fabs(x4)-1.0) < 1e-8 )
+          if( fabs(x1) < (1.0+1e-8) && fabs(x2) < (1.0+1e-8)  &&
+              fabs(x3) < (1.0+1e-8) && fabs(x4) < (1.0+1e-8) )
           {
             addRef = true;
           }

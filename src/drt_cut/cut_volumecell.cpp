@@ -1017,9 +1017,9 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 }
 
 /*-------------------------------------------------------------------------------------*
-| get the points of the  volume cell                                     shahmiri 06/12
+| Return Ids of all the points associated with this volumecell           shahmiri 06/12
 *--------------------------------------------------------------------------------------*/
-std::set<int> GEO::CUT::VolumeCell::VolumeCellPoints()
+std::set<int> GEO::CUT::VolumeCell::VolumeCellPointIds()
 {
   if ( vcpoints_ids_.size() != 0)
   {
