@@ -554,11 +554,9 @@ DRT::INPUT::IntRealBundle::IntRealBundle
  *----------------------------------------------------------------------*/
 void DRT::INPUT::IntRealBundle::DefaultLine(std::ostream& stream)
 {
-  dserror("After all, the function DefaultLine is used!! Please, contact A. Ehrl");
-
   intcomp_->DefaultLine(stream);
   stream << " ";
-
+#if 0
   // handling of different int vectors including an optional separator
   for(unsigned int i=0; i<intvectcomp_.size(); ++i)
   {
@@ -580,7 +578,7 @@ void DRT::INPUT::IntRealBundle::DefaultLine(std::ostream& stream)
     }
     realvectcomp_[i]->DefaultLine(stream);
   }
-
+#endif
   return;
 }
 
@@ -678,15 +676,15 @@ DRT::INPUT::CondCompBundle::CondCompBundle(
  *----------------------------------------------------------------------*/
 void DRT::INPUT::CondCompBundle::DefaultLine(std::ostream& stream)
 {
-  dserror("After all, the function DefaultLine is used!! Please, contact A. Ehrl");
-
+  // only type is printed in class CondCompBundleSelector
+#if 0
   // default line of selected condition component bundle
   for (unsigned int i=0; condcomp_.size();++i)
   {
     condcomp_[i]->DefaultLine(stream);
     stream << " ";
   }
-
+#endif
   return;
 }
 
@@ -740,8 +738,6 @@ DRT::INPUT::CondCompBundleSelector::CondCompBundleSelector(
  *----------------------------------------------------------------------*/
 void DRT::INPUT::CondCompBundleSelector::DefaultLine(std::ostream& stream)
 {
-  dserror("After all, the function DefaultLine is used!! Please, contact A. Ehrl");
-
   //Attention: default value defined here may not be identical to the printed condition component bundle
   stringcomp_->DefaultLine(stream);
   stream << " ";
