@@ -1050,8 +1050,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_newtonuzawalin,
                                  INPAR::STR::soltech_newtonuzawanonlin,
                                  INPAR::STR::soltech_noxnewtonlinesearch,
-                                 INPAR::STR::soltech_noxgeneral,
-                                 INPAR::STR::soltech_nonlinamg),
+                                 INPAR::STR::soltech_noxgeneral),
                                &sdyn);
 
   setStringToIntegralParameter<int>("CONTROLTYPE","load","load, disp, arc1, arc2 control",
