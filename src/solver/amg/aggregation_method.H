@@ -14,7 +14,7 @@
 #ifndef AGGREGATION_METHOD_H_
 #define AGGREGATION_METHOD_H_
 
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 using namespace std;
 using namespace Teuchos;

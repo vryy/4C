@@ -70,9 +70,9 @@ Maintainer: Michael Gee
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <EpetraExt_Transpose_RowMatrix.h>
 
-#include "solver_directsolver.H"
-#include "solver_aztecsolver.H"
-#include "solver_stratimikossolver.H"
+#include "../solver/solver_directsolver.H"
+#include "../solver/solver_aztecsolver.H"
+#include "../solver/solver_stratimikossolver.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

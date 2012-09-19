@@ -20,7 +20,7 @@
 #include "solver_ifpackpreconditioner.H"
 #include "solver_mlpreconditioner.H"
 
-#include "linalg_solver.H"
+#include "../linalg/linalg_solver.H"
 
 void LINALG::Solver::BuildBelosSolver(const Epetra_Comm & comm, Teuchos::ParameterList & params, FILE * outfile)
 {

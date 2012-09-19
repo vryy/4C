@@ -12,9 +12,9 @@ Maintainer: Lena Wiechert
 
 #include "ml_MultiLevelPreconditioner.h"
 
-#include "linalg_precond.H"
-#include "linalg_utils.H"
-#include "linalg_solver.H"
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 
 #include "bgs2x2_operator.H"
 

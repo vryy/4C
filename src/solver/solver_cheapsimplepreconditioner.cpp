@@ -16,13 +16,13 @@ Maintainer: Tobias Wiesner
 #include <ml_MultiLevelPreconditioner.h>
 
 // BACI headers
-#include "linalg_ana.H"
-#include "linalg_solver.H"
-#include "linalg_blocksparsematrix.H"
-#include "linalg_sparsematrix.H"
-#include "linalg_utils.H"				// helper functions (linear Algebra related)
+#include "../linalg/linalg_ana.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"    // helper functions (linear Algebra related)
+#include "../linalg/linalg_downwindmatrix.H"
 
-#include "linalg_downwindmatrix.H"
 #include "solver_cheapsimplepreconditioner.H"
 
 #define SIMPLEC_DIAGONAL      1    // 1: row sums     0: just diagonal

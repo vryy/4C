@@ -11,8 +11,8 @@
 
 // include header files for concrete implementation
 #include "bgs2x2_operator.H"                   // Lena's BGS implementation
-#include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
 #include "saddlepointpreconditioner.H"         // Tobias' saddle point preconditioner
+#include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

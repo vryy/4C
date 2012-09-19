@@ -21,30 +21,15 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Time.h"
 
-#include "linalg_sparsematrix.H"
-
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_mapextractor.H"
-#include "linalg_sparsematrix.H"
-#include "linalg_blocksparsematrix.H"
-#include "linalg_utils.H"
-#include "linalg_ana.H"
+#include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_ana.H"
 
-//#include "MLAPI_Error.h"
-//#include "MLAPI_CompObject.h"
-//#include "MLAPI_TimeObject.h"
-//#include "MLAPI_Operator.h"
-//#include "MLAPI_Operator_Utils.h"
-//#include "MLAPI_MultiVector.h"
-//#include "MLAPI_InverseOperator.h"
-//#include "MLAPI_Expressions.h"
-//#include "MLAPI_BaseOperator.h"
-//#include "MLAPI_Workspace.h"
-//#include "MLAPI_Aggregation.h"
-//#include "MLAPI_Eig.h"
-
-#include "braesssarazin_smoother.H"
-#include "transfer_operator.H"
+#include "amg/braesssarazin_smoother.H"
+#include "amg/transfer_operator.H"
 
 using namespace std;
 using namespace Teuchos;

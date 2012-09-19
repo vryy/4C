@@ -15,8 +15,8 @@
 #include <Teko_EpetraOperatorWrapper.hpp>
 
 
-#include "linalg_mapextractor.H"
-#include "linalg_blocksparsematrix.H"
+#include "../../linalg/linalg_mapextractor.H"
+#include "../../linalg/linalg_blocksparsematrix.H"
 
 namespace LINALG
 {

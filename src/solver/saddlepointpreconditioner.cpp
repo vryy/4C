@@ -15,16 +15,16 @@
 
 #include <Epetra_LocalMap.h>
 
-#include "linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 #include "saddlepointpreconditioner.H"
-#include "transfer_operator.H"
-#include "transfer_operator_tentative.H"
-#include "transfer_operator_saamg.H"
-#include "transfer_operator_pgamg.H"
-#include "braesssarazin_smoother.H"
-#include "aggregation_method_uncoupled.H"
-#include "aggregation_method_ml.H"
+#include "amg/transfer_operator.H"
+#include "amg/transfer_operator_tentative.H"
+#include "amg/transfer_operator_saamg.H"
+#include "amg/transfer_operator_pgamg.H"
+#include "amg/braesssarazin_smoother.H"
+#include "amg/aggregation_method_uncoupled.H"
+#include "amg/aggregation_method_ml.H"
 
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_StandardParameterEntryValidators.hpp"

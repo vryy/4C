@@ -13,7 +13,7 @@
 #include <Ifpack.h>
 
 // BACI headers
-#include "linalg_sparsematrix.H" // for SmootherFactory::Create
+#include "../linalg/linalg_sparsematrix.H" // for SmootherFactory::Create
 
 #include "smoother.H"
 

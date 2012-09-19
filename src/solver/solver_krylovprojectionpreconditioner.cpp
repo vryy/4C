@@ -5,9 +5,9 @@
  *      Author: wiesner
  */
 
-#include "linalg_krylov_projector.H"
-#include "linalg_projected_operator.H"  // for LINALG::LinalgProjectedOperator
-#include "linalg_projected_precond.H"   // for LINALG::LinalgPrecondOperator
+#include "../linalg/linalg_krylov_projector.H"
+#include "../linalg/linalg_projected_operator.H"  // for LINALG::LinalgProjectedOperator
+#include "../linalg/linalg_projected_precond.H"   // for LINALG::LinalgPrecondOperator
 
 #include "solver_krylovprojectionpreconditioner.H"
 

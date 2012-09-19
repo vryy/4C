@@ -22,7 +22,7 @@ Maintainer: Tobias Wiesner
 #ifdef HAVE_MueLu
 
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 #include <MueLu_ConfigDefs.hpp>
 

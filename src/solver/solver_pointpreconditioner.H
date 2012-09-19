@@ -12,8 +12,8 @@ Created on: Jul 4, 2011
 #ifndef SOLVER_POINTPRECONDITIONER_H_
 #define SOLVER_POINTPRECONDITIONER_H_
 
-#include "linalg_downwindmatrix.H"
-#include "linalg_none_operator.H"
+#include "../linalg/linalg_downwindmatrix.H"
+#include "../linalg/linalg_none_operator.H"
 
 #include "solver_preconditionertype.H"
 

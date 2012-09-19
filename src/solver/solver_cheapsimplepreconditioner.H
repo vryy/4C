@@ -11,15 +11,9 @@ Maintainer: Tobias Wiesner
 #ifndef SOLVER_CHEAPSIMPLE_H
 #define SOLVER_CHEAPSIMPLE_H
 
-// Trilinos includes
-//#include <Epetra_CrsMatrix.h>      // temporarely deactivated
-//#include <Epetra_Time.h>           // temporarely deactivated
-//#include <Teuchos_RefCountPtr.hpp> // temporarely deactivated
-//#include <Teuchos_ParameterList.hpp> // temporarely deactivated
-
 #include "../drt_lib/drt_dserror.H"
 
-#include "linalg_mapextractor.H" // This is for mmex_ (reference, not RCP by intention)
+#include "../linalg/linalg_mapextractor.H" // This is for mmex_ (reference, not RCP by intention)
 
 using Teuchos::RCP;				// it's ok to use Teuchos::RCP and Teuchos::ParameterList
 using Teuchos::ParameterList;   // note, we do not include a whole namespacae!

@@ -18,8 +18,8 @@ Maintainer: Lena Wiechert
 
 // BACI headers
 #include "../drt_lib/drt_dserror.H"
-#include "linalg_mapextractor.H"       // for mmex_ ( mmex is a reference by intention)
-#include "linalg_blocksparsematrix.H"  // TODO remove me
+#include "../linalg/linalg_mapextractor.H"       // for mmex_ ( mmex is a reference by intention)
+#include "../linalg/linalg_blocksparsematrix.H"  // TODO remove me
 
 namespace LINALG
 {

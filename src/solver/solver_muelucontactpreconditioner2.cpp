@@ -57,11 +57,11 @@
 
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
-#include "muelu_ContactAFilterFactory_decl.hpp"
-#include "muelu_ContactTransferFactory_decl.hpp"
-#include "muelu_ContactMapTransferFactory_decl.hpp"
-#include "muelu_ContactASlaveDofFilterFactory_decl.hpp"
-#include "MueLu_MyTrilinosSmoother_decl.hpp"
+#include "muelu/muelu_ContactAFilterFactory_decl.hpp"
+#include "muelu/muelu_ContactTransferFactory_decl.hpp"
+#include "muelu/muelu_ContactMapTransferFactory_decl.hpp"
+#include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
+#include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 
 #include "solver_muelucontactpreconditioner2.H"
 

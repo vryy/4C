@@ -10,12 +10,12 @@
 
 #ifdef HAVE_TEKO
 
-#include "linalg_blocksparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 // Teko specific includes
 #include <Teko_EpetraBlockPreconditioner.hpp>
 
-#include "teko_baciepetraoperatorwrapper.H"
+#include "teko/teko_baciepetraoperatorwrapper.H"
 
 #include "solver_preconditionertype.H"
 

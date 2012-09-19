@@ -14,8 +14,8 @@
 #ifndef BRAESSSARAZIN_SMOOTHER_H_
 #define BRAESSSARAZIN_SMOOTHER_H_
 
-#include "linalg_solver.H"
-#include "linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 
 using namespace std;
 using Teuchos::RCP;

@@ -23,7 +23,7 @@
 #include <Teko_GaussSeidelPreconditionerFactory.hpp>
 #include <Teko_SIMPLEPreconditionerFactory.hpp>
 
-#include "teko_baciepetraoperatorwrapper.H"
+#include "teko/teko_baciepetraoperatorwrapper.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

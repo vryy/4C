@@ -12,7 +12,7 @@
 #include "Teuchos_ParameterList.hpp"
 
 // BACI includes
-#include "linalg_sparsematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 using namespace std;
 using namespace Teuchos;

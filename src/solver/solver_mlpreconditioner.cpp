@@ -28,10 +28,10 @@ Maintainer: Tobias Wiesner
 #include "ml_epetra_operator.h"
 #include "ml_MultiLevelPreconditioner.h"
 
-#include "linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
-#include "amgpreconditioner.H"      // Tobias' smoothed aggregation AMG implementation in BACI (only for fluids)
+#include "../linalg/linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
+#include "amg/amgpreconditioner.H"      // Tobias' smoothed aggregation AMG implementation in BACI (only for fluids)
 
-#include "linalg_utils.H"
+#include "../linalg/linalg_utils.H"
 
 #include "solver_mlpreconditioner.H"
 

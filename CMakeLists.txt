@@ -1086,11 +1086,19 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_LINALG
-  src/linalg/aggregation_method.cpp
-  src/linalg/aggregation_method_ml.cpp
-  src/linalg/aggregation_method_uncoupled.cpp
-  src/linalg/amgpreconditioner.cpp
-  src/linalg/braesssarazin_smoother.cpp
+  src/solver/amg/aggregation_method.cpp
+  src/solver/amg/aggregation_method_ml.cpp
+  src/solver/amg/aggregation_method_uncoupled.cpp
+  src/solver/amg/smoother.cpp
+  src/solver/amg/transfer_operator.cpp
+  src/solver/amg/transfer_operator_pgamg.cpp
+  src/solver/amg/transfer_operator_pgamg2.cpp
+  src/solver/amg/transfer_operator_saamg.cpp
+  src/solver/amg/transfer_operator_tentative.cpp
+  src/solver/amg/amgpreconditioner.cpp
+  src/solver/amg/braesssarazin_smoother.cpp
+  src/solver/saddlepointpreconditioner.cpp
+  src/solver/bgs2x2_operator.cpp
   src/linalg/linalg_ana.cpp
   src/linalg/linalg_blocksparsematrix.cpp
   src/linalg/linalg_condest.cpp
@@ -1108,37 +1116,29 @@ set(OBJS_LINALG
   src/linalg/linalg_sparsematrix.cpp
   src/linalg/linalg_sparsematrixbase.cpp
   src/linalg/linalg_utils.cpp
-  src/linalg/saddlepointpreconditioner.cpp
-  src/linalg/solver_cheapsimplepreconditioner.cpp
-  src/linalg/bgs2x2_operator.cpp
-  src/linalg/smoother.cpp
-  src/linalg/transfer_operator.cpp
-  src/linalg/transfer_operator_pgamg.cpp
-  src/linalg/transfer_operator_pgamg2.cpp
-  src/linalg/transfer_operator_saamg.cpp
-  src/linalg/transfer_operator_tentative.cpp
-  src/linalg/solver_preconditionertype.cpp
-  src/linalg/solver_directsolver.cpp
-  src/linalg/solver_krylovsolver.cpp  
-  src/linalg/solver_pointpreconditioner.cpp
-  src/linalg/solver_blockpreconditioners.cpp
-  src/linalg/solver_krylovprojectionpreconditioner.cpp
-  src/linalg/solver_ifpackpreconditioner.cpp
-  src/linalg/solver_mlpreconditioner.cpp
-  src/linalg/solver_muelupreconditioner.cpp
-  src/linalg/solver_muelucontactpreconditioner.cpp
-  src/linalg/solver_muelucontactpreconditioner2.cpp
-  src/linalg/solver_tekopreconditioner.cpp
-  src/linalg/solver_belossolver.cpp
-  src/linalg/solver_aztecsolver.cpp
-  src/linalg/solver_stratimikossolver.cpp
-  src/linalg/teko_baciepetraoperatorwrapper.cpp
-  src/linalg/muelu_ContactAFilterFactory.cpp
-  src/linalg/muelu_ContactTransferFactory.cpp
-  src/linalg/muelu_ContactInfoFactory.cpp
-  src/linalg/muelu_ContactASlaveDofFilterFactory.cpp
-  src/linalg/muelu_ContactMapTransferFactory.cpp
-  src/linalg/MueLu_MyTrilinosSmoother.cpp
+  src/solver/solver_cheapsimplepreconditioner.cpp
+  src/solver/solver_preconditionertype.cpp
+  src/solver/solver_directsolver.cpp
+  src/solver/solver_krylovsolver.cpp  
+  src/solver/solver_pointpreconditioner.cpp
+  src/solver/solver_blockpreconditioners.cpp
+  src/solver/solver_krylovprojectionpreconditioner.cpp
+  src/solver/solver_ifpackpreconditioner.cpp
+  src/solver/solver_mlpreconditioner.cpp
+  src/solver/solver_muelupreconditioner.cpp
+  src/solver/solver_muelucontactpreconditioner.cpp
+  src/solver/solver_muelucontactpreconditioner2.cpp
+  src/solver/solver_tekopreconditioner.cpp
+  src/solver/solver_belossolver.cpp
+  src/solver/solver_aztecsolver.cpp
+  src/solver/solver_stratimikossolver.cpp
+  src/solver/teko/teko_baciepetraoperatorwrapper.cpp
+  src/solver/muelu/muelu_ContactAFilterFactory.cpp
+  src/solver/muelu/muelu_ContactTransferFactory.cpp
+  src/solver/muelu/muelu_ContactInfoFactory.cpp
+  src/solver/muelu/muelu_ContactASlaveDofFilterFactory.cpp
+  src/solver/muelu/muelu_ContactMapTransferFactory.cpp
+  src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp

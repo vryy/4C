@@ -53,8 +53,8 @@ Maintainer: Michael Gee
 
 
 
-#include "solver_solvertype.H"
-#include "solver_preconditionertype.H"
+#include "../solver/solver_solvertype.H"
+#include "../solver/solver_preconditionertype.H"
 
 using namespace std;
 
