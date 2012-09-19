@@ -2276,32 +2276,36 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
       }
       // end loop over electrode kinetics
-#if 1
+
+      // actual potential difference is used to calculate the current path length
+      // -> it is possible to compute the new ohmic potential step
+      //    without the input parameter GSTAT_LENGTH_CURRENTPATH
+      //
+      // for only one BV boundary condition, keep the original approach using GSTAT_LENGTH_CURRENTPATH
       if (cond.size()>=2)
       {
         if(myrank_==0)
         {
-          cout<<"  cell potential difference = "<<potdiffcell<<endl;
+          cout << endl <<"  cell potential difference = "<<potdiffcell<<endl;
           cout<<"  bulk potential difference = "<<potdiffbulk<<endl;
         }
         if (abs(actualcurrent) > EPS10)
         {
           if(myrank_==0)
           {
-            cout<<"  REPLACED potinc_ohm. Old value was: "<<potinc_ohm<<endl;
-            cout<<"  Suggested GSTAT_LENGTH_CURRENTPATH: "<<(-1.0)*(potdiffbulk/(actualcurrent))*(sigma_(numscal_)*electrodesurface)<<endl;
-            cout<<"  dV/dI = "<< (-1.0)*potdiffbulk/actualcurrent << endl;
-            cout<<"  New guess for potinc_ohm: "<<(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<endl;
+            cout<<"  Defined GSTAT_LENGTH_CURRENTPATH:   "<< effective_length << endl;
+            cout<<"  Suggested GSTAT_LENGTH_CURRENTPATH: "<< (potdiffbulk/(actualcurrent))*(sigma_(numscal_)*electrodesurface)<<endl;
+            cout<<"  dV/dI =  "<< (-1.0)*potdiffbulk/actualcurrent << endl;
+            cout<<"  potinc_ohm (CURRENTPATH based): "<< potinc_ohm <<endl;
+            cout<<"  New guess for potinc_ohm:       "<< (-1.0)*(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<endl;
           }
-          potinc_ohm = (potdiffbulk*newtonrhs)/(timefac*(actualcurrent));
+          potinc_ohm = (-1.0)*(potdiffbulk*newtonrhs)/(timefac*(actualcurrent));
         }
         else
         {
           potinc_ohm = 0.0;
         }
       }
-      // for only one BV boundary condition, keep the original approach using GSTAT_LENGTH_CURRENTPATH
-#endif
 
       // Newton step:  Jacobian * \Delta pot = - Residual
       const double potinc_cathode = newtonrhs/currtangent_cathode;
