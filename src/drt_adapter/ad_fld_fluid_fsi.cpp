@@ -7,7 +7,6 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/solver_cheapsimplepreconditioner.H"
 
 #include "../drt_io/io_control.H"
 
