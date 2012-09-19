@@ -20,8 +20,8 @@
 //#include "Teuchos_ParameterList.hpp"
 #include "Epetra_Time.h"
 
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_ana.H"
+#include "../../linalg/linalg_utils.H"
+#include "../../linalg/linalg_ana.H"
 
 using namespace std;
 using namespace Teuchos;

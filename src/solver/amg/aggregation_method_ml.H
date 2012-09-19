@@ -10,7 +10,7 @@
 
 #include "aggregation_method.H"
 
-#include "../drt_lib/drt_dserror.H"
+#include "../../drt_lib/drt_dserror.H"
 
 #include "MLAPI_Error.h"
 #include "MLAPI_CompObject.h"

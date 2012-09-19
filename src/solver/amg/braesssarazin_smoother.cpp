@@ -9,7 +9,7 @@
 
 #include "braesssarazin_smoother.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+#include "../../drt_lib/drt_globalproblem.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Vector.h>

@@ -18,7 +18,7 @@
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-#include "../drt_lib/drt_dserror.H"
+#include "../../drt_lib/drt_dserror.H"
 
 using Teuchos::RCP;
 using Teuchos::ParameterList;
