@@ -4138,7 +4138,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& fsidyn = list->sublist(
     "FSI DYNAMIC",false,
     "Fluid Structure Interaction\n"
-    "Partitioned FSI solver with various coupling methods"
+    "FSI solver with various coupling methods"
     );
 
   Teuchos::Tuple<std::string,20> name;
@@ -4173,7 +4173,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>(
                                "PARTITIONED","DirichletNeumann",
-                               "Coupling strategies for partitioned FSI solvers. Most of the time Dirichlet-Neumann is just right.",
+                               "Coupling strategies for partitioned FSI solvers.",
                                tuple<std::string>(
                                  "DirichletNeumann",
                                  "DirichletNeumannSlideALE"
@@ -4213,7 +4213,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     &fsidyn);
 
   setStringToIntegralParameter<int>("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
-                               "Predictor for interface displacements",
+                               "Predictor for interface displacements for partitioned schemes",
                                tuple<std::string>(
                                  "d(n)",
                                  "d(n)+dt*(1.5*v(n)-0.5*v(n-1))",
