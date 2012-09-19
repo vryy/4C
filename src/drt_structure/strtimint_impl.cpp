@@ -26,6 +26,7 @@ Maintainer: Thomas Klöppel
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_defines.H"
+#include "../drt_contact/contact_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_defines.H"
@@ -1450,6 +1451,53 @@ void STR::TimIntImpl::CmtLinearSolve()
   // strategy and system setup types
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
   INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+
+  // update information about active slave dofs
+  //**********************************************************************
+  // feed solver/preconditioner with additional information about the contact/meshtying problem
+  //**********************************************************************
+  {
+    if (contactsolver_->Params().isSublist("MueLu (Contact) Parameters"))
+    {
+      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact) Parameters");
+      RCP<Epetra_Map> masterDofMap;
+      RCP<Epetra_Map> slaveDofMap;
+      RCP<Epetra_Map> innerDofMap;
+      RCP<Epetra_Map> activeDofMap;
+      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      if(cstrat == Teuchos::null) dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
+      cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
+      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
+      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
+      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
+
+      //std::cout << contactsolver_->Params() << std::endl;
+    }
+
+    // TODO fix me
+    if (contactsolver_->Params().isSublist("MueLu (Contact2) Parameters"))
+    {
+      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact2) Parameters");
+      RCP<Epetra_Map> masterDofMap;
+      RCP<Epetra_Map> slaveDofMap;
+      RCP<Epetra_Map> innerDofMap;
+      RCP<Epetra_Map> activeDofMap;
+      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      if(cstrat == Teuchos::null) dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
+      cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
+      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
+      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
+      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
+
+      //std::cout << contactsolver_->Params() << std::endl;
+    }
+  } // end: feed solver with contact/meshtying information
 
   // analysis of eigenvalues and condition number
 #ifdef CONTACTEIG

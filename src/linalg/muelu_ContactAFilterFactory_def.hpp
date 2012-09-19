@@ -20,6 +20,115 @@
 #include "MueLu_Level.hpp"
 #include "MueLu_Monitor.hpp"
 
+#if 1
+namespace MueLu {
+
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactAFilterFactory(const std::string& ename, const FactoryBase* fac)
+    : varName_(ename), factory_(fac)//, threshold_(0.0)
+  {
+
+  }
+
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~ContactAFilterFactory() {}
+
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+  void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
+    currentLevel.DeclareInput(varName_,factory_,this);
+    //currentLevel.DeclareInput("SegAMapExtractor", MueLu::NoFactory::get(),this);
+    currentLevel.DeclareInput("SlaveDofMap", MueLu::NoFactory::get(), this);
+  }
+
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+  void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
+    typedef Xpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> OOperator; //TODO
+    typedef Xpetra::CrsOperator<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> CrsOOperator; //TODO
+    typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactoryClass;
+
+    Monitor m(*this, "A filtering (contact)");
+
+    // fetch map with slave Dofs from Level
+    RCP<const Map> slaveDofMap = currentLevel.Get< RCP<const Map> >("SlaveDofMap",MueLu::NoFactory::get());
+
+    RCP<OOperator> Ain = currentLevel.Get< RCP<OOperator> >(varName_, factory_);
+
+    RCP<Vector> blockVectorRowMap = VectorFactoryClass::Build(Ain->getRowMap());
+    blockVectorRowMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not slave DOF
+
+    // use master map as source map (since all GIDs are uniquely owned by its corresponding proc
+    // use column map of current matrix Ain as target map
+    // define Xpetra::Import object
+    RCP<Vector> blockVectorSlave  = VectorFactoryClass::Build(slaveDofMap);  blockVectorSlave->putScalar(1);
+
+    RCP<const Import> importer = ImportFactory::Build(/*Ain->getRowMap()*/slaveDofMap, Ain->getColMap());
+    RCP<Vector> blockVectorColMapData = VectorFactoryClass::Build(Ain->getColMap());
+    blockVectorColMapData->putScalar(-1.0);         // -1.0 denotes that this Dof is not slave DOF
+    blockVectorColMapData->doImport(*blockVectorSlave,*importer,Xpetra::INSERT);
+
+    // create new empty Operator
+    RCP<CrsOOperator> Aout = rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
+
+    // loop over local rows
+    for(size_t row=0; row<Ain->getNodeNumRows(); row++) {
+        // get global row id
+        GlobalOrdinal grid = Ain->getRowMap()->getGlobalElement(row); // global row id
+
+        // check in which submap of mapextractor grid belongs to
+        bool isSlaveDofRow = slaveDofMap->isNodeGlobalElement(grid);
+
+        size_t nnz = Ain->getNumEntriesInLocalRow(row);
+
+        Teuchos::ArrayView<const LocalOrdinal> indices;
+        Teuchos::ArrayView<const Scalar> vals;
+        Ain->getLocalRowView(row, indices, vals);
+
+        TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<size_t>(indices.size()) != nnz, Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: number of nonzeros not equal to number of indices? Error.");
+
+        // just copy all values in output
+        Teuchos::ArrayRCP<GlobalOrdinal> indout(indices.size(),Teuchos::ScalarTraits<GlobalOrdinal>::zero());
+        Teuchos::ArrayRCP<Scalar> valout(indices.size(),Teuchos::ScalarTraits<Scalar>::zero());
+        size_t nNonzeros = 0;
+
+        for(size_t i=0; i<(size_t)indices.size(); i++) {
+            GlobalOrdinal gcid = Ain->getColMap()->getGlobalElement(indices[i]); // LID -> GID (column)
+
+            //bool isSlaveDofCol = slaveDofMap->isNodeGlobalElement(gcid);
+
+            Teuchos::ArrayRCP< const Scalar > colBlockData = blockVectorColMapData->getData(0);
+
+            LocalOrdinal colBlockId = Teuchos::as<LocalOrdinal>(colBlockData[indices[i]]); // LID -> colBlockID
+
+            // colBlockId can be
+            // -1:  indices[i] is not a slavel dof
+            //  1:  indices[i] is a slave dof
+            //  else: error
+            if( ( colBlockId == -1 && isSlaveDofRow == false) ||
+                ( colBlockId ==  1 && isSlaveDofRow == true )) {
+              indout [nNonzeros] = gcid;
+              valout [nNonzeros] = vals[i];
+              nNonzeros++;
+            }
+        }
+        indout.resize(nNonzeros);
+        valout.resize(nNonzeros);
+
+        Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,indout.size()), valout.view(0,valout.size()));
+    }
+
+    Aout->fillComplete(Ain->getDomainMap(), Ain->getRangeMap());
+
+    // copy block size information
+    Aout->SetFixedBlockSize(Ain->GetFixedBlockSize());
+
+    GetOStream(Statistics0, 0) << "Nonzeros in " << varName_ << "(input): " << Ain->getGlobalNumEntries() << ", Nonzeros after filtering " << varName_ << ": " << Aout->getGlobalNumEntries() << std::endl;
+
+    currentLevel.Set(varName_, Teuchos::rcp_dynamic_cast<OOperator>(Aout), this);
+  }
+} // namespace MueLu
+
+#else  // OLD version with map extractor
+
 namespace MueLu {
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
@@ -290,6 +399,8 @@ namespace MueLu {
   }*/
 
 } // namespace MueLu
+#endif
+
 
 #endif // HAVE_MueLu
 

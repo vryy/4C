@@ -1,17 +1,12 @@
-/*!----------------------------------------------------------------------
-\file solver_muelupreconditioner.H
+/*
+ * solver_muelucontactpreconditioner2.H
+ *
+ *  Created on: Sep 7, 2012
+ *      Author: wiesner
+ */
 
-<pre>
-Maintainer: Tobias Wiesner
-            wiesner@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-Created on: Jan 11, 2012
-</pre>
-*----------------------------------------------------------------------*/
-
-#ifndef SOLVER_MUELUCONTACTPRECONDITIONER_H_
-#define SOLVER_MUELUCONTACTPRECONDITIONER_H_
+#ifndef SOLVER_MUELUCONTACTPRECONDITIONER2_H_
+#define SOLVER_MUELUCONTACTPRECONDITIONER2_H_
 
 #ifdef HAVE_MueLu
 
@@ -38,11 +33,11 @@ namespace LINALG
       Set of single-matrix algebraic multi-grid preconditioners
       for contact/meshtying problems
      */
-    class MueLuContactPreconditioner : public PreconditionerType
+    class MueLuContactPreconditioner2 : public PreconditionerType
     {
     public:
 
-      MueLuContactPreconditioner( FILE * outfile, Teuchos::ParameterList & mllist );
+      MueLuContactPreconditioner2( FILE * outfile, Teuchos::ParameterList & mllist );
 
       virtual void Setup( bool create,
                           Epetra_Operator * matrix,
@@ -77,5 +72,4 @@ namespace LINALG
 
 #endif // HAVE_MueLu
 
-
-#endif /* SOLVER_MUELUCONTACTPRECONDITIONER_H_ */
+#endif /* SOLVER_MUELUCONTACTPRECONDITIONER2_H_ */

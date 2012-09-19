@@ -18,6 +18,61 @@
 
 namespace MueLu {
 
+
+#if 1
+/*!
+  @class ContactAFilterFactory class.
+  @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying problems
+
+*/
+
+template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
+class ContactAFilterFactory : public SingleLevelFactoryBase {
+#undef MUELU_CONTACTAFILTERFACTORY_SHORT
+  #include "MueLu_UseShortNames.hpp"
+
+  typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; // TODO move me to ShortNames...
+
+public:
+  //! @name Constructors/Destructors.
+  //@{
+
+  //! Constructor.
+  ContactAFilterFactory(const std::string& ename, const FactoryBase* fac);
+
+  //! Destructor.
+  virtual ~ContactAFilterFactory();
+  //@}
+
+  //! Input
+  //@{
+
+  void DeclareInput(Level &currentLevel) const;
+
+  //@}
+
+  //@{
+  //! @name Build methods.
+
+  //! Build an object with this factory.
+  void Build(Level & currentLevel) const;
+
+  //@}
+
+private:
+
+  //bool IsGlobalId(Teuchos::RCP<const Map> & map, GlobalOrdinal gid) const;
+
+  std::string        varName_;   ///< name of input and output variable
+  const FactoryBase* factory_;   ///< generating factory of input variable
+  //const Scalar       threshold_; ///< threshold parameter
+
+  //RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+
+
+}; // class ContactAFilterFactory
+
+#else
   /*!
     @class ContactAFilterFactory class.
     @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying problems
@@ -69,8 +124,10 @@ namespace MueLu {
 
 
   }; // class ContactAFilterFactory
+#endif
 
 } // namespace MueLu
+
 
 #define MUELU_CONTACTAFILTERFACTORY_SHORT
 #endif // HAVE_MueLu

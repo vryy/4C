@@ -716,6 +716,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     break;
   case INPAR::SOLVER::azprec_MueLuAMG_sym: // MueLu operator (smoothed aggregation)
   case INPAR::SOLVER::azprec_MueLuAMG_contact: // MueLu operator (contact)
+  case INPAR::SOLVER::azprec_MueLuAMG_contact2: // MueLu operator (contact)
     mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
     break;
   case INPAR::SOLVER::azprec_MueLuAMG_nonsym: // MueLu operator (Petrov-Galerkin)
@@ -1047,6 +1048,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   case INPAR::SOLVER::azprec_MueLuAMG_sym:
   case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
   case INPAR::SOLVER::azprec_MueLuAMG_contact:
+  case INPAR::SOLVER::azprec_MueLuAMG_contact2:
     beloslist.set("Preconditioner Type","ML");
     break;
   case INPAR::SOLVER::azprec_AMGBS:
@@ -1119,9 +1121,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
     muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
   }
-  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact    )
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact  )
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+    muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
+  }
+  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact2 )
+  {
+    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact2) Parameters");
     muelulist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);         // MueLu reuses the ML parameter list
   }
   if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
@@ -1318,6 +1325,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     case INPAR::SOLVER::azprec_MueLuAMG_sym:
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
     case INPAR::SOLVER::azprec_MueLuAMG_contact:
+    case INPAR::SOLVER::azprec_MueLuAMG_contact2:
       azlist.set("AZ_precond",AZ_user_precond);
       break;
     case INPAR::SOLVER::azprec_CheapSIMPLE:
@@ -1392,9 +1400,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
       muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);    	 // MueLu reuses the ML parameter list
     }
-    if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact    )
+    if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact  )
     {
       Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
+      muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
+    }
+    if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact2 )
+    {
+      Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact2) Parameters");
       muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
     }
     //------------------------------------- set parameters for AMGBS if used

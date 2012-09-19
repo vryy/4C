@@ -18,8 +18,11 @@
 #include "solver_krylovprojectionpreconditioner.H"
 #include "solver_ifpackpreconditioner.H"
 #include "solver_mlpreconditioner.H"
+#ifdef HAVE_MueLu
 #include "solver_muelupreconditioner.H"
 #include "solver_muelucontactpreconditioner.H"
+#include "solver_muelucontactpreconditioner2.H"
+#endif
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif
@@ -98,7 +101,19 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
       ////////////////////////////// EXPERIMENTAL
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
 #else
-      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q1/2012 or newer.");
+      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
+#endif
+    }
+    else if ( Params().isSublist("MueLu (Contact2) Parameters") )
+    {
+#ifdef HAVE_MueLu
+      ////////////////////////////// EXPERIMENTAL
+      //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
+      //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
+      ////////////////////////////// EXPERIMENTAL
+      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner2( outfile_, Params().sublist("MueLu (Contact2) Parameters") ) );
+#else
+      dserror("MueLu (Contact2) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
 #endif
     }
     else if ( Params().isSublist("AMGBS Parameters") )
