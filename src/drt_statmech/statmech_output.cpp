@@ -4067,7 +4067,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
               diff -= (pos0->second);
               dist2nodes = diff.Norm2();
               // distance of node pairs separated by periodic boundaries
-              if(j<0 || j>(int)evalnodepositions.size())
+              if(j<0 || j>(int)evalnodepositions.size()-1)
                 dist2nodes = periodlength-dist2nodes;
               distances<<std::scientific<<std::setprecision(15)<<dist2nodes<<" ";
             }
