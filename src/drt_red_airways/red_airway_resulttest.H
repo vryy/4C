@@ -1,4 +1,3 @@
-#ifdef D_RED_AIRWAYS
 
 #ifndef RED_AIRWAY_RESULTTEST_H
 #define RED_AIRWAY_RESULTTEST_H
@@ -58,4 +57,3 @@ private:
 
 #endif //RED_AIRWAY_RESULTTEST_H
 
-#endif //#ifdef D_RED_AIRWAYS

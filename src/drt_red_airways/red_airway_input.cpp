@@ -10,7 +10,6 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_RED_AIRWAYS
 
 #include "red_airway.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -62,4 +61,3 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   return true;
 }
 
-#endif  // #ifdef D_RED_AIRWAY

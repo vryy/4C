@@ -2654,8 +2654,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Point));
 
   acinus_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("materialType", "NeoHookean",
-                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","ViscoElastic_3dof","KelvinVoigt","Exponential"),
-                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","ViscoElastic_3dof","KelvinVoigt","Exponential"),
+                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","ViscoElastic_3dof","KelvinVoigt","Exponential","DoubleExponential"),
+                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","ViscoElastic_3dof","KelvinVoigt","Exponential","DoubleExponential"),
     true)));
 
   AddNamedReal(acinus_bc,"Acinus_Volume");
@@ -2664,6 +2664,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(acinus_bc,"Stiffness2");
   AddNamedReal(acinus_bc,"Viscosity1");
   AddNamedReal(acinus_bc,"Viscosity2");
+
+  acinus_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("PlueralPressureType", "FromCurve",
+                                                                    Teuchos::tuple<std::string>("FromCurve","Exponential"),
+                                                                    Teuchos::tuple<std::string>("FromCurve","Exponential"),
+                                                                    true)));
 
   // add the pleural pressure
   std::vector<Teuchos::RCP<ConditionComponent> > acinus_pleural_p_components;

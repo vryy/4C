@@ -14,7 +14,6 @@ Maintainer: Mahmoud Ismail
 /*----------------------------------------------------------------------*/
 
 
-#ifdef D_RED_AIRWAYS
 
 
 #include "airway_impl.H"
@@ -184,6 +183,10 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
 
   elem_params.set<Epetra_SerialDenseVector>("acin_vnp" ,e_acin_vnp);
   elem_params.set<Epetra_SerialDenseVector>("acin_vn"  ,e_acin_vn );
+
+  elem_params.set<double>("lungVolume_np",params.get<double>("lungVolume_np"));
+  elem_params.set<double>("lungVolume_n",params.get<double>("lungVolume_n"));
+  elem_params.set<double>("lungVolume_nm",params.get<double>("lungVolume_nm"));
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -679,7 +682,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       double vn = acin_vn(i);
 
       // evaluate the pleural pressure at (t - dt), (t), and (t + dt)
-      if((*curve)[0]>=0)
+      string pleuralPType = *(condition->Get<string>("PlueralPressureType"));
+      if((*curve)[0]>=0 && pleuralPType == "FromCurve")
       {
         Pp_nm = DRT::Problem::Instance()->Curve((*curve)[0]).f(time - 2.0*dt);
         Pp_nm *= (*vals)[0];
@@ -689,7 +693,33 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         Pp_np *= (*vals)[0];
 
       }
-      
+      else if(pleuralPType=="Exponential")
+      {     
+        const double ap =  -977.203;
+        const double bp = -3338.290;
+        const double cp =    -7.686;
+        const double dp =  2034.470;     
+        const double VFR   = 1240000.0;
+        const double TLC   = 4760000.0 - VFR;
+
+        const double lungVolumenp = params.get<double>("lungVolume_np") - VFR;
+        const double lungVolumen  = params.get<double>("lungVolume_n")  - VFR;
+        const double lungVolumenm = params.get<double>("lungVolume_nm") - VFR;
+
+        const double TLCnp= lungVolumenp/TLC;
+        const double TLCn = lungVolumen/TLC;
+        const double TLCnm= lungVolumenm/TLC;
+
+        Pp_np = ap + bp*exp(cp*TLCnp) + dp*TLCnp;
+        Pp_n  = ap + bp*exp(cp*TLCn ) + dp*TLCn;
+        Pp_nm = ap + bp*exp(cp*TLCnm) + dp*TLCnm;
+      }
+      else
+      {
+        dserror("[%s] at Node (%d) in elem(%d) is not defined as a plueral pressure type",pleuralPType.c_str(),ele->Nodes()[i]->Id(),ele->Id());
+        exit(1);
+      }
+
       if (i==0)
       {
         dserror("SMTHG IS WRONG with Node (%d) in elem(%d)",ele->Nodes()[i]->Id(),ele->Id());
@@ -794,6 +824,83 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         
         sysmat(i,i)+= pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
         rhs(i)     += pow(-1.0,i)*(-(-kp_np*Pp_np + kp_n*(pn-Pp_n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
+      }
+      else if (MatType == "DoubleExponential")
+      {
+        const double Vo  = VolAcinus;
+        double dvnp= (vnp/NumOfAcini)- Vo;
+        double dvn = (vn /NumOfAcini)- Vo;
+
+        //------------------------------------------------------------
+        // V  = A + B*exp(-K*P)
+        //
+        // The P-V curve is fitted to create the following
+        // P1 = E1.(V-Vo)
+        //
+        // E1 = a + b.(V-Vo) + c.exp(d.(V-Vo))
+        //------------------------------------------------------------
+        double kp_np = Rt/(E2*dt)+1.0;
+        double kp_n  =-Rt/(E2*dt);
+        double kq_np = Rt*Ra/(E2*dt) + (Ra+Rt);
+        double kq_n  =-Rt*Ra/(E2*dt);
+
+        double term_nonlin = 0.0;
+        //------------------------------------------------------------
+        // for now the (a,b,c,d) components are not read from the
+        // input file
+        //------------------------------------------------------------
+        // OLD VALUES
+        //        double a = 6449.0 ;
+        //        double b = 33557.7;
+        //        double c = 6.5158;
+        //        double d = 47.9892;
+
+        // NEW VALUES
+        double a = 6510.99;
+        double b = 3.5228E04;
+        double c = 6.97154E-06;
+        double d = 144.716;
+
+        double a2= 0.0;
+        double b2= 0.0;
+        double c2= 38000.0*1.4;
+        double d2=-90.0000;
+
+        //------------------------------------------------------------
+        // get the terms assosciated with the nonlinear behavior of
+        // E1
+        //------------------------------------------------------------
+        double pnpi = 0.0;
+        double pnpi2= 0.0;
+        double dpnpi_dt = 0.0;
+        double dpnpi2_dt= 0.0;
+
+        // componets of linearized E1
+        pnpi      = (a + b *dvnp + c *exp(d *dvnp))*dvnp;
+        pnpi     += (a2+ b2*dvnp + c2*exp(d2*dvnp))*dvnp;
+
+        pnpi2     = (a + 2.0*b *dvnp + c *exp(d *dvnp)*(d *dvnp+1.0));
+        pnpi2    += (a2+ 2.0*b2*dvnp + c2*exp(d2*dvnp)*(d2*dvnp+1.0));
+
+        // componets of linearized d(E1)/dt
+        dpnpi_dt  = (a +2.0*b *dvnp+c *exp(d *dvnp)*(1.0+d *dvnp))*(dvnp-dvn)/dt;
+        dpnpi_dt += (a2+2.0*b2*dvnp+c2*exp(d2*dvnp)*(1.0+d2*dvnp))*(dvnp-dvn)/dt;
+
+        dpnpi2_dt = (2.0*b +d *c *exp(d *dvnp)*(1.0+d *dvnp) + c *d *exp(d *dvnp))*(dvnp-dvn)/dt + (a +2.0*b *dvnp+c *exp(d *dvnp)*(1.0+d *dvnp))/dt;
+        dpnpi2_dt+= (2.0*b2+d2*c2*exp(d2*dvnp)*(1.0+d2*dvnp) + c2*d2*exp(d2*dvnp))*(dvnp-dvn)/dt + (a2+2.0*b2*dvnp+c2*exp(d2*dvnp)*(1.0+d2*dvnp))/dt;
+
+        // Add up the nonlinear terms
+
+
+
+        //---------------
+        term_nonlin = pnpi + pnpi2*(-(dvnp) +(qn/NumOfAcini)*dt/2.0 + dvn);
+        kq_np = kq_np + pnpi2/2.0*dt;
+        term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(dvnp)+(qnp/NumOfAcini)*dt/2.0 + dvn);
+        kq_np = kq_np + dpnpi2_dt*Rt/E2/2.0*dt;
+
+        sysmat(i,i)+= pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
+        rhs(i)     += pow(-1.0,i)*((kp_np*Pp_np - kp_n*(pn-Pp_n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
       }
       else
       {
@@ -1173,7 +1280,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   RedAirway*                   ele,
   ParameterList&               params,
   DRT::Discretization&         discretization,
-  Epetra_SerialDenseVector&    nothing,
+  Epetra_SerialDenseVector&    a_volume_strain_np,
   Epetra_SerialDenseVector&    a_volumenp,
   vector<int>&                 lm,
   RefCountPtr<MAT::Material>   material)
@@ -1466,6 +1573,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
       double acinus_volume = a_volumen(i);
       acinus_volume +=  0.5*(eqout_np+eqout_n)*dt;
       a_volumenp(i) = acinus_volume;
+
+      //----------------------------------------------------------------
+      // Read in the material information
+      //----------------------------------------------------------------
+      const double VolPerArea = (ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))->GetDouble("VolumePerArea");
+      const double VolAcinus  = (ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))->GetDouble("Acinus_Volume");
+      double vo =  VolPerArea*A;
+      a_volume_strain_np(i) =  (acinus_volume - vo)/vo;
     }
   }
 
@@ -1610,4 +1725,3 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   } // End of node i has a condition
 }
 
-#endif

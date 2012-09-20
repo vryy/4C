@@ -10,8 +10,6 @@ Maintainer: Mahmoud Ismail
             089 - 289-15268
 </pre>
 *----------------------------------------------------------------------*/
-
-
 #include <stdio.h>
 
 #include "airwayimplicitintegration.H"
@@ -151,11 +149,14 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
   bcval_   = LINALG::CreateVector(*dofrowmap,true);
-  dbctog_  = LINALG::CreateVector(*dofrowmap,true);
+  dbctog_  = LINALG::CreateVector(*dofrowmap,true); 
 
-  acini_volumen_  = LINALG::CreateVector(*dofrowmap,true);
-  acini_volumenp_ = LINALG::CreateVector(*dofrowmap,true);
-  acini_bc_       = LINALG::CreateVector(*elementcolmap,true);
+  acini_volumenm_      = LINALG::CreateVector(*dofrowmap,true);
+  acini_volumen_       = LINALG::CreateVector(*dofrowmap,true);
+  acini_volumenp_      = LINALG::CreateVector(*dofrowmap,true);
+  acini_volume_strain_ = LINALG::CreateVector(*dofrowmap,true);
+  acini_bc_            = LINALG::CreateVector(*elementcolmap,true);
+  acini_volume0_       = LINALG::CreateVector(*dofrowmap,true);
 
   // Vectors used for solution process
   // ---------------------------------
@@ -189,6 +190,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   acini_volumen_->Update(1.0,*acini_volumenp_,0.0);
+  acini_volumenm_->Update(1.0,*acini_volumenp_,0.0);
+  acini_volume0_->Update(1.0,*acini_volumenp_,0.0);
 
   // Fill the NodeId vector
   for (int nele=0;nele<discret_->NumMyColElements();++nele)
@@ -218,7 +221,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
       nodeIds_->ReplaceGlobalValues(1,&val,&gid);
     }
   }
-
 
 } // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
@@ -415,6 +417,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
   double error_norm1 = 1.e7;
   double error_norm2 = 1.e7;
 
+  double lung_volume_np = 0.0;
+  acini_volumenp_->MeanValue(&lung_volume_np);
+  lung_volume_np *= double(acini_volumenp_->GlobalLength());
+  
+  if(!myrank_)
+  {
+    cout<<"time: "<<time_-dta_<<" LungVolume: "<<lung_volume_np<<endl;
+  }
+
   for (int i =1; i<=maxiter_; i++)
   {
     //------------------------------------------------------------------
@@ -524,6 +535,23 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qout_n" ,qout_n_ );
     eleparams.set("qout_nm",qout_nm_ );
 
+    // get lung volume
+    double lung_volume_np = 0.0;
+    double lung_volume_n  = 0.0;
+    double lung_volume_nm = 0.0;
+    
+    acini_volumenp_->MeanValue(&lung_volume_np);
+    acini_volumen_->MeanValue(&lung_volume_n);
+    acini_volumenm_->MeanValue(&lung_volume_nm);
+
+    lung_volume_np *= double(acini_volumenp_->GlobalLength());
+    lung_volume_n  *= double(acini_volumenp_->GlobalLength());
+    lung_volume_nm *= double(acini_volumenp_->GlobalLength());
+
+    eleparams.set("lungVolume_np",lung_volume_np);
+    eleparams.set("lungVolume_n" ,lung_volume_n);
+    eleparams.set("lungVolume_nm",lung_volume_nm);
+
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
@@ -532,7 +560,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     sysmat_->Complete();
     discret_->ClearState();
     
-
 #if 0  // Exporting some values for debugging purposes
 
     {
@@ -703,8 +730,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qout_np",qout_np_);
 
     acini_volumenp_->PutScalar(0.0);
+    acini_volume_strain_->PutScalar(0.0);
     // call standard loop over all elements
-    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,Teuchos::null,acini_volumenp_,Teuchos::null);
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,acini_volume_strain_,acini_volumenp_,Teuchos::null);
     discret_->ClearState();
   }
 
@@ -815,6 +843,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
   qout_n_ ->Update(1.0,*qout_np_,0.0);
   //  qcnm_->Update(1.0,*qcn_ ,0.0);
   //  qcn_ ->Update(1.0,*qcnp_,0.0);
+  acini_volumenm_->Update(1.0,*acini_volumen_,0.0);
   acini_volumen_->Update(1.0,*acini_volumenp_,0.0);
 
   return;
@@ -887,8 +916,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     LINALG::Export(*qout_np_,*qexp_);
     output_.WriteVector("qout_np",qexp_);
     //
+    output_.WriteVector("acini_vnm",acini_volumenm_);
     output_.WriteVector("acini_vn",acini_volumen_);
     output_.WriteVector("acini_vnp",acini_volumenp_);
+    output_.WriteVector("acini_volumetric_strain",acini_volume_strain_);
+    output_.WriteVector("acini_v0",acini_volume0_);
+
 //   LINALG::Export(*acini_volumen_,*pexp_);
 //   output_.WriteVector("acini_vn",pexp_);
 //   LINALG::Export(*acini_volumenp_,*pexp_);
@@ -932,7 +965,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
 
 
     // write domain decomposition for visualization
-    output_.WriteElementData();
+    //    output_.WriteElementData();
     
 
     // write the flow values
@@ -954,8 +987,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     //    output_.WriteVector("acini_vn",pexp_);
     //    LINALG::Export(*acini_volumenp_,*pexp_);
     //    output_.WriteVector("acini_vnp",pexp_);
+    output_.WriteVector("acini_vnm",acini_volumenm_);
     output_.WriteVector("acini_vn",acini_volumen_);
     output_.WriteVector("acini_vnp",acini_volumenp_);
+    output_.WriteVector("acini_volumetric_strain",acini_volume_strain_);
+    output_.WriteVector("acini_v0",acini_volume0_);
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -1016,6 +1052,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
   //  reader.ReadVector(pexp_, "acini_vnp");
   //  LINALG::Export(*pexp_,*acini_volumenp_);
 
+  reader.ReadVector(acini_volumenm_,"acini_vnm");
   reader.ReadVector(acini_volumen_ ,"acini_vn");
   reader.ReadVector(acini_volumenp_,"acini_vnp");
   
@@ -1092,6 +1129,23 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     eleparams.set("qout_np",qout_np_);
     eleparams.set("qout_n" ,qout_n_ );
     eleparams.set("qout_nm",qout_nm_ );
+
+    // get lung volume
+    double lung_volume_np = 0.0;
+    double lung_volume_n  = 0.0;
+    double lung_volume_nm = 0.0;
+    
+    acini_volumenp_->MeanValue(&lung_volume_np);
+    acini_volumen_->MeanValue(&lung_volume_n);
+    acini_volumenm_->MeanValue(&lung_volume_nm);
+    
+    lung_volume_np *= double(acini_volumenp_->GlobalLength());
+    lung_volume_n  *= double(acini_volumenp_->GlobalLength());
+    lung_volume_nm *= double(acini_volumenp_->GlobalLength());
+
+    eleparams.set("lungVolume_np",lung_volume_np);
+    eleparams.set("lungVolume_n" ,lung_volume_n);
+    eleparams.set("lungVolume_nm",lung_volume_nm);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);

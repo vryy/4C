@@ -297,6 +297,10 @@ protected:
   RCP<Epetra_Vector>    pn_;
   //@}
 
+  //! @name Area at time n
+  RCP<Epetra_Vector>    an_;
+  //@}
+
   //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
   RCP<Epetra_Vector>    Wfnp_;
   RCP<Epetra_Vector>    Wfn_;

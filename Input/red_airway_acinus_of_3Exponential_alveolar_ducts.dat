@@ -80,7 +80,7 @@ NODE 1 DNODE 1
 NODE 2 DNODE 2
 --------------------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
 DPOINT                          1
-E 2 - Exponential Acinus_Volume 0.0372 VolumePerArea 0.1116 Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023 0.0 1
+E 2 -  Exponential Acinus_Volume 0.0372 VolumePerArea 0.1116 Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023 FromCurve 0.0 1
 ----------------------------------------------------------RESULT DESCRIPTION
 RED_AIRWAY DIS 1 NODE 1 POSITION pressure NAME pressure VALUE -3.37489810215513387e+02 TOLERANCE 1e-6
 RED_AIRWAY DIS 1 NODE 2 POSITION pressure NAME pressure VALUE -3.37489810215513330e+02 TOLERANCE 1e-6

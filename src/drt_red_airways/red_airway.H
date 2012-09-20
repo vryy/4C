@@ -9,7 +9,6 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_RED_AIRWAYS
 #ifndef RED_AIRWAY_H_
 #define RED_AIRWAY_H_
 
@@ -433,4 +432,3 @@ private:
 
 
 #endif  // #ifndef RED_AIRWAY_H_
-#endif  // #ifdef D_RED_AIRWAYS

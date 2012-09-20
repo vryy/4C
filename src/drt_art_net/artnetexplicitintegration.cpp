@@ -159,6 +159,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   // --------------------------------------------
   qn_           = LINALG::CreateVector(*noderowmap,true);
   pn_           = LINALG::CreateVector(*noderowmap,true);
+  an_           = LINALG::CreateVector(*noderowmap,true);
   
 
   // right hand side vector and right hand side corrector
@@ -660,6 +661,7 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     // "volumetric flow rate/cross-sectional area" vector
     output_.WriteVector("qanp",qanp_);
 
+
     // write domain decomposition for visualization (only once!)
     if (step_==upres_) output_.WriteElementData();
 
@@ -687,9 +689,10 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     //    discret_->ClearState();
 
     // Export postpro results
-    //  this->CalcPostprocessingValues();
-    //  output_.WriteVector("one_d_artery_flow",qn_);
+    this->CalcPostprocessingValues();
+    output_.WriteVector("one_d_artery_flow",qn_);
     output_.WriteVector("one_d_artery_pressure",pn_);
+    output_.WriteVector("one_d_artery_area",an_);
     
     if (CoupledTo3D)
     {
@@ -707,10 +710,11 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("qanp",qanp_);
 
     // Export postpro results
-    //  this->CalcPostprocessingValues();
-    //  output_.WriteVector("one_d_artery_flow",qn_);
-    //  output_.WriteVector("one_d_artery_pressure",pn_);
-        
+    this->CalcPostprocessingValues();
+    output_.WriteVector("one_d_artery_flow",qn_);
+    output_.WriteVector("one_d_artery_pressure",pn_);
+    output_.WriteVector("one_d_artery_area",an_);
+    
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
     // impedancebc_->WriteRestart(output_);
@@ -800,6 +804,36 @@ ART::ArtNetExplicitTimeInt::~ArtNetExplicitTimeInt()
  | Calculate the post processing values (public)            ismail 04/10|
  *----------------------------------------------------------------------*/
 void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
+#if 1
+{
+  //  cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<endl;
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  eleparams.set("action","calc_postprocessing_values");
+
+  // set vecotr values needed by elements
+  discret_->ClearState();
+  //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<endl;
+  discret_->SetState("qanp",qanp_);
+  //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<endl;
+  discret_->SetState("Wfnp",Wfnp_);
+  //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<endl;
+  discret_->SetState("Wbnp",Wbnp_);
+
+  eleparams.set("time step size",dta_);
+  eleparams.set("total time",time_);
+  eleparams.set("pressure",pn_);
+  eleparams.set("art_area",an_);
+  eleparams.set("flow",qn_);
+  //  cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<endl;
+  // call standard loop over all elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  //  cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<endl;
+}//ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
+#else
 {
   cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<endl;
 
@@ -827,5 +861,6 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<endl;
 }//ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
+#endif
 
 

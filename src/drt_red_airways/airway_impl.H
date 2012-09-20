@@ -14,7 +14,6 @@ Maintainer: Mahmoud Ismail
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_RED_AIRWAYS
 
 
 #ifndef AIRWAY_IMPL_H
@@ -185,7 +184,7 @@ namespace ELEMENTS
     virtual void CalcFlowRates(RedAirway*                    ele,
                                ParameterList&                params,
                                DRT::Discretization&          discretization,
-                               Epetra_SerialDenseVector&     a_volumen,
+                               Epetra_SerialDenseVector&     a_volumen_strain_np,
                                Epetra_SerialDenseVector&     a_volumenp,
                                vector<int>&                  lm,
                                RefCountPtr<MAT::Material>    mat);
@@ -207,4 +206,3 @@ namespace ELEMENTS
 
 #endif
 
-#endif 

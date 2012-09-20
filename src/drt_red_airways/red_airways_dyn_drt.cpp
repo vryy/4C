@@ -46,22 +46,13 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 {
 #ifdef D_RED_AIRWAYS
 
+#if 1
+
   if(DRT::Problem::Instance()->DoesExistDis("red_airway")==false)
   {
-#if 0
-    if (actdis->Comm().MyPID()==0)
-    {
-      cout<<"+--------------------- WARNING ---------------------+"<<endl;
-      cout<<"|                                                   |"<<endl;
-      cout<<"| Reduced-dimensional airways is compiled, but no   |"<<endl;
-      cout<<"| airways elements are defined!                     |"<<endl;
-      cout<<"|                                                   |"<<endl;
-      cout<<"+---------------------------------------------------+"<<endl;
-    }
-#endif
     return Teuchos::null;
   }
-
+#endif
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
