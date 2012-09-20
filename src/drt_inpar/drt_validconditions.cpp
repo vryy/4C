@@ -2051,62 +2051,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
   condlist.push_back(nodeonlineconst2D);
 
-#if 0
-  /*--------------------------------------------------------------------*/
-  // Electrode kinetics (Electrochemistry)
-
-  std::vector<Teuchos::RCP<ConditionComponent> > eleccomponents;
-
-  eleccomponents.push_back(
-    Teuchos::rcp(
-      new StringConditionComponent(
-        "kinetic model","Butler-Volmer",
-        Teuchos::tuple<std::string>("Butler-Volmer","Butler-Volmer-Yang1997","Tafel","linear","zero"),
-        Teuchos::tuple<std::string>("Butler-Volmer","Butler-Volmer-Yang1997","Tafel","linear","zero"))));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("species")));
-  eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("species")));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("pot")));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot")));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
-  eleccomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("i0")));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-  eleccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
-  eleccomponents.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
-
-  Teuchos::RCP<ConditionDefinition> lineelec =
-    Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS LINE CONDITIONS",
-                                         "ElectrodeKinetics",
-                                         "Line Electrode Kinetics",
-                                         DRT::Condition::ElectrodeKinetics,
-                                         true,
-                                         DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfelec =
-    Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS SURF CONDITIONS",
-                                         "ElectrodeKinetics",
-                                         "Surface Electrode Kinetics",
-                                         DRT::Condition::ElectrodeKinetics,
-                                         true,
-                                         DRT::Condition::Surface));
-
-  for (unsigned i=0; i<eleccomponents.size(); ++i)
-  {
-    lineelec->AddComponent(eleccomponents[i]);
-    surfelec->AddComponent(eleccomponents[i]);
-  }
-
-  condlist.push_back(lineelec);
-  condlist.push_back(surfelec);
-#endif
-
   /*--------------------------------------------------------------------*/
    // Electrode kinetics (Electrochemistry)
   {
