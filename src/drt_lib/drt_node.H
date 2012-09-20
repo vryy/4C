@@ -177,7 +177,7 @@ public:
   virtual inline const double* X() const { return x_; }
 
   /*!
-  \brief Return number of elements adjacent to this node
+  \brief Return processor-local number of elements adjacent to this node
   */
   virtual inline int NumElement() const { return element_.size(); }
 
