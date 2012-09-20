@@ -48,10 +48,8 @@ problem.
 \section{Preprocessing}
 
 \subsection{Creating the Geometry with Cubit}
-We will use Cubit version 12.0 for creating the geometry and the mesh. Cubit 12.0 can be executed by \newline
-\texttt{/lnm/programs/cubit12/cubit}. Within Cubit, open the Journal-Editor (\emph{Tools}$\to$\emph{Journal
-Editor}), paste the text below and press \emph{play}. If the geometry couldn't be created, try to set the editor to 
-'Translate to Cubit commands' first and retry. After successful geometry and mesh creation, export everything to an Exodus-file of your choice via \emph{File}$\to$\emph{Export...}.
+We will use Cubit for creating the geometry and the mesh. For 32-bit systems, Cubit 12.0 is used which can be executed by \texttt{/lnm/programs/cubit12/cubit} and for 64-bit systems, Cubit 13.2 is used that can be started via \texttt{/lnm/programs64/cubit-13.2/cubit}. Within Cubit, open the Journal-Editor (\emph{Tools}$\to$\emph{Journal
+Editor}), paste the text below and press \emph{play}. If the geometry couldn't be created, try to set the editor to 'Translate to Cubit commands' first and retry. After successful geometry and mesh creation, export everything to an Exodus-file of your choice via \emph{File}$\to$\emph{Export...}. During export, set the dimension explicitly to 2d.
 
 \begin{small} \begin{verbatim}
 $***********************
@@ -231,11 +229,22 @@ Open the previously created \head 'default.head' and edit the following entries 
  \item \verb|PROBLEM TYP|
 
  \verb|PROBLEMTYP Fluid|
+ 
+ \item Delete the section \verb|XFLUID DYNAMIC| including sub-sections
+ 
  \item \verb|FLUID DYNAMIC|
+
+ \verb|LINEAR_SOLVER 1|
 
  \verb|NUMSTEP 20|
 
  \verb|TIMESTEP 0.01|
+
+ \item \verb|SOLVER 1|
+ 
+ \verb|NAME Fluid solver|
+
+ \verb|SOLVER UMFPACK|
 
  \item \verb|MATERIALS|
 
@@ -268,35 +277,35 @@ Property Name: none
 has 23 Nodes
 *ns1="CONDITION"
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
+description="3 1 1 0  1.0 0.0 0.0  1 none none  0 0 0"
 
 Node Set, named: top
 Property Name: none
 has 68 Nodes
 *ns2="CONDITION"
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="0 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="3 0 1 0  0.0 0.0 0.0  none none none  0 0 0"
 
 Node Set, named: bottom
 Property Name: none
 has 68 Nodes
 *ns3="CONDITION"
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="0 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="3 0 1 0  0.0 0.0 0.0  none none none  0 0 0"
 
 Node Set, named: cylinder
 Property Name: none
 has 116 Nodes
 *ns4="CONDITION"
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="3 1 1 0  0.0 0.0 0.0  none none none  0 0 0"
 
 Node Set, named: edges
 Property Name: none
 has 2 Nodes
 *ns5="CONDITION"
 sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="3 1 1 0  1.0 0.0 0.0  none none none  0 0 0"
  \end{verbatim} \end{small}
 Save the file under a different name of your choice.
 
@@ -340,11 +349,12 @@ the call (inside the \baci{} directory): \texttt{./post\_drt\_ensight -\,-file=[
 \subsection{Visualize your results in Paraview}
 \begin{itemize}
 \item After the filtering process is finished open \emph{paraview} by typing \newline
-\texttt{/lnm/programs/paraview-3.6.1-Linux-i686/bin/paraview \&}
+\texttt{/lnm/programs/paraview-3.6.1-Linux-i686/bin/paraview \&} for 32-bit systems and simply \newline
+\texttt{paraview \&} for 64-bit systems that should have installed Paraview locally.
 \item \emph{File$\to$Open} and select the filtered \emph{*.case}
 file: \emph{outputprefix.case}
-\item choose \emph{LittleEndian} instead of \emph{LittleEndian} and press \emph{Apply} to activate the display.
-\item choose time step $19$ ($=0.2$) in the top menu bar 
+\item Choose \emph{LittleEndian} instead of \emph{BigEndian} and press \emph{Apply} to activate the display. \newline (Only for older versions of Paraview)
+\item Choose time step $19$ ($=0.2$) in the top menu bar 
 \item At \emph{Color by} you can choose now between \emph{pressure} and \emph{velocity (Magnitude, X, ...)}. Choose \emph{velocity (X)}!
 \item in the \emph{Display} tab (section \emph{Color}) press \emph{Rescale to Data Range}. 
 \item For the scale, press \emph{Edit Color Map}, choose the tab \emph{Color legend} and activate \emph{Show color legend}.
