@@ -3968,7 +3968,8 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
       {
         // choose the GIDs of the two center nodes of the vertical filaments for  distance measurements
         int nodeID1 = (int)(floor((double)(filamentnumber_->MyLength())/4.0));
-        int nodeID2 = nodeID1 + filamentnumber_->MyLength()/2.0;
+        // assumption that both filaments are of the same discretization length
+        int nodeID2 = nodeID1 + filamentnumber_->MyLength()/2;
         evalnodes.push_back(nodeID1);
         evalnodes.push_back(nodeID2);
 
