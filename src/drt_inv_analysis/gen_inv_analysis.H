@@ -139,14 +139,15 @@ private:
   ///  number of measurment points the
   double tstep_;                    // timestep
 
-  int problem_type_;		    // Neumann or Dirichlet Problem
+  int problem_type_;		            // Neumann or Dirichlet Problem
   int np_;                          // number of fitted parameters (default 3, 4 with kappa)
   int nmp_;                         // total number of measured dofs
 
-  Epetra_SerialDenseVector mcurve_; // measured displacment of the experiments (target value)
-  std::vector<double> timesteps_;  // time values where displacements are measured
+  Epetra_SerialDenseVector mcurve_; // measured displacement of the experiments (target value)
+  std::vector<double> timesteps_;   // time values where displacements are measured
 
   double mu_;
+  double mu_init_;
 
   double error_;
   double error_o_;
@@ -162,13 +163,19 @@ private:
       res_based
     };
   INV_REG_UPDATE_STRATEGY reg_update_;
+
+  // don't accept optimization step for negative material parameters
+  int check_neg_params_;
+
+
   string filename_;
 
   double kappa_multi_;
 
   int numb_run_;
 
-  Epetra_SerialDenseVector p_;	   // parameter vector
+  Epetra_SerialDenseVector p_;	           // parameter vector
+  Epetra_SerialDenseVector p_initial_;     // initial parameter vector
 
   /// @name Storage
   //@{
@@ -177,6 +184,7 @@ private:
   Epetra_SerialDenseMatrix par_s_;
   Epetra_SerialDenseVector mu_s_;
   Epetra_SerialDenseVector error_s_;
+  Epetra_SerialDenseVector error_grad_s_;
   //Epetra_SerialDenseMatrix ccurve_s_;
   //@}
 
@@ -232,6 +240,9 @@ public:
   /// Output of Inverse Analysis
   void PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_SerialDenseVector delta_p);
   void PrintFile();
+
+  // Check if mat params are out of bounds
+  void CheckOptStep();
 
   /// Re-initialized micro-scale
   void MultiInvAnaInit();

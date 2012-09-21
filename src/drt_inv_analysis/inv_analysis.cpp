@@ -118,6 +118,8 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
      default:
        dserror("Only RES based update strategy implemented for old inverse analysis switch to inv_generalized to use other update strategies");
    }
+  if (DRT::INPUT::IntegralValue<int>(iap,"PARAM_BOUNDS"))
+    dserror("Bounds Check only implemented for gen_inv_ana");
 
   // trainings parameter
   mu_  = 1.;

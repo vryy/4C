@@ -1247,6 +1247,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("NEW_FILES","yes",
                                     "new result files for each run",
                                     yesnotuple,yesnovalue,&iap);
+  setStringToIntegralParameter<int>("PARAM_BOUNDS","no",
+                                      "Reset parameters if optstep predicts negative values",
+                                      yesnotuple,yesnovalue,&iap);
   /*----------------------------------------------------------------------*/
 
   /* parameters for multi-level monte carlo */

@@ -205,6 +205,7 @@ steps 25 nnodes 5
 
   // trainings parameter
   mu_ = iap.get<double>("INV_INITREG");
+  mu_init_ = mu_;
   kappa_multi_=1.0;
   
   // update strategy for mu
@@ -224,7 +225,7 @@ steps 25 nnodes 5
        dserror("Unknown update strategy for regularization parameter! Fix your input file");
    }
 
-
+  check_neg_params_ = DRT::INPUT::IntegralValue<int>(iap,"PARAM_BOUNDS");
 
   // list of materials for each problem instance that should be fitted
 
@@ -238,6 +239,7 @@ steps 25 nnodes 5
 
   // read material parameters from input file
   ReadInParameters();
+  p_initial_ = p_;
 
   // Number of material parameters
   np_ = p_.Length();
@@ -334,6 +336,13 @@ void STR::GenInvAnalysis::Integrate()
 
     discret_->Comm().Barrier();
     if (!myrank) CalcNewParameters(cmatrix,perturb);
+
+
+    // check bounds of parameters
+    if (check_neg_params_)
+    {
+      if (!myrank) CheckOptStep();
+    }
 
     // set new material parameters
     discret_->Comm().Broadcast(&p_[0],p_.Length(),0);
@@ -485,6 +494,11 @@ void STR::GenInvAnalysis::NPIntegrate()
 
     gcomm->Barrier();
     if (!gmyrank) CalcNewParameters(cmatrix,perturb);
+
+    if (check_neg_params_)
+    {
+      if (!gmyrank) CheckOptStep();
+    }
 
     // set new material parameters
     // these are the same for all groups
@@ -828,6 +842,8 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
 
   error_s_.Resize(numb_run_+1);
   error_s_(numb_run_) = error_;
+  error_grad_s_.Resize(numb_run_+1);
+  error_grad_s_(numb_run_) = error_grad_;
   // print error and parameter
 
   if (gmyrank==0) // this if should actually not be necessary since there is only gproc 0 in here
@@ -848,6 +864,8 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
       {
         printf("Error: ");
         printf("%10.3e", error_s_(i));
+        printf("\tGrad_error: ");
+        printf("%10.3e", error_grad_s_(i));
         printf("\tParameter: ");
         for (int j=0; j < delta_p.Length(); j++)
           printf("%10.3e", p_s_(i, j));
@@ -1501,7 +1519,37 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 
   return;
 }
+void STR::GenInvAnalysis::CheckOptStep()
+{
+  for (int i=0; i<np_; i++)
+  {
+    if (p_(i) < 0.0)
+    {
+      cout << "at least one negative material parameter detected: reverse update" << endl;
+      // reset the update step in case it was too large and increase regularization
+      if (numb_run_)
+      {
+        for (int j=0; j<np_; j++)
+        p_(j) = p_s_(numb_run_-1,j);
+        error_ = error_o_;
+        error_grad_ = error_grad_o_;
+        mu_= mu_s_(numb_run_-1)*2.0;
+        return;
+      }
+      else
+      {
+        p_ = p_initial_;
+        error_ = error_o_;
+        error_grad_ = error_grad_o_;
+        mu_= mu_init_*2.0;
+        return;
+      }
 
+
+
+    }
+  }
+}
 //===========================================================================================
 void STR::GenInvAnalysis::MultiInvAnaInit()
 {
