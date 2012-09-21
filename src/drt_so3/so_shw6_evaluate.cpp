@@ -182,47 +182,43 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID()==Owner())
-      {
-        const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-          params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-        if (gpstressmap==null)
-          dserror("no gp stress/strain map available for postprocessing");
-        string stresstype = params.get<string>("stresstype","ndxyz");
-        int gid = Id();
-        LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+      if (gpstressmap==null)
+        dserror("no gp stress/strain map available for postprocessing");
+      string stresstype = params.get<string>("stresstype","ndxyz");
+      int gid = Id();
+      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
 
 
-        RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-        if (poststress==null)
-          dserror("No element stress/strain vector available");
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+      if (poststress==null)
+        dserror("No element stress/strain vector available");
 
-        if (stresstype=="ndxyz") {
-          // extrapolate stresses/strains at Gauss points to nodes
-          soweg6_expol(gpstress, *poststress);
+      if (stresstype=="ndxyz") {
+        // extrapolate stresses/strains at Gauss points to nodes
+        soweg6_expol(gpstress, *poststress);
 
-        }
-        else if (stresstype=="cxyz") {
-          const Epetra_BlockMap elemap = poststress->Map();
-          int lid = elemap.LID(Id());
-          if (lid!=-1)
+      }
+      else if (stresstype=="cxyz") {
+        const Epetra_BlockMap elemap = poststress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1)
+        {
+          for (int i = 0; i < NUMSTR_WEG6; ++i)
           {
-            for (int i = 0; i < NUMSTR_WEG6; ++i)
+            double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
+            s = 0.;
+            for (int j = 0; j < NUMGPT_WEG6; ++j)
             {
-              double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
-              s = 0.;
-              for (int j = 0; j < NUMGPT_WEG6; ++j)
-              {
-                s += gpstress(j,i);
-              }
-              s *= 1.0/NUMGPT_WEG6;
+              s += gpstress(j,i);
             }
+            s *= 1.0/NUMGPT_WEG6;
           }
         }
-        else{
-          dserror("unknown type of stress/strain output on element level");
-        }
+      }
+      else{
+        dserror("unknown type of stress/strain output on element level");
       }
     }
     break;

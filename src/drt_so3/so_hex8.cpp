@@ -434,9 +434,9 @@ void DRT::ELEMENTS::So_hex8::soh8_expol
   for (int i=0;i<NUMNOD_SOH8;++i)
   {
     int gid = NodeIds()[i];
-    int lid = expolstresses.Map().LID(gid);
-    if (lid != -1) // rownode
+    if (expolstresses.Map().MyGID(NodeIds()[i])) // rownode
     {
+      int lid = expolstresses.Map().LID(gid);
       int myadjele = Nodes()[i]->NumElement();
       for (int j=0;j<6;j++)
         (*(expolstresses(j)))[lid] += nodalstresses(i,j)/myadjele;

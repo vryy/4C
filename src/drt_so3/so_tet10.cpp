@@ -312,11 +312,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
   // "assembly" of extrapolated nodal stresses
   for (int i=0;i<NUMNOD_SOTET10;++i)
   {
-    int adjele = Nodes()[i]->NumElement();
-    int gnid = NodeIds()[i];
-    int lnid = expolstresses.Map().LID(gnid);
-    for (int j=0;j<6;j++)
-      (*(expolstresses(j)))[lnid] += nodalstresses(i,j)/adjele;
+    int gid = NodeIds()[i];
+    if (expolstresses.Map().MyGID(NodeIds()[i])) // rownode
+    {
+      int lid = expolstresses.Map().LID(gid);
+      int myadjele = Nodes()[i]->NumElement();
+      for (int j=0;j<6;j++)
+        (*(expolstresses(j)))[lid] += nodalstresses(i,j)/myadjele;
+    }
   }
 }
 

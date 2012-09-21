@@ -461,13 +461,16 @@ void DRT::ELEMENTS::Wall1::w1_expol
   // distribute nodal stresses to expolstress for assembling
   for (int i=0;i<numnode;++i)
   {
-    int adjele = Nodes()[i]->NumElement();
-    int gnid = NodeIds()[i];
-    int lnid = expolstress.Map().LID(gnid);
-    (*(expolstress(0)))[lnid] += nodalstresses(i,0)/adjele;
-    (*(expolstress(1)))[lnid] += nodalstresses(i,1)/adjele;
-    (*(expolstress(2)))[lnid] += nodalstresses(i,2)/adjele;
-    (*(expolstress(3)))[lnid] += nodalstresses(i,3)/adjele;
+    int gid = NodeIds()[i];
+    if (expolstress.Map().MyGID(NodeIds()[i])) // rownode
+    {
+      int adjele = Nodes()[i]->NumElement();
+      int lid = expolstress.Map().LID(gid);
+      (*(expolstress(0)))[lid] += nodalstresses(i,0)/adjele;
+      (*(expolstress(1)))[lid] += nodalstresses(i,1)/adjele;
+      (*(expolstress(2)))[lid] += nodalstresses(i,2)/adjele;
+      (*(expolstress(3)))[lid] += nodalstresses(i,3)/adjele;
+    }
   }
 }
 
