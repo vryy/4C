@@ -433,11 +433,14 @@ void DRT::ELEMENTS::So_hex8::soh8_expol
   // "assembly" of extrapolated nodal stresses
   for (int i=0;i<NUMNOD_SOH8;++i)
   {
-    int adjele = Nodes()[i]->NumElement();
-    int gnid = NodeIds()[i];
-    int lnid = expolstresses.Map().LID(gnid);
-    for (int j=0;j<6;j++)
-      (*(expolstresses(j)))[lnid] += nodalstresses(i,j)/adjele;
+    int gid = NodeIds()[i];
+    int lid = expolstresses.Map().LID(gid);
+    if (lid != -1) // rownode
+    {
+      int myadjele = Nodes()[i]->NumElement();
+      for (int j=0;j<6;j++)
+        (*(expolstresses(j)))[lid] += nodalstresses(i,j)/myadjele;
+    }
   }
 }
 
@@ -695,7 +698,7 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     string accumulatedstrain = "accumulatedstrain";
     names[accumulatedstrain] = 1; // scalar
   }
-  
+
 
   return;
 }
@@ -1255,7 +1258,7 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       data[0] = temp(0)/NUMGPT_SOH8;
     }
   }
-  
+
   return true;
 }
 

@@ -219,14 +219,13 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
     result.read_result_serialdensematrix(groupname);
 
   const RCP<DRT::Discretization> dis = field_->discretization();
+  const Epetra_Map* noderowmap = dis->NodeRowMap();
 
   ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
-  const Epetra_Map* nodemap = dis->NodeColMap();
-  Epetra_MultiVector* tmp = new Epetra_MultiVector(*nodemap,6);
-  for (int i=0; i<6; ++i) (*tmp)(i)->PutScalar(0.0);
+  Epetra_MultiVector* tmp = new Epetra_MultiVector(*noderowmap,6,true);
   RCP<Epetra_MultiVector> nodal_stress = rcp(tmp);
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,null,null,null,null,null);
@@ -235,16 +234,11 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
     dserror("vector containing element center stresses/strains not available");
   }
 
-  const Epetra_BlockMap& datamap = nodal_stress->Map();
-
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
   RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,6));
-  Epetra_Export exporter(datamap,*proc0map_);
-  int err = data_proc0->Export(*nodal_stress,exporter,Add);
-//  Epetra_Import proc0dofimporter(*proc0map_,datamap);
-//  int err = data_proc0->Import(*nodal_stress,proc0dofimporter,Add);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
+  Epetra_Export exporter(*noderowmap,*proc0map_);
+  int err = data_proc0->Export(*nodal_stress,exporter,Insert);
+  if (err>0) dserror("Exporting everything to proc 0 went wrong. Export returns %d",err);
 
   //--------------------------------------------------------------------
   // write some key words
@@ -617,7 +611,6 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
 
   WriteNodalEigenStressStep(files,result,resultfilepos,groupname,name);
 
-
   // how many bits are necessary per time step (we assume a fixed size)?
   if (myrank_==0)
   {
@@ -707,13 +700,13 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
     result.read_result_serialdensematrix(groupname);
 
   const RefCountPtr<DRT::Discretization> dis = field_->discretization();
+  const Epetra_Map* noderowmap = dis->NodeRowMap();
 
   ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
-  const Epetra_Map* nodemap = dis->NodeRowMap();
-  RCP<Epetra_MultiVector> nodal_stress = rcp(new Epetra_MultiVector(*nodemap,6));
+  RCP<Epetra_MultiVector> nodal_stress = rcp(new Epetra_MultiVector(*noderowmap,6,true));
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,null,null,null,null,null);
   if (nodal_stress==null)
@@ -722,7 +715,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   }
 
   // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
-  RCP<Epetra_MultiVector> nodal_eigen_val_vec = rcp(new Epetra_MultiVector(*nodemap,12));
+  RCP<Epetra_MultiVector> nodal_eigen_val_vec = rcp(new Epetra_MultiVector(*noderowmap,12));
 
   const int numnodes = dis->NumMyRowNodes();
   bool threedim = true;
@@ -795,9 +788,9 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
   RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,12));
-  Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
-  int err = data_proc0->Import(*nodal_eigen_val_vec,proc0dofimporter,Insert);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+  Epetra_Export exporter(*noderowmap,*proc0map_);
+  int err = data_proc0->Export(*nodal_eigen_val_vec,exporter,Insert);
+  if (err>0) dserror("Exporting everything to proc 0 went wrong. Export returns %d",err);
 
   //--------------------------------------------------------------------
   // write some key words
