@@ -240,6 +240,15 @@ namespace DRT
             const vector<int>&           lm            ///< local map
         ) = 0;
 
+        virtual void getembpress(
+          //LINALG::Matrix<nsd_,1>& embpress  ///< embedded pressure
+          double&  press
+        ) = 0;
+
+       virtual void getembvelgradint(
+         LINALG::Matrix<nsd_,nsd_>& velgradint    ///< interface velocity gradients at embedded side
+         ) = 0;
+
         //! compute embedded element's element length
         virtual void element_length( double & hk_emb ) = 0;
 

@@ -401,6 +401,14 @@ namespace DRT
           const vector<int>&           lm            ///< local map
           );
 
+      virtual void getembpress(
+        double& press
+        );
+
+      virtual void getembvelgradint(
+        LINALG::Matrix<nsd_,nsd_>& velgradint    ///< interface velocity gradients at embedded side
+        );
+
       //! compute embedded element's element length
       virtual void element_length( double & hk_emb );
 

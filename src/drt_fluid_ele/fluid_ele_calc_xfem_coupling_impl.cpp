@@ -109,7 +109,6 @@ void SideImpl<distype, side_distype, numdof>::eivel(
   return;
 } // eivel
 
-
 /*--------------------------------------------------------------------------------
  * extract/set side's interface velocity
  *--------------------------------------------------------------------------------*/
@@ -387,7 +386,7 @@ void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
 
 
 
-
+#
 
 
 
@@ -2632,6 +2631,34 @@ void EmbImpl<distype, emb_distype>::addembdisp(
   return;
 }
 
+
+/*--------------------------------------------------------------------------------
+ * extract embedded  pressure
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType emb_distype>
+void EmbImpl<distype, emb_distype>::getembpress(
+  double& press  ///< interface velocity at embedded side
+  )
+{
+  // interface velocity vector in gausspoint
+  press = emb_funct_.Dot(emb_pres_);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------
+ * extract/set side's interface velocity gradients
+ *--------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType emb_distype>
+void EmbImpl<distype, emb_distype>::getembvelgradint(
+  LINALG::Matrix<nsd_,nsd_>& velgradint    ///< interface velocity gradients at embedded side
+  )
+{
+  // get velocity derivatives at integration point
+  velgradint.MultiplyNT(emb_vel_,emb_derxy_);
+
+  return;
+}
 
 /*--------------------------------------------------------------------------------
  * extract/set embedded element velocity

@@ -614,6 +614,10 @@ namespace FLD
    //@}
 
     //! @name flags for gmsh output
+    bool gmsh_debug_out_;
+    bool gmsh_debug_out_screen_;
+    bool gmsh_sol_out_;
+    bool gmsh_discret_out_;
     bool gmsh_cut_out_;
     //@}
 

@@ -75,7 +75,7 @@ public:
 
     /// called upon destruction
     virtual void Done();
-    
+
     /// Evaluate the XFEM cut element
     virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid*                             ele,
                              DRT::Discretization &                             discretization,
@@ -121,6 +121,22 @@ public:
         Teuchos::ParameterList&                                             params,            ///< parameter list
         const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
     );
+
+    virtual int ComputeErrorInterfacefluidfluidcoupling(
+        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+        DRT::Discretization &                                               dis,               ///< background discretization
+        const std::vector<int> &                                            lm,                ///< element local map
+        Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+        Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
+        DRT::Discretization &                                               cutdis,            ///< cut discretization
+        DRT::Discretization &                                               embdis,            ///< embedded discretization
+        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+        Teuchos::ParameterList&                                             params,            ///< parameter list
+        const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
+        map<int,int> &                                                      boundary_emb_gid_map
+      );
 
     /// add mixed/stress/hybrid (MSH) interface condition to element matrix and rhs
     virtual void ElementXfemInterfaceMSH(
