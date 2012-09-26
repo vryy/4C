@@ -2505,6 +2505,20 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
     // extract the ML parameters
     ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
+    // remark: we create a new solver with ML preconditioner here, since this allows for also using other solver setups 
+    // to solve the system of equations
+    // get the solver number used form the multifractal subgrid-scale model parameter list
+    const int scale_sep_solvernumber = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
+    if (scale_sep_solvernumber != (-1))     // create a dummy solver
+    {
+      Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
+                                            discret_->Comm(),
+                                            DRT::Problem::Instance()->ErrorFile()->Handle()));
+      // compute the null space,
+      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
+      // and, finally, extract the ML parameters
+      mlparams = solver->Params().sublist("ML Parameters");
+    }
 
     // get toggle vector for Dirchlet boundary conditions
     const Epetra_Vector& dbct = *DirichletToggle();

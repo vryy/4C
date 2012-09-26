@@ -2975,12 +2975,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     tuple<int>(0,1,2,3),
     &fdyn_turbmfs);
 
+  IntParameter(
+    "ML_SOLVER",
+    -1,
+    "Set solver number for scale separtion via level set transfer operators from plain aggregation.",
+  &fdyn_turbmfs);
+
   BoolParameter("CALC_N","No","Flag to (de)activate calculation of N from the Reynolds number.",&fdyn_turbmfs);
 
   DoubleParameter(
     "N",
     1.0,
-    "Set grid to viscous scale ratio..",
+    "Set grid to viscous scale ratio.",
     &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>(
