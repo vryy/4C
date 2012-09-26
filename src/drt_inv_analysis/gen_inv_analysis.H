@@ -147,13 +147,15 @@ private:
   std::vector<double> timesteps_;   // time values where displacements are measured
 
   double mu_;
-  double mu_init_;
+  double mu_o_;
 
   double error_;
   double error_o_;
   // Gradient based error measure
   double error_grad_;
   double error_grad_o_;
+
+  double error_i_; //keeps the current error for the tolerance check depending on the update strategy
   double tol_;
 
   // Update Stratgy for mu
@@ -175,7 +177,7 @@ private:
   int numb_run_;
 
   Epetra_SerialDenseVector p_;	           // parameter vector
-  Epetra_SerialDenseVector p_initial_;     // initial parameter vector
+  Epetra_SerialDenseVector p_o_;           // parameters of the last step
 
   /// @name Storage
   //@{

@@ -205,7 +205,7 @@ steps 25 nnodes 5
 
   // trainings parameter
   mu_ = iap.get<double>("INV_INITREG");
-  mu_init_ = mu_;
+  mu_o_ = mu_;
   kappa_multi_=1.0;
   
   // update strategy for mu
@@ -239,7 +239,7 @@ steps 25 nnodes 5
 
   // read material parameters from input file
   ReadInParameters();
-  p_initial_ = p_;
+  p_o_ = p_;
 
   // Number of material parameters
   np_ = p_.Length();
@@ -337,13 +337,6 @@ void STR::GenInvAnalysis::Integrate()
     discret_->Comm().Barrier();
     if (!myrank) CalcNewParameters(cmatrix,perturb);
 
-
-    // check bounds of parameters
-    if (check_neg_params_)
-    {
-      if (!myrank) CheckOptStep();
-    }
-
     // set new material parameters
     discret_->Comm().Broadcast(&p_[0],p_.Length(),0);
     SetParameters(p_);
@@ -354,7 +347,13 @@ void STR::GenInvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_grad_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
 
-  } while (error_>tol_ && numb_run_<max_itter);
+    if(reg_update_ == grad_based)
+      error_i_ = error_grad_;
+    else if(reg_update_ == res_based)
+      error_i_ = error_;
+
+
+  } while (error_i_>tol_ && numb_run_<max_itter);
 
 
   // print results to file
@@ -495,11 +494,6 @@ void STR::GenInvAnalysis::NPIntegrate()
     gcomm->Barrier();
     if (!gmyrank) CalcNewParameters(cmatrix,perturb);
 
-    if (check_neg_params_)
-    {
-      if (!gmyrank) CheckOptStep();
-    }
-
     // set new material parameters
     // these are the same for all groups
     gcomm->Broadcast(&p_[0],p_.Length(),0);
@@ -512,7 +506,12 @@ void STR::GenInvAnalysis::NPIntegrate()
     gcomm->Broadcast(&error_grad_,1,0);
     gcomm->Broadcast(&numb_run_,1,0);
 
-  } while (error_>tol_ && numb_run_<max_itter);
+    if(reg_update_ == grad_based)
+      error_i_ = error_grad_;
+    else if(reg_update_ == res_based)
+      error_i_ = error_;
+
+  } while (error_i_>tol_ && numb_run_<max_itter);
 //printf("gmyrank %d reached this point\n",gmyrank); fflush(stdout); exit(0);
 
 
@@ -573,6 +572,9 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   // dependent on the # of steps
   error_grad_o_ = error_grad_;
   error_o_ = error_;
+  mu_o_ = mu_;
+  p_o_ = p_;
+
   // update res based error
   error_   = rcurve.Norm2()/sqrt(nmp_);
   // Gradient based update of mu based on
@@ -619,6 +621,8 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, v
   cmatrix.Shape(nmp_,np_+1);
 
   PrintStorage(cmatrix, delta_p);
+
+  if (check_neg_params_) CheckOptStep();
   return;
 }
 
@@ -1526,27 +1530,13 @@ void STR::GenInvAnalysis::CheckOptStep()
     if (p_(i) < 0.0)
     {
       cout << "at least one negative material parameter detected: reverse update" << endl;
-      // reset the update step in case it was too large and increase regularization
-      if (numb_run_)
-      {
-        for (int j=0; j<np_; j++)
-        p_(j) = p_s_(numb_run_-1,j);
-        error_ = error_o_;
-        error_grad_ = error_grad_o_;
-        mu_= mu_s_(numb_run_-1)*2.0;
-        return;
-      }
-      else
-      {
-        p_ = p_initial_;
-        error_ = error_o_;
-        error_grad_ = error_grad_o_;
-        mu_= mu_init_*2.0;
-        return;
-      }
-
-
-
+      // reset the update step in case it was too large and increase regularization;
+      // storage is not touched, so screen print out does not reflect what really happens
+      p_ = p_o_;
+      error_ = error_o_;
+      error_grad_ = error_grad_o_;
+      mu_= mu_o_*2.0;
+      return;
     }
   }
 }
