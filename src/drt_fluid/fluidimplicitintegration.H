@@ -440,7 +440,7 @@ public:
   {
     if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
          return 1.0;
-    else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
+    else if (is_genalpha_)
          return alphaM_/(gamma_*dta_);
     else return 1.0/(theta_*dta_);
   }
