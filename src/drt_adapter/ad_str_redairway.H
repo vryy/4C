@@ -1,0 +1,71 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file ad_str_redairway.H
+
+\brief Structure field adapter for coupling with reduced-D airway trees
+
+<pre>
+Maintainer: Lena Yoshiahra
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
+/* macros */
+
+
+#ifndef AD_STR_REDAIRWAY_H
+#define AD_STR_REDAIRWAY_H
+/*----------------------------------------------------------------------*/
+/* headers */
+#include <Teuchos_RefCountPtr.hpp>
+#include "Epetra_Vector.h"
+
+#include "ad_str_wrapper.H"
+
+
+namespace DRT
+{
+  class Condition;
+}
+
+
+namespace ADAPTER {
+
+class StructureRedAirway : public StructureWrapper
+{
+public:
+
+  /// Constructor
+  StructureRedAirway(Teuchos::RCP<Structure> stru);
+
+  /// set pressure calculated from reduced-d airway tree
+  void SetPressure(Teuchos::RCP<Epetra_Vector> couppres);
+
+  /// calculate outlet fluxes for reduced-d airway tree
+  void CalcFlux(Teuchos::RCP<Epetra_Vector> coupflux, double dt);
+
+  /// calculate volume
+  void CalcVol(std::map<int,double>& V);
+
+  /// calculate initial volume
+  void InitVol();
+
+  virtual void Update();
+
+private:
+
+  /// map between coupling ID and conditions on structure
+  std::map<int,DRT::Condition*> coupcond_;
+
+  /// map of coupling IDs
+  Teuchos::RCP<Epetra_Map> coupmap_;
+
+  std::map<int,double> Vn_;
+  std::map<int,double> Vnp_;
+};
+
+}
+#endif
