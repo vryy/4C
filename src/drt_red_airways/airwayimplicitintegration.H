@@ -1,7 +1,7 @@
 
 /*!----------------------------------------------------------------------
 \file airwayimplicitintegration.H
-\brief Associated with control routine for reduced dimensional airways 
+\brief Associated with control routine for reduced dimensional airways
   solvers,
 
 <pre>
@@ -125,6 +125,18 @@ public:
   */
   void TimeLoop(bool CoupledTo3D, RCP<ParameterList> CouplingParams);
 
+  /*!
+  \brief Do one step time integration (time loop)
+
+  */
+  void OneStepTimeLoop(bool CoupledTo3D = false, RCP<ParameterList> CouplingParams = Teuchos::null);
+
+
+  /*!
+  \brief Integrate one step
+
+  */
+  void IntegrateStep(RCP<ParameterList> CouplingTo3DParams = Teuchos::null);
 
 
   /// setup the variables to do a new time step
@@ -164,11 +176,11 @@ public:
   \brief update configuration and output to file/screen
 
   */
-  void Output  (bool               CoupledTo3D,
-                RCP<ParameterList> CouplingParams);
+  void Output  (bool               CoupledTo3D = false,
+                RCP<ParameterList> CouplingParams = Teuchos::null);
 
   /*!
-  \brief Assembling of the RHS Vector and the LHS Matrix 
+  \brief Assembling of the RHS Vector and the LHS Matrix
 
   */
   void AssembleMatAndRHS();
@@ -232,6 +244,14 @@ public:
 
   //@}
 
+
+  //! @name methods related to coupling with 3D tissue models
+
+  void SetupForCoupling();
+  void SetAirwayFluxFromTissue(Teuchos::RCP<Epetra_Vector> coupflux);
+  void ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres);
+
+  //@}
 
 protected:
 
@@ -350,11 +370,23 @@ protected:
   bool coupledTo3D_;
   //@}
 
-  //! @name Nonlinear solution parameters 
-  int     maxiter_; 
+  //! @name Nonlinear solution parameters
+  int     maxiter_;
   double  non_lin_tol_;
   //@}
 
+
+  //! @name Additional stuff related to coupling with 3D tissue models
+
+  /// map between coupling ID and conditions on structure
+  std::map<int,DRT::Condition*> coupcond_;
+
+  /// map of coupling IDs
+  Teuchos::RCP<Epetra_Map> coupmap_;
+
+  std::map<int,double> pres_;
+
+  //@}
 
 }; // class RedAirwayImplicitTimeInt
 

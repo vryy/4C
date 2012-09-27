@@ -297,7 +297,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       for (int checkdof = 1; checkdof < 3; ++checkdof)
         if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
       double ortho_value = (*val)[0];
-      if (!ortho_value) dserror("no orthopressure value given!");
+      //if (!ortho_value) dserror("no orthopressure value given!"); // in case of coupling with redairways,
+                                                                    //there is a zero orthoval in the beginning!!!!
       vector<double> normal(3);
       SurfaceIntegration(normal, xc,deriv);
       //Calculate spatial position of GP
@@ -327,7 +328,6 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       }
 
       val_curvefac_functfac = curvefac*functfac;
-
 
       const double fac = intpoints.qwgt[gp] * val_curvefac_functfac * ortho_value * normalfac;
       for (int node=0; node < numnode; ++node)
@@ -653,7 +653,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_potential_stiff")         act = StructuralSurface::calc_potential_stiff;
   else if (action=="calc_brownian_motion")         act = StructuralSurface::calc_brownian_motion;
   else if (action=="calc_brownian_motion_damping") act = StructuralSurface::calc_brownian_motion_damping;
-  else if (action=="calc_struct_centerdisp") 	     act = StructuralSurface::calc_struct_centerdisp;
+  else if (action=="calc_struct_centerdisp")       act = StructuralSurface::calc_struct_centerdisp;
   else if (action=="calc_struct_rotation")         act = StructuralSurface::calc_struct_rotation;
   else if (action=="calc_undo_struct_rotation")    act = StructuralSurface::calc_undo_struct_rotation;
   else if (action=="calc_struct_area") 	           act = StructuralSurface::calc_struct_area;
@@ -671,61 +671,61 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   //gives the center displacement for SlideALE
   case calc_struct_centerdisp:
   {
-	  //We are not interested in ghosted elements
-	  if(Comm.MyPID()==Owner())
-	  {
-		  // element geometry update
-		  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacementtotal");
-		  if (disp==null) dserror("Cannot get state vector 'displacementtotal'");
-		  vector<double> mydisp(lm.size());
-		  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-		  const int numnode = NumNode();
-		  const int numdf=3;
-		  LINALG::SerialDenseMatrix xc(numnode,numdf);
-		  SpatialConfiguration(xc,mydisp);
+    //We are not interested in ghosted elements
+    if(Comm.MyPID()==Owner())
+    {
+      // element geometry update
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacementtotal");
+      if (disp==null) dserror("Cannot get state vector 'displacementtotal'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      const int numnode = NumNode();
+      const int numdf=3;
+      LINALG::SerialDenseMatrix xc(numnode,numdf);
+      SpatialConfiguration(xc,mydisp);
 
-		  //integration of the displacements over the surface
-		  // allocate vector for shape functions and matrix for derivatives
-		  LINALG::SerialDenseVector  funct(numnode);
-		  LINALG::SerialDenseMatrix  deriv(2,numnode);
+      //integration of the displacements over the surface
+      // allocate vector for shape functions and matrix for derivatives
+      LINALG::SerialDenseVector  funct(numnode);
+      LINALG::SerialDenseMatrix  deriv(2,numnode);
 
-		  /*----------------------------------------------------------------------*
-		    |               start loop over integration points                     |
-		   *----------------------------------------------------------------------*/
-		  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+      /*----------------------------------------------------------------------*
+        |               start loop over integration points                     |
+        *----------------------------------------------------------------------*/
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
-		  Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
-		  vector<double> edispincr(lm.size());
-		  DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
-		  elevector2[0] = 0;
+      Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
+      vector<double> edispincr(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
+      elevector2[0] = 0;
 
-		  for (int gp=0; gp<intpoints.nquad; gp++)
-		  {
-			  const double e0 = intpoints.qxg[gp][0];
-			  const double e1 = intpoints.qxg[gp][1];
+      for (int gp=0; gp<intpoints.nquad; gp++)
+      {
+        const double e0 = intpoints.qxg[gp][0];
+        const double e1 = intpoints.qxg[gp][1];
 
-			  // get shape functions and derivatives in the plane of the element
-			  DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
-			  DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+        // get shape functions and derivatives in the plane of the element
+        DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
+        DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
-			  vector<double> normal(3);
-			  double detA;
-			  SurfaceIntegration(detA,normal,xc,deriv);
+        vector<double> normal(3);
+        double detA;
+        SurfaceIntegration(detA,normal,xc,deriv);
 
-			  elevector2[0] +=  sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+        elevector2[0] +=  sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
 
-			  for (int dim=0; dim<3; dim++)
-			  {
-				  for (int j=0; j<numnode; ++j)
-				  {
-					  elevector3[dim] +=  funct[j] * intpoints.qwgt[gp]
-					                          * edispincr[j*numdf + dim] * detA;
-				  }
-			  }
+        for (int dim=0; dim<3; dim++)
+        {
+          for (int j=0; j<numnode; ++j)
+          {
+            elevector3[dim] +=  funct[j] * intpoints.qwgt[gp]
+                                * edispincr[j*numdf + dim] * detA;
+          }
+        }
 
-		  }
+      }
 
-	  }
+    }
   }
   break;
   case calc_struct_rotation:

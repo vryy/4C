@@ -27,7 +27,8 @@ Maintainer: Mahmoud Ismail
 using namespace std;
 using namespace Teuchos;
 
-  void dyn_red_airways_drt();
+void dyn_red_airways_drt();
+void redairway_tissue_dyn();
 
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D);
 

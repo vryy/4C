@@ -525,7 +525,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
                                         const string name,
                                         RefCountPtr<DRT::Condition> cond)
 {
-  // this condition is special since an associated volume condition also needs
+  // these conditions are special since associated volume conditions also need
   // to be considered
   std::set<int> VolEleIDs;
   if (cond->Type() == DRT::Condition::StructFluidSurfCoupling)
@@ -535,6 +535,8 @@ void DRT::Discretization::BuildSurfacesinCondition(
       FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
     }
   }
+  else if (cond->Type() == DRT::Condition::RedAirwayTissue)
+    FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
 
   /* First: Create the surface objects that belong to the condition. */
 

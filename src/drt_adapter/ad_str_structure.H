@@ -217,6 +217,9 @@ namespace ADAPTER {
     /// \date 11/08
     virtual void Integrate() = 0;
 
+    /// integrate a single time step
+    virtual void IntegrateStep() = 0;
+
     /// start new time step
     virtual void PrepareTimeStep() = 0;
 

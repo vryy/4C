@@ -476,6 +476,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_bio.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
   src/drt_adapter/ad_str_lung.cpp
+  src/drt_adapter/ad_str_redairway.cpp
   src/drt_adapter/ad_str_timint_poroelast.cpp
   src/drt_adapter/ad_str_timint_adaptive.cpp
   src/drt_adapter/ad_str_wrapper.cpp
@@ -493,6 +494,7 @@ set(OBJS_DRT_RED_AIRWAYS_LIB
   src/drt_red_airways/red_airway.cpp
   src/drt_red_airways/red_airway_input.cpp
   src/drt_red_airways/red_airway_resulttest.cpp
+  src/drt_red_airways/redairway_tissue.cpp
 )
 set(OBJS_DRT_INPAR
   src/drt_inpar/drt_boolifyparameters.cpp

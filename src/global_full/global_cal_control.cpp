@@ -138,7 +138,9 @@ void ntacal()
     case prb_ssi:
       ssi_drt();
       break;
-
+    case prb_redairways_tissue:
+      redairway_tissue_dyn();
+      break;
     case prb_np_support:
       STRUMULTI::np_support_drt();
       break;

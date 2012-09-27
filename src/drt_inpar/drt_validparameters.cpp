@@ -2444,6 +2444,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for arterial dynamics",&andyn);
 
  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& redtisdyn = list->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC",false,"");
+  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redtisdyn);
+  IntParameter("NUMSTEP",1,"Number of Time Steps",&redtisdyn);
+  DoubleParameter("MAXTIME",4.0,"",&redtisdyn);
+
+ /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& redawdyn = list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",false,"");
 
   setStringToIntegralParameter<int>("DYNAMICTYP","CrankNicolson",

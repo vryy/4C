@@ -19,6 +19,7 @@ Maintainer: Georg Hammerl
 #include "ad_str_wrapper.H"
 #include "ad_str_lung.H"
 #include "ad_str_timint_poroelast.H"
+#include "ad_str_redairway.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -89,7 +90,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
     break;
   }
-
 }
 
 
@@ -153,7 +153,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   sdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  if(probtype == prb_struct_ale || probtype == prb_structure)
+  if(probtype == prb_struct_ale || probtype == prb_structure || probtype == prb_redairways_tissue)
   {
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
   }
@@ -290,7 +290,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
     }
   }
 
-
   // create marching time integrator
   Teuchos::RCP<STR::TimInt> tmpstr = STR::TimIntCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
 
@@ -328,7 +327,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
           structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
-        else 
+        else
           structure_ = Teuchos::rcp(new StructureConstrMerged(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
       }
       else
@@ -339,6 +338,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
         else
           structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
       }
+    }
+    break;
+    case prb_redairways_tissue:
+    {
+      structure_ = Teuchos::rcp(new StructureRedAirway(tmpstr));
     }
     break;
     case prb_poroelast:
@@ -372,7 +376,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   {
     dserror("no proper time integration found");
   }
-
   // see you
   return;
 }

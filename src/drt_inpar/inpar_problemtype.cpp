@@ -51,6 +51,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Poroelastic_scalar_transport"] =              prb_poroscatra;
     string2prbtype["Structure_Scalar_Interaction"] =              prb_ssi;
     string2prbtype["NP_Supporting_Procs"] =                       prb_np_support;
+    string2prbtype["RedAirways_Tissue"] =                         prb_redairways_tissue;
   }
 
   return string2prbtype;

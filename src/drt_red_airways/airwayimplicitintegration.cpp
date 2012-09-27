@@ -149,7 +149,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
   bcval_   = LINALG::CreateVector(*dofrowmap,true);
-  dbctog_  = LINALG::CreateVector(*dofrowmap,true); 
+  dbctog_  = LINALG::CreateVector(*dofrowmap,true);
 
   acini_volumenm_      = LINALG::CreateVector(*dofrowmap,true);
   acini_volumen_       = LINALG::CreateVector(*dofrowmap,true);
@@ -176,7 +176,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   eleparams.set("p0np",pnp_);
   eleparams.set("p0n",pn_);
   eleparams.set("p0nm",pnm_);
-  
+
   //  eleparams.set("qc0np",qcnp_);
   //  eleparams.set("qc0n",qcn_);
   //  eleparams.set("qc0nm",qcnm_);
@@ -295,74 +295,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
 
   while (step_<stepmax_ and time_<maxtime_)
   {
-    double time3D = time_;
-    if(coupledTo3D_)
-    {
-      time3D  = CouplingTo3DParams->get<double>("time");
-    }
-    if(time3D!=time_ || !coupledTo3D_)
-    {
-      PrepareTimeStep();
-    }
-    // -------------------------------------------------------------------
-    //                       output to screen
-    // -------------------------------------------------------------------
-    if (myrank_==0)
-    {
-      if(!coupledTo3D_)
-      {
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
-      }
-      else
-      {
-        printf("SUBSCALE_TIME: %11.4E/%11.4E  SUBSCALE_DT = %11.4E   Solving Reduced Dimensional Airways    SUBSCALE_STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
-      }
-    }
-
-    // -------------------------------------------------------------------
-    //                            Solve
-    // -------------------------------------------------------------------
-    if(params_.get<string> ("solver type") == "Nonlinear")
-    {
-      NonLin_Solve(CouplingTo3DParams);
-      if (!myrank_)
-        cout<<endl;
-    }
-    else if (params_.get<string> ("solver type") == "Linear")
-    {
-      Solve(CouplingTo3DParams);
-      if (!myrank_)
-        cout<<endl<<endl;
-    }
-    else
-    {
-      dserror("[%s] is not a defined solver",(params_.get<string> ("solver type")).c_str() );
-    }
-
-    // -------------------------------------------------------------------
-    //                         update solution
-    //        current solution becomes old solution of next timestep
-    // -------------------------------------------------------------------
-    if (!CoupledTo3D)
-    {
-      TimeUpdate();
-    }
-
-    // -------------------------------------------------------------------
-    //  lift'n'drag forces, statistics time sample and output of solution
-    //  and statistics
-    // -------------------------------------------------------------------
-    if (!CoupledTo3D)
-    {
-      Output(CoupledTo3D,CouplingTo3DParams);
-    }
-
-    // -------------------------------------------------------------------
-    //                       update time step sizes
-    // -------------------------------------------------------------------
-    dtp_ = dta_;
+    this->OneStepTimeLoop(CoupledTo3D, CouplingTo3DParams);
 
     // -------------------------------------------------------------------
     //                    stop criterium for timeloop
@@ -375,6 +308,135 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
 
 } // RedAirwayImplicitTimeInt::TimeLoop
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | contains the one step time loop                          ismail 09/12|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
+                                                RCP<ParameterList> CouplingTo3DParams)
+{
+  coupledTo3D_ = CoupledTo3D;
+
+  double time3D = time_;
+  if(coupledTo3D_)
+  {
+    time3D  = CouplingTo3DParams->get<double>("time");
+  }
+  if(time3D!=time_ || !coupledTo3D_)
+  {
+    cout<<"Everything is fine??"<<endl;
+    PrepareTimeStep();
+  }
+  // -------------------------------------------------------------------
+  //                       output to screen
+  // -------------------------------------------------------------------
+  if (myrank_==0)
+  {
+    if(!coupledTo3D_)
+    {
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = %4d/%4d \n",
+             time_,maxtime_,dta_,step_,stepmax_);
+      }
+      else
+      {
+        printf("SUBSCALE_TIME: %11.4E/%11.4E  SUBSCALE_DT = %11.4E   Solving Reduced Dimensional Airways    SUBSCALE_STEP = %4d/%4d \n",
+               time_,maxtime_,dta_,step_,stepmax_);
+      }
+    }
+
+  // -------------------------------------------------------------------
+  //                            SolverParams
+  // -------------------------------------------------------------------
+  if(params_.get<string> ("solver type") == "Nonlinear")
+  {
+    NonLin_Solve(CouplingTo3DParams);
+    if (!myrank_)
+      cout<<endl;
+  }
+  else if (params_.get<string> ("solver type") == "Linear")
+  {
+    Solve(CouplingTo3DParams);
+    if (!myrank_)
+      cout<<endl<<endl;
+  }
+  else
+  {
+    dserror("[%s] is not a defined solver",(params_.get<string> ("solver type")).c_str() );
+  }
+
+  // -------------------------------------------------------------------
+  //                         update solution
+  //        current solution becomes old solution of next timestep
+  // -------------------------------------------------------------------
+  if (!CoupledTo3D)
+  {
+    TimeUpdate();
+  }
+
+  // -------------------------------------------------------------------
+  //  lift'n'drag forces, statistics time sample and output of solution
+  //  and statistics
+  // -------------------------------------------------------------------
+  if (!CoupledTo3D)
+  {
+    Output(CoupledTo3D,CouplingTo3DParams);
+  }
+
+  // -------------------------------------------------------------------
+  //                       update time step sizes
+  // -------------------------------------------------------------------
+  dtp_ = dta_;
+
+} // RedAirwayImplicitTimeInt::OneStepTimeLoop
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | contains the one step time loop                          ismail 09/12|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(RCP<ParameterList> CouplingTo3DParams)
+{
+  // -------------------------------------------------------------------
+  //                       output to screen
+  // -------------------------------------------------------------------
+  if (myrank_==0)
+  {
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = %4d/%4d \n", time_,maxtime_,dta_,step_,stepmax_);
+
+  }
+
+  // -------------------------------------------------------------------
+  //                            SolverParams
+  // -------------------------------------------------------------------
+  if(params_.get<string> ("solver type") == "Nonlinear")
+  {
+    NonLin_Solve(CouplingTo3DParams);
+    if (!myrank_)
+      cout<<endl;
+  }
+  else if (params_.get<string> ("solver type") == "Linear")
+  {
+    Solve(CouplingTo3DParams);
+    if (!myrank_)
+      cout<<endl<<endl;
+  }
+  else
+  {
+    dserror("[%s] is not a defined solver",(params_.get<string> ("solver type")).c_str() );
+  }
+
+} // RedAirwayImplicitTimeInt::IntegrateStep
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -393,6 +455,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   step_ += 1;
   time_ += dta_;
+
 } //RedAirwayImplicitTimeInt::PrepareTimeStep
 
 
@@ -412,7 +475,7 @@ Some detials!!
 void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams)
 {
   //--------------------------------------------------------------------
-  // 
+  //
   //--------------------------------------------------------------------
   double error_norm1 = 1.e7;
   double error_norm2 = 1.e7;
@@ -420,7 +483,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
   double lung_volume_np = 0.0;
   acini_volumenp_->MeanValue(&lung_volume_np);
   lung_volume_np *= double(acini_volumenp_->GlobalLength());
-  
+
   if(!myrank_)
   {
     cout<<"time: "<<time_-dta_<<" LungVolume: "<<lung_volume_np<<endl;
@@ -452,7 +515,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
     this->EvalResidual(CouplingTo3DParams);
     residual_->Norm2 (&error_norm2);
     //    cout<<"Proc: "<<myrank_<<" Norm: "<<error_norm<<" length: "<<p_nonlin_->GlobalLength()<<endl;
-    
+
     //------------------------------------------------------------------
     // if L2 norm is smaller then tolerance then proceed
     //------------------------------------------------------------------
@@ -463,7 +526,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
     }
     if(error_norm1 <= non_lin_tol_)
       break;
-    
+
   }
   if (!myrank_)
     printf("\n");
@@ -539,7 +602,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     double lung_volume_np = 0.0;
     double lung_volume_n  = 0.0;
     double lung_volume_nm = 0.0;
-    
+
     acini_volumenp_->MeanValue(&lung_volume_np);
     acini_volumen_->MeanValue(&lung_volume_n);
     acini_volumenm_->MeanValue(&lung_volume_nm);
@@ -559,7 +622,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     // finalize the complete matrix
     sysmat_->Complete();
     discret_->ClearState();
-    
+
 #if 0  // Exporting some values for debugging purposes
 
     {
@@ -573,14 +636,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
       cout<<"Map is: ("<<myrank_<<")"<<endl<<*(discret_->DofRowMap())<<endl;
       cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
     }
-#endif 
+#endif
 
   }
   // end time measurement for element
 
 
   // -------------------------------------------------------------------
-  // Solve the boundary conditions 
+  // Solve the boundary conditions
   // -------------------------------------------------------------------
   bcval_->PutScalar(0.0);
   dbctog_->PutScalar(0.0);
@@ -629,11 +692,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
   }
-  
+
 
   double norm_bc_tog = 0.0;
   rhs_->Norm1(&norm_bc_tog);
-  
+
   // -------------------------------------------------------------------
   // Apply the BCs to the system matrix and rhs
   // -------------------------------------------------------------------
@@ -663,7 +726,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     }
     cout<<"rhs: "<<*rhs_<<endl;
 
-#endif 
+#endif
 
   //-------solve for total new velocities and pressures
   // get cpu time
@@ -683,14 +746,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
       // print to screen
       (A_debug->EpetraMatrix())->Print(cout);
     }
-    //#else    
+    //#else
     cout<<"DOF row map"<<*(discret_->DofRowMap())<<endl;
     cout<<"bcval: "<<*bcval_<<endl;
     cout<<"bctog: "<<*dbctog_<<endl;
     cout<<"pnp: "<<*pnp_<<endl;
     cout<<"rhs: "<<*rhs_<<endl;
 
-#endif 
+#endif
     // call solver
     solver_.Solve(sysmat_->EpetraOperator(),pnp_,rhs_,true,true);
     //    cout<<"Solved"<<endl;
@@ -810,7 +873,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> qael)
 {
-  
+
 }
 
 
@@ -867,7 +930,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
   int uprestart = 0;
   double time_backup = 0.0;
   // -------------------------------------------------------------------
-  // if coupled to 3D problem, then get the export information from 
+  // if coupled to 3D problem, then get the export information from
   // the 3D problem
   // -------------------------------------------------------------------
   if (CoupledTo3D)
@@ -881,7 +944,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     uprestart_ = CouplingParams->get<int>("uprestart");
     time_      = CouplingParams->get<double>("time");
   }
-
 
   if (step_%upres_ == 0)
   {
@@ -966,7 +1028,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
 
     // write domain decomposition for visualization
     //    output_.WriteElementData();
-    
+
 
     // write the flow values
     LINALG::Export(*qin_nm_,*qexp_);
@@ -1002,7 +1064,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       output_.WriteDouble("Actual_RedD_step", step);
     }
   }
-
   // -------------------------------------------------------------------
   // if coupled to 3D problem, then retrieve the old information of the
   // the reduced model problem
@@ -1014,7 +1075,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     uprestart_= uprestart;
     time_     = time_backup;
   }
-
   return;
 } // RedAirwayImplicitTimeInt::Output
 
@@ -1027,7 +1087,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
  -----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>// 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
 {
 
@@ -1055,14 +1115,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(acini_volumenm_,"acini_vnm");
   reader.ReadVector(acini_volumen_ ,"acini_vn");
   reader.ReadVector(acini_volumenp_,"acini_vnp");
-  
+
   reader.ReadVector(qexp_, "qin_nm");
   LINALG::Export(*qexp_,*qin_nm_);
   reader.ReadVector(qexp_ , "qin_n" );
   LINALG::Export(*qexp_,*qin_n_);
   reader.ReadVector(qexp_, "qin_np");
   LINALG::Export(*qexp_,*qin_np_);
-  
+
   reader.ReadVector(qexp_, "qout_nm");
   LINALG::Export(*qexp_,*qout_nm_);
   reader.ReadVector(qexp_ , "qout_n" );
@@ -1117,7 +1177,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
 
-    
+
     discret_->SetState("acinar_vn" ,acini_volumen_);
     discret_->SetState("acinar_vnp",acini_volumenp_);
 
@@ -1134,11 +1194,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     double lung_volume_np = 0.0;
     double lung_volume_n  = 0.0;
     double lung_volume_nm = 0.0;
-    
+
     acini_volumenp_->MeanValue(&lung_volume_np);
     acini_volumen_->MeanValue(&lung_volume_n);
     acini_volumenm_->MeanValue(&lung_volume_nm);
-    
+
     lung_volume_np *= double(acini_volumenp_->GlobalLength());
     lung_volume_n  *= double(acini_volumenp_->GlobalLength());
     lung_volume_nm *= double(acini_volumenp_->GlobalLength());
@@ -1157,7 +1217,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
   }
 
   // -------------------------------------------------------------------
-  // Solve the boundary conditions 
+  // Solve the boundary conditions
   // -------------------------------------------------------------------
   bcval_->PutScalar(0.0);
   dbctog_->PutScalar(0.0);
@@ -1198,7 +1258,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
   }
-  
+
   // -------------------------------------------------------------------
   // Apply the BCs to the system matrix and rhs
   // -------------------------------------------------------------------
@@ -1219,6 +1279,74 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
 AIRWAY::RedAirwayImplicitTimeInt::~RedAirwayImplicitTimeInt()
 {
   return;
+}
+
+
+void AIRWAY::RedAirwayImplicitTimeInt::SetAirwayFluxFromTissue(Teuchos::RCP<Epetra_Vector> coupflux)
+{
+  const Epetra_BlockMap& condmap = coupflux->Map();
+
+  for (int i=0; i<condmap.NumMyElements(); ++i)
+  {
+    int condID = condmap.GID(i);
+    DRT::Condition* cond = coupcond_[condID];
+    std::vector<double> newval(1,0.0);
+    newval[0] = (*coupflux)[i];
+    cond->Add("val",newval);
+  }
+}
+
+
+void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
+{
+  std::vector<DRT::Condition*> nodecond;
+  discret_->GetCondition("RedAirwayPrescribedCond",nodecond);
+  unsigned int numnodecond = nodecond.size();
+  if (numnodecond == 0) dserror("no redairway prescribed conditions");
+
+  std::vector<int> tmp;
+  for (unsigned int i = 0; i < numnodecond; ++i)
+  {
+    DRT::Condition* actcond = nodecond[i];
+    if (actcond->Type() == DRT::Condition::RedAirwayNodeTissue)
+    {
+      int condID = actcond->GetInt("coupling id");
+      coupcond_[condID] = actcond;
+      tmp.push_back(condID);
+      pres_[condID] = 0.0;
+    }
+  }
+  unsigned int numcond = tmp.size();
+  if (numcond == 0) dserror("no coupling conditions found");
+  coupmap_ = Teuchos::rcp(new Epetra_Map(tmp.size(),tmp.size(),&tmp[0],0,discret_->Comm()));
+}
+
+
+void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres)
+{
+  for (int i=0; i<coupmap_->NumMyElements(); i++)
+  {
+    int condgid = coupmap_->GID(i);
+    DRT::Condition * cond = coupcond_[condgid];
+    const std::vector<int>* nodes = cond->Nodes();
+
+    if (nodes->size()!=1)
+      dserror("Too many nodes on coupling with tissue condition ID=[%d]\n",condgid);
+
+    int gid = (*nodes)[0];
+    DRT::Node* node = discret_->gNode(gid);
+
+    double pressure = 0.0;
+    if (myrank_==node->Owner())
+    {
+      int giddof = discret_->Dof(node, 0);
+      int liddof = pnp_->Map().LID(giddof);
+      pressure = (*pnp_)[liddof];
+    }
+    double parpres = 0.;
+    discret_->Comm().SumAll(&pressure,&parpres,1);
+    (*couppres)[i] = parpres;
+  }
 }
 
 

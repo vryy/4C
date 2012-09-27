@@ -221,7 +221,9 @@ public:
     TotalTractionCorrectionCond,
     NoPenetration,
     TotalTractionCorrectionBorderNodes,
-    RedAirwayVentilatorCond
+    RedAirwayVentilatorCond,
+    RedAirwayTissue,
+    RedAirwayNodeTissue
   };
 
   /*!

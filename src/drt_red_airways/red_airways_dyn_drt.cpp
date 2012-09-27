@@ -23,6 +23,7 @@ Maintainer: Mahmoud Ismail
 #include "red_airway_resulttest.H"
 #include "red_airways_dyn_drt.H"
 #include "airwayimplicitintegration.H"
+#include "redairway_tissue.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
@@ -58,7 +59,6 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->GetDis("red_airway");
-
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -185,4 +185,14 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   return Teuchos::null;
 #endif
 } // end of dyn_red_airways_drt()
+
+
+void redairway_tissue_dyn()
+{
+  const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
+  RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<AIRWAY::RedAirwayTissue> myalgo = Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(),rawdyn));
+
+  myalgo->Integrate();
+}
 

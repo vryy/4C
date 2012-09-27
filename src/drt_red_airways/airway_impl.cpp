@@ -80,7 +80,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   RefCountPtr<MAT::Material> mat)
 {
   //  const int   myrank  = discretization.Comm().MyPID();
-  
+
   //  const int numnode = iel;
   const int elemVecdim = elevec1_epetra.Length () ;
   vector<int>::iterator it_vcr;
@@ -342,7 +342,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
     // get density
     dens = actmat->Density();
-    
+
     // get dynamic viscosity
     visc = actmat->Viscosity();
   }
@@ -415,7 +415,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     //-----------------------------------------------------------------
     double gamma = 0.327;
     R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
-    
+
     //-----------------------------------------------------------------
     // Correct any resistance smaller than Poiseuille's one
     //-----------------------------------------------------------------
@@ -427,7 +427,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     double Rep  = 1.0/((gamma*alfa)*(gamma*alfa));
     double k    = 0.50;
     double st   = 1.0/(1.0+exp(-2*k*(Re-Rep)));
-    
+
     R = R*st + Rp*(1.0-st);
 
   }
@@ -439,28 +439,28 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     double gamma = 0.327;
     switch(generation)
     {
-    case 0: 
+    case 0:
       gamma = 0.162;
       break;
-    case 1: 
+    case 1:
       gamma = 0.239;
       break;
-    case 2: 
+    case 2:
       gamma = 0.244;
       break;
-    case 3: 
+    case 3:
       gamma = 0.295;
       break;
-    case 4: 
+    case 4:
       gamma = 0.175;
       break;
-    case 5: 
+    case 5:
       gamma = 0.303;
       break;
-    case 6: 
+    case 6:
       gamma = 0.356;
       break;
-    case 7: 
+    case 7:
       gamma = 0.566;
       break;
     default:
@@ -471,7 +471,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     // Pedley et al (1970)
     //-----------------------------------------------------------------
     R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
-    
+
     //-----------------------------------------------------------------
     // Correct any resistance smaller than Poiseuille's one
     //-----------------------------------------------------------------
@@ -491,7 +491,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
   if(ele->Type() == "Resistive")
   {
-    
+
     //------------------------------------------------------------
     //               Calculate the System Matrix
     //------------------------------------------------------------
@@ -535,7 +535,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
     // calculate out flow at the current time step
     //    q_out = (epnp(0)-epnp(1))/R;
-    
+
   }
   else if(ele->Type() == "RLC")
   {
@@ -664,41 +664,54 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       {
         dserror("Acinus condition at node (%d) has zero acini",ele->Nodes()[i]->Id());
       }
-      
+
       // -------------------------------------------------------------
       // Read in the pleural pressure
       // -------------------------------------------------------------
       const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
       const  vector<double>* vals   = condition->Get<vector<double> >("val");
-      
+
       double Pp_nm = 0.0;
       double Pp_n  = 0.0;
       double Pp_np = 0.0;
-      
+
       double pnm = epnm(i);
       double pn  = epn(i);
-      
+
       double vnp= acin_vnp(i);
       double vn = acin_vn(i);
 
       // evaluate the pleural pressure at (t - dt), (t), and (t + dt)
       string pleuralPType = *(condition->Get<string>("PlueralPressureType"));
-      if((*curve)[0]>=0 && pleuralPType == "FromCurve")
+
+      // find out whether we will use a time curve and get the factor
+
+      int curvenum = -1;
+      if (curve) curvenum = (*curve)[0];
+      double curvefac_np = 1.0;
+      double curvefac_n  = 1.0;
+      double curvefac_nm = 1.0;
+
+
+      if(curvenum)
       {
-        Pp_nm = DRT::Problem::Instance()->Curve((*curve)[0]).f(time - 2.0*dt);
-        Pp_nm *= (*vals)[0];
-        Pp_n  = DRT::Problem::Instance()->Curve((*curve)[0]).f(time -     dt);
-        Pp_n  *= (*vals)[0];
-        Pp_np = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-        Pp_np *= (*vals)[0];
+        curvefac_nm = DRT::Problem::Instance()->Curve(curvenum).f(time - 2.0*dt);
+        curvefac_n  = DRT::Problem::Instance()->Curve(curvenum).f(time -     dt);
+        curvefac_np = DRT::Problem::Instance()->Curve(curvenum).f(time         );
+      }
+      if (pleuralPType == "FromCurve")
+      {
+        Pp_nm = curvefac_nm*(*vals)[0];
+        Pp_n  = curvefac_n *(*vals)[0];
+        Pp_np = curvefac_np*(*vals)[0];
 
       }
       else if(pleuralPType=="Exponential")
-      {     
+      {
         const double ap =  -977.203;
         const double bp = -3338.290;
         const double cp =    -7.686;
-        const double dp =  2034.470;     
+        const double dp =  2034.470;
         const double VFR   = 1240000.0;
         const double TLC   = 4760000.0 - VFR;
 
@@ -750,7 +763,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double Kp_nm = -Rt/(dt*dt);
         const double Kq_np = E1*E2 + Rt*(E1 + E2)/dt;
         const double Kq_n  = -Rt*(E1+E2)/dt;
-        
+
         sysmat(i,i)+= pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
         rhs(i)     += pow(-1.0,i)*((Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
 
@@ -764,7 +777,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double Kq_np = Ra*Rt/(dt*dt) + (E1*Rt + E2*Ra + E2*Rt)/dt + E1*E2;
         const double Kq_n  = -2.0*Ra*Rt/(dt*dt) - (E1*Rt + E2*Ra + E2*Rt)/dt;
         const double Kq_nm = Ra*Rt/(dt*dt);
-        
+
         sysmat(i,i)+= pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
         rhs(i)     += pow(-1.0,i)*(-(-Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + (Kq_n*qn + Kq_nm*qnm)/Kq_np);
 
@@ -780,7 +793,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         //
         // The P-V curve is fitted to create the following
         // P1 = E1.(V-Vo)
-        // 
+        //
         // E1 = a + b.(V-Vo) + c.exp(d.(V-Vo))
         //------------------------------------------------------------
 
@@ -788,11 +801,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         double kp_n  =-Rt/(E2*dt);
         double kq_np = Rt*Ra/(E2*dt) + (Ra+Rt);
         double kq_n  =-Rt*Ra/(E2*dt);
-        
+
         double term_nonlin = 0.0;
 
         //------------------------------------------------------------
-        // for now the (a,b,c,d) components are not read from the 
+        // for now the (a,b,c,d) components are not read from the
         // input file
         //------------------------------------------------------------
         double a = 6449.0 ;
@@ -801,7 +814,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         double d = 47.9892;
 
         //------------------------------------------------------------
-        // get the terms assosciated with the nonlinear behavior of 
+        // get the terms assosciated with the nonlinear behavior of
         // E1
         //------------------------------------------------------------
         double pnpi = 0.0;
@@ -821,7 +834,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         kq_np = kq_np + pnpi2/2*dt;
         term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(dvnp)+(qnp/NumOfAcini)*dt/2 + dvn);
         kq_np = kq_np + dpnpi2_dt*Rt/E2/2*dt;
-        
+
         sysmat(i,i)+= pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
         rhs(i)     += pow(-1.0,i)*(-(-kp_np*Pp_np + kp_n*(pn-Pp_n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
       }
@@ -975,26 +988,23 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = *(condition->Get<string>("boundarycond"));
-          
-        
+
+
           const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
           double curvefac = 1.0;
           const  vector<double>* vals   = condition->Get<vector<double> >("val");
-          
+
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
           // -----------------------------------------------------------------
-          if((*curve)[0]>=0)
-          {
-            curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-            BCin = (*vals)[0]*curvefac;
-          }
-          else
-          {
-            dserror("no boundary condition defined!");
-            exit(1);
-          }
-          
+          int curvenum = -1;
+          if (curve) curvenum = (*curve)[0];
+          if (curvenum>=0 )
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+          BCin = (*vals)[0]*curvefac;
+
+
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
           // -----------------------------------------------------------------------------
@@ -1019,7 +1029,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
             exit(1);
           }
-          
+
           // -----------------------------------------------------------------
           // Read in Condition type
           // -----------------------------------------------------------------
@@ -1043,11 +1053,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           //     |     +------+------------------------+----------------+    |
           //     +-----------------------------------------------------------+
           // -----------------------------------------------------------------
-          
+
           int ID = condition->GetInt("ConditionID");
           RCP<map<string,double> > map3D;
           map3D   = CoupledTo3DParams->get<RCP<map<string,double > > >("3D map of values");
-          
+
           // find the applied boundary variable
           std::stringstream stringID;
           stringID<< "_"<<ID;
@@ -1070,7 +1080,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond");
           // Get the type of prescribed bc
           Bc  = *(condition->Get<string>("phase1"));
-        
+
           double period  = condition->GetDouble("period");
           double period1 = condition->GetDouble("phase1_period");
 
@@ -1089,16 +1099,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
           // -----------------------------------------------------------------
-          if((*curve)[phase_number]>=0)
-          {
-            curvefac = DRT::Problem::Instance()->Curve((*curve)[phase_number]).f(time);
-            BCin = (*vals)[phase_number]*curvefac;
-          }
-          else
-          {
-            dserror("no boundary condition defined!");
-            exit(1);
-          }
+          int curvenum = -1;
+          if (curve) curvenum = (*curve)[phase_number];
+          if (curvenum>=0 )
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+          BCin = (*vals)[phase_number]*curvefac;
+
 
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
@@ -1108,7 +1115,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           {
             dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i]->Id(),discretization.Comm().MyPID());
             exit(1);
-          } 
+          }
         }
         else
         {
@@ -1119,22 +1126,22 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
         {
           RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
-          
+
           if (bcval==null||dbctog==null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
-          }        
-          
-          
+          }
+
+
           // set pressure at node i
-          int    gid; 
-          double val; 
-          
+          int    gid;
+          double val;
+
           gid = lm[i];
           val = BCin;
           bcval->ReplaceGlobalValues(1,&val,&gid);
-      
+
           gid = lm[i];
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
@@ -1142,7 +1149,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
         else if (Bc == "flow")
         {
           // ----------------------------------------------------------
-          // Since a node might belong to multiple elements then the 
+          // Since a node might belong to multiple elements then the
           // flow might be added to the rhs multiple time.
           // To fix this the flow is devided by the number of elements
           // (which is the number of branches). Thus the sum of the
@@ -1158,11 +1165,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           //            dserror("Cannot get state vector 'rhs'");
           //            exit(1);
           //          }
-          
+
           // set pressure at node i
-          //          int    gid; 
-          //          double val; 
-          
+          //          int    gid;
+          //          double val;
+
           //          gid =  lm[i];
           //          cout<<"FLOW in: "<<BCin<<" with old rhs: "<<rhs(i)<<" With "<<numOfElems<<" elements"<<endl;
           rhs(i) += -BCin + rhs(i);
@@ -1174,9 +1181,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           dserror("precribed [%s] is not defined for reduced airways",Bc.c_str());
           exit(1);
         }
-        
+
       }
-      
+
       else if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
       {
         #if 0
@@ -1190,7 +1197,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
         // ---------------------------------------------------------------
         // If the node is conected to a reduced dimesnional acinus
         // ---------------------------------------------------------------
-        
+
         // At this state do nothing, since this boundary is resolved
         // during the assembly of Sysmat and RHS
       }
@@ -1213,25 +1220,25 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
             exit(1);
           }
-          
+
           RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
-          
+
           if (bcval==null||dbctog==null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
-          }        
-          
-          
+          }
+
+
           // set pressure at node i
-          int    gid; 
-          double val; 
-          
+          int    gid;
+          double val;
+
           gid = lm[i];
           val = 0.0;
           bcval->ReplaceGlobalValues(1,&val,&gid);
-          
+
           gid = lm[i];
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
@@ -1254,18 +1261,18 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             dserror("Cannot get state vector 'rhs'");
             exit(1);
           }
-          
+
           // set pressure at node i
-          int    gid; 
-          double val; 
-          
+          int    gid;
+          double val;
+
           gid =  lm[i];
           val =  0.0;
           //rhs->ReplaceGlobalValues(1,&val,&gid);
         }
         #endif
       } // END of if there is no BC but the node still is at the terminal
-      
+
     } // END of if node is available on this processor
   } // End of node i has a condition
 }
@@ -1311,7 +1318,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
     // get density
     dens = actmat->Density();
-    
+
     // get dynamic viscosity
     visc = actmat->Viscosity();
   }
@@ -1342,7 +1349,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     // split area and volumetric flow rate, insert into element arrays
     epnp(i)      = mypnp[i];
     epn(i)       = mypn[i];
-    a_volumen(i) = myacinar_vn[i];    
+    a_volumen(i) = myacinar_vn[i];
   }
 
 
@@ -1399,7 +1406,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     //-----------------------------------------------------------------
     double gamma = 0.327;
     R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
-    
+
     //-----------------------------------------------------------------
     // Correct any resistance smaller than Poiseuille's one
     //-----------------------------------------------------------------
@@ -1411,7 +1418,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     double Rep  = 1.0/((gamma*alfa)*(gamma*alfa));
     double k    = 0.50;
     double st   = 1.0/(1.0+exp(-2*k*(Re-Rep)));
-    
+
     R = R*st + Rp*(1.0-st);
 
   }
@@ -1423,28 +1430,28 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     double gamma = 0.327;
     switch(generation)
     {
-    case 0: 
+    case 0:
       gamma = 0.162;
       break;
-    case 1: 
+    case 1:
       gamma = 0.239;
       break;
-    case 2: 
+    case 2:
       gamma = 0.244;
       break;
-    case 3: 
+    case 3:
       gamma = 0.295;
       break;
-    case 4: 
+    case 4:
       gamma = 0.175;
       break;
-    case 5: 
+    case 5:
       gamma = 0.303;
       break;
-    case 6: 
+    case 6:
       gamma = 0.356;
       break;
-    case 7: 
+    case 7:
       gamma = 0.566;
       break;
     default:
@@ -1455,7 +1462,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     // Pedley et al (1970)
     //-----------------------------------------------------------------
     R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
-    
+
     //-----------------------------------------------------------------
     // Correct any resistance smaller than Poiseuille's one
     //-----------------------------------------------------------------
@@ -1472,7 +1479,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   {
     dserror("[%s] is not a defined resistance model",ele->Resistance().c_str());
   }
-  
+
   // ------------------------------------------------------------------
   // Find the airway type
   // ------------------------------------------------------------------
@@ -1494,7 +1501,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     ele->getParams("WallCompliance",Ew);
     ele->getParams("WallThickness",tw);
 
- 
+
     // find Capacitance C
     const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
 
@@ -1509,7 +1516,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     eqout_np = (epnp(0)-epnp(1))/R;
 
     eqin_np  = eqout_np + qcnp_val;
-    
+
   }
   else if(ele->Type() == "RLC")
   {
@@ -1545,13 +1552,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - qcn;
 #endif
 
-    
+
     eqout_np = qlnp;
     eqin_np  = eqout_np + qcnp_val;
   }
   else if(ele->Type() == "SUKI")
   {
-    
+
   }
   else
   {
@@ -1643,7 +1650,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
       if(ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
       {
 
-          const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");        
+          const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
           RCP<ParameterList> CoupledTo3DParams  =
             params.get<RCP<ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
@@ -1700,7 +1707,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         }
         std::stringstream returnedBCwithId;
         returnedBCwithId << returnedBC <<"_" << ID;
-        
+
         //        cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<endl;
 
         // -----------------------------------------------------------------
@@ -1709,7 +1716,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         // because of the preassumption that the map is filled and sorted
         // Thus we can use parallel addition
         // -----------------------------------------------------------------
-        
+
         map<string,double>::iterator itrMap1D;
         itrMap1D = map1D->find(returnedBCwithId.str());
         if (itrMap1D == map1D->end())
@@ -1717,10 +1724,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
           dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",returnedBC.c_str(),ID );
           exit(1);
         }
-        
+
         // update the 1D map
         (*map1D)[returnedBCwithId.str()] = BC3d;
-      }   
+      }
     } // END of if node is available on this processor
   } // End of node i has a condition
 }

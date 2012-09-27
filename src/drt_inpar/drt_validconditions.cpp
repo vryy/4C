@@ -233,7 +233,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Volume));
 
-
   for (unsigned i=0; i<neumanncomponents.size(); ++i)
   {
     pointneumann->AddComponent(neumanncomponents[i]);
@@ -2615,6 +2614,55 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkessel_optim_bc,"Tolerance");
 
   condlist.push_back(windkessel_optim_bc);
+
+
+  /*--------------------------------------------------------------------*/
+  // Coupling of 3D tissue models and reduced-D airway tree
+
+  std::vector<Teuchos::RCP<ConditionComponent> > redairtiscomponents;
+
+  redairtiscomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  Teuchos::RCP<ConditionDefinition> surfredairtis =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF TISSUE REDAIRWAY CONDITIONS",
+                                         "SurfaceNeumann",
+                                         "tissue RedAirway coupling surface condition",
+                                         DRT::Condition::RedAirwayTissue,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<redairtiscomponents.size(); ++i)
+  {
+    surfredairtis->AddComponent(redairtiscomponents[i]);
+  }
+
+  condlist.push_back(surfredairtis);
+
+
+  /*--------------------------------------------------------------------*/
+  // Prescribed BC for reduced dimensional airways
+
+  std::vector<Teuchos::RCP<ConditionComponent> > noderedairtiscomponents;
+
+  noderedairtiscomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  Teuchos::RCP<ConditionDefinition> noderedairtis =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE TISSUE REDAIRWAY CONDITIONS",
+                                         "RedAirwayPrescribedCond",
+                                         "tissue RedAirway coupling node condition",
+                                         DRT::Condition::RedAirwayNodeTissue,
+                                         true,
+                                         DRT::Condition::Point));
+
+
+  for (unsigned i=0; i<noderedairtiscomponents.size(); ++i)
+  {
+    noderedairtis->AddComponent(noderedairtiscomponents[i]);
+  }
+
+  condlist.push_back(noderedairtis);
+
+
 
 #ifdef D_RED_AIRWAYS
   /*--------------------------------------------------------------------*/

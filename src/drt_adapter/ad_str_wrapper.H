@@ -119,6 +119,10 @@ namespace ADAPTER
     virtual void Reset()
     { structure_->Reset(); }
 
+    /// integrate a single time step
+    virtual void IntegrateStep()
+    { structure_->IntegrateStep(); }
+
     /*
     \brief Shorten the Dirichlet DOF set
 

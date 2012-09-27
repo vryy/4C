@@ -220,6 +220,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FSI DYNAMIC/CONSTRAINT", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
+  reader.ReadGidSection("--COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC", *list);
   reader.ReadGidSection("--SEARCH TREE", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
   reader.ReadGidSection("--XFLUID DYNAMIC", *list);
@@ -1213,7 +1214,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // no discretizations and nodes needed for supporting procs
     break;
   }
+  case prb_redairways_tissue:
+  {
+    // create empty discretizations
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    AddDis("structure", structdis);
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
+    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+    AddDis("red_airway", airwaydis);
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+  }
+  break;
   default:
     dserror("Unknown problem type: %d",ProblemType());
     break;

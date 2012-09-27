@@ -281,18 +281,8 @@ public:
   /// @name Input parameter sections
   /// direct access to parameters from input file sections
 
-//<<<<<<< .mine
-//  const Teuchos::ParameterList& DiscretisationParams() const { return getParameterList()->sublist("DISCRETISATION"); }
-//  const Teuchos::ParameterList& ProblemTypeParams() const { return getParameterList()->sublist("PROBLEM TYP"); }
-//  const Teuchos::ParameterList& ProblemSizeParams() const { return getParameterList()->sublist("PROBLEM SIZE"); }
-//=======
-//>>>>>>> .r16680
   const Teuchos::ParameterList& MeshfreeParams() const { return getParameterList()->sublist("MESHFREE"); }
   const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
-//<<<<<<< .mine
-//=======
-////  const Teuchos::ParameterList& DiscretisationParams() const { return getParameterList()->sublist("DISCRETISATION"); }
-//>>>>>>> .r16680
   const Teuchos::ParameterList& DesignDescriptionParams() const { return getParameterList()->sublist("DESIGN DESCRIPTION"); }
   const Teuchos::ParameterList& PatSpecParams() const { return getParameterList()->sublist("PATIENT SPECIFIC"); }
   const Teuchos::ParameterList& StructuralDynamicParams() const { return getParameterList()->sublist("STRUCTURAL DYNAMIC"); }
@@ -317,6 +307,7 @@ public:
   const Teuchos::ParameterList& ELCHControlParams() const { return getParameterList()->sublist("ELCH CONTROL"); }
   const Teuchos::ParameterList& ArterialDynamicParams() const { return getParameterList()->sublist("ARTERIAL DYNAMIC"); }
   const Teuchos::ParameterList& ReducedDAirwayDynamicParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC"); }
+  const Teuchos::ParameterList& RedAirwayTissueDynamicParams() const { return getParameterList()->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC"); }
   const Teuchos::ParameterList& PoroelastDynamicParams() const { return getParameterList()->sublist("POROELASTICITY DYNAMIC"); }
   const Teuchos::ParameterList& PoroScatraControlParams() const { return getParameterList()->sublist("POROSCATRA CONTROL"); }
   const Teuchos::ParameterList& SSIControlParams() const { return getParameterList()->sublist("SSI CONTROL"); }

@@ -137,6 +137,18 @@ int main(
       }
       // don't add break here !!!!
     }
+    case prb_redairways_tissue:
+    {
+        PostField* structfield = problem.get_discretization(0);
+        StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
+        structwriter.WriteFiles();
+
+
+        PostField* fluidfield = problem.get_discretization(1);
+        StructureEnsightWriter fluidwriter(fluidfield, problem.outname(), problem.stresstype(), problem.straintype());
+        fluidwriter.WriteFiles();
+        break;
+    }
     case prb_fluid_ale:
     case prb_freesurf:
     {
