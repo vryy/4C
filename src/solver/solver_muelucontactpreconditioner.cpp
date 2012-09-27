@@ -33,7 +33,8 @@
 
 #include <MueLu_CoalesceDropFactory.hpp>
 //#include <MueLu_UCAggregationFactory.hpp>
-#include <MueLu_ExperimentalAggregationFactory.hpp>
+//#include <MueLu_ExperimentalAggregationFactory.hpp>
+#include <MueLu_UncoupledAggregationFactory.hpp>
 #include <MueLu_TentativePFactory.hpp>
 #include <MueLu_SaPFactory.hpp>
 #include <MueLu_PgPFactory.hpp>
@@ -267,10 +268,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   Teuchos::ArrayRCP<unsigned int> aggStat;
   if(nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows/nDofsPerNode);
   for(LocalOrdinal i=0; i<nDofRows; ++i) {
-    aggStat[i/nDofsPerNode] = 0; //MueLu::READY;
+    aggStat[i/nDofsPerNode] = MueLu::NodeStats::READY;
     GlobalOrdinal grid = xfullmap->getGlobalElement(i);
     if(xSlaveDofMap->isNodeGlobalElement(grid)) {
-      aggStat[i/nDofsPerNode] |= MueLu::NODEONEPT;
+      aggStat[i/nDofsPerNode] = MueLu::NodeStats::ONEPT;
     }
   }
   Finest->Set("coarseAggStat",aggStat);
@@ -301,11 +302,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // aggregation factory
   //Teuchos::RCP<UCAggregationFactory> UCAggFact = Teuchos::rcp(new UCAggregationFactory(dropFact));
-  Teuchos::RCP<ExperimentalAggregationFactory> UCAggFact = Teuchos::rcp(new ExperimentalAggregationFactory(dropFact));
+  //Teuchos::RCP<ExperimentalAggregationFactory> UCAggFact = Teuchos::rcp(new ExperimentalAggregationFactory(dropFact));
+  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(dropFact));
   UCAggFact->SetMinNodesPerAggregate(minPerAgg);
   UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
-  //UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
-  UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
+  UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
+  //UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
 
   Teuchos::RCP<PFactory> PFact;
   Teuchos::RCP<RFactory> RFact;
