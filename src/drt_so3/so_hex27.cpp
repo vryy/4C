@@ -287,6 +287,8 @@ void DRT::ELEMENTS::So_hex27::soh27_expol
   }
 
   // "assembly" of extrapolated nodal stresses
+  // here, we use that the gaussian points are numbered in the same pattern
+  // as the nodes
   for (int i=0;i<NUMNOD_SOH27;++i)
   {
     int gid = NodeIds()[i];
