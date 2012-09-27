@@ -15,64 +15,12 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 
 
 #include "fluid_ele.H"
+#include "fluid_ele_action.H"
 #include "fluid_ele_boundary_calc.H"
 #include "fluid_ele_calc_weak_dbc.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_opti/topopt_fluidAdjoint3_boundary.H"
-
-
-/*---------------------------------------------------------------------*
-|  converts a string into an action for this element                   |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::ActionType DRT::ELEMENTS::FluidBoundary::convertStringToActionType(
-    const string& action) const
-{
-  dsassert(action != "none", "No action supplied");
-
-  DRT::ELEMENTS::FluidBoundary::ActionType act = FluidBoundary::none;
-  if (action == "none") dserror("No action supplied");
-  else if (action == "integrate_Shapefunction")
-    act = FluidBoundary::integrate_Shapefunction;
-  else if (action == "area calculation")
-    act = FluidBoundary::areacalc;
-  else if (action == "calc_flowrate")
-    act = FluidBoundary::calc_flowrate;
-  else if (action == "flowrate_deriv")
-    act = FluidBoundary::flowratederiv;
-  else if (action == "Outlet impedance")
-    act = FluidBoundary::Outletimpedance;
-  else if (action == "calc_node_normal")
-    act = FluidBoundary::calc_node_normal;
-  else if (action == "calc_node_curvature")
-    act = FluidBoundary::calc_node_curvature;
-  else if (action == "calc_surface_tension")
-    act = FluidBoundary::calc_surface_tension;
-  else if (action == "enforce_weak_dbc")
-    act = FluidBoundary::enforce_weak_dbc;
-  else if (action == "MixedHybridDirichlet")
-    act = FluidBoundary::mixed_hybrid_dbc;
-  else if (action == "conservative_outflow_bc")
-    act = FluidBoundary::conservative_outflow_bc;
-  else if (action == "calc_Neumann_inflow")
-    act = FluidBoundary::calc_Neumann_inflow;
-  else if (action == "calculate integrated pressure")
-    act = FluidBoundary::integ_pressure_calc;
-  else if (action == "center of mass calculation")
-    act = FluidBoundary::center_of_mass_calc;
-  else if (action == "calculate traction velocity component")
-    act = FluidBoundary::traction_velocity_component;
-  else if (action == "calculate Uv integral component")
-    act = FluidBoundary::traction_Uv_integral_component;
-  else if (action == "no penetration")
-    act = FluidBoundary::no_penetration;
-  else if (action == "AdjointNeumannBoundaryCondition")
-    act = FluidBoundary::adjoint_neumann;
-  else
-    dserror("Unknown type of action for Fluid_Boundary: %s",action.c_str());
-
-  return act;
-}
 
 
 /*----------------------------------------------------------------------*
@@ -89,17 +37,14 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
     Epetra_SerialDenseVector& elevec3)
 {
   // get the action required
-  const string action = params.get<string>("action","none");
-  const DRT::ELEMENTS::FluidBoundary::ActionType act = convertStringToActionType(action);
-
-
+  const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params,"action");
 
   // get status of Ale
   const bool isale = this->ParentElement()->IsAle();
 
   switch(act)
   {
-  case FluidBoundary::integrate_Shapefunction:
+  case FLD::integrate_Shapefunction:
   {
     RefCountPtr<const Epetra_Vector> dispnp;
     vector<double> mydispnp;
@@ -123,7 +68,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         mydispnp);
     break;
   }
-  case FluidBoundary::areacalc:
+  case FLD::areacalc:
   {
     if (this->Owner() == discretization.Comm().MyPID())
       DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->AreaCaculation(
@@ -133,7 +78,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
           lm);
     break;
   }
-  case FluidBoundary::integ_pressure_calc:
+  case FLD::integ_pressure_calc:
   {
     if(this->Owner() == discretization.Comm().MyPID())
       DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->IntegratedPressureParameterCalculation(
@@ -144,7 +89,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
     break;
   }
   // general action to calculate the flow rate
-  case FluidBoundary::calc_flowrate:
+  case FLD::calc_flowrate:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ComputeFlowRate(
         this,
@@ -154,7 +99,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::flowratederiv:
+  case FLD::flowratederiv:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->FlowRateDeriv(
         this,
@@ -168,7 +113,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec3);
     break;
   }
-  case FluidBoundary::Outletimpedance:
+  case FLD::Outletimpedance:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ImpedanceIntegration(
         this,
@@ -178,7 +123,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::calc_node_normal:
+  case FLD::ba_calc_node_normal:
   {
     RefCountPtr<const Epetra_Vector> dispnp;
     vector<double> mydispnp;
@@ -201,7 +146,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         mydispnp);
     break;
   }
-  case FluidBoundary::calc_node_curvature:
+  case FLD::calc_node_curvature:
   {
     RefCountPtr<const Epetra_Vector> dispnp;
     vector<double> mydispnp;
@@ -239,7 +184,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         mynormals);
     break;
   }
-  case FluidBoundary::enforce_weak_dbc:
+  case FLD::enforce_weak_dbc:
   {
     return DRT::ELEMENTS::FluidBoundaryWeakDBCInterface::Impl(this)->EvaluateWeakDBC(
         this,
@@ -250,7 +195,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::mixed_hybrid_dbc:
+  case FLD::mixed_hybrid_dbc:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->MixHybDirichlet(
         this,
@@ -261,7 +206,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::conservative_outflow_bc:
+  case FLD::conservative_outflow_bc:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ConservativeOutflowConsistency(
         this,
@@ -272,7 +217,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::calc_Neumann_inflow:
+  case FLD::calc_Neumann_inflow:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->NeumannInflow(
         this,
@@ -283,7 +228,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::calc_surface_tension:
+  case FLD::calc_surface_tension:
   {
     // employs the divergence theorem acc. to Saksono eq. (24) and does not
     // require second derivatives.
@@ -313,7 +258,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         mycurvature);
     break;
   }
-  case FluidBoundary::center_of_mass_calc:
+  case FLD::center_of_mass_calc:
   {
     // evaluate center of mass
     if(this->Owner() == discretization.Comm().MyPID())
@@ -324,7 +269,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
           lm);
     break;
   }
-  case FluidBoundary::traction_velocity_component:
+  case FLD::traction_velocity_component:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->CalcTractionVelocityComponent(
         this,
@@ -334,7 +279,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::traction_Uv_integral_component:
+  case FLD::traction_Uv_integral_component:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ComputeNeumannUvIntegral(
         this,
@@ -344,7 +289,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::no_penetration:
+  case FLD::no_penetration:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->NoPenetration(
         this,
@@ -356,7 +301,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FluidBoundary::adjoint_neumann:
+  case FLD::ba_calc_adjoint_neumann:
   {
     DRT::ELEMENTS::FluidAdjoint3BoundaryImplInterface::Impl(this)->EvaluateNeumann(
         this,
@@ -368,7 +313,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
     break;
   }
   default:
-    dserror("Unknown type of action for Fluid_Boundary: %s",action.c_str());
+    dserror("Unknown type of action for Fluid_Boundary!");
   } // end of switch(act)
 
   return 0;

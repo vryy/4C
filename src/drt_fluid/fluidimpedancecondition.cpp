@@ -16,6 +16,7 @@ Maintainer: Christiane Förster
 #include "fluidimpedancecondition.H"
 
 #include "../linalg/linalg_ana.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 
 
@@ -687,7 +688,7 @@ double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, i
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set("action","area calculation");
+  eleparams.set<int>("action",FLD::areacalc);
   eleparams.set<double>("Area calculation", 0.0);
   eleparams.set<double>("viscosity", 0.0);
   eleparams.set<double>("density", 0.0);
@@ -876,7 +877,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set("action","calc_flowrate");
+  eleparams.set<int>("action",FLD::calc_flowrate);
   eleparams.set("total time",time);
 
   // get a vector layout from the discretization to construct matching
@@ -927,7 +928,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   }
 
 #if 0 // This is kept for some minor debugging purposes
-  eleparams.set("action","calculate integrated pressure");
+  eleparams.set<int>("action",FLD::integ_pressure_calc);
   eleparams.set<double>("Inlet integrated pressure", 0.0);
   eleparams.set("total time",time);
 
@@ -1026,7 +1027,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   // call the element to apply the pressure
   ParameterList eleparams;
   // action for elements
-  eleparams.set("action","Outlet impedance");
+  eleparams.set<int>("action",FLD::Outletimpedance);
 
   eleparams.set("total time",time);
   eleparams.set("delta time",dta);

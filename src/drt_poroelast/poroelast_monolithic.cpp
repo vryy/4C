@@ -40,6 +40,7 @@
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_adapter/ad_fld_poro.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -1034,8 +1035,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
   // create the parameters for the discretization
   Teuchos::ParameterList fparams;
   // action for elements
-  const std::string action = "calc_porousflow_fluid_coupling";
-  fparams.set("action", action);
+  fparams.set<int>("action", FLD::calc_porousflow_fluid_coupling);
   // other parameters that might be needed by the elements
   fparams.set("delta time", Dt());
   fparams.set("total time", Time());

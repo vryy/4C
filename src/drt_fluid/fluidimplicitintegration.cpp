@@ -50,6 +50,9 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_adapter/ad_opt.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include "../drt_opti/topopt_optimizer.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/sutherland.H"
 
 #ifdef D_ARTNET
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -463,9 +466,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
 
       // get one instance of the dynamic Smagorinsky class
-      DynSmag_=rcp(new DynSmagFilter(discret_            ,
-                                     pbcmapmastertoslave_,
-                                     *params_             ));
+      DynSmag_=rcp(new FLD::DynSmagFilter(discret_            ,
+                                          pbcmapmastertoslave_,
+                                          *params_             ));
     }
     else if (physmodel == "Smagorinsky")
       turbmodel_ = INPAR::FLUID::smagorinsky;
@@ -483,9 +486,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       {
         scale_sep_ = INPAR::FLUID::box_filter;
         // get one instance of the dynamic Smagorinsky class
-        DynSmag_=rcp(new DynSmagFilter(discret_            ,
-                                       pbcmapmastertoslave_,
-                                       *params_             ));
+        DynSmag_=rcp(new FLD::DynSmagFilter(discret_            ,
+                                            pbcmapmastertoslave_,
+                                            *params_             ));
       }
       else if (scale_sep == "algebraic_multigrid_operator")
       {
@@ -521,9 +524,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
         scale_sep_ = INPAR::FLUID::box_filter;
 
         // get one instance of the dynamic Smagorinsky class
-        DynSmag_=rcp(new DynSmagFilter(discret_            ,
-                                       pbcmapmastertoslave_,
-                                       *params_             ));
+        DynSmag_=rcp(new FLD::DynSmagFilter(discret_            ,
+                                            pbcmapmastertoslave_,
+                                            *params_             ));
 
         if (fssgv_ != "No")
           dserror("No fine-scale subgrid viscosity for this scale separation operator!");
@@ -602,14 +605,20 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // set density variable to 1.0 and get gas constant for low-Mach-number
   // flow and get constant density variable for incompressible flow
   // ---------------------------------------------------------------------
-  if (physicaltype_ == INPAR::FLUID::loma or physicaltype_ == INPAR::FLUID::varying_density)
+  if (physicaltype_ == INPAR::FLUID::loma)
   {
     // get gas constant
-    ParameterList eleparams;
-    eleparams.set("action","get_gas_constant");
-    eleparams.set<int>("Physical Type", physicaltype_);
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-    gasconstant_ = eleparams.get("gas constant", 1.0);
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
+    if (id==-1)
+      dserror("Could not find sutherland material");
+    else
+    {
+      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
+      // we need the kinematic viscosity here
+      gasconstant_ = actmat->gasconst_;
+    }
+
     // potential check here -> currently not executed
     //if (gasconstant_ < EPS15) dserror("received zero or negative gas constant");
   }
@@ -1157,7 +1166,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 #endif // D_RED_AIRWAYS
 
-
       //------------------------------------------------------------------
       // Add the traction velocity component
       //------------------------------------------------------------------
@@ -1193,7 +1201,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
       // set action type
-      eleparams.set("action","calc_fluid_systemmat_and_residual");
+      eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
       eleparams.set<int>("physical type",physicaltype_);
 
       // parameters for turbulence approach
@@ -1279,7 +1287,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           ParameterList eleparams;
 
           // set action for elements
-          eleparams.set("action","calc_surface_tension");
+          eleparams.set<int>("action",FLD::calc_surface_tension);
 
           discret_->ClearState();
           discret_->SetState("dispnp", dispnp_);
@@ -1299,7 +1307,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           ParameterList weakdbcparams;
 
           // set action for elements
-          weakdbcparams.set("action"    ,"enforce_weak_dbc");
+          weakdbcparams.set<int>("action"    ,FLD::enforce_weak_dbc);
           //weakdbcparams.set("gdt"       ,gamma_*dta_        );
           //weakdbcparams.set("afgdt"     ,alphaF_*gamma_*dta_);
           //weakdbcparams.set("total time",time_             );
@@ -1359,7 +1367,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           ParameterList mhdbcparams;
 
           // set action for elements
-          mhdbcparams.set("action"    ,"MixedHybridDirichlet");
+          mhdbcparams.set<int>("action"    ,FLD::mixed_hybrid_dbc);
 
           // set the only required state vectors
           if (is_genalpha_)
@@ -1434,7 +1442,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           ParameterList condparams;
 
           // action for elements
-          condparams.set("action","calc_Neumann_inflow");
+          condparams.set<int>("action",FLD::calc_Neumann_inflow);
 
           // set thermodynamic pressure
           condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -1594,7 +1602,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         ParameterList mode_params;
 
         // set action for elements
-        mode_params.set("action","integrate_shape");
+        mode_params.set<int>("action",FLD::integrate_shape);
 
         if (alefluid_)
         {
@@ -1896,7 +1904,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       {
         ParameterList eleparams;
         // set action for elements
-        eleparams.set("action","calc_node_normal");
+        eleparams.set<int>("action",FLD::calc_node_normal);
 
         // get a vector layout from the discretization to construct matching
         // vectors and matrices
@@ -2205,7 +2213,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           ParameterList mode_params;
 
           // set action for elements
-          mode_params.set("action","integrate_shape");
+          mode_params.set<int>("action",FLD::integrate_shape);
 
           if (alefluid_)
           {
@@ -2499,7 +2507,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   }
 
   // set action type
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
   eleparams.set<int>("physical type",physicaltype_);
 
   // parameters for turbulence model
@@ -2567,7 +2575,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     ParameterList condparams;
 
     // action for elements
-    condparams.set("action","calc_Neumann_inflow");
+    condparams.set<int>("action",FLD::calc_Neumann_inflow);
 
     // set thermodynamic pressure
     condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -3273,7 +3281,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   ParameterList eleparams;
 
   // set action type
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
   eleparams.set<int>("physical type",physicaltype_);
 
   // set thermodynamic pressures
@@ -3328,7 +3336,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     ParameterList eleparams;
 
     // set action for elements
-    eleparams.set("action","calc_surface_tension");
+    eleparams.set<int>("action",FLD::calc_surface_tension);
 
     discret_->ClearState();
     discret_->SetState("dispnp", dispnp_);
@@ -3428,7 +3436,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     // create the parameters for the discretization
     ParameterList eleparams;
     // action for elements
-    eleparams.set("action","time update for subscales");
+    eleparams.set<int>("action",FLD::calc_fluid_genalpha_update_for_subscales);
 
     // update time paramters
     if (is_genalpha_)
@@ -4178,7 +4186,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   ParameterList eleparams;
 
   // set action type
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
   eleparams.set<int>("physical type",physicaltype_);
 
   // parameters for turbulence approach
@@ -4984,7 +4992,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     ParameterList eleparams;
 
     // action for elements
-    eleparams.set("action","calc_fluid_error");
+    eleparams.set<int>("action",FLD::calc_fluid_error);
     eleparams.set<int>("calculate error",calcerr);
 
     // set vector values needed by elements
@@ -5337,7 +5345,10 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
     // perform filtering and computation of Cs
     // compute averaged values for LijMij and MijMij
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
-    DynSmag_->ApplyFilterForDynamicComputationOfCs(velnp_,dirichtoggle);
+    if (is_genalpha_)
+       DynSmag_->ApplyFilterForDynamicComputationOfCs(velaf_,scaaf_,thermpressaf_,dirichtoggle);
+    else
+       DynSmag_->ApplyFilterForDynamicComputationOfCs(velnp_,scaaf_,thermpressaf_,dirichtoggle);
   }
   else if (turbmodel_==INPAR::FLUID::scale_similarity or turbmodel_==INPAR::FLUID::scale_similarity_basic)
   {
@@ -5348,13 +5359,13 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       // perform filtering
       const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
       // call only filtering
-      if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+      if (is_genalpha_)
       {
-        DynSmag_->ApplyFilter(velaf_,dirichtoggle);
+        DynSmag_->ApplyFilter(velaf_,scaaf_,thermpressaf_,dirichtoggle);
       }
       else
       {
-        DynSmag_->ApplyFilter(velnp_,dirichtoggle);
+        DynSmag_->ApplyFilter(velnp_,scaaf_,thermpressaf_,dirichtoggle);
       }
       // get filtered fields
       filteredvel_->PutScalar(0.0);
@@ -5393,7 +5404,7 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       RCP<Epetra_MultiVector> row_finescalereystretmp;
       row_finescalereystretmp = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 
-      if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+      if (is_genalpha_)
       {
         /*-------------------------------------------------------------------
          * remark:
@@ -5590,10 +5601,10 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       // perform filtering
       const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
       // call only filtering
-      if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-        DynSmag_->ApplyFilter(velaf_,dirichtoggle);
+      if (is_genalpha_)
+        DynSmag_->ApplyFilter(velaf_,scaaf_,thermpressaf_,dirichtoggle);
       else
-        DynSmag_->ApplyFilter(velnp_,dirichtoggle);
+        DynSmag_->ApplyFilter(velnp_,scaaf_,thermpressaf_,dirichtoggle);
       // get fine-scale velocity
       DynSmag_->OutputofFineScaleVel(fsvelaf_);
 
@@ -5611,7 +5622,7 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
     }
     case INPAR::FLUID::geometric_multigrid_operator:
     {
-      if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+      if (is_genalpha_)
         ScaleSepGMO_->ApplyScaleSeparation(velaf_,fsvelaf_);
       else
         ScaleSepGMO_->ApplyScaleSeparation(velnp_,fsvelaf_);
@@ -5643,7 +5654,7 @@ void FLD::FluidImplicitTimeInt::OutputofFilteredVel(
   RCP<Epetra_Vector> row_finescaleveltmp;
   row_finescaleveltmp = rcp(new Epetra_Vector(*dofrowmap,true));
 
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  if (is_genalpha_)
   {
     // get fine scale velocity
     if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
@@ -5675,7 +5686,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::IntegrateInterfaceShape(s
 {
   ParameterList eleparams;
   // set action for elements
-  eleparams.set("action","integrate_Shapefunction");
+  eleparams.set<int>("action",FLD::integrate_Shapefunction);
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -5804,7 +5815,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     discret_->SetState("dispnp", griddisp);
     discret_->SetState("gridv", zeros_);
 
-    eleparams.set("action","calc_fluid_systemmat_and_residual");
+    eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
     eleparams.set<int>("physical type",physicaltype_);
     // set scheme-specific element parameters and vector values
     if (is_genalpha_)
@@ -5961,7 +5972,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
 
   ParameterList eleparams;
   // set action for elements
-  eleparams.set("action","calc_node_normal");
+  eleparams.set<int>("action",FLD::ba_calc_node_normal);
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -6069,7 +6080,7 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
 {
   ParameterList eleparams;
 
-  eleparams.set("action","set_general_fluid_parameter");
+  eleparams.set<int>("action",FLD::set_general_fluid_parameter);
 
   // set general element parameters
   eleparams.set("form of convective term",convform_);
@@ -6096,7 +6107,7 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
 {
   ParameterList eleparams;
 
-  eleparams.set("action","set_time_parameter");
+  eleparams.set<int>("action",FLD::set_time_parameter);
 
   // set general element parameters
   eleparams.set("dt",dta_);
@@ -6140,7 +6151,7 @@ void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
 {
   ParameterList eleparams;
 
-  eleparams.set("action","set_turbulence_parameter");
+  eleparams.set<int>("action",FLD::set_turbulence_parameter);
 
   // set general parameters for turbulent flow
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -6162,7 +6173,7 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
 {
   ParameterList eleparams;
 
-  eleparams.set("action","set_loma_parameter");
+  eleparams.set<int>("action",FLD::set_loma_parameter);
 
   // set parameters to update material with subgrid-scale temperature
   // potential inclusion of addtional subgrid-scale terms in continuity equation
@@ -6272,6 +6283,13 @@ void FLD::FluidImplicitTimeInt::UpdateNewton(Teuchos::RCP<const Epetra_Vector> v
 // -------------------------------------------------------------------
 Teuchos::RCP<FLD::TurbulenceStatisticManager> FLD::FluidImplicitTimeInt::TurbulenceStatisticManager()
   {return statisticsmanager_;};
+
+
+// -------------------------------------------------------------------
+// provide access to box filter for dynamic Smagorinsky model rasthofer
+// -------------------------------------------------------------------
+Teuchos::RCP<FLD::DynSmagFilter> FLD::FluidImplicitTimeInt::DynSmagFilter() {return DynSmag_; }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -6426,7 +6444,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
     // generate a parameterlist for communication and control
     ParameterList myparams;
     // action for elements
-    myparams.set("action","calc_mean_Cai");
+    myparams.set<int>("action",FLD::calc_mean_Cai);
     myparams.set<int>("physical type",physicaltype_);
     
     // set state vector to pass distributed vector to the element
@@ -6484,7 +6502,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
     }
 
     // store value in element parameter list
-    myparams.set("action","set_mean_Cai");
+    myparams.set<int>("action",FLD::set_mean_Cai);
     myparams.set<double>("meanCai",meanCai);
     for (int nele=0;nele<discret_->NumMyRowElements();++nele)
     {
@@ -6563,7 +6581,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
 {
   // set action in order to calculate the integrated divergence operator
   ParameterList params;
-  params.set("action","calc_divop");
+  params.set<int>("action",FLD::calc_divop);
 
   // integrated divergence operator B in vector form
   Teuchos::RCP<Epetra_Vector> divop = rcp(new Epetra_Vector(velnp_->Map(),true));

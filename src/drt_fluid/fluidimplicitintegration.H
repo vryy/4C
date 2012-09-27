@@ -497,6 +497,8 @@ public:
 
   /// provide access to turbulence statistics manager
   Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
+  /// provide access to the box filter for dynamic Smagorinsky model
+  Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter();
 
   /// introduce surface split extractor object
   /*!
@@ -843,7 +845,7 @@ protected:
   //        -------------------------
 
   //! one instance of the filter object
-  RCP<DynSmagFilter> DynSmag_;
+  RCP<FLD::DynSmagFilter> DynSmag_;
   RCP<LESScaleSeparation> ScaleSepGMO_;
 
   //@}

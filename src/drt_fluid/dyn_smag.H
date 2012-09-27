@@ -51,6 +51,9 @@ Maintainer: Ursula Rasthofer
 #include "Teuchos_TimeMonitor.hpp"
 #include "Teuchos_ParameterList.hpp"
 
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_scatra.H"
+
 using namespace std;
 using namespace Teuchos;
 
@@ -77,6 +80,11 @@ public:
   */
   virtual ~DynSmagFilter();
 
+  void AddScatra(
+    RCP<DRT::Discretization>     scatradis,
+    INPAR::SCATRA::ScaTraType    scatratype,
+    RCP<map<int,vector<int> > >  scatra_pbcmapmastertoslave);
+
   /*!
   \brief Perform box filter operation, compare filtered quantities
   to solution to get an estimate for Cs (using clpping), average
@@ -94,12 +102,24 @@ public:
 
   */
   void ApplyFilterForDynamicComputationOfCs(
-    Teuchos::RCP<Epetra_Vector>             solution    ,
+    Teuchos::RCP<Epetra_Vector>             velocity,
+    Teuchos::RCP<Epetra_Vector>             scalar,
+    const double                            thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
+  void ApplyFilterForDynamicComputationOfPrt(
+    Teuchos::RCP<Epetra_MultiVector>        velocity,
+    Teuchos::RCP<Epetra_Vector>             scalar,
+    const double                            thermpress,
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
+    ParameterList&                          extraparams
+    );
+
   void ApplyFilter(
-    Teuchos::RCP<Epetra_Vector>             solution    ,
+          Teuchos::RCP<Epetra_Vector>             velocity,
+          Teuchos::RCP<Epetra_Vector>             scalar,
+          const double                            thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
@@ -295,13 +315,18 @@ private:
                              set to zero
 
   */
-//  void DynSmagBoxFilter(
-//    Teuchos::RCP<Epetra_Vector>             velocity    ,
-//    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
-//    );
 
   void ApplyBoxFilter(
     const Teuchos::RCP<const Epetra_Vector> velocity,
+    const Teuchos::RCP<const Epetra_Vector> scalar,
+    const double                            thermpress,
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+    );
+
+  void ApplyBoxFilterScatra(
+    const Teuchos::RCP<const Epetra_MultiVector> velocity,
+    const Teuchos::RCP<const Epetra_Vector> scalar,
+    const double                            thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
@@ -314,6 +339,17 @@ private:
   */
   void DynSmagComputeCs();
 
+  /*!
+  \brief Compute Prt using the filtered quantities.
+  This is an element call!
+
+  For a turbulent channel flow, the averaging of the turbulent
+  Prandtl number is done in here.
+  */
+  void DynSmagComputePrt(ParameterList& extraparams,
+                         int& numele_layer);
+
+
   //! @name input arguments of the constructor
   //
   //! the discretization
@@ -322,6 +358,8 @@ private:
   RCP<map<int,vector<int> > >  pbcmapmastertoslave_;
   //! parameterlist including time params, stabilization params and turbulence sublist
   ParameterList&               params_ ;
+  //! flag for physical type of fluid flow
+  INPAR::FLUID::PhysicalType   physicaltype_;
   //@}
 
   //! @name control parameters
@@ -331,6 +369,12 @@ private:
   bool                         apply_box_filter_;
   //@}
 
+  //! @name special scatra variables
+  //! the discretization
+  RCP<DRT::Discretization>     scatradiscret_;
+  INPAR::SCATRA::ScaTraType    scatratype_;
+  RCP<map<int,vector<int> > >  scatra_pbcmapmastertoslave_;
+  //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)
   //        --------------------------
@@ -341,16 +385,52 @@ private:
   RCP<Epetra_MultiVector>      filtered_reynoldsstress_;
   //! the modeled subgrid stress in nodes (9 vectors)
   RCP<Epetra_MultiVector>      filtered_modeled_subgrid_stress_;
+  //! the filtered velocities times rho (3 vectors)
+  RCP<Epetra_MultiVector>      filtered_dens_vel_;
+  //! the filtered density (vector)
+  RCP<Epetra_Vector>           filtered_dens_;
+  //! the filtered trace of the strain times rho (vector)
+  RCP<Epetra_Vector>           filtered_dens_trace_;
+  //! the filtered strainrate times rho (vector)
+  RCP<Epetra_Vector>           filtered_dens_strainrate_;
   //! the modeled fine scale velocities in nodes (3 vectors)
   RCP<Epetra_MultiVector>      fs_vel_;
+  //! the filtered density times temperature times velocity (scalar)
+  RCP<Epetra_MultiVector>      filtered_dens_vel_temp_;
+  //! the filtered density times temperature gradient times rate of strain (scalar)
+  RCP<Epetra_MultiVector>      filtered_dens_rateofstrain_temp_;
+//  //! the filtered temperature gradient (scalar)
+//  RCP<Epetra_MultiVector>      filtered_gradtemp_;
+  //! the filtered temperature (scalar)
+  RCP<Epetra_Vector>           filtered_temp_;
+  //! the filtered density times temperature (scalar)
+  RCP<Epetra_Vector>           filtered_dens_temp_;
   //! the filtered vel exported to column map
   RCP<Epetra_MultiVector>      col_filtered_vel_;
   //! the filtered reystress exported to column map
   RCP<Epetra_MultiVector>      col_filtered_reynoldsstress_;
   //! the modeled subgrid stresses exported to column map
   RCP<Epetra_MultiVector>      col_filtered_modeled_subgrid_stress_;
+  //! the filtered velocities times rho exported to column map
+  RCP<Epetra_MultiVector>      col_filtered_dens_vel_;
+  //! the filtered density exported to column map
+  RCP<Epetra_Vector>           col_filtered_dens_;
+  //! the filtered divergence times rho exported to column map
+  RCP<Epetra_Vector>           col_filtered_dens_trace_;
+  //! the filtered strainrate times rho exported to column map
+  RCP<Epetra_Vector>           col_filtered_dens_strainrate_;
   //! the modeled fine scale velocities exported to column map
   RCP<Epetra_MultiVector>      col_fs_vel_;
+  //! the filtered density times temperature times velocity exported to column map (scalar)
+  RCP<Epetra_MultiVector>      col_filtered_dens_vel_temp_;
+  //! the filtered density times temperature gradient times rate of strain exported to column map (scalar)
+  RCP<Epetra_MultiVector>      col_filtered_dens_rateofstrain_temp_;
+//  //! the filtered temperature gradient exported to column map (scalar)
+//  RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
+  //! the filtered temperature exported to column map (scalar)
+  RCP<Epetra_Vector>           col_filtered_temp_;
+  //! the filtered density times temperature exported to column map (scalar)
+  RCP<Epetra_Vector>           col_filtered_dens_temp_;
   //@}
 
   //! @name homogeneous flow specials

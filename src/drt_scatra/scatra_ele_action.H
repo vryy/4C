@@ -2,7 +2,7 @@
 \file scatra_ele_action.H
 
 \brief provides enum of actions. Motivation was to have a quick enum
-comparison instead of a cumberso me string compare.
+comparison instead of a cumbersome string compare.
 
 <pre>
 Maintainer: Georg Bauer
@@ -38,6 +38,8 @@ enum Action {
   calc_error,                      // calc_error,
   calc_elch_conductivity,          // calc_elch_conductivity,
   calc_elch_initial_potential,     // calc_initial_potential_field,
+  calc_scatra_box_filter,          // calc_scatra_box_filter,
+  calc_turbulent_prandtl_number,   // calc_turbulent_prandtl_number
   calc_TG_mat_and_rhs,             // levelset_TaylorGalerkin,
   reinitialize_levelset,           // reinitialize_levelset,
   calc_error_reinit,               // calc_error_reinit,

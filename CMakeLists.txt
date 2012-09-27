@@ -836,8 +836,9 @@ set(OBJS_DRT_REGISTER
 set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra/scatra_ele_boundary_impl.cpp
   src/drt_scatra/scatra_ele_impl.cpp
-  src/drt_scatra/scatra_ele_impl_utils.cpp
   src/drt_scatra/scatra_ele_impl_reinit.cpp
+  src/drt_scatra/scatra_ele_impl_turbulence_service.cpp
+  src/drt_scatra/scatra_ele_impl_utils.cpp
   src/drt_scatra/scatra_element.cpp
   src/drt_scatra/scatra_element_boundary_evaluate.cpp
   src/drt_scatra/scatra_element_evaluate.cpp
@@ -2070,6 +2071,7 @@ baci_test(f3_onewaycoupled_afgenalpha 2 8)
 baci_test(f3_onewaycoupled_genalpha 2 8)
 baci_test(f3_onewaycoupled_ost 2 8)
 baci_test(f3_turbmodel_test_dynsmag 1 "")
+baci_test(f3_turbmodel_test_dynsmag_dens 1 "")
 baci_test(f3_turbmodel_test_fssgvisc 1 "")
 baci_test(f3_turbmodel_test_mfs 1 "")
 baci_test(f3_turbmodel_test_ssm 1 "")
@@ -2177,6 +2179,7 @@ baci_test(loma_2d_heated_chan_sgs_30x100 1 10)
 baci_test(loma_2d_heated_chan_sgs_30x100 2 10)
 baci_test(loma_mono_2d_heated_chan_sgs_30x100 1 10)
 baci_test(loma_mono_2d_heated_chan_sgs_30x100 2 10)
+baci_test(loma_turbmodel_test_dynsmag 1 "")
 baci_test(loma_turbmodel_test_fssgd 1 "")
 baci_test(loma_turbmodel_test_mfs 1 "")
 baci_test(mat_balzaniso_plate 1 "")
@@ -2280,6 +2283,7 @@ baci_test(scatra_myocard_material 2 "")
 baci_test(scatra_nurbs9_channel 1 "")
 baci_test(scatra_nurbs9_channel 2 5)
 baci_test(scatra_turbmodel_test_mfs 1 "")
+baci_test(scatra_turbmodel_test_dynsmag 1 "")
 baci_test(so3_h27_patchtest_nl_cost_drt 1 "")
 baci_test(so3_h27_patchtest_nl_cost_drt 2 "")
 baci_test(sohex20_patchtest_nl_cost_drt 1 "")

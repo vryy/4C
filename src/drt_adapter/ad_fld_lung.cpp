@@ -6,6 +6,7 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_io/io.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 
 /*======================================================================*/
@@ -135,7 +136,7 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
     ParameterList params;
     params.set("ConditionID",condID);
     params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
-    params.set("action","flowrate_deriv");
+    params.set<int>("action",FLD::flowratederiv);
     params.set("flowrateonly", true);
     const double dt = Dt();
     params.set("dt", dt);
@@ -242,7 +243,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
     map<int,RefCountPtr<DRT::Element> >::iterator curr;
 
     // define element action
-    params.set("action", "flowrate_deriv");
+    params.set<int>("action",FLD::flowratederiv);
 
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {

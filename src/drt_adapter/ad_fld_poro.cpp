@@ -20,6 +20,7 @@
 #include "../drt_io/io.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 /*======================================================================*/
 /* constructor */
@@ -62,7 +63,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
   ParameterList params;
 
   // set action for elements
-  params.set("action","no penetration");
+  params.set<int>("action",FLD::no_penetration);
   if(coupltype==0)
     params.set("coupling","fluid fluid");
   else if(coupltype==1)

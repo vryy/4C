@@ -20,6 +20,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_io/io_control.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -303,7 +304,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     if(model=="Dynamic_Smagorinsky")
     {
       // get one instance of the dynamic Smagorinsky class
-      DynSmag_=rcp(new DynSmagFilter(discret_            ,
+      DynSmag_=rcp(new FLD::DynSmagFilter(discret_            ,
                                      pbcmapmastertoslave_,
                                      *params_             ));
     }
@@ -933,7 +934,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
     // create the parameters for the discretization
     ParameterList eleparams;
     // action for elements
-    eleparams.set("action","time update for subscales");
+    eleparams.set<int>("action",FLD::calc_fluid_genalpha_update_for_subscales);
 
     // update time paramters
     eleparams.set("gamma"  ,gamma_ );
@@ -1317,7 +1318,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     discret_->SetState("scaaf",scaaf_);
     condparams.set("thsl",alphaF_*gamma_*dt_);
     condparams.set("rhs time factor",1.0);
-    condparams.set("action","calc_Neumann_inflow");
+    condparams.set<int>("action",FLD::calc_Neumann_inflow);
     condparams.set<int>("Physical Type",physicaltype_);
     condparams.set("using generalized-alpha time integration",true);
 
@@ -1337,7 +1338,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");
+  eleparams.set<int>("action",FLD::calc_fluid_genalpha_sysmat_and_residual);
   // choose what to assemble
   if (itenum_ == itemax_)
   {
@@ -1462,7 +1463,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     ParameterList weakdbcparams;
 
     // set action for elements
-    weakdbcparams.set("action"    ,"enforce_weak_dbc");
+    weakdbcparams.set<int>("action"    ,FLD::enforce_weak_dbc);
     weakdbcparams.set("gdt"       ,gamma_*dt_        );
     weakdbcparams.set("afgdt"     ,alphaF_*gamma_*dt_);
     weakdbcparams.set("total time",time_             );
@@ -1517,7 +1518,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     ParameterList mhdbcparams;
 
     // set action for elements
-    mhdbcparams.set("action"    ,"MixedHybridDirichlet");
+    mhdbcparams.set<int>("action"    ,FLD::mixed_hybrid_dbc);
     mhdbcparams.set("alpha_F",alphaF_);
     mhdbcparams.set("gamma"  ,gamma_ );
     mhdbcparams.set("dt"     ,dt_    );
@@ -1572,7 +1573,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   {
     ParameterList apply_cons_params;
     // set action for elements
-    apply_cons_params.set("action","conservative_outflow_bc");
+    apply_cons_params.set<int>("action",FLD::conservative_outflow_bc);
     apply_cons_params.set("timefac_mat" ,alphaF_*gamma_*dt_);
     apply_cons_params.set("timefac_rhs" ,               1.0);
 
@@ -1740,7 +1741,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       ParameterList mode_params;
 
       // set action for elements
-      mode_params.set("action","integrate_shape");
+      mode_params.set<int>("action",FLD::integrate_shape);
 
       if (alefluid_)
       {
@@ -2107,7 +2108,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
   ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");
+  eleparams.set<int>("action",FLD::calc_fluid_genalpha_sysmat_and_residual);
   eleparams.set("assemble matrix 1",true);
   eleparams.set("assemble matrix 2",false);
   eleparams.set("assemble vector 1",true);
@@ -2604,7 +2605,7 @@ void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   // perform filtering and computation of Cs
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
-    DynSmag_->ApplyFilterForDynamicComputationOfCs(velaf_,dirichtoggle);
+    DynSmag_->ApplyFilterForDynamicComputationOfCs(velaf_,scaaf_,0.0,dirichtoggle);
   }
 
   dtfilter_=Teuchos::Time::wallTime()-tcpu;
@@ -3148,7 +3149,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::IntegrateInterfaceSha
 {
   ParameterList eleparams;
   // set action for elements
-  eleparams.set("action","integrate_Shapefunction");
+  eleparams.set<int>("action",FLD::integrate_Shapefunction);
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -3342,7 +3343,7 @@ void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
 {
   ParameterList eleparams;
 
-  eleparams.set("action","set_general_fluid_parameter");
+  eleparams.set<int>("action",FLD::set_general_fluid_parameter);
 
   // set general element parameters
   eleparams.set("form of convective term","convective");
@@ -3367,7 +3368,7 @@ void FLD::FluidGenAlphaIntegration::SetElementTurbulenceParameter()
 {
   ParameterList eleparams;
 
-  eleparams.set("action","set_turbulence_parameter");
+  eleparams.set<int>("action",FLD::set_turbulence_parameter);
 
   // set general parameters for turbulent flow
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -3390,7 +3391,7 @@ void FLD::FluidGenAlphaIntegration::SetElementTimeParameter()
 {
   ParameterList eleparams;
 
-  eleparams.set("action","set_time_parameter");
+  eleparams.set<int>("action",FLD::set_time_parameter);
 
   // set general element parameters
   eleparams.set("dt",dt_);
@@ -3412,6 +3413,11 @@ void FLD::FluidGenAlphaIntegration::SetElementTimeParameter()
 // -------------------------------------------------------------------
 Teuchos::RCP<FLD::TurbulenceStatisticManager> FLD::FluidGenAlphaIntegration::TurbulenceStatisticManager()
   {return statisticsmanager_;}
+
+// -------------------------------------------------------------------
+// provide access to box filter for dynamic Smagorinsky model rasthofer
+// -------------------------------------------------------------------
+Teuchos::RCP<FLD::DynSmagFilter> FLD::FluidGenAlphaIntegration::DynSmagFilter() {return DynSmag_; }
 
 // -------------------------------------------------------------------
 // extrapolate from time mid-point to end-point         (mayr 12/2011)

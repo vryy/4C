@@ -3452,7 +3452,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_td(
   // if not available, the arrays for the subscale quantities have to
   // be resized and initialised to zero
 
-  ele->ActivateTDS(intpoints.IP().nquad,nsd_);
+//  ele->ActivateTDS(intpoints.IP().nquad,nsd_);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -3522,9 +3522,9 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_td(
 
     // update estimates for the subscale quantities
     const double facMtau = 1./(alphaM*tauM+afgdt);
-    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
-    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
-    const double fac3=(gamma*dt*tauM)*facMtau;
+//    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
+//    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
+//    const double fac3=(gamma*dt*tauM)*facMtau;
 
     /*-------------------------------------------------------------------*
      *                                                                   *
@@ -3563,19 +3563,19 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_td(
 
   */
 
-    for(int rr=0;rr<nsd_;++rr)
-    {
-      ele->UpdateSvelnpInOneDirection(
-          fac1       ,
-          fac2       ,
-          fac3       ,
-          resM_(rr)  ,
-          alphaF     ,
-          rr         ,
-          iquad      ,
-          svelnp_(rr),
-          svelaf_(rr));
-    }
+//    for(int rr=0;rr<nsd_;++rr)
+//    {
+//      ele->UpdateSvelnpInOneDirection(
+//          fac1       ,
+//          fac2       ,
+//          fac3       ,
+//          resM_(rr)  ,
+//          alphaF     ,
+//          rr         ,
+//          iquad      ,
+//          svelnp_(rr),
+//          svelaf_(rr));
+//    }
 
     /* the intermediate value of subscale acceleration is not needed to be
      * computed anymore --- we use the governing ODE to replace it ....
@@ -7922,7 +7922,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_td(
   // if not available, the arrays for the subscale quantities have to
   // be resized and initialised to zero
 
-  ele->ActivateTDS(intpoints.IP().nquad,nsd_);
+//  ele->ActivateTDS(intpoints.IP().nquad,nsd_);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -7984,9 +7984,9 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_td(
 
     // update estimates for the subscale quantities
     const double facMtau = 1./(alphaM*tauM+afgdt);
-    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
-    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
-    const double fac3=(gamma*dt*tauM)*facMtau;
+//    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
+//    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
+//    const double fac3=(gamma*dt*tauM)*facMtau;
 
     /*-------------------------------------------------------------------*
      *                                                                   *
@@ -8025,19 +8025,19 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_td(
 
   */
 
-    for(int rr=0;rr<nsd_;++rr)
-    {
-      ele->UpdateSvelnpInOneDirection(
-          fac1       ,
-          fac2       ,
-          fac3       ,
-          resM_(rr)  ,
-          alphaF     ,
-          rr         ,
-          iquad      ,
-          svelnp_(rr),
-          svelaf_(rr));
-    }
+//    for(int rr=0;rr<nsd_;++rr)
+//    {
+//      ele->UpdateSvelnpInOneDirection(
+//          fac1       ,
+//          fac2       ,
+//          fac3       ,
+//          resM_(rr)  ,
+//          alphaF     ,
+//          rr         ,
+//          iquad      ,
+//          svelnp_(rr),
+//          svelaf_(rr));
+//    }
 
     /* the intermediate value of subscale acceleration is not needed to be
      * computed anymore --- we use the governing ODE to replace it ....
@@ -10798,13 +10798,13 @@ int DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcResAvgs(
                (i)              (i)
 
       */
-      for (int rr=0;rr<3;++rr)
-      {
-        svelaf_(rr) =
-          alphaF      *(ele->Svelnp())(rr,iquad)
-          +
-          (1.0-alphaF)*(ele->Sveln())(rr,iquad);
-      }
+//      for (int rr=0;rr<3;++rr)
+//      {
+//        svelaf_(rr) =
+//          alphaF      *(ele->Svelnp())(rr,iquad)
+//          +
+//          (1.0-alphaF)*(ele->Sveln())(rr,iquad);
+//      }
     }
 
     /*---------------------------- get stabilisation parameter ---*/
@@ -11123,24 +11123,24 @@ int DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcResAvgs(
                        |                    |
                         \                  /
       */
-      if(tds == INPAR::FLUID::subscales_time_dependent)
-      {
-        eps_pspg-=
-          ((ele->Svelnp())(0,iquad)*pderxynp_(0)
-           +
-           (ele->Svelnp())(1,iquad)*pderxynp_(1)
-           +
-           (ele->Svelnp())(2,iquad)*pderxynp_(2))*fac;
-      }
-      else
-      {
+//      if(tds == INPAR::FLUID::subscales_time_dependent)
+//      {
+//        eps_pspg-=
+//          ((ele->Svelnp())(0,iquad)*pderxynp_(0)
+//           +
+//           (ele->Svelnp())(1,iquad)*pderxynp_(1)
+//           +
+//           (ele->Svelnp())(2,iquad)*pderxynp_(2))*fac;
+//      }
+//      else
+//      {
         eps_pspg+=tau_(1)*fac*
           (resM_(0)*pderxynp_(0)
            +
            resM_(1)*pderxynp_(1)
            +
            resM_(2)*pderxynp_(2));
-      }
+//      }
     }
 
     if(supg     == INPAR::FLUID::convective_stab_supg)
@@ -11911,7 +11911,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::SetParametersForTurbulenceMode
       }
       else
       {
-        Cs_delta_sq = ele->CsDeltaSq();
+        Cs_delta_sq = 0.0; //ele->CsDeltaSq();
       }
     }
     else

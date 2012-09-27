@@ -538,6 +538,26 @@ private:
   RefCountPtr<vector<double> >     incrsumCs_delta_sq_;
   //! increment of sumvisceff over in one timestep
   RefCountPtr<vector<double> >     incrsumvisceff_;
+  //! sum over Prt --- used only for dynamic Smagorinsky model
+  RefCountPtr<vector<double> >     sumPrt_;
+  //! sum over (Cs*delta)^2/Prt --- used only for dynamic Smagorinsky model
+  RefCountPtr<vector<double> >     sumCs_delta_sq_Prt_;
+  //! sum over effective diffusivity --- used only for dynamic Smagorinsky model
+  RefCountPtr<vector<double> >     sumdiffeff_;
+  //! increment of sumCs_delta_sq_Prt over in one timestep
+  RefCountPtr<vector<double> >     incrsumCs_delta_sq_Prt_;
+  //! increment of sumPrt over in one timestep
+  RefCountPtr<vector<double> >     incrsumPrt_;
+  //! increment of sumdiffeff over in one timestep
+  RefCountPtr<vector<double> >     incrsumdiffeff_;
+  //! sum over Ci --- used only for dynamic Smagorinsky model for loma
+  RefCountPtr<vector<double> >     sumCi_;
+  //! sum over (Ci*delta)^2 --- used only for dynamic Smagorinsky model for loma
+  RefCountPtr<vector<double> >     sumCi_delta_sq_;
+  //! increment of sumCi over in one timestep
+  RefCountPtr<vector<double> >     incrsumCi_;
+  //! increment of sumCi_delta_sq over in one timestep
+  RefCountPtr<vector<double> >     incrsumCi_delta_sq_;
 
   //!--------------------------------------------------
   //!  averaged quantities from scale similarity model

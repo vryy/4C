@@ -1018,20 +1018,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
           my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::fldpara_->Dt()
                            +my::fldpara_->Theta()*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
                            -2*visceff_*my::visc_old_(rr)+my::reacoeff_*(my::velint_(rr)+my::convvelint_(rr))))/my::fldpara_->Theta())-my::rhsmom_(rr);
-  #ifdef TAU_SUBGRID_IN_RES_MOM
-          if (my::fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
-             or my::fldpara_->TurbModAction() == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
-          {
-  #if 0
-            my::momres_old_(rr) += my::fldpara_->Cl()*(reystresshatdiv_(rr,0)
-                               - (velinthat_(0,0) * velhatderxy_(rr,0)
-                                 +velinthat_(1,0) * velhatderxy_(rr,1)
-                                 +velinthat_(2,0) * velhatderxy_(rr,2)
-                                 +velinthat_(nn,0) * velhatdiv_));
-  #endif
-            my::momres_old_(rr) += my::fldpara_->Cl()* (reystresshatdiv_(rr,0) - velhativelhatjdiv_(rr,0));
-          }
-  #endif
        }
 
   //      // modify residual integration factor for right-hand side in instat. case:

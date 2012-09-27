@@ -138,6 +138,9 @@ protected:
   /// AVM3-based scale separation
   void AVM3Separation();
 
+  /// dynamic Smagorinsky model
+  void DynamicComputationOfCs();
+
   /// add parameters specific for time-integration scheme
   void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);
 

@@ -57,7 +57,7 @@ LINALG::KrylovProjector::KrylovProjector(
 
         result.Norm2(&norm);
 
-        if(norm>1e-6)
+        if(norm>1e-9)
         {
           dserror("krylov projection failed, Ac returned %12.5e for kernel basis vector %d",norm,mm);
         }

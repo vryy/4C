@@ -1,12 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_impl.cpp
+\file fluid_ele_calc_turbulence_service.cpp
 
 \brief Internal implementation of Fluid element
 
 <pre>
-Maintainer:
-
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -29,8 +31,10 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
                                ParameterList&             turbmodelparams,
                                double&                    Cs_delta_sq,
+                               double&                    Ci_delta_sq,
                                int&                       nlayer,
-                               double CsDeltaSq)
+                               double                     CsDeltaSq,
+                               double                     CiDeltaSq)
 {
   if(fldpara_->TurbModAction() != INPAR::FLUID::no_model and nsd_ == 2)
     dserror("turbulence and 2D flow does not make any sense");
@@ -82,12 +86,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
             !=
             "not_specified")
     {
-      RCP<vector<double> > averaged_LijMij
-        =
-        turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
-      RCP<vector<double> > averaged_MijMij
-        =
-        turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+      RCP<vector<double> > averaged_LijMij = turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
+      RCP<vector<double> > averaged_MijMij = turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+      RCP<vector<double> > averaged_CI_numerator = Teuchos::null;
+      RCP<vector<double> > averaged_CI_denominator = Teuchos::null;
+      if (fldpara_->PhysicalType()==INPAR::FLUID::loma)
+      {
+        averaged_CI_numerator = turbmodelparams.get<RCP<vector<double> > >("averaged_CI_numerator_");
+        averaged_CI_denominator = turbmodelparams.get<RCP<vector<double> > >("averaged_CI_denominator_");
+      }
 
       // get homogeneous direction
       string homdir = turbmodelparams.get<string>("HOMDIR","not_specified");
@@ -196,20 +203,29 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
 
       // Cs_delta_sq is set by the averaged quantities
       Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-
       // clipping to get algorithm stable
       if (Cs_delta_sq<0)
+        Cs_delta_sq=0.0;
+
+      // Ci_delta_sq is set by the averaged quantities
+      if (fldpara_->PhysicalType()==INPAR::FLUID::loma)
       {
-        Cs_delta_sq=0;
+        Ci_delta_sq = 0.5 * (*averaged_CI_numerator)[nlayer]/(*averaged_CI_denominator)[nlayer] ;
+        if (Ci_delta_sq<0.0)
+          Ci_delta_sq=0.0;
       }
+
     }
     }
     else
     {
       // when no averaging was done, we just keep the calculated (clipped) value
       Cs_delta_sq = CsDeltaSq;
+      if (fldpara_->PhysicalType()==INPAR::FLUID::loma)
+        Ci_delta_sq = CiDeltaSq;
     }
   }
+
   return;
 } // FluidEleCalc::GetTurbulenceParams
 
@@ -223,6 +239,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
   const double                            vol,
   double&                                 Cs,
   double&                                 Cs_delta_sq,
+  double&                                 Ci_delta_sq,
   double&                                 l_tau
   )
 {
@@ -260,6 +277,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
 
     // for evaluation of statistics: remember the 'real' Cs
     Cs = sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
+
+    // calculate isotropic part of subgrid-stress tensor (loma only)
+    if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+    {
+        q_sq_ = densaf_ * Ci_delta_sq * rateofstrain * rateofstrain;
+    }
   }
   else
   {
@@ -1397,7 +1420,52 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FineScaleSimilaritySubGridViscosityTe
   return;
 }
 
-// Ursula is responsible for this comment!
+
+//----------------------------------------------------------------------
+// outpu for statistics of dynamic Smagorinsky           rasthofer 09/12
+//----------------------------------------------------------------------
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
+   const double Cs_delta_sq,
+   const double Ci_delta_sq,
+   const int    nlayer,
+   const int    eid,
+   const bool   isowned,
+   ParameterList&  turbmodelparams)
+{
+  // do the fastest test first
+  if (isowned)
+  {
+    if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
+        fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
+    {
+      if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+      {
+        if (turbmodelparams.get<string>("CANONICAL_FLOW","no") == "channel_flow_of_height_2" or
+            turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2" or
+            turbmodelparams.get<string>("CANONICAL_FLOW","no") == "scatra_channel_flow_of_height_2")
+        {
+          // Cs was changed in Sysmat (Cs->sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0)))
+          // to compare it with the standard Smagorinsky Cs
+          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs_;
+          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
+          (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
+          if (turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2")
+          {
+            // recompute delta = pow((vol),(1.0/3.0))
+            EvalShapeFuncAndDerivsAtEleCenter(eid);
+            (*(turbmodelparams.get<RCP<vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((fac_),(1.0/3.0));
+            (*(turbmodelparams.get<RCP<vector<double> > >("local_Ci_delta_sq_sum")))[nlayer]+=Ci_delta_sq;
+          }
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27>;

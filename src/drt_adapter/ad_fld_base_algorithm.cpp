@@ -766,6 +766,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("DUMPING_PERIOD",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_DUMPING_PERIOD"));
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("SAMPLING_START",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_SAMPLING_START"));
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("SAMPLING_STOP",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_SAMPLING_STOP"));
+  fluidtimeparams->sublist("TURBULENCE MODEL").set<double>("CHAN_AMPL_INIT_DIST",fdyn.sublist("TURBULENT INFLOW").get<double>("INFLOW_INIT_DIST"));
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective

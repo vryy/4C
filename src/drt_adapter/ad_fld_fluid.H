@@ -51,6 +51,7 @@ namespace IO
 namespace FLD
 {
   class TurbulenceStatisticManager;
+  class DynSmagFilter;
   namespace UTILS
   {
     class MapExtractor;
@@ -240,6 +241,8 @@ namespace ADAPTER {
 
     /// provide access to the turbulence statistic manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() = 0;
+    /// provide access to the box filter class for dynamic Smaorinsky model
+    virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() = 0;
 
     /// reset state vectors (needed for biofilm simulations)
     virtual void Reset() { dserror("reset function not implemented for this fluid adapter"); };

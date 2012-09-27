@@ -346,11 +346,11 @@ is_ale_(false)
 {
     distype_= dis_none;
 
-    Cs_delta_sq_=0;
-
+#if 0
     saccn_ .Shape(0,0);
     svelnp_.Shape(0,0);
     sveln_ .Shape(0,0);
+#endif
 
     return;
 }
@@ -361,11 +361,12 @@ is_ale_(false)
 DRT::ELEMENTS::Fluid::Fluid(const DRT::ELEMENTS::Fluid& old) :
 DRT::Element(old             ),
 distype_    (old.distype_    ),
-is_ale_     (old.is_ale_     ),
-Cs_delta_sq_(old.Cs_delta_sq_),
+is_ale_     (old.is_ale_     )
+#if 0
 saccn_      (old.saccn_      ),
 svelnp_     (old.svelnp_     ),
 sveln_      (old.sveln_      )
+#endif
 {
     return;
 }
@@ -396,11 +397,10 @@ void DRT::ELEMENTS::Fluid::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
   // is_ale_
   AddtoPack(data,is_ale_);
-  // Cs_delta_sq_, the Smagorinsky constant for the dynamic Smagorinsky model
-  AddtoPack(data,Cs_delta_sq_);
   // Discretisation type
   AddtoPack(data,distype_);
 
+#if 0
   // history variables
   AddtoPack(data,saccn_.M());
   AddtoPack(data,saccn_.N());
@@ -410,6 +410,7 @@ void DRT::ELEMENTS::Fluid::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,saccn_ .A(),size);
   AddtoPack(data,svelnp_.A(),size);
   AddtoPack(data,sveln_ .A(),size);
+#endif
 
   return;
 }
@@ -432,12 +433,10 @@ void DRT::ELEMENTS::Fluid::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   // is_ale_
   is_ale_ = ExtractInt(position,data);
-  // extract Cs_delta_sq_, the Smagorinsky constant for the dynamic
-  // Smagorinsky model
-  ExtractfromPack(position,data,Cs_delta_sq_);
   // distype
   distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
+#if 0
   // history variables (subgrid-scale velocities, accelerations and pressure)
   {
     int firstdim;
@@ -446,9 +445,11 @@ void DRT::ELEMENTS::Fluid::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,firstdim);
     ExtractfromPack(position,data,secondim);
 
+
     saccn_ .Shape(firstdim,secondim);
     svelnp_.Shape(firstdim,secondim);
     sveln_ .Shape(firstdim,secondim);
+
 
     int size = firstdim*secondim*sizeof(double);
 
@@ -456,6 +457,7 @@ void DRT::ELEMENTS::Fluid::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,&(svelnp_.A()[0]),size);
     ExtractfromPack(position,data,&(sveln_ .A()[0]),size);
   }
+#endif
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -593,6 +595,39 @@ RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateInternalFaces( DRT::Element* paren
 }
 
 
+int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+{
+  if (nds==1)
+  {
+    // what's the current problem type?
+    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    switch (probtype)
+    {
+      case prb_poroelast:
+      case prb_poroscatra:
+      {
+        return DRT::Problem::Instance()->NDim();
+        break;
+      }
+      default: // scalar transport
+      {
+        return 1;
+        break;
+      }
+    }
+  }
+  else if(nds==0)
+    return NumDofPerNode(node);
+  else
+  {
+    dserror("invalid number of dof sets");
+    return -1;
+  }
+}
+
+
+# if 0
+
 /*----------------------------------------------------------------------*
  |  activate time dependend subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/
@@ -690,35 +725,5 @@ void DRT::ELEMENTS::Fluid::UpdateSvelnpInOneDirection(
       return;
     }
 
-
-int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
-{
-  if (nds==1)
-  {
-    // what's the current problem type?
-    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-    switch (probtype)
-    {
-      case prb_poroelast:
-      case prb_poroscatra:
-      {
-        return DRT::Problem::Instance()->NDim();
-        break;
-      }
-      default: // scalar transport
-      {
-        return 1;
-        break;
-      }
-    }
-  }
-  else if(nds==0)
-    return NumDofPerNode(node);
-  else
-  {
-    dserror("invalid number of dof sets");
-    return -1;
-  }
-}
-
+#endif
 

@@ -20,6 +20,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
+#include "../drt_fluid/dyn_smag.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 // for AVM3 solver:
@@ -700,9 +701,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     << Step() <<","<<" time "<<initialtime<<")"<<endl;
   }
 
-  // are we really at step 0?
-  if(Step() !=0 ) //and scatratype_!= INPAR::SCATRA::scatratype_levelset)
-   ;// dserror("Step counter is not 0");
+//  // are we really at step 0?
+//  if(Step() !=0 ) //and scatratype_!= INPAR::SCATRA::scatratype_levelset)
+//   ;// dserror("Step counter is not 0");
 
   // zero out matrix and rhs entries !
   sysmat_->Zero();
@@ -2627,10 +2628,36 @@ const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggl
   return dirichtoggle;
 } // ScaTraTimIntImpl::DirichletToggle
 
-
 /*========================================================================*/
 // turbulence and related
 /*========================================================================*/
+
+/*----------------------------------------------------------------------*
+ | provide access to the dynamic Smagorinsky filter     rasthofer 98/12 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AccessDynSmagFilter(
+  Teuchos::RCP<FLD::DynSmagFilter> dynSmag
+)
+{
+  DynSmag_ = dynSmag;
+
+  // access to the dynamic Smagorinsky class is provided
+  // by the fluid scatra coupling algorithm
+  // therefore, we only have to add some scatra specific parameters here
+  if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+  {
+    if (myrank_ == 0)
+    {
+      std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+      std::cout << "Dynamic Smagorinsky model: provided access for ScaTra       " << std::endl;
+      std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    }
+    DynSmag_->AddScatra(discret_,scatratype_,pbcmapmastertoslave_);
+  }
+
+  return;
+}
+
 
 /*-------------------------------------------------------------------------*
  | calculate mean CsgsB to estimate CsgsD                                  |
@@ -2719,3 +2746,4 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
 
   return;
 }
+

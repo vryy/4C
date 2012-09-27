@@ -20,6 +20,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../drt_fluid/dyn_smag.H"
 
 
 /*----------------------------------------------------------------------*
@@ -217,6 +218,23 @@ void SCATRA::TimIntGenAlpha::AVM3Separation()
 
   // set fine-scale vector
   discret_->SetState("fsphinp",fsphiaf_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | dynamic Smagorinsky model                           rasthofer  08/12 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
+{
+  if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
+  {
+    // perform filtering and computation of Prt
+    // compute averaged values for LkMk and MkMk
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    DynSmag_->ApplyFilterForDynamicComputationOfPrt(convel_,phiaf_,thermpressaf_,dirichtoggle,*extraparams_);
+  }
 
   return;
 }

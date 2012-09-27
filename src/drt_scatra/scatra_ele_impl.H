@@ -301,29 +301,6 @@ private:
     const int            k      //!< index of current scalar
   );
 
-  //! calculate all-scale subgrid diffusivity
-  virtual void CalcSubgrDiff(  // ? subgrid = subgr or subgrid?
-    const double                          dt,        //!< current time-step length
-    const double                          timefac,   //!< time discretization factor
-    const enum INPAR::SCATRA::AssgdType   whichassgd,//!< all-scale subgrid-diffusivity definition
-    const bool                            assgd,     //!< all-scale subgrid-diff. flag
-    const double                          Cs,        //!< Smagorinsky constant
-    const double                          tpn,       //!< turbulent Prandtl number
-    const double                          vol,       //!< element volume
-    const int                             k          //!< index of current scalar
-  );
-
-  //! calculate fine-scale subgrid diffusivity
-  virtual void CalcFineScaleSubgrDiff(
-    DRT::Element*                         ele,       //!< the element we are dealing with
-    Epetra_SerialDenseVector&             subgrdiff, //!< subgrid-diff.-scaling vector ?
-    const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,//!< all-scale subgrid-diffusivity definition
-    const double                          Cs,        //!< Smagorinsky constant
-    const double                          tpn,       //!< turbulent Prandtl number
-    const double                          vol,       //!< element volume
-    const int                             k          //!< index of current scalar
-  );
-
   //! calculate stabilization parameter
   virtual void CalTau(
     DRT::Element*  ele,           //!< the element we are dealing with
@@ -340,24 +317,6 @@ private:
   virtual double CalcCharEleLength(
     const double  vol,     //!< element volume
     const double  vel_norm //!?
-  );
-
-  //! calculate coefficients of mutifractal subgrid-scale modeling
-  virtual void CalcBAndDForMultifracSubgridScales(
-    LINALG::Matrix<nsd_,1>&               B_mfs,     //!< coefficient for fine-scale velocity (will be filled)
-    double &                              D_mfs,     //!< coefficient for fine-scale scalar (will be filled)
-    const double                          Csgs_sgvel,//!< parameter of multifractal subgrid-scales (velocity)
-    const double                          alpha,     //!< grid-filter to test-filter ratio
-    const bool                            calc_N,    //!< flag to activate calculation of N
-    const double                          N_vel,     //!< value for N if not calculated
-    const enum INPAR::FLUID::RefVelocity  refvel,    //!< reference velocity
-    const enum INPAR::FLUID::RefLength    reflength, //!< reference length
-    const double                          c_nu,      //!< scaling for Re
-    const bool                            nwl,       //!< flag to activate near-wall limit
-    const double                          Csgs_sgphi,//!< parameter of multifractal subgrid-scales (phi)
-    const double                          c_diff,    //!< scaling for Re*Pr
-    const double                          vol,       //!< volume of element
-    const int                             k          //!< index of current scalar
   );
 
   //! calculate subgrid-scale velocity
@@ -381,7 +340,54 @@ private:
   //! calculate rate of strain of (fine-scale) velocity
   inline double GetStrainRate(
     const LINALG::Matrix<nsd_,nen_>& evel
-  );
+  )
+  {
+    // evel is tranferred here since the evaluation of the strain rate can be performed
+    // for various velocities such as velint_, fsvel_, ...
+
+    double rateofstrain=0;
+
+    // get velocity derivatives at integration point
+    //
+    //              +-----  dN (x)
+    //   dvel (x)    \        k
+    //   -------- =   +     ------ * vel
+    //      dx       /        dx        k
+    //        j     +-----      j
+    //              node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    LINALG::Matrix<nsd_,nsd_> velderxy;
+    velderxy.MultiplyNT(evel,derxy_);
+
+    // compute (resolved) rate of strain
+    //
+    //          +-                                 -+ 1
+    //          |          /   \           /   \    | -
+    //          | 2 * eps | vel |   * eps | vel |   | 2
+    //          |          \   / ij        \   / ij |
+    //          +-                                 -+
+    //
+    LINALG::Matrix<nsd_,nsd_> two_epsilon;
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
+      }
+    }
+
+    for(int rr=0;rr<nsd_;rr++)
+    {
+      for(int mm=0;mm<nsd_;mm++)
+      {
+        rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
+      }
+    }
+
+    return(sqrt(rateofstrain/2.0));
+  };
 
 
   /*========================================================================*/
@@ -440,6 +446,98 @@ private:
       const int                             iquad,    //!< id of current Gauss point
       const int                             eleid     //!< the element id
   );
+
+  /*========================================================================*/
+  //! @name Turbulence -> implemented in scatra_ele_imlp_turbulence_service.cpp
+  /*========================================================================*/
+
+  //! calculate filtered quantities for dynamic Smagorinsky model
+  void scatra_apply_box_filter(
+          const double               thermpress,
+          double&                    dens_hat,
+          double&                    temp_hat,
+          double&                    dens_temp_hat,
+          RCP<vector<double> >       vel_hat,
+          RCP<vector<double> >       densvel_hat,
+          RCP<vector<double> >       densveltemp_hat,
+          RCP<vector<double> >       densstraintemp_hat,
+          double&                    volume,
+          const DRT::Element*        ele
+  );
+
+  //! calculate turbulent Prandtl number for dynamic Smagorinsky model
+  void scatra_calc_smag_const_LkMk_and_MkMk(
+          RCP<Epetra_MultiVector>&  col_filtered_vel,
+          RCP<Epetra_MultiVector>&  col_filtered_dens_vel,
+          RCP<Epetra_MultiVector>&  col_filtered_dens_vel_temp,
+          RCP<Epetra_MultiVector>&  col_filtered_dens_rateofstrain_temp,
+          RCP<Epetra_Vector>&       col_filtered_temp,
+          RCP<Epetra_Vector>&       col_filtered_dens,
+          RCP<Epetra_Vector>&       col_filtered_dens_temp,
+          double&                   LkMk,
+          double&                   MkMk,
+          double&                   xcenter,
+          double&                   ycenter,
+          double&                   zcenter,
+          const DRT::Element*       ele
+  );
+
+  //! calculate mean turbulent Prandtl number
+  void GetMeanPrtOfHomogenousDirection(
+          ParameterList&             turbmodelparams,
+          double&                    inv_Prt,
+          int&                       nlayer
+          );
+
+  //! calculate all-scale subgrid diffusivity
+  virtual void CalcSubgrDiff(  // ? subgrid = subgr or subgrid?
+    const double                          dt,        //!< current time-step length
+    const double                          timefac,   //!< time discretization factor
+    const enum INPAR::SCATRA::AssgdType   whichassgd,//!< all-scale subgrid-diffusivity definition
+    const bool                            assgd,     //!< all-scale subgrid-diff. flag
+    const double                          Cs,        //!< Smagorinsky constant
+    const double                          tpn,       //!< turbulent Prandtl number
+    const double                          vol,       //!< element volume
+    const int                             k          //!< index of current scalar
+  );
+
+  //! calculate fine-scale subgrid diffusivity
+  virtual void CalcFineScaleSubgrDiff(
+    DRT::Element*                         ele,       //!< the element we are dealing with
+    Epetra_SerialDenseVector&             subgrdiff, //!< subgrid-diff.-scaling vector ?
+    const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,//!< all-scale subgrid-diffusivity definition
+    const double                          Cs,        //!< Smagorinsky constant
+    const double                          tpn,       //!< turbulent Prandtl number
+    const double                          vol,       //!< element volume
+    const int                             k          //!< index of current scalar
+  );
+
+  //! calculate coefficients of mutifractal subgrid-scale modeling
+  virtual void CalcBAndDForMultifracSubgridScales(
+    LINALG::Matrix<nsd_,1>&               B_mfs,     //!< coefficient for fine-scale velocity (will be filled)
+    double &                              D_mfs,     //!< coefficient for fine-scale scalar (will be filled)
+    const double                          Csgs_sgvel,//!< parameter of multifractal subgrid-scales (velocity)
+    const double                          alpha,     //!< grid-filter to test-filter ratio
+    const bool                            calc_N,    //!< flag to activate calculation of N
+    const double                          N_vel,     //!< value for N if not calculated
+    const enum INPAR::FLUID::RefVelocity  refvel,    //!< reference velocity
+    const enum INPAR::FLUID::RefLength    reflength, //!< reference length
+    const double                          c_nu,      //!< scaling for Re
+    const bool                            nwl,       //!< flag to activate near-wall limit
+    const double                          Csgs_sgphi,//!< parameter of multifractal subgrid-scales (phi)
+    const double                          c_diff,    //!< scaling for Re*Pr
+    const double                          vol,       //!< volume of element
+    const int                             k          //!< index of current scalar
+  );
+
+  //! store turbulent Prandtl number and effective diffusivity for output
+  virtual void StoreModelParametersForOutput(
+    const bool                            isowned,        //!< owner of element
+    ParameterList&                        turbulencelist, //!< turbulence parameter list
+    const int                             nlayer,         //!< element layer
+    const double                          tpn             //! turbulent Prandlt number
+    );
+
 
   /*========================================================================*/
   //! @name dofs and nodes
@@ -501,8 +599,8 @@ private:
   //! @name scalar degrees of freedom and related
   /*========================================================================*/
 
-  // ? scalar
-  // double phi_
+  //! scalar at integration point
+  vector<double> phi_;
   //! subgrid-scale part of scalar
   vector<double> sgphi_;
   //! multifractal subgrid-scale part of scalar

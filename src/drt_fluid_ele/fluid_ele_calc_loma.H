@@ -95,6 +95,7 @@ class FluidEleCalcLoma : public FluidEleCalc<distype>
                                 Teuchos::RCP<MAT::Material>          mat,
                                 bool                                 isale,
                                 double                               CsDeltaSq,
+                                double                               CiDeltaSq,
                                 const DRT::UTILS::GaussIntegration & intpoints);
 
     /*!
@@ -143,6 +144,7 @@ class FluidEleCalcLoma : public FluidEleCalc<distype>
                                const double                         thermpressdtam,
                                Teuchos::RCP<const MAT::Material>    material,
                                double&                              Cs_delta_sq,
+                               double&                              Ci_delta_sq,
                                bool                                 isale,
                                const DRT::UTILS::GaussIntegration & intpoints);
 

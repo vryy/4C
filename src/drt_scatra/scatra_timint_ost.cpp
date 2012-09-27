@@ -21,6 +21,7 @@ Maintainer: Georg Bauer
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_fluid/dyn_smag.H"
 
 
 /*----------------------------------------------------------------------*
@@ -178,6 +179,23 @@ void SCATRA::TimIntOneStepTheta::AVM3Separation()
 
   // set fine-scale vector
   discret_->SetState("fsphinp",fsphinp_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | dynamic Smagorinsky model                           rasthofer  08/12 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::DynamicComputationOfCs()
+{
+  if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
+  {
+    // perform filtering and computation of Prt
+    // compute averaged values for LkMk and MkMk
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    DynSmag_->ApplyFilterForDynamicComputationOfPrt(convel_,phinp_,thermpressnp_,dirichtoggle,*extraparams_);
+  }
 
   return;
 }

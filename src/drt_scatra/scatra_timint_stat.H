@@ -130,6 +130,9 @@ protected:
   /// add parameters specific for time-integration scheme
   void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);
 
+  /// dynamic Smagorinsky model
+  void DynamicComputationOfCs() {dserror("no turbulence in stationary flows!"); return;};
+
   /// write additional data required for restart
   void OutputRestart();
 

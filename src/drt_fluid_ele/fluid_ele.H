@@ -28,6 +28,15 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+//=================================================================
+//
+// This file still contains some deactivated time-dependent subgrid-
+// scales stuff. As soon as the time-dependent subgrid-scales are
+// fixed, these members and methods should be removed from the element!
+// Ursula
+//
+//=================================================================
+
 
 // forward declarations
 namespace DRT
@@ -280,7 +289,7 @@ public:
 
   /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple
-         dofsets (implements pure virtual DRT::Element)
+         dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
 
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
@@ -378,7 +387,7 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-
+#if 0
   //@}
 
   //! @name Time-dependent subgrid scales
@@ -419,6 +428,7 @@ public:
                                   double&       svelaf);
 
   //@}
+#endif
 
 
   //! @name Other
@@ -435,11 +445,8 @@ public:
     return;
   };
 
-  /*!
-  \brief Returns the quantity Cs*h^2 from the dynamic Smagorinsky model
-  */
-  double CsDeltaSq() const {return Cs_delta_sq_; }
 
+#if 0
   /*!
   \brief Returns the subgrid velocity at time n (sveln_)
   */
@@ -449,43 +456,9 @@ public:
   \brief Returns the subgrid velocity at time n+1 (svelnp_)
   */
   Epetra_SerialDenseMatrix Svelnp() const {return svelnp_; }
+#endif
 
 private:
-
-  //! action parameters recognized by fluid3
-  enum ActionType
-  {
-    none,
-    calc_fluid_systemmat_and_residual,
-    calc_porousflow_fluid_coupling,
-    calc_loma_mono_odblock,
-    calc_fluid_genalpha_sysmat_and_residual,
-    calc_fluid_genalpha_update_for_subscales,
-    calc_fluid_genalpha_average_for_subscales_and_residual,
-    calc_fluid_error,
-    calc_turbulence_statistics,
-    calc_loma_statistics,
-    calc_turbscatra_statistics,
-    calc_dissipation,
-    calc_model_params_mfsubgr_scales,
-    calc_mean_Cai,
-    set_mean_Cai,
-    calc_fluid_box_filter,
-    calc_smagorinsky_const,
-    get_gas_constant,
-    integrate_shape,
-    calc_divop,
-    calc_node_normal,
-    calc_fluid_elementvolume,
-    set_general_fluid_parameter,
-    set_time_parameter,
-    set_turbulence_parameter,
-    set_loma_parameter,
-    calc_adjoint_systemmat_and_residual,
-    calc_adjoint_neumann,
-    set_general_adjoint_parameter,
-    set_adjoint_time_parameter
-  };
 
   //! discretization type
   DRT::Element::DiscretizationType distype_;
@@ -493,266 +466,19 @@ private:
   //! flag for euler/ale net algorithm
   bool is_ale_;
 
-  //! factor including Smagorinsky's constant
-  double Cs_delta_sq_;
-
+#if 0
   //! matrices of subgrid-scale acceleration values at integration points of this element
   Epetra_SerialDenseMatrix saccn_;
   //! matrices of subgrid-scale velocity values, current iteration value, at integration points of this element
   Epetra_SerialDenseMatrix svelnp_;
   //! matrices of subgrid-scale velocity values, last timestep, at integration points of this element
   Epetra_SerialDenseMatrix sveln_;
+#endif
 
   // internal calculation methods
 
   // don't want = operator
   Fluid& operator = (const Fluid& old);
-
-  /*!
-    \brief calculate spatial mean values for channel flow
-    (requires wall parallel layers of elements)
-
-                                                             gammi 07/07
-
-    <pre>
-
-    this method assumes that each 2 dimensional integration element
-    in the homogeneous plane is parallel to the wall!!!
-
-    The necessary element integration is done in here. The element
-    is cut into two (HEX8) or three (quadratic elements) planes (plus
-    additional planes for visualisation purposes, defined by planes
-    vector), the spatial functions (velocity, pressure etc.) are
-    integrated over this plane and this element contribution is added
-    to a processor local vector (see formulas below for a exact
-    description of the output).
-    It is assumed that the sampling planes are distributed equidistant
-    in the element. The result is normalized by the area afterwards
-
-
-                       ^ normdirect       integration plane
-                       |                /
-                       |               /
-                       |
-                 +-----|-------------+
-                /|     |            /|
-               / |     |           / |
-              /  |     |          /  |
-             /   |     |         /   |
-            /    +-----|--------/----+ ---- additional integration
-           /    /|     |       /    /|      plane (for quadratic elements)
-          /    / |     |      /    / |
-         +-------------------+    /  |
-         |   /   |     *-----|---+------------>
-         |  /    +----/------|--/----+         inplanedirect[1]
-         | /    /    /       | /    /
-         |/    /    /        |/    /   \
-         +---------+---------+    /     \
-         |   /    /          |   /       integration plane
-         |  /    /           |  /
-         | /    /            | /
-         |/    /             |/
-         +----/--------------+
-             /
-            /   inplanedirect[0]
-
-
-    Example for a mean value evaluation:
-
-           1.0       /                     1.0      /
-    _               |                              |            detJ
-    u = -------- *  | u(x,y,z) dx dz =  -------- * | u(r,s,t) * ---- dr ds
-        +---        |                   +---       |             h
-         \         / A                   \        /  [-1:1]^2     y
-         / area                          / area
-        +---                            +---                    +--+
-                                                               Jacobi-
-                                                             determinant
-                                                              computed
-                                                           from 3d mapping
-                                                         h  is the (constant)
-                                                          y
-                                                        height of the element
-
-    The method computes:
-                        _             _             _             _
-               numele * u  , numele * v  , numele * w  , numele * p
-                        ___           ___           ___           ___
-                         ^2            ^2            ^2            ^2
-    and        numele * u  , numele * v  , numele * w  , numele * p
-
-                        _ _           _ _           _ _
-    as well as  numele * u*v, numele * u*w, numele * v*w
-
-
-    as well as numele and the element area.
-    All results are communicated via the parameter list!
-
-    </pre>
-
-   */
-  template<int iel>
-  void f3_calc_means(DRT::Discretization&  discretization,
-                     vector<double>&       vel,
-                     vector<double>&       disp,
-                     ParameterList& 	   params);
-
-  /*!
-    \brief same as above for low-Mach-number flow
-   */
-  template<int iel>
-  void f3_calc_loma_means(DRT::Discretization&  discretization,
-                          vector<double>&       velocitypressure ,
-                          vector<double>&       temperature  ,
-                          ParameterList&        params,
-                          const double          eosfac);
-
-  /*!
-    \brief same as above for turbulent scalar transport
-   */
-  template<int iel>
-  void f3_calc_scatra_means(DRT::Discretization&  discretization,
-                            vector<double>&       velocitypressure,
-                            vector<double>&       scalar,
-                            ParameterList&        params);
-
-  /*!
-    \brief one point integration of convolutions with box filter
-    function. The filter function is not normalized yet, this has
-    to be done as a 'postprocessing' step after the patchvolume
-    is calculated, i.e. after the volume contribution of all
-    elements adjacent to a node has been added to the
-    normalisation constant.
-
-    See reference
-
-    A.E. Tejada-Martinez, K.E. Jansen
-    Spatial test filters for dynamic model large-eddy simulation with
-    finite elements.
-    Communications in numerical methods in engineering, 2000
-
-    for details
-
-    \param evelaf                        (in )  : nodal velocities
-    \param vel_hat                       (out)  : integrated convolution
-                                                  with velocity
-    \param reystr_hat                    (out)  : integrated convolution
-                                                  with reynolds stresses
-    \param modeled_stress_grid_scale_hat (out)  : integrated convolution
-                                                  with subgrid scale
-                                                  stress tensor model
-    \param volume                        (out)  : element volume
-    \return void
-
-   */
-  template<int iel>
-  void f3_apply_box_filter(bool             dyn_smagorinsky,
-                           vector<double>&  myvel,
-                           double*          vel_hat,
-                           double*          reystr_hat,
-                           double*          modeled_stress_grid_scale_hat,
-                           double&          volume);
-
-  /*!
-    \brief compute the quantities necessary to determine Cs for the dynamic
-    model.
-
-    References are
-
-
-    M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
-    A dynamic subgrid-scale eddy viscosity model
-    (Phys. Fluids 1991)
-
-    or
-
-    D.K. Lilly:
-    A proposed modification of the Germano subgrid-scale closure method
-    (Phys. Fluids 1992)
-
-    or
-    A.E. Tejada-Martinez
-    Dynamic subgrid-scale modeling for large eddy simulation of turbulent
-    flows with a stabilized finite element method
-    (Phd thesis, Rensselaer Polytechnic Institute, Troy, New York)
-
-    <pre>
-
-    L_ij : the tensor of resolved components of the stress tensor associated
-           with the scales of motion between the resolved and the test scale
-
-    M_ij : the tensor of modeled components of the stress tensor associated
-           with the scales of motion between the resolved and the test scale
-           (modulo 2Cs, a constant)
-
-    </pre>
-
-
-    \param evelaf                        (in )  : nodal velocities
-    \param vel_hat                       (in)   : integrated convolution
-                                                  with velocity
-    \param reystr_hat                    (in)   : integrated convolution
-                                                  with reynolds stresses
-    \param modeled_stress_grid_scale_hat (in)   : integrated convolution
-                                                  with subgrid scale
-                                                  stress tensor model
-    \param LijMij                        (out)  : trace of product of resolved
-                                                  stress tensor with modeled
-                                                  stress tensor
-    \param MijMij                        (out)  : trace of product of modeled
-                                                  resolved stress tensor with
-                                                  itself
-    \param center                        (out)  : element center
-    \return void
-
-   */
-   template<int iel>
-   void f3_calc_smag_const_LijMij_and_MijMij(RCP<Epetra_MultiVector>& filtered_vel,
-                                             RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
-                                             RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
-                                             double&                  LijMij,
-                                             double&                  MijMij,
-                                             double&                  xcenter,
-                                             double&                  ycenter,
-                                             double&                  zcenter);
-
-   /*!
-       \brief compute parameters of multifractal subgrid-scale model
-   */
-   template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
-   void f3_get_mf_params(ParameterList&      params,
-                         RCP<MAT::Material>  mat,
-                         vector<double>&     vel,
-                         vector<double>&     fsvel);
-
-   /*!
-     \brief compute parameters of multifractal subgrid-scale model
-   */
-   template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
-   void f3_get_mf_nwc(double&             Cai,
-                      double&             vol,
-                      vector<double>&     vel,
-                      vector<double>&     sca,
-                      const double&       thermpress);
-
-  /*!
-    \brief Calculate node normals using the volume integral in Wall (7.13).
-    That formula considers all surfaces of the element, not only the
-    free surfaces.
-
-    \param elevec1 (out)      : grad(N) integrated over Element
-    \param edispnp (in)       : Displacement-vector
-  */
-  template<DRT::Element::DiscretizationType DISTYPE>
-  void ElementNodeNormal(ParameterList& 		    params,
-                         DRT::Discretization&       discretization,
-                         vector<int>&               lm,
-                         Epetra_SerialDenseVector&  elevec1);
-
-  /*!
-   * \brief convert string to action type
-   */
-  ActionType convertStringToActionType(const string& action) const;
 
 }; // class Fluid
 
@@ -927,7 +653,7 @@ public:
 
   /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple
-         dofsets (implements pure virtual DRT::Element)
+         dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
 
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
@@ -1033,29 +759,6 @@ public:
 
 private:
 
-  enum ActionType
-  {
-    none,
-    integrate_Shapefunction,
-    areacalc,
-    flowratecalc,
-    calc_flowrate,
-    flowratederiv,
-    Outletimpedance,
-    calc_node_normal,
-    calc_node_curvature,
-    calc_surface_tension,
-    enforce_weak_dbc,
-    mixed_hybrid_dbc,
-    conservative_outflow_bc,
-    calc_Neumann_inflow,
-    integ_pressure_calc,
-    center_of_mass_calc,
-    traction_velocity_component,
-    traction_Uv_integral_component,
-    no_penetration,
-    adjoint_neumann
-  };
 
   // don't want = operator
   FluidBoundary& operator = (const FluidBoundary& old);
@@ -1065,11 +768,6 @@ private:
 
   //! The local surface number of this surface w.r.t to the parent_ element
   int lsurface_;
-
-  /*!
-   * \brief convert string to action type
-   */
-  ActionType convertStringToActionType(const string& action) const;
 
 }; // class FluidBoundary
 
@@ -1234,7 +932,7 @@ public:
 
   /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple
-         dofsets (implements pure virtual DRT::Element)
+         dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
 
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
@@ -1371,13 +1069,6 @@ public:
   }
 
   //@}
-
-
-  enum ActionType
-  {
-    none,
-    EOS_and_GhostPenalty_stabilization
-  };
 
 private:
 

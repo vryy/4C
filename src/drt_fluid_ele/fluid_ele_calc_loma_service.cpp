@@ -201,7 +201,7 @@ if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   mixfracaf += sgsca;
 
   // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
-  visceff_ = actmat->ComputeViscosity(mixfracaf);
+  visc_ = actmat->ComputeViscosity(mixfracaf);
 
   // compute density at n+alpha_F or n+1 based on mixture fraction
   densaf_ = actmat->ComputeDensity(mixfracaf);
@@ -250,7 +250,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   tempaf += sgsca;
 
   // compute viscosity according to Sutherland law
-  visceff_ = actmat->ComputeViscosity(tempaf);
+  visc_ = actmat->ComputeViscosity(tempaf);
 
   // compute density at n+alpha_F or n+1 based on temperature
   // and thermodynamic pressure
@@ -312,7 +312,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   const double tempaf = actmat->ComputeTemperature(provaraf);
 
   // compute viscosity according to Sutherland law
-  visceff_ = actmat->ComputeViscosity(tempaf);
+  visc_ = actmat->ComputeViscosity(tempaf);
 
   // compute density at n+alpha_F or n+1 based on progress variable
   densaf_ = actmat->ComputeDensity(provaraf);
@@ -364,7 +364,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   const double tempaf = actmat->ComputeTemperature(provaraf);
 
   // compute viscosity according to Sutherland law
-  visceff_ = actmat->ComputeViscosity(tempaf);
+  visc_ = actmat->ComputeViscosity(tempaf);
 
   // compute density at n+alpha_F or n+1 based on progress variable
   densaf_ = actmat->ComputeDensity(provaraf);
@@ -419,7 +419,7 @@ else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
   rateofstrain = GetStrainRate(evelaf);
 
   // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
-  visceff_ = actmat->ComputeViscosity(rateofstrain,tempaf);
+  visc_ = actmat->ComputeViscosity(rateofstrain,tempaf);
 
   // compute diffusivity
   diffus_ = actmat->ComputeDiffusivity();

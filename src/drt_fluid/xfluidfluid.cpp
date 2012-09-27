@@ -12,7 +12,7 @@ Maintainer:  Shadan Shahmiri
 *----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 
-
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_discret_xfem.H"
@@ -2714,7 +2714,7 @@ void FLD::XFluidFluid::NonlinearSolve()
       ParameterList eleparams;
 
       // Set action type
-      eleparams.set("action","calc_fluid_systemmat_and_residual");
+      eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
       eleparams.set<int>("physical type",physicaltype_);
 
       // parameters for turbulent approach
@@ -3086,7 +3086,7 @@ void FLD::XFluidFluid::Evaluate(
   ParameterList eleparams;
 
   // Set action type
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
   eleparams.set<int>("physical type",physicaltype_);
 
   // parameters for turbulent approach
@@ -3316,8 +3316,6 @@ void FLD::XFluidFluid::TimeUpdate()
 
     // create the parameters for the discretization
     ParameterList eleparams;
-    // action for elements
-    eleparams.set("action","time update for subscales");
 
     // update time paramters
     if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
@@ -3964,7 +3962,7 @@ void FLD::XFluidFluid::SetElementGeneralFluidParameter()
 #ifdef D_FLUID3
   ParameterList eleparams;
 
-  eleparams.set("action","set_general_fluid_parameter");
+  eleparams.set<int>("action",FLD::set_general_fluid_parameter);
 
   // set general element parameters
   eleparams.set("form of convective term",convform_);
@@ -3994,7 +3992,7 @@ void FLD::XFluidFluid::SetElementTurbulenceParameter()
 #ifdef D_FLUID3
   ParameterList eleparams;
 
-  eleparams.set("action","set_turbulence_parameter");
+  eleparams.set<int>("action",FLD::set_turbulence_parameter);
 
   // set general parameters for turbulent flow
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -4019,7 +4017,7 @@ void FLD::XFluidFluid::SetElementTimeParameter()
 #ifdef D_FLUID3
   ParameterList eleparams;
 
-  eleparams.set("action","set_time_parameter");
+  eleparams.set<int>("action",FLD::set_time_parameter);
 
   // set general element parameters
   eleparams.set("dt",dta_);

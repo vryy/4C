@@ -19,6 +19,7 @@ Maintainer: Martin Winklmaier
 
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/time_integration_scheme.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io.H"
@@ -317,7 +318,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
     ParameterList nbcparams;
 
     // set action for elements
-    nbcparams.set("action"    ,"AdjointNeumannBoundaryCondition");
+    nbcparams.set<int>("action",FLD::ba_calc_adjoint_neumann);
 
     // set flag for test case
     nbcparams.set("special test case",params_->get<INPAR::TOPOPT::AdjointTestCases>("special test case"));
@@ -353,14 +354,15 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
         Teuchos::null        ,
         "LineNeumann");
 
-    discret_->EvaluateConditionUsingParentData(
-        nbcparams            ,
-        Teuchos::null        ,
-        Teuchos::null        ,
-        neumann_loads_       ,
-        Teuchos::null        ,
-        Teuchos::null        ,
-        "SurfaceNeumann");
+    //TODO: diese Zeile macht Probleme
+//    discret_->EvaluateConditionUsingParentData(
+//        nbcparams            ,
+//        Teuchos::null        ,
+//        Teuchos::null        ,
+//        neumann_loads_       ,
+//        Teuchos::null        ,
+//        Teuchos::null        ,
+//        "SurfaceNeumann");
 
     // clear state
     discret_->ClearState();
@@ -432,7 +434,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       ParameterList eleparams;
 
       // set action type
-      eleparams.set("action","calc_adjoint_systemmat_and_residual");
+      eleparams.set<int>("action",FLD::calc_adjoint_systemmat_and_residual);
 
       //set additional pseudo-porosity field for topology optimization
       eleparams.set("topopt_porosity",topopt_porosity_);
@@ -1055,7 +1057,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
 
   ParameterList eleparams;
 
-  eleparams.set("action","set_general_adjoint_parameter");
+  eleparams.set<int>("action",FLD::set_general_adjoint_parameter);
 
   // set material parameters
   eleparams.set<double>("density" ,density);
@@ -1093,7 +1095,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter() const
 {
   ParameterList eleparams;
 
-  eleparams.set("action","set_adjoint_time_parameter");
+  eleparams.set<int>("action",FLD::set_adjoint_time_parameter);
 
   // set general element parameters
   eleparams.set("dt",dt_);

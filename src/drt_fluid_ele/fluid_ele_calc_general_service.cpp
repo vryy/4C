@@ -636,16 +636,29 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   // ---------------------------------------------------------------------
   ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
+  double Ci_delta_sq = 0.0;
   double Cs_delta_sq = 0.0;
   visceff_ = 0.0;
 
   // remember the layer of averaging for the dynamic Smagorinsky model
   int  smaglayer=0;
 
+  double CsDeltaSq = 0.0;
+  double CiDeltaSq = 0.0;
+  if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+  {
+    RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Cs_delta_sq");
+    RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Ci_delta_sq");
+    const int id = ele->LID();
+    CsDeltaSq = (*ele_CsDeltaSq)[id];
+    CiDeltaSq = (*ele_CiDeltaSq)[id];
+  }
   GetTurbulenceParams(turbmodelparams,
                       Cs_delta_sq,
+                      Ci_delta_sq,
                       smaglayer,
-                      ele->CsDeltaSq());
+                      CsDeltaSq,
+                      CiDeltaSq);
 
 
   //----------------------------------------------------------------------
@@ -742,7 +755,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     visceff_ = visc_;
     if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
     {
-      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
+      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,fldpara_->l_tau_);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
@@ -915,7 +928,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       visceff_ = visc_;
       if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       {
-        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
+        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,fldpara_->l_tau_);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
@@ -977,6 +990,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
           UpdateMaterialParams(mat,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
         else
           UpdateMaterialParams(mat,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+        visceff_ = visc_;
+        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+        visceff_ += sgvisc_;
       }
     }
 
@@ -1153,6 +1169,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
           eps_smag += 0.5*sgvisc_*fac_*two_epsilon(rr,mm)*two_epsilon(rr,mm);
         }
       }
+      if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+        eps_smag -= 2.0/3.0 * q_sq_ * vdiv_ * fac_;
     }
 
     //---------------------------------------------------------------
@@ -1267,7 +1285,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
           if (mm!=rr)
             eps_visc += 0.5*visc_*fac_*two_epsilon(rr,mm)*two_epsilon(rr,mm);
           else
-            eps_visc += 0.5*visc_*fac_*(two_epsilon(rr,mm) - 1/3 * vdiv_)*two_epsilon(rr,mm);
+            eps_visc += 0.5*visc_*fac_*(two_epsilon(rr,mm) - 2.0/3.0 * vdiv_)*two_epsilon(rr,mm);
         }
       }
     }
@@ -1887,7 +1905,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
 }
 
 
-// tenplate classes
+// template classes
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27>;

@@ -128,6 +128,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     mffsvdiv_(0.0),
     sgvisc_(0.0),
     fssgvisc_(0.0),
+    q_sq_(0.0),
     mfssgscaint_(0.0)
 {
   rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
@@ -203,8 +204,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   double * saccn = NULL;
   double * sveln = NULL;
   double * svelnp = NULL;
-  if (fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
-    ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
+//  if (fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
+//    ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, scalar,
@@ -337,6 +338,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
     return(0);
   } // Nurbs specific stuff
 
+  //----------------------------------------------------------------
+  // prepare some dynamic Smagorinsky related stuff
+  //----------------------------------------------------------------
+  double CsDeltaSq = 0.0;
+  double CiDeltaSq = 0.0;
+  if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+  {
+    RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Cs_delta_sq");
+    RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Ci_delta_sq");
+    const int id = ele->LID();
+    CsDeltaSq = (*ele_CsDeltaSq)[id];
+    CiDeltaSq = (*ele_CiDeltaSq)[id];
+  }
+
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = Evaluate(
     ele->Id(),
@@ -366,7 +381,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
     mat,
     ele->IsAle(),
     ele->Owner()==discretization.Comm().MyPID(),
-    ele->CsDeltaSq(),
+    CsDeltaSq,
+    CiDeltaSq,
     saccn,
     sveln,
     svelnp,
@@ -412,6 +428,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   bool                                          isale,
   bool                                          isowned,
   double                                        CsDeltaSq,
+  double                                        CiDeltaSq,
   double *                                      saccn,
   double *                                      sveln,
   double *                                      svelnp,
@@ -446,6 +463,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
   double Cs_delta_sq   = 0.0;
+  double Ci_delta_sq   = 0.0;
   visceff_  = 0.0;
 
   // remember the layer of averaging for the dynamic Smagorinsky model
@@ -453,8 +471,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
 
   GetTurbulenceParams(turbmodelparams,
                       Cs_delta_sq,
+                      Ci_delta_sq,
                       nlayer,
-                      CsDeltaSq);
+                      CsDeltaSq,
+                      CiDeltaSq);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -488,39 +508,17 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
          thermpressdtam,
          mat,
          Cs_delta_sq,
+         Ci_delta_sq,
          isale,
          saccn,
          sveln,
          svelnp,
          intpoints);
 
-
   // ---------------------------------------------------------------------
   // output values of Cs, visceff and Cs_delta_sq
   // ---------------------------------------------------------------------
-  // do the fastest test first
-  if (isowned)
-  {
-    if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky
-        or
-        fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping
-      )
-    {
-      if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-      {
-        if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-            ==
-            "channel_flow_of_height_2")
-        {
-          // Cs was changed in Sysmat (Cs->sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0)))
-          // to compare it with the standard Smagorinsky Cs
-          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs_;
-          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
-          (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
-        }
-      }
-    }
-  }
+  StoreModelParametersForOutput(Cs_delta_sq,Ci_delta_sq, nlayer,eid,isowned,turbmodelparams);
 
   return 0;
 }
@@ -560,6 +558,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   const double                                  thermpressdtam,
   Teuchos::RCP<const MAT::Material>             material,
   double&                                       Cs_delta_sq,
+  double&                                       Ci_delta_sq,
   bool                                          isale,
   double * saccn,
   double * sveln,
@@ -607,7 +606,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
     {
-      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
+      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,fldpara_->l_tau_);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
@@ -825,7 +824,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       visceff_ = visc_;
       if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       {
-        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,fldpara_->l_tau_);
+        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,fldpara_->l_tau_);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
@@ -984,6 +983,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
           UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
         else
           UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+        visceff_ = visc_;
+        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+          visceff_ += sgvisc_;
       }
 
       // right-hand side of continuity equation based on updated material parameters
@@ -2984,7 +2986,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
 //         fac2           ,
 //         fac3           ,
 //         momres_old_(rr),
-//         fldpara_->AlphaF()        ,
+//         fldpara_->AlphaF(),
 //         rr             ,
 //         iquad          ,
 //         sgvelint_(rr)  );
@@ -3500,8 +3502,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ContStab(
   }
   if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
   {
-    conti_stab_and_vol_visc_fac-=(2.0/3.0)*visceff_*timefacfac;
-    conti_stab_and_vol_visc_rhs+=(2.0/3.0)*visceff_*rhsfac*vdiv_;
+    // caution: using visc_ instead of visceff_ here is no bug!
+    // for variable-density flow, we have:
+    // the Smagorinsky model in its usual form acts on the total rate of deformation tensor
+    // not only on its deviatoric part; this is corrected by the inclusion of q_sq_
+    // see: Moin et al. 1991
+    conti_stab_and_vol_visc_fac-=(2.0/3.0)*visc_*timefacfac;
+    conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*(visc_*vdiv_+q_sq_);
   }
 
   /* continuity stabilisation on left hand side */

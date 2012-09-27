@@ -614,10 +614,19 @@ namespace FLD
       {
       case channel_flow_of_height_2:
       case loma_channel_flow_of_height_2:
+      case scatra_channel_flow_of_height_2:
       {
         // add computed dynamic Smagorinsky quantities
         // (effective viscosity etc. used during the computation)
-        if(turbmodel_ == INPAR::FLUID::dynamic_smagorinsky) statistics_channel_->AddDynamicSmagorinskyQuantities();
+        if(turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+        {
+          if(discret_->Comm().MyPID()==0)
+          {
+            cout << "\nSmagorinsky constant, effective viscosity, ... etc, ";
+            cout << "all element-quantities \n";
+            }
+          statistics_channel_->AddDynamicSmagorinskyQuantities();
+        }
         break;
       }
       default:
@@ -647,6 +656,7 @@ namespace FLD
       {
       case channel_flow_of_height_2:
       case loma_channel_flow_of_height_2:
+      case scatra_channel_flow_of_height_2:
       {
         // add computed subfilter stress
         if(turbmodel_ == INPAR::FLUID::scale_similarity_basic) statistics_channel_->AddSubfilterStresses(stress12);
@@ -675,6 +685,10 @@ namespace FLD
                                                 const double thermpressdtaf,
                                                 const double thermpressdtam)
   {
+
+    // store Smagorinsky statistics if used
+    StoreElementValues(step);
+
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
     {
@@ -1238,7 +1252,7 @@ namespace FLD
             }
          }
         }
-        else
+        else // loma
         {
           if(outputformat == write_single_record)
             statistics_bfs_->DumpLomaStatistics(step);

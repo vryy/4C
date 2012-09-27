@@ -16,6 +16,7 @@ Maintainer: Volker Gravemeier
 
 #include "loma_algorithm.H"
 
+#include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_solver.H"
@@ -578,7 +579,7 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(
   ParameterList fparams;
 
   // set action type
-  fparams.set("action","calc_loma_mono_odblock");
+  fparams.set<int>("action",FLD::calc_loma_mono_odblock);
 
   // set general vector values needed by elements
   FluidField().Discretization()->ClearState();

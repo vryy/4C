@@ -272,10 +272,10 @@ namespace ELEMENTS
       ) {dserror("Implemented in derived xfem class!"); return;}
 
     virtual void ElementXfemInterfaceNIT2(
-                                       DRT::ELEMENTS::Fluid *   ele,
-                                       DRT::Discretization &    dis,
-                                       const std::vector<int> & lm,
-                                       DRT::Discretization &    cutdis,
+                                       DRT::ELEMENTS::Fluid *                                            ele,
+                                       DRT::Discretization &                                             dis,
+                                       const std::vector<int> &                                          lm,
+                                       DRT::Discretization &                                             cutdis,
                                        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
                                        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
                                        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
@@ -339,6 +339,7 @@ namespace ELEMENTS
                          bool                                          isale,
                          bool                                          isowned,
                          double                                        CsDeltaSq,
+                         double                                        CiDeltaSq,
                          double *                                      saccn,
                          double *                                      sveln,
                          double *                                      svelnp,
@@ -406,6 +407,7 @@ namespace ELEMENTS
                         const double                                  thermpressdtam,
                         Teuchos::RCP<const MAT::Material>             material,
                         double&                                       Cs_delta_sq,
+                        double&                                       Ci_delta_sq,
                         bool                                          isale,
                         double *                                      saccn,
                         double *                                      sveln,
@@ -653,8 +655,10 @@ namespace ELEMENTS
      //! get turbulence parameter
      void GetTurbulenceParams(ParameterList&  turbmodelparams,    ///< pointer general turbulence parameter list
                               double&         Cs_delta_sq,        ///< parameter CS in dynamic Smagorinsky
+                              double&         Ci_delta_sq,        ///< parameter CI in dynamic Smagorinsky for loma
                               int&            nlayer,             ///< number of layers for computation of parameter CS in dynamic Smagorinsky
-                              double          CsDeltaSq           ///< parameter CS in dynamic Smagorinsky computed in DynSmagFilter()
+                              double          CsDeltaSq,          ///< parameter CS in dynamic Smagorinsky computed in DynSmagFilter()
+                              double          CiDeltaSq           ///< parameter CI in dynamic Smagorinsky for loma computed in DynSmagFilter()
                               );
 
      //! calculate (all-scale) subgrid viscosity
@@ -662,6 +666,7 @@ namespace ELEMENTS
                         const double                      vol,           ///< volume
                         double&                           Cs,            ///< parameter CS in constant Smagorinsky
                         double&                           Cs_delta_sq,   ///< parameter CS in dynamic Smagorinsky
+                        double&                           Ci_delta_sq,   ///< parameter CS in dynamic Smagorinsky for loma
                         double&                           l_tau          ///< channel length to normalize the normal wall distance
                         );
 
@@ -852,6 +857,13 @@ namespace ELEMENTS
       return(sqrt(rateofstrain/2.0));
     }
 
+    //! output values of Cs, visceff and Cs_delta_sq for statistics
+    void StoreModelParametersForOutput(const double Cs_delta_sq,
+                                       const double Ci_delta_sq,
+                                       const int    nlayer,
+                                       const int    eid,
+                                       const bool   isowned,
+                                       ParameterList&  turbmodelparams);
 
 //    /*!
 //     * \brief fill elment matrix and vectors with the global values
@@ -1060,6 +1072,8 @@ namespace ELEMENTS
     double sgvisc_;
     //! fine-scale subgrid viscosity
     double fssgvisc_;
+    //! model parameter for isotropic part of subgrid-stress tensor (dyn Smag for loma)
+    double q_sq_;
     //! multifractal subgrid-scale part of scalar at integration point
     double mfssgscaint_;
 

@@ -717,6 +717,8 @@ public:
 
   /// provide access to turbulence statistics manager
   Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
+  /// provide access to the box filter for dynamic Smagorinsky model
+  Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter();
 
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
@@ -1228,7 +1230,7 @@ private:
   //        -------------------------
 
   //! one instance of the filter object
-  RCP<DynSmagFilter>                      DynSmag_;
+  RCP<FLD::DynSmagFilter>                      DynSmag_;
 
   //@}
 

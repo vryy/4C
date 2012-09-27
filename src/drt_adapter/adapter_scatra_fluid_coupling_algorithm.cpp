@@ -96,6 +96,10 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
           ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
   }
 
+  // if available, allow scatra field to access dynamic Smagorinsky filter
+  if (FluidField().DynSmagFilter() != Teuchos::null)
+    ScaTraField().AccessDynSmagFilter(FluidField().DynSmagFilter());
+
   return;
 
 }

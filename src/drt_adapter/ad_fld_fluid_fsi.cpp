@@ -4,6 +4,7 @@
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
@@ -411,7 +412,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
     // set action in order to calculate the integrated divergence operator via an Evaluate()-call
     ParameterList params;
-    params.set("action","calc_divop");
+    params.set<int>("action",FLD::calc_divop);
 
     // call the element specific evaluate method
     actele->Evaluate(params,*fluid_->Discretization(),lm,elematrix1,elematrix2,

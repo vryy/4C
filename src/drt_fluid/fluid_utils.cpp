@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 
 /*----------------------------------------------------------------------*
@@ -568,7 +569,7 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
 {
   ParameterList eleparams;
   // set action for elements
-  eleparams.set("action","calc_flowrate");
+  eleparams.set<int>("action",FLD::calc_flowrate);
 
   // note that the flowrate is not yet divided by the area
   std::map<int,double> volumeflowrateperline;

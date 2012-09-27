@@ -71,12 +71,6 @@ return;
 void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
-  if (Comm().MyPID()==0)
-  {
-    cout<<"\n******************\n   TIME STEP     \n******************\n";
-    cout<<"\nStep:   " << Step() << " / " << NStep() << "\n";
-    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
-  }
 
   FluidField().PrepareTimeStep();
 
@@ -86,6 +80,13 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
    * the one-step-theta scheme, are thus initialized correctly.
    */
   ScaTraField().PrepareTimeStep();
+
+  if (Comm().MyPID()==0)
+  {
+    cout<<"\n******************\n   TIME STEP     \n******************\n";
+    cout<<"\nStep:   " << Step() << " / " << NStep() << "\n";
+    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
+  }
 
   return;
 }

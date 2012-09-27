@@ -1776,7 +1776,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_td_2D(
   // if not available, the arrays for the subscale quantities have to
   // be resized and initialised to zero
 
-  ele->ActivateTDS(intpoints.IP().nquad, nsd_);
+//  ele->ActivateTDS(intpoints.IP().nquad, nsd_);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -1847,9 +1847,9 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_td_2D(
 
     // update estimates for the subscale quantities
     const double facMtau = 1./(alphaM*tauM+afgdt);
-    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
-    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
-    const double fac3=(gamma*dt*tauM)*facMtau;
+//    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
+//    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
+//    const double fac3=(gamma*dt*tauM)*facMtau;
 
     /*-------------------------------------------------------------------*
      *                                                                   *
@@ -1888,19 +1888,19 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_adv_td_2D(
 
   */
 
-    for(int rr=0;rr<nsd_;++rr)
-    {
-      ele->UpdateSvelnpInOneDirection(
-          fac1       ,
-          fac2       ,
-          fac3       ,
-          resM_(rr)  ,
-          alphaF     ,
-          rr         ,
-          iquad      ,
-          svelnp_(rr),
-          svelaf_(rr));
-    }
+//    for(int rr=0;rr<nsd_;++rr)
+//    {
+//      ele->UpdateSvelnpInOneDirection(
+//          fac1       ,
+//          fac2       ,
+//          fac3       ,
+//          resM_(rr)  ,
+//          alphaF     ,
+//          rr         ,
+//          iquad      ,
+//          svelnp_(rr),
+//          svelaf_(rr));
+//    }
 
     /* the intermediate value of subscale acceleration is not needed to be
      * computed anymore --- we use the governing ODE to replace it ....
@@ -3648,14 +3648,14 @@ N                   \                                                           
     //                    PRESSURE STABILISATION
     //
     //---------------------------------------------------------------
-    if(pspg == INPAR::FLUID::pstab_use_pspg)
-    {
+//    if(pspg == INPAR::FLUID::pstab_use_pspg)
+//    {
 
-      const double fac_svelnpx = fac*(ele->Svelnp())(0,iquad);
-      const double fac_svelnpy = fac*(ele->Svelnp())(1,iquad);
-
-      for (int vi=0; vi<iel; ++vi) // loop rows
-      {
+//      const double fac_svelnpx = fac*(ele->Svelnp())(0,iquad);
+//      const double fac_svelnpy = fac*(ele->Svelnp())(1,iquad);
+//
+//      for (int vi=0; vi<iel; ++vi) // loop rows
+//      {
         /* factor: -1
 
                        /                 \
@@ -3664,11 +3664,11 @@ N                   \                                                           
                       |   (i)             |
                        \                 /
         */
-
-        elevec(vi*3 + 2) += fac_svelnpx*derxy_(0,vi)+fac_svelnpy*derxy_(1,vi);
-
-      } // vi
-    }
+//
+//        elevec(vi*3 + 2) += fac_svelnpx*derxy_(0,vi)+fac_svelnpy*derxy_(1,vi);
+//
+//      } // vi
+//    }
 
     //---------------------------------------------------------------
     //
@@ -5513,7 +5513,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_td_2D(
   // if not available, the arrays for the subscale quantities have to
   // be resized and initialised to zero
 
-  ele->ActivateTDS(intpoints.IP().nquad, nsd_);
+//  ele->ActivateTDS(intpoints.IP().nquad, nsd_);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -5582,9 +5582,9 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_td_2D(
 
     // update estimates for the subscale quantities
     const double facMtau = 1./(alphaM*tauM+afgdt);
-    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
-    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
-    const double fac3=(gamma*dt*tauM)*facMtau;
+//    const double fac1=(alphaM*tauM+gamma*dt*(alphaF-1.0))*facMtau;
+//    const double fac2=(dt*tauM*(alphaM-gamma))*facMtau;
+//    const double fac3=(gamma*dt*tauM)*facMtau;
 
     /*-------------------------------------------------------------------*
      *                                                                   *
@@ -5623,19 +5623,19 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::Sysmat_cons_td_2D(
 
   */
 
-    for(int rr=0;rr<nsd_;++rr)
-    {
-      ele->UpdateSvelnpInOneDirection(
-          fac1       ,
-          fac2       ,
-          fac3       ,
-          resM_(rr)  ,
-          alphaF     ,
-          rr         ,
-          iquad      ,
-          svelnp_(rr),
-          svelaf_(rr));
-    }
+//    for(int rr=0;rr<nsd_;++rr)
+//    {
+//      ele->UpdateSvelnpInOneDirection(
+//          fac1       ,
+//          fac2       ,
+//          fac3       ,
+//          resM_(rr)  ,
+//          alphaF     ,
+//          rr         ,
+//          iquad      ,
+//          svelnp_(rr),
+//          svelaf_(rr));
+//    }
 
     /* the intermediate value of subscale acceleration is not needed to be
      * computed anymore --- we use the governing ODE to replace it ....
@@ -7586,14 +7586,14 @@ N                   \                                                           
     //                    PRESSURE STABILISATION
     //
     //---------------------------------------------------------------
-    if(pspg == INPAR::FLUID::pstab_use_pspg)
-    {
-
-      const double fac_svelnpx                      = fac*(ele->Svelnp())(0,iquad);
-      const double fac_svelnpy                      = fac*(ele->Svelnp())(1,iquad);
-
-      for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
-      {
+//    if(pspg == INPAR::FLUID::pstab_use_pspg)
+//    {
+//
+//      const double fac_svelnpx                      = fac*(ele->Svelnp())(0,iquad);
+//      const double fac_svelnpy                      = fac*(ele->Svelnp())(1,iquad);
+//
+//      for (int ui=0; ui<iel; ++ui) // loop columns (solution for matrix, test function for vector)
+//      {
         /* factor: -1
 
                        /                 \
@@ -7602,11 +7602,11 @@ N                   \                                                           
                       |   (i)             |
                        \                 /
         */
-
-        elevec(ui*3 + 2) += fac_svelnpx*derxy_(0,ui)+fac_svelnpy*derxy_(1,ui);
-
-      } // end loop rows (solution for matrix, test function for vector)
-    }
+//
+//        elevec(ui*3 + 2) += fac_svelnpx*derxy_(0,ui)+fac_svelnpy*derxy_(1,ui);
+//
+//      } // end loop rows (solution for matrix, test function for vector)
+//    }
 
     //---------------------------------------------------------------
     //

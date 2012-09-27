@@ -19,6 +19,7 @@ Maintainer: Mahmoud Ismail
 
 #include "fluid_coupling_red_models.H"
 #include "../linalg/linalg_ana.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -814,7 +815,7 @@ double FLD::UTILS::Fluid_couplingBc::Area( double& density, double& viscosity, i
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set("action","area calculation");
+  eleparams.set<int>("action",FLD::areacalc);
   eleparams.set<double>("Area calculation", 0.0);
   eleparams.set<double>("viscosity", 0.0);
   eleparams.set<double>("density", 0.0);
@@ -889,7 +890,7 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set("action","calc_flowrate");
+  eleparams.set<int>("action",FLD::calc_flowrate);
   eleparams.set("total time",time);
 
   // get a vector layout from the discretization to construct matching
@@ -943,7 +944,7 @@ double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set("action","calculate integrated pressure");
+  eleparams.set<int>("action",FLD::integ_pressure_calc);
   eleparams.set<double>("Inlet integrated pressure", 0.0);
   eleparams.set("total time",time);
 
@@ -999,7 +1000,7 @@ void FLD::UTILS::Fluid_couplingBc::OutflowBoundary(double pressure, double time,
   // action for elements
   // the reason we have Outlet impedance as action is because we don't
   // want to rewrite the implimented code
-  eleparams.set("action","Outlet impedance");
+  eleparams.set<int>("action",FLD::Outletimpedance);
 
   eleparams.set("total time",time);
   eleparams.set("delta time",dta);

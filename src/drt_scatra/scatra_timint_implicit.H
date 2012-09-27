@@ -78,6 +78,7 @@ namespace LINALG
 namespace FLD
 {
   class Meshtying;
+  class DynSmagFilter;
 }
 
 
@@ -457,6 +458,12 @@ public:
   Teuchos::RCP<Epetra_Vector> PhiReinitStart() { return phistart_; }
 
   /*========================================================================*/
+  //! @name turbulence and related
+  /*========================================================================*/
+
+  void AccessDynSmagFilter(Teuchos::RCP<FLD::DynSmagFilter> dynSmag);
+
+  /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
   /*========================================================================*/
 
@@ -723,7 +730,10 @@ protected:
   /*========================================================================*/
   //! @name turbulence and related
   /*========================================================================*/
-  
+
+  //! dynamic Smagorinsk model
+  virtual void DynamicComputationOfCs()=0;
+
   //! calculate mean CsgsB to estimate CsgsD for multifractal subgrid-scale model
   void RecomputeMeanCsgsB();
 
@@ -1037,6 +1047,21 @@ protected:
   int numinflowsteps_;
 
   /*========================================================================*/
+  //! @name turbulent flow variables
+  /*========================================================================*/
+
+  //! one instance of the filter object
+  Teuchos::RCP<FLD::DynSmagFilter> DynSmag_;
+
+  //! parameters for sampling/dumping period
+  int samstart_;
+  int samstop_;
+  int dumperiod_;
+
+  //! flag for turbulent inflow (turbulent loma specific)
+  bool turbinflow_;
+
+  /*========================================================================*/
   //! @name variables for reinitialization of level sets
   /*========================================================================*/
 
@@ -1058,20 +1083,12 @@ protected:
   //! write restart data every uprestart_ steps ? writesolutioneveryrestart_
   int uprestart_;
 
-  //! parameters for sampling/dumping period
-  int samstart_;
-  int samstop_;
-  int dumperiod_;
-
   /*========================================================================*/
   //! @name obsolete or unused variables - to be deleted soon (at noon)!!!
   /*========================================================================*/
 
   //! flag for potential Neumann inflow boundary condition
   bool neumanninflow_;
-
-  //! flag for turbulent inflow (turbulent loma specific)
-  bool turbinflow_;
 
   //! flag for potential boundary condition due to convective heat transfer
   bool convheatrans_;

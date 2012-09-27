@@ -112,6 +112,8 @@ namespace ADAPTER
     { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar); }
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
     { return fluid_->TurbulenceStatisticManager();}
+    virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter()
+    { return fluid_->DynSmagFilter();}
     virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp)
     { dserror("not implemented!");return; };
 //    virtual void TimeLoop()

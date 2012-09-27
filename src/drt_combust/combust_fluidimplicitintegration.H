@@ -246,6 +246,8 @@ public:
   \brief provide access to turbulence statistics manager
   */
   Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() { return turbstatisticsmanager_; }
+  /// provide access to the box filter for dynamic Smagorinsky model
+  Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter(){return Teuchos::null;}
 
   /*!
   \brief update configuration and output to file/screen

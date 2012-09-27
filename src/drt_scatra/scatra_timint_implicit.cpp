@@ -39,6 +39,7 @@ Maintainer: Georg Bauer
 #include "scatra_utils.H"
 #include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
+#include "../drt_fluid/dyn_smag.H"
 #include "../drt_io/io.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -120,13 +121,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   gstatincrement_(0.0),
   frt_      (0.0),
   numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
+  turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   reinitswitch_(extraparams->get<bool>("REINITSWITCH",false)),
   w_(Teuchos::null),
   c_(Teuchos::null),
   upres_    (params->get<int>("UPRES")),
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
-  turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
   skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER"))
 {
@@ -471,6 +472,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
         cout << &endl << &endl;
       }
     }
+    else if (turbparams->get<string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
+    {
+      turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+      // access to the dynamic Smagorinsky class will provided by the
+      // scatra fluid couling algorithm
+    }
     else if (turbparams->get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
     {
       turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
@@ -496,9 +503,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     }
 
     // warning No. 1: if classical (all-scale) turbulence model other than
-    // constant-coefficient Smagorinsky or multifractal subrgid-scale modeling
+    // Smagorinsky or multifractal subrgid-scale modeling
     // is intended to be used
     if (turbparams->get<string>("PHYSICAL_MODEL") != "Smagorinsky" and
+        turbparams->get<string>("PHYSICAL_MODEL") != "Dynamic_Smagorinsky" and
         turbparams->get<string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales" and
         turbparams->get<string>("PHYSICAL_MODEL") != "no_model")
       dserror("No classical (all-scale) turbulence model other than constant-coefficient Smagorinsky model and multifractal subrgid-scale modeling currently possible!");
@@ -621,7 +629,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
     // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes
     if (initialvelset_) PrepareFirstTimeStep();
-    else if (reinitswitch_);
+    else if (reinitswitch_){}
     else dserror("Initial velocity field has not been set");
   }
 
@@ -2272,6 +2280,11 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   eleparams.set<int>("form of convective term",convform_);
   eleparams.set<int>("fs subgrid diffusivity",fssgd_);
   // set general parameters for turbulent flow
+  // prepare dynamic Smagorinsky model if required,
+  // i.e. calculate turbulent Prandtl number
+  if ((timealgo_ == INPAR::SCATRA::timeint_gen_alpha or timealgo_ == INPAR::SCATRA::timeint_one_step_theta
+      or timealgo_ == INPAR::SCATRA::timeint_bdf2) and reinitswitch_ == false)
+    DynamicComputationOfCs();
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
   // set model-dependent parameters
   eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");

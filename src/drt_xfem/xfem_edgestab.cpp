@@ -24,6 +24,7 @@ Maintainer: Benedikt Schott
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "../drt_fluid/xfluid_defines.H"
 
@@ -427,7 +428,7 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
   ParameterList edgebasedparams;
 
   // set action for elements
-  edgebasedparams.set("action","EOS_and_GhostPenalty_stabilization");
+  edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);
 
   // decide if the element has to be stabilized
   bool stabilize_edge_based_fluid             = eleparams.get<bool>("edge_based");

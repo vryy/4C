@@ -9,6 +9,7 @@ flows.
 #include "turbulence_statistics_cha.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/sutherland.H"
@@ -814,6 +815,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     RefCountPtr<vector<double> > local_Cs_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
     RefCountPtr<vector<double> > local_Cs_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
     RefCountPtr<vector<double> > local_visceff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Prt_sum         =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Cs_delta_sq_Prt_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_diffeff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Ci_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Ci_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
     // store them in parameterlist for access on the element
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
@@ -823,6 +829,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     modelparams->set<RefCountPtr<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
     modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
     modelparams->set<RefCountPtr<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
+    modelparams->set<RefCountPtr<vector<double> > >("local_Prt_sum"        ,local_Prt_sum);
+    modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_Prt_sum",local_Cs_delta_sq_Prt_sum);
+    modelparams->set<RefCountPtr<vector<double> > >("local_diffeff_sum"    ,local_diffeff_sum    );
+    modelparams->set<RefCountPtr<vector<double> > >("local_Ci_sum"         ,local_Ci_sum         );
+    modelparams->set<RefCountPtr<vector<double> > >("local_Ci_delta_sq_sum",local_Ci_delta_sq_sum);
 
     // vectors for statistics computation (sums and increments)
     // ----------------------------------
@@ -847,6 +858,41 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     incrsumvisceff_  =  rcp(new vector<double> );
     incrsumvisceff_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for Prt
+    sumPrt_  =  rcp(new vector<double> );
+    sumPrt_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumPrt_  =  rcp(new vector<double> );
+    incrsumPrt_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for (Cs*delta)^2/Prt
+    sumCs_delta_sq_Prt_  =  rcp(new vector<double> );
+    sumCs_delta_sq_Prt_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumCs_delta_sq_Prt_  =  rcp(new vector<double> );
+    incrsumCs_delta_sq_Prt_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for the effective diffusivity
+    sumdiffeff_  =  rcp(new vector<double> );
+    sumdiffeff_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumdiffeff_  =  rcp(new vector<double> );
+    incrsumdiffeff_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for Ci
+    sumCi_  =  rcp(new vector<double> );
+    sumCi_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumCi_  =  rcp(new vector<double> );
+    incrsumCi_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for (Ci*delta)^2
+    sumCi_delta_sq_  =  rcp(new vector<double> );
+    sumCi_delta_sq_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumCi_delta_sq_  =  rcp(new vector<double> );
+    incrsumCi_delta_sq_->resize(nodeplanes_->size()-1,0.0);
   }
 
   //----------------------------------------------------------------------
@@ -1131,6 +1177,16 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       (*log) << "# Statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)\n\n";
 
       log->flush();
+
+      // additional output for dynamic Smagorinsky model
+      if (smagorinsky_)
+      {
+        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        s_smag.append(".Cs_statistics");
+
+        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+        (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
+      }
     }
     else
     {
@@ -1143,16 +1199,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)\n\n";
 
       log->flush();
-
-      // additional output for dynamic Smagorinsky model
-      if (smagorinsky_)
-      {
-        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-        s_smag.append(".Cs_statistics");
-
-        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
-        (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
-      }
 
       // additional output for scale similarity model
       if (scalesimilarity_)
@@ -1348,6 +1394,11 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
       (*sumCs_         )[rr]+=(*incrsumCs_         )[rr];
       (*sumCs_delta_sq_)[rr]+=(*incrsumCs_delta_sq_)[rr];
       (*sumvisceff_    )[rr]+=(*incrsumvisceff_    )[rr];
+      (*sumPrt_        )[rr]+=(*incrsumPrt_        )[rr];
+      (*sumCs_delta_sq_Prt_)[rr]+=(*incrsumCs_delta_sq_Prt_)[rr];
+      (*sumdiffeff_    )[rr]+=(*incrsumdiffeff_    )[rr];
+      (*sumCi_         )[rr]+=(*incrsumCi_         )[rr];
+      (*sumCi_delta_sq_)[rr]+=(*incrsumCi_delta_sq_)[rr];
     }
   }
 
@@ -1508,6 +1559,25 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
     }
   }
 
+  //----------------------------------------------------------------------
+  // add increment of last iteration to the sum of Cs values
+  // (statistics for dynamic Smagorinsky model)
+
+  if (smagorinsky_)
+  {
+    for (unsigned rr=0;rr<(*incrsumCs_).size();++rr)
+    {
+      (*sumCs_         )[rr]+=(*incrsumCs_         )[rr];
+      (*sumCs_delta_sq_)[rr]+=(*incrsumCs_delta_sq_)[rr];
+      (*sumvisceff_    )[rr]+=(*incrsumvisceff_    )[rr];
+      (*sumPrt_        )[rr]+=(*incrsumPrt_        )[rr];
+      (*sumCs_delta_sq_Prt_)[rr]+=(*incrsumCs_delta_sq_Prt_)[rr];
+      (*sumdiffeff_    )[rr]+=(*incrsumdiffeff_    )[rr];
+      (*sumCi_         )[rr]+=(*incrsumCi_         )[rr];
+      (*sumCi_delta_sq_)[rr]+=(*incrsumCi_delta_sq_)[rr];
+    }
+  }
+
   return;
 }// TurbulenceStatisticsCha::DoLomaTimeSample
 
@@ -1652,6 +1722,25 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(
     }
   }
 
+  //----------------------------------------------------------------------
+  // add increment of last iteration to the sum of Cs values
+  // (statistics for dynamic Smagorinsky model)
+
+  if (smagorinsky_)
+  {
+    for (unsigned rr=0;rr<(*incrsumCs_).size();++rr)
+    {
+      (*sumCs_         )[rr]+=(*incrsumCs_         )[rr];
+      (*sumCs_delta_sq_)[rr]+=(*incrsumCs_delta_sq_)[rr];
+      (*sumvisceff_    )[rr]+=(*incrsumvisceff_    )[rr];
+      (*sumPrt_        )[rr]+=(*incrsumPrt_        )[rr];
+      (*sumCs_delta_sq_Prt_)[rr]+=(*incrsumCs_delta_sq_Prt_)[rr];
+      (*sumdiffeff_    )[rr]+=(*incrsumdiffeff_    )[rr];
+      (*sumCi_         )[rr]+=(*incrsumCi_         )[rr];
+      (*sumCi_delta_sq_)[rr]+=(*incrsumCi_delta_sq_)[rr];
+    }
+  }
+
   return;
 }// TurbulenceStatisticsCha::DoScatraTimeSample
 
@@ -1671,7 +1760,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_turbulence_statistics");
+  eleparams.set<int>("action",FLD::calc_turbulence_statistics);
 
   // choose what to assemble
   eleparams.set("assemble matrix 1",false);
@@ -1873,7 +1962,7 @@ const double eosfac)
   ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_loma_statistics");
+  eleparams.set<int>("action",FLD::calc_loma_statistics);
 
   // choose what to assemble
   eleparams.set("assemble matrix 1",false);
@@ -2111,7 +2200,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
   ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_turbscatra_statistics");
+  eleparams.set<int>("action",FLD::calc_turbscatra_statistics);
 
   // choose what to assemble
   eleparams.set("assemble matrix 1",false);
@@ -2527,6 +2616,41 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   if(local_visceff_sum==Teuchos::null)
       dserror("local_visceff_sum==null from parameterlist");
 
+  RefCountPtr<vector<double> > global_incr_Prt_sum;
+  RefCountPtr<vector<double> > local_Prt_sum;
+  global_incr_Prt_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Prt_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Prt_sum",Teuchos::null);
+  if(local_Prt_sum==Teuchos::null)
+    dserror("local_Prt_sum==null from parameterlist");
+
+  RefCountPtr<vector<double> > global_incr_Cs_delta_sq_Prt_sum;
+  RefCountPtr<vector<double> > local_Cs_delta_sq_Prt_sum;
+  global_incr_Cs_delta_sq_Prt_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_delta_sq_Prt_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_Prt_sum",Teuchos::null);
+  if(local_Cs_delta_sq_Prt_sum==Teuchos::null)
+    dserror("local_Cs_delta_sq_Prt_sum==null from parameterlist");
+
+  RefCountPtr<vector<double> > global_incr_diffeff_sum;
+  RefCountPtr<vector<double> > local_diffeff_sum;
+  global_incr_diffeff_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_diffeff_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_diffeff_sum"    ,Teuchos::null);
+  if(local_diffeff_sum==Teuchos::null)
+      dserror("local_diffeff_sum==null from parameterlist");
+
+  RefCountPtr<vector<double> > global_incr_Ci_sum;
+  RefCountPtr<vector<double> > local_Ci_sum;
+  global_incr_Ci_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_Ci_sum"         ,Teuchos::null);
+  if(local_Ci_sum==Teuchos::null)
+    dserror("local_Ci_sum==null from parameterlist");
+
+  RefCountPtr<vector<double> > global_incr_Ci_delta_sq_sum;
+  RefCountPtr<vector<double> > local_Ci_delta_sq_sum;
+  global_incr_Ci_delta_sq_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_delta_sq_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Ci_delta_sq_sum",Teuchos::null);
+  if(local_Ci_delta_sq_sum==Teuchos::null)
+    dserror("local_Ci_delta_sq_sum==null from parameterlist");
+
   // now add all the stuff from the different processors
   discret_->Comm().SumAll(&((*local_Cs_sum               )[0]),
                           &((*global_incr_Cs_sum         )[0]),
@@ -2537,6 +2661,21 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   discret_->Comm().SumAll(&((*local_visceff_sum          )[0]),
                           &((*global_incr_visceff_sum    )[0]),
                           local_visceff_sum->size());
+  discret_->Comm().SumAll(&((*local_Prt_sum      )[0]),
+                          &((*global_incr_Prt_sum)[0]),
+                          local_Prt_sum->size());
+  discret_->Comm().SumAll(&((*local_Cs_delta_sq_Prt_sum      )[0]),
+                          &((*global_incr_Cs_delta_sq_Prt_sum)[0]),
+                          local_Cs_delta_sq_Prt_sum->size());
+  discret_->Comm().SumAll(&((*local_diffeff_sum          )[0]),
+                          &((*global_incr_diffeff_sum    )[0]),
+                          local_diffeff_sum->size());
+  discret_->Comm().SumAll(&((*local_Ci_sum               )[0]),
+                          &((*global_incr_Ci_sum         )[0]),
+                          local_Ci_sum->size());
+  discret_->Comm().SumAll(&((*local_Ci_delta_sq_sum      )[0]),
+                          &((*global_incr_Ci_delta_sq_sum)[0]),
+                          local_Ci_delta_sq_sum->size());
 
   // Replace increment to compute average of Smagorinsky Constant, effective
   // viscosity and (Cs_delta)^2
@@ -2545,16 +2684,31 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
     (*incrsumCs_         )[rr] =(*global_incr_Cs_sum         )[rr];
     (*incrsumCs_delta_sq_)[rr] =(*global_incr_Cs_delta_sq_sum)[rr];
     (*incrsumvisceff_    )[rr] =(*global_incr_visceff_sum    )[rr];
+    (*incrsumPrt_        )[rr] =(*global_incr_Prt_sum)[rr];
+    (*incrsumCs_delta_sq_Prt_)[rr] =(*global_incr_Cs_delta_sq_Prt_sum)[rr];
+    (*incrsumdiffeff_    )[rr] =(*global_incr_diffeff_sum    )[rr];
+    (*incrsumCi_         )[rr] =(*global_incr_Ci_sum         )[rr];
+    (*incrsumCi_delta_sq_)[rr] =(*global_incr_Ci_delta_sq_sum)[rr];
   }
 
   // reinitialise to zero for next element call
   local_Cs_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Cs_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_visceff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Prt_sum         =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_delta_sq_Prt_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_diffeff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
   modelparams->set<RefCountPtr<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
   modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
   modelparams->set<RefCountPtr<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
+  modelparams->set<RefCountPtr<vector<double> > >("local_Prt_sum"        ,local_Prt_sum);
+  modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_Prt_sum",local_Cs_delta_sq_Prt_sum);
+  modelparams->set<RefCountPtr<vector<double> > >("local_diffeff_sum"    ,local_diffeff_sum    );
+  modelparams->set<RefCountPtr<vector<double> > >("local_Ci_sum"         ,local_Ci_sum         );
+  modelparams->set<RefCountPtr<vector<double> > >("local_Ci_delta_sq_sum",local_Ci_delta_sq_sum);
 
   return;
 } // FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities
@@ -2646,7 +2800,7 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
 {
   // action for elements
   ParameterList paramsele;
-  paramsele.set("action","calc model parameter multifractal subgid scales");
+  paramsele.set<int>("action",FLD::calc_model_params_mfsubgr_scales);
   paramsele.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
   paramsele.set("scalar", withscatra);
   if (withscatra)
@@ -2899,7 +3053,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     // set parameter list (time integration)
 
     // action for elements
-    eleparams_.set("action","calc_dissipation");
+    eleparams_.set<int>("action",FLD::calc_dissipation);
 
     // parameters for a turbulence model
     {
@@ -3559,9 +3713,14 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
 
 
       (*log_Cs) << "#     y      ";
-      (*log_Cs) << "     Cs     ";
+      (*log_Cs) << "     Cs      ";
       (*log_Cs) << "   (Cs*hk)^2 ";
       (*log_Cs) << "    visceff  ";
+      (*log_Cs) << "    Prt      ";
+      (*log_Cs) << "(Cs*hk)^2/Prt";
+      (*log_Cs) << "    diffeff  ";
+      (*log_Cs) << "     Ci      ";
+      (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &endl;
       (*log_Cs) << scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
@@ -3569,10 +3728,15 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
         // we associate the value with the midpoint of the element layer
         (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
-        // the three values to be visualised
+        // the five values to be visualized
         (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
         (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
       }
       log_Cs->flush();
     } // end smagorinsky_
@@ -3923,6 +4087,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
   if (discret_->Comm().MyPID()==0)
   {
 
+    // ------------------------------------------------------------------
     // additional output for dynamic Smagorinsky model
     if (smagorinsky_)
     {
@@ -3933,27 +4098,41 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
-      (*log_Cs) << "# Smagorinsky parameter statistics for turbulent incompressible flow in a channel";
+      (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
+
       (*log_Cs) << "\n\n\n";
-      (*log_Cs) << "# Statistics record ";
+      (*log_Cs) << "# Statistics record " << countrecord_;
       (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
 
       (*log_Cs) << "#     y      ";
-      (*log_Cs) << "     Cs     ";
+      (*log_Cs) << "     Cs      ";
       (*log_Cs) << "   (Cs*hk)^2 ";
       (*log_Cs) << "    visceff  ";
+      (*log_Cs) << "    Prt      ";
+      (*log_Cs) << "(Cs*hk)^2/Prt";
+      (*log_Cs) << "    diffeff  ";
+      (*log_Cs) << "     Ci      ";
+      (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &endl;
       (*log_Cs) << scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
+        // we associate the value with the midpoint of the element layer
         (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_)[rr])/(numele_*numsamp_) << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)<< "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_)[rr])/(numele_*numsamp_) << &endl;
+
+        // the five values to be visualized
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
       }
       log_Cs->flush();
-    }
+    } // end smagorinsky_
 
     if(subgrid_dissipation_)
     {
@@ -3964,10 +4143,6 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
-      
-      (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
-      (*log_res) << "# All values are first averaged over the integration points in an element \n";
-      (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
@@ -4258,10 +4433,6 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
-      
-      (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
-      (*log_res) << "# All values are first averaged over the integration points in an element \n";
-      (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
@@ -4406,6 +4577,54 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       }
       log_res->flush();
     } // end subgrid_dissipation_
+
+    // ------------------------------------------------------------------
+    // additional output for dynamic Smagorinsky model
+    if (true)//(smagorinsky_)
+    {
+      // get the outfile
+      Teuchos::RefCountPtr<std::ofstream> log_Cs;
+
+      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_smag.append(".Cs_statistics");
+
+      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+      (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
+
+      (*log_Cs) << "\n\n\n";
+      (*log_Cs) << "# Statistics record " << countrecord_;
+      (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+
+      (*log_Cs) << "#     y      ";
+      (*log_Cs) << "     Cs      ";
+      (*log_Cs) << "   (Cs*hk)^2 ";
+      (*log_Cs) << "    visceff  ";
+      (*log_Cs) << "    Prt      ";
+      (*log_Cs) << "(Cs*hk)^2/Prt";
+      (*log_Cs) << "    diffeff  ";
+      (*log_Cs) << "     Ci      ";
+      (*log_Cs) << "   (Ci*hk)^2 ";
+      (*log_Cs) << &endl;
+      (*log_Cs) << scientific;
+      for (unsigned rr=0;rr<sumCs_->size();++rr)
+      {
+        // we associate the value with the midpoint of the element layer
+        (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+
+        // the five values to be visualized
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+      }
+      log_Cs->flush();
+    } // end smagorinsky_
+
   }
 
   return;
@@ -4586,6 +4805,53 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       }
       log_mf->flush();
     } // end multifractal_
+
+    // ------------------------------------------------------------------
+    // additional output for dynamic Smagorinsky model
+    if (smagorinsky_)
+    {
+      // get the outfile
+      Teuchos::RefCountPtr<std::ofstream> log_Cs;
+
+      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_smag.append(".Cs_statistics");
+
+      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+      (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
+
+      (*log_Cs) << "\n\n\n";
+      (*log_Cs) << "# Statistics record " << countrecord_;
+      (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+
+      (*log_Cs) << "#     y      ";
+      (*log_Cs) << "     Cs      ";
+      (*log_Cs) << "   (Cs*hk)^2 ";
+      (*log_Cs) << "    visceff  ";
+      (*log_Cs) << "    Prt      ";
+      (*log_Cs) << "(Cs*hk)^2/Prt";
+      (*log_Cs) << "    diffeff  ";
+      (*log_Cs) << "     Ci      ";
+      (*log_Cs) << "   (Ci*hk)^2 ";
+      (*log_Cs) << &endl;
+      (*log_Cs) << scientific;
+      for (unsigned rr=0;rr<sumCs_->size();++rr)
+      {
+        // we associate the value with the midpoint of the element layer
+        (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+
+        // the five values to be visualized
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+      }
+      log_Cs->flush();
+    } // end smagorinsky_
   }
 
   return;
@@ -4658,9 +4924,14 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
     for (unsigned rr=0;rr<sumCs_->size();++rr)
     {
       // reset value
-      (*sumCs_)         [rr]=0;
-      (*sumCs_delta_sq_)[rr]=0;
-      (*sumvisceff_)    [rr]=0;
+      (*sumCs_)         [rr]=0.0;
+      (*sumCs_delta_sq_)[rr]=0.0;
+      (*sumvisceff_)    [rr]=0.0;
+      (*sumPrt_)        [rr]=0.0;
+      (*sumCs_delta_sq_Prt_)[rr]=0.0;
+      (*sumdiffeff_)    [rr]=0.0;
+      (*sumCi_)         [rr]=0.0;
+      (*sumCi_delta_sq_)[rr]=0.0;
     }
   } // end smagorinsky_
 

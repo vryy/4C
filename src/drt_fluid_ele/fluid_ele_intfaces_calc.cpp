@@ -17,6 +17,7 @@ Maintainer: Benedikt Schott
 
 #include "fluid_ele_intfaces_calc.H"
 #include "fluid_ele_calc_intfaces_stab.H"
+#include "fluid_ele_action.H"
 #include "../drt_inpar/inpar_xfem.H"
 
 #include "../linalg/linalg_utils.H"
@@ -359,18 +360,12 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(   DRT::ELEM
                                                                        vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
                                                                        )
 {
-  DRT::ELEMENTS::FluidIntFace::ActionType act = FluidIntFace::none;
-  string action = params.get<string>("action","none");
-
-  if (action == "none") dserror("No action supplied");
-  else if (action == "EOS_and_GhostPenalty_stabilization")
-      act = FluidIntFace::EOS_and_GhostPenalty_stabilization;
-  else dserror("Unknown type of action for FluidIntFace for internal faces: %s",action.c_str());
-
+  FLD::IntFaceAction act = FLD::ifa_none;
+  act = DRT::INPUT::get<FLD::IntFaceAction>(params,"action");
 
   switch(act)
   {
-  case FluidIntFace::EOS_and_GhostPenalty_stabilization:
+  case FLD::EOS_and_GhostPenalty_stabilization:
   {
     return DRT::ELEMENTS::FluidIntFaceStab::Impl(intface)->EvaluateEdgeBasedStabilization(
       intface,

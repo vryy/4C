@@ -194,6 +194,20 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
     return(0);
   } // Nurbs specific stuff
 
+  //----------------------------------------------------------------
+  // prepare some dynamic Smagorinsky related stuff
+  //----------------------------------------------------------------
+  double CsDeltaSq = 0.0;
+  double CiDeltaSq = 0.0;
+  if (my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+  {
+    RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Cs_delta_sq");
+    RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Ci_delta_sq");
+    const int id = ele->LID();
+    CsDeltaSq = (*ele_CsDeltaSq)[id];
+    CiDeltaSq = (*ele_CiDeltaSq)[id];
+  }
+
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = EvaluateOD(
     ele->Id(),
@@ -214,7 +228,8 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
     egridv,
     mat,
     ele->IsAle(),
-    ele->CsDeltaSq(),
+    CsDeltaSq,
+    CiDeltaSq,
     intpoints);
 
   return result;
@@ -245,6 +260,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   Teuchos::RCP<MAT::Material>          mat,
   bool                                 isale,
   double                               CsDeltaSq,
+  double                               CiDeltaSq,
   const DRT::UTILS::GaussIntegration & intpoints)
 {
   // flag for higher order elements
@@ -271,6 +287,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
   double Cs_delta_sq   = 0.0;
+  double Ci_delta_sq   = 0.0;
   my::visceff_  = 0.0;
 
   // remember the layer of averaging for the dynamic Smagorinsky model
@@ -278,8 +295,10 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
 
   my::GetTurbulenceParams(turbmodelparams,
                       Cs_delta_sq,
+                      Ci_delta_sq,
                       nlayer,
-                      CsDeltaSq);
+                      CsDeltaSq,
+                      CiDeltaSq);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix
@@ -305,6 +324,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
                         thermpressdtam,
                         mat,
                         Cs_delta_sq,
+                        Ci_delta_sq,
                         isale,
                         intpoints);
 
@@ -339,6 +359,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   const double                         thermpressdtam,
   Teuchos::RCP<const MAT::Material>    material,
   double&                              Cs_delta_sq,
+  double&                              Ci_delta_sq,
   bool                                 isale,
   const DRT::UTILS::GaussIntegration & intpoints
   )
@@ -371,7 +392,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
         my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
     {
-      my::CalcSubgrVisc(evelaf,vol,my::fldpara_->Cs_,Cs_delta_sq,my::fldpara_->l_tau_);
+      my::CalcSubgrVisc(evelaf,vol,my::fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,my::fldpara_->l_tau_);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       my::visceff_ += my::sgvisc_;
     }
@@ -421,7 +442,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
           my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       {
-        my::CalcSubgrVisc(evelaf,vol,my::fldpara_->Cs_,Cs_delta_sq,my::fldpara_->l_tau_);
+        my::CalcSubgrVisc(evelaf,vol,my::fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,my::fldpara_->l_tau_);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         my::visceff_ += my::sgvisc_;
       }
@@ -446,8 +467,12 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       dserror("No material update in combination with smagorinsky model!");
     if (my::fldpara_->UpdateMat())
+    {
       my::UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,my::sgscaint_);
-
+      my::visceff_ = my::visc_;
+      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+        my::visceff_ += my::sgvisc_;
+    }
     //----------------------------------------------------------------------
     //  evaluate temperature-based residual vector for continuity equation
     //----------------------------------------------------------------------

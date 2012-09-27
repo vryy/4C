@@ -29,6 +29,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -334,14 +335,14 @@ public:
   \brief Corrects the flow rate
   */
   void CorrectFlowRate(string             ds_condname,
-                       string             action,
+                       FLD::BoundaryAction action,
                        double             time,
                        bool               force_correction=false);
 
   /*!
   \brief Calculate the Flowrate on a boundary
   */
-  double FlowRateCalculation(double time, string ds_condname, string action, int condid);
+  double FlowRateCalculation(double time, string ds_condname, FLD::BoundaryAction action, int condid);
 
   double PressureCalculation(double time, string ds_condname, string action, int condid);
   /*!
