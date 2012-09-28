@@ -44,6 +44,8 @@ void InsideChcek1( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::Side *
 
 void check15node5concave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::Side * s );
 
+void check8nodeQuadInsidePt( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::Side * s );
+
 void checkTemporary( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::Side * s );
 
 void checkTemporary2( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::Side * s );
@@ -120,6 +122,7 @@ void test_facet_split()
 
   InsideChcek1( mesh, e, s );
   check15node5concave( mesh, e, s );
+  check8nodeQuadInsidePt( mesh, e, s );
 
   /*checkTemporary( mesh, e, s );*/
   //checkTemporary2( mesh, e, s );
@@ -2179,6 +2182,82 @@ void check15node5concave( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT:
     dserror( "triangulation failed for check15node5concave" );
   if( cell8[0]!=p6 || cell8[1]!=p13 || cell8[2]!=p4 )
     dserror( "triangulation failed for check15node5concave" );
+}
+
+/*---------------------------------------------------------------------------------------*
+ *                 A 8 noded facet -- check for QuadInsidePt                             *
+ *---------------------------------------------------------------------------------------*/
+void check8nodeQuadInsidePt( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::Side * s )
+{
+  std::cout<<"check8nodeQuadInsidePt...\n";
+  std::vector<GEO::CUT::Point*> ptlist(8);
+  double x[3];
+  x[0] = 5.44;
+
+  x[1] = 4.8;x[2] = 4.88;
+  GEO::CUT::Point * p1 = mesh.NewPoint( x, NULL, s );
+  ptlist[0] = p1;
+
+  x[1] = 4.8;x[2] = 4.8;
+  GEO::CUT::Point * p2 = mesh.NewPoint( x, NULL, s );
+  ptlist[1] = p2;
+
+  x[1] = 4.88;x[2] = 4.8;
+  GEO::CUT::Point * p3 = mesh.NewPoint( x, NULL, s );
+  ptlist[2] = p3;
+
+  x[1] = 4.88;x[2] = 4.80242;
+  GEO::CUT::Point * p4 = mesh.NewPoint( x, NULL, s );
+  ptlist[3] = p4;
+
+  x[1] = 4.85799;x[2] = 4.81544;
+  GEO::CUT::Point * p5 = mesh.NewPoint( x, NULL, s );
+  ptlist[4] = p5;
+
+  x[1] = 4.83652;x[2] = 4.83652;
+  GEO::CUT::Point * p6 = mesh.NewPoint( x, NULL, s );
+  ptlist[5] = p6;
+
+  x[1] = 4.81544;x[2] = 4.85799;
+  GEO::CUT::Point * p7 = mesh.NewPoint( x, NULL, s );
+  ptlist[6] = p7;
+
+  x[1] = 4.80242;x[2] = 4.88;
+  GEO::CUT::Point * p8 = mesh.NewPoint( x, NULL, s );
+  ptlist[7] = p8;
+
+  GEO::CUT::Facet face1( mesh, ptlist, s, false );
+  GEO::CUT::TriangulateFacet tf( &face1, ptlist );
+  tf.SplitFacet();
+
+  std::vector<std::vector<GEO::CUT::Point*> > split;
+  split = tf.GetSplitCells();
+
+  /*for( std::vector<std::vector<GEO::CUT::Point*> >::iterator i=split.begin();i!=split.end();i++ )
+  {
+    std::cout<<"cell\n";
+    std::vector<GEO::CUT::Point*> cell = *i;;
+    for( std::vector<GEO::CUT::Point*>::iterator j=cell.begin();j!=cell.end();j++ )
+    {
+      GEO::CUT::Point* pt = *j;
+      double coo[3];
+      pt->Coordinates(coo);
+      std::cout<<coo[0]<<"\t"<<coo[1]<<"\t"<<coo[2]<<"\n";
+    }
+  }*/
+
+  std::vector<GEO::CUT::Point*> cell1 = split[0];
+  std::vector<GEO::CUT::Point*> cell2 = split[1];
+  std::vector<GEO::CUT::Point*> cell3 = split[2];
+  std::vector<GEO::CUT::Point*> cell4 = split[3];
+  if( cell1[0]!=p7 || cell1[1]!=p8 || cell1[2]!=p1 || cell1[3]!=p2 )
+    dserror( "triangulation failed for check8nodeQuadInsidePt" );
+  if( cell2[0]!=p2 || cell2[1]!=p3 || cell2[2]!=p4 || cell2[3]!=p5 )
+    dserror( "triangulation failed for check8nodeQuadInsidePt" );
+  if( cell3[0]!=p6 || cell3[1]!=p7 || cell3[2]!=p2 )
+    dserror( "triangulation failed for check8nodeQuadInsidePt" );
+  if( cell4[0]!=p6 || cell4[1]!=p2 || cell4[2]!=p5 )
+    dserror( "triangulation failed for check8nodeQuadInsidePt" );
 }
 
 void checkTemporary( GEO::CUT::Mesh& mesh, GEO::CUT::Element * e, GEO::CUT::Side * s )

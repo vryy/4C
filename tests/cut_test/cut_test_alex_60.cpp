@@ -537,7 +537,7 @@ void test_alex60()
   intersection.Status();
   intersection.Cut( true, "Tessellation" );
 
-  std::vector<double> tessVol,momFitVol;
+  std::vector<double> tessVol,momFitVol,dirDivVol;
 
   GEO::CUT::Mesh mesh = intersection.NormalMesh();
   const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
@@ -563,6 +563,23 @@ void test_alex60()
   {
     if(fabs(tessVol[i]-momFitVol[i])>1e-5)
       dserror("The volumes calculated by momentFitting and Tessellation are not the same");
+  }
+
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+           i!=other_cells.end();
+           ++i )
+   {
+     GEO::CUT::VolumeCell * vc = &**i;
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,"DirectDivergence");
+     dirDivVol.push_back(vc->Volume());
+   }
+
+  std::cout<<"the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
+  for(unsigned i=0;i<tessVol.size();i++)
+  {
+    std::cout<<tessVol[i]<<"\t"<<momFitVol[i]<<"\t"<<dirDivVol[i]<<"\n";
+    if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-9 )
+      dserror("volume predicted by either one of the method is wrong");
   }
 }
 

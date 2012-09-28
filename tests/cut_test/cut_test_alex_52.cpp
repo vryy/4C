@@ -258,7 +258,7 @@ void test_alex52()
     momFitVol.push_back(vc->Volume());
   }
 
-  /*for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
            i!=other_cells.end();
            ++i )
    {
@@ -273,6 +273,6 @@ void test_alex52()
     std::cout<<tessVol[i]<<"\t"<<momFitVol[i]<<"\t"<<dirDivVol[i]<<"\n";
     if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-9 )
       dserror("volume predicted by either one of the method is wrong");
-  }*/
+  }
 }
 
