@@ -37,7 +37,8 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
   // call constructor for "nontrivial" objects
   discret_(actdis),
   output_ (output),
-  imp_ (ImpWrapper)
+  imp_ (ImpWrapper),
+  period_(0.0)
 {
 
   vector<DRT::Condition*> impedancecond;
@@ -89,15 +90,6 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
     } // end loop over condition lines from input
   } // end if there were conditions
   
-
-  // -------------------------------------------------------------------
-  // test that we have an integer number of time steps per cycle
-  // -------------------------------------------------------------------
-  // something more intelligent could possibly be found one day ...
-  double doublestepnum = period_/dta;
-  
-  int cyclesteps = (int)(doublestepnum+0.5)+1;
-
   // ---------------------------------------------------------------------
   // Check if there is any optimzation conditions
   // ---------------------------------------------------------------------
@@ -108,6 +100,13 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
   int numOptlines = wk_optim_cond.size();
   if (numOptlines > 0 )
   {
+    // -------------------------------------------------------------------
+    // test that we have an integer number of time steps per cycle
+    // -------------------------------------------------------------------
+    // something more intelligent could possibly be found one day ...
+    double doublestepnum = period_/dta;
+    int cyclesteps = (int)(doublestepnum+0.5)+1;
+
     // Problems total dimension
     int Dim = 0;
     // -------------------------------------------------------------------
