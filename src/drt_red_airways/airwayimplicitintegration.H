@@ -349,11 +349,13 @@ protected:
   RCP<Epetra_Vector>          bcval_;
   RCP<Epetra_Vector>          dbctog_;
   RCP<Epetra_Vector>          acini_bc_;
-  RCP<Epetra_Vector>          acini_volume0_;
-  RCP<Epetra_Vector>          acini_volumenm_;
-  RCP<Epetra_Vector>          acini_volumen_;
-  RCP<Epetra_Vector>          acini_volumenp_;
-  RCP<Epetra_Vector>          acini_volume_strain_;
+
+  //! @name acinar elementel values
+  RCP<Epetra_Vector>          acini_e_volume0_;
+  RCP<Epetra_Vector>          acini_e_volumenm_;
+  RCP<Epetra_Vector>          acini_e_volumen_;
+  RCP<Epetra_Vector>          acini_e_volumenp_;
+  RCP<Epetra_Vector>          acini_e_volume_strain_;
 
   //@}
 

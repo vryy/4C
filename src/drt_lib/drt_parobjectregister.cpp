@@ -176,10 +176,8 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::So_tet4ScatraType::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet4ThermoType::Instance().Name() << " "
     << DRT::ELEMENTS::So_weg6Type::Instance().Name() << " "
-#ifdef D_ARTNET //_1D_ARTERY_
     << DRT::ELEMENTS::ArteryType::Instance().Name() << " "
     << MAT::Cnst_1d_artType::Instance().Name() << " "
-#endif
     << MAT::AAAgasserType::Instance().Name() << " "
     << MAT::AAAneohookeType::Instance().Name() << " "
     << MAT::AAAneohooke_stoproType::Instance().Name() << " "
@@ -241,9 +239,8 @@ std::string DRT::ParObjectList()
     << MAT::PlasticLinElastType::Instance().Name() << " "
     << MAT::RobinsonType::Instance().Name() << " "
     << MAT::DamageType::Instance().Name() << " "
-#ifdef D_RED_AIRWAYS
     << DRT::ELEMENTS::RedAirwayType::Instance().Name() << " "
-#endif
+    << DRT::ELEMENTS::RedAcinusType::Instance().Name() << " "
     ;
   return s.str();
 }

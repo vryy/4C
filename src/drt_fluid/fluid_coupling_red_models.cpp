@@ -12,7 +12,6 @@ Maintainer: Mahmoud Ismail
 *----------------------------------------------------------------------*/
 
 //#ifdef D_COUPLED_ARTNET
-#ifdef D_RED_AIRWAYS
 
 #include <stdio.h>
 #include <math.h>
@@ -1185,8 +1184,3 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
   }
   //  exit(1);
 }
-
-
-
-#endif // D_ARTNET
-//#endif // D_COUPLED_ARTNET

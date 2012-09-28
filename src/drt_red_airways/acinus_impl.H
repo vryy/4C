@@ -1,0 +1,208 @@
+
+/*----------------------------------------------------------------------*/
+/*!
+\file acinus_impl.H
+
+\brief Internal implementation of acinus_impl element
+
+<pre>
+Maintainer: Mahmoud Ismail
+            ismail@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15268
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
+
+
+#ifndef ACINUS_IMPL_H
+#define ACINUS_IMPL_H
+
+#include "red_airway.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+
+
+namespace DRT
+{
+namespace ELEMENTS
+{
+  /// Interface base class for acinus_impl
+  /*!
+    This class exists to provide a common interface for all template
+    versions of acinus_impl. The only function
+    this class actually defines is Impl, which returns a pointer to
+    the appropriate version of acinus_impl.
+   */
+  class RedAcinusImplInterface
+  {
+  public:
+    /// Empty constructor
+    RedAcinusImplInterface() {}
+    /// Empty destructor
+    virtual ~RedAcinusImplInterface() {}
+    /// Evaluate the element
+    virtual int Evaluate(RedAcinus*                ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat) = 0;
+
+    virtual void Initial(RedAcinus*                               ele,
+                         ParameterList&                           params,
+                         DRT::Discretization&                     discretization,
+                         vector<int>&                             lm,
+                         Teuchos::RCP<const MAT::Material>        material)=0;
+
+    virtual void EvaluateTerminalBC(RedAcinus*                    ele,
+                                    ParameterList&                params,
+                                    DRT::Discretization&          discretization,
+                                    vector<int>&                  lm,
+                                    Epetra_SerialDenseVector& elevec1_epetra,
+                                    RefCountPtr<MAT::Material>    mat) = 0;
+
+    virtual void CalcFlowRates(RedAcinus*                    ele,
+                               ParameterList&                params,
+                               DRT::Discretization&          discretization,
+                               Epetra_SerialDenseVector&     a_volumen,
+                               Epetra_SerialDenseVector&     a_volumenp,
+                               vector<int>&                  lm,
+                               RefCountPtr<MAT::Material>    mat) = 0;
+
+    virtual void GetCoupledValues(RedAcinus*                   ele,
+                                  ParameterList&               params,
+                                  DRT::Discretization&         discretization,
+                                  vector<int>&                 lm,
+                                  RefCountPtr<MAT::Material>   material) = 0;
+
+    /// Internal implementation class for acinus element
+    static RedAcinusImplInterface* Impl(DRT::ELEMENTS::RedAcinus* acinus);
+
+  };
+
+
+  /// Internal acinus implementation
+  /*!
+    This internal class keeps all the working arrays needed to
+    calculate the acinus element. Additionally the method Sysmat()
+    provides a clean and fast element implementation.
+
+    <h3>Purpose</h3>
+
+    \author ismail
+    \date 01/09
+  */
+
+  template <DRT::Element::DiscretizationType distype>
+  class AcinusImpl: public RedAcinusImplInterface
+  {
+  public:
+    /// Constructor
+    explicit AcinusImpl();
+
+    //! number of nodes
+    static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    
+
+    /// Evaluate
+    /*!
+      The evaluate function for the general acinus case.
+     */
+    virtual int Evaluate(RedAcinus*                ele,
+                         ParameterList&            params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elemat1_epetra,
+                         Epetra_SerialDenseMatrix& elemat2_epetra,
+                         Epetra_SerialDenseVector& elevec1_epetra,
+                         Epetra_SerialDenseVector& elevec2_epetra,
+                         Epetra_SerialDenseVector& elevec3_epetra,
+                         RefCountPtr<MAT::Material> mat);
+
+    /*!
+      \brief calculate element matrix and rhs
+
+      \param ele              (i) the element those matrix is calculated
+      \param eqnp             (i) nodal volumetric flow rate at n+1
+      \param evelnp           (i) nodal velocity at n+1
+      \param eareanp          (i) nodal cross-sectional area at n+1
+      \param eprenp           (i) nodal pressure at n+1
+      \param estif            (o) element matrix to calculate
+      \param eforce           (o) element rhs to calculate
+      \param material         (i) acinus material/dimesion
+      \param time             (i) current simulation time
+      \param dt               (i) timestep
+      */
+    void Sysmat(RedAcinus*                               ele,
+                Epetra_SerialDenseVector&                epnp,
+                Epetra_SerialDenseVector&                epn,
+                Epetra_SerialDenseVector&                epnm,
+                Epetra_SerialDenseMatrix&                estif,
+                Epetra_SerialDenseVector&                eforce,
+                Teuchos::RCP<const MAT::Material>        material,
+                ParameterList &                          params,
+                double                                   time,
+                double                                   dt);
+
+
+    virtual void EvaluateTerminalBC(RedAcinus *                  ele,
+                                    ParameterList&               params,
+                                    DRT::Discretization&         disctretization,
+                                    vector<int>&                 lm,
+                                    Epetra_SerialDenseVector&    elevec1_epetra,
+                                    RefCountPtr<MAT::Material>   mat);
+
+    /*!
+      \brief get the initial values of the degrees of freedome at the node
+
+      \param ele              (i) the element those matrix is calculated
+      \param eqnp             (i) nodal volumetric flow rate at n+1
+      \param evelnp           (i) nodal velocity at n+1
+      \param eareanp          (i) nodal cross-sectional area at n+1
+      \param eprenp           (i) nodal pressure at n+1
+      \param estif            (o) element matrix to calculate
+      \param eforce           (o) element rhs to calculate
+      \param material         (i) acinus material/dimesion
+      \param time             (i) current simulation time
+      \param dt               (i) timestep
+      */
+    virtual void Initial(RedAcinus*                               ele,
+                         ParameterList&                           params,
+                         DRT::Discretization&                     discretization,
+                         vector<int>&                             lm,
+                         Teuchos::RCP<const MAT::Material>        material);
+
+    /*!
+     \Essential functions to compute the results of essentail matrices 
+    */
+    virtual void CalcFlowRates(RedAcinus*                    ele,
+                               ParameterList&                params,
+                               DRT::Discretization&          discretization,
+                               Epetra_SerialDenseVector&     a_volumen_strain_np,
+                               Epetra_SerialDenseVector&     a_volumenp,
+                               vector<int>&                  lm,
+                               RefCountPtr<MAT::Material>    mat);
+
+    /*!
+     \Essential functions to evaluate the coupled results
+    */
+    virtual void GetCoupledValues(RedAcinus*                   ele,
+                                  ParameterList&               params,
+                                  DRT::Discretization&         discretization,
+                                  vector<int>&                 lm,
+                                  RefCountPtr<MAT::Material>   material);
+
+  private:
+  };
+
+}
+}
+
+#endif
+

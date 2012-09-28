@@ -133,6 +133,7 @@ namespace INPAR
       m_structporo,   //< wrapper material for poroelasticity (structure)
       m_spring,       ///< elastic spring (translational or rotational)
       m_opti_dens,    ///< density field for topology optimization
+      m_0d_maxwell_acinus, ///< 0D acinar Maxwell material
       m_none          ///< undefined
     };
 

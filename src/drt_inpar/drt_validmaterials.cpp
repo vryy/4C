@@ -1825,6 +1825,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*--------------------------------------------------------------------*/
+  // 0D Acinar material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS",
+                                            "0D acinar material",
+                                            INPAR::MAT::m_0d_maxwell_acinus));
+
+    AddNamedReal(m,"Stiffness1","first stiffness");
+    AddNamedReal(m,"Stiffness2","second stiffness");
+    AddNamedReal(m,"Viscosity1","first viscosity");
+    AddNamedReal(m,"Viscosity2","second viscosity");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*----------------------------------------------------------------------*/
   // deliver
   return vm;

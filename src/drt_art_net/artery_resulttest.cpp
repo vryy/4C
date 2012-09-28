@@ -13,8 +13,6 @@ Maintainer: Mahmoud Ismail
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_ARTNET
-
 #include "artnetexplicitintegration.H"
 #include "artery_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -81,5 +79,4 @@ bool ART::ArteryResultTest::Match(DRT::INPUT::LineDefinition& res)
   return res.HaveNamed("ARTNET");
 }
 
-#endif //#ifdef D_RED_AIRWAYS
 

@@ -2664,7 +2664,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
 
-#ifdef D_RED_AIRWAYS
   /*--------------------------------------------------------------------*/
   // Prescribed BC for reduced dimensional airways
 
@@ -2759,8 +2758,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(raw_vent_bc);
 
-
-#endif //D_RED_AIRWAYS
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition

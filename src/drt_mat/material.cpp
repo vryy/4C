@@ -74,6 +74,7 @@ Maintainer: Lena Wiechert
 #include "fluidporo.H"
 #include "structporo.H"
 #include "spring.H"
+#include "maxwell_0d_acinus.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -453,6 +454,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Cnst_1d_art(curmat));
     MAT::PAR::Cnst_1d_art* params = static_cast<MAT::PAR::Cnst_1d_art*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_0d_maxwell_acinus:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus(curmat));
+    MAT::PAR::Maxwell_0d_acinus* params = static_cast<MAT::PAR::Maxwell_0d_acinus*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_th_fourier_iso:

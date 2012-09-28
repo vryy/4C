@@ -113,17 +113,13 @@ void ntacal()
       fluid_topopt_dyn();
       break;
 
-#ifdef D_ARTNET
     case prb_art_net:
       dyn_art_net_drt();
       break;
-#endif /* D_ARTNET */
 
-#ifdef D_RED_AIRWAYS
     case prb_red_airways:
       dyn_red_airways_drt();
       break;
-#endif /* D_RED_AIRWAYS */
 
     case prb_struct_ale:
       stru_ale_dyn_drt(restart);

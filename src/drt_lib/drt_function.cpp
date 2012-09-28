@@ -1992,60 +1992,60 @@ locsyscond_(NULL)
  *----------------------------------------------------------------------*/
 double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
-	/* DESCRIPTION:
-	 *
-	 * THIS IS STLL BASIC. DO NOT TRY ANYTHING FANCY...PLEASE!!!!
-	 *
-	 * During initialization fluid properties, vessel radius and the local
-	 * coordinate system (normal, tangent, origin) of the inflow surface are read
-	 * from the input file. The third direction is built via cross product.
-	 * In case of a non-circular cross section, the egde nodes of the inflow surface are
-	 * detected. The node coordinates are transformed to local polar coordinates.
-	 * The time curve is recorded for one cardiac cycle using the time curve manager.
-	 * It is then transformed from time to frequency domain by applying a Discrete Fourier
-	 * Transform (DFT). In order to ensure a smooth transition from pre-stressing velocity
-	 * to the actual physiological velocity profile during the first second,
-	 * a linear evolution of the nodevelocity values from w=0 @t=0s to w @ t=1s is set up.
-	 * After leaving the initialization, the polar coordinates (r,phi) of the current node are
-	 * determined in case of a non-circular cross section. Its phase is matched to the two
-	 * closest edge node phase values and the vessel radius R is interpolated.
-	 * In case of an FSI problem, the edge node coordinates are updated each time step.
-	 * In case of a circular cross section, the radius is applied and the aforementioned
-	 * steps are skipped. Now, a vector with time dependent values for each harmonic is
-	 * generated from the results of the DFT and handed over to the Womersley Function.
-	 * The results are scaled using the components of the earlier read normal vector and
-	 * returned depending on index=current global cartesian coordinate (x,y,z)=(0,1,2)
-	 *
-	 * what you need in order to run this thing:
-	 * - DSURF DIRICHLET CONDITION definition(s) for the application of Womersley Dirichlet values;
-	 *   expample:
-	 *   //DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
-	 *       E 2  -  1    1    1    0    0    0  1.0 1.0 1.0 0.0 0.0 0.0   1     1     1    none  none  none   1     1     1     0     0     0
-	 *
-	 *   ( hold also t1-dof and t2-dof because we do not want radial velocities on the inflow surface)
-	 * - DLINE DIRICHLET CONDITION definition(s) of the line(s) delimiting the Womersley inflow surface;
-	 *   example:
-	 *   E 3 - 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 1 1 1 none none none 1 1 1 0 0 0
-	 *
-	 * - a SURF LOCSYS definition like this one:
-	 *   E 2 - normal nx ny nz tangent tx ty tz origin ox oy oz Type FunctionEvaluation
-	 *
-	 * - a CURVE of the type PhysiologicalWaveform
-	 * - a FUNCT definition like this one:
-	 *   FUNCT1 WOMERSLEY Local 2 MAT 1 CURVE 1 FSI Yes
-	 * - in addition: for serial use (NumProc()==1), the origin is calculated anew.
-	 * 								This might come in handy, when one is to determine the center
-	 * 								of gravity, i.e. the center line, of the inflow surface.
-	 * 								(current "usage": you might run it in serial mode first, get the COG-
-	 * 								coordinates, change your input file accordingly (->LOCSYS) and then rerun
-	 * 								it in parallel mode. Getting this section to run in parallel mode still causes
-	 * 								me some headaches. For the time being, just stick to this method!
-	 * 								Also, for now, please define your inflow surface as ONE Design surface.)
-	 *
-	 * further preparations in the FSI DYNAMIC section of your input file
-	 * - set SHAPEDERIVATIVES to 'no'
-	 * - select 'iter_monolithicstructuresplit' for COUPALGO
-	 * - select 'FSIAMG' for LINEARBLOCKSOLVER
+  /* DESCRIPTION:
+   *
+   * THIS IS STLL BASIC. DO NOT TRY ANYTHING FANCY...PLEASE!!!!
+   *
+   * During initialization fluid properties, vessel radius and the local
+   * coordinate system (normal, tangent, origin) of the inflow surface are read
+   * from the input file. The third direction is built via cross product.
+   * In case of a non-circular cross section, the egde nodes of the inflow surface are
+   * detected. The node coordinates are transformed to local polar coordinates.
+   * The time curve is recorded for one cardiac cycle using the time curve manager.
+   * It is then transformed from time to frequency domain by applying a Discrete Fourier
+   * Transform (DFT). In order to ensure a smooth transition from pre-stressing velocity
+   * to the actual physiological velocity profile during the first second,
+   * a linear evolution of the nodevelocity values from w=0 @t=0s to w @ t=1s is set up.
+   * After leaving the initialization, the polar coordinates (r,phi) of the current node are
+   * determined in case of a non-circular cross section. Its phase is matched to the two
+   * closest edge node phase values and the vessel radius R is interpolated.
+   * In case of an FSI problem, the edge node coordinates are updated each time step.
+   * In case of a circular cross section, the radius is applied and the aforementioned
+   * steps are skipped. Now, a vector with time dependent values for each harmonic is
+   * generated from the results of the DFT and handed over to the Womersley Function.
+   * The results are scaled using the components of the earlier read normal vector and
+   * returned depending on index=current global cartesian coordinate (x,y,z)=(0,1,2)
+   *
+   * what you need in order to run this thing:
+   * - DSURF DIRICHLET CONDITION definition(s) for the application of Womersley Dirichlet values;
+   *   expample:
+   *   //DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
+   *       E 2  -  1    1    1    0    0    0  1.0 1.0 1.0 0.0 0.0 0.0   1     1     1    none  none  none   1     1     1     0     0     0
+   *
+   *   ( hold also t1-dof and t2-dof because we do not want radial velocities on the inflow surface)
+   * - DLINE DIRICHLET CONDITION definition(s) of the line(s) delimiting the Womersley inflow surface;
+   *   example:
+   *   E 3 - 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 1 1 1 none none none 1 1 1 0 0 0
+   *
+   * - a SURF LOCSYS definition like this one:
+   *   E 2 - normal nx ny nz tangent tx ty tz origin ox oy oz Type FunctionEvaluation
+   *
+   * - a CURVE of the type PhysiologicalWaveform
+   * - a FUNCT definition like this one:
+   *   FUNCT1 WOMERSLEY Local 2 MAT 1 CURVE 1 FSI Yes
+   * - in addition: for serial use (NumProc()==1), the origin is calculated anew.
+   * 								This might come in handy, when one is to determine the center
+   * 								of gravity, i.e. the center line, of the inflow surface.
+   * 								(current "usage": you might run it in serial mode first, get the COG-
+   * 								coordinates, change your input file accordingly (->LOCSYS) and then rerun
+   * 								it in parallel mode. Getting this section to run in parallel mode still causes
+   * 								me some headaches. For the time being, just stick to this method!
+   * 								Also, for now, please define your inflow surface as ONE Design surface.)
+   *
+   * further preparations in the FSI DYNAMIC section of your input file
+   * - set SHAPEDERIVATIVES to 'no'
+   * - select 'iter_monolithicstructuresplit' for COUPALGO
+   * - select 'FSIAMG' for LINEARBLOCKSOLVER
    */
   // ONGOING IMPLEMENTATION
   //**********************************************************************
@@ -2114,211 +2114,211 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       //**************************************************************
       // get inflow surface edge nodes
       //**************************************************************
-			int linecount = 0;
-			const double *tempcoords;
-			vector<double> xnode;
-			vector<double> ynode;
-			vector<double> znode;
-			vector<DRT::Condition*> dirichlet;
-
-			dis->GetCondition("Dirichlet",dirichlet);
-			if (!dirichlet.size())
-				dserror("No Dirichlet boundary conditions in discretization");
-			// calculation of the centroid, only for serial use
-			double centerx = 0.0;
-			double centery = 0.0;
-			double centerz = 0.0;
-
-			// create node id vector of inflow surface
-			for(int i=0;i<(int)dirichlet.size();i++)
-			{
-				if(dirichlet.at(i)->Id()==locsysid_ && dirichlet.at(i)->Type() == DRT::Condition::SurfaceDirichlet)
-				{
-					surfnodeids_.assign((int)dirichlet.at(i)->Nodes()->size(), 0);
-					for(int j=0;j<(int)dirichlet.at(i)->Nodes()->size();j++)
-						surfnodeids_.at(j) = dirichlet.at(i)->Nodes()->at(j);
-				}
-			}
-
-			// look through all Dirichlet BCs
-			for(int i=0;i<(int)dirichlet.size();i++)
-			{
-				// explicitely look for Line Dirichlet BCs
-				if(dirichlet.at(i)->Type() == DRT::Condition::LineDirichlet)
-				{
-					// check if current Line is part of inflow surface:
-					// the lines containing the edge nodes must share all their nodes
-					// with the inflow surface. Other line Dirichlet BCs are skipped.
-					int nodecount = (int)dirichlet.at(i)->Nodes()->size();
-
-					for(int k=0;k<(int)dirichlet.at(i)->Nodes()->size();k++)
-						for(int l=0;l<(int)surfnodeids_.size();l++)
-							if(dirichlet.at(i)->Nodes()->at(k)==surfnodeids_.at(l))
-								nodecount--;
-
-					if(nodecount==0)
-					{
-						//cout<<"Line "<<dirichlet.at(i)->Id()<<" lies on surface "<<locsysid_<<endl;
-						for(int j=0; j<(int)dirichlet.at(i)->Nodes()->size(); j++)
-						{
-							int currentid = dirichlet.at(i)->Nodes()->at(j);
-							bool havenode = dis->HaveGlobalNode(currentid);
-							bool redundant = false;
-
-							nodeids_.push_back(dirichlet.at(i)->Nodes()->at(j));
-						 // check if node exists on current proc
-							if(!havenode) continue;
-						 // exclude redundant nodes from second node on
-							if(j>0)
-								for(int k=0;k<j;k++)
-									if(currentid==nodeids_.at(k))
-									{
-										//cout<<"Womersley BC: redundant edge node "<<currentid<<" excluded!"<<endl;
-										redundant = true;
-										continue;
-									}
-							if(!redundant)
-							{
-								tempcoords = dis->gNode(currentid)->X();
-								xnode.push_back(tempcoords[0]);
-								ynode.push_back(tempcoords[1]);
-								znode.push_back(tempcoords[2]);
-
-								// calculation of the centroid (1/2), currently only for serial use
-								if(dis->Comm().NumProc()==1)
-								{
-									centerx += tempcoords[0];
-									centery += tempcoords[1];
-									centerz += tempcoords[2];
-								}
-							}
-						}
-						// counting lines
-						linecount++;
-					}
-					else
-						continue;
-				}
-			}
-
-			if (linecount<1)
-				dserror("Define Line Dirichlet BC(s) delimiting the inflow surface in your input file!");
-			// calculation of the centroid (2/2), currently only for serial use
-			if(dis->Comm().NumProc()==1)
-			{
-				origin_.at(0) = (centerx /= (double)xnode.size());
-				origin_.at(1) = (centery /= (double)ynode.size());
-				origin_.at(2) = (centerz /= (double)znode.size());
-				cout.precision(15);
-				cout<<"=== newly calculated inflow surface origin: "<<origin_.at(0)<<"   "<<origin_.at(1)<<"   "<<origin_.at(2)<<" ==="<<endl;
-			}
-
-			 //nodal polar coordinates
-			vector<double> xpedge;
-			vector<double> xpedgeloc;
-			// transform global to local coordinates
-			xpedge.assign(3,0.0);
-			xpedgeloc.assign(3,0.0);
-
-			for(int i=0; i<(int)xnode.size(); i++)
-			{
-				xpedge.at(0) = xnode.at(i) - origin_.at(0);
-				xpedge.at(1) = ynode.at(i) - origin_.at(1);
-				xpedge.at(2) = znode.at(i) - origin_.at(2);
-				//(n,t1,t2), signed
-				xpedgeloc.assign(3,0.0);
-				for(int j=0;j<(int)xpedge.size();j++)
-				{
-					xpedgeloc.at(1) += xpedge.at(j)*tangent1_.at(j);
-					xpedgeloc.at(2) += xpedge.at(j)*tangent2_.at(j);
-				}
-				 // store r and phi of current node
-				phi_.push_back(atan2(xpedgeloc.at(2), xpedgeloc.at(1)));
-				noderadius_.push_back(sqrt(xpedge.at(0)*xpedge.at(0) +
+      int linecount = 0;
+      const double *tempcoords;
+      vector<double> xnode;
+      vector<double> ynode;
+      vector<double> znode;
+      vector<DRT::Condition*> dirichlet;
+      
+      dis->GetCondition("Dirichlet",dirichlet);
+      if (!dirichlet.size())
+      dserror("No Dirichlet boundary conditions in discretization");
+      // calculation of the centroid, only for serial use
+      double centerx = 0.0;
+      double centery = 0.0;
+      double centerz = 0.0;
+      
+      // create node id vector of inflow surface
+      for(int i=0;i<(int)dirichlet.size();i++)
+      {
+        if(dirichlet.at(i)->Id()==locsysid_ && dirichlet.at(i)->Type() == DRT::Condition::SurfaceDirichlet)
+        {
+          surfnodeids_.assign((int)dirichlet.at(i)->Nodes()->size(), 0);
+          for(int j=0;j<(int)dirichlet.at(i)->Nodes()->size();j++)
+          surfnodeids_.at(j) = dirichlet.at(i)->Nodes()->at(j);
+        }
+      }
+      
+      // look through all Dirichlet BCs
+      for(int i=0;i<(int)dirichlet.size();i++)
+      {
+        // explicitely look for Line Dirichlet BCs
+        if(dirichlet.at(i)->Type() == DRT::Condition::LineDirichlet)
+        {
+          // check if current Line is part of inflow surface:
+          // the lines containing the edge nodes must share all their nodes
+          // with the inflow surface. Other line Dirichlet BCs are skipped.
+          int nodecount = (int)dirichlet.at(i)->Nodes()->size();
+          
+          for(int k=0;k<(int)dirichlet.at(i)->Nodes()->size();k++)
+          for(int l=0;l<(int)surfnodeids_.size();l++)
+          if(dirichlet.at(i)->Nodes()->at(k)==surfnodeids_.at(l))
+          nodecount--;
+          
+          if(nodecount==0)
+          {
+            //cout<<"Line "<<dirichlet.at(i)->Id()<<" lies on surface "<<locsysid_<<endl;
+            for(int j=0; j<(int)dirichlet.at(i)->Nodes()->size(); j++)
+            {
+              int currentid = dirichlet.at(i)->Nodes()->at(j);
+              bool havenode = dis->HaveGlobalNode(currentid);
+              bool redundant = false;
+              
+              nodeids_.push_back(dirichlet.at(i)->Nodes()->at(j));
+              // check if node exists on current proc
+              if(!havenode) continue;
+              // exclude redundant nodes from second node on
+              if(j>0)
+              for(int k=0;k<j;k++)
+              if(currentid==nodeids_.at(k))
+              {
+                //cout<<"Womersley BC: redundant edge node "<<currentid<<" excluded!"<<endl;
+                redundant = true;
+                continue;
+              }
+              if(!redundant)
+              {
+                tempcoords = dis->gNode(currentid)->X();
+                xnode.push_back(tempcoords[0]);
+                ynode.push_back(tempcoords[1]);
+                znode.push_back(tempcoords[2]);
+                
+                // calculation of the centroid (1/2), currently only for serial use
+                if(dis->Comm().NumProc()==1)
+                {
+                  centerx += tempcoords[0];
+                  centery += tempcoords[1];
+                  centerz += tempcoords[2];
+                }
+              }
+            }
+            // counting lines
+            linecount++;
+          }
+          else
+          continue;
+        }
+      }
+      
+      if (linecount<1)
+      dserror("Define Line Dirichlet BC(s) delimiting the inflow surface in your input file!");
+      // calculation of the centroid (2/2), currently only for serial use
+      if(dis->Comm().NumProc()==1)
+      {
+        origin_.at(0) = (centerx /= (double)xnode.size());
+        origin_.at(1) = (centery /= (double)ynode.size());
+        origin_.at(2) = (centerz /= (double)znode.size());
+        cout.precision(15);
+        cout<<"=== newly calculated inflow surface origin: "<<origin_.at(0)<<"   "<<origin_.at(1)<<"   "<<origin_.at(2)<<" ==="<<endl;
+      }
+      
+      //nodal polar coordinates
+      vector<double> xpedge;
+      vector<double> xpedgeloc;
+      // transform global to local coordinates
+      xpedge.assign(3,0.0);
+      xpedgeloc.assign(3,0.0);
+      
+      for(int i=0; i<(int)xnode.size(); i++)
+      {
+        xpedge.at(0) = xnode.at(i) - origin_.at(0);
+        xpedge.at(1) = ynode.at(i) - origin_.at(1);
+        xpedge.at(2) = znode.at(i) - origin_.at(2);
+        //(n,t1,t2), signed
+        xpedgeloc.assign(3,0.0);
+        for(int j=0;j<(int)xpedge.size();j++)
+        {
+                                  xpedgeloc.at(1) += xpedge.at(j)*tangent1_.at(j);
+                                  xpedgeloc.at(2) += xpedge.at(j)*tangent2_.at(j);
+        }
+        // store r and phi of current node
+        phi_.push_back(atan2(xpedgeloc.at(2), xpedgeloc.at(1)));
+        noderadius_.push_back(sqrt(xpedge.at(0)*xpedge.at(0) +
 																	 xpedge.at(1)*xpedge.at(1) +
-																	 xpedge.at(2)*xpedge.at(2)));
-			}
-			// check for redundant values resulting from having read redundant nodes:
-			// the phi-entry in question is not deleted, but simply set to 2pi
-			for(int i=0;i<(int)phi_.size();i++)
-				for(int j=i+1;j<(int)phi_.size();j++)
-					if(phi_.at(i)==phi_.at(j))
-						phi_.at(i)=2.0*M_PI;
-
-			 // find locations of change of sign
-			imaxplus_ = 0;
-			imaxminus_ = 0;
-			iminplus_ = 0;
-			iminminus_ = 0;
-			for(int i=0; i<(int)phi_.size(); i++)
-			{
-				if(fabs(phi_.at(iminminus_))>fabs(phi_.at(i)) && phi_.at(i)<=0.0)
-					iminminus_ = i;
-				if(fabs(phi_.at(iminplus_))>fabs(phi_.at(i)) && phi_.at(i)>0.0)
-					iminplus_ = i;
-				if(phi_.at(imaxminus_)>phi_.at(i))
-					imaxminus_ = i;
-				if(phi_.at(imaxplus_)<phi_.at(i))
-					imaxplus_ = i;
-			}
+                                   xpedge.at(2)*xpedge.at(2)));
+      }
+      // check for redundant values resulting from having read redundant nodes:
+      // the phi-entry in question is not deleted, but simply set to 2pi
+      for(int i=0;i<(int)phi_.size();i++)
+      for(int j=i+1;j<(int)phi_.size();j++)
+      if(phi_.at(i)==phi_.at(j))
+      phi_.at(i)=2.0*M_PI;
+      
+      // find locations of change of sign
+      imaxplus_ = 0;
+      imaxminus_ = 0;
+      iminplus_ = 0;
+      iminminus_ = 0;
+      for(int i=0; i<(int)phi_.size(); i++)
+      {
+        if(fabs(phi_.at(iminminus_))>fabs(phi_.at(i)) && phi_.at(i)<=0.0)
+        iminminus_ = i;
+        if(fabs(phi_.at(iminplus_))>fabs(phi_.at(i)) && phi_.at(i)>0.0)
+        iminplus_ = i;
+        if(phi_.at(imaxminus_)>phi_.at(i))
+        imaxminus_ = i;
+        if(phi_.at(imaxplus_)<phi_.at(i))
+        imaxplus_ = i;
+      }
     }
     else //if locsys == false
     	dserror("Please check your Womersley Function Definition in your Input file concerning local coordinate systems!");
 
     //****************************************************************
-		// Fourier Analysis of a given time CURVE
-		//****************************************************************
-		 // number of harmonics used for synthesis of a given physiological curve
-		noharm_ = 32;
-		int sizephyscurve = 200;
-		 // storage vector for time curve values
-		vector<double> flowvel;
-		 // chosen time value from TimeCurveManager
-		double timetcm = 0.0;
-		 // modulus of n-th harmonic during transition phase
-		double modtrans;
-		 // phase between DFT()'s imaginary and real part during transition phase
-		double thetatrans;
-		 // average velocity V(t)
-			//physiological curve (>1s)
-		for(int j=0; j<sizephyscurve; j++)
-		{
-			timetcm = 1.0+(double)(j)/(double)(sizephyscurve);
-			flowvel.push_back(tc_.f(timetcm));
-		}
-		 // Discrete Fourier Transform (results already scaled with 2/size within DFT())
-		DFT(&flowvel, &fouphyscurve_, sizephyscurve);
-
-		//****************************************************************
-		// Synthesis of the harmonics vector
-		// used for transitional velocity profiles
-		//****************************************************************
-		 // vtemp_ used for transition from parabolic to physiological profile (@t==0)
-		for(int l=0;l<(noharm_);l++)
-		{
-			if(l==0)
-			{
-				modtrans = sqrt(pow(real(fouphyscurve_.at(l)),2.0) + pow(imag(fouphyscurve_.at(l)),2.0));
-				vtemp_.push_back(0.5 * modtrans);
-			}
-			else
-			{
-				modtrans = sqrt(real(fouphyscurve_.at(l))*real(fouphyscurve_.at(l)) +
-												imag(fouphyscurve_.at(l))*imag(fouphyscurve_.at(l)));
-				thetatrans = -atan2(-imag(fouphyscurve_.at(l)),real(fouphyscurve_.at(l)));
-				vtemp_.push_back(modtrans*cos(thetatrans));
-			}
-		}
+    // Fourier Analysis of a given time CURVE
+    //****************************************************************
+    // number of harmonics used for synthesis of a given physiological curve
+    noharm_ = 32;
+    int sizephyscurve = 200;
+    // storage vector for time curve values
+    vector<double> flowvel;
+    // chosen time value from TimeCurveManager
+    double timetcm = 0.0;
+    // modulus of n-th harmonic during transition phase
+    double modtrans;
+    // phase between DFT()'s imaginary and real part during transition phase
+    double thetatrans;
+    // average velocity V(t)
+    //physiological curve (>1s)
+    for(int j=0; j<sizephyscurve; j++)
+    {
+      timetcm = 1.0+(double)(j)/(double)(sizephyscurve);
+      flowvel.push_back(tc_.f(timetcm));
+    }
+    // Discrete Fourier Transform (results already scaled with 2/size within DFT())
+    DFT(&flowvel, &fouphyscurve_, sizephyscurve);
+    
+    //****************************************************************
+    // Synthesis of the harmonics vector
+    // used for transitional velocity profiles
+    //****************************************************************
+    // vtemp_ used for transition from parabolic to physiological profile (@t==0)
+    for(int l=0;l<(noharm_);l++)
+    {
+      if(l==0)
+      {
+        modtrans = sqrt(pow(real(fouphyscurve_.at(l)),2.0) + pow(imag(fouphyscurve_.at(l)),2.0));
+        vtemp_.push_back(0.5 * modtrans);
+      }
+      else
+      {
+        modtrans = sqrt(real(fouphyscurve_.at(l))*real(fouphyscurve_.at(l)) +
+                        imag(fouphyscurve_.at(l))*imag(fouphyscurve_.at(l)));
+        thetatrans = -atan2(-imag(fouphyscurve_.at(l)),real(fouphyscurve_.at(l)));
+        vtemp_.push_back(modtrans*cos(thetatrans));
+      }
+    }
     isinit_ = true;
   }// end of initialization
-
+  
   //**********************************************************************
   // FSI-specific section
   //**********************************************************************
   // if fsi_==true, the edge node coordinates are updated once for
   // each time step applying the same procedure as during initialization
   if(t > tnminus1_)
-    dotrafo_ = true;
+     dotrafo_ = true;
   if(fsi_ && dotrafo_==true)
   {
     vector<double> xnode;
@@ -2336,61 +2336,61 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       dserror("No Dirichlet boundary conditions in discretization");
 
     for(int i=0;i<(int)dirichlet.size(); i++)
-      if(dirichlet.at(i)->Type() == 2)
+    if(dirichlet.at(i)->Type() == 2)
+    {
+      int nodecount = (int)dirichlet.at(i)->Nodes()->size();
+      // check if line lies on surface
+      for(int k=0;k<(int)dirichlet.at(i)->Nodes()->size();k++)
+      for(int l=0;l<(int)surfnodeids_.size();l++)
+      if(dirichlet.at(i)->Nodes()->at(k)==surfnodeids_.at(l))
+      nodecount--;
+      
+      if(nodecount==0)
       {
-        int nodecount = (int)dirichlet.at(i)->Nodes()->size();
-         // check if line lies on surface
-        for(int k=0;k<(int)dirichlet.at(i)->Nodes()->size();k++)
-          for(int l=0;l<(int)surfnodeids_.size();l++)
-            if(dirichlet.at(i)->Nodes()->at(k)==surfnodeids_.at(l))
-              nodecount--;
-
-        if(nodecount==0)
+        for(int j=0; j<(int)dirichlet.at(i)->Nodes()->size(); j++)
         {
-          for(int j=0; j<(int)dirichlet.at(i)->Nodes()->size(); j++)
+          int currentid = dirichlet.at(i)->Nodes()->at(j);
+          bool havenode = dis->HaveGlobalNode(currentid);
+          bool redundant = false;
+          if(!havenode)
+          continue;
+          
+          if(j>0)
+          for(int k=0;k<j;k++)
+          if(currentid==nodeids_.at(k))
           {
-            int currentid = dirichlet.at(i)->Nodes()->at(j);
-            bool havenode = dis->HaveGlobalNode(currentid);
-            bool redundant = false;
-            if(!havenode)
-            	continue;
+            redundant = true;
+            continue;
+          }
 
-            if(j>0)
-              for(int k=0;k<j;k++)
-                if(currentid==nodeids_.at(k))
-                {
-                  redundant = true;
-                  continue;
-                }
-
-						if(!redundant)
-						{
-							const double *coords = dis->gNode(currentid)->X();
-							vector<double> tempcoords;
-							vector<int> dofnode = dis->Dof(dis->gNode(currentid));
-							tempcoords.assign(3,0.0);
-							// determine current nodal position: reference position + displacement
-							for(int k=0; k<3; k++)
-							{
-								tempcoords.at(k) = coords[k];
-							//	if(t>0.0)
-							//		tempcoords.at(k) += (*disp)[dis->DofRowMap()->LID( dofnode[k] )];
-							}
-							xnode.push_back(tempcoords.at(0));
-							ynode.push_back(tempcoords.at(1));
-							znode.push_back(tempcoords.at(2));
-						}
+          if(!redundant)
+          {
+            const double *coords = dis->gNode(currentid)->X();
+            vector<double> tempcoords;
+            vector<int> dofnode = dis->Dof(dis->gNode(currentid));
+            tempcoords.assign(3,0.0);
+            // determine current nodal position: reference position + displacement
+            for(int k=0; k<3; k++)
+            {
+              tempcoords.at(k) = coords[k];
+              //	if(t>0.0)
+              //		tempcoords.at(k) += (*disp)[dis->DofRowMap()->LID( dofnode[k] )];
+            }
+            xnode.push_back(tempcoords.at(0));
+            ynode.push_back(tempcoords.at(1));
+            znode.push_back(tempcoords.at(2));
           }
         }
-        else
-          continue;
       }
+      else
+      continue;
+    }
     vector<double> xpedge;
     vector<double> xpedgeloc;
-
+    
     xpedge.assign(3,0.0);
     xpedgeloc.assign(3,0.0);
-
+    
     for(int i=0; i<(int)xnode.size(); i++)
     {
       xpedge.at(0) = xnode.at(i) - origin_.at(0);
@@ -2444,91 +2444,91 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   double rabs;
    // current angle
   double phicurr;
-
-	 //nodal polar coordinates
-	vector<double> xptemp;
-	vector<double> xplocal;
-	 // transform global to local coordinates
-	xptemp.assign(3,0.0);
-	xplocal.assign(3,0.0);
-
-	// calculate phase and radius of current node
-	for(int i=0;i<(int)xptemp.size();i++)
-		xptemp.at(i) = xp[i] - origin_.at(i);
-	cout.setf(ios::scientific);
-	cout.precision(8);
-	//cout<<"xpTemp: "<<xptemp.at(0)<<","<<xptemp.at(1)<<","<<xptemp.at(2)<<endl;
-	//(n,t1,t2), signed
-	xplocal.assign(3,0.0);
-
-	for(int j=0;j<(int)xptemp.size();j++)
-	{
-		xplocal.at(0) += xptemp.at(j)*normal_.at(j);
-		xplocal.at(1) += xptemp.at(j)*tangent1_.at(j);
-		xplocal.at(2) += xptemp.at(j)*tangent2_.at(j);
-	}
-	// FSI/ALE problem:
-	// the ALE mesh gets sucked in or pushed out, hence
-	// nodal position changes in normal direction occur.
-	// This may lead to erroneous radii, especially when the node's
-	// position is close to the local origin.
-	// Therefore only the projection of the current node's position
-	// into the inflow plane is evaluated, neglecting the normal component.
-	// Currently, the reference position is given. Hence, there is no difference.
-	// updated node coordinates will be implemented.
-	rabs = sqrt(xplocal.at(1)*xplocal.at(1) + xplocal.at(2)*xplocal.at(2));
-	phicurr = atan2(xplocal.at(2), xplocal.at(1));
-	// determine the two closest edge nodes in terms of phase
-	int imin1 = -1;
-	int imin2 = -1;
-	// closest value to phicurr
-	double closest = 100.0;
-	// second closest value to phicurr
-	double close = 100.0;
-
-	for(int i=0; i<(int)phi_.size(); i++)
-	{
-		// find location i of closest value phi to phicurr
-		if(fabs(phi_.at(i)-phicurr)<closest)
-		{
+  
+  //nodal polar coordinates
+  vector<double> xptemp;
+  vector<double> xplocal;
+  // transform global to local coordinates
+  xptemp.assign(3,0.0);
+  xplocal.assign(3,0.0);
+  
+  // calculate phase and radius of current node
+  for(int i=0;i<(int)xptemp.size();i++)
+  xptemp.at(i) = xp[i] - origin_.at(i);
+  cout.setf(ios::scientific);
+  cout.precision(8);
+  //cout<<"xpTemp: "<<xptemp.at(0)<<","<<xptemp.at(1)<<","<<xptemp.at(2)<<endl;
+  //(n,t1,t2), signed
+  xplocal.assign(3,0.0);
+  
+  for(int j=0;j<(int)xptemp.size();j++)
+  {
+    xplocal.at(0) += xptemp.at(j)*normal_.at(j);
+    xplocal.at(1) += xptemp.at(j)*tangent1_.at(j);
+    xplocal.at(2) += xptemp.at(j)*tangent2_.at(j);
+  }
+  // FSI/ALE problem:
+  // the ALE mesh gets sucked in or pushed out, hence
+  // nodal position changes in normal direction occur.
+  // This may lead to erroneous radii, especially when the node's
+  // position is close to the local origin.
+  // Therefore only the projection of the current node's position
+  // into the inflow plane is evaluated, neglecting the normal component.
+  // Currently, the reference position is given. Hence, there is no difference.
+  // updated node coordinates will be implemented.
+  rabs = sqrt(xplocal.at(1)*xplocal.at(1) + xplocal.at(2)*xplocal.at(2));
+  phicurr = atan2(xplocal.at(2), xplocal.at(1));
+  // determine the two closest edge nodes in terms of phase
+  int imin1 = -1;
+  int imin2 = -1;
+  // closest value to phicurr
+  double closest = 100.0;
+  // second closest value to phicurr
+  double close = 100.0;
+  
+  for(int i=0; i<(int)phi_.size(); i++)
+  {
+    // find location i of closest value phi to phicurr
+    if(fabs(phi_.at(i)-phicurr)<closest)
+    {
 			closest = fabs(phi_.at(i)-phicurr);
 			imin1 = i;
-		}
-	}
-	for(int i=0;i<(int)phi_.size();i++)
-	{
-		// second closest value
-		if(fabs(phi_.at(i)-phicurr)<close && i!=imin1)
-		{
-			close = fabs(phi_.at(i)-phicurr);
-			imin2 = i;
-		}
-		//special cases when phi changes the sign
-		if((phicurr>phi_.at(iminminus_) && phicurr<=0.0) || (phicurr<phi_.at(iminplus_) && phicurr>0.0))
-		{
-			imin1 = iminminus_;
-			imin2 = iminplus_;
-		}
-		if(phicurr<phi_.at(imaxminus_) || phicurr>phi_.at(imaxplus_))
-		{
-			imin1 = imaxminus_;
-			imin2 = imaxplus_;
-		}
-	}
-	//linear interpolation in order to get current approximated vessel radius
-	radius_ = noderadius_.at(imin1)+(phicurr-phi_.at(imin1))/(phi_.at(imin2)-phi_.at(imin1))*
-		 (noderadius_.at(imin2)-noderadius_.at(imin1));
-
-
+    }
+  }
+  for(int i=0;i<(int)phi_.size();i++)
+  {
+    // second closest value
+    if(fabs(phi_.at(i)-phicurr)<close && i!=imin1)
+    {
+      close = fabs(phi_.at(i)-phicurr);
+      imin2 = i;
+    }
+    //special cases when phi changes the sign
+    if((phicurr>phi_.at(iminminus_) && phicurr<=0.0) || (phicurr<phi_.at(iminplus_) && phicurr>0.0))
+    {
+      imin1 = iminminus_;
+      imin2 = iminplus_;
+    }
+    if(phicurr<phi_.at(imaxminus_) || phicurr>phi_.at(imaxplus_))
+    {
+      imin1 = imaxminus_;
+      imin2 = imaxplus_;
+    }
+  }
+  //linear interpolation in order to get current approximated vessel radius
+  radius_ = noderadius_.at(imin1)+(phicurr-phi_.at(imin1))/(phi_.at(imin2)-phi_.at(imin1))*
+    (noderadius_.at(imin2)-noderadius_.at(imin1));
+  
+  
   //**********************************************************************
   // Synthesis of the time-dependant harmonics vector
   // used to calculate the velocity profile
   //**********************************************************************
-   // modulus of n-th harmonic during physiological cycle
+  // modulus of n-th harmonic during physiological cycle
   double modphys;
-   // phase between imaginary and real part during physiological cycle
+  // phase between imaginary and real part during physiological cycle
   double theta;
-   // calculation of the harmonic solutions
+  // calculation of the harmonic solutions
   vector<double> vphyscurve;
 
   for(int l=0;l<(noharm_);l++)
@@ -2549,69 +2549,69 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   //**********************************************************************
   // Calculation of nodal velocities by components
   //**********************************************************************
-   // velocity at given coordinates (Womersley part)
+  // velocity at given coordinates (Womersley part)
   double w = 0.0;
-   // steady part (Hagen-Poiseuille)
+  // steady part (Hagen-Poiseuille)
   double wsteady = 0.0;
   i_ = complex<double> (0.0,1.0);
-   // Womersley number
+  // Womersley number
   complex<double> alpha(0.0,0.0);
-   // z = alpha*i_^(3/2)
+  // z = alpha*i_^(3/2)
   complex<double> z(0.0,0.0);
-   // term consisting of several Bessel functions
+  // term consisting of several Bessel functions
   complex<double> bessel(0.0,0.0);
-
-// calculation of the velocity by components (index)
-	 // linear transition to physiological profile (may be of advantage to introduce a flexible t_start, here fixed at 1.0)
-	if(t<1.0)
-	{
-		 // calculation of the steady part of the solution
-		wsteady = 2.0*vtemp_.at(0)/(radius_*radius_)*((radius_*radius_)-(rabs*rabs));
-		for(int k=1;k<noharm_;k++)
-		{
-			 // Womersley number
-			alpha = radius_*sqrt(2.0*M_PI*k*fbase_/viscosity_);
-			z = alpha*pow(i_,1.5);
-			 // Bessel term
-			bessel = z*(BesselJ01(z,false)-BesselJ01(z*(complex<double>)(rabs/radius_), false))/
-							(z*BesselJ01(z,false)-(complex<double>)(2.0)*BesselJ01(z, true));
-			w += vtemp_.at(k)*real(bessel);
-		}
-		 // division through time curve value because of result = VALUE*CURVE*FUNCT
-		if(tc_.f(t)==0.0)
-			return 0.0;
-		else
-		{
-			w = (w + wsteady)/tc_.f(t)*t;
-			// calculate normal component (in opposite direction due to the normal being an outward normal)
-			w *= -normal_[index];
-			return w;
-		}
-	}
-	 // physiological solution
-	if(t>=1.0)
-	{
-		wsteady = 2.0*vphyscurve.at(0)/(radius_*radius_)*((radius_*radius_)-(rabs*rabs));
-		for(int k=1;k<noharm_;k++)
-		{
-			alpha = radius_*sqrt(2.0*M_PI*k*fbase_/viscosity_);
-			z = alpha*pow(i_,1.5);
-			bessel= z*(BesselJ01(z,false)-BesselJ01(z*(complex<double>)(rabs/radius_), false))/
-						 (z*BesselJ01(z,false)-(complex<double>)(2.0)*BesselJ01(z, true));
-			w += vphyscurve.at(k)*real(bessel);
-		}
-		if(tc_.f(t)==0.0)
-			w = (w + wsteady)/tcprevious_;
-		else
-		{
-			w = (w + wsteady)/tc_.f(t);
-			tcprevious_ = tc_.f(t);
-		}
-		w *= -normal_[index];
-		return w;
-	}
-
-	return -999.0e99;
+  
+  // calculation of the velocity by components (index)
+  // linear transition to physiological profile (may be of advantage to introduce a flexible t_start, here fixed at 1.0)
+  if(t<1.0)
+  {
+    // calculation of the steady part of the solution
+    wsteady = 2.0*vtemp_.at(0)/(radius_*radius_)*((radius_*radius_)-(rabs*rabs));
+    for(int k=1;k<noharm_;k++)
+    {
+      // Womersley number
+      alpha = radius_*sqrt(2.0*M_PI*k*fbase_/viscosity_);
+      z = alpha*pow(i_,1.5);
+      // Bessel term
+      bessel = z*(BesselJ01(z,false)-BesselJ01(z*(complex<double>)(rabs/radius_), false))/
+        (z*BesselJ01(z,false)-(complex<double>)(2.0)*BesselJ01(z, true));
+      w += vtemp_.at(k)*real(bessel);
+    }
+    // division through time curve value because of result = VALUE*CURVE*FUNCT
+    if(tc_.f(t)==0.0)
+       return 0.0;
+    else
+    {
+      w = (w + wsteady)/tc_.f(t)*t;
+      // calculate normal component (in opposite direction due to the normal being an outward normal)
+      w *= -normal_[index];
+      return w;
+    }
+  }
+  // physiological solution
+  if(t>=1.0)
+  {
+    wsteady = 2.0*vphyscurve.at(0)/(radius_*radius_)*((radius_*radius_)-(rabs*rabs));
+    for(int k=1;k<noharm_;k++)
+    {
+      alpha = radius_*sqrt(2.0*M_PI*k*fbase_/viscosity_);
+      z = alpha*pow(i_,1.5);
+      bessel= z*(BesselJ01(z,false)-BesselJ01(z*(complex<double>)(rabs/radius_), false))/
+        (z*BesselJ01(z,false)-(complex<double>)(2.0)*BesselJ01(z, true));
+      w += vphyscurve.at(k)*real(bessel);
+    }
+    if(tc_.f(t)==0.0)
+    w = (w + wsteady)/tcprevious_;
+    else
+    {
+      w = (w + wsteady)/tc_.f(t);
+      tcprevious_ = tc_.f(t);
+    }
+    w *= -normal_[index];
+    return w;
+  }
+  
+  return -999.0e99;
 }
 /*----------------------------------------------------------------------*
  |  Womersley: Bessel functions of order 0 and 1          mueller 04/10 |
@@ -2696,9 +2696,9 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, d
   // the disk consists of 3 lines and a part of a circle and four points
   // decide if the orthogonal projection of the current point lies on the lines and the circle (four different distances possible)
   // additionally the smallest distance can be between the current point and one of the four corners
-
+  
   double distance = 99999.0;
-
+  
   //=====================================
   // distances to the four corners
   //=====================================

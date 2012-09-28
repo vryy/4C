@@ -13,7 +13,6 @@ Maintainer: Mahmoud Ismail
 *----------------------------------------------------------------------*/
 
 //#ifdef D_COUPLED_ARTNET
-#ifdef D_RED_AIRWAYS
 #ifndef FLUID_COUPLING_RED_MODELS_H_
 #define FLUID_COUPLING_RED_MODELS_H_
 
@@ -349,5 +348,4 @@ private:
 }
 }
 
-#endif /* D_ARTNET */
 #endif /* FLUID_COUPLING_RED_MODELS_H_ */

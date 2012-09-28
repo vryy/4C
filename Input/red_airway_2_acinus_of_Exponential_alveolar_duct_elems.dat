@@ -7,12 +7,12 @@ NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ReducedDimensionalAirWays
 NUMFIELD                        1
-RESTART 0 //599
+RESTART                        0 // 599
 --------------------------------------------------------------------------IO
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC 
 LINEAR_SOLVER                   1
 DYNAMICTYP                      CrankNicolson
-NUMSTEP                         1
+NUMSTEP                         600
 TIMESTEP                        5.0e-3
 RESTARTEVRY                     1
 UPRES                           1
@@ -53,12 +53,13 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
+NDPOINT                         3
 NDLINE                          0
 NDSURF                          0
 NDVOL                           0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
+MAT 2 MAT_0D_MAXWELL_ACINUS Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1500.0*sin(2*(t)*pi/1)+1500.0 t1 0.0 t2 100.0
 ----------------------------------------------------------------------CURVE2
@@ -68,21 +69,31 @@ CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
-DPOINT                          1
+DPOINT                          3
 E 1 - flow 1.0 2
+E 2 - pressure 0.0 1
+E 3 - pressure 0.0 1
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
-1 RED_AIRWAY LINE2 1 2 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.12 Area 1.0 Generation 0
+1 RED_AIRWAY LINE2 1 2 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.20 Area 1.0 Generation 0
+2 RED_AIRWAY LINE2 2 3 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.15 Area 1.0 Generation 0
+3 RED_AIRWAY LINE2 2 4 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.12 Area 1.0 Generation 0
+4 RED_ACINUS LINE2 3 5 MAT 2 TYPE Exponential AcinusVolume 0.1116 AlveolarDuctVolume 0.0372
+5 RED_ACINUS LINE2 4 6 MAT 2 TYPE Exponential AcinusVolume 0.1488 AlveolarDuctVolume 0.0372
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD 193.300 -546.7000 32.1400
-NODE 2 COORD 183.000 -517.0000 -68.0000
+NODE 1 COORD -5.0  0.0 0.0
+NODE 2 COORD  0.0  0.0 0.0
+NODE 3 COORD  2.5  2.5 0.0
+NODE 4 COORD  2.5 -2.5 0.0
+NODE 5 COORD  3.0  2.5 0.0
+NODE 6 COORD  3.0 -2.5 0.0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
-NODE 2 DNODE 2
+NODE 5 DNODE 2
+NODE 6 DNODE 3
 --------------------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
-DPOINT                          1
-E 2 -  Exponential Acinus_Volume 0.0372 VolumePerArea 0.1116 Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023 FromCurve 0.0 1
+DPOINT                          0
 ----------------------------------------------------------RESULT DESCRIPTION
-RED_AIRWAY DIS 1 NODE 1 POSITION pressure NAME pressure VALUE -3.37489810215513387e+02 TOLERANCE 1e-6
-RED_AIRWAY DIS 1 NODE 2 POSITION pressure NAME pressure VALUE -3.37489810215513330e+02 TOLERANCE 1e-6
+RED_AIRWAY DIS 1 NODE 3 POSITION pressure NAME pressure VALUE -1.45098465831474329e+02 TOLERANCE 1e-6
+RED_AIRWAY DIS 1 NODE 4 POSITION pressure NAME pressure VALUE -1.45098465831474329e+02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

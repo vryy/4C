@@ -1242,7 +1242,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 //  case prb_loma:
 //  case prb_elch:
   {
-#ifdef D_ARTNET
     if(distype == "Polynomial")
     {
       // create empty discretizations
@@ -1250,15 +1249,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("artery", arterydis);
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
     }
-#endif
-#ifdef D_RED_AIRWAYS
     if(distype == "Polynomial")
     {
       airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
       AddDis("airway", airwaydis);
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
     }
-#endif
   }
   break;
   default:

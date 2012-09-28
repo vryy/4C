@@ -447,6 +447,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isovolaaagasser.cpp
   src/drt_matelast/elast_isovolHUdependentneohooke.cpp
   src/drt_patspec/patspec.cpp
+  src/drt_mat/maxwell_0d_acinus.cpp
 )
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_manager.cpp
@@ -490,8 +491,11 @@ set(OBJS_DRT_CONTACT_LIB
 )
 set(OBJS_DRT_RED_AIRWAYS_LIB
   src/drt_red_airways/airway_evaluate.cpp
+  src/drt_red_airways/acinus_evaluate.cpp
   src/drt_red_airways/airway_impl.cpp
+  src/drt_red_airways/acinus_impl.cpp
   src/drt_red_airways/red_airway.cpp
+  src/drt_red_airways/red_acinus.cpp
   src/drt_red_airways/red_airway_input.cpp
   src/drt_red_airways/red_airway_resulttest.cpp
   src/drt_red_airways/redairway_tissue.cpp
@@ -2502,7 +2506,9 @@ baci_test(xfsi_fluid_pusher_instat_OST_1 1 "")
 baci_test(xfsi_fluid_pusher_instat_OST_1_Div 1 "")
 baci_test(one_d_3_artery_network 1 9999)
 baci_test(trachea 2 100)
-baci_test(red_airway_acinus_of_3Exponential_alveolar_ducts 1 599)
+baci_test(red_airway_acinus_of_3Exponential_alveolar_ducts 2 599)
+baci_test(red_airway_2_acinus_of_3Exponential_alveolar_ducts 2 599)
+baci_test(red_airway_2_acinus_of_Exponential_alveolar_duct_elems 2 599)
 
 baci_test(beam3iitest1linear 1 "")
 baci_test(beam3iitest1linear 2 "")
