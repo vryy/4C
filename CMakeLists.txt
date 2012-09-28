@@ -1349,7 +1349,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_axel_8.cpp
   tests/cut_test/cut_test_axel_9.cpp
   tests/cut_test/cut_test_axel_10.cpp
- # tests/cut_test/cut_test_hex8_twintri.cpp
+  tests/cut_test/cut_test_hex8_twintri.cpp
   tests/cut_test/cut_test_shadan_6.cpp
   tests/cut_test/cut_test_volume.cpp
   tests/cut_test/drt_dserror.cpp
