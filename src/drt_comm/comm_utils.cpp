@@ -386,7 +386,12 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
       const string* rdistype = cont.Get<string>("distype");
       distype = *rdistype;
       // allocate or get the discretization
-      if (group->GroupId()==bgroup) dis = problem->GetDis(disnames[i]); //problem->Dis(i,j);
+      if (group->GroupId()==bgroup) 
+      {
+        dis = problem->GetDis(disnames[i]);
+        if (!dis->Filled()) dis->FillComplete(true,true,true);
+        if (!dis->HaveDofs()) dis->FillComplete(true,true,true);
+      }
       else
       {
         if (distype=="Nurbs")
@@ -467,9 +472,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
     dserror("For Nurbs this method needs additional features!");
   }
   else
-  {
     commondis = Teuchos::rcp(new DRT::Discretization(name,icomm));
-  }
 
   // --------------------------------------
   // sender group fills commondis with elements and nodes and conditions
