@@ -389,8 +389,6 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
       if (group->GroupId()==bgroup) 
       {
         dis = problem->GetDis(disnames[i]);
-        if (!dis->Filled()) dis->FillComplete(true,true,true);
-        if (!dis->HaveDofs()) dis->FillComplete(true,true,true);
       }
       else
       {
