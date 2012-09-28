@@ -65,7 +65,8 @@ void STR::invanalysis()
   actdis = DRT::Problem::Instance()->GetDis("structure");
 
   // set degrees of freedom in the discretization
-  if (not actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->HaveDofs()) actdis->FillComplete();
 
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output
