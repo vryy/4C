@@ -1055,29 +1055,6 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
       const double curv = (*curvature)[nodelid];
 
       double speedfac = 0.0;
-
-#ifdef COMBUST_BUNSENBURNER
-      //      if(((lnode->X()[1]>0.5 && lnode->X()[1]<=0.55) && (lnode->X()[0]>=0.45)) || ((lnode->X()[1]>0.5 && lnode->X()[1]<=0.55) && (lnode->X()[0]<=-0.45)))
-      //      {
-      //          if(lnode->X()[0]>0)
-      //              speedfac = 10.0*sqrt((lnode->X()[1]-0.5)*(lnode->X()[1]-0.5)+(lnode->X()[0]-0.5)*(lnode->X()[0]-0.5));
-      //          else
-      //              speedfac = 10.0*sqrt((lnode->X()[1]-0.5)*(lnode->X()[1]-0.5)+(lnode->X()[0]+0.5)*(lnode->X()[0]+0.5));
-      //      }
-      if(lnode->X()[1]<=0.5 && lnode->X()[0]<0.51 && lnode->X()[0]>-0.51)
-      {
-        speedfac = 0.0;
-      } //2D
-      //      if(lnode->X()[1]<=0.0 && lnode->X()[0]<0.51 && lnode->X()[0]>-0.51)
-      //      {
-      //          speedfac = 0.0;
-      //      } //2D einfach
-      //      if(lnode->X()[2]<=0.5 && sqrt(lnode->X()[0]*lnode->X()[0]+lnode->X()[1]*lnode->X()[1])<0.51)
-      //      {
-      //          speedfac = 0.0;
-      //      }  //3D
-#endif //BUNSENBURNER
-
       double wallfac = 1.0;
 #ifdef ORACLES
       //---------------------------------------------------------

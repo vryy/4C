@@ -2219,6 +2219,7 @@ void Nitsche_SysmatBoundaryCell(
 
     double velproj_plus  = vel_plus(0)*normal_smooth(0) + vel_plus(1)*normal_smooth(1) + vel_plus(2)*normal_smooth(2);
     double velproj_minus = vel_minus(0)*normal_smooth(0) + vel_minus(1)*normal_smooth(1) + vel_minus(2)*normal_smooth(2);
+    const double absvelproj = fabs(velproj_plus);
 
     if (velproj_plus > 0.0) // outflow plus domain
       velproj_plus = 0.0;
@@ -2234,8 +2235,10 @@ void Nitsche_SysmatBoundaryCell(
     //                  domain into the negative (-) domain (n = n^+ = -n^-)
     //--------------------------------------------------------------------------------------------
 
-    const double halftimefacfac  = 0.5*timefacfac;
+    const double halftimefacfacplus   = dens_plus*0.5*timefacfac;
+    const double halftimefacfacminus  = dens_minus*0.5*timefacfac;
     const double alphatimefacfac = alphau*timefacfac;
+    const double convstabtimefacfac = 0.5*absvelproj*fac_pen*timefacfac;
 
 #ifdef COMBUST_NITSCHE_VISCCONSISTMEAN
     //-------------------------    |                                      |
@@ -2492,7 +2495,34 @@ void Nitsche_SysmatBoundaryCell(
     //assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, alphatimefacfac*normal(2)*ju_n);
 #endif
 
-#ifdef COMBUST_NITSCHE_PENALTY
+#ifdef COMBUST_NITSCHE_CONVSTAB
+    //--------------------     |                                  |
+    // normal penalty term   + |  1/(2h)*|u*n| || v ||, || Du ||  |
+    //--------------------     |                                  |
+
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_jump.d0, convstabtimefacfac, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_jump.d0, convstabtimefacfac, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_jump.d0, convstabtimefacfac, shp_jump.d0);
+
+    //    |                                   |
+    //  - |  1/(2h)*|u*n| || v ||, || u_i ||  |
+    //    |                                   |
+
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, -convstabtimefacfac*veljump(0,0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, -convstabtimefacfac*veljump(1,0));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, -convstabtimefacfac*veljump(2,0));
+
+    //------------------------    |                             |
+    // normal penalty term RHS  + |  1/(2h)*|u*n| || v ||, j_u  |
+    //------------------------    |                             |
+
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, convstabtimefacfac*ju(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, convstabtimefacfac*ju(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, convstabtimefacfac*ju(2));
+#endif
+
+
+#ifdef COMBUST_NITSCHE_CONVPENALTY
     const double pentimefacfac   = fac_pen*timefacfac;
     //--------------------     |                             |
     // normal penalty term   + |  1/h || v ||*n, || Du ||*n  |
@@ -2646,49 +2676,49 @@ void Nitsche_SysmatBoundaryCell(
     // convective flux inflow term plus  + |  v^{+} (u^{+}*n)_{in}, || Du ||  |
     //---------------------------------    |                                  |
 
-    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_plus.d0, halftimefacfac*velproj_plus, shp_jump.d0);
-    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_plus.d0, halftimefacfac*velproj_plus, shp_jump.d0);
-    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_plus.d0, halftimefacfac*velproj_plus, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean_inv.d0, halftimefacfacplus*velproj_plus, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_mean_inv.d0, halftimefacfacplus*velproj_plus, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_mean_inv.d0, halftimefacfacplus*velproj_plus, shp_jump.d0);
 
     //   |                                   |
     // - |  v^{+} (u^{+}*n)_{in}, || u_i ||  |
     //   |                                   |
 
-    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_plus.d0, -halftimefacfac*velproj_plus*veljump(0));
-    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_plus.d0, -halftimefacfac*velproj_plus*veljump(1));
-    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_plus.d0, -halftimefacfac*velproj_plus*veljump(2));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, -halftimefacfacplus*velproj_plus*veljump(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, -halftimefacfacplus*velproj_plus*veljump(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, -halftimefacfacplus*velproj_plus*veljump(2));
 
     //   |                             |
     // + |  v^{+} (u^{+}*n)_{in}, j_u  |
     //   |                             |
 
-    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_plus.d0, halftimefacfac*velproj_plus*ju(0));
-    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_plus.d0, halftimefacfac*velproj_plus*ju(1));
-    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_plus.d0, halftimefacfac*velproj_plus*ju(2));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, halftimefacfacplus*velproj_plus*ju(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, halftimefacfacplus*velproj_plus*ju(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, halftimefacfacplus*velproj_plus*ju(2));
 
     //----------------------------------    |                                  |
     // convective flux inflow term minus  + |  v^{-} (u^{-}*n)_{in}, || Du ||  |
     //----------------------------------    |                                  |
 
-    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_minus.d0, halftimefacfac*velproj_minus, shp_jump.d0);
-    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_minus.d0, halftimefacfac*velproj_minus, shp_jump.d0);
-    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_minus.d0, halftimefacfac*velproj_minus, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean_inv.d0, halftimefacfacminus*velproj_minus, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_mean_inv.d0, halftimefacfacminus*velproj_minus, shp_jump.d0);
+    assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_mean_inv.d0, halftimefacfacminus*velproj_minus, shp_jump.d0);
 
     //   |                                   |
     // - |  v^{-} (u^{-}*n)_{in}, || u_i ||  |
     //   |                                   |
 
-    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_minus.d0, -halftimefacfac*velproj_minus*veljump(0));
-    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_minus.d0, -halftimefacfac*velproj_minus*veljump(1));
-    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_minus.d0, -halftimefacfac*velproj_minus*veljump(2));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, -halftimefacfacminus*velproj_minus*veljump(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, -halftimefacfacminus*velproj_minus*veljump(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, -halftimefacfacminus*velproj_minus*veljump(2));
 
     //   |                             |
     // + |  v^{-} (u^{-}*n)_{in}, j_u  |
     //   |                             |
 
-    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_minus.d0, halftimefacfac*velproj_minus*ju(0));
-    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_minus.d0, halftimefacfac*velproj_minus*ju(1));
-    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_minus.d0, halftimefacfac*velproj_minus*ju(2));
+    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_mean_inv.d0, halftimefacfacminus*velproj_minus*ju(0));
+    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_mean_inv.d0, halftimefacfacminus*velproj_minus*ju(1));
+    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_mean_inv.d0, halftimefacfacminus*velproj_minus*ju(2));
 
 
 //    assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean_inv.d0, halftimefacfac*velproj_plus, shp_jump.d0);
@@ -2890,13 +2920,12 @@ void SysmatBoundaryNitsche(
   //-----------------------------------------------------------------------------------------
   double ele_meas = ele_meas_plus + ele_meas_minus;
   if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
-  double kappa_plus  = ele_meas_plus/ele_meas;
-  double kappa_minus = ele_meas_minus/ele_meas;
-  //const double a_plus = ele_meas_plus/ele_meas;
-  //const double a_minus = ele_meas_minus/ele_meas;
-  //const double denominator = dynvisc_plus*a_minus + dynvisc_minus*a_plus;
-  //const double kappa_plus = dynvisc_minus*a_plus / denominator;
-  //const double kappa_minus = dynvisc_plus*a_minus / denominator;
+  //double kappa_plus  = ele_meas_plus/ele_meas;
+  //double kappa_minus = ele_meas_minus/ele_meas;
+  const double a_plus = ele_meas_plus/ele_meas;
+  const double a_minus = ele_meas_minus/ele_meas;
+  const double kappa_plus = dynvisc_minus*a_plus / (dynvisc_plus*a_minus + dynvisc_minus*a_plus);
+  const double kappa_minus = dynvisc_plus*a_minus / (dynvisc_plus*a_minus + dynvisc_minus*a_plus);
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();

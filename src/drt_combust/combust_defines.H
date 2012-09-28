@@ -68,7 +68,8 @@ Maintainer: Florian Henke
 #define COMBUST_NITSCHE_FLUXJUMP          // turn on/off flux jump RHS term
 #define COMBUST_NITSCHE_NITSCHEVEL        // turn on/off Nitsche velocity stabilization term
 #define COMBUST_NITSCHE_CONVFLUX          // turn on/off convective inflow flux terms
-//#define COMBUST_NITSCHE_PENALTY           // turn on/off Nitsche normal and tangential penalty/stabilization terms
+#define COMBUST_NITSCHE_CONVSTAB          // turn on/off Nitsche convective stabilization terms
+//#define COMBUST_NITSCHE_CONVPENALTY       // turn on/off Nitsche normal and tangential penalty/stabilization terms
 
 //----------------------------------------------------------
 // combustion domain integral terms stress-based formulation
