@@ -3950,7 +3950,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
     int firstvfil = -1;
     // node IDs at first double bond (smallest coordinate value) between horizontal and a vertical filament
     std::vector<int> nodeIDs;
-    std::vector<int> evalnodes;
+    std::vector<int> evalnodeIDs;
     nodeIDs.clear();
     switch(loomtype)
     {
@@ -3960,7 +3960,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
         {
           if((int)(*bspotstatus_)[i]>-1)
             if((*numbond_)[(int)(*bspotstatus_)[i]]>0.9)
-              evalnodes.push_back(bspotcolmap_->GID(i));
+              evalnodeIDs.push_back(bspotcolmap_->GID(i));
         }
       }
       break;
@@ -3970,8 +3970,8 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
         int nodeID1 = (int)(floor((double)(filamentnumber_->MyLength())/4.0));
         // assumption that both filaments are of the same discretization length
         int nodeID2 = nodeID1 + filamentnumber_->MyLength()/2;
-        evalnodes.push_back(nodeID1);
-        evalnodes.push_back(nodeID2);
+        evalnodeIDs.push_back(nodeID1);
+        evalnodeIDs.push_back(nodeID2);
 
       }
       break;
@@ -3994,8 +3994,8 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
                 }
             }
           }
-          else if((int)(*filamentnumber_)[i] == (int)evalnodes.size()+1)
-            evalnodes.push_back(bspotcolmap_->GID(i));
+          else if((int)(*filamentnumber_)[i] == (int)evalnodeIDs.size()+1)
+            evalnodeIDs.push_back(bspotcolmap_->GID(i));
         }
       }
     }
@@ -4004,38 +4004,38 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
     if(!nodeIDs.empty() || loomtype == loom_singlefil)
     {
       // get the nodes at which we want to measure neighbour distances
-      // note: we assume nodeIDs.at(1)>=evalnodes.at(firstvfil-1).
-      // "-1" because evalnodes only stores one node per VERTICAL filament.
+      // note: we assume nodeIDs.at(1)>=evalnodeIDs.at(firstvfil-1).
+      // "-1" because evalnodeIDs only stores one node per VERTICAL filament.
       if(!nodeIDs.empty())
       {
-        int vnodeoffset = nodeIDs.at(1) - evalnodes.at(firstvfil-1);
-        for(int i=0; i<(int)evalnodes.size(); i++)
-          evalnodes.at(i) += vnodeoffset;
+        int vnodeoffset = nodeIDs.at(1) - evalnodeIDs.at(firstvfil-1);
+        for(int i=0; i<(int)evalnodeIDs.size(); i++)
+          evalnodeIDs.at(i) += vnodeoffset;
       }
 
       // sort nodes from smallest to largest x-coordinate
-      if((int)evalnodes.size()>1)
+      if((int)evalnodeIDs.size()>1)
       {
-        for(int i=0; i<(int)evalnodes.size()-1; i++)
+        for(int i=0; i<(int)evalnodeIDs.size()-1; i++)
         {
-          map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodes.at(i));
-          for(int j=i+1; j<(int)evalnodes.size(); j++)
+          map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodeIDs.at(i));
+          for(int j=i+1; j<(int)evalnodeIDs.size(); j++)
           {
-            map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodes.at(j));
+            map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodeIDs.at(j));
             if((posj->second)(0)<(posi->second)(0))
             {
-              int tmp = evalnodes.at(i);
-              evalnodes.at(i) = evalnodes.at(j);
-              evalnodes.at(j) = tmp;
+              int tmp = evalnodeIDs.at(i);
+              evalnodeIDs.at(i) = evalnodeIDs.at(j);
+              evalnodeIDs.at(j) = tmp;
             }
           }
         }
         // gather positions in one vector
         std::vector<LINALG::Matrix<3,1> > evalnodepositions;
         evalnodepositions.clear();
-        for(int i=0; i<(int)evalnodes.size(); i++)
+        for(int i=0; i<(int)evalnodeIDs.size(); i++)
         {
-          map< int,LINALG::Matrix<3,1> >::const_iterator pos = currentpositions.find(evalnodes.at(i));
+          map< int,LINALG::Matrix<3,1> >::const_iterator pos = currentpositions.find(evalnodeIDs.at(i));
           evalnodepositions.push_back(pos->second);
         }
 
@@ -4056,19 +4056,23 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
             for(int j=i+1; j<i+maxnearneighbors+1; j++)
             {
               int jindex = j;
-              if(j<0)
-                jindex += (int)evalnodepositions.size();
-              else if(j>(int)evalnodepositions.size()-1)
+              bool periodicshift = false;
+              // we close the periodic loop by thinking of the first node to be the first neighbor of the last node...
+              if(j>=(int)evalnodepositions.size())
+              {
+                periodicshift = true;
                 jindex -= evalnodepositions.size();
+              }
 
-              map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodes.at(i));
-              map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodes.at(jindex));
+              map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs.at(i));
+              map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodeIDs.at(jindex));
               LINALG::Matrix<3,1> diff = (pos1->second);
               diff -= (pos0->second);
-              dist2nodes = diff.Norm2();
               // distance of node pairs separated by periodic boundaries
-              if(j<0 || j>(int)evalnodepositions.size()-1)
-                dist2nodes = periodlength-dist2nodes;
+              if(periodicshift)
+                dist2nodes = periodlength-diff.Norm2();
+              else // std
+                dist2nodes = diff.Norm2();
               distances<<std::scientific<<std::setprecision(15)<<dist2nodes<<" ";
             }
             if(maxnearneighbors<3) // note: hard coded "3" because of hard coded maximal maxneighbors = 3
@@ -4124,14 +4128,10 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
       for(int i=0; i<bspotstatus_->MyLength(); i++)
       {
         // consider only filament 0 (horizontal filament)
-        if((int)(*filamentnumber_)[i]==0)
-        {
-          if((*bspotstatus_)[i]>-0.1)
-            coverage<< scientific << setprecision(15) <<bspotcolmap_->GID(i)<<"  "<<1<<"  "<<(currentpositions.find(i)->second)(0)<<endl;
-          else
-            coverage<< scientific << setprecision(15) <<bspotcolmap_->GID(i)<<"  "<<0<<"  "<<(currentpositions.find(i)->second)(0)<<endl;
-        }
-        else
+        if((int)(*filamentnumber_)[i]==0 && (*bspotstatus_)[i]>-0.1)
+          // store both singly and doubly bound linkers
+          coverage<<bspotcolmap_->GID(i)<<"  "<<(int)(*numbond_)[(*bspotstatus_)[i]]<<"  "<< scientific << setprecision(15) <<(currentpositions.find(i)->second)(0)<<endl;
+        else if((int)(*filamentnumber_)[i]>0)
           break;
       }
     }
@@ -4139,9 +4139,14 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
     {
       int sum = 0;
       for(int i=0; i<bspotstatus_->MyLength(); i++)
-        if((*bspotstatus_)[i]>-0.1)
+      {
+        // no distinction between singly bound and doubly bound linkers here
+        if((*filamentnumber_)[i]==0 && (*bspotstatus_)[i]>-0.1)
           sum++;
-      coverage << sum << " "<<bspotstatus_->MyLength() <<endl;
+        else if((int)(*filamentnumber_)[i]>0)
+          break;
+      }
+      coverage << sum << " "<< setprecision(5) <<(double)(sum)/(double)(bspotstatus_->MyLength()) <<endl;
     }
     // print to file and close
     fprintf(fp, coverage.str().c_str());
