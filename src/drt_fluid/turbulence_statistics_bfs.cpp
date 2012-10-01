@@ -1679,15 +1679,6 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         double x2rhosq = (*x2sumsqrho_)(i,j)/numsamp_;
         double x2Tsq   = (*x2sumsqT_)(i,j)/numsamp_;
 
-        double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
-        double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
-        double x2vw   = (*x2sumvw_)(i,j)/numsamp_-x2v*x2w;
-
-        double x2rhou  = (*x2sumrhou_)(i,j)/numsamp_-x2u*x2rho;
-        double x2uT = (*x2sumuT_)(i,j)/numsamp_-x2u*x2T;
-        double x2rhov  = (*x2sumrhov_)(i,j)/numsamp_-x2v*x2rho;
-        double x2vT = (*x2sumvT_)(i,j)/numsamp_-x2v*x2T;
-#else
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_; //-x2u*x2v;
         double x2uw   = (*x2sumuw_)(i,j)/numsamp_; //-x2u*x2w;
         double x2vw   = (*x2sumvw_)(i,j)/numsamp_; //-x2v*x2w;
@@ -1696,6 +1687,15 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         double x2uT = (*x2sumuT_)(i,j)/numsamp_; //-x2u*x2T;
         double x2rhov  = (*x2sumrhov_)(i,j)/numsamp_; //-x2v*x2rho;
         double x2vT = (*x2sumvT_)(i,j)/numsamp_; //-x2v*x2T;
+#else
+        double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
+        double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
+        double x2vw   = (*x2sumvw_)(i,j)/numsamp_-x2v*x2w;
+
+        double x2rhou  = (*x2sumrhou_)(i,j)/numsamp_-x2u*x2rho;
+        double x2uT = (*x2sumuT_)(i,j)/numsamp_-x2u*x2T;
+        double x2rhov  = (*x2sumrhov_)(i,j)/numsamp_-x2v*x2rho;
+        double x2vT = (*x2sumvT_)(i,j)/numsamp_-x2v*x2T;
 #endif
 
         double x2rhouppTpp = x2rho*(x2uT-x2u*x2T);

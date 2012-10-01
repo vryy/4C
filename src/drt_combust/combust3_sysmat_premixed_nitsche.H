@@ -1818,8 +1818,9 @@ void Nitsche_SysmatBoundaryCell(
 
     // call smoothed normals for an accurate evaluation of boundary integration terms
     if ((smoothed_boundary_integration == true) and
-        (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed or
-         surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal))
+        (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed
+         and surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal
+         and surftensapprox != INPAR::COMBUST::surface_tension_approx_nodal_curvature))
     {
       // get shape functions at gaussian point
       static LINALG::Matrix<numnode,1> funct_gp;
@@ -2451,8 +2452,17 @@ void Nitsche_SysmatBoundaryCell(
       //------------------------------------------------
       // assemble boundary integrals for surface tension
       //------------------------------------------------
-      COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain, shp_mean_inv, ele,
-          xyze, grad_ephi_smoothed, ecurv, normal, timefacfac, surftensapprox, variablesurftens, surftenscoeff, assembler);
+      if ((smoothed_boundary_integration == true) and
+          (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed
+           and surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal
+           and surftensapprox != INPAR::COMBUST::surface_tension_approx_nodal_curvature))
+     {
+        COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain, shp_mean_inv, ele,
+                    xyze, grad_ephi_smoothed, ecurv, normal_smooth, timefacfac, surftensapprox, variablesurftens, surftenscoeff, assembler);
+      }
+      else
+        COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain, shp_mean_inv, ele,
+            xyze, grad_ephi_smoothed, ecurv, normal, timefacfac, surftensapprox, variablesurftens, surftenscoeff, assembler);
     }
     else
     {

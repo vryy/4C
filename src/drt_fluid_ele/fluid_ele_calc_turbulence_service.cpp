@@ -164,8 +164,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
           dim2_center = ycenter;
         }
 
-        int  n1layer;
-        int  n2layer;
+        int  n1layer = 0;
+        int  n2layer = 0;
         bool dir1found = false;
         bool dir2found = false;
         for (n1layer=0;n1layer<(int)(*dir1coords).size()-1;)
@@ -195,7 +195,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
           dserror("could not determine element layer");
         }
 
-        const int numdir1layer = (int)(*dir2coords).size()-1;
+        const int numdir1layer = (int)(*dir1coords).size()-1;
         nlayer = numdir1layer * n2layer + n1layer;
       }
       else

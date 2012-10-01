@@ -358,9 +358,9 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
         }
 
         // compute the shape function values
-        shape_function_3D(funct,e[0],e[1],e[2],distype);
+        DRT::UTILS::shape_function_3D(funct,e[0],e[1],e[2],distype);
 
-        shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
+        DRT::UTILS::shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
 
         // get transposed Jacobian matrix and determinant
         //
@@ -1003,8 +1003,8 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
         }
 
         // compute the shape function values
-        shape_function_3D(funct,e[0],e[1],e[2],distype);
-        shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
+        DRT::UTILS::shape_function_3D(funct,e[0],e[1],e[2],distype);
+        DRT::UTILS::shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
 
         // get transposed Jacobian matrix and determinant
         //
@@ -1392,8 +1392,8 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
         }
 
         // compute the shape function values
-        shape_function_3D(funct,e[0],e[1],e[2],distype);
-        shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
+        DRT::UTILS::shape_function_3D(funct,e[0],e[1],e[2],distype);
+        DRT::UTILS::shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
 
         // get transposed Jacobian matrix and determinant
         //

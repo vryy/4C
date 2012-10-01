@@ -518,8 +518,8 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
         }
 
         // for this purpose, determine the layer (the direction for average)
-        int  n1layer;
-        int  n2layer;
+        int  n1layer = 0;
+        int  n2layer = 0;
         bool dir1found = false;
         bool dir2found = false;
         for (n1layer=0;n1layer<(int)(*dir1coords_).size()-1;)
@@ -549,7 +549,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
           dserror("could not determine element layer");
         }
 
-        const int numdir1layer = (int)(*dir2coords_).size()-1;
+        const int numdir1layer = (int)(*dir1coords_).size()-1;
         nlayer = numdir1layer * n2layer + n1layer;
       }
       else
@@ -849,8 +849,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
         }
 
         // for this purpose, determine the layer (the direction for average)
-        int  n1layer;
-        int  n2layer;
+        int  n1layer = 0;
+        int  n2layer = 0;
         bool dir1found = false;
         bool dir2found = false;
         for (n1layer=0;n1layer<(int)(*dir1coords_).size()-1;)
@@ -880,7 +880,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
           dserror("could not determine element layer");
         }
 
-        const int numdir1layer = (int)(*dir2coords_).size()-1;
+        const int numdir1layer = (int)(*dir1coords_).size()-1;
         nlayer = numdir1layer * n2layer + n1layer;
       }
       else
