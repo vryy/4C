@@ -1361,7 +1361,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
       std::vector<RCP<DRT::Element> > lines = side_1->Lines();
 
-      RCP<DRT::Element> line = lines[local_lineIds[0]];
+      RCP<DRT::Element> line_ele = lines[local_lineIds[0]];
 //
 //      // line geometry
 //      const int numnodes = line->NumNode();
@@ -1377,7 +1377,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 //      DRT::Element::LocationArray cutla( 1 );
 //      line->LocationVector(*boundarydis_,cutla,false);
 
-      call_get_projxn_Line(side_1, &*line, proj_x_n, local_xi_line[0]);
+      call_get_projxn_Line(side_1, &*line_ele, proj_x_n, local_xi_line[0]);
 
 
       ComputeStartPoint_Line(
