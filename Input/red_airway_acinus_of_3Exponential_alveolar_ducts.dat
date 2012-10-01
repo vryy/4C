@@ -12,7 +12,7 @@ RESTART 0 //599
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC 
 LINEAR_SOLVER                   1
 DYNAMICTYP                      CrankNicolson
-NUMSTEP                         1
+NUMSTEP                         600
 TIMESTEP                        5.0e-3
 RESTARTEVRY                     1
 UPRES                           1
