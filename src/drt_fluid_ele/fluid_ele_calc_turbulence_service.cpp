@@ -785,10 +785,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       {
         //
         //   Delta
-        //  ---------  ~ Re^(3/4)*Pr^(1/2)
+        //  ---------  ~ Re^(3/4)*Pr^(p)
         //  lambda_diff
         //
-        scale_ratio_phi = fldpara_->CDiff() * pow(Re_ele,3.0/4.0) * pow(Pr,1.0/2.0);
+        // Pr <= 1: p=3/4
+        // Pr >> 1: p=1/2
+        double p = 3.0/4.0;
+        if (Pr>1.0) p =1.0/2.0;
+
+        scale_ratio_phi = fldpara_->CDiff() * pow(Re_ele,3.0/4.0) * pow(Pr,p);
         // scale_ratio < 1.0 leads to N < 0
         // therefore, we clip again
         if (scale_ratio_phi < 1.0)
@@ -882,7 +887,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridScaCoef(
     gamma = 4.0/3.0;
   else if (Pr > 2.0 and Nvel[0]<1.0) // Pr >> 1, i.e., case 2 (ii)
     gamma = 2.0;
-  else if (Pr > 2.0 and Nvel[0]<Nphi)
+  else if (Pr > 2.0 and (Nvel[0]>=1.0 and Nvel[0]<Nphi))
     dserror("Inertial-convective and viscous-convective range?");
   else
     dserror("Could not determine D!");
