@@ -492,10 +492,13 @@ set(OBJS_DRT_CONTACT_LIB
 set(OBJS_DRT_RED_AIRWAYS_LIB
   src/drt_red_airways/airway_evaluate.cpp
   src/drt_red_airways/acinus_evaluate.cpp
+  src/drt_red_airways/inter_acinar_dep_evaluate.cpp
   src/drt_red_airways/airway_impl.cpp
   src/drt_red_airways/acinus_impl.cpp
+  src/drt_red_airways/inter_acinar_dep_impl.cpp
   src/drt_red_airways/red_airway.cpp
   src/drt_red_airways/red_acinus.cpp
+  src/drt_red_airways/red_inter_acinar_dep.cpp
   src/drt_red_airways/red_airway_input.cpp
   src/drt_red_airways/red_airway_resulttest.cpp
   src/drt_red_airways/redairway_tissue.cpp
@@ -2509,6 +2512,7 @@ baci_test(trachea 2 100)
 baci_test(red_airway_acinus_of_3Exponential_alveolar_ducts 2 599)
 baci_test(red_airway_2_acinus_of_3Exponential_alveolar_ducts 2 599)
 baci_test(red_airway_2_acinus_of_Exponential_alveolar_duct_elems 2 599)
+baci_test(red_airway_acinus_inter_acinar 2 890)
 
 baci_test(beam3iitest1linear 1 "")
 baci_test(beam3iitest1linear 2 "")

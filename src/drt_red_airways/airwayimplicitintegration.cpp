@@ -117,6 +117,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   pnm_          = LINALG::CreateVector(*dofrowmap,true);
 
   p_nonlin_     = LINALG::CreateVector(*dofrowmap,true);
+  sysmat_iad_   = LINALG::CreateVector(*dofrowmap,true);
 
   // Inlet volumetric flow rates at time n+1, n and n-1
   qin_np_       = LINALG::CreateVector(*elementcolmap,true);
@@ -611,6 +612,41 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("lungVolume_n" ,lung_volume_n);
     eleparams.set("lungVolume_nm",lung_volume_nm);
 
+    sysmat_iad_->PutScalar(0.0);
+    eleparams.set("sysmat_iad",sysmat_iad_);
+
+    // call standard loop over all elements
+    discret_->Evaluate(eleparams,sysmat_,rhs_);
+    discret_->ClearState();
+
+    // finalize the complete matrix
+    //    sysmat_->Complete();
+    discret_->ClearState();
+
+#if 0  // Exporting some values for debugging purposes
+
+    {
+      cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
+      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      if (A_debug != Teuchos::null)
+      {
+        // print to screen
+        (A_debug->EpetraMatrix())->Print(cout);
+      }
+      cout<<"Map is: ("<<myrank_<<")"<<endl<<*(discret_->DofRowMap())<<endl;
+      cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
+    }
+#endif
+
+  }
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","calc_sys_matrix_rhs_iad");
+    discret_->SetState("sysmat_iad",sysmat_iad_);
+
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
@@ -619,7 +655,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     sysmat_->Complete();
     discret_->ClearState();
 
-#if 0  // Exporting some values for debugging purposes
+#if 0 // Exporting some values for debugging purposes
 
     {
       cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
@@ -788,7 +824,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qout_n",qout_n_);
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qout_np",qout_np_);
-
+    eleparams.set("sysmat_iad",sysmat_iad_);
 
 
     //    acini_e_volumenp_->PutScalar(0.0);
@@ -1239,6 +1275,23 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     eleparams.set("lungVolume_n" ,lung_volume_n);
     eleparams.set("lungVolume_nm",lung_volume_nm);
 
+    eleparams.set("sysmat_iad",sysmat_iad_);
+
+    // call standard loop over all elements
+    discret_->Evaluate(eleparams,sysmat_,rhs_);
+    discret_->ClearState();
+
+    // finalize the complete matrix
+    discret_->ClearState();
+  }
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","calc_sys_matrix_rhs_iad");
+    discret_->SetState("sysmat_iad",sysmat_iad_);
+
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
@@ -1246,8 +1299,23 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     // finalize the complete matrix
     sysmat_->Complete();
     discret_->ClearState();
-  }
 
+#if 0  // Exporting some values for debugging purposes
+
+    {
+      cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
+      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      if (A_debug != Teuchos::null)
+      {
+        // print to screen
+        (A_debug->EpetraMatrix())->Print(cout);
+      }
+      cout<<"Map is: ("<<myrank_<<")"<<endl<<*(discret_->DofRowMap())<<endl;
+      cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
+    }
+#endif
+
+  }
   // -------------------------------------------------------------------
   // Solve the boundary conditions
   // -------------------------------------------------------------------

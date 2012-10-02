@@ -312,6 +312,8 @@ protected:
   RCP<Epetra_Vector>          pn_;
   RCP<Epetra_Vector>          pnm_;
   RCP<Epetra_Vector>          p_nonlin_;
+
+  RCP<Epetra_Vector>          sysmat_iad_;
   //@}
 
   //! @name inlet volumetric flow rates at time n+1, n and n-1

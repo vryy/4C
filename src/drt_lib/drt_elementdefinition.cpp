@@ -106,6 +106,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintSectionHeader(stream,"REDUCED D AIRWAYS ELEMENTS");
   PrintElementLines(stream,"RED_AIRWAY");
   PrintElementLines(stream,"RED_ACINUS");
+  PrintElementLines(stream,"RED_ACINAR_INTER_DEP");
 }
 
 

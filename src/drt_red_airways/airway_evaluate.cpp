@@ -59,6 +59,8 @@ int DRT::ELEMENTS::RedAirway::Evaluate(ParameterList& params,
     act = RedAirway::calc_flow_rates;
   else if (action == "get_coupled_values")
     act = RedAirway::get_coupled_values;
+  else if (action == "calc_sys_matrix_rhs_iad")
+    act = RedAirway::calc_sys_matrix_rhs_iad;
   else
   {
 
@@ -75,67 +77,71 @@ Here must add the steps for evaluating an element
 
   switch(act)
   {
-    case calc_sys_matrix_rhs:
-    {
-      return DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Evaluate(this,
-                                                                         params,
-                                                                         discretization,
-                                                                         lm,
-                                                                         elemat1,
-                                                                         elemat2,
-                                                                         elevec1,
-                                                                         elevec2,
-                                                                         elevec3,
-                                                                         mat);
-    }
-    break;
-    case get_initial_state:
-    {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Initial(this,
-                                                                 params,
-                                                                 discretization,
-                                                                 lm,
-                                                                 mat);
-
-    }
-    break;
-    case set_bc:
-    {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvaluateTerminalBC(this,
-                                                                            params,
-                                                                            discretization,
-                                                                            lm,
-                                                                            elevec1,
-                                                                            mat);
-
-    }
-    break;
-    case calc_flow_rates:
-    {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcFlowRates(this,
+  case calc_sys_matrix_rhs:
+  {
+    return DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Evaluate(this,
                                                                        params,
                                                                        discretization,
+                                                                       lm,
+                                                                       elemat1,
+                                                                       elemat2,
                                                                        elevec1,
                                                                        elevec2,
-                                                                       lm,
+                                                                       elevec3,
                                                                        mat);
-
-    }
-    break;
-    case get_coupled_values:
-    {
-      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->GetCoupledValues(this,
+  }
+  break;
+  case calc_sys_matrix_rhs_iad:
+  {
+  }
+  break;
+  case get_initial_state:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->Initial(this,
+                                                               params,
+                                                               discretization,
+                                                               lm,
+                                                               mat);
+    
+  }
+  break;
+  case set_bc:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvaluateTerminalBC(this,
                                                                           params,
                                                                           discretization,
                                                                           lm,
+                                                                          elevec1,
                                                                           mat);
+    
+  }
+  break;
+  case calc_flow_rates:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcFlowRates(this,
+                                                                     params,
+                                                                     discretization,
+                                                                     elevec1,
+                                                                     elevec2,
+                                                                     lm,
+                                                                     mat);
 
-    }
-    break;
-    default:
-      dserror("Unkown type of action for reduced dimensional airways");
+  }
+  break;
+  case get_coupled_values:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->GetCoupledValues(this,
+                                                                        params,
+                                                                        discretization,
+                                                                        lm,
+                                                                        mat);
+    
+  }
+  break;
+  default:
+    dserror("Unkown type of action for reduced dimensional airways");
   }// end of switch(act)
-
+  
   return 0;
 } // end of DRT::ELEMENTS::RedAirway::Evaluate
 

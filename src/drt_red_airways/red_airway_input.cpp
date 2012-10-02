@@ -101,3 +101,23 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(const std::string& eletype,
   return true;
 }
 
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(const std::string& eletype,
+                                                   const std::string& distype,
+                                                   DRT::INPUT::LineDefinition* linedef)
+{
+  const int ndim = DRT::Problem::Instance()->NDim();
+  if (ndim!=3)
+    dserror("Problem defined as %dd, but found Reduced dimensional INTER ACINAR DEPENDENCE element.",ndim);
+
+  // read number of material model
+  const int generation = -2;
+  generation_                       = generation;
+  
+  
+  return true;
+}
+

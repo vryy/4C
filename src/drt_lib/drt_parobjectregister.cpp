@@ -241,6 +241,7 @@ std::string DRT::ParObjectList()
     << MAT::DamageType::Instance().Name() << " "
     << DRT::ELEMENTS::RedAirwayType::Instance().Name() << " "
     << DRT::ELEMENTS::RedAcinusType::Instance().Name() << " "
+    << DRT::ELEMENTS::RedInterAcinarDepType::Instance().Name() << " "
     ;
   return s.str();
 }

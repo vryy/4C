@@ -1,6 +1,6 @@
 
 /*!----------------------------------------------------------------------
-\file acinus_evaluate.cpp
+\file inter_acinar_dep_evaluate.cpp
 \brief
 
 <pre>
@@ -14,7 +14,7 @@ Maintainer: Mahmoud Ismail
 
 
 #include "red_airway.H"
-#include "acinus_impl.H"
+#include "inter_acinar_dep_impl.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -33,7 +33,7 @@ using namespace DRT::UTILS;
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAcinus::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(ParameterList& params,
                                        DRT::Discretization&      discretization,
                                        vector<int>&              lm,
                                        Epetra_SerialDenseMatrix& elemat1,
@@ -43,21 +43,23 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(ParameterList& params,
                                        Epetra_SerialDenseVector& elevec3)
 {
 
-  DRT::ELEMENTS::RedAcinus::ActionType act = RedAcinus::none;
+  DRT::ELEMENTS::RedInterAcinarDep::ActionType act = RedInterAcinarDep::none;
 
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
-    act = RedAcinus::calc_sys_matrix_rhs;
+    act = RedInterAcinarDep::calc_sys_matrix_rhs;
+  else if (action == "calc_sys_matrix_rhs_iad")
+    act = RedInterAcinarDep::calc_sys_matrix_rhs_iad;
   else if (action == "get_initial_state")
-    act = RedAcinus::get_initial_state;
+    act = RedInterAcinarDep::get_initial_state;
   else if (action == "set_bc")
-    act = RedAcinus::set_bc;
+    act = RedInterAcinarDep::set_bc;
   else if (action == "calc_flow_rates")
-    act = RedAcinus::calc_flow_rates;
+    act = RedInterAcinarDep::calc_flow_rates;
   else if (action == "get_coupled_values")
-    act = RedAcinus::get_coupled_values;
+    act = RedInterAcinarDep::get_coupled_values;
   else
   {
 
@@ -74,72 +76,76 @@ Here must add the steps for evaluating an element
 
   switch(act)
   {
-    case calc_sys_matrix_rhs:
-    {
-      return DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->Evaluate(this,
-                                                                         params,
-                                                                         discretization,
-                                                                         lm,
-                                                                         elemat1,
-                                                                         elemat2,
-                                                                         elevec1,
-                                                                         elevec2,
-                                                                         elevec3,
-                                                                         mat);
-    }
-    break;
-    case get_initial_state:
-    {
-      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->Initial(this,
-                                                                 params,
-                                                                 discretization,
-                                                                 lm,
-                                                                 mat);
-
-    }
-    break;
-    case set_bc:
-    {
-      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->EvaluateTerminalBC(this,
-                                                                            params,
-                                                                            discretization,
-                                                                            lm,
-                                                                            elevec1,
-                                                                            mat);
-
-    }
-    break;
-    case calc_flow_rates:
-    {
-      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->CalcFlowRates(this,
+  case calc_sys_matrix_rhs:
+  {
+  }
+  break;
+  case calc_sys_matrix_rhs_iad:
+  {
+    return DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Evaluate(this,
+                                                                               params,
+                                                                               discretization,
+                                                                               lm,
+                                                                               elemat1,
+                                                                               elemat2,
+                                                                               elevec1,
+                                                                               elevec2,
+                                                                               elevec3,
+                                                                               mat);
+  }
+  break;
+  case get_initial_state:
+  {
+    DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Initial(this,
                                                                        params,
                                                                        discretization,
-                                                                       elevec1,
-                                                                       elevec2,
                                                                        lm,
                                                                        mat);
-
-    }
+    
+  }
+  break;
+  case set_bc:
+  {
+    DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->EvaluateTerminalBC(this,
+                                                                                  params,
+                                                                                  discretization,
+                                                                                  lm,
+                                                                                  elevec1,
+                                                                                  mat);
+    
+  }
     break;
-    case get_coupled_values:
-    {
-      DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->GetCoupledValues(this,
-                                                                          params,
-                                                                          discretization,
-                                                                          lm,
-                                                                          mat);
-
-    }
-    break;
-    default:
-      dserror("Unkown type of action for reduced dimensional acinuss");
+  case calc_flow_rates:
+  {
+    DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->CalcFlowRates(this,
+                                                                             params,
+                                                                             discretization,
+                                                                             elevec1,
+                                                                             elevec2,
+                                                                             lm,
+                                                                             mat);
+    
+  }
+  break;
+  case get_coupled_values:
+  {
+    DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->GetCoupledValues(this,
+                                                                                params,
+                                                                                discretization,
+                                                                                lm,
+                                                                                mat);
+    
+  }
+  break;
+  default:
+    dserror("Unkown type of action for reduced dimensional acinuss");
   }// end of switch(act)
-
+  
   return 0;
-} // end of DRT::ELEMENTS::RedAcinus::Evaluate
+} // end of DRT::ELEMENTS::RedInterAcinarDep::Evaluate
 
 
-int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::RedInterAcinarDep::EvaluateNeumann(ParameterList& params,
                                               DRT::Discretization& discretization,
                                               DRT::Condition& condition,
                                               vector<int>& lm,
@@ -154,7 +160,7 @@ int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAcinus::EvaluateDirichlet(ParameterList& params,
+int DRT::ELEMENTS::RedInterAcinarDep::EvaluateDirichlet(ParameterList& params,
                                                 DRT::Discretization&      discretization,
                                                 DRT::Condition&           condition,
                                                 vector<int>&              lm,
@@ -165,7 +171,7 @@ int DRT::ELEMENTS::RedAcinus::EvaluateDirichlet(ParameterList& params,
 
 
 // get optimal gaussrule for discretization type
-GaussRule1D DRT::ELEMENTS::RedAcinus::getOptimalGaussrule(const DiscretizationType& distype)
+GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(const DiscretizationType& distype)
 {
 
   DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
@@ -185,7 +191,7 @@ GaussRule1D DRT::ELEMENTS::RedAcinus::getOptimalGaussrule(const DiscretizationTy
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::ELEMENTS::RedAcinus::isHigherOrderElement(
+bool DRT::ELEMENTS::RedInterAcinarDep::isHigherOrderElement(
   const DRT::Element::DiscretizationType  distype) const
 {
   bool hoel = true;

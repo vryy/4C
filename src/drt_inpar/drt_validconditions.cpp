@@ -2758,7 +2758,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(raw_vent_bc);
 
-
   /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition
   Teuchos::RCP<ConditionDefinition> volumetric_surface_flow_cond =

@@ -128,6 +128,8 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   RefCountPtr<Epetra_Vector> qout_np = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
   RefCountPtr<Epetra_Vector> qout_n  = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
   RefCountPtr<Epetra_Vector> qout_nm = params.get<RefCountPtr<Epetra_Vector> >("qout_nm");
+  
+  RefCountPtr<Epetra_Vector> sysmat_iad = params.get<RefCountPtr<Epetra_Vector> >("sysmat_iad");
 
  if (pnp==null || pn==null || pnm==null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -181,7 +183,6 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   elem_params.set<double>("lungVolume_np",params.get<double>("lungVolume_np"));
   elem_params.set<double>("lungVolume_n",params.get<double>("lungVolume_n"));
   elem_params.set<double>("lungVolume_nm",params.get<double>("lungVolume_nm"));
-
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
@@ -196,6 +197,12 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
          time,
          dt);
 
+  for (int i=0;i<lm.size();i++)
+  {
+    int    gid = lm[i];
+    double val = elemat1_epetra(i,i);
+    sysmat_iad->ReplaceGlobalValues(1,&val,&gid);
+  }
 
 #if 0
   cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<endl;
@@ -694,13 +701,13 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
   {
     if (ele->Nodes()[i]->Owner()== myrank)
     {
-      if(ele->Nodes()[i]->GetCondition("RedAcinusPrescribedCond") || ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond") || ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond"))
+      if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond") || ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond") || ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond"))
       {
         string Bc;
         double BCin = 0.0;
-        if (ele->Nodes()[i]->GetCondition("RedAcinusPrescribedCond"))
+        if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
-          DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAcinusPrescribedCond");
+          DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = *(condition->Get<string>("boundarycond"));
           
