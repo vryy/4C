@@ -420,10 +420,10 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     if (Comm().MyPID()==0)
     {
       (*log) << Step()
-             << " " << timer.totalElapsedTime()
-             << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
-             << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
-             << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
+             << "\t" << timer.totalElapsedTime()
+             << "\t" << nlParams.sublist("Output").get("Nonlinear Iterations",0)
+             << "\t" << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
+             << "\t" << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
         ;
       for (std::vector<int>::size_type i=0; i<counter_.size(); ++i)
       {
