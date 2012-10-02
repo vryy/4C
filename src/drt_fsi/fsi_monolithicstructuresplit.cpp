@@ -72,7 +72,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
 
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  // Recovering of Lagrange multiplier happens on structure field
+  // Recovery of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
   ddiinc_ = Teuchos::null;
   solipre_ = Teuchos::null;
@@ -1179,7 +1179,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
 {
   // get time integration parameter of structural time integrator
   // to enable consistent time integration among the fields
-  double stiparam = StructureField()->TimIntParam();
+  const double stiparam = StructureField()->TimIntParam();
 
   // store the product S_{\GammaI} \Delta d_I^{n+1} in here
   Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);

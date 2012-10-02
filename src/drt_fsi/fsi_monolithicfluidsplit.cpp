@@ -64,7 +64,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
 
-  // Recovering of Lagrange multiplier happens on fluid field
+  // Recovery of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap()));
   fmgipre_ = Teuchos::null;
   fmgicur_ = Teuchos::null;
@@ -566,9 +566,11 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
+  //  print stiffness matrix to *.mtl-file
 //  const std::string fname = "stiffmatrix.mtl";
-//  cout<<"Printing stiffmatrix to file"<<endl;
-//  LINALG::PrintMatrixInMatlabFormat(fname,*fgg.EpetraMatrix());
+//  cout << __LINE__ << __FILE__ << endl;
+//  cout << "Printing stiffmatrix to file" << endl;
+//  LINALG::PrintMatrixInMatlabFormat(fname,*fii.EpetraMatrix());
 //  exit(0);
 
   // scaling factors for fluid
@@ -1302,7 +1304,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
 {
   // get time integration parameter of fluid time integrator
   // to enable consistent time integration among the fields
-  double ftiparam = FluidField().TimIntParam();
+  const double ftiparam = FluidField().TimIntParam();
 
   // store the prodcut F_{\Gamma I}^{G,n+1} \Delta d_I^{G,n+1} in here
   Teuchos::RCP<Epetra_Vector> fgialeddi = LINALG::CreateVector(*AleField().Interface()->FSICondMap(),true);
