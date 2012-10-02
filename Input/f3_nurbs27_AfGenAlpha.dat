@@ -11,6 +11,13 @@
 ==================================================================
 ------------------------------------------------------------------------TITLE
 f3_nurbs27_AfGenAlpha
+remark:
+This test case is set up with the pressure fixed at one node. Alternatively,
+one could use a krylov projection method to fix the pressure level. Due to 
+the under-integration of nurbs, the given kernel is not the exact kernel and
+the krylov projection method will fail (i.e. Ac!=0). To overcome this problem
+one could use more gauss points or set if(norm>1e-12) in linalg_krylov_projection.cpp
+to if(norm>1e-7).
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        3000
 NODES                           4896

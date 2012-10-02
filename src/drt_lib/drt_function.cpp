@@ -659,6 +659,18 @@ namespace UTILS {
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
+  /// special implementation two-phase flow test case
+  class CollapsingWaterColumnFunctionCoarse : public Function
+  {
+  public:
+
+    /// ctor
+    CollapsingWaterColumnFunctionCoarse();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
   /// special implementation for the G-function in the ORACLES problem
   class ORACLESGFunction : public Function
   {
@@ -862,10 +874,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedInt("FUNCT")
     .AddTag("CIRCULARFLAME4")
     ;
+
   DRT::INPUT::LineDefinition collapsingwatercolumn;
   collapsingwatercolumn
     .AddNamedInt("FUNCT")
     .AddTag("COLLAPSINGWATERCOLUMN")
+    ;
+
+  DRT::INPUT::LineDefinition collapsingwatercolumncoarse;
+  collapsingwatercolumncoarse
+    .AddNamedInt("FUNCT")
+    .AddTag("COLLAPSINGWATERCOLUMNCOARSE")
     ;
 
   DRT::INPUT::LineDefinition oraclesgfunc;
@@ -926,6 +945,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(circularflame3);
   lines->Add(circularflame4);
   lines->Add(collapsingwatercolumn);
+  lines->Add(collapsingwatercolumncoarse);
   lines->Add(oraclesgfunc);
   lines->Add(rotatingcone);
   lines->Add(levelsetcuttest);
@@ -1189,6 +1209,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
         functions_.push_back(rcp(new CollapsingWaterColumnFunction()));
+      }
+      else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
+      {
+        functions_.push_back(rcp(new CollapsingWaterColumnFunctionCoarse()));
       }
       else if (function->HaveNamed("ORACLESGFUNC"))
       {
@@ -2853,7 +2877,7 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const doub
 {
   //here calculation of distance (sign is already taken in consideration)
   double distance = 0.0;
-  
+
   if (xp[0] > -0.146 and xp[1] > 0.067)
   {
      distance = + sqrt(DSQR(-0.146 - xp[0])+DSQR(0.067 - xp[1]));
@@ -2877,6 +2901,61 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const doub
      //distance = - fabs(-0.146 - xp[0]);
      distance = - fabs(0.067 - xp[1]);
      //std::cout << distance << std::endl;
+  }
+
+  return distance;
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor                                          rasthofer 04/10 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::CollapsingWaterColumnFunctionCoarse::CollapsingWaterColumnFunctionCoarse() :
+Function()
+{
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of two-phase flow test case               rasthofer 04/10 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::CollapsingWaterColumnFunctionCoarse::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  double xp_corner[2];
+  double xp_center[2];
+    double distance = 0.0;
+  double radius=0.03;
+
+  //xp_corner[0]=0.146;//0.06
+  xp_corner[0]=0.06;//0.06
+  //xp_corner[1]=0.292;//0.06
+  xp_corner[1]=0.06;//0.06
+
+  xp_center[0]=xp_corner[0]-radius;
+  xp_center[1]=xp_corner[1]-radius;
+
+
+  if (xp[0] <=xp_center[0] and xp[1] >= xp_center[1])
+  {
+     distance = xp[1]-xp_corner[1] ;
+  }
+  else if (xp[0] >=xp_center[0] and xp[1] <= xp_center[1] and !(xp[0]==xp_center[0] and xp[1]==xp_center[1]))
+  {
+      distance= xp[0]-xp_corner[0];
+  }
+  else if (xp[0] <xp_center[0] and xp[1] < xp_center[1])
+  {
+      if(xp[1]>(xp_corner[1]+(xp[0]-xp_corner[0])))
+      {
+          distance = - fabs(xp_corner[1] - xp[1]);
+      }
+      else
+      {
+          distance = - fabs(xp_corner[0] - xp[0]);
+      }
+  }
+  else
+  {
+      distance = sqrt(DSQR(xp[0]-xp_center[0])+DSQR(xp[1]-xp_center[1]))-radius;
   }
 
   return distance;

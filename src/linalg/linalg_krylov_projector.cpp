@@ -57,8 +57,19 @@ LINALG::KrylovProjector::KrylovProjector(
 
         result.Norm2(&norm);
 
-        if(norm>1e-9)
+        if(norm>1e-12)
         {
+          std::cout << "#####################################################" << std::endl;
+          std::cout << "Krylov projection failed!                            " << std::endl;
+          std::cout << "This might be caused by:                             " << std::endl;
+          std::cout << " - you don't have pure Dirichlet boundary conditions " << std::endl;
+          std::cout << "   or pbcs -> check your inputfile                   " << std::endl;
+          std::cout << " - you don't integrate the pressure exactly and the  " << std::endl;
+          std::cout << "   given kernel is not a kernel of your system -> to " << std::endl;
+          std::cout << "   check this, use more gauss points (often problem  " << std::endl;
+          std::cout << "   with nurbs)                                       " << std::endl;
+          std::cout << " - there is indeed a problem with the Krylov projection " << std::endl;
+          std::cout << "#####################################################" << std::endl;
           dserror("krylov projection failed, Ac returned %12.5e for kernel basis vector %d",norm,mm);
         }
       }

@@ -175,8 +175,23 @@ void SysmatTwoPhaseFlow(
 
       // coordinates of the current integration point in element coordinates \xi
       LINALG::Matrix<nsd,1> posXiDomain;
-      GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
-      const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+//      GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+//      const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+      // this is a workaround for TwoPhaseFlow with standard FEM
+      // sets AssemblyType to XFEM Assembly, otherwise detEtaToXi3D is always 1.0
+      // and coordinate mapping is incorrect!
+      double detcell_temp=0.0;
+      if(ASSTYPE==XFEM::standard_assembly and ele->Bisected())
+      {
+        GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
+        detcell_temp = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);
+      }
+      else
+      {
+        GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+        detcell_temp = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+      }
+      const double detcell=detcell_temp;
 
       // shape functions and their first derivatives
       static LINALG::Matrix<numnode,1> funct;
