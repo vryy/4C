@@ -35,6 +35,8 @@ MAX_ITER                        1
 MATID                           2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
+TESTCASE                        test_primal
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes

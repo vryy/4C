@@ -1452,6 +1452,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
       bodyforce_old_(1) = 9*x + x*t + 6*x*y*t;
       break;
     }
+    case INPAR::TOPOPT::adjointtest_primal:
+      break;
     default:
       dserror("no dirichlet condition implemented for special test case");
     }
@@ -1533,6 +1535,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContForce(
       contforce_old_ = y*t + 1 + t;
       break;
     }
+    case INPAR::TOPOPT::adjointtest_primal:
+      break;
     default:
       dserror("no dirichlet condition implemented for special test case");
     }

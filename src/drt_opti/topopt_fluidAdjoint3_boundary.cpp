@@ -368,6 +368,8 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
         values_old(1) = 3*y*t*t - 3*x*t*t + 6*y*y*t - 3*x*y*t - 2*t + 2*x*t - 3*x*x*t;
         break;
       }
+      case INPAR::TOPOPT::adjointtest_primal:
+        break;
       default:
         dserror("no dirichlet condition implemented for special test case");
       }

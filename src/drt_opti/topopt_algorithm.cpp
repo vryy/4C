@@ -36,7 +36,6 @@ TOPOPT::Algorithm::Algorithm(
 : FluidTopOptCouplingAlgorithm(comm, topopt),
   topopt_(topopt),
   optimizer_(Optimizer()),
-  objective_(1.0e10),
   doGradient_(true)
 {
   // initialize system vector (without values)
@@ -59,14 +58,44 @@ void TOPOPT::Algorithm::OptimizationLoop()
 {
   PrepareOptimization();
 
+  // prepare data for new optimization iteration
+  PrepareFluidField();
+
+  // solve the primary field
+  DoFluidField();
+
+  if (doGradient_)
+  {
+    // Transfer data from primary field to adjoint field
+    PrepareAdjointField();
+
+    // solve the adjoint equations
+    DoAdjointField();
+  }
+
   // optimization process has not yet finished
   while (OptimizationFinished() == false)
   {
+    // compute the gradient of the objective function
+    PrepareOptimizationStep();
+
+    // update objective due to optimization approach
+    DoOptimizationStep();
+
+    // write output of optimization step
+//    Output();
+
+    // Update data for new optimization step
+//    Update();
+
     // prepare data for new optimization iteration
     PrepareFluidField();
 
     // solve the primary field
     DoFluidField();
+
+    // handle inner optimization stuff for whick fluid field is required
+    FinishOptimizationStep();
 
     if (doGradient_)
     {
@@ -76,22 +105,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
       // solve the adjoint equations
       DoAdjointField();
     }
-
-    // compute the gradient of the objective function
-    PrepareOptimizationStep();
-
-    // update objective due to optimization approach
-    DoOptimizationStep();
-
-//    write output of optimization step
-//    Output();
-
-//    // Update data for new optimization step
-//    Update();
   }
-
-
-  return;
 }
 
 
@@ -102,6 +116,9 @@ void TOPOPT::Algorithm::OptimizationLoop()
 void TOPOPT::Algorithm::PrepareOptimization()
 {
   optimizer_->ImportFlowParams(AdjointFluidField()->AdjointParams());
+
+  UpdatePorosity();
+
   return;
 }
 
@@ -112,7 +129,10 @@ void TOPOPT::Algorithm::PrepareOptimization()
  *------------------------------------------------------------------------------------------------*/
 bool TOPOPT::Algorithm::OptimizationFinished()
 {
-  bool converged = optimizer_->Converged();
+  if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointTestCases>(AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE")!=INPAR::TOPOPT::adjointtest_no)
+    return true; // special test cases for adjoint equations -> no optimization
+
+  bool converged = optimizer_->Converged(doGradient_);
 
   if (converged == false)
   {
@@ -191,6 +211,15 @@ void TOPOPT::Algorithm::DoOptimizationStep()
 }
 
 
+
+/*------------------------------------------------------------------------------------------------*
+ | protected: finish one optimization step                                       winklmaier 12/11 |
+ *------------------------------------------------------------------------------------------------*/
+void TOPOPT::Algorithm::FinishOptimizationStep()
+{
+  optimizer_->FinishIteration(doGradient_);
+  return;
+}
 
 /*------------------------------------------------------------------------------------------------*
  | protected: update the porosity field                                          winklmaier 12/11 |

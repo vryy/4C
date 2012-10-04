@@ -89,6 +89,9 @@ namespace TOPOPT
     /// perform an optimization step
     void DoOptimizationStep();
 
+    /// finish one optimization step
+    void FinishOptimizationStep();
+
     /// update the porosity field
     void UpdatePorosity();
 
@@ -106,9 +109,6 @@ namespace TOPOPT
     /// pseudo-porosity function for topology optimization
     Teuchos::RCP<Epetra_Vector> poro_;
     Teuchos::RCP<TOPOPT::Optimizer>& optimizer_;
-
-    /// objective fields
-    double objective_; /// objective at new iteration in row map
 
     bool doGradient_; /// compute gradient(s) in current optimization step
   };

@@ -345,24 +345,30 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
 
     neumann_loads_->PutScalar(0.0);
 
-    discret_->EvaluateConditionUsingParentData(
-        nbcparams            ,
-        Teuchos::null        ,
-        Teuchos::null        ,
-        neumann_loads_       ,
-        Teuchos::null        ,
-        Teuchos::null        ,
-        "LineNeumann");
-
-    //TODO: diese Zeile macht Probleme
-//    discret_->EvaluateConditionUsingParentData(
-//        nbcparams            ,
-//        Teuchos::null        ,
-//        Teuchos::null        ,
-//        neumann_loads_       ,
-//        Teuchos::null        ,
-//        Teuchos::null        ,
-//        "SurfaceNeumann");
+    if (DRT::Problem::Instance()->NDim()==2)
+    {
+      discret_->EvaluateConditionUsingParentData(
+          nbcparams            ,
+          Teuchos::null        ,
+          Teuchos::null        ,
+          neumann_loads_       ,
+          Teuchos::null        ,
+          Teuchos::null        ,
+          "LineNeumann");
+    }
+    else if (DRT::Problem::Instance()->NDim()==3)
+    {
+      discret_->EvaluateConditionUsingParentData(
+          nbcparams            ,
+          Teuchos::null        ,
+          Teuchos::null        ,
+          neumann_loads_       ,
+          Teuchos::null        ,
+          Teuchos::null        ,
+          "SurfaceNeumann");
+    }
+    else
+      dserror("Dimension not implemented");
 
     // clear state
     discret_->ClearState();
@@ -959,6 +965,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
         values[1] = y*t - x*t;
         break;
       }
+      case INPAR::TOPOPT::adjointtest_primal:
+        break;
       default:
         dserror("no dirichlet condition implemented for special test case");
       }

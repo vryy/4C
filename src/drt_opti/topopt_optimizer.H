@@ -113,10 +113,16 @@ namespace TOPOPT
     }
 
     void Iterate(
-        bool& dualVariable
+        bool& doGradient
     );
 
-    bool Converged();
+    void FinishIteration(
+        bool& doGradient
+    );
+
+    bool Converged(
+        bool& doGradient
+    );
 
     Teuchos::RCP<const DRT::Discretization> OptiDis(){return optidis_;}
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return fluidvel_;} /// fluid velocity

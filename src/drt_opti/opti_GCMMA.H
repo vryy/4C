@@ -74,54 +74,80 @@ namespace OPTI
     virtual ~GCMMA(){};
 
     /// Perform one outer iteration step
-    void Iterate(
+    Teuchos::RCP<Epetra_Vector> Iterate(
         double& objective,
         Teuchos::RCP<Epetra_Vector> objectivegrad,
         double* constraints,
-        Teuchos::RCP<Epetra_MultiVector> constraintsgrad,
-        bool& innerIterConverged);
+        Teuchos::RCP<Epetra_MultiVector> constraintsgrad
+    );
 
-    bool Converged();
+    bool Converged(
+        double& objective,
+        Teuchos::RCP<Epetra_Vector> objectivegrad,
+        double* constraints,
+        Teuchos::RCP<Epetra_MultiVector> constraintsgrad
+    );
+
+    void FinishIteration(
+        double& objective,
+        double* constraints,
+        bool& doGradient
+    );
 
   private:
 
-    void PrepareOuterIter();
-
-    void PrepareInnerIter();
+    void InitIter(
+        double& objective,
+        Teuchos::RCP<Epetra_Vector> objectivegrad,
+        double* constraints,
+        Teuchos::RCP<Epetra_MultiVector> constraintsgrad);
 
     void Asymptotes();
 
-    void UpdateRho();
+    void InitRho();
 
-    bool InnerConvergence();
+    void UpdateRho(
+        double& objective,
+        double* constraints
+    );
+
+    bool InnerConvergence(
+        double& objective,
+        double* constraints
+    );
 
     void InitSubSolve();
 
     void SubSolve();
 
-    void Update(
-        bool& innerIterConverged
+    void Update();
+
+    bool KKTCond(
+        double& objective,
+        Teuchos::RCP<Epetra_Vector> objectivegrad,
+        double* constraints,
+        Teuchos::RCP<Epetra_MultiVector> constraintsgrad
     );
 
     //! @name problem data
 
     Teuchos::RCP<const DRT::Discretization> discret_; /// dof-map of optimization variable
-    const Teuchos::ParameterList& params_; /// optimization parameter list
     //@}
 
     //! @name iteration counter
 
+    int total_iter_; /// counter for total iterations
     int outer_iter_; /// counter for outer iterations
     int inner_iter_; /// counter for inner iterations
 
-    const int max_outer_iter_; /// maximal outer iterations
+    const int max_total_iter_; /// maximal total iterations (outer and inner)
     const int max_inner_iter_; /// maximal inner iterations
     //@}
 
     //! @name size of optimization problem
 
     const int m_; /// number of constraints
-    const int n_; /// number of optimization variables (=number of nodes) TODO auch bei periodischen RBs
+    const int n_; /// number of optimization variables (=number of nodes) TODO auch bei periodischen RBs?
     //@}
 
     //! @name optimization variable data
@@ -150,8 +176,6 @@ namespace OPTI
     //! @name objective data
 
     double obj_; /// objective value
-    double obj_mma_; /// objective value of inner iteration
-
     Teuchos::RCP<Epetra_Vector> obj_deriv_; /// derivation of objective w.r.t. optimization variable
     double obj_appr_; /// MMA approximation of objective
     //@}
@@ -159,8 +183,6 @@ namespace OPTI
     //! @name constraint data
 
     double* constr_; /// constraint values
-    double* constr_mma_; /// constraint value of inner iteration
-
     Teuchos::RCP<Epetra_MultiVector> constr_deriv_; /// derivation of constraints w.r.t. optimization variable
     double* constr_appr_; /// MMA approximation of constraint
     //@}
@@ -173,7 +195,7 @@ namespace OPTI
 
     Teuchos::RCP<Epetra_MultiVector> P_; /// first part of approximation function of constraints
     Teuchos::RCP<Epetra_MultiVector> Q_; /// second part of approximation function of constraints
-    double* r_; /// third part of approximation function of constraints
+    double* b_; /// third part of approximation function of constraints
     //@}
 
     //! @name approximation function coefficients

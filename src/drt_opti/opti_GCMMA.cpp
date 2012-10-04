@@ -30,11 +30,11 @@ OPTI::GCMMA::GCMMA(
     Teuchos::RCP<Epetra_Vector> x_max
 ) :
 discret_(discret),
-params_(params),
+total_iter_(0),
 outer_iter_(0),
 inner_iter_(0),
-max_outer_iter_(1),
-max_inner_iter_(1),
+max_total_iter_(params.get<int>("MAX_ITER")),
+max_inner_iter_(min(max_total_iter_,100)),
 m_(numConstraints),
 n_(x->MyLength()),
 x_(rcp(new Epetra_Vector(*x))),
@@ -43,11 +43,9 @@ x_old2_(rcp(new Epetra_Vector(*x))),
 x_mma_(rcp(new Epetra_Vector(*x))),
 x_diff_min_(1.0e-5),
 obj_(0.0),
-obj_mma_(0.0),
 obj_deriv_(rcp(new Epetra_Vector(x->Map()))),
 obj_appr_(0.0),
 constr_(new double[m_]),
-constr_mma_(new double[m_]),
 constr_deriv_(rcp(new Epetra_MultiVector(x->Map(),m_))),
 constr_appr_(new double[m_]),
 p0_(rcp(new Epetra_Vector(x->Map()))),
@@ -55,7 +53,7 @@ q0_(rcp(new Epetra_Vector(x->Map()))),
 r0_(0.0),
 P_(rcp(new Epetra_MultiVector(x->Map(),m_))),
 Q_(rcp(new Epetra_MultiVector(x->Map(),m_))),
-r_(new double[m_]),
+b_(new double[m_]),
 rho0_(0.01),
 rho_(new double[m_]),
 rho0min_(1.0e-6),
@@ -66,7 +64,7 @@ xsi_(rcp(new Epetra_Vector(x->Map()))),
 eta_(rcp(new Epetra_Vector(x->Map()))),
 lam_(new double[m_]),
 mu_(new double[m_]),
-zet_(0.0),
+zet_(1.0),
 a0_(1.0),
 a_(new double[m_]),
 c_(new double[m_]),
@@ -98,9 +96,9 @@ s_(new double[m_])
   else
     x_max_ = rcp(new Epetra_Vector(*x_max));
 
-  // TODO remove these two lines!!!
-  x_min_->PutScalar(-2.0);
-  x_max_->PutScalar(2.0);
+//  // TODO remove these two lines!!!
+//  x_min_->PutScalar(-2.0);
+//  x_max_->PutScalar(2.0);
 
   if ((not x_min_->Map().SameAs(x_max_->Map())) or
       (not x_min_->Map().SameAs(x_->Map())))
@@ -140,26 +138,38 @@ s_(new double[m_])
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void OPTI::GCMMA::Iterate(
+Teuchos::RCP<Epetra_Vector> OPTI::GCMMA::Iterate(
     double& objective,
     Teuchos::RCP<Epetra_Vector> objectivegrad,
     double* constraints,
-    Teuchos::RCP<Epetra_MultiVector> constraintsgrad,
-    bool& innerIterConverged
+    Teuchos::RCP<Epetra_MultiVector> constraintsgrad
 )
 {
-  if (inner_iter_ == 0)
-  {
-    if (constraints == NULL or constraintsgrad == Teuchos::null)
-      dserror("constraints and its gradients must be given in new outer iteration");
+  InitIter(objective,objectivegrad,constraints,constraintsgrad);
 
-    constr_ = constraints;
-    *constr_deriv_ = *constraintsgrad;
+  InitSubSolve();
 
-    obj_ = objective;
-    *obj_deriv_ = *objectivegrad;
+  SubSolve();
 
-  }
+  Update();
+
+  return x_mma_; // current solution
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void OPTI::GCMMA::InitIter(
+    double& objective,
+    Teuchos::RCP<Epetra_Vector> objectivegrad,
+    double* constraints,
+    Teuchos::RCP<Epetra_MultiVector> constraintsgrad
+)
+{
+  // currently gradients are always computed
+  if ((inner_iter_==0) and // new outer_iter
+      (objectivegrad == Teuchos::null or constraintsgrad == Teuchos::null))
+    dserror("gradients must be given in new outer iteration");
 
   // initialization of old values
   if (outer_iter_ == 0)
@@ -185,101 +195,93 @@ void OPTI::GCMMA::Iterate(
 
 
 
-    double* constr_mma = constr_mma_;
-    double* constr = constr_;
+    cout << "here outer iter 0 - init" << endl;
+    *x_old_ = *x_;
+    *x_old2_ = *x_;
+    *x_mma_ = *x_;
+  }
 
+
+
+//  // TODO testing example -> remove
+//  objective = 0.0;
+//  constraints[0] = 0.0;
+//
+//  int l = x_mma_->Map().NumMyElements()/3;
+//
+//  double alpha;
+//  for (int i=0;i<l;i++)
+//  {
+//    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+//
+//    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
+//
+//    if (inner_iter_==0)
+//    {
+//      (*objectivegrad)[i] = cos(alpha);
+//      (*objectivegrad)[i+l] = sin(alpha);
+//      (*objectivegrad)[i+2*l] = -0.1;
+//    }
+//
+//    constraints[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
+//
+//    if (inner_iter_==0)
+//    {
+//      (*constraintsgrad)[0][i] = 2*(*x_mma_)[i];
+//      (*constraintsgrad)[0][i+l] = 2*(*x_mma_)[i+l];
+//      (*constraintsgrad)[0][i+2*l] = 2*(*x_mma_)[i+2*l];
+//    }
+//  }
+//
+//  constraints[0] -= l + 1.0e-5;
+
+
+
+  // update counters
+  inner_iter_++;
+  total_iter_++;
+
+  if (inner_iter_==1) // new outer iter
+  {
+    // update counters
+    outer_iter_++;
+cout << "here outer iter " << outer_iter_ << endl;
+
+    // reset constraints and objective values
+    double* constraint = constraints;
+    double* constr = constr_;
     for (int i=0;i<m_;i++)
     {
-      *constr_mma = *constr;
+      *constr = *constraint;
 
       constr++;
-      constr_mma++;
+      constraint++;
     }
+    *constr_deriv_ = *constraintsgrad;
 
-    obj_mma_ = obj_;
+    obj_ = objective;
+    *obj_deriv_ = *objectivegrad;
+    cout << "new obj is " << obj_ << endl;
+    cout << "new obj deriv is " << *obj_deriv_ << endl;
+    cout << "new constr are " << constr_[0] << endl;
+    cout << "new constr deriv are " << *constr_deriv_ << endl;
 
-    x_old_ = x_;
-    x_old2_ = x_;
-    x_mma_ = x_;
-  }
+    // reset optimization variables
+    *x_old2_ = *x_old_;
+    *x_old_ = *x_;
+    *x_ = *x_mma_;
 
+    Asymptotes();
 
-
-  // TODO testing example -> remove
-  obj_ = 0.0;
-  constr_[0] = 0.0;
-
-  int l = x_->Map().NumMyElements()/3;
-  double alpha;
-  for (int i=0;i<l;i++)
-  {
-    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
-
-    obj_ += cos(alpha)*(*x_)[i] + sin(alpha)*(*x_)[i+l] - 0.1*(*x_)[i+2*l];
-
-    (*obj_deriv_)[i] = cos(alpha);
-    (*obj_deriv_)[i+l] = sin(alpha);
-    (*obj_deriv_)[i+2*l] = -0.1;
-
-    constr_[0] += (*x_)[i]*(*x_)[i] + (*x_)[i+l]*(*x_)[i+l] + (*x_)[i+2*l]*(*x_)[i+2*l];
-
-    (*constr_deriv_)[0][i] = 2*(*x_)[i];
-    (*constr_deriv_)[0][i+l] = 2*(*x_)[i+l];
-    (*constr_deriv_)[0][i+2*l] = 2*(*x_)[i+2*l];
-  }
-
-  constr_[0] -= l + 1.0e-5;
-
-
-  if (inner_iter_==0) // new outer iteration
-  {
-    outer_iter_++;
-    inner_iter_++;
-
-    PrepareOuterIter();
+    InitRho();
   }
   else
   {
-    inner_iter_++;
-
-    PrepareInnerIter();
+cout << "here inner iter " << inner_iter_ << endl;
+cout << "new obj is " << objective << endl;
+cout << "new constr are " << constraints[0] << endl;
+    UpdateRho(objective,constraints);
   }
-return; // TODO remove
-  InitSubSolve();
-
-  SubSolve();
-//  %
-//  % Solving the subproblem by a primal-dual Newton method
-//  [xmma,ymma,zmma,lam,xsi,eta,mu,zet,s] = ...
-//  subsolv(m,n,epsimin,low,upp,alfa,beta,p0,q0,P,Q,a0,a,b,c,d);
-//  %
-//  % Calculations of f0app and fapp.
-//  ux1 = upp-xmma;
-//  xl1 = xmma-low;
-//  uxinv = eeen./ux1;
-//  xlinv = eeen./xl1;
-//  f0app = r0 + p0'*uxinv + q0'*xlinv;
-//  fapp  =  r +   P*uxinv +   Q*xlinv;
-
-  Update(innerIterConverged);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void OPTI::GCMMA::PrepareOuterIter()
-{
-  Asymptotes();
-
-  UpdateRho();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void OPTI::GCMMA::PrepareInnerIter()
-{
-  UpdateRho();
 }
 
 
@@ -321,8 +323,8 @@ void OPTI::GCMMA::Asymptotes()
       *asy_min = max(*asy_min,*xval-10**xdiff);
       *asy_min = min(*asy_min,*xval-0.01**xdiff);
 
-      *asy_max = min(*asy_max,*xval+0.01**xdiff);
-      *asy_max = max(*asy_max,*xval+10**xdiff);
+      *asy_max = min(*asy_max,*xval+10**xdiff);
+      *asy_max = max(*asy_max,*xval+0.01**xdiff);
 
       xval++;
       xold++;
@@ -332,184 +334,243 @@ void OPTI::GCMMA::Asymptotes()
       xdiff++;
     }
   }
-//  cout << "low is " << *asymp_min_ << endl;
-//  cout << "upp is " << *asymp_max_ << endl;
+  cout << "low is " << *asymp_min_ << endl;
+  cout << "upp is " << *asymp_max_ << endl;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void OPTI::GCMMA::UpdateRho()
+void OPTI::GCMMA::InitRho()
 {
-  if (inner_iter_==1)
+  // set rho of objective function
+  double rho0loc = 0.0;
+  double* obj_deriv = obj_deriv_->Values();
+  double* xdiff = x_diff_->Values();
+
+  for (int i=0;i<n_;i++)
   {
-    // set rho of objective function
-    double rho0loc = 0.0;
-    double* obj_deriv = obj_deriv_->Values();
-    double* xdiff = x_diff_->Values();
+    rho0loc += abs(*obj_deriv)**xdiff;
+
+    obj_deriv++;
+    xdiff++;
+  }
+
+  // communicate values
+  discret_->Comm().SumAll(&rho0loc,&rho0_,1);
+
+  // apply minimal value
+  rho0_ = max(rho0min_,rho0_/(10*n_));
+
+
+  // set rho of constraints
+  double* rholoc = new double[m_];
+  double* rho = rholoc;
+
+  for (int j=0;j<m_;j++)
+  {
+    *rho = 0.0;
+
+    Epetra_Vector constr_der(View,*constr_deriv_,j);
+    double* constr_deriv = constr_der.Values();
+    xdiff = x_diff_->Values();
 
     for (int i=0;i<n_;i++)
     {
-      rho0loc += abs(*obj_deriv)**xdiff;
+      *rho += abs(*constr_deriv)**xdiff;
 
-      obj_deriv++;
+      constr_deriv++;
       xdiff++;
     }
-
-    // communicate values
-    discret_->Comm().SumAll(&rho0loc,&rho0_,1);
-
-    // apply minimal value
-    rho0_ = max(rho0min_,rho0_/(10*n_));
-
-
-    // set rho of constraints
-    double* rholoc = new double[m_];
-    double* rho = rholoc;
-
-    for (int j=0;j<m_;j++)
-    {
-      *rho = 0.0;
-
-      Epetra_Vector constr_der(View,*constr_deriv_,j);
-      double* constr_deriv = constr_der.Values();
-      xdiff = x_diff_->Values();
-
-      for (int i=0;i<n_;i++)
-      {
-        *rho += abs(*constr_deriv)**xdiff;
-
-        constr_deriv++;
-        xdiff++;
-      }
-      rho++;
-    }
-
-    // communicate values
-    discret_->Comm().SumAll(rholoc,rho_,m_);
-
-    // apply minimal value
-    rho = rho_;
-    double* rhomin = rhomin_;
-
-    for (int j=0;j<m_;j++)
-    {
-      *rho = max(*rhomin,*rho/(10*n_));
-
-      rho++;
-      rhomin++;
-    }
+    rho++;
   }
-  else
+
+  // communicate values
+  discret_->Comm().SumAll(rholoc,rho_,m_);
+
+  // apply minimal value
+  rho = rho_;
+  double* rhomin = rhomin_;
+
+  for (int j=0;j<m_;j++)
   {
-    double fac = 0.0;
+    *rho = max(*rhomin,*rho/(10*n_));
 
-    double* x = x_->Values();
-    double* xmma = x_mma_->Values();
-    double* xmax = x_max_->Values();
-    double* xmin = x_min_->Values();
-    double* xdiff = x_diff_->Values();
-    double* asy_min = asymp_min_->Values();
-    double* asy_max = asymp_max_->Values();
-    for (int i=0;i<n_;i++)
-    {
-      fac += (*xmma-*x)/(*asy_max-*xmma) * (*xmma-*x)/(*xmma-*asy_min) * (*xmax-*xmin)/max(x_diff_min_,*xdiff);
-
-      x++;
-      xmax++;
-      xmin++;
-    }
-    fac = max(fac,facmin_);
-
-    if (obj_ > obj_appr_ + 0.5*tol_sub_min_)
-    {
-      rho0_ = min(1.1*(rho0_ + (obj_-obj_appr_)/fac),10*rho0_);
-    }
-
-    double* constr = constr_;
-    double* constr_appr = constr_appr_;
-    double* rho = rho_;
-
-    for (int i=0;i<m_;i++)
-    {
-      if (*constr > *constr_appr + 0.5*tol_sub_min_)
-      {
-        *rho = min(1.1*((*rho) + (*constr-*constr_appr)/fac),10*(*rho));
-      }
-
-      constr++;
-      constr_appr++;
-      rho++;
-    }
+    rho++;
+    rhomin++;
   }
+  cout << "rho0 is " << rho0_ << endl;
+  cout << "rho is " << rho_[0] << endl;
 }
 
 
-bool OPTI::GCMMA::Converged()
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void OPTI::GCMMA::UpdateRho(
+    double& objective,
+    double* constraints
+)
 {
-//  /*
-//   * Usually it notfinished is initially set true and it is checked if
-//   * convergence is reached
-//   *
-//   * Since here in optimization usually only the objective function is checked
-//   * and the density increment usually not, it is done here the other way:
-//   * setting notfinished false and checking whether convergence is not reached
-//   *
-//   * winklmaier 12/11
-//   */
-//  iter_++;
-//  if (max_iter_<1) dserror("maximal number of optimization steps smaller than 1");
+  double fac = 0.0;
+
+  double* x = x_->Values();
+  double* xmma = x_mma_->Values();
+  double* xdiff = x_diff_->Values();
+  double* asy_min = asymp_min_->Values();
+  double* asy_max = asymp_max_->Values();
+
+  for (int i=0;i<n_;i++)
+  {
+    fac += (*xmma-*x)/(*asy_max-*xmma) * (*xmma-*x)/(*xmma-*asy_min) * (*asy_max-*asy_min)/max(x_diff_min_,*xdiff);
+
+    x++;
+    xmma++;
+    asy_max++;
+    asy_min++;
+    xdiff++;
+  }
+  fac = max(fac,facmin_);
+
+  if (objective > obj_appr_ + 0.5*tol_sub_min_)
+  {
+    rho0_ = min(1.1*(rho0_ + (objective-obj_appr_)/fac),10*rho0_);
+  }
+
+  double* constr = constraints;
+  double* constr_appr = constr_appr_;
+  double* rho = rho_;
+
+  for (int i=0;i<m_;i++)
+  {
+    if (*constr > *constr_appr + 0.5*tol_sub_min_)
+    {
+      *rho = min(1.1*((*rho) + (*constr-*constr_appr)/fac),10*(*rho));
+    }
+
+    constr++;
+    constr_appr++;
+    rho++;
+  }
+  cout << "rho0 is " << rho0_ << endl;
+  cout << "rho is " << rho_[0] << endl;
+}
+
+
+bool OPTI::GCMMA::Converged(
+    double& objective,
+    Teuchos::RCP<Epetra_Vector> objectivegrad,
+    double* constraints,
+    Teuchos::RCP<Epetra_MultiVector> constraintsgrad
+)
+{
+//  // TODO testing example -> remove
+//  objective = 0.0;
+//  constraints[0] = 0.0;
 //
-//  bool finished = true;
+//  int l = x_mma_->Map().NumMyElements()/3;
 //
-//  if (iter_==1)
+//  double alpha;
+//  for (int i=0;i<l;i++)
 //  {
-//    finished = false;
-//    // TODO initial output
+//    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+//
+//    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
+//    constraints[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
 //  }
-//  else
+//
+//  constraints[0] -= l + 1.0e-5;
+//
+//  if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
 //  {
-//    if (iter_>max_iter_)
+//    for (int i=0;i<l;i++)
 //    {
-//      finished = true;
-//      // TODO output
-//    }
-//    else // TODO check convergence also if maxiter reached?
-//    {
-//      if ((conv_check_type_==INPAR::TOPOPT::inc) or
-//          (conv_check_type_==INPAR::TOPOPT::inc_and_res))
-//      {
-//        Epetra_Vector inc(*optimizer_->RowMap(),false);
-////        inc.Update(1.0,*optimizer_->DensityIp(),-1.0,*optimizer_->DensityI(),0.0);
+//      alpha = M_PI*(3*(i+1)-2*l)/(6*l);
 //
-//        double incvelnorm;
-//        inc.Norm2(&incvelnorm);
+//      (*objectivegrad)[i] = cos(alpha);
+//      (*objectivegrad)[i+l] = sin(alpha);
+//      (*objectivegrad)[i+2*l] = -0.1;
 //
-//        if (incvelnorm>inc_tol_)
-//          finished = false;
-//      }
-//
-//      if ((conv_check_type_==INPAR::TOPOPT::res) or
-//          (conv_check_type_==INPAR::TOPOPT::inc_and_res))
-//      {
-//        if (fabs(objective_ip_-objective_i_)>res_tol_)
-//          finished = false;
-//      }
-//      // TODO output
+//      (*constraintsgrad)[0][i] = 2*(*x_mma_)[i];
+//      (*constraintsgrad)[0][i+l] = 2*(*x_mma_)[i+l];
+//      (*constraintsgrad)[0][i+2*l] = 2*(*x_mma_)[i+2*l];
 //    }
 //  }
-  // no check in first iteration
-  if (outer_iter_==0)
-    return false;
+
+
+
+
+//TODO test if totaliter counter works well  cout << "total iter here is " << total_iter_ << endl;
+  if (total_iter_==max_total_iter_)
+  {
+    cout << "WARNING: GCMMA optimization algorithm did not converge" << endl;
+    return true;
+  }
+
+
+  bool converged = false;
+
+  if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
+  {
+    inner_iter_ = 0;
+
+    if (KKTCond(objective,objectivegrad,constraints,constraintsgrad)==false)
+      converged = false;
+    else
+      converged = true;
+  }
   else
-    return true; // TODO remove
+    converged = false;
 
-  // check only new outer iterations
-  if (inner_iter_!=0)
-    return true; // TODO this shall be false
+  // TODO check maybe also increment
 
+  return converged;
+}
+
+
+void OPTI::GCMMA::FinishIteration(
+    double& objective,
+    double* constraints,
+    bool& doGradient
+)
+{
+//  // TODO testing example -> remove
+//  objective = 0.0;
+//  constraints[0] = 0.0;
+//
+//  int l = x_mma_->Map().NumMyElements()/3;
+//
+//  double alpha;
+//  for (int i=0;i<l;i++)
+//  {
+//    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+//
+//    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
+//    constraints[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
+//  }
+//
+//  constraints[0] -= l + 1.0e-5;
+
+
+
+  if (outer_iter_==0)
+    doGradient = true;
+
+  if (InnerConvergence(objective,constraints))
+    doGradient = true;
+  else
+    doGradient = false;
+}
+
+
+bool OPTI::GCMMA::KKTCond(
+    double& objective,
+    Teuchos::RCP<Epetra_Vector> objectivegrad,
+    double* constraints,
+    Teuchos::RCP<Epetra_MultiVector> constraintsgrad
+)
+{
   // compute residual for original variables x
-  Teuchos::RCP<Epetra_Vector> resX = rcp(new Epetra_Vector(*obj_deriv_));
+  Teuchos::RCP<Epetra_Vector> resX = rcp(new Epetra_Vector(*objectivegrad));
 
   resX->Update(-1.0,*xsi_,1.0);
   resX->Update(+1.0,*eta_,1.0);
@@ -518,13 +579,12 @@ bool OPTI::GCMMA::Converged()
 
   for (int i=0;i<m_;i++)
   {
-    Epetra_Vector constr_deriv(View,*constr_deriv_,i);
+    Epetra_Vector constr_deriv(View,*constraintsgrad,i);
 
     resX->Update(*lam,constr_deriv,1.0);
 
     lam++;
   }
-
 
 
   double* resy = new double[m_];
@@ -547,6 +607,7 @@ bool OPTI::GCMMA::Converged()
     lam++;
   }
 
+
   double resz = a0_ - zet_;
   double* a = a_;
   lam = lam_;
@@ -560,17 +621,19 @@ bool OPTI::GCMMA::Converged()
   }
 
 
-  double* relam = new double[m_];
-  double* constr = constr_;
+  double* reslam = new double[m_];
+  double* reslamptr = reslam;
+
+  double* constr = constraints;
   a = a_;
   y = y_mma_;
   double* s = s_;
 
   for (int i=0;i<m_;i++)
   {
-    *relam = *constr - z_mma_**a - *y + *s;
+    *reslamptr = *constr - z_mma_**a - *y + *s;
 
-    relam++;
+    reslamptr++;
     constr++;
     a++;
     y++;
@@ -578,63 +641,71 @@ bool OPTI::GCMMA::Converged()
   }
 
 
-  double* rexsi;
-  double* reeta;
+  Epetra_Vector resXsi(x_->Map());
+  Epetra_Vector resEta(x_->Map());
+
+  double* resxsi = resXsi.Values();
+  double* reseta = resEta.Values();
   double* xsi = xsi_->Values();
   double* eta = eta_->Values();
-  double* x = x_->Values();
+  double* x = x_mma_->Values();
   double* xmin = x_min_->Values();
   double* xmax = x_max_->Values();
 
 
   for (int i=0;i<n_;i++)
   {
-    *rexsi = *xsi*(*x-*xmin);
-    *reeta = *eta*(*xmax-*x);
+    *resxsi = *xsi*(*x-*xmin);
+    *reseta = *eta*(*xmax-*x);
 
-    rexsi++;
-    reeta++;
+    resxsi++;
+    reseta++;
     xsi++;
+    eta++;
     x++;
     xmax++;
     xmin++;
   }
 
 
-  double* remu;
+  double* resmu = new double[m_];
+  double* resmuptr = resmu;
   mu = mu_;
   y = y_mma_;
 
   for (int i=0;i<m_;i++)
   {
-    *remu = *mu**y;
+    *resmuptr = *mu**y;
 
-    remu++;
+    resmuptr++;
     mu++;
     y++;
-    s++;
   }
 
 
   double reszet = zet_*z_mma_;
 
 
-  double* res;
+  double* res = new double[m_];
+  double* resptr = res;
   s = s_;
   lam = lam_;
 
   for (int i=0;i<m_;i++)
   {
-    *res = *lam**s;
+    *resptr = *lam**s;
 
-    res++;
+    resptr++;
     s++;
     lam++;
   }
 
-  double resnorm;
-  resX->Norm2(&resnorm);
-  resnorm += resnorm*resnorm + resz*resz;
+
+  double resnorm = 0.0;
+  double value = 0.0;
+//  residu2 = [rezet]';
+  resX->Norm2(&value);
+  resnorm += value*value;
 
   resyptr = resy;
   for (int i=0;i<m_;i++)
@@ -643,8 +714,31 @@ bool OPTI::GCMMA::Converged()
     resyptr++;
   }
 
-  resnorm = sqrt(resnorm);
+  resnorm += resz*resz;
 
+  reslamptr = reslam;
+  resmuptr = resmu;
+  resptr = res;
+  for (int i=0;i<m_;i++)
+  {
+    resnorm += *reslamptr**reslamptr + *resmuptr**resmuptr + *resptr**resptr;
+
+    reslamptr++;
+    resmuptr++;
+    resptr++;
+  }
+
+  resXsi.Norm2(&value);
+  resnorm += value*value;
+
+  resEta.Norm2(&value);
+  resnorm += value*value;
+
+  resnorm += reszet*reszet;
+
+
+  resnorm = sqrt(resnorm);
+  cout << "resnorm is " << resnorm << endl;
   if (resnorm<tol_)
     return true;
 
@@ -652,18 +746,34 @@ bool OPTI::GCMMA::Converged()
 }
 
 
-bool OPTI::GCMMA::InnerConvergence()
+bool OPTI::GCMMA::InnerConvergence(
+    double& objective,
+    double* constraints
+)
 {
-  if (obj_appr_ + tol_sub_min_ < obj_)
+//TODO check if inner iter counter works well  cout << "inner iter here is " << inner_iter_ << endl;
+  if (outer_iter_==0)
+    return true;
+
+  if (inner_iter_==max_inner_iter_)
+  {
+    cout << "WARNING: inner GCMMA optimization loop did not converge" << endl;
+    return true;
+  }
+
+  if (obj_appr_ + tol_sub_min_ < objective)
     return false;
 
   double* constr_appr = constr_appr_;
-  double* constr = constr_;
+  double* constr = constraints;
 
   for (int i=0;i<m_;i++)
   {
     if (*constr_appr + tol_sub_min_ < *constr)
       return false;
+
+    constr_appr++;
+    constr++;
   }
 
   return true;
@@ -722,6 +832,9 @@ void OPTI::GCMMA::InitSubSolve()
     ux2ptr++;
     xl1ptr++;
     xl2ptr++;
+    x++;
+    asymp_max++;
+    asymp_min++;
   }
 
   double* p0 = p0_->Values();
@@ -766,7 +879,7 @@ void OPTI::GCMMA::InitSubSolve()
   }
 
 
-  double* r = r_;
+  double* b = b_;
   double* constr = constr_;
 
   double* rho = rho_;
@@ -782,7 +895,7 @@ void OPTI::GCMMA::InitSubSolve()
 
     double pq; // tmp variable
 
-    *r = *constr;
+    *b = *constr;
 
     xdiff = x_diff_->Values();
 
@@ -802,7 +915,7 @@ void OPTI::GCMMA::InitSubSolve()
       *p = (*p + fac*pq + *rho*xdiffinv)**ux2ptr;
       *q = (*q + fac*pq + *rho*xdiffinv)**xl2ptr;
 
-      *r -= *p/(*ux1ptr) + *q/(*xl1ptr);
+      *b -= *p/(*ux1ptr) + *q/(*xl1ptr);
 
       p++;
       q++;
@@ -814,19 +927,20 @@ void OPTI::GCMMA::InitSubSolve()
       xl2ptr++;
     }
 
-    *r = -*r;
+    *b = -*b;
 
-    r++;
+    b++;
     constr++;
     rho++;
   }
 
-//  cout << "m is " << m_ << ", n is " << n_ << ", epsimin is " << tol_sub_ << endl;
+//  cout << "init subsolve: " << endl;
+//  cout << "m is " << m_ << ", n is " << n_ << ", epsimin is " << tol_sub_min_ << endl;
 //  cout << "low asy is " << *asymp_min_ << "upp asy is " << *asymp_max_ << endl;
 //  cout << "alpha is " << *alpha_ << "beta is " << *beta_ << endl;
-//  cout << "p0 is " << p0_ << "q0 is " << q0_ << endl;
-//  cout << "p is " << P_ << "q is " << Q_ << endl;
-//  cout << "a0 is " << a0_ << ", a is " << a_[0] << ", b is " << r[0] << ", c is " << c_[0] << ", d is " << d_[0] << endl;
+//  cout << "p0 is " << *p0_ << "q0 is " << *q0_ << endl;
+//  cout << "p is " << *P_ << "q is " << *Q_ << endl;
+//  cout << "a0 is " << a0_ << ", a is " << a_[0] << ", b is " << b_[0] << ", c is " << c_[0] << ", d is " << d_[0] << endl;
 }
 
 
@@ -846,6 +960,7 @@ void OPTI::GCMMA::SubSolve()
     y++;
     lam++;
   }
+
 
   z_mma_ = 1.0;
 
@@ -908,7 +1023,7 @@ void OPTI::GCMMA::SubSolve()
     double* uxinv1ptr = uxinv1.Values();
     double* xlinv1ptr = xlinv1.Values();
 
-    double* x = x_->Values();
+    double* x = x_mma_->Values();
     double* asymp_max = asymp_max_->Values();
     double* asymp_min = asymp_min_->Values();
 
@@ -929,8 +1044,8 @@ void OPTI::GCMMA::SubSolve()
       *xlinv1ptr = 1.0/(*xl1ptr);
 
 
-      double plam = (*p0_)[n_];
-      double qlam = (*q0_)[n_];
+      double plam = (*p0_)[i];
+      double qlam = (*q0_)[i];
 
       for (int j=0;j<m_;j++)
       {
@@ -939,7 +1054,6 @@ void OPTI::GCMMA::SubSolve()
       }
 
       double dpsidx = plam/(*ux2ptr) - qlam/(*xl2ptr);
-
       *resxptr = dpsidx - *xsi + *eta;
 
       ux1ptr++;
@@ -949,6 +1063,11 @@ void OPTI::GCMMA::SubSolve()
       uxinv1ptr++;
       xlinv1ptr++;
       resxptr++;
+      x++;
+      asymp_max++;
+      asymp_min++;
+      xsi++;
+      eta++;
     }
 
 
@@ -971,7 +1090,6 @@ void OPTI::GCMMA::SubSolve()
     }
 
     double resz = a0_ - zet_;
-
     double* a = a_;
     lam = lam_;
 
@@ -998,11 +1116,11 @@ void OPTI::GCMMA::SubSolve()
     a = a_;
     y = y_mma_;
     double* s = s_;
-    double* r = r_;
+    double* b = b_;
 
     for (int j=0;j<m_;j++)
     {
-      *reslamptr = *gvec1ptr + *gvec2ptr - *a*z_mma_ - *y + *s - *r;
+      *reslamptr = *gvec1ptr + *gvec2ptr - *a*z_mma_ - *y + *s - *b;
 
       reslamptr++;
       gvec1ptr++;
@@ -1010,7 +1128,7 @@ void OPTI::GCMMA::SubSolve()
       a++;
       y++;
       s++;
-      r++;
+      b++;
     }
 
 
@@ -1022,7 +1140,7 @@ void OPTI::GCMMA::SubSolve()
 
     xsi = xsi_->Values();
     eta = eta_->Values();
-    x = x_->Values();
+    x = x_mma_->Values();
     alpha = alpha_->Values();
     beta = beta_->Values();
 
@@ -1032,6 +1150,7 @@ void OPTI::GCMMA::SubSolve()
       *resetaptr = *eta*(*beta-*x) - tol_sub;
 
       resxsiptr++;
+      resetaptr++;
       xsi++;
       eta++;
       x++;
@@ -1126,7 +1245,6 @@ void OPTI::GCMMA::SubSolve()
 
     resnorm = sqrt(resnorm);
 
-
     int inner_iter = 0;
     int max_sub_inner_iter_ = 200;
 
@@ -1155,7 +1273,7 @@ void OPTI::GCMMA::SubSolve()
       double* xlinv1ptr = xlinv1.Values();
       double* xlinv2ptr = xlinv2.Values();
 
-      double* x = x_->Values();
+      double* x = x_mma_->Values();
       double* asymp_max = asymp_max_->Values();
       double* asymp_min = asymp_min_->Values();
 
@@ -1164,6 +1282,9 @@ void OPTI::GCMMA::SubSolve()
 
       xsi = xsi_->Values();
       eta = eta_->Values();
+
+      alpha = alpha_->Values();
+      beta = beta_->Values();
 
       for (int i=0;i<n_;i++)
       {
@@ -1180,8 +1301,8 @@ void OPTI::GCMMA::SubSolve()
         *xlinv2ptr = 1.0/(*xl1ptr**xl1ptr);
 
 
-        double plam = (*p0_)[n_];
-        double qlam = (*q0_)[n_];
+        double plam = (*p0_)[i];
+        double qlam = (*q0_)[i];
 
         for (int j=0;j<m_;j++)
         {
@@ -1206,6 +1327,13 @@ void OPTI::GCMMA::SubSolve()
         xlinv2ptr++;
         delxptr++;
         diagxptr++;
+        asymp_max++;
+        asymp_min++;
+        x++;
+        alpha++;
+        beta++;
+        xsi++;
+        eta++;
       }
 
 
@@ -1281,19 +1409,19 @@ void OPTI::GCMMA::SubSolve()
       gvec2ptr = gvec2;
       a = a_;
       y = y_mma_;
-      r = r_;
+      b = b_;
       lam = lam_;
 
       for (int i=0;i<m_;i++)
       {
-        *dellamptr = *gvec1ptr + *gvec2ptr - *a*z_mma_ - *y - *r + tol_sub/(*lam);
+        *dellamptr = *gvec1ptr + *gvec2ptr - *a*z_mma_ - *y - *b + tol_sub/(*lam);
 
         dellamptr++;
         gvec1ptr++;
         gvec2ptr++;
         a++;
         y++;
-        r++;
+        b++;
         lam++;
       }
 
@@ -1332,7 +1460,6 @@ void OPTI::GCMMA::SubSolve()
         lam++;
         diagyptr++;
       }
-
 
 
       double* dlam = new double[m_];
@@ -1376,6 +1503,7 @@ void OPTI::GCMMA::SubSolve()
           diagyptr++;
         }
 
+
         Epetra_SerialDenseVector bb(m_+1);
         double* bbval = bb.A();
         blamptr = blam;
@@ -1388,17 +1516,21 @@ void OPTI::GCMMA::SubSolve()
         }
         *bbval = delz;
 
+
         Epetra_SerialDenseMatrix AA(m_+1,m_+1);
         double* aa = AA.A();
         a = a_;
+        diaglamyiptr = diaglamyi;
+
         for (int icol=0;icol<m_;icol++)
         {
+//          Alam = spdiags(diaglamyi,0,m,m) + GG*spdiags(diagxinv,0,n,n)*GG';
           Epetra_Vector colGG(View,GG,icol);
           double* colgg;
 
           for (int irow=0;irow<m_;irow++)
           {
-            colgg = colGG.Values();
+            colgg = colGG.Values(); // reset here every loop
 
             Epetra_Vector rowGG(View,GG,irow);
             double* rowgg = rowGG.Values();
@@ -1421,12 +1553,13 @@ void OPTI::GCMMA::SubSolve()
               *aa += *diaglamyiptr;
 
             aa++;
-            diaglamyiptr++;
           }
+
           *aa = *a;
 
           a++;
           aa++;
+          diaglamyiptr++;
         }
 
         a = a_;
@@ -1440,6 +1573,7 @@ void OPTI::GCMMA::SubSolve()
 
         *aa = -zet_/z_mma_;
 
+
         Epetra_SerialDenseVector solut(m_+1);
 
         Epetra_SerialDenseSolver solver;
@@ -1451,7 +1585,7 @@ void OPTI::GCMMA::SubSolve()
         double* dlamptr = dlam;
         double* sol = solut.A();
 
-        for (int i=0;i<m_;i++)
+        for (int i=0;i<m_;i++) // first m entries of sol
         {
           *dlamptr = *sol;
 
@@ -1459,9 +1593,11 @@ void OPTI::GCMMA::SubSolve()
           sol++;
         }
 
-        dz = *dlamptr;
+
+        dz = *sol; // last entry (=m+1) of sol
 
 
+        dlamptr = dlam;
         for (int i=0;i<m_;i++)
         {
           Epetra_Vector gg(View,GG,i);
@@ -1513,11 +1649,11 @@ void OPTI::GCMMA::SubSolve()
       xsi = xsi_->Values();
       eta = eta_->Values();
       double* dxptr = dx.Values();
-      x = x_->Values();
+      x = x_mma_->Values();
       alpha = alpha_->Values();
       beta = beta_->Values();
 
-      for (int i=0;i<m_;i++)
+      for (int i=0;i<n_;i++)
       {
         *dxsiptr = -*xsi + (tol_sub - *xsi**dxptr)/(*x-*alpha);
         *detaptr = -*eta + (tol_sub + *eta**dxptr)/(*beta-*x);
@@ -1553,7 +1689,7 @@ void OPTI::GCMMA::SubSolve()
       {
         *dyptr = -*delyptr/(*diagyptr) + *dlamptr/(*diagy);
         *dmuptr = -*mu + tol_sub/(*y) - (*mu**dyptr)/(*y);
-        *dsptr = -*s + tol_sub/(*lam) - (*s**dlam)/(*lam);
+        *dsptr = -*s + tol_sub/(*lam) - (*s**dlamptr)/(*lam);
 
         dyptr++;
         delyptr++;
@@ -1565,15 +1701,14 @@ void OPTI::GCMMA::SubSolve()
         dsptr++;
         s++;
         lam++;
-        dlam++;
+        dlamptr++;
       }
 
 
       double dzet = -zet_ + tol_sub/z_mma_ - zet_*dz/z_mma_;
 
 
-
-      double val = min(z_mma_/dz, zet_/dzet);
+      double val = min(dz/z_mma_, dzet/zet_);
 
       y = y_mma_;
       dyptr = dy;
@@ -1586,10 +1721,10 @@ void OPTI::GCMMA::SubSolve()
 
       for (int i=0;i<m_;i++)
       {
-        val = min(val, *y/(*dyptr));
-        val = min(val, *lam/(*dlamptr));
-        val = min(val, *mu/(*dmuptr));
-        val = min(val, *s/(*dsptr));
+        val = min(val, *dyptr/(*y));
+        val = min(val, *dlamptr/(*lam));
+        val = min(val, *dmuptr/(*mu));
+        val = min(val, *dsptr/(*s));
 
         y++;
         dyptr++;
@@ -1606,16 +1741,16 @@ void OPTI::GCMMA::SubSolve()
       eta = eta_->Values();
       detaptr = deta.Values();
       dxptr = dx.Values();
-      x = x_->Values();
+      x = x_mma_->Values();
       alpha = alpha_->Values();
       beta = beta_->Values();
 
       for (int i=0;i<n_;i++)
       {
-        val = min(val, *xsi/(*dxsiptr));
-        val = min(val, *eta/(*detaptr));
+        val = min(val, *dxsiptr/(*xsi));
+        val = min(val, *detaptr/(*eta));
         val = min(val, *dxptr/(*x-*alpha));
-        val = min(val, *dxptr/(*beta-*x));
+        val = min(val, *dxptr/(*x-*beta));
 
         xsi++;
         dxsiptr++;
@@ -1628,6 +1763,7 @@ void OPTI::GCMMA::SubSolve()
       }
 
       double fac = -1.01;
+      if (fac>-1.0) dserror("unsensible factor");
 
       // min becomes max since fac<0
       val = max(1.0,fac*val);
@@ -1638,33 +1774,89 @@ void OPTI::GCMMA::SubSolve()
       int max_it = 50;
       double resnew = 2*resnorm;
 
+
+      // save old values
+      Epetra_Vector x_mma_old(*x_mma_);
+      Epetra_Vector xsi_old(*xsi_);
+      Epetra_Vector eta_old(*eta_);
+
+      double* y_old = new double[m_];
+      double* lam_old = new double[m_];
+      double* mu_old = new double[m_];
+      double* s_old = new double[m_];
+      double z_mma_old = z_mma_;
+      double zet_old = zet_;
+
+      y = y_mma_;
+      lam = lam_;
+      mu = mu_;
+      s = s_;
+      double* yptr = y_old;
+      double* lamptr = lam_old;
+      double* muptr = mu_old;
+      double* sptr = s_old;
+
+      for (int j=0;j<m_;j++)
+      {
+        *yptr = *y;
+        *lamptr = *lam;
+        *muptr = *mu;
+        *sptr = *s;
+
+        yptr++;
+        lamptr++;
+        muptr++;
+        sptr++;
+        y++;
+        lam++;
+        mu++;
+        s++;
+      }
+
       while ((resnorm<resnew) and (it<max_it))
       {
         it++;
 
-        x_->Update(steg,dx,1.0);
-        xsi_->Update(steg,dxsi,1.0);
-        eta_->Update(steg,deta,1.0);
+        x_mma_->Update(steg,dx,1.0,x_mma_old,0.0);
+        xsi_->Update(steg,dxsi,1.0,xsi_old,0.0);
+        eta_->Update(steg,deta,1.0,eta_old,0.0);
 
         y = y_mma_;
+        yptr = y_old;
         dyptr = dy;
         lam = lam_;
+        lamptr = lam_old;
         dlamptr = dlam;
         mu = mu_;
+        muptr = mu_old;
         dmuptr = dmu;
         s = s_;
+        sptr = s_old;
         dsptr = ds;
+
         for (int i=0;i<m_;i++)
         {
-          *y = *y + steg**dyptr;
-          *lam = *lam + steg**dlamptr;
-          *mu = *mu + steg**dmuptr;
-          *s = *s + steg**dsptr;
+          *y = *yptr + steg**dyptr;
+          *lam = *lamptr + steg**dlamptr;
+          *mu = *muptr + steg**dmuptr;
+          *s = *sptr + steg**dsptr;
+
+          y++;
+          yptr++;
+          dyptr++;
+          lam++;
+          lamptr++;
+          dlamptr++;
+          mu++;
+          muptr++;
+          dmuptr++;
+          s++;
+          sptr++;
+          dsptr++;
         }
 
-        z_mma_ = z_mma_ + steg*dz;
-        zet_ = zet_ + steg*dzet;
-
+        z_mma_ = z_mma_old + steg*dz;
+        zet_ = zet_old + steg*dzet;
 
 
         double* ux1ptr = ux1.Values();
@@ -1675,7 +1867,7 @@ void OPTI::GCMMA::SubSolve()
         double* uxinv1ptr = uxinv1.Values();
         double* xlinv1ptr = xlinv1.Values();
 
-        double* x = x_->Values();
+        double* x = x_mma_->Values();
         double* asymp_max = asymp_max_->Values();
         double* asymp_min = asymp_min_->Values();
 
@@ -1716,6 +1908,11 @@ void OPTI::GCMMA::SubSolve()
           uxinv1ptr++;
           xlinv1ptr++;
           resxptr++;
+          x++;
+          asymp_max++;
+          asymp_min++;
+          xsi++;
+          eta++;
         }
 
 
@@ -1736,6 +1933,7 @@ void OPTI::GCMMA::SubSolve()
           mu++;
           lam++;
         }
+
 
         double resz = a0_ - zet_;
 
@@ -1765,11 +1963,11 @@ void OPTI::GCMMA::SubSolve()
         a = a_;
         y = y_mma_;
         double* s = s_;
-        double* r = r_;
+        double* b = b_;
 
         for (int j=0;j<m_;j++)
         {
-          *reslamptr = *gvec1ptr + *gvec2ptr - *a*z_mma_ - *y + *s - *r;
+          *reslamptr = *gvec1ptr + *gvec2ptr - *a*z_mma_ - *y + *s - *b;
 
           reslamptr++;
           gvec1ptr++;
@@ -1777,7 +1975,7 @@ void OPTI::GCMMA::SubSolve()
           a++;
           y++;
           s++;
-          r++;
+          b++;
         }
 
 
@@ -1789,7 +1987,7 @@ void OPTI::GCMMA::SubSolve()
 
         xsi = xsi_->Values();
         eta = eta_->Values();
-        x = x_->Values();
+        x = x_mma_->Values();
         alpha = alpha_->Values();
         beta = beta_->Values();
 
@@ -1799,6 +1997,7 @@ void OPTI::GCMMA::SubSolve()
           *resetaptr = *eta*(*beta-*x) - tol_sub;
 
           resxsiptr++;
+          resetaptr++;
           xsi++;
           eta++;
           x++;
@@ -1891,7 +2090,6 @@ void OPTI::GCMMA::SubSolve()
 
 
         resnew = sqrt(resnew);
-
         steg = steg/2.0;
 
         if (it==max_it)
@@ -1913,20 +2111,85 @@ void OPTI::GCMMA::SubSolve()
     else
       tol_reached = true;
   }
+  cout << "after subsolv:" << endl;
+  cout << "x is " << *x_mma_ << endl;
+//  cout << "y is " << y_mma_[0] << ", z is " << z_mma_ << ", lam is " << lam_[0] << endl;
+//  cout << "xsi is " << *xsi_ << endl;
+//  cout << "eta is " << *eta_ << endl;
+//  cout << "mu is " << mu_[0] << ", zet is " << zet_ << ", s is " << s_[0] << endl;
 }
 
 
 void OPTI::GCMMA::Update(
-    bool& innerIterConverged
 )
 {
-  innerIterConverged = InnerConvergence();
+  // Update data
 
-  if (innerIterConverged)
+  // helper vectors
+  Epetra_Vector uxinv(x_->Map());
+  Epetra_Vector xlinv(x_->Map());
+
+  double* asymp_max = asymp_max_->Values();
+  double* asymp_min = asymp_min_->Values();
+  double* x = x_mma_->Values();
+
+  double* uxinvptr = uxinv.Values();
+  double* xlinvptr = xlinv.Values();
+
+
+  for (int i=0;i<n_;i++)
   {
-    inner_iter_ = 0;
+    *uxinvptr = 1.0/(*asymp_max-*x);
+    *xlinvptr = 1.0/(*x-*asymp_min);
+
+    asymp_max++;
+    asymp_min++;
+    x++;
+    uxinvptr++;
+    xlinvptr++;
   }
 
+  // set new approximation of objective value
+  double value = 0.0;
+
+  uxinv.Dot(*p0_,&value);
+  obj_appr_ = r0_ + value;
+
+  xlinv.Dot(*q0_,&value);
+  obj_appr_ += value;
+
+  // set new approximation of constraints
+  double* values = new double[m_];
+
+  double* valptr = values;
+  uxinv.Dot(*P_,valptr);
+
+  double* constrptr = constr_appr_;
+  double* b = b_;
+  valptr = values;
+
+  for (int i=0;i<m_;i++)
+  {
+    *constrptr = -*b + *valptr;
+
+    constrptr++;
+    b++;
+    valptr++;
+  }
+
+  valptr = values;
+  xlinv.Dot(*Q_,valptr);
+
+  constrptr = constr_appr_;
+  valptr = values;
+
+  for (int i=0;i<m_;i++)
+  {
+    *constrptr += *valptr;
+
+    constrptr++;
+    valptr++;
+  }
 }
 
 

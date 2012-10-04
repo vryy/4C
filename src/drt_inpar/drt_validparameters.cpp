@@ -3767,6 +3767,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("TESTCASE","test_no","test case for adjoint problem",
       tuple<std::string>(
           "test_no",
+          "test_primal",
           "test_stat_const_vel_lin_pres",
           "test_stat_lin_vel_quad_pres",
           "test_stat_quad_vel_lin_pres",
@@ -3776,6 +3777,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "test_instat_primal_and_dual"),
           tuple<int>(
               INPAR::TOPOPT::adjointtest_no,
+              INPAR::TOPOPT::adjointtest_primal,
               INPAR::TOPOPT::adjointtest_stat_const_vel_lin_pres,
               INPAR::TOPOPT::adjointtest_stat_lin_vel_quad_pres,
               INPAR::TOPOPT::adjointtest_stat_quad_vel_lin_pres,

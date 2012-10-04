@@ -64,6 +64,7 @@ namespace INPAR
     enum AdjointTestCases
     {
       adjointtest_no,
+      adjointtest_primal,
       adjointtest_stat_const_vel_lin_pres,
       adjointtest_stat_lin_vel_quad_pres,
       adjointtest_stat_quad_vel_lin_pres,

@@ -65,7 +65,7 @@ params_(params)
 
   optimizer_ = rcp(new OPTI::GCMMA(
       optidis_,
-      params_,
+      optimizer_params,
       dens_,
       num_constr_,
       Teuchos::null,
@@ -304,31 +304,126 @@ void TOPOPT::Optimizer::Iterate(
 {
   if (doGradient)
   {
-    optimizer_->Iterate(
+    dens_ = optimizer_->Iterate(
         obj_value_,
         obj_grad_,
         constr_,
-        constr_deriv_,
-        doGradient
+        constr_deriv_
     );
   }
   else
   {
-    optimizer_->Iterate(
+    dens_ = optimizer_->Iterate(
         obj_value_,
         Teuchos::null,
         constr_,
-        Teuchos::null,
-        doGradient
+        Teuchos::null
     );
   }
 }
 
 
 
-bool TOPOPT::Optimizer::Converged()
+void TOPOPT::Optimizer::FinishIteration(
+    bool& doGradient
+)
 {
-  return optimizer_->Converged();
+  return optimizer_->FinishIteration(
+      obj_value_,
+      constr_,
+      doGradient
+  );
+}
+
+
+
+bool TOPOPT::Optimizer::Converged(
+    bool& doGradient
+)
+{
+  bool converged = false;
+
+  if (doGradient)
+  {
+    converged = optimizer_->Converged(
+        obj_value_,
+        obj_grad_,
+        constr_,
+        constr_deriv_
+    );
+  }
+  else
+  {
+    converged = optimizer_->Converged(
+        obj_value_,
+        Teuchos::null,
+        constr_,
+        Teuchos::null
+    );
+  }
+
+//  // TODO only for test case!!!
+//  if (converged)
+//  {
+//    Epetra_Vector test(dens_->Map());
+//    if (test.GlobalLength()!=45)
+//      dserror("not this test case");
+//
+//    test[0] = -0.584868794268125;
+//    test[1] = -0.665810582990085;
+//    test[2] = -0.739457949079084;
+//    test[3] = -0.805002024284126;
+//    test[4] = -0.861727543236331;
+//    test[5] = -0.909011793980679;
+//    test[6] = -0.94633671862114;
+//    test[7] = -0.973293377288238;
+//    test[8] = -0.989586424898245;
+//    test[9] = -0.99503734866137;
+//    test[10] = -0.989586426046322;
+//    test[11] = -0.97329337974256;
+//    test[12] = -0.946336722118922;
+//    test[13] = -0.909011796891682;
+//    test[14] = -0.8617275426676;
+//    test[15] = 0.805001521663327;
+//    test[16] = 0.739457733277856;
+//    test[17] = 0.665811522790293;
+//    test[18] = 0.58486919527587;
+//    test[19] = 0.497519036502705;
+//    test[20] = 0.404717989772426;
+//    test[21] = 0.307483287334521;
+//    test[22] = 0.206879793752334;
+//    test[23] = 0.104009407613673;
+//    test[24] = 5.05353890794511e-06;
+//    test[25] = -0.104009407666688;
+//    test[26] = -0.206879876653389;
+//    test[27] = -0.307483976487677;
+//    test[28] = -0.404718392591825;
+//    test[29] = -0.497518786988378;
+//    test[30] = 0.0995034164844887;
+//    test[31] = 0.0995033250555555;
+//    test[32] = 0.0995032307514039;
+//    test[33] = 0.0995031938683105;
+//    test[34] = 0.0995032744248536;
+//    test[35] = 0.0995034164915694;
+//    test[36] = 0.0995034164987948;
+//    test[37] = 0.0995034165203259;
+//    test[38] = 0.0995034165550159;
+//    test[39] = 0.0995034166006579;
+//    test[40] = 0.0995034166204698;
+//    test[41] = 0.0995034165481689;
+//    test[42] = 0.0995034163504223;
+//    test[43] = 0.0995034161109501;
+//    test[44] = 0.0995034160006565;
+//
+//    test.Update(-1.0,*dens_,1.0);
+//    double value = 0.0;
+//    test.Norm2(&value);
+//
+//    if (value > 1.0e-14)
+//      dserror("Test failed with difference to reference solution in L2-norm: %e",value);
+//  }
+
+  return converged;
 }
 
 
