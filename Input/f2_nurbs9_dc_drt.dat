@@ -41,8 +41,8 @@ INITIALFIELD                    zero_field
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
-TDS                             time_dependent
-TRANSIENT                       yes_transient
+//TDS                             time_dependent
+//TRANSIENT                       yes_transient
 SUPG                            yes_supg
 PSPG                            yes_pspg
 VSTAB                           no_vstab
