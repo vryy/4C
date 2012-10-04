@@ -56,6 +56,8 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // Get the parameters for the ConvergenceCheck
   itmax_ = tsidyn.get<int>("ITEMAX"); // default: =1
   ittol_ = tsidyn.get<double>("CONVTOL"); // default: =1e-6
+  normtypeinc_
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
 
   // decide if one-way coupling or full coupling
   INPAR::TSI::SolutionSchemeOverFields coupling =
@@ -202,8 +204,6 @@ void TSI::Partitioned::TimeLoop()
   // decide if apply one-way coupling or full coupling
   INPAR::TSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
-  normtypeinc_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
 
   // get active nodes from structural contact simulation
   Teuchos::RCP<MORTAR::ManagerBase> cmtman = StructureField()->ContactManager();
