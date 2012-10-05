@@ -2982,7 +2982,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // Embedding Tissue
 
   Teuchos::RCP<ConditionDefinition> embeddingtissuecond =
-    Teuchos::rcp(new ConditionDefinition("DESIGN EMBEDDING TISSUE CONDITIONS",
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF EMBEDDING TISSUE CONDITIONS",
                                          "EmbeddingTissue",
                                          "Embedding Tissue",
                                          DRT::Condition::EmbeddingTissue,

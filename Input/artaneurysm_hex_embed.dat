@@ -138,7 +138,7 @@ DLINE                           0
 DSURF                           2
 E 5 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
 E 7 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
-------------------------------------------DESIGN EMBEDDING TISSUE CONDITIONS
+------------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
 DSURF                           1
 E 13 - stiff 1.0e3 offset 0.0 lin
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
