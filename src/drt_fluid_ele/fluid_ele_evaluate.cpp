@@ -569,13 +569,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         // add potential loma specific vectors
         RCP<Epetra_MultiVector> col_filtered_dens_vel = Teuchos::null;
         RCP<Epetra_Vector> col_filtered_dens = Teuchos::null;
-        RCP<Epetra_Vector> col_filtered_dens_trace = Teuchos::null;
         RCP<Epetra_Vector> col_filtered_dens_strainrate = Teuchos::null;
         if (fldpara->PhysicalType()==INPAR::FLUID::loma)
         {
           col_filtered_dens_vel = params.get<RCP<Epetra_MultiVector> >("col_filtered_dens_vel");
           col_filtered_dens = params.get<RCP<Epetra_Vector> >("col_filtered_dens");
-          col_filtered_dens_trace = params.get<RCP<Epetra_Vector> >("col_filtered_dens_trace");
           col_filtered_dens_strainrate = params.get<RCP<Epetra_Vector> >("col_filtered_dens_strainrate");
         }
 
@@ -600,7 +598,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
               col_filtered_modeled_subgrid_stress,
               col_filtered_dens_vel              ,
               col_filtered_dens                  ,
-              col_filtered_dens_trace            ,
               col_filtered_dens_strainrate       ,
               LijMij                             ,
               MijMij                             ,
@@ -621,7 +618,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
               col_filtered_modeled_subgrid_stress,
               col_filtered_dens_vel              ,
               col_filtered_dens                  ,
-              col_filtered_dens_trace            ,
               col_filtered_dens_strainrate       ,
               LijMij                             ,
               MijMij                             ,

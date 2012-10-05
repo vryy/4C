@@ -202,7 +202,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
         dserror("More than two homogeneous directions not supported!");
 
       // Cs_delta_sq is set by the averaged quantities
-      Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+      if ((*averaged_MijMij)[nlayer] > 1E-16)
+        Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+      else
+        Cs_delta_sq = 0.0;
+
       // clipping to get algorithm stable
       if (Cs_delta_sq<0)
         Cs_delta_sq=0.0;
@@ -210,7 +214,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
       // Ci_delta_sq is set by the averaged quantities
       if (fldpara_->PhysicalType()==INPAR::FLUID::loma)
       {
-        Ci_delta_sq = 0.5 * (*averaged_CI_numerator)[nlayer]/(*averaged_CI_denominator)[nlayer] ;
+        if ((*averaged_CI_denominator)[nlayer] > 1E-16)
+          Ci_delta_sq = 0.5 * (*averaged_CI_numerator)[nlayer]/(*averaged_CI_denominator)[nlayer] ;
+        else
+          Ci_delta_sq = 0.0;
+
+        // clipping to get algorithm stable
         if (Ci_delta_sq<0.0)
           Ci_delta_sq=0.0;
       }
@@ -281,7 +290,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
     // calculate isotropic part of subgrid-stress tensor (loma only)
     if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
     {
-        q_sq_ = densaf_ * Ci_delta_sq * rateofstrain * rateofstrain;
+        q_sq_ = densaf_ * Ci_delta_sq * rateofstrain * rateofstrain; //remark: missing factor 2 is added in function ContStab()
     }
   }
   else
@@ -739,13 +748,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
     // calculate near-wall correction
     if (fldpara_->NearWallLimit())
     {
-      // not yet calculated, estimate norm of strain rate
-      if (fldpara_->CalcN() or fldpara_->RefVel() != INPAR::FLUID::strainrate)
+      // if not yet calculated, estimate norm of strain rate
+      if (not fldpara_->CalcN() or fldpara_->RefVel() != INPAR::FLUID::strainrate)
       {
         //strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
         strainnorm = GetStrainRate(evelaf);
-        strainnorm /= sqrt(2.0);
+        strainnorm /= sqrt(2.0); //cf. Burton & Dahm 2005
       }
+      // and reference length
+      if (not fldpara_->CalcN()) dserror("hk not yet calculated"); // solution see scatra
 
       // get Re from strain rate
       double Re_ele_str = strainnorm * hk * hk * densaf_ / visc_;

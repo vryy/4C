@@ -1880,7 +1880,7 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
     }
 
     // add additional scalar quantities for loma
-    // i.e., filtered density, filtered density times trace of reynolds-stress tensor as well as filtered density times strainrate^2
+    // i.e., filtered density and filtered density times strainrate^2
     if (fldpara->PhysicalType() == INPAR::FLUID::loma)
     {
       dens_hat = dens*volume;
@@ -1939,9 +1939,7 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
                                                 with density times velocity (loma only)
   \param filtered_dens                 (in)   : integrated convolution
                                                 with density (loma only)
-  \params filtered_dens_trace          (in)   : integrated convolution
-                                                with density times trace of reynolds stresses (loma only)
-  \params filtered_dens_strainrate     (in)   : integrated convolution
+  \param filtered_dens_strainrate     (in)   : integrated convolution
                                                 with density times rate of strain (loma only)
   \param LijMij                        (out)  : trace of product of resolved
                                                 stress tensor with modeled
@@ -1962,7 +1960,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
                                         RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
                                         RCP<Epetra_MultiVector>& col_filtered_dens_vel,
                                         RCP<Epetra_Vector>&      col_filtered_dens,
-                                        RCP<Epetra_Vector>&      col_filtered_dens_trace,
                                         RCP<Epetra_Vector>&      col_filtered_dens_strainrate,
                                         double&                  LijMij,
                                         double&                  MijMij,
@@ -1978,7 +1975,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
   // loma specific quantities
   LINALG::Matrix<3,iel> edensvel_hat                        ;
   LINALG::Matrix<1,iel> edens_hat                           ;
-  LINALG::Matrix<1,iel> edenstrace_hat                      ;
   LINALG::Matrix<1,iel> edensstrainrate_hat                 ;
 
   for (int nn=0;nn<iel;++nn)
@@ -2009,7 +2005,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
       int lid = (ele->Nodes()[nn])->LID();
 
       edens_hat(0,nn) = (*col_filtered_dens)[lid];
-      edenstrace_hat(0,nn) = (*col_filtered_dens_trace)[lid];
       edensstrainrate_hat(0,nn) = (*col_filtered_dens_strainrate)[lid];
 
       for (int dimi=0;dimi<3;++dimi)
@@ -2039,9 +2034,9 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
     xyze(1,inode)=ele->Nodes()[inode]->X()[1];
     xyze(2,inode)=ele->Nodes()[inode]->X()[2];
 
-    xcenter+=xyze(1,inode);
+    xcenter+=xyze(0,inode);
     ycenter+=xyze(1,inode);
-    zcenter+=xyze(1,inode);
+    zcenter+=xyze(2,inode);
   }
   xcenter/=iel;
   ycenter/=iel;

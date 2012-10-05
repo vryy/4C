@@ -530,6 +530,11 @@ private:
     const int                             k          //!< index of current scalar
   );
 
+  //! calculate reference length for element Reynolds number
+  double CalcRefLength(const enum INPAR::FLUID::RefLength reflength, //!< reference length
+                       const double vol                              //!< volume of element
+  );
+
   //! store turbulent Prandtl number and effective diffusivity for output
   virtual void StoreModelParametersForOutput(
     const bool                            isowned,        //!< owner of element

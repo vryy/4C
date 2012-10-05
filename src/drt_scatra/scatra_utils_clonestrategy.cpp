@@ -40,6 +40,8 @@ std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
   // when the fluid problem is periodic we also expect the mass transport to be so:
   conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
   conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
+  // when the fluid problem has a turbulent inflow section, we also expect this section for scatra:
+  conditions_to_copy.insert(pair<string,string>("TurbulentInflowSection","TurbulentInflowSection"));
 
   conditions_to_copy.insert(pair<string,string>("LineNeumann","FluidLineNeumann"));
   conditions_to_copy.insert(pair<string,string>("SurfaceNeumann","FluidSurfaceNeumann"));

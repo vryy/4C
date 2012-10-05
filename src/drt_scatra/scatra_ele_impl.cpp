@@ -753,7 +753,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         c_diff = mfslist.get<double>("C_DIFF");
         // general parameters
         beta = mfslist.get<double>("BETA");
-        if (beta!=0.0) dserror("Lhs terms for mfs not included! Fixed-point interation noly!");
+        if (beta!=0.0) dserror("Lhs terms for mfs not included! Fixed-point iteration only!");
         if (mfslist.get<string>("EVALUATION_B") == "element_center")
         BD_gp = false;
         else if (mfslist.get<string>("EVALUATION_B") == "integration_point")
@@ -1340,7 +1340,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // get phi for material parameters
     RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null)
-      dserror("Cannot get state vector 'hist' and/or 'phinp'");
+      dserror("Cannot get state vector 'phinp'");
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
     // fill all element arrays
@@ -1358,12 +1358,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     
     turbmodel_ = INPAR::FLUID::no_model;
     // set flag for turbulence model
-    if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Smagorinsky")
-      turbmodel_ = INPAR::FLUID::smagorinsky;
-    if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
-      turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
     if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
       turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+    else
+      dserror("Multifractal_Subgrid_Scales expected");
 
     // get parameters for multifractal subgrid-scales
     ParameterList& mfslist = params.sublist("MULTIFRACTAL SUBGRID SCALES");
@@ -1413,8 +1411,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         DRT::UTILS::IntPointsAndWeights<nsd_> gauss_intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
         intpoints = gauss_intpoints;
       }
-      
-      
+
       for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
         const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
@@ -1426,138 +1423,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         convelint_.Multiply(econvelnp_,funct_);
 
         // calculate characteristic element length
-        double hk = 1.0e+10;
-        // cf. stabilization parameters
-        switch (reflength)
-        {
-          case INPAR::FLUID::streamlength:
-          {
-            // a) streamlength due to Tezduyar et al. (1992)
-            // get norm of velocity
-            const double vel_norm = convelint_.Norm2();
-            // normed velocity vector
-            LINALG::Matrix<nsd_,1> velino(true);
-            if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convelint_);
-            else
-            {
-              velino.Clear();
-              velino(0,0) = 1.0;
-            }
-            LINALG::Matrix<nen_,1> tmp;
-            tmp.MultiplyTN(derxy_,velino);
-            const double val = tmp.Norm1();
-            hk = 2.0/val;
-
-            break;
-          }
-          case INPAR::FLUID::sphere_diameter:
-          {
-            // b) volume-equivalent diameter
-            hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-            break;
-          }
-          case INPAR::FLUID::cube_edge:
-          {
-            // c) qubic element length
-            hk = pow(vol,(1.0/nsd_));
-
-            break;
-          }
-          case INPAR::FLUID::metric_tensor:
-          {
-            /*          +-           -+   +-           -+   +-           -+
-                      |             |   |             |   |             |
-                      |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
-                G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
-                 ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
-                      |    i     j  |   |    i     j  |   |    i     j  |
-                      +-           -+   +-           -+   +-           -+
-            */
-            LINALG::Matrix<3,3> G;
-
-            for (int nn=0;nn<3;++nn)
-            {
-              for (int rr=0;rr<3;++rr)
-              {
-                G(nn,rr) = xij_(nn,0)*xij_(rr,0);
-                for (int mm=1;mm<3;++mm)
-                {
-                  G(nn,rr) += xij_(nn,mm)*xij_(rr,mm);
-                }
-              }
-            }
-
-            /*          +----
-                       \
-              G : G =   +   G   * G
-              -   -    /     ij    ij
-              -   -   +----
-                       i,j
-           */
-           double normG = 0;
-           for (int nn=0;nn<3;++nn)
-           {
-             for (int rr=0;rr<3;++rr)
-             {
-               normG+=G(nn,rr)*G(nn,rr);
-             }
-           }
-           hk = pow(normG,-0.25);
-
-           break;
-        }
-        case INPAR::FLUID::gradient_based:
-        {
-          LINALG::Matrix<nsd_,nsd_> convderxy;
-          convderxy.MultiplyNT(econvelnp_,derxy_);
-          LINALG::Matrix<3,1> normed_velgrad;
-
-          for (int rr=0;rr<3;++rr)
-          {
-            normed_velgrad(rr)=sqrt(convderxy(0,rr)*convderxy(0,rr)
-                                    +
-                                    convderxy(1,rr)*convderxy(1,rr)
-                                    +
-                                    convderxy(2,rr)*convderxy(2,rr));
-          }
-          double norm=normed_velgrad.Norm2();
-
-          // normed gradient
-          if (norm>1e-6)
-          {
-            for (int rr=0;rr<3;++rr)
-            {
-              normed_velgrad(rr)/=norm;
-            }
-          }
-          else
-          {
-            normed_velgrad(0) = 1.;
-            for (int rr=1;rr<3;++rr)
-            {
-              normed_velgrad(rr)=0.0;
-            }
-          }
-
-          // get length in this direction
-          double val = 0.0;
-          for (int rr=0;rr<nen_;++rr) /* loop element nodes */
-          {
-            val += fabs( normed_velgrad(0)*derxy_(0,rr)
-                        +normed_velgrad(1)*derxy_(1,rr)
-                        +normed_velgrad(2)*derxy_(2,rr));
-          } /* end of loop over element nodes */
-
-          hk = 2.0/val;
-
-          break;
-        }
-        default:
-          dserror("Unknown length");
-        } // switch reflength
-        if (hk == 1.0e+10)
-         dserror("Something went wrong!");
+        double hk = CalcRefLength(reflength,vol);
 
         // estimate norm of strain rate
         double strainnorm = GetStrainRate(econvelnp_);
@@ -3503,11 +3369,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 //     }
 //#endif
 
+     vrhs = rhsfac*densnp_[k]*(cross+reynolds+conserv);
+
      for (int vi=0; vi<nen_; ++vi)
      {
        const int fvi = vi*numdofpernode_+k;
        //erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds);
-       erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds+conserv);
+       //erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds+conserv);
+       erhs[fvi] -= vrhs*funct_(vi);
      }
    }
   }

@@ -1170,8 +1170,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
         }
       }
       if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
-        eps_smag -= 2.0/3.0 * q_sq_ * vdiv_ * fac_;
+        eps_smag -= (2.0/3.0)*fac_*(sgvisc_*vdiv_+q_sq_)*vdiv_;
     }
+    
 
     //---------------------------------------------------------------
     // scale-similarity model
@@ -1266,31 +1267,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
                     |       \     /         \     /   |
                      \                                /
     */
-    if (fldpara_->PhysicalType() != INPAR::FLUID::loma)
+    for(int rr=0;rr<nsd_;++rr)
     {
-      for(int rr=0;rr<nsd_;++rr)
+      for(int mm=0;mm<nsd_;++mm)
       {
-        for(int mm=0;mm<nsd_;++mm)
-        {
-          eps_visc += 0.5*visc_*fac_*two_epsilon(rr,mm)*two_epsilon(rr,mm);
-        }
+        eps_visc += 0.5*visc_*fac_*two_epsilon(rr,mm)*two_epsilon(rr,mm);
       }
     }
-    else if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
-    {
-      for(int rr=0;rr<nsd_;++rr)
-      {
-        for(int mm=0;mm<nsd_;++mm)
-        {
-          if (mm!=rr)
-            eps_visc += 0.5*visc_*fac_*two_epsilon(rr,mm)*two_epsilon(rr,mm);
-          else
-            eps_visc += 0.5*visc_*fac_*(two_epsilon(rr,mm) - 2.0/3.0 * vdiv_)*two_epsilon(rr,mm);
-        }
-      }
-    }
-    else
-     dserror("Physical type not supported for calculation of dissipation!");
+    if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+      eps_visc -= (2.0/3.0)*visc_*fac_*vdiv_*vdiv_;
 
 
     //---------------------------------------------------------------

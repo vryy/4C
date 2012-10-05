@@ -389,8 +389,6 @@ private:
   RCP<Epetra_MultiVector>      filtered_dens_vel_;
   //! the filtered density (vector)
   RCP<Epetra_Vector>           filtered_dens_;
-  //! the filtered trace of the strain times rho (vector)
-  RCP<Epetra_Vector>           filtered_dens_trace_;
   //! the filtered strainrate times rho (vector)
   RCP<Epetra_Vector>           filtered_dens_strainrate_;
   //! the modeled fine scale velocities in nodes (3 vectors)
@@ -415,8 +413,6 @@ private:
   RCP<Epetra_MultiVector>      col_filtered_dens_vel_;
   //! the filtered density exported to column map
   RCP<Epetra_Vector>           col_filtered_dens_;
-  //! the filtered divergence times rho exported to column map
-  RCP<Epetra_Vector>           col_filtered_dens_trace_;
   //! the filtered strainrate times rho exported to column map
   RCP<Epetra_Vector>           col_filtered_dens_strainrate_;
   //! the modeled fine scale velocities exported to column map

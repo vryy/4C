@@ -3025,8 +3025,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
   // include computed subgrid-scale velocity in convective term
   // -> only required for cross- and Reynolds-stress terms
   //----------------------------------------------------------------------
-  if (fldpara_->Cross()    != INPAR::FLUID::cross_stress_stab_none or
-      fldpara_->Reynolds() != INPAR::FLUID::reynolds_stress_stab_none)
+  if (fldpara_->Cross()         != INPAR::FLUID::cross_stress_stab_none or
+      fldpara_->Reynolds()      != INPAR::FLUID::reynolds_stress_stab_none or
+      fldpara_->ContiCross()    != INPAR::FLUID::cross_stress_stab_none or
+      fldpara_->ContiReynolds() != INPAR::FLUID::reynolds_stress_stab_none)
        sgconv_c_.MultiplyTN(derxy_,sgvelint_);
   else sgconv_c_.Clear();
 }
@@ -3502,13 +3504,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ContStab(
   }
   if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
   {
-    // caution: using visc_ instead of visceff_ here is no bug!
-    // for variable-density flow, we have:
-    // the Smagorinsky model in its usual form acts on the total rate of deformation tensor
-    // not only on its deviatoric part; this is corrected by the inclusion of q_sq_
-    // see: Moin et al. 1991
-    conti_stab_and_vol_visc_fac-=(2.0/3.0)*visc_*timefacfac;
-    conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*(visc_*vdiv_+q_sq_);
+    conti_stab_and_vol_visc_fac-=(2.0/3.0)*visceff_*timefacfac;
+    conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*(visceff_*vdiv_+q_sq_);
   }
 
   /* continuity stabilisation on left hand side */

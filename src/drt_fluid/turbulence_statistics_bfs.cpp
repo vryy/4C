@@ -1670,9 +1670,9 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         // as they produce nans
         double x2rhorms = 0.0;
         double x2Trms   = 0.0;
-        if (abs((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho)>1e-12)
+        if (abs((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho)>1e-9)
             x2rhorms = sqrt((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho);
-        if (abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-12)
+        if (abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-9)
             x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
 
 #ifdef COMBINE_SAMPLES

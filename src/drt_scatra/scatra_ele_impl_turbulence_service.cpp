@@ -173,7 +173,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_calc_smag_const_LkMk_and_MkMk(
   zcenter = 0.0;
   for(int inode=0;inode<nen_;inode++)
   {
-    // xyze_ has been initialized at the begining of Impl()
+    // xyze_ has been initialized at the beginning of Impl()
     xcenter+=xyze_(0,inode);
     ycenter+=xyze_(1,inode);
     zcenter+=xyze_(2,inode);
@@ -631,6 +631,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
   // compute sum of physical and all-scale subgrid diffusivity
   // -> set internal variable for use when calculating matrix and rhs
   diffus_[k] += sgdiff_[k];
+  if (update_mat_)
+    dserror("Material update will overwrite effective diffusivity due to eddy-diffusivity model");
 
   return;
 } //ScaTraImpl::CalcSubgrDiff
@@ -799,134 +801,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   else //no, so we calculate N from Re
   {
     // calculate characteristic element length
-    // cf. stabilization parameters
-    switch (reflength)
-    {
-      case INPAR::FLUID::streamlength:
-      {
-        // a) streamlength due to Tezduyar et al. (1992)
-        // normed velocity vector
-        LINALG::Matrix<nsd_,1> velino(true);
-        if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convelint_);
-        else
-        {
-          velino.Clear();
-          velino(0,0) = 1.0;
-        }
-        LINALG::Matrix<nen_,1> tmp;
-        tmp.MultiplyTN(derxy_,velino);
-        const double val = tmp.Norm1();
-        hk = 2.0/val;
-
-        break;
-      }
-      case INPAR::FLUID::sphere_diameter:
-      {
-        // b) volume-equivalent diameter
-        hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-        break;
-      }
-      case INPAR::FLUID::cube_edge:
-      {
-        // c) qubic element length
-        hk = pow(vol,(1.0/nsd_));
-        break;
-      }
-      case INPAR::FLUID::metric_tensor:
-      {
-        /*          +-           -+   +-           -+   +-           -+
-                    |             |   |             |   |             |
-                    |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
-              G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
-               ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
-                    |    i     j  |   |    i     j  |   |    i     j  |
-                    +-           -+   +-           -+   +-           -+
-        */
-        LINALG::Matrix<3,3> G;
-
-        for (int nn=0;nn<3;++nn)
-        {
-          for (int rr=0;rr<3;++rr)
-          {
-            G(nn,rr) = xij_(nn,0)*xij_(rr,0);
-            for (int mm=1;mm<3;++mm)
-            {
-              G(nn,rr) += xij_(nn,mm)*xij_(rr,mm);
-            }
-          }
-        }
-
-        /*          +----
-                     \
-            G : G =   +   G   * G
-            -   -    /     ij    ij
-            -   -   +----
-                     i,j
-        */
-        double normG = 0;
-        for (int nn=0;nn<3;++nn)
-        {
-          for (int rr=0;rr<3;++rr)
-          {
-            normG+=G(nn,rr)*G(nn,rr);
-          }
-        }
-        hk = pow(normG,-0.25);
-
-        break;
-      }
-      case INPAR::FLUID::gradient_based:
-      {
-        LINALG::Matrix<nsd_,nsd_> convderxy;
-        convderxy.MultiplyNT(econvelnp_,derxy_);
-        LINALG::Matrix<3,1> normed_velgrad;
-
-        for (int rr=0;rr<3;++rr)
-        {
-          normed_velgrad(rr)=sqrt(convderxy(0,rr)*convderxy(0,rr)
-                                  +
-                                  convderxy(1,rr)*convderxy(1,rr)
-                                  +
-                                  convderxy(2,rr)*convderxy(2,rr));
-        }
-        double norm=normed_velgrad.Norm2();
-
-        // normed gradient
-        if (norm>1e-6)
-        {
-          for (int rr=0;rr<3;++rr)
-          {
-            normed_velgrad(rr)/=norm;
-          }
-        }
-        else
-        {
-          normed_velgrad(0) = 1.;
-          for (int rr=1;rr<3;++rr)
-          {
-            normed_velgrad(rr)=0.0;
-          }
-        }
-
-        // get length in this direction
-        double val = 0.0;
-        for (int rr=0;rr<nen_;++rr) /* loop element nodes */
-        {
-          val += fabs( normed_velgrad(0)*derxy_(0,rr)
-                      +normed_velgrad(1)*derxy_(1,rr)
-                      +normed_velgrad(2)*derxy_(2,rr));
-        } /* end of loop over element nodes */
-
-        hk = 2.0/val;
-
-        break;
-      }
-      default:
-        dserror("Unknown length");
-    } // switch reflength
-    if (hk == 1.0e+10)
-      dserror("Something went wrong!");
+    double hk = CalcRefLength(reflength,vol);
 
     // warning: k=0, this first scalar is taken!
     // multifractal subgrid-scale model is for passive and active
@@ -987,11 +862,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   if (nwl)
   {
     // not yet calculated, estimate norm of strain rate
-    if (calc_N or refvel != INPAR::FLUID::strainrate)
+    if (not calc_N or refvel != INPAR::FLUID::strainrate)
     {
       strainnorm = GetStrainRate(econvelnp_);
-      strainnorm /= sqrt(2.0);
+      strainnorm /= sqrt(2.0); //cf. Burton & Dahm 2008
     }
+    // and reference length
+    if (not calc_N)
+      hk = CalcRefLength(reflength,vol);
 
     // get Re from strain rate
     double Re_ele_str = strainnorm * hk * hk * densnp_[0] / visc_;
@@ -1025,7 +903,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   for (int dim=0; dim<nsd_; dim++)
   {
     B_mfs(dim,0) = Csgs_vel_nw *sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1));
-//    if (eid_ == 10000)
+//    if (eid_ == 100)
 //     std::cout << "B  " << setprecision (10) << B_mfs(dim,0) << std::endl;
   }
 
@@ -1116,8 +994,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //                                        |                   |
   //
   D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
-//    if (eid_ == 10000)
-//     std::cout << "D  " << setprecision(10) << D_mfs(dim,0) << std::endl;
+//    if (eid_ == 100)
+//     std::cout << "D  " << setprecision(10) << D_mfs << std::endl;
 #endif
 
   // second implementation for tests on cluster
@@ -1179,6 +1057,153 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
 #endif
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate reference length for multifractal subgrid-scales           |
+ |                                                      rasthofer 09/12 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraImpl<distype>::CalcRefLength(
+        const enum INPAR::FLUID::RefLength reflength,
+        const double vol)
+{
+  // calculate characteristic element length
+  double hk = 1.0e+10;
+  // cf. stabilization parameters
+  switch (reflength)
+  {
+    case INPAR::FLUID::streamlength:
+    {
+      // a) streamlength due to Tezduyar et al. (1992)
+      // get norm of velocity
+      const double vel_norm = convelint_.Norm2();
+      // normed velocity vector
+      LINALG::Matrix<nsd_,1> velino(true);
+      if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convelint_);
+      else
+      {
+        velino.Clear();
+        velino(0,0) = 1.0;
+      }
+      LINALG::Matrix<nen_,1> tmp;
+      tmp.MultiplyTN(derxy_,velino);
+      const double val = tmp.Norm1();
+      hk = 2.0/val;
+
+      break;
+    }
+    case INPAR::FLUID::sphere_diameter:
+    {
+      // b) volume-equivalent diameter
+      hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+      break;
+    }
+    case INPAR::FLUID::cube_edge:
+    {
+      // c) qubic element length
+      hk = pow(vol,(1.0/nsd_));
+
+      break;
+    }
+    case INPAR::FLUID::metric_tensor:
+    {
+      /*          +-           -+   +-           -+   +-           -+
+                |             |   |             |   |             |
+                |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+          G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+           ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                |    i     j  |   |    i     j  |   |    i     j  |
+                +-           -+   +-           -+   +-           -+
+      */
+      LINALG::Matrix<3,3> G;
+
+      for (int nn=0;nn<3;++nn)
+      {
+        for (int rr=0;rr<3;++rr)
+        {
+          G(nn,rr) = xij_(nn,0)*xij_(rr,0);
+          for (int mm=1;mm<3;++mm)
+          {
+            G(nn,rr) += xij_(nn,mm)*xij_(rr,mm);
+          }
+        }
+      }
+
+      /*          +----
+                 \
+        G : G =   +   G   * G
+        -   -    /     ij    ij
+        -   -   +----
+                 i,j
+     */
+     double normG = 0;
+     for (int nn=0;nn<3;++nn)
+     {
+       for (int rr=0;rr<3;++rr)
+       {
+         normG+=G(nn,rr)*G(nn,rr);
+       }
+     }
+     hk = pow(normG,-0.25);
+
+     break;
+  }
+  case INPAR::FLUID::gradient_based:
+  {
+    LINALG::Matrix<nsd_,nsd_> convderxy;
+    convderxy.MultiplyNT(econvelnp_,derxy_);
+    LINALG::Matrix<3,1> normed_velgrad;
+
+    for (int rr=0;rr<3;++rr)
+    {
+      normed_velgrad(rr)=sqrt(convderxy(0,rr)*convderxy(0,rr)
+                              +
+                              convderxy(1,rr)*convderxy(1,rr)
+                              +
+                              convderxy(2,rr)*convderxy(2,rr));
+    }
+    double norm=normed_velgrad.Norm2();
+
+    // normed gradient
+    if (norm>1e-6)
+    {
+      for (int rr=0;rr<3;++rr)
+      {
+        normed_velgrad(rr)/=norm;
+      }
+    }
+    else
+    {
+      normed_velgrad(0) = 1.;
+      for (int rr=1;rr<3;++rr)
+      {
+        normed_velgrad(rr)=0.0;
+      }
+    }
+
+    // get length in this direction
+    double val = 0.0;
+    for (int rr=0;rr<nen_;++rr) /* loop element nodes */
+    {
+      val += fabs( normed_velgrad(0)*derxy_(0,rr)
+                  +normed_velgrad(1)*derxy_(1,rr)
+                  +normed_velgrad(2)*derxy_(2,rr));
+    } /* end of loop over element nodes */
+
+    hk = 2.0/val;
+
+    break;
+  }
+  default:
+    dserror("Unknown length");
+  } // switch reflength
+  if (hk == 1.0e+10)
+   dserror("Something went wrong!");
+
+  return hk;
 }
 
 

@@ -410,7 +410,6 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   {
     calc_smag_const_params.set("col_filtered_dens",col_filtered_dens_);
     calc_smag_const_params.set("col_filtered_dens_vel",col_filtered_dens_vel_);
-    calc_smag_const_params.set("col_filtered_dens_trace",col_filtered_dens_trace_);
     calc_smag_const_params.set("col_filtered_dens_strainrate",col_filtered_dens_strainrate_);
   }
 
@@ -605,12 +604,29 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     // do averaging
     for (int rr=0;rr<numlayers;++rr)
     {
-      (*averaged_LijMij)[rr]/=count_for_average[rr];
-      (*averaged_MijMij)[rr]/=count_for_average[rr];
+      // perform some checks first
+      if (count_for_average[rr]==0 and
+           ((*averaged_LijMij)[rr]!=0.0 or (*averaged_MijMij)[rr]!=0.0))
+          dserror("Expected 'averaged_LijMij' or 'averaged_MijMij' equal zero!");
       if (physicaltype_ == INPAR::FLUID::loma)
       {
-        (*averaged_CI_numerator)[rr]/=count_for_average[rr];
-        (*averaged_CI_denominator)[rr]/=count_for_average[rr];
+        if (count_for_average[rr]==0 and
+             ((*averaged_CI_numerator)[rr]!=0.0 or (*averaged_CI_denominator)[rr]!=0.0))
+            dserror("Expected 'averaged_CI_numerator' or 'averaged_CI_denominator' equal zero!");
+      }
+
+      // calculate averaged quantities
+      // we have to exclude zero here, since, for backward-facing steps, the step is contained and
+      // we will obtain a zero block there
+      if (count_for_average[rr]!=0)
+      {
+        (*averaged_LijMij)[rr]/=count_for_average[rr];
+        (*averaged_MijMij)[rr]/=count_for_average[rr];
+        if (physicaltype_ == INPAR::FLUID::loma)
+        {
+          (*averaged_CI_numerator)[rr]/=count_for_average[rr];
+          (*averaged_CI_denominator)[rr]/=count_for_average[rr];
+        }
       }
     }
     // provide necessary information for the elements
@@ -922,8 +938,19 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     // do averaging
     for (int rr=0;rr<numlayers;++rr)
     {
-      (*averaged_LkMk)[rr]/=count_for_average[rr];
-      (*averaged_MkMk)[rr]/=count_for_average[rr];
+      // perform some checks first
+      if (count_for_average[rr]==0 and
+           ((*averaged_LkMk)[rr]!=0.0 or (*averaged_MkMk)[rr]!=0.0))
+          dserror("Expected 'averaged_LkMk' or 'averaged_MkMk' equal zero!");
+
+      // calculate averaged quantities
+      // we have to exclude zero here, since, for backward-facing steps, the step is contained and
+      // we will obtain a zero block there
+      if (count_for_average[rr]!=0)
+      {
+        (*averaged_LkMk)[rr]/=count_for_average[rr];
+        (*averaged_MkMk)[rr]/=count_for_average[rr];
+      }
     }
 
     // provide necessary information for the elements
@@ -1003,7 +1030,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
     {
       filtered_dens_vel_ = Teuchos::null;
       filtered_dens_ = Teuchos::null;
-      filtered_dens_trace_ = Teuchos::null;
       filtered_dens_strainrate_ = Teuchos::null;
     }
   }
@@ -1019,7 +1045,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
     {
       filtered_dens_vel_ = rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
       filtered_dens_ = rcp(new Epetra_Vector(*noderowmap,true));
-      filtered_dens_trace_ = rcp(new Epetra_Vector(*noderowmap,true));
       filtered_dens_strainrate_ = rcp(new Epetra_Vector(*noderowmap,true));
     }
   }
@@ -1158,7 +1183,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
     // loma specific quantities
     vector<double> dens_vel_val(3);
     double dens_val;
-    double dens_trace_val;
     double dens_strainrate_val;
 
     // loop all master nodes on this proc
@@ -1177,7 +1201,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
       if (physicaltype_ == INPAR::FLUID::loma and apply_dynamic_smagorinsky_)
       {
         dens_val = (*filtered_dens_)[lid];
-        dens_trace_val = (*filtered_dens_trace_)[lid];
         dens_strainrate_val = (*filtered_dens_strainrate_)[lid];
       }
 
@@ -1207,7 +1230,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         if (physicaltype_ == INPAR::FLUID::loma and apply_dynamic_smagorinsky_)
         {
           dens_val += (*filtered_dens_)[lid];
-          dens_trace_val += (*filtered_dens_trace_)[lid];
           dens_strainrate_val += (*filtered_dens_strainrate_)[lid];
         }
 
@@ -1238,7 +1260,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
       {
         int err = 0;
         err += filtered_dens_->ReplaceMyValues(1,&dens_val,&lid);
-        err += filtered_dens_trace_->ReplaceMyValues(1,&dens_trace_val,&lid);
         err += filtered_dens_strainrate_->ReplaceMyValues(1,&dens_strainrate_val,&lid);
         if (err != 0) dserror("dof not on proc");
       }
@@ -1273,7 +1294,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         {
           int err = 0;
           err += filtered_dens_->ReplaceMyValues(1,&dens_val,&lid);
-          err += filtered_dens_trace_->ReplaceMyValues(1,&dens_trace_val,&lid);
           err += filtered_dens_strainrate_->ReplaceMyValues(1,&dens_strainrate_val,&lid);
           if (err != 0) dserror("dof not on proc");
         }
@@ -1415,8 +1435,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
             double thisvol = (*patchvol)[lnodeid];
             double val = (*filtered_dens_)[lnodeid]/thisvol;
             err += filtered_dens_->ReplaceMyValues(1,&val,&lnodeid);
-            val = (*filtered_dens_trace_)[lnodeid]/thisvol;
-            err += filtered_dens_trace_->ReplaceMyValues(1,&val,&lnodeid);
             val = (*filtered_dens_strainrate_)[lnodeid]/thisvol;
             err += filtered_dens_strainrate_->ReplaceMyValues(1,&val,&lnodeid);
         }
@@ -1444,8 +1462,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
     {
       val = (*filtered_dens_)[lnodeid]/thisvol;
       err += filtered_dens_->ReplaceMyValues(1,&val,&lnodeid);
-      val = (*filtered_dens_trace_)[lnodeid]/thisvol;
-      err += filtered_dens_trace_->ReplaceMyValues(1,&val,&lnodeid);
       val = (*filtered_dens_strainrate_)[lnodeid]/thisvol;
       err += filtered_dens_strainrate_->ReplaceMyValues(1,&val,&lnodeid);
     }
@@ -1528,7 +1544,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   {
     col_filtered_dens_vel_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
     col_filtered_dens_ = rcp(new Epetra_Vector(*nodecolmap,true));
-    col_filtered_dens_trace_ = rcp(new Epetra_Vector(*nodecolmap,true));
     col_filtered_dens_strainrate_ = rcp(new Epetra_Vector(*nodecolmap,true));
   }
 
@@ -1543,7 +1558,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   {
     LINALG::Export(*filtered_dens_vel_,*col_filtered_dens_vel_);
     LINALG::Export(*filtered_dens_,*col_filtered_dens_);
-    LINALG::Export(*filtered_dens_trace_,*col_filtered_dens_trace_);
     LINALG::Export(*filtered_dens_strainrate_,*col_filtered_dens_strainrate_);
   }
 

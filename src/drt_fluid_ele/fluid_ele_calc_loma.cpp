@@ -464,10 +464,10 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     my::ComputeSubgridScaleScalar(escaaf,escaam);
 
     // update material parameters including subgrid-scale part of scalar
-    if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
-      dserror("No material update in combination with smagorinsky model!");
     if (my::fldpara_->UpdateMat())
     {
+      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+        dserror("No material update in combination with smagorinsky model!");
       my::UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,my::sgscaint_);
       my::visceff_ = my::visc_;
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
