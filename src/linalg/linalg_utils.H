@@ -889,7 +889,10 @@ namespace LINALG
   The sparse matrix is printed in Matlab sparse format to
   a file with specified file name.
 
-  \note works in parallel and serial!
+  \note - Works in parallel and serial!
+  \note - When reading this in Matlab, entries are located according to
+  their global row and column ID, even if corresponding DOFs are condensed
+  from global system.
   */
   void PrintMatrixInMatlabFormat(
       std::string fname,
@@ -902,7 +905,10 @@ namespace LINALG
   The block sparse matrix is printed in Matlab sparse format to
   a file with specified file name.
 
-  \note works in parallel and serial!
+  \note - Works in parallel and serial!
+  \note - When reading this in Matlab, entries are located according to
+  their global row and column ID, even if corresponding DOFs are condensed
+  from global system.
   */
   void PrintBlockMatrixInMatlabFormat(
       std::string fname,
