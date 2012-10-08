@@ -4580,7 +4580,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
 
     // ------------------------------------------------------------------
     // additional output for dynamic Smagorinsky model
-    if (true)//(smagorinsky_)
+    if (smagorinsky_)
     {
       // get the outfile
       Teuchos::RefCountPtr<std::ofstream> log_Cs;
