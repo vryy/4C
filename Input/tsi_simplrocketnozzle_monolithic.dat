@@ -469,7 +469,7 @@ DSURF 1 //2
 E 6 - Tempnp coeff -28000 surtemp 1.0 surtempcurve 2 curve none
 // thr top surrounding temp
 //E 7 - Tempnp coeff 28000 surtemp 293.15 surtempcurve none curve none
-------------------------------------------DESIGN EMBEDDING TISSUE CONDITIONS
+------------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
