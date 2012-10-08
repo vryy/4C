@@ -4130,7 +4130,7 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
         // consider only filament 0 (horizontal filament)
         if((int)(*filamentnumber_)[i]==0 && (*bspotstatus_)[i]>-0.1)
           // store both singly and doubly bound linkers
-          coverage<<bspotcolmap_->GID(i)<<"  "<<(int)(*numbond_)[(*bspotstatus_)[i]]<<"  "<< scientific << setprecision(15) <<(currentpositions.find(i)->second)(0)<<endl;
+          coverage<<bspotcolmap_->GID(i)<<"  "<<(int)(*numbond_)[(int)(*bspotstatus_)[i]]<<"  "<< scientific << setprecision(15) <<(currentpositions.find(i)->second)(0)<<endl;
         else if((int)(*filamentnumber_)[i]>0)
           break;
       }
