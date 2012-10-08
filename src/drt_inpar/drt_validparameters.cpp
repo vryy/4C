@@ -4229,7 +4229,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       ),
                                     &fsidyn);
 
-  setStringToIntegralParameter<int>("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
+  setStringToIntegralParameter<int>("PREDICTOR","d(n)",
                                "Predictor for interface displacements for partitioned schemes",
                                tuple<std::string>(
                                  "d(n)",
@@ -4279,7 +4279,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&fsidyn);
 
   IntParameter("PRECONDREUSE",
-               10,
+               0,
                "Number of preconditioner reused in monolithic FSI",
                &fsidyn);
 
