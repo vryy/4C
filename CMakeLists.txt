@@ -252,15 +252,6 @@ if (Trilinos_FOUND)
     ${Trilinos_TPL_LIBRARIES}
     ${LIBRARIES}
     )
-
-  #if (HAVE_MueLu)
-    # ugly hacks for MueLu
-    # move muelu-utils to end of library list. it seems that otherwise Teuchos-dependencies cannot be resolved by linker
-    #set(LIBRARIES
-    #  ${LIBRARIES}
-    #  muelu-utils
-    #  )
-  #endif (HAVE_MueLu)
     
 # define of which library we are using - for compatibility checks
 #if (Trilinos_VERSION STREQUAL "10.1d") 
@@ -1096,19 +1087,6 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_LINALG
-  src/solver/amg/aggregation_method.cpp
-  src/solver/amg/aggregation_method_ml.cpp
-  src/solver/amg/aggregation_method_uncoupled.cpp
-  src/solver/amg/smoother.cpp
-  src/solver/amg/transfer_operator.cpp
-  src/solver/amg/transfer_operator_pgamg.cpp
-  src/solver/amg/transfer_operator_pgamg2.cpp
-  src/solver/amg/transfer_operator_saamg.cpp
-  src/solver/amg/transfer_operator_tentative.cpp
-  src/solver/amg/amgpreconditioner.cpp
-  src/solver/amg/braesssarazin_smoother.cpp
-  src/solver/saddlepointpreconditioner.cpp
-  src/solver/bgs2x2_operator.cpp
   src/linalg/linalg_ana.cpp
   src/linalg/linalg_blocksparsematrix.cpp
   src/linalg/linalg_condest.cpp
@@ -1122,10 +1100,25 @@ set(OBJS_LINALG
   src/linalg/linalg_projected_precond.cpp
   src/linalg/linalg_serialdensematrix.cpp
   src/linalg/linalg_serialdensevector.cpp
-  src/linalg/linalg_solver.cpp
   src/linalg/linalg_sparsematrix.cpp
   src/linalg/linalg_sparsematrixbase.cpp
   src/linalg/linalg_utils.cpp
+)
+set(OBJS_SOLVER
+  src/linalg/linalg_solver.cpp
+  src/solver/amg/aggregation_method.cpp
+  src/solver/amg/aggregation_method_ml.cpp
+  src/solver/amg/aggregation_method_uncoupled.cpp
+  src/solver/amg/smoother.cpp
+  src/solver/amg/transfer_operator.cpp
+  src/solver/amg/transfer_operator_pgamg.cpp
+  src/solver/amg/transfer_operator_pgamg2.cpp
+  src/solver/amg/transfer_operator_saamg.cpp
+  src/solver/amg/transfer_operator_tentative.cpp
+  src/solver/amg/amgpreconditioner.cpp
+  src/solver/amg/braesssarazin_smoother.cpp
+  src/solver/saddlepointpreconditioner.cpp
+  src/solver/bgs2x2_operator.cpp
   src/solver/solver_cheapsimplepreconditioner.cpp
   src/solver/solver_preconditionertype.cpp
   src/solver/solver_directsolver.cpp
@@ -1619,6 +1612,7 @@ add_library(filter_common ${OBJS_FILTER_COMMON})
 # linear algebra objects
 #add_library(linalg SHARED ${OBJS_LINALG})
 add_library(linalg ${OBJS_LINALG})
+add_library(libsolver ${OBJS_SOLVER})
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
@@ -1648,6 +1642,7 @@ target_link_libraries (${baciname}
   ${SUPPORT_LIBRARIES}
   drt_micromat drt_mat
   drt_lib_utils
+  libsolver
   linalg
   drt_comm
   ${LIBRARIES})
@@ -1659,6 +1654,7 @@ set(FILTER_LIBRARIES
   ${SUPPORT_LIBRARIES}
   drt_mat
   drt_lib_utils
+  libsolver
   linalg
   filter_common
   drt_comm
