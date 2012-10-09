@@ -223,7 +223,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
   // fill the local element vector/matrix with the global values
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1>        epreaf(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelaf, &epreaf, "u and p at time n+1 (converged)" );
+  this->ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelaf, &epreaf, "u and p at time n+1 (converged)" );
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -249,7 +249,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
   if (ele->IsAle())
   {
     LINALG::Matrix<my::nsd_,my::nen_>       edispnp(true);
-    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
+    this->ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
 
     // get new node positions for isale
     my::xyze_ += edispnp;

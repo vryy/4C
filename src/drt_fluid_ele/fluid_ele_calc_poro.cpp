@@ -145,7 +145,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
   LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
   LINALG::Matrix<my::nen_,1>    escabofoaf(true);
-  BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
+  this->BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
@@ -281,24 +281,24 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
   if (my::fldpara_->IsGenalphaNP())
-    ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
+    this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         NULL, "velnp");
 
   LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist,
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist,
       NULL, "hist");
 
   LINALG::Matrix<my::nsd_, my::nen_> eaccam(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
       NULL, "accam");
 
   LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
   LINALG::Matrix<my::nen_, 1> epren(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
       &epren, "veln");
 
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
 
   if (not my::fldpara_->IsGenalpha())
@@ -311,11 +311,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
   LINALG::Matrix<my::nsd_, my::nen_> edispn(true);
 
-  ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispnp,
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispnp,
       NULL, "dispnp");
-  ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridv,
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridv,
       NULL, "gridv");
-  ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispn,
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispn,
       NULL, "dispn");
 
   //ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &initporosity_, "initporosity");
@@ -1591,7 +1591,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 /***********************************************************************************************************/
 
     // 5) standard Galerkin bodyforce term on right-hand side
-    BodyForceRhsTerm(velforce,
+    this->BodyForceRhsTerm(velforce,
                      rhsfac);
 
     // 6) PSPG term
@@ -1610,7 +1610,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     // 7) reactive stabilization term
     if (my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
     {
-      ReacStab(estif_u,
+      this->ReacStab(estif_u,
                estif_p_v,
                velforce,
                lin_resM_Du,

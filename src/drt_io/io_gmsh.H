@@ -303,18 +303,6 @@ namespace IO
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
-    template<class M> std::string cellWithScalarToString(
-        const DRT::Element::DiscretizationType distype,   ///< element shape
-        const double scalar,                              ///< scalar value for the entire element
-        const M& xyze                                     ///< position array (3, numnode)
-    )
-    {
-      std::ostringstream s;
-      cellWithScalarToStream(distype, scalar, xyze, s);
-      return s.str();
-    }
-
-    //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
     template<class M> void cellWithScalarToStream(
         const DRT::Element::DiscretizationType  distype,  ///< element shape
         const double                            scalar,   ///< scalar value for the entire element
@@ -327,6 +315,18 @@ namespace IO
       CoordinatesToStream(xyze, distype, s);
       ScalarToStream(scalar, distype, s);
       s << "\n";
+    }
+    
+    //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
+    template<class M> std::string cellWithScalarToString(
+        const DRT::Element::DiscretizationType distype,   ///< element shape
+        const double scalar,                              ///< scalar value for the entire element
+        const M& xyze                                     ///< position array (3, numnode)
+    )
+    {
+      std::ostringstream s;
+      cellWithScalarToStream(distype, scalar, xyze, s);
+      return s.str();
     }
 
     //! take an value array (numnode) and a position array (3,numnode) and translate it to an element section of a Gmsh postprocessing file

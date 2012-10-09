@@ -417,7 +417,7 @@ namespace GEO
         bool operator()( const LINALG::Matrix<3, numNodesElement> & xyze,
                          const LINALG::Matrix<3,1> & px )
         {
-          Setup( xyze, px );
+          this->Setup( xyze, px );
           if ( this->Solve() )
           {
             return true;
@@ -684,7 +684,7 @@ namespace GEO
                          const LINALG::Matrix<3,1> & px,
                          double & distance )
         {
-          Setup( xyze_surface, px );
+          this->Setup( xyze_surface, px );
           if ( this->Solve() )
           {
             distance = this->Distance();
@@ -976,7 +976,7 @@ namespace GEO
         bool operator()( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
                          const LINALG::Matrix<3,numNodesLine> & xyze_line )
         {
-          Setup( xyze_surface, xyze_line );
+          this->Setup( xyze_surface, xyze_line );
           if ( this->Solve() )
           {
             return true;
