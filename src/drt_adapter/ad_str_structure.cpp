@@ -425,7 +425,8 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       // plausibility check
       INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
       if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-          prec != INPAR::SOLVER::azprec_TekoSIMPLE)
+          prec != INPAR::SOLVER::azprec_TekoSIMPLE  &&
+          prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
         dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER %i block in your dat file.",linsolvernumber);
 
       // build meshtying solver

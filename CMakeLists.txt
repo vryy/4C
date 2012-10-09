@@ -1138,6 +1138,7 @@ set(OBJS_LINALG
   src/solver/solver_muelupreconditioner.cpp
   src/solver/solver_muelucontactpreconditioner.cpp
   src/solver/solver_muelucontactpreconditioner2.cpp
+  src/solver/solver_muelucontactsppreconditioner.cpp
   src/solver/solver_tekopreconditioner.cpp
   src/solver/solver_belossolver.cpp
   src/solver/solver_aztecsolver.cpp

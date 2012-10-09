@@ -22,6 +22,7 @@
 #include "solver_muelupreconditioner.H"
 #include "solver_muelucontactpreconditioner.H"
 #include "solver_muelucontactpreconditioner2.H"
+#include "solver_muelucontactsppreconditioner.H"
 #endif
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
@@ -182,6 +183,19 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
       preconditioner_ = Teuchos::rcp( new TekoPreconditioner( outfile_, Params() ));
 #else
       dserror("You need the HAVE_TEKO define flag set. Works only for TRILINOS_DEV Q4/2011 or newer.");
+#endif
+    }
+    else if ( Params().isSublist("MueLu (Contact) Parameters") )
+    {
+#ifdef HAVE_MueLu
+      ////////////////////////////// EXPERIMENTAL
+      //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
+      //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
+      ////////////////////////////// EXPERIMENTAL
+      std::cout << "found MueLu (Contact) Parameters -> MueLuContactSpPreconditioner" << std::endl;
+      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactSpPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
+#else
+      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
 #endif
     }
     else
