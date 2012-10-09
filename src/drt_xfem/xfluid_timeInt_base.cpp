@@ -1310,7 +1310,6 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
   }
   else if(data.proj_ == TimeIntData::onLine_)
   {
-#if 0 // code does not compile with FC17
     // check if both lines are identical
     for(map<vector<int>, vector<int> >::iterator line=proj_nid_line.begin(); line!=proj_nid_line.end(); line++)
     {
@@ -1393,11 +1392,6 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
       );
 
     }
-#else
-    dserror("Code does not compile with gcc 4.7. No idea why it compiles at all with other compilers. TODO: Fix me!");
-#endif // if0 code does not compile
-
-
   }
   else if(data.proj_ == TimeIntData::onPoint_)
   {
