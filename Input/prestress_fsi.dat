@@ -19344,6 +19344,8 @@ NODE 5565 COORD 5.0 -0.424264068712 0.424264068712
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.03 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 3.0e6 NUE 0.3 DENS 1.2 THEXPANS 0.0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.8e-3 FACTOR 0.0 10.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.8e-3 1.0e-3 FACTOR 10.0 10.0

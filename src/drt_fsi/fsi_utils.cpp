@@ -158,6 +158,41 @@ FSI::UTILS::ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+bool FSI::UTILS::FluidAleNodesDisjoint( Teuchos::RCP<DRT::Discretization> fluiddis,
+                                        Teuchos::RCP<DRT::Discretization> aledis)
+{
+  // flag indicating whether fluid and ALE node numbers have are non-overlapping or not
+  bool isdisjoint = false;
+
+  // try a simple check that should work for most cases
+  if (fluiddis->NodeRowMap()->MaxAllGID() < aledis->NodeRowMap()->MinAllGID()
+      or fluiddis->NodeRowMap()->MinAllGID() > aledis->NodeRowMap()->MaxAllGID())
+  {
+    // no overlap of node numbers
+    isdisjoint = true;
+  }
+  else // do a more sophisticated check
+  {
+    // get node row maps
+    Teuchos::RCP<const Epetra_Map> fluidmap = rcp(new const Epetra_Map(*fluiddis->NodeRowMap()));
+    Teuchos::RCP<const Epetra_Map> alemap = rcp(new const Epetra_Map(*aledis->NodeRowMap()));
+
+    // Create intersection of fluid and ALE map
+    std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+    intersectionmaps.push_back(fluidmap);
+    intersectionmaps.push_back(alemap);
+    Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+
+    if (intersectionmap->NumGlobalElements() == 0)
+      isdisjoint = true;
+  }
+
+  return isdisjoint;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 std::map<string,string> FSI::UTILS::AleFluidCloneStrategy::ConditionsToCopy()
 {
   std::map<string,string> conditions_to_copy;
@@ -180,7 +215,11 @@ std::map<string,string> FSI::UTILS::AleFluidCloneStrategy::ConditionsToCopy()
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::AleFluidCloneStrategy::CheckMaterialType(const int matid)
 {
-  // no check implemented for ALE materials!
+  // We take the material with the ID specified by the user
+  // Here we check first, whether this material is of admissible type
+  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+  if (mtype != INPAR::MAT::m_stvenant)
+    dserror("Material with ID %d is not admissible for ALE elements",matid);
 }
 
 
@@ -192,15 +231,9 @@ void FSI::UTILS::AleFluidCloneStrategy::SetElementData(
     const int matid,
     const bool nurbsdis)
 {
-  // We must not add a new material type here because that might move
-  // the internal material vector. And each element material might
-  // have a pointer to that vector. Too bad.
-  // So we search for a StVenantKirchhoff material and take the first
-  // one we find.
-  // => matid from outside remains unused!
-  const int matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
-  if (matnr==-1)
-    dserror("No StVenantKirchhoff material defined. Cannot generate ale mesh.");
+  // We need to set material and possibly other things to complete element setup.
+  // This is again really ugly as we have to extract the actual
+  // element type in order to access the material property.
 
 #ifdef D_ALE
     if(nurbsdis==false)
@@ -208,14 +241,14 @@ void FSI::UTILS::AleFluidCloneStrategy::SetElementData(
       DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(newele.get());
       if (ale2!=NULL)
       {
-        ale2->SetMaterial(matnr);
+        ale2->SetMaterial(matid);
       }
       else
       {
         DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(newele.get());
         if (ale3!=NULL)
         {
-          ale3->SetMaterial(matnr);
+          ale3->SetMaterial(matid);
         }
         else
         {
@@ -228,7 +261,7 @@ void FSI::UTILS::AleFluidCloneStrategy::SetElementData(
       DRT::ELEMENTS::NURBS::Ale2Nurbs* ale2 = dynamic_cast<DRT::ELEMENTS::NURBS::Ale2Nurbs*>(newele.get());
       if (ale2!=NULL)
       {
-        ale2->SetMaterial(matnr);
+        ale2->SetMaterial(matid);
       }
       else
       {
@@ -236,7 +269,7 @@ void FSI::UTILS::AleFluidCloneStrategy::SetElementData(
 
         if(ale3!=NULL)
         {
-          ale3->SetMaterial(matnr);
+          ale3->SetMaterial(matid);
         }
         else
         {

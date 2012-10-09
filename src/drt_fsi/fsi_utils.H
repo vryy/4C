@@ -55,6 +55,12 @@ namespace FSI
                                             const std::vector<Teuchos::RCP<const Epetra_Map> >& vecSpaces);
 
 
+    /// Check whether fluid node numbers and ALE node numbers are equal.
+    bool FluidAleNodesDisjoint(
+        Teuchos::RCP<DRT::Discretization> fluiddis, ///< pointer to fluid discretization
+        Teuchos::RCP<DRT::Discretization> aledis    ///< pointer to ALE discretization
+        );
+
     /*!
     \brief implementation of special clone strategy for automatic generation
            of an ALE-mesh from a given fluid discretization

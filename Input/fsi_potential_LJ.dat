@@ -319,6 +319,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 50000 NUE 0.3 DENS 0.00000125 THEXPANS 0.0
 MAT 2 MAT_carreauyasuda NU_0 1318 NU_INF 1010 LAMBDA 3000000 APARAM 1.33 BPARAM 0.6 DENSITY 0.000001
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 1
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(t*pi/5.0))/2.0 t1 0.0 t2 5.0
 CURVE1 on EXPR FUNC 1.0 t1 5.0 t2 10000.0

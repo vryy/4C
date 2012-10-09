@@ -35,16 +35,19 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 void elch_dyn(int restart)
 {
+  // pointer to problem
+  DRT::Problem* problem = DRT::Problem::Instance();
+
   // access the communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = problem->GetDis("fluid")->Comm();
 
   // print ELCH-Logo to screen
   if (comm.MyPID()==0) printlogo();
 
   // access the fluid discretization
-  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  RefCountPtr<DRT::Discretization> fluiddis = problem->GetDis("fluid");
   // access the scatra discretization
-  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
+  RefCountPtr<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra/elch dof
@@ -57,14 +60,14 @@ void elch_dyn(int restart)
 #endif
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& elchcontrol = DRT::Problem::Instance()->ELCHControlParams();
+  const Teuchos::ParameterList& elchcontrol = problem->ELCHControlParams();
 
   // print default parameters to screen
   if (comm.MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, elchcontrol);
 
   // access the scalar transport parameter list
-  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
   const INPAR::SCATRA::VelocityField veltype
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
 
@@ -133,10 +136,10 @@ void elch_dyn(int restart)
     // we need a non-const list in order to be able to add sublists below!
     Teuchos::ParameterList prbdyn(elchcontrol);
     // support for turbulent flow statistics
-    const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
+    const Teuchos::ParameterList& fdyn = (problem->FluidDynamicParams());
     prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
-    RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
+    RefCountPtr<DRT::Discretization> aledis = problem->GetDis("ale");
     if (!aledis->Filled()) aledis->FillComplete();
     // is ALE needed or not?
     const INPAR::ELCH::ElchMovingBoundary withale
@@ -149,10 +152,21 @@ void elch_dyn(int restart)
       {
         Epetra_Time time(comm);
         {
+          // get material cloning map
+          std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+          if (clonefieldmatmap.size() == 0)
+            dserror("No CLONING MATERIAL MAP defined in input file. "
+                "This is necessary to assign a material to the ALE elements.");
+
+          std::pair<string,string> key("fluid","ale");
+          std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+          if (fluidmatmap.size() == 0)
+            dserror("Key pair 'fluid/ale' was not found in input file.");
+
           Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
             Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
-          alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+          alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
         }
 
         if(comm.MyPID()==0)
@@ -171,7 +185,7 @@ void elch_dyn(int restart)
 
       // create an ELCH::MovingBoundaryAlgorithm instance
       Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch
-        = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,prbdyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+        = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,prbdyn,problem->SolverParams(linsolvernumber)));
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);
@@ -183,10 +197,10 @@ void elch_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      DRT::Problem::Instance()->AddFieldTest(elch->FluidField().CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(elch->AleField().CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(elch->CreateScaTraFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      problem->AddFieldTest(elch->FluidField().CreateFieldTest());
+      problem->AddFieldTest(elch->AleField().CreateFieldTest());
+      problem->AddFieldTest(elch->CreateScaTraFieldTest());
+      problem->TestAll(comm);
     }
     else
     {
@@ -196,7 +210,7 @@ void elch_dyn(int restart)
         dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
       // create an ELCH::Algorithm instance
-      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,prbdyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,prbdyn,problem->SolverParams(linsolvernumber)));
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);
@@ -208,9 +222,9 @@ void elch_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      DRT::Problem::Instance()->AddFieldTest(elch->FluidField().CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(elch->CreateScaTraFieldTest());
-      DRT::Problem::Instance()->TestAll(comm);
+      problem->AddFieldTest(elch->FluidField().CreateFieldTest());
+      problem->AddFieldTest(elch->CreateScaTraFieldTest());
+      problem->TestAll(comm);
     }
 
     break;

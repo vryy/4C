@@ -689,17 +689,35 @@ void fluid_fluid_fsi_drt()
   RCP<DRT::Discretization> aledis = problem->GetDis("ale");
   if (aledis->NumGlobalNodes()==0)
   {
+    Epetra_Time time(*comm);
+
     {
+      // get material cloning map
+      std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+      if (clonefieldmatmap.size() == 0)
+        dserror("No CLONING MATERIAL MAP defined in input file. "
+            "This is necessary to assign a material to the ALE elements.");
+
+      std::pair<string,string> key("fluid","ale");
+      std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+      if (fluidmatmap.size() == 0)
+        dserror("Key pair 'fluid/ale' was not found in input file.");
+
+      // create cloning object
       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
-      alecreator->CreateMatchingDiscretization(embfluiddis,aledis,-1);
+      // Clone ALE discretization from fluid discretization
+      alecreator->CreateMatchingDiscretization(embfluiddis,aledis,fluidmatmap);
     }
+
     if (comm->MyPID()==0)
-    {
-      cout << "\n\nCreating ALE discretisation ....\n\n";
-    }
+      cout <<"Created fluid-based ALE discretization from fluid discretization in...."
+           << time.ElapsedTime() << " secs\n\n";
   }
+  else  // ale discretization in input file
+    dserror("Providing an ALE mesh is not supported for problemtype Fluid_Fluid_FSI.");
+
   aledis->FillComplete();
 
   // print all dofsets
@@ -869,16 +887,45 @@ void fsi_ale_drt()
   problem->GetDis("fluid")->FillComplete();
   problem->GetDis("ale")->FillComplete();
 
+  // get discretizations
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
+
   // create ale elements if the ale discretization is empty
-  RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-  if (aledis->NumGlobalNodes()==0)
+  if (aledis->NumGlobalNodes()==0) // empty ale discretization
   {
-    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    Epetra_Time time(comm);
 
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+    {
+      // get material cloning map
+      std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+      if (clonefieldmatmap.size() == 0)
+        dserror("No CLONING MATERIAL MAP defined in input file. "
+            "This is necessary to assign a material to the ALE elements.");
 
-    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+      std::pair<string,string> key("fluid","ale");
+      std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+      if (fluidmatmap.size() == 0)
+        dserror("Key pair 'fluid/ale' was not found in input file.");
+
+      // create cloning object
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+      // Clone ALE discretization from fluid discretization
+      alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
+    }
+
+    if (comm.MyPID()==0)
+          cout <<"Created fluid-based ALE discretization from fluid discretization in...."
+               << time.ElapsedTime() << " secs\n\n";
+  }
+  else  // filled ale discretization
+  {
+    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
+      dserror("Fluid and ALE nodes have the same node numbers. "
+          "This it not allowed since it causes problems with Dirichlet BCs. "
+          "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();

@@ -303,6 +303,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.8E-5 DENSITY 1.0E-6
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.E3 NUE 0.3 DENS 1E-1
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (0.25*(1-cos(2*pi*t/120))) t1 0.0 t2 60.0
 CURVE1 on EXPR FUNC 0.5 t1 60.0 t2 360.0

@@ -323,6 +323,8 @@ SOLVER                          Aztec_MSR
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 50000 NUE 0.3 DENS 0.00000125 THEXPANS 0.0
 MAT 2 MAT_fluid DYNVISCOSITY 0.00101 DENSITY 0.000001 GAMMA 1.0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 1
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(t*pi/1.0))/2.0 t1 0.0 t2 1.0
 CURVE1 on EXPR FUNC 1.0 t1 1.0 t2 10000.0

@@ -117,7 +117,10 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.0
-MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1 
+MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0 
+-----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
 ------------------------------------------------------------CURVE2

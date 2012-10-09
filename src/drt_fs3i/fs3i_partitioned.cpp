@@ -88,11 +88,26 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   {
     RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
 
+    // get material cloning map
+    std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+    if (clonefieldmatmap.size() == 0)
+      dserror("No CLONING MATERIAL MAP defined in input file. "
+          "This is necessary to assign a material to the ALE elements.");
+
+    std::pair<string,string> key("fluid","ale");
+    std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+    if (fluidmatmap.size() == 0)
+      dserror("Key pair 'fluid/ale' was not found in input file.");
+
+    // create cloning object
     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
-    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+    // clone
+    alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
   }
+  else
+    dserror("Providing an ALE mesh is not supported for problemtype FS3I.");
 
   //---------------------------------------------------------------------
   // access discretizations for structure, fluid as well as fluid- and

@@ -7066,6 +7066,8 @@ NODE 2244 COORD 0.000000000000000e+000 -2.000000000000000e-003 0.000000000000000
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.0 DENS 500.0
+-----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 //CURVE1 on Explicit FUNC f(t)=exp(1-1:t) c1 1.0 c2 1.0
 CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
