@@ -25,6 +25,9 @@
 #include "MueLu_Level.hpp"
 #include "MueLu_Monitor.hpp"
 
+#define sumAll(rcpComm, in, out)                                        \
+  Teuchos::reduceAll(*rcpComm, Teuchos::REDUCE_SUM, in, Teuchos::outArg(out));
+
 namespace MueLu {
 
 template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
@@ -62,191 +65,359 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
   Monitor m(*this, "ContactSPAggregationFactory");
 
+  Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  //slaveDofMap->describe(*fos,Teuchos::VERB_EXTREME);
 
-  RCP<Aggregates> aggs = currentLevel.Get<RCP<Aggregates> >("Aggregates", aggregatesFact_.get());
-  RCP<LOVector> aggsvec = aggs->GetVertex2AggId();
-  ArrayRCP< const LocalOrdinal > aggsdata = aggsvec->getData(0);
-  std::cout << *aggsvec << std::endl;
-
-
+#if 1
+  // extract block matrix (must be a 2x2 block matrix)
   RCP<Matrix> Ain = currentLevel.Get< RCP<Matrix> >("A", AFact_.get());
   RCP<BlockedCrsMatrix> bOp = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(Ain);
   TEUCHOS_TEST_FOR_EXCEPTION(bOp==Teuchos::null, Exceptions::BadCast, "MueLu::ContactSPAggregationFactory::Build: input matrix A is not of type BlockedCrsMatrix! error.");
 
+  // determine rank of current processor
   const int myRank = bOp->getRangeMap()->getComm()->getRank();
 
-  // pick out matrix block (0,1)
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 1" << std::endl;
+
+  // pick out subblocks of block matrix
   RCP<CrsMatrix> A00 = bOp->getMatrix(0,0);
   RCP<CrsMatrix> A01 = bOp->getMatrix(0,1);
 
-  // 1) check for blocking/striding information
-  LocalOrdinal blockdim = 1;         // block dim for fixed size blocks
-  GlobalOrdinal offset = 0;          // global offset of dof gids
+  // determine block information for displacement blocks
+  // disp_offset usually is zero (default),
+  // disp_blockdim is 2 or 3 (for 2d or 3d problems) on the finest level (# displacement dofs per node) and
+  // disp_blockdim is 3 or 6 (for 2d or 3d problems) on coarser levels (# nullspace vectors)
+  LocalOrdinal  disp_blockdim = 1;         // block dim for fixed size blocks
+  GlobalOrdinal disp_offset   = 0;         // global offset of dof gids
   if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0)) != Teuchos::null) {
     RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0));
-    TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::CoalesceFactory::Build: cast to strided row map failed.");
-    blockdim = strMap->getFixedBlockSize(); // TODO shorten code
-    offset   = strMap->getOffset();
-    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found blockdim=" << blockdim << " from strided maps. offset=" << offset << std::endl;
-  } else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information available. Use blockdim=1 with offset=0" << std::endl;
+    TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
+    disp_blockdim = strMap->getFixedBlockSize(); disp_offset   = strMap->getOffset();
+    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found disp_blockdim=" << disp_blockdim << " from strided maps. disp_offset=" << disp_offset << std::endl;
+  } else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for displacement Dofs available. Use blockdim=1 with offset=0" << std::endl;
 
-  // 2) check for blocking/striding information of Lagrange block
-  LocalOrdinal blockdim2 = 1;         // block dim for fixed size blocks
-  GlobalOrdinal offset2 = 0;          // global offset of dof gids
+  // determine block information for Lagrange multipliers
+  // lagr_offset usually > zero (set by domainOffset for Ptent11Fact)
+  // lagr_blockdim is disp_blockdim (for 2d or 3d problems) on the finest level (1 Lagrange multiplier per displacement dof) and
+  // lagr_blockdim is 2 or 3 (for 2d or 3d problems) on coarser levels (same as on finest level, whereas there are 3 or 6 displacement dofs per node)
+  LocalOrdinal  lagr_blockdim = disp_blockdim;         // block dim for fixed size blocks
+  GlobalOrdinal lagr_offset   = 1000;         // global offset of dof gids (TODO fix this)
   if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1)) != Teuchos::null) {
     RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1));
-    TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::CoalesceFactory::Build: cast to strided row map failed.");
-    blockdim2 = strMap->getFixedBlockSize(); // TODO shorten code
-    offset2   = strMap->getOffset();
-    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found blockdim2=" << blockdim2 << " from strided maps. offset2=" << offset2 << std::endl;
-  } else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information available. Use blockdim2=1 with offset2=0" << std::endl;
+    TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
+    lagr_blockdim = strMap->getFixedBlockSize(); lagr_offset   = strMap->getOffset();
+    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found lagr_blockdim=" << lagr_blockdim << " from strided maps. lagr_offset=" << lagr_offset << std::endl;
+  } else {
+    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for Lagrange multipliers available. Use lagr_blockdim=disp_blockdim=" << lagr_blockdim << " with lagr_offset=" << lagr_offset << std::endl;
+  }
 
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 2" << std::endl;
 
-  // loop over all rows
-  // extract my values
+  // extract aggregates built using the displacement DOFs (from matrix block A00)
+  RCP<Aggregates> dispAggs = currentLevel.Get<RCP<Aggregates> >("Aggregates", aggregatesFact_.get());
+  RCP<LOVector> dispAggsVec = dispAggs->GetVertex2AggId();
+  ArrayRCP< const LocalOrdinal > dispAggsData = dispAggsVec->getData(0);
 
-  std::map<LocalOrdinal, std::vector<GlobalOrdinal> > laggId2gcids;
-  std::map<LocalOrdinal, LocalOrdinal> dispAggId2lagAggId;
-  std::map<LocalOrdinal, LocalOrdinal> nodeId2lagAggId;
-
-  LocalOrdinal nLocalAggregates = 0;
-
-  //fetch map with slave Dofs from Level
+  // fetch map with slave Dofs from Level
+  // slaveDofMap contains all global slave displacement DOF ids on the current level
+  // we extract the corresponding aggregate ids of the slave nodes
   RCP<const Map> slaveDofMap = currentLevel.Get< RCP<const Map> >("SlaveDofMap",MueLu::NoFactory::get());
 
-  std::cout << "slaveDofMap " << std::endl;
-  Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  slaveDofMap->describe(*fos,Teuchos::VERB_EXTREME);
-
-  /*std::cout << "A00->rowMap" << std::endl;
-  A00->getRowMap()->describe(*fos, Teuchos::VERB_EXTREME);
-  std::cout << "A01->rowMap" << std::endl;
-  A01->getRowMap()->describe(*fos, Teuchos::VERB_EXTREME);*/
-
-  // handle slave dofs
+  // generate map displacement aggregate id -> new Lagrange multiplier aggregate id
+  // count number of new aggregates for Lagrange multipliers that are to be built on the current proc
+  LocalOrdinal nLocalAggregates = 0;  // number of new local aggregates for Lagrange multipliers
+  std::map<LocalOrdinal, LocalOrdinal> dispAggId2lagAggId;
   for (size_t r = 0; r < slaveDofMap->getNodeNumElements(); r++) {
-    //std::cout << "r=" << r << std::endl;
+    // obtain global slave displacement DOF id
     GlobalOrdinal grid = slaveDofMap->getGlobalElement(r);
-    //std::cout << "grid("<<r<<")=" << grid << std::endl;
 
-    if(A01->getRowMap()->isNodeGlobalElement(grid) ) {
+    if(A01->getRowMap()->isNodeGlobalElement(grid) ) { // todo simplify me
       LocalOrdinal Alrid = A01->getRowMap()->getLocalElement(grid);
 
       // translate grid to nodeid
-      GlobalOrdinal nodeId = AmalgamationFactory::DOFGid2NodeId(grid, Teuchos::null /* parameter not used */, blockdim, offset);
-      LocalOrdinal lnodeId = aggsdata[Alrid/blockdim];
+      //GlobalOrdinal nodeId = AmalgamationFactory::DOFGid2NodeId(grid, Teuchos::null /* parameter not used */, blockdim, offset);
+      LocalOrdinal dispAggId = dispAggsData[Alrid/disp_blockdim];
 
-      std::cout << "grid is " << grid << " Alrid " << Alrid << " nodeId " << nodeId << " lnodeId " <<lnodeId << std::endl;
-
-      Teuchos::ArrayView<const LocalOrdinal> indices;  // extract entries from local row
-      Teuchos::ArrayView<const Scalar> vals;
-      A01->getLocalRowView(Alrid, indices, vals);
-
-      for(size_t i=0; i<(size_t)indices.size(); i++) {
-        GlobalOrdinal gcid = A01->getColMap()->getGlobalElement(indices[i]);
-        std::cout << "GRID: " << grid << " LID: " << Alrid << " node id: " << nodeId << " aggregate id: " << lnodeId << " GCID: " << gcid << " vals: " << vals[i] << std::endl;
-        if(laggId2gcids.count(lnodeId) == 0) {
-          std::vector<GlobalOrdinal> gcids;
-          laggId2gcids[lnodeId] = gcids;
-        }
-        std::vector<GlobalOrdinal> & gcids = laggId2gcids[lnodeId];
-        gcids.push_back(gcid);
-      }
       // displacementAggId2lagrangeMultAggId
-      if(dispAggId2lagAggId.count(lnodeId) == 0) {
-        dispAggId2lagAggId[lnodeId] = nLocalAggregates++;
-      }
-
-      if(nodeId2lagAggId.count(nodeId) == 0) {
-        nodeId2lagAggId[nodeId] = dispAggId2lagAggId[nodeId];
+      if(dispAggId2lagAggId.count(dispAggId) == 0) {
+        dispAggId2lagAggId[dispAggId] = nLocalAggregates++;  // a new aggregate has to be built for this Lagrange multiplier
+        std::cout << "dispAggId: " << dispAggId << " dispAggId2lagAggId[dispAggId]: " << dispAggId2lagAggId[dispAggId] << std::endl;
       }
     } //if A01->getRowMap()->isNodeGlobalElement()
   }
 
-  typename std::map<LocalOrdinal, std::vector<GlobalOrdinal> >::iterator it;
-  for(it = laggId2gcids.begin(); it != laggId2gcids.end(); it++) {
-    std::cout << it->first << ": ";
-    std::vector<GlobalOrdinal> & gcids = it->second;
-    for(size_t t = 0; t<gcids.size(); t++) {
-      std::cout << " " << gcids[t];
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 3" << std::endl;
+
+  // loop over all local slave dofs
+  // disp_node -> lagr_dofs
+  std::map<LocalOrdinal, std::vector<GlobalOrdinal> > dispNodeId2lagNodeIds;
+  for (size_t r = 0; r < slaveDofMap->getNodeNumElements(); r++) {
+    // obtain global slave displacement DOF id
+    GlobalOrdinal disp_grid = slaveDofMap->getGlobalElement(r);
+
+    if(A01->getRowMap()->isNodeGlobalElement(disp_grid) ) { // todo simplify me
+      LocalOrdinal Alrid = A01->getRowMap()->getLocalElement(disp_grid);
+
+      // translate displacement dof id to displacement node id
+      GlobalOrdinal disp_nodeId = AmalgamationFactory::DOFGid2NodeId(
+          disp_grid, Teuchos::null /* parameter not used */,
+          disp_blockdim,
+          disp_offset);
+
+      Teuchos::ArrayView<const LocalOrdinal> lagr_indices;
+      Teuchos::ArrayView<const Scalar> lagr_vals;
+      A01->getLocalRowView(Alrid, lagr_indices, lagr_vals);
+
+      std::cout << "disp_nodeId=" << disp_nodeId << " lagNodeIds:";
+
+      std::vector<GlobalOrdinal> lagr_nodeIds;
+      lagr_nodeIds.empty();
+      for(size_t i = 0; i<lagr_indices.size(); i++) {
+        GlobalOrdinal lagr_gcid = A01->getColMap()->getGlobalElement(lagr_indices[i]);
+        GlobalOrdinal lagr_nodeId = AmalgamationFactory::DOFGid2NodeId(
+            lagr_gcid, Teuchos::null /* parameter not used */,
+            lagr_blockdim,
+            lagr_offset);
+        lagr_nodeIds.push_back(lagr_nodeId);
+        std::cout << lagr_nodeId << "(" << lagr_gcid << ")" << " ";
+      }
+      dispNodeId2lagNodeIds[disp_nodeId] = lagr_nodeIds;
+      std::cout << std::endl;
+
     }
-    std::cout << std::endl;
   }
 
-  // todo create nodemap for all slave nodes (usually non-overlapping) with
-  // same distribution over processors than nodes
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 4" << std::endl;
 
-  // make sure that the unamalgamation information is correct (global node id -> global agg id)
+  bOp->getRangeMap(1)->describe(*fos,Teuchos::VERB_EXTREME);
 
   // generate "artificial nodes" for lagrange multipliers
-  std::vector<GlobalOrdinal> lagMultNodes;
+  std::vector<GlobalOrdinal> lagr_Nodes;
   for (size_t r = 0; r < bOp->getRangeMap(1)->getNodeNumElements(); r++) {
-    //std::cout << "r=" << r << std::endl;
-    GlobalOrdinal grid = bOp->getRangeMap(1)->getGlobalElement(r);
-    //std::cout << "grid("<<r<<")=" << grid << std::endl;
-
-    // translate grid to nodeid
-    GlobalOrdinal nodeId = AmalgamationFactory::DOFGid2NodeId(grid, Teuchos::null /* parameter not used */, blockdim2 /*TODO */, offset2);
-    //std::cout << "nodeId: " << nodeId << std::endl;
-    lagMultNodes.push_back(nodeId);
+    // determine global Lagrange multiplier row Dof
+    // generate a node id using the grid, lagr_blockdim and lagr_offset // todo make sure, that nodeId is unique and does not interfer with the displacement nodes
+    GlobalOrdinal lagr_grid = bOp->getRangeMap(1)->getGlobalElement(r);
+    GlobalOrdinal lagr_nodeId =
+        AmalgamationFactory::DOFGid2NodeId(
+          lagr_grid, Teuchos::null /* parameter not used */,
+          lagr_blockdim, lagr_offset);
+    lagr_Nodes.push_back(lagr_nodeId);
   }
 
-  Teuchos::RCP<const Map > lagMultAggMap = MapFactory::Build(A01->getRowMap()->lib(),
-                                                Teuchos::OrdinalTraits<Xpetra::global_size_t>::invalid(),
-                                                lagMultNodes,
-                                                /*indexBase*/ 0 /*TODO*/,
+  // remove all duplicates
+  lagr_Nodes.erase(std::unique(lagr_Nodes.begin(),lagr_Nodes.end()),lagr_Nodes.end());
+
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 5" << std::endl;
+
+  // define node map for Lagrange multipliers
+  size_t numGlobalElements = 0;
+  sumAll(A01->getRowMap()->getComm(), lagr_Nodes.size(), numGlobalElements);
+  Teuchos::RCP<const Map > lagr_NodeMap = MapFactory::Build(A01->getRowMap()->lib(),
+                                                //Teuchos::OrdinalTraits<Xpetra::global_size_t>::invalid(), // TODO fix me
+                                                numGlobalElements,
+                                                lagr_Nodes,
+                                                A01->getRowMap()->getIndexBase(),
                                                 A01->getRowMap()->getComm());
 
-  std::cout << "lagMultAggMap " << std::endl;
-  lagMultAggMap->describe(*fos,Teuchos::VERB_EXTREME);
+  lagr_NodeMap->describe(*fos,Teuchos::VERB_EXTREME);
 
-  // build aggregates
-  RCP<Aggregates> aggregates;
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 6" << std::endl;
 
-  // Build
-  aggregates = rcp(new Aggregates(/*bOp->getRangeMap(1)*/lagMultAggMap));
+  // Build aggregates using the lagrange multiplier node map
+  RCP<Aggregates> aggregates = rcp(new Aggregates(lagr_NodeMap));
   aggregates->setObjectLabel("UC (slave)");
-  aggregates->SetNumAggregates(Teuchos::as<LocalOrdinal>(laggId2gcids.size())); // dont forget to set number of new aggregates
+  aggregates->SetNumAggregates(Teuchos::as<LocalOrdinal>(dispAggId2lagAggId.size())); // dont forget to set number of new aggregates
 
   // extract aggregate data structures to fill
   Teuchos::ArrayRCP<LocalOrdinal> vertex2AggId = aggregates->GetVertex2AggId()->getDataNonConst(0);
   Teuchos::ArrayRCP<LocalOrdinal> procWinner   = aggregates->GetProcWinner()->getDataNonConst(0);
 
-  // build new aggregates
-  std::cout << "build " << laggId2gcids.size() << " more aggregates" << std::endl;
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 7" << std::endl;
 
-  for (size_t t = 0; t < slaveDofMap->getNodeNumElements(); t++) {
-    GlobalOrdinal grid = slaveDofMap->getGlobalElement(t);
-    //std::cout << "found grid " << grid << std::endl;
+  slaveDofMap->describe(*fos,Teuchos::VERB_EXTREME);
+
+  for (size_t r = 0; r < slaveDofMap->getNodeNumElements(); r++) {
+    // obtain global slave displacement DOF id
+    GlobalOrdinal disp_grid = slaveDofMap->getGlobalElement(r);
+
+    if(A01->getRowMap()->isNodeGlobalElement(disp_grid) ) { // todo simplify me
+      LocalOrdinal Alrid = A01->getRowMap()->getLocalElement(disp_grid);
+
+      LocalOrdinal dispAggId = dispAggsData[Alrid/disp_blockdim];
+
+      std::cout << "myRank: " << myRank << " r=" << r << " disp_grid=" << disp_grid << " Alrid=" << Alrid << " dispAggId=" << dispAggId << std::endl;
+
+      GlobalOrdinal disp_NodeId = AmalgamationFactory::DOFGid2NodeId(
+          disp_grid, Teuchos::null /* parameter not used */,
+          disp_blockdim,
+          disp_offset);
+
+      std::cout << "myRank: " << myRank << " r=" << r << " disp_grid=" << disp_grid << " Alrid=" << Alrid << " dispAggId=" << dispAggId << " disp_NodeId=" << disp_NodeId << std::endl;
+
+      std::vector<GlobalOrdinal> lagr_nodeIds = dispNodeId2lagNodeIds[disp_NodeId];
+
+      std::cout << "myRank: " << myRank << " r=" << r << " disp_grid=" << disp_grid << " Alrid=" << Alrid << " dispAggId=" << dispAggId << " disp_NodeId=" << disp_NodeId << " lagr_nodeIds.size()=" << lagr_nodeIds.size() << std::endl;
+
+      for(size_t i=0; i< lagr_nodeIds.size(); i++) {
+        GlobalOrdinal lagr_NodeId = lagr_nodeIds[i];
+        std::cout << "myRank: " << myRank << " r=" << r << " disp_grid=" << disp_grid << " Alrid=" << Alrid << " dispAggId=" << dispAggId << " disp_NodeId=" << disp_NodeId << " lagr_nodeId=" << lagr_NodeId << std::endl;
+        LocalOrdinal lagr_NodeLID = lagr_NodeMap->getLocalElement(lagr_NodeId); // here it fails
+        std::cout << "myRank: " << myRank << " r=" << r << " disp_grid=" << disp_grid << " Alrid=" << Alrid << " dispAggId=" << dispAggId << " disp_NodeId=" << disp_NodeId << " lagr_nodeLID=" << lagr_NodeLID << std::endl;
+        vertex2AggId[lagr_NodeLID] = dispAggId2lagAggId[dispAggId]; // aggregate
+        std::cout << "myRank: " << myRank << "lagr_nodeLID: " << lagr_NodeLID << " lagr_NodeId: " << lagr_NodeId << " dispAggId: " << dispAggId << " lagrAggId: " <<  dispAggId2lagAggId[dispAggId] << std::endl;
+        procWinner[lagr_NodeLID] = myRank;
+      }
+    }
+  }
+
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 8" << std::endl;
+
+  std::cout << "lagAggregates" << std::endl;
+  aggregates->GetVertex2AggId()->describe(*fos,Teuchos::VERB_EXTREME);
+
+  currentLevel.Set("Aggregates", aggregates, this);
+  aggregates->describe(GetOStream(Statistics0, 0), getVerbLevel());
+
+  std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 9" << std::endl;
+
+#else
+  // extract block matrix (must be a 2x2 block matrix)
+  RCP<Matrix> Ain = currentLevel.Get< RCP<Matrix> >("A", AFact_.get());
+  RCP<BlockedCrsMatrix> bOp = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(Ain);
+  TEUCHOS_TEST_FOR_EXCEPTION(bOp==Teuchos::null, Exceptions::BadCast, "MueLu::ContactSPAggregationFactory::Build: input matrix A is not of type BlockedCrsMatrix! error.");
+
+  // determine rank of current processor
+  const int myRank = bOp->getRangeMap()->getComm()->getRank();
+
+  // pick out subblocks of block matrix
+  RCP<CrsMatrix> A00 = bOp->getMatrix(0,0);
+  RCP<CrsMatrix> A01 = bOp->getMatrix(0,1);
+
+  // determine block information for displacement blocks
+  // disp_offset usually is zero (default),
+  // disp_blockdim is 2 or 3 (for 2d or 3d problems) on the finest level (# displacement dofs per node) and
+  // disp_blockdim is 3 or 6 (for 2d or 3d problems) on coarser levels (# nullspace vectors)
+  LocalOrdinal  disp_blockdim = 1;         // block dim for fixed size blocks
+  GlobalOrdinal disp_offset   = 0;         // global offset of dof gids
+  if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0)) != Teuchos::null) {
+    RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0));
+    TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
+    disp_blockdim = strMap->getFixedBlockSize(); disp_offset   = strMap->getOffset();
+    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found disp_blockdim=" << disp_blockdim << " from strided maps. disp_offset=" << disp_offset << std::endl;
+  } else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for displacement Dofs available. Use blockdim=1 with offset=0" << std::endl;
+
+  // determine block information for Lagrange multipliers
+  // lagr_offset usually > zero (set by domainOffset for Ptent11Fact)
+  // lagr_blockdim is disp_blockdim (for 2d or 3d problems) on the finest level (1 Lagrange multiplier per displacement dof) and
+  // lagr_blockdim is 2 or 3 (for 2d or 3d problems) on coarser levels (same as on finest level, whereas there are 3 or 6 displacement dofs per node)
+  LocalOrdinal  lagr_blockdim = disp_blockdim;         // block dim for fixed size blocks
+  GlobalOrdinal lagr_offset   = 100;         // global offset of dof gids (TODO fix this)
+  if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1)) != Teuchos::null) {
+    RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1));
+    TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
+    lagr_blockdim = strMap->getFixedBlockSize(); lagr_offset   = strMap->getOffset();
+    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found lagr_blockdim=" << lagr_blockdim << " from strided maps. lagr_offset=" << lagr_offset << std::endl;
+  } else {
+    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for Lagrange multipliers available. Use lagr_blockdim=disp_blockdim=" << lagr_blockdim << " with offset=100" << std::endl;
+  }
+
+  // extract aggregates built using the displacement DOFs (from matrix block A00)
+  RCP<Aggregates> dispAggs = currentLevel.Get<RCP<Aggregates> >("Aggregates", aggregatesFact_.get());
+  RCP<LOVector> dispAggsVec = dispAggs->GetVertex2AggId();
+  ArrayRCP< const LocalOrdinal > dispAggsData = dispAggsVec->getData(0);
+
+  // fetch map with slave Dofs from Level
+  // slaveDofMap contains all global slave displacement DOF ids on the current level
+  // we extract the corresponding aggregate ids of the slave nodes
+  RCP<const Map> slaveDofMap = currentLevel.Get< RCP<const Map> >("SlaveDofMap",MueLu::NoFactory::get());
+
+  // loop over all local slave dofs
+  // generate map displacement aggregate id -> new Lagrange multiplier aggregate id
+  // count number of new aggregates for Lagrange multipliers that are to be built on the current proc
+  LocalOrdinal nLocalAggregates = 0;  // number of new local aggregates for Lagrange multipliers
+  std::map<LocalOrdinal, LocalOrdinal> dispAggId2lagAggId;
+  for (size_t r = 0; r < slaveDofMap->getNodeNumElements(); r++) {
+    // obtain global slave displacement DOF id
+    GlobalOrdinal grid = slaveDofMap->getGlobalElement(r);
+
+    if(A01->getRowMap()->isNodeGlobalElement(grid) ) { // todo simplify me
+      LocalOrdinal Alrid = A01->getRowMap()->getLocalElement(grid);
+
+      // translate grid to nodeid
+      //GlobalOrdinal nodeId = AmalgamationFactory::DOFGid2NodeId(grid, Teuchos::null /* parameter not used */, blockdim, offset);
+      LocalOrdinal dispAggId = dispAggsData[Alrid/disp_blockdim];
+
+      // displacementAggId2lagrangeMultAggId
+      if(dispAggId2lagAggId.count(dispAggId) == 0) {
+        dispAggId2lagAggId[dispAggId] = nLocalAggregates++;  // a new aggregate has to be built for this Lagrange multiplier
+        std::cout << "dispAggId: " << dispAggId << " dispAggId2lagAggId[dispAggId]: " << dispAggId2lagAggId[dispAggId] << std::endl;
+      }
+    } //if A01->getRowMap()->isNodeGlobalElement()
+  }
+
+  // generate "artificial nodes" for lagrange multipliers
+  std::vector<GlobalOrdinal> lagr_Nodes;
+  for (size_t r = 0; r < bOp->getRangeMap(1)->getNodeNumElements(); r++) {
+    // determine global Lagrange multiplier row Dof
+    // generate a node id using the grid, lagr_blockdim and lagr_offset // todo make sure, that nodeId is unique and does not interfer with the displacement nodes
+    GlobalOrdinal lagr_grid = bOp->getRangeMap(1)->getGlobalElement(r);
+    GlobalOrdinal lagr_nodeId =
+        AmalgamationFactory::DOFGid2NodeId(
+          lagr_grid, Teuchos::null /* parameter not used */,
+          lagr_blockdim, lagr_offset);
+    lagr_Nodes.push_back(lagr_nodeId);
+  }
+
+  // define node map for Lagrange multipliers
+  Teuchos::RCP<const Map > lagr_NodeMap = MapFactory::Build(A01->getRowMap()->lib(),
+                                                Teuchos::OrdinalTraits<Xpetra::global_size_t>::invalid(),
+                                                lagr_Nodes,
+                                                A01->getRowMap()->getIndexBase(),
+                                                A01->getRowMap()->getComm());
+
+  // Build aggregates using the lagrange multiplier node map
+  RCP<Aggregates> aggregates = rcp(new Aggregates(lagr_NodeMap));
+  aggregates->setObjectLabel("UC (slave)");
+  aggregates->SetNumAggregates(Teuchos::as<LocalOrdinal>(dispAggId2lagAggId.size())); // dont forget to set number of new aggregates
+
+  // extract aggregate data structures to fill
+  Teuchos::ArrayRCP<LocalOrdinal> vertex2AggId = aggregates->GetVertex2AggId()->getDataNonConst(0);
+  Teuchos::ArrayRCP<LocalOrdinal> procWinner   = aggregates->GetProcWinner()->getDataNonConst(0);
+
+  /*for (size_t t = 0; t < slaveDofMap->getNodeNumElements(); t++) {
+    GlobalOrdinal grid = slaveDofMap->getGlobalElement(t);  // TODO simplify me
+
     if(A01->getRowMap()->isNodeGlobalElement(grid) ) {
       LocalOrdinal Alrid = A01->getRowMap()->getLocalElement(grid);
 
       // translate grid to nodeid
-      GlobalOrdinal nodeId = AmalgamationFactory::DOFGid2NodeId(grid, Teuchos::null /* parameter not used */, blockdim, offset);
-      LocalOrdinal laggId = aggsdata[Alrid/blockdim];
+      LocalOrdinal dispAggId = dispAggsData[Alrid/disp_blockdim];
+      std::cout << "need aggregate for dispAggId " << dispAggId << std::endl;
 
-      std::cout << "found grid " << grid << " ~ Alrid: " << Alrid << " nodeId: " << nodeId << " laggId: " << laggId << std::endl;
-
-      vertex2AggId[t] = dispAggId2lagAggId[laggId];
-      //vertex2AggId[t] = nodeId2lagAggId[nodeId];
+      vertex2AggId[t] = dispAggId2lagAggId[dispAggId];
       procWinner[t] = myRank;
-
-      // inefficient and only for 2d
-      /*vertex2AggId[laggId+0] = dispAggId2lagAggId[laggId];
-      vertex2AggId[laggId+1] = dispAggId2lagAggId[laggId];
-      procWinner[laggId+0] = myRank;
-      procWinner[laggId+1] = myRank;*/
     }
-  }
-
-
-  // print results
-  for(LocalOrdinal i = 0; i<vertex2AggId.size(); i++) {
-    std::cout << "LID: " << i << " GID: " << aggregates->GetVertex2AggId()->getMap()->getGlobalElement(i) << " aggId: " << vertex2AggId[i] << " procWinner: " << procWinner[i] << std::endl;
+  }*/
+  /*for(size_t t = 0; t < lagr_NodeMap->getNodeNumElements(); t++) {
+    // calculate corresponding global Lagrange row id
+  }*/
+  for (size_t r = 0; r < bOp->getRangeMap(1)->getNodeNumElements(); r++) {
+    // determine global Lagrange multiplier row Dof
+    // generate a node id using the grid, lagr_blockdim and lagr_offset // todo make sure, that nodeId is unique and does not interfer with the displacement nodes
+    GlobalOrdinal lagr_grid = bOp->getRangeMap(1)->getGlobalElement(r);
+    GlobalOrdinal lagr_nodeId =
+        AmalgamationFactory::DOFGid2NodeId(
+          lagr_grid, Teuchos::null /* parameter not used */,
+          lagr_blockdim, lagr_offset);
+    vertex2AggId[lagr_nodeid] = 0; // aggregate
+    procWinner[lagr_nodeid] = myRank;
   }
 
   currentLevel.Set("Aggregates", aggregates, this);
   aggregates->describe(GetOStream(Statistics0, 0), getVerbLevel());
+
+#endif
+
 }
 } // namespace MueLu
 

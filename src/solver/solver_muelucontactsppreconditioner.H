@@ -64,7 +64,7 @@ namespace LINALG
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
 
       // private Setup routine for MueLu Multigrid hierarchy
-      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
+      //Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
 
       Teuchos::ParameterList & mllist_;
 
