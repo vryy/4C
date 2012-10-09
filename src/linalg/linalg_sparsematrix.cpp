@@ -981,9 +981,11 @@ void LINALG::SparseMatrix::ApplyDirichlet(
         if (diagonalblock)
         {
           double one = 1.0;
-          err = sysmat_->SumIntoMyValues(i,1,&one,&i);
 #ifdef DEBUG
+          int err = sysmat_->SumIntoMyValues(i,1,&one,&i);
           if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#else
+          sysmat_->SumIntoMyValues(i,1,&one,&i);
 #endif
         }
       }
