@@ -365,7 +365,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // coarse level smoother/solver
   Teuchos::RCP<SmootherFactory> coarsestSmooFact;
-  coarsestSmooFact = MueLu::MLParameterListInterpreter<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetSmootherFactory(params, "coarse"/*, const int levelID, const RCP<FactoryBase> & AFact*/);
+  coarsestSmooFact = MueLu::MLParameterListInterpreter<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetSmootherFactory(params, "coarse");
 
   ///////////////////////////////////////////////////////////////////////
   // prepare factory managers

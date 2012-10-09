@@ -63,9 +63,9 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   //typedef Xpetra::CrsOperator<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> CrsOOperator; //TODO
   //typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactoryClass;
 
-  Monitor m(*this, "ContactSPAggregationFactory");
+  //Monitor m(*this, "ContactSPAggregationFactory");
 
-  Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  //Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
   //slaveDofMap->describe(*fos,Teuchos::VERB_EXTREME);
 
 #if 1
@@ -75,7 +75,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   TEUCHOS_TEST_FOR_EXCEPTION(bOp==Teuchos::null, Exceptions::BadCast, "MueLu::ContactSPAggregationFactory::Build: input matrix A is not of type BlockedCrsMatrix! error.");
 
   // determine rank of current processor
-  const int myRank = bOp->getRangeMap()->getComm()->getRank();
+  const Teuchos::RCP< const Teuchos::Comm< int > > comm = Ain->getRowMap()->getComm();
+  const int myRank = comm->getRank();//bOp->getRangeMap()->getComm()->getRank();
 
   // pick out subblocks of block matrix
   RCP<CrsMatrix> A00 = bOp->getMatrix(0,0);
@@ -91,8 +92,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
     RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0));
     TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
     disp_blockdim = strMap->getFixedBlockSize(); disp_offset   = strMap->getOffset();
-    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found disp_blockdim=" << disp_blockdim << " from strided maps. disp_offset=" << disp_offset << std::endl;
-  } else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for displacement Dofs available. Use blockdim=1 with offset=0" << std::endl;
+    //GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found disp_blockdim=" << disp_blockdim << " from strided maps. disp_offset=" << disp_offset << std::endl;
+  } //else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for displacement Dofs available. Use blockdim=1 with offset=0" << std::endl;
 
   // determine block information for Lagrange multipliers
   // lagr_offset usually > zero (set by domainOffset for Ptent11Fact)
@@ -104,9 +105,9 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
     RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1));
     TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
     lagr_blockdim = strMap->getFixedBlockSize(); lagr_offset   = strMap->getOffset();
-    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found lagr_blockdim=" << lagr_blockdim << " from strided maps. lagr_offset=" << lagr_offset << std::endl;
+    //GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found lagr_blockdim=" << lagr_blockdim << " from strided maps. lagr_offset=" << lagr_offset << std::endl;
   } else {
-    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for Lagrange multipliers available. Use lagr_blockdim=disp_blockdim=" << lagr_blockdim << " with lagr_offset=" << lagr_offset << std::endl;
+    //GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for Lagrange multipliers available. Use lagr_blockdim=disp_blockdim=" << lagr_blockdim << " with lagr_offset=" << lagr_offset << std::endl;
   }
 
   // extract aggregates built using the displacement DOFs (from matrix block A00)
@@ -114,7 +115,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   RCP<LOVector> dispAggsVec = dispAggs->GetVertex2AggId();
   ArrayRCP< const LocalOrdinal > dispAggsData = dispAggsVec->getData(0);
 
-  dispAggsVec->describe(*fos,Teuchos::VERB_EXTREME);
+  //dispAggsVec->describe(*fos,Teuchos::VERB_EXTREME);
 
   // fetch map with slave Dofs from Level
   // slaveDofMap contains all global slave displacement DOF ids on the current level
@@ -133,9 +134,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
   // generate locally replicated vector for mapping Lagrange node ids to displacement node ids
   std::vector<GlobalOrdinal> lagrNodeId2dispNodeId(gMaxLagrNodeId-gMinLagrNodeId+1, -1);
+  std::vector<GlobalOrdinal> local_lagrNodeId2dispNodeId(gMaxLagrNodeId-gMinLagrNodeId+1, -1);
 
   // generate locally replicated vector for mapping Lagrange node ids to displacement aggregate id.
   std::vector<GlobalOrdinal> lagrNodeId2dispAggId(gMaxLagrNodeId-gMinLagrNodeId+1, -1);
+  std::vector<GlobalOrdinal> local_lagrNodeId2dispAggId(gMaxLagrNodeId-gMinLagrNodeId+1, -1);
 
   for (size_t r = 0; r < slaveDofMap->getNodeNumElements(); r++) {  // todo improve me: loop only over node (skip all dofs in between..)
     // obtain global slave displacement DOF id
@@ -163,23 +166,30 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
             lagr_gcid, Teuchos::null /* parameter not used */,
             lagr_blockdim,
             lagr_offset);
-        //lagr_nodeIds.push_back(lagr_nodeId);
-        TEUCHOS_TEST_FOR_EXCEPTION(lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId. error.");
-        if(lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] == -1)
-          lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] = disp_nodeId;
-        else std::cout << "PROC: " << myRank << " lagr_nodeId " << lagr_nodeId << " is already connected to lagrange nodeId " <<  lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] << ". Ignore new dispNodeId: " << disp_nodeId << std::endl;
 
-        lagrNodeId2dispAggId[lagr_nodeId-gMinLagrNodeId] = dispAggId; // todo: only if dispAggId belongs to current proc. these are local agg ids!
+        TEUCHOS_TEST_FOR_EXCEPTION(local_lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId. error.");
+        if(lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] == -1)
+          local_lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] = disp_nodeId;
+        //else std::cout << "PROC: " << myRank << " lagr_nodeId " << lagr_nodeId << " is already connected to lagrange nodeId " <<  lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] << ". Ignore new dispNodeId: " << disp_nodeId << std::endl;
+
+        local_lagrNodeId2dispAggId[lagr_nodeId-gMinLagrNodeId] = dispAggId; // todo: only if dispAggId belongs to current proc. these are local agg ids!
       }
     }
   }
 
-  GlobalOrdinal lagrNodeId2dispNodeId_size = Teuchos::as<GlobalOrdinal>(lagrNodeId2dispNodeId.size());
-  Teuchos::reduceAll(*A01->getColMap()->getComm(),Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispNodeId[0],&lagrNodeId2dispNodeId[0]);
-  Teuchos::reduceAll(*A01->getColMap()->getComm(),Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispAggId[0],&lagrNodeId2dispAggId[0]);
-  for(size_t t = 0; t<lagrNodeId2dispNodeId.size(); t++) {
+  GlobalOrdinal lagrNodeId2dispNodeId_size = Teuchos::as<GlobalOrdinal>(local_lagrNodeId2dispNodeId.size());
+  Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&local_lagrNodeId2dispNodeId[0],&lagrNodeId2dispNodeId[0]);
+  Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&local_lagrNodeId2dispAggId[0],&lagrNodeId2dispAggId[0]);
+
+  //Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispNodeId[0],&lagrNodeId2dispNodeId[0]);
+  //Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispAggId[0],&lagrNodeId2dispAggId[0]);
+  //Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispNodeId[0],Teuchos::outArg(&lagrNodeId2dispNodeId[0]));
+  //Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispAggId[0],Teuchos::outArg(&lagrNodeId2dispAggId[0]));
+
+  //Teuchos::outArg()
+  /*for(size_t t = 0; t<lagrNodeId2dispNodeId.size(); t++) {
     std::cout << "PROC: " << myRank << " t=" << t << " lagrNodeId=" << t+gMinLagrNodeId << " corr dispNodeId=" << lagrNodeId2dispNodeId[t] << " dispAggId=" << lagrNodeId2dispAggId[t] << std::endl;
-  }
+  }*/
 
   // build node map for Lagrange multipliers
   // generate "artificial nodes" for lagrange multipliers
@@ -204,9 +214,9 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
                                                 Teuchos::OrdinalTraits<Xpetra::global_size_t>::invalid(), // TODO fix me
                                                 lagr_Nodes,
                                                 A01->getRowMap()->getIndexBase(),
-                                                A01->getRowMap()->getComm());
+                                                /*A01->getRowMap()->getComm()*/comm);
 
-  lagr_NodeMap->describe(*fos,Teuchos::VERB_EXTREME);
+  //lagr_NodeMap->describe(*fos,Teuchos::VERB_EXTREME);
 
   // build processor local map: dispAggId2lagrAggId
   // generate new aggregegate ids if necessary (independent on each processor)
@@ -235,8 +245,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
   aggregates->SetNumAggregates(nLocalAggregates);
 
-  aggregates->GetVertex2AggId()->describe(*fos,Teuchos::VERB_EXTREME);
-  aggregates->GetProcWinner()->describe(*fos,Teuchos::VERB_EXTREME);
+  //aggregates->GetVertex2AggId()->describe(*fos,Teuchos::VERB_EXTREME);
+  //aggregates->GetProcWinner()->describe(*fos,Teuchos::VERB_EXTREME);
 
   currentLevel.Set("Aggregates", aggregates, this);
 

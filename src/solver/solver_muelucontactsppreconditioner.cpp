@@ -124,9 +124,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
     Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap  ));
 
-    std::cout << *epSlaveDofMap << std::endl;
-    std::cout << *epMasterDofMap << std::endl;
-
     // create maps
     Teuchos::RCP<const Map> fullrangemap = Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
 
@@ -136,14 +133,14 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<CrsMatrix> xA22 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1,1).EpetraMatrix()));
 
     ///////////////////// DEBUG
-    Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps> > t00 = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps>(xA11));
+    /*Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps> > t00 = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps>(xA11));
     Utils::Write("A00.dat", *t00);
     Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps> > t01 = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps>(xA12));
     Utils::Write("A01.dat", *t01);
     Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps> > t10 = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps>(xA21));
     Utils::Write("A10.dat", *t10);
     Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps> > t11 = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LocalOrdinal, GlobalOrdinal, Node,LocalMatOps>(xA22));
-    Utils::Write("A11.dat", *t11);
+    Utils::Write("A11.dat", *t11);*/
     ///////////////////// DEBUG
 
     ///////////////////// EXPERIMENTAL
@@ -160,8 +157,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     std::vector<Teuchos::RCP<const Map> > xmaps;
     xmaps.push_back(strMap1);
     xmaps.push_back(strMap2);
-
-    std::cout << "length of A11 block: " << xA11->getRowMap()->getGlobalNumElements() << std::endl;
 
     Teuchos::RCP<const Xpetra::MapExtractor<Scalar,LO,GO> > map_extractor = Xpetra::MapExtractorFactory<Scalar,LO,GO>::Build(fullrangemap,xmaps);
 
@@ -185,11 +180,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
         nspVector11i[j] = (*nsdata)[i*myLength+j];
       }
     }
-
-
-
-    std::cout << "PDE equations: " << numdf << std::endl;
-    std::cout << "nullspace dims: " << dimns << std::endl;
 
     ///////////////////////////////////////////////////////////////////////
     // special aggregation strategy
@@ -300,7 +290,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<GenericRFactory> RFact = Teuchos::rcp(new GenericRFactory(PFact));
 
     Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory(PFact, RFact));
-    //AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
+    AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
     // TODO add transfer factories!!!!
     Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", Ptent11Fact, MueLu::NoFactory::getRCP()));
