@@ -968,9 +968,11 @@ void LINALG::SparseMatrix::ApplyDirichlet(
         int *indexOffset;
         int *indices;
         double *values;
-        int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
 #ifdef DEBUG
+        int err = sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
         if (err<0) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+#else
+        sysmat_->ExtractCrsDataPointers(indexOffset, indices, values);
 #endif
         // zero row
         memset(&values[indexOffset[i]], 0,
@@ -1709,9 +1711,9 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
       if (count1) err1 = A21->InsertGlobalValues(grid,count1,&gvalues1[0],&gcindices1[0]);
       if (count2) err2 = A22->InsertGlobalValues(grid,count2,&gvalues2[0],&gcindices2[0]);
     }
-#ifdef DEBUG
+//#ifdef DEBUG
     if (err1<0 || err2<0) dserror("SparseMatrix::Split2x2: Epetra_CrsMatrix::InsertGlobalValues returned err1=%d / err2=%d",err1,err2);
-#endif
+//#endif
   } // for (int i=0; i<A->NumMyRows(); ++i)
   // Do not complete BlockMatrix
   return;
