@@ -70,6 +70,7 @@
 #include "muelu/muelu_ContactTransferFactory_decl.hpp"
 #include "muelu/muelu_ContactMapTransferFactory_decl.hpp"
 #include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
+#include "muelu/muelu_ContactSPAggregationFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 
 #include "solver_muelucontactsppreconditioner.H"
@@ -144,8 +145,14 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
      // create a Teuchos::Comm from EpetraComm
     Teuchos::RCP<const Teuchos::Comm<int> > comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
 
-    // TODO build strided maps (using the maps from block matrix A...
+    // get contact information
+    Teuchos::RCP<Epetra_Map> epMasterDofMap = mllist_.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap");
+    Teuchos::RCP<Epetra_Map> epSlaveDofMap  = mllist_.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap");
+    //Teuchos::RCP<Epetra_Map> epActiveDofMap = mllist_.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap");
+    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
+    Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap  ));
 
+    // create maps
     Teuchos::RCP<const Map> fullrangemap = Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
 
     Teuchos::RCP<CrsMatrix> xA11 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0,0).EpetraMatrix()));
@@ -158,15 +165,13 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     stridingInfo1.push_back(numdf);
     Teuchos::RCP<Xpetra::StridedEpetraMap> strMap1 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(0,0).EpetraMatrix()->RowMap()), stridingInfo1, -1 /* stridedBlock */, 0 /*globalOffset*/));
     std::vector<size_t> stridingInfo2;
-    stridingInfo2.push_back(1);
+    stridingInfo2.push_back(numdf); // we have numdf Lagrange multipliers per node at the contact interface!
     Teuchos::RCP<Xpetra::StridedEpetraMap> strMap2 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(1,1).EpetraMatrix()->RowMap()), stridingInfo2, -1 /* stridedBlock */, 0 /*globalOffset*/));
     std::cout << *strMap1 << std::endl;
     std::cout << *strMap2 << std::endl;
     ///////////////////// EXPERIMENTAL
 
     std::vector<Teuchos::RCP<const Map> > xmaps;
-    //xmaps.push_back(xA11->getRowMap()); // TODO introduce strided maps
-    //xmaps.push_back(xA22->getRowMap());
     xmaps.push_back(strMap1);
     xmaps.push_back(strMap2);
 
@@ -224,6 +229,9 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     H->GetLevel(0)->Set("A",Teuchos::rcp_dynamic_cast<Matrix>(bOp));
     H->GetLevel(0)->Set("Nullspace1",nspVector11);
     H->GetLevel(0)->Set("coarseAggStat",aggStat);
+    H->GetLevel(0)->Set("MasterDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xMasterDofMap));  // set map with active dofs
+    H->GetLevel(0)->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
+
 
     Teuchos::RCP<SubBlockAFactory> A11Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
     Teuchos::RCP<SubBlockAFactory> A22Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 1, 1));
@@ -263,7 +271,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 
     // use TentativePFactory
     Teuchos::RCP<AmalgamationFactory> amalgFact22 = Teuchos::rcp(new AmalgamationFactory(A22Fact));
-    Teuchos::RCP<TentativePFactory> P22Fact = Teuchos::rcp(new TentativePFactory(UCAggFact11, amalgFact22));
+    Teuchos::RCP<MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > UCAggFact22 = Teuchos::rcp(new MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(UCAggFact11, amalgFact11));
+    Teuchos::RCP<TentativePFactory> P22Fact = Teuchos::rcp(new TentativePFactory(UCAggFact22, amalgFact22));
     P22Fact->setStridingData(stridingInfo2);
     //P22Fact->setStridedBlockId(0); // declare this P22Fact to be the transfer operator for the pressure dofs
 
@@ -276,7 +285,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     M22->SetFactory("A", A22Fact);
     M22->SetFactory("P", P22Fact);
     M22->SetFactory("R", R22Fact);
-    M22->SetFactory("Aggregates", UCAggFact11);
+    M22->SetFactory("Aggregates", UCAggFact22);
     M22->SetFactory("Nullspace", nspFact22);
     M22->SetFactory("Ptent", P22Fact);
     M22->SetIgnoreUserData(true);               // always use data from factories defined in factory manager
@@ -289,6 +298,9 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<GenericRFactory> RFact = Teuchos::rcp(new GenericRFactory(PFact));
 
     Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory(PFact, RFact));
+    // TODO add transfer factories!!!!
+    //Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
+    //AcFact->AddTransferFactory(cmTransFact3);
 
     // create Braess-Sarazin smoother
     Scalar omega = 1.3;
