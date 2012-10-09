@@ -19,6 +19,7 @@ Maintainer: Martin Winklmaier
 #include<Teuchos_RCP.hpp>
 
 class Epetra_MultiVector;
+class Epetra_SerialDenseVector;
 class Epetra_Vector;
 
 namespace DRT
@@ -77,20 +78,20 @@ namespace OPTI
     Teuchos::RCP<Epetra_Vector> Iterate(
         double& objective,
         Teuchos::RCP<Epetra_Vector> objectivegrad,
-        double* constraints,
+        Teuchos::RCP<Epetra_SerialDenseVector> constraints,
         Teuchos::RCP<Epetra_MultiVector> constraintsgrad
     );
 
     bool Converged(
         double& objective,
         Teuchos::RCP<Epetra_Vector> objectivegrad,
-        double* constraints,
+        Teuchos::RCP<Epetra_SerialDenseVector> constraints,
         Teuchos::RCP<Epetra_MultiVector> constraintsgrad
     );
 
     void FinishIteration(
         double& objective,
-        double* constraints,
+        Teuchos::RCP<Epetra_SerialDenseVector> constraints,
         bool& doGradient
     );
 
@@ -99,7 +100,7 @@ namespace OPTI
     void InitIter(
         double& objective,
         Teuchos::RCP<Epetra_Vector> objectivegrad,
-        double* constraints,
+        Teuchos::RCP<Epetra_SerialDenseVector> constraints,
         Teuchos::RCP<Epetra_MultiVector> constraintsgrad);
 
     void Asymptotes();
@@ -108,12 +109,12 @@ namespace OPTI
 
     void UpdateRho(
         double& objective,
-        double* constraints
+        Teuchos::RCP<Epetra_SerialDenseVector> constraints
     );
 
     bool InnerConvergence(
         double& objective,
-        double* constraints
+        Teuchos::RCP<Epetra_SerialDenseVector> constraints
     );
 
     void InitSubSolve();
@@ -125,7 +126,7 @@ namespace OPTI
     bool KKTCond(
         double& objective,
         Teuchos::RCP<Epetra_Vector> objectivegrad,
-        double* constraints,
+        Teuchos::RCP<Epetra_SerialDenseVector> constraints,
         Teuchos::RCP<Epetra_MultiVector> constraintsgrad
     );
 
@@ -182,9 +183,9 @@ namespace OPTI
 
     //! @name constraint data
 
-    double* constr_; /// constraint values
+    Teuchos::RCP<Epetra_SerialDenseVector> constr_; /// constraint values
     Teuchos::RCP<Epetra_MultiVector> constr_deriv_; /// derivation of constraints w.r.t. optimization variable
-    double* constr_appr_; /// MMA approximation of constraint
+    Teuchos::RCP<Epetra_SerialDenseVector> constr_appr_; /// MMA approximation of constraint
     //@}
 
     //! @name approximation function data
@@ -195,20 +196,20 @@ namespace OPTI
 
     Teuchos::RCP<Epetra_MultiVector> P_; /// first part of approximation function of constraints
     Teuchos::RCP<Epetra_MultiVector> Q_; /// second part of approximation function of constraints
-    double* b_; /// third part of approximation function of constraints
+    Teuchos::RCP<Epetra_SerialDenseVector> b_; /// third part of approximation function of constraints
     //@}
 
     //! @name approximation function coefficients
 
     double rho0_; /// part of the objective function of the MMA subproblem
-    double* rho_; /// part of the objective function of the MMA subproblem, size m_
+    Teuchos::RCP<Epetra_SerialDenseVector> rho_; /// part of the objective function of the MMA subproblem, size m_
     double rho0min_; /// part of the objective function of the MMA subproblem
-    double* rhomin_; /// part of the objective function of the MMA subproblem
+    Teuchos::RCP<Epetra_SerialDenseVector> rhomin_; /// part of the objective function of the MMA subproblem
     //@}
 
     //! @name additional optimization variables
 
-    double* y_mma_; /// additional optimization variables for better convergence properties
+    Teuchos::RCP<Epetra_SerialDenseVector> y_mma_; /// additional optimization variables for better convergence properties
     double z_mma_; /// additional optimization variable for better convergence properties
     //@}
 
@@ -216,17 +217,17 @@ namespace OPTI
 
     Teuchos::RCP<Epetra_Vector> xsi_; /// Lagrange multiplier for xmin-x <= 0
     Teuchos::RCP<Epetra_Vector> eta_; /// Lagrange multiplier for x-xmax <= 0
-    double* lam_; /// Lagrange multiplier for the m constraints
-    double* mu_; /// Lagrange multiplier for constraints y <= 0
+    Teuchos::RCP<Epetra_SerialDenseVector> lam_; /// Lagrange multiplier for the m constraints
+    Teuchos::RCP<Epetra_SerialDenseVector> mu_; /// Lagrange multiplier for constraints y <= 0
     double zet_; /// Lagrange multiplier for -z <= 0
     //@}
 
     //! @name additional model parameters
 
     double a0_; /// model parameter
-    double* a_; /// model parameter with size = m_
-    double* c_; /// model parameter with size = m_
-    double* d_; /// model parameter with size = m_
+    Teuchos::RCP<Epetra_SerialDenseVector> a_; /// model parameter with size = m_
+    Teuchos::RCP<Epetra_SerialDenseVector> c_; /// model parameter with size = m_
+    Teuchos::RCP<Epetra_SerialDenseVector> d_; /// model parameter with size = m_
     //@}
 
     //! @name convergence stuff
@@ -240,7 +241,7 @@ namespace OPTI
 
 
     double facmin_; /// minimal coefficient in a denominator
-    double* s_; /// helper variable
+    Teuchos::RCP<Epetra_SerialDenseVector> s_; /// helper variable
 
 
 

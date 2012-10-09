@@ -193,7 +193,7 @@ private:
     map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
     LINALG::Matrix<nen_,1>& edens,
     double& objective,
-    double* constraints,
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints,
     RCP<MAT::Material> mat,
     DRT::UTILS::GaussIntegration& intpoints
   );

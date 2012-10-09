@@ -186,7 +186,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
 {
   double& objective = params.get<double>("objective_value");
 
-  double* constraints = params.get<double*>("constraint_values");
+  Teuchos::RCP<Epetra_SerialDenseVector> constraints = params.get<Teuchos::RCP<Epetra_SerialDenseVector> >("constraint_values");
 
   RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
 
@@ -244,14 +244,14 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
   map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
   LINALG::Matrix<nen_,1>& edens,
   double& objective,
-  double* constraints,
+  Teuchos::RCP<Epetra_SerialDenseVector> constraints,
   RCP<MAT::Material> mat,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
   double value = 0.0; // total unscaled entries at one gauss point
 
-  double& densint = constraints[0]; // integrated density
+  double& densint = (*constraints)[0]; // integrated density
 
   //------------------------------------------------------------------------
   //  start loop over integration points

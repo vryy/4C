@@ -23,6 +23,7 @@ Maintainer: Martin Winklmaier
 /// forward declarations
 class Epetra_Map;
 class Epetra_MultiVector;
+class Epetra_SerialDenseVector;
 class Epetra_Vector;
 
 namespace Teuchos
@@ -174,7 +175,7 @@ namespace TOPOPT
     double obj_value_; /// value of the objective (adjoint solution not required)
     Teuchos::RCP<Epetra_Vector> obj_grad_; /// gradient of the objective (with help of the adjoint solution)
 
-    double* constr_; /// values of the constraints
+    Teuchos::RCP<Epetra_SerialDenseVector> constr_; /// values of the constraints
     Teuchos::RCP<Epetra_MultiVector> constr_deriv_; /// derivatives of the constraints w.r.t. the optimization variables
     int num_constr_; /// number of constraints
 

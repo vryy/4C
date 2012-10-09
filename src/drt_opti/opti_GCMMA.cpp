@@ -45,36 +45,36 @@ x_diff_min_(1.0e-5),
 obj_(0.0),
 obj_deriv_(rcp(new Epetra_Vector(x->Map()))),
 obj_appr_(0.0),
-constr_(new double[m_]),
+constr_(rcp(new Epetra_SerialDenseVector(m_))),
 constr_deriv_(rcp(new Epetra_MultiVector(x->Map(),m_))),
-constr_appr_(new double[m_]),
+constr_appr_(rcp(new Epetra_SerialDenseVector(m_))),
 p0_(rcp(new Epetra_Vector(x->Map()))),
 q0_(rcp(new Epetra_Vector(x->Map()))),
 r0_(0.0),
 P_(rcp(new Epetra_MultiVector(x->Map(),m_))),
 Q_(rcp(new Epetra_MultiVector(x->Map(),m_))),
-b_(new double[m_]),
+b_(rcp(new Epetra_SerialDenseVector(m_))),
 rho0_(0.01),
-rho_(new double[m_]),
+rho_(rcp(new Epetra_SerialDenseVector(m_))),
 rho0min_(1.0e-6),
-rhomin_(new double[m_]),
-y_mma_(new double[m_]),
+rhomin_(rcp(new Epetra_SerialDenseVector(m_))),
+y_mma_(rcp(new Epetra_SerialDenseVector(m_))),
 z_mma_(0.0),
 xsi_(rcp(new Epetra_Vector(x->Map()))),
 eta_(rcp(new Epetra_Vector(x->Map()))),
-lam_(new double[m_]),
-mu_(new double[m_]),
+lam_(rcp(new Epetra_SerialDenseVector(m_))),
+mu_(rcp(new Epetra_SerialDenseVector(m_))),
 zet_(1.0),
 a0_(1.0),
-a_(new double[m_]),
-c_(new double[m_]),
-d_(new double[m_]),
+a_(rcp(new Epetra_SerialDenseVector(m_))),
+c_(rcp(new Epetra_SerialDenseVector(m_))),
+d_(rcp(new Epetra_SerialDenseVector(m_))),
 tol_sub_min_(1.0e-09),
 tol_(1.0e-5),
 res_norm_(1.0e-6),
 inc_norm_(1.0e-6),
 facmin_(1.0e-10),
-s_(new double[m_])
+s_(rcp(new Epetra_SerialDenseVector(m_)))
 {
   if (m_>100)
     dserror("current implementation inefficient for large number of constraints due to array structure and used solver");
@@ -96,9 +96,9 @@ s_(new double[m_])
   else
     x_max_ = rcp(new Epetra_Vector(*x_max));
 
-//  // TODO remove these two lines!!!
-//  x_min_->PutScalar(-2.0);
-//  x_max_->PutScalar(2.0);
+  // TODO remove these two lines!!!
+  x_min_->PutScalar(-2.0);
+  x_max_->PutScalar(2.0);
 
   if ((not x_min_->Map().SameAs(x_max_->Map())) or
       (not x_min_->Map().SameAs(x_->Map())))
@@ -113,11 +113,11 @@ s_(new double[m_])
   alpha_ = Teuchos::rcp(new Epetra_Vector(*x_min_));
   beta_ = Teuchos::rcp(new Epetra_Vector(*x_max_));
 
-  double* p1 = a_;
-  double* p2 = c_;
-  double* p3 = d_;
-  double* p4 = rho_;
-  double* p5 = rhomin_;
+  double* p1 = a_->Values();
+  double* p2 = c_->Values();
+  double* p3 = d_->Values();
+  double* p4 = rho_->Values();
+  double* p5 = rhomin_->Values();
 
   for (int i=0;i<m_;i++)
   {
@@ -141,7 +141,7 @@ s_(new double[m_])
 Teuchos::RCP<Epetra_Vector> OPTI::GCMMA::Iterate(
     double& objective,
     Teuchos::RCP<Epetra_Vector> objectivegrad,
-    double* constraints,
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints,
     Teuchos::RCP<Epetra_MultiVector> constraintsgrad
 )
 {
@@ -162,7 +162,7 @@ Teuchos::RCP<Epetra_Vector> OPTI::GCMMA::Iterate(
 void OPTI::GCMMA::InitIter(
     double& objective,
     Teuchos::RCP<Epetra_Vector> objectivegrad,
-    double* constraints,
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints,
     Teuchos::RCP<Epetra_MultiVector> constraintsgrad
 )
 {
@@ -174,28 +174,27 @@ void OPTI::GCMMA::InitIter(
   // initialization of old values
   if (outer_iter_ == 0)
   {
-//    // TODO test case
-//    if (x_->Map().NumMyElements()%3!=0)
-//      dserror("cannot be tested");
-//
-//    int l = x_->Map().NumMyElements()/3;
-//    double val[3];
-//
-//    for(int i=0;i<l;i++)
-//    {
-//      double alphai = (3*(i+1)-2*l)*M_PI/(6*l);
-//
-//      val[0] = cos(alphai + M_PI/12);
-//      val[1] = sin(alphai + M_PI/12);
-//      val[2] = sin(2*alphai + M_PI/6);
-//
-//      int indices[] = {i,i+l,i+2*l};
-//      x_->ReplaceMyValues(3,(double*)val,(int*)indices); // lnodeid = ldofid
-//    }
+    // TODO test case
+    if (x_->Map().NumMyElements()%3!=0)
+      dserror("cannot be tested");
+
+    int l = x_->Map().NumMyElements()/3;
+    double val[3];
+
+    for(int i=0;i<l;i++)
+    {
+      double alphai = (3*(i+1)-2*l)*M_PI/(6*l);
+
+      val[0] = cos(alphai + M_PI/12);
+      val[1] = sin(alphai + M_PI/12);
+      val[2] = sin(2*alphai + M_PI/6);
+
+      int indices[] = {i,i+l,i+2*l};
+      x_->ReplaceMyValues(3,(double*)val,(int*)indices); // lnodeid = ldofid
+    }
 
 
 
-    cout << "here outer iter 0 - init" << endl;
     *x_old_ = *x_;
     *x_old2_ = *x_;
     *x_mma_ = *x_;
@@ -203,37 +202,37 @@ void OPTI::GCMMA::InitIter(
 
 
 
-//  // TODO testing example -> remove
-//  objective = 0.0;
-//  constraints[0] = 0.0;
-//
-//  int l = x_mma_->Map().NumMyElements()/3;
-//
-//  double alpha;
-//  for (int i=0;i<l;i++)
-//  {
-//    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
-//
-//    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
-//
-//    if (inner_iter_==0)
-//    {
-//      (*objectivegrad)[i] = cos(alpha);
-//      (*objectivegrad)[i+l] = sin(alpha);
-//      (*objectivegrad)[i+2*l] = -0.1;
-//    }
-//
-//    constraints[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
-//
-//    if (inner_iter_==0)
-//    {
-//      (*constraintsgrad)[0][i] = 2*(*x_mma_)[i];
-//      (*constraintsgrad)[0][i+l] = 2*(*x_mma_)[i+l];
-//      (*constraintsgrad)[0][i+2*l] = 2*(*x_mma_)[i+2*l];
-//    }
-//  }
-//
-//  constraints[0] -= l + 1.0e-5;
+  // TODO testing example -> remove
+  objective = 0.0;
+  (*constraints)[0] = 0.0;
+
+  int l = x_mma_->Map().NumMyElements()/3;
+
+  double alpha = 0.0;
+  for (int i=0;i<l;i++)
+  {
+    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+
+    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
+
+    if (inner_iter_==0)
+    {
+      (*objectivegrad)[i] = cos(alpha);
+      (*objectivegrad)[i+l] = sin(alpha);
+      (*objectivegrad)[i+2*l] = -0.1;
+    }
+
+    (*constraints)[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
+
+    if (inner_iter_==0)
+    {
+      (*constraintsgrad)[0][i] = 2*(*x_mma_)[i];
+      (*constraintsgrad)[0][i+l] = 2*(*x_mma_)[i+l];
+      (*constraintsgrad)[0][i+2*l] = 2*(*x_mma_)[i+2*l];
+    }
+  }
+
+  (*constraints)[0] -= l + 1.0e-5;
 
 
 
@@ -245,11 +244,10 @@ void OPTI::GCMMA::InitIter(
   {
     // update counters
     outer_iter_++;
-cout << "here outer iter " << outer_iter_ << endl;
 
     // reset constraints and objective values
-    double* constraint = constraints;
-    double* constr = constr_;
+    double* constraint = constraints->Values();
+    double* constr = constr_->Values();
     for (int i=0;i<m_;i++)
     {
       *constr = *constraint;
@@ -263,7 +261,7 @@ cout << "here outer iter " << outer_iter_ << endl;
     *obj_deriv_ = *objectivegrad;
     cout << "new obj is " << obj_ << endl;
     cout << "new obj deriv is " << *obj_deriv_ << endl;
-    cout << "new constr are " << constr_[0] << endl;
+    cout << "new constr are " << (*constr_)[0] << endl;
     cout << "new constr deriv are " << *constr_deriv_ << endl;
 
     // reset optimization variables
@@ -277,9 +275,8 @@ cout << "here outer iter " << outer_iter_ << endl;
   }
   else
   {
-cout << "here inner iter " << inner_iter_ << endl;
 cout << "new obj is " << objective << endl;
-cout << "new constr are " << constraints[0] << endl;
+cout << "new constr are " << (*constraints)[0] << endl;
     UpdateRho(objective,constraints);
   }
 }
@@ -364,8 +361,8 @@ void OPTI::GCMMA::InitRho()
 
 
   // set rho of constraints
-  double* rholoc = new double[m_];
-  double* rho = rholoc;
+  Epetra_SerialDenseVector rholoc(m_);
+  double* rho = rholoc.Values();
 
   for (int j=0;j<m_;j++)
   {
@@ -386,11 +383,11 @@ void OPTI::GCMMA::InitRho()
   }
 
   // communicate values
-  discret_->Comm().SumAll(rholoc,rho_,m_);
+  discret_->Comm().SumAll(rholoc.Values(),rho_->Values(),m_);
 
   // apply minimal value
-  rho = rho_;
-  double* rhomin = rhomin_;
+  rho = rho_->Values();
+  double* rhomin = rhomin_->Values();
 
   for (int j=0;j<m_;j++)
   {
@@ -400,7 +397,7 @@ void OPTI::GCMMA::InitRho()
     rhomin++;
   }
   cout << "rho0 is " << rho0_ << endl;
-  cout << "rho is " << rho_[0] << endl;
+  cout << "rho is " << (*rho_)[0] << endl;
 }
 
 
@@ -408,10 +405,11 @@ void OPTI::GCMMA::InitRho()
  *----------------------------------------------------------------------*/
 void OPTI::GCMMA::UpdateRho(
     double& objective,
-    double* constraints
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints
 )
 {
   double fac = 0.0;
+  double facloc = 0.0;
 
   double* x = x_->Values();
   double* xmma = x_mma_->Values();
@@ -421,7 +419,7 @@ void OPTI::GCMMA::UpdateRho(
 
   for (int i=0;i<n_;i++)
   {
-    fac += (*xmma-*x)/(*asy_max-*xmma) * (*xmma-*x)/(*xmma-*asy_min) * (*asy_max-*asy_min)/max(x_diff_min_,*xdiff);
+    facloc += (*xmma-*x)/(*asy_max-*xmma) * (*xmma-*x)/(*xmma-*asy_min) * (*asy_max-*asy_min)/max(x_diff_min_,*xdiff);
 
     x++;
     xmma++;
@@ -429,6 +427,10 @@ void OPTI::GCMMA::UpdateRho(
     asy_min++;
     xdiff++;
   }
+
+  // communicate values
+  discret_->Comm().SumAll(&facloc,&fac,1);
+
   fac = max(fac,facmin_);
 
   if (objective > obj_appr_ + 0.5*tol_sub_min_)
@@ -436,9 +438,9 @@ void OPTI::GCMMA::UpdateRho(
     rho0_ = min(1.1*(rho0_ + (objective-obj_appr_)/fac),10*rho0_);
   }
 
-  double* constr = constraints;
-  double* constr_appr = constr_appr_;
-  double* rho = rho_;
+  double* constr = constraints->Values();
+  double* constr_appr = constr_appr_->Values();
+  double* rho = rho_->Values();
 
   for (int i=0;i<m_;i++)
   {
@@ -452,54 +454,59 @@ void OPTI::GCMMA::UpdateRho(
     rho++;
   }
   cout << "rho0 is " << rho0_ << endl;
-  cout << "rho is " << rho_[0] << endl;
+  cout << "rho is " << (*rho_)[0] << endl;
 }
 
 
 bool OPTI::GCMMA::Converged(
     double& objective,
     Teuchos::RCP<Epetra_Vector> objectivegrad,
-    double* constraints,
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints,
     Teuchos::RCP<Epetra_MultiVector> constraintsgrad
 )
 {
-//  // TODO testing example -> remove
-//  objective = 0.0;
-//  constraints[0] = 0.0;
-//
-//  int l = x_mma_->Map().NumMyElements()/3;
-//
-//  double alpha;
-//  for (int i=0;i<l;i++)
-//  {
-//    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
-//
-//    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
-//    constraints[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
-//  }
-//
-//  constraints[0] -= l + 1.0e-5;
-//
-//  if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
-//  {
-//    for (int i=0;i<l;i++)
-//    {
-//      alpha = M_PI*(3*(i+1)-2*l)/(6*l);
-//
-//      (*objectivegrad)[i] = cos(alpha);
-//      (*objectivegrad)[i+l] = sin(alpha);
-//      (*objectivegrad)[i+2*l] = -0.1;
-//
-//      (*constraintsgrad)[0][i] = 2*(*x_mma_)[i];
-//      (*constraintsgrad)[0][i+l] = 2*(*x_mma_)[i+l];
-//      (*constraintsgrad)[0][i+2*l] = 2*(*x_mma_)[i+2*l];
-//    }
-//  }
+  // TODO testing example -> remove
+  objective = 0.0;
+  (*constraints)[0] = 0.0;
+
+  int l = x_mma_->Map().NumMyElements()/3;
+
+  double alpha;
+  for (int i=0;i<l;i++)
+  {
+    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+
+    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
+    (*constraints)[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
+  }
+
+  (*constraints)[0] -= l + 1.0e-5;
+
+  if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
+  {
+    for (int i=0;i<l;i++)
+    {
+      alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+
+      (*objectivegrad)[i] = cos(alpha);
+      (*objectivegrad)[i+l] = sin(alpha);
+      (*objectivegrad)[i+2*l] = -0.1;
+
+      (*constraintsgrad)[0][i] = 2*(*x_mma_)[i];
+      (*constraintsgrad)[0][i+l] = 2*(*x_mma_)[i+l];
+      (*constraintsgrad)[0][i+2*l] = 2*(*x_mma_)[i+2*l];
+    }
+  }
 
 
 
 
-//TODO test if totaliter counter works well  cout << "total iter here is " << total_iter_ << endl;
+//  cout << "test if iter counters works well: total iter always increases by 1," << endl;
+//  cout << "either inner or outer iter increase by 1, in second case inner iter shall be 1" << endl;
+//  cout << "total iter is " << total_iter_ << endl;
+//  cout << "inner iter is " << inner_iter_ << endl;
+//  cout << "outer iter is " << outer_iter_ << endl;
+
   if (total_iter_==max_total_iter_)
   {
     cout << "WARNING: GCMMA optimization algorithm did not converge" << endl;
@@ -529,26 +536,26 @@ bool OPTI::GCMMA::Converged(
 
 void OPTI::GCMMA::FinishIteration(
     double& objective,
-    double* constraints,
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints,
     bool& doGradient
 )
 {
-//  // TODO testing example -> remove
-//  objective = 0.0;
-//  constraints[0] = 0.0;
-//
-//  int l = x_mma_->Map().NumMyElements()/3;
-//
-//  double alpha;
-//  for (int i=0;i<l;i++)
-//  {
-//    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
-//
-//    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
-//    constraints[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
-//  }
-//
-//  constraints[0] -= l + 1.0e-5;
+  // TODO testing example -> remove
+  objective = 0.0;
+  (*constraints)[0] = 0.0;
+
+  int l = x_mma_->Map().NumMyElements()/3;
+
+  double alpha;
+  for (int i=0;i<l;i++)
+  {
+    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+
+    objective += cos(alpha)*(*x_mma_)[i] + sin(alpha)*(*x_mma_)[i+l] - 0.1*(*x_mma_)[i+2*l];
+    (*constraints)[0] += (*x_mma_)[i]*(*x_mma_)[i] + (*x_mma_)[i+l]*(*x_mma_)[i+l] + (*x_mma_)[i+2*l]*(*x_mma_)[i+2*l];
+  }
+
+  (*constraints)[0] -= l + 1.0e-5;
 
 
 
@@ -565,80 +572,69 @@ void OPTI::GCMMA::FinishIteration(
 bool OPTI::GCMMA::KKTCond(
     double& objective,
     Teuchos::RCP<Epetra_Vector> objectivegrad,
-    double* constraints,
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints,
     Teuchos::RCP<Epetra_MultiVector> constraintsgrad
 )
 {
-  // compute residual for original variables x
-  Teuchos::RCP<Epetra_Vector> resX = rcp(new Epetra_Vector(*objectivegrad));
+  /*
+   * Global residual of primal dual interior point algorithm consists of:
+   * res x/y/z
+   * res lam/mu/std
+   * res xsi/eta/zet
+   */
+  double resnorm = 0.0;
+  double value = 0.0;
 
+
+
+  Teuchos::RCP<Epetra_Vector> resX = rcp(new Epetra_Vector(*objectivegrad));
   resX->Update(-1.0,*xsi_,1.0);
   resX->Update(+1.0,*eta_,1.0);
 
-  double* lam = lam_;
+  double resy = 0.0; // whole residual is of size m_
+  double resz = a0_ - zet_;
+  double reslam = 0.0; // whole residual is of size m_
+  double resmu = 0.0; // whole residual is of size m_
+  double res = 0.0; // whole residual is of size m_
+
+
+  double* lam = lam_->Values();
+  double* c = c_->Values();
+  double* d = d_->Values();
+  double* y = y_mma_->Values();
+  double* mu = mu_->Values();
+  double* a = a_->Values();
+  double* constr = constraints->Values();
+  double* s = s_->Values();
 
   for (int i=0;i<m_;i++)
   {
     Epetra_Vector constr_deriv(View,*constraintsgrad,i);
-
     resX->Update(*lam,constr_deriv,1.0);
 
-    lam++;
-  }
+    resy = *c + *d**y-*mu-*lam;
+    resz -= *a**lam;
+    reslam = *constr - z_mma_**a - *y + *s;
+    resmu = *mu**y;
+    res = *lam**s;
 
+    resnorm += resy*resy + reslam*reslam + resmu*resmu + res*res;
 
-  double* resy = new double[m_];
-  double* resyptr = resy;
-  double* c = c_;
-  double* d = d_;
-  double* y = y_mma_;
-  double* mu = mu_;
-  lam = lam_;
-
-  for (int i=0;i<m_;i++)
-  {
-    *resyptr = *c + *d**y-*mu-*lam;
-
-    resyptr++;
     c++;
     d++;
     y++;
     mu++;
     lam++;
-  }
-
-
-  double resz = a0_ - zet_;
-  double* a = a_;
-  lam = lam_;
-
-  for (int i=0;i<m_;i++)
-  {
-    resz -= *a**lam;
-
     a++;
-    lam++;
-  }
-
-
-  double* reslam = new double[m_];
-  double* reslamptr = reslam;
-
-  double* constr = constraints;
-  a = a_;
-  y = y_mma_;
-  double* s = s_;
-
-  for (int i=0;i<m_;i++)
-  {
-    *reslamptr = *constr - z_mma_**a - *y + *s;
-
-    reslamptr++;
     constr++;
-    a++;
-    y++;
     s++;
-  }
+ }
+
+  resX->Norm2(&value);
+  resnorm += value*value;
+
+  resnorm += resz*resz;
+
 
 
   Epetra_Vector resXsi(x_->Map());
@@ -667,74 +663,18 @@ bool OPTI::GCMMA::KKTCond(
     xmin++;
   }
 
-
-  double* resmu = new double[m_];
-  double* resmuptr = resmu;
-  mu = mu_;
-  y = y_mma_;
-
-  for (int i=0;i<m_;i++)
-  {
-    *resmuptr = *mu**y;
-
-    resmuptr++;
-    mu++;
-    y++;
-  }
-
-
-  double reszet = zet_*z_mma_;
-
-
-  double* res = new double[m_];
-  double* resptr = res;
-  s = s_;
-  lam = lam_;
-
-  for (int i=0;i<m_;i++)
-  {
-    *resptr = *lam**s;
-
-    resptr++;
-    s++;
-    lam++;
-  }
-
-
-  double resnorm = 0.0;
-  double value = 0.0;
-//  residu2 = [rezet]';
-  resX->Norm2(&value);
-  resnorm += value*value;
-
-  resyptr = resy;
-  for (int i=0;i<m_;i++)
-  {
-    resnorm += *resyptr**resyptr;
-    resyptr++;
-  }
-
-  resnorm += resz*resz;
-
-  reslamptr = reslam;
-  resmuptr = resmu;
-  resptr = res;
-  for (int i=0;i<m_;i++)
-  {
-    resnorm += *reslamptr**reslamptr + *resmuptr**resmuptr + *resptr**resptr;
-
-    reslamptr++;
-    resmuptr++;
-    resptr++;
-  }
-
   resXsi.Norm2(&value);
   resnorm += value*value;
 
   resEta.Norm2(&value);
   resnorm += value*value;
 
+
+
+  double reszet = zet_*z_mma_;
   resnorm += reszet*reszet;
+
+
 
 
   resnorm = sqrt(resnorm);
@@ -748,10 +688,9 @@ bool OPTI::GCMMA::KKTCond(
 
 bool OPTI::GCMMA::InnerConvergence(
     double& objective,
-    double* constraints
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints
 )
 {
-//TODO check if inner iter counter works well  cout << "inner iter here is " << inner_iter_ << endl;
   if (outer_iter_==0)
     return true;
 
@@ -764,8 +703,8 @@ bool OPTI::GCMMA::InnerConvergence(
   if (obj_appr_ + tol_sub_min_ < objective)
     return false;
 
-  double* constr_appr = constr_appr_;
-  double* constr = constraints;
+  double* constr_appr = constr_appr_->Values();
+  double* constr = constraints->Values();
 
   for (int i=0;i<m_;i++)
   {
@@ -879,10 +818,10 @@ void OPTI::GCMMA::InitSubSolve()
   }
 
 
-  double* b = b_;
-  double* constr = constr_;
+  double* b = b_->Values();
+  double* constr = constr_->Values();
 
-  double* rho = rho_;
+  double* rho = rho_->Values();
   for (int i=0;i<m_;i++)
   {
     Epetra_Vector p_i(View,*P_,i);
@@ -950,8 +889,8 @@ void OPTI::GCMMA::SubSolve()
   x_mma_->Update(0.5,*alpha_,0.0);
   x_mma_->Update(0.5,*beta_,1.0);
 
-  double* y = y_mma_;
-  double* lam = lam_;
+  double* y = y_mma_->Values();
+  double* lam = lam_->Values();
   for (int i=0;i<m_;i++)
   {
     *y = 1.0;
@@ -983,9 +922,9 @@ void OPTI::GCMMA::SubSolve()
   }
 
 
-  double* mu = mu_;
-  double* s = s_;
-  double* c = c_;
+  double* mu = mu_->Values();
+  double* s = s_->Values();
+  double* c = c_->Values();
   for (int i=0;i<m_;i++)
   {
     *mu = max(1.0, *c/2.0);
@@ -1049,8 +988,8 @@ void OPTI::GCMMA::SubSolve()
 
       for (int j=0;j<m_;j++)
       {
-        plam += (*P_)[j][i]*lam_[j];
-        qlam += (*Q_)[j][i]*lam_[j];
+        plam += (*P_)[j][i]*(*lam_)[j];
+        qlam += (*Q_)[j][i]*(*lam_)[j];
       }
 
       double dpsidx = plam/(*ux2ptr) - qlam/(*xl2ptr);
@@ -1071,12 +1010,12 @@ void OPTI::GCMMA::SubSolve()
     }
 
 
-    double* resy = new double[m_];
-    double* c = c_;
-    double* d = d_;
-    double* y = y_mma_;
-    double* mu = mu_;
-    double* lam = lam_;
+    Epetra_SerialDenseVector resy(m_);
+    double* c = c_->Values();
+    double* d = d_->Values();
+    double* y = y_mma_->Values();
+    double* mu = mu_->Values();
+    double* lam = lam_->Values();
 
     for (int j=0;j<m_;j++)
     {
@@ -1090,8 +1029,8 @@ void OPTI::GCMMA::SubSolve()
     }
 
     double resz = a0_ - zet_;
-    double* a = a_;
-    lam = lam_;
+    double* a = a_->Values();
+    lam = lam_->Values();
 
     for (int j=0;j<m_;j++)
     {
@@ -1102,21 +1041,21 @@ void OPTI::GCMMA::SubSolve()
     }
 
 
-    double* reslam = new double[m_];
+    Epetra_SerialDenseVector reslam(m_);
 
-    double* gvec1 = new double[m_];
-    double* gvec2 = new double[m_];
+    Epetra_SerialDenseVector gvec1(m_);
+    Epetra_SerialDenseVector gvec2(m_);
 
-    uxinv1.Dot(*P_,gvec1);
-    xlinv1.Dot(*Q_,gvec2);
+    uxinv1.Dot(*P_,gvec1.Values());
+    xlinv1.Dot(*Q_,gvec2.Values());
 
-    double* reslamptr = reslam;
-    double* gvec1ptr = gvec1;
-    double* gvec2ptr = gvec2;
-    a = a_;
-    y = y_mma_;
-    double* s = s_;
-    double* b = b_;
+    double* reslamptr = reslam.Values();
+    double* gvec1ptr = gvec1.Values();
+    double* gvec2ptr = gvec2.Values();
+    a = a_->Values();
+    y = y_mma_->Values();
+    double* s = s_->Values();
+    double* b = b_->Values();
 
     for (int j=0;j<m_;j++)
     {
@@ -1159,15 +1098,15 @@ void OPTI::GCMMA::SubSolve()
     }
 
 
-    double* resmu = new double[m_];
-    double* res = new double[m_];
+    Epetra_SerialDenseVector resmu(m_);
+    Epetra_SerialDenseVector res(m_);
 
-    double* resmuptr = resmu;
-    double* resptr = res;
-    mu = mu_;
-    y = y_mma_;
-    lam = lam_;
-    s = s_;
+    double* resmuptr = resmu.Values();
+    double* resptr = res.Values();
+    mu = mu_->Values();
+    y = y_mma_->Values();
+    lam = lam_->Values();
+    s = s_->Values();
 
     for (int j=0;j<m_;j++)
     {
@@ -1195,7 +1134,7 @@ void OPTI::GCMMA::SubSolve()
     resX->NormInf(&locnorm);
     resinf = max(locnorm,resinf);
 
-    double* resyptr = resy;
+    double* resyptr = resy.Values();
     for (int j=0;j<m_;j++)
     {
       resnorm += *resyptr**resyptr;
@@ -1205,7 +1144,7 @@ void OPTI::GCMMA::SubSolve()
 
     resnorm += resz*resz;
 
-    reslamptr = reslam;
+    reslamptr = reslam.Values();
     for (int j=0;j<m_;j++)
     {
       resnorm += *reslamptr**reslamptr;
@@ -1223,7 +1162,7 @@ void OPTI::GCMMA::SubSolve()
     resEta->NormInf(&locnorm);
     resinf = max(locnorm,resinf);
 
-    resmuptr = resmu;
+    resmuptr = resmu.Values();
     for (int j=0;j<m_;j++)
     {
       resnorm += *resmuptr**resmuptr;
@@ -1234,7 +1173,7 @@ void OPTI::GCMMA::SubSolve()
     resnorm += reszet*reszet;
     resinf = max(resinf,abs(reszet));
 
-    resptr = res;
+    resptr = res.Values();
     for (int j=0;j<m_;j++)
     {
       resnorm += *resptr**resptr;
@@ -1306,8 +1245,8 @@ void OPTI::GCMMA::SubSolve()
 
         for (int j=0;j<m_;j++)
         {
-          plam += (*P_)[j][i]*lam_[j];
-          qlam += (*Q_)[j][i]*lam_[j];
+          plam += (*P_)[j][i]*(*lam_)[j];
+          qlam += (*Q_)[j][i]*(*lam_)[j];
         }
 
         double dpsidx = plam/(*ux2ptr) - qlam/(*xl2ptr);
@@ -1337,8 +1276,8 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
-      uxinv1.Dot(*P_,gvec1);
-      xlinv1.Dot(*Q_,gvec2);
+      uxinv1.Dot(*P_,gvec1.Values());
+      xlinv1.Dot(*Q_,gvec2.Values());
 
       Epetra_MultiVector GG(x_->Map(),m_);
 
@@ -1368,13 +1307,13 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
-      double* dely = new double[m_];
+      Epetra_SerialDenseVector dely(m_);
 
-      double* delyptr = dely;
-      c = c_;
-      d = d_;
-      y = y_mma_;
-      lam = lam_;
+      double* delyptr = dely.Values();
+      c = c_->Values();
+      d = d_->Values();
+      y = y_mma_->Values();
+      lam = lam_->Values();
 
       for (int i=0;i<m_;i++)
       {
@@ -1390,8 +1329,8 @@ void OPTI::GCMMA::SubSolve()
 
       double delz = a0_ - tol_sub/z_mma_;
 
-      a = a_;
-      lam = lam_;
+      a = a_->Values();
+      lam = lam_->Values();
 
       for (int i=0;i<m_;i++)
       {
@@ -1402,15 +1341,15 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
-      double* dellam = new double[m_];
+      Epetra_SerialDenseVector dellam(m_);
 
-      double* dellamptr = dellam;
-      gvec1ptr = gvec1;
-      gvec2ptr = gvec2;
-      a = a_;
-      y = y_mma_;
-      b = b_;
-      lam = lam_;
+      double* dellamptr = dellam.Values();
+      gvec1ptr = gvec1.Values();
+      gvec2ptr = gvec2.Values();
+      a = a_->Values();
+      y = y_mma_->Values();
+      b = b_->Values();
+      lam = lam_->Values();
 
       for (int i=0;i<m_;i++)
       {
@@ -1426,12 +1365,12 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
-      double* diagy = new double[m_];
+      Epetra_SerialDenseVector diagy(m_);
 
-      double* diagyptr = diagy;
-      d = d_;
-      mu = mu_;
-      y = y_mma_;
+      double* diagyptr = diagy.Values();
+      d = d_->Values();
+      mu = mu_->Values();
+      y = y_mma_->Values();
 
       for (int i=0;i<m_;i++)
       {
@@ -1444,12 +1383,12 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
-      double* diaglamyi = new double[m_];
+      Epetra_SerialDenseVector diaglamyi(m_);
 
-      double* diaglamyiptr = diaglamyi;
-      s = s_;
-      lam = lam_;
-      diagyptr = diagy;
+      double* diaglamyiptr = diaglamyi.Values();
+      s = s_->Values();
+      lam = lam_->Values();
+      diagyptr = diagy.Values();
 
       for (int i=0;i<m_;i++)
       {
@@ -1462,18 +1401,18 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
-      double* dlam = new double[m_];
+      Epetra_SerialDenseVector dlam(m_);
       double dz = 0.0;
       Epetra_Vector dx(x_->Map());
 
       if (m_ < x_->GlobalLength())
       {
-        double* blam = new double[m_];
+        Epetra_SerialDenseVector blam(m_);
 
-        double* blamptr = blam;
-        dellamptr = dellam;
-        delyptr = dely;
-        diagyptr = diagy;
+        double* blamptr = blam.Values();
+        dellamptr = dellam.Values();
+        delyptr = dely.Values();
+        diagyptr = diagy.Values();
 
         for (int i=0;i<m_;i++)
         {
@@ -1506,7 +1445,7 @@ void OPTI::GCMMA::SubSolve()
 
         Epetra_SerialDenseVector bb(m_+1);
         double* bbval = bb.A();
-        blamptr = blam;
+        blamptr = blam.Values();
 
         for (int i=0;i<m_;i++)
         {
@@ -1519,8 +1458,8 @@ void OPTI::GCMMA::SubSolve()
 
         Epetra_SerialDenseMatrix AA(m_+1,m_+1);
         double* aa = AA.A();
-        a = a_;
-        diaglamyiptr = diaglamyi;
+        a = a_->Values();
+        diaglamyiptr = diaglamyi.Values();
 
         for (int icol=0;icol<m_;icol++)
         {
@@ -1562,7 +1501,7 @@ void OPTI::GCMMA::SubSolve()
           diaglamyiptr++;
         }
 
-        a = a_;
+        a = a_->Values();
         for (int i=0;i<m_;i++)
         {
           *aa = *a;
@@ -1582,7 +1521,7 @@ void OPTI::GCMMA::SubSolve()
         solver.Solve();
 
 
-        double* dlamptr = dlam;
+        double* dlamptr = dlam.Values();
         double* sol = solut.A();
 
         for (int i=0;i<m_;i++) // first m entries of sol
@@ -1597,7 +1536,7 @@ void OPTI::GCMMA::SubSolve()
         dz = *sol; // last entry (=m+1) of sol
 
 
-        dlamptr = dlam;
+        dlamptr = dlam.Values();
         for (int i=0;i<m_;i++)
         {
           Epetra_Vector gg(View,GG,i);
@@ -1669,25 +1608,24 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
-      double* dy = new double[m_];
-      double* dmu = new double[m_];
-      double* ds = new double[m_];
+      Epetra_SerialDenseVector dy(m_);
+      Epetra_SerialDenseVector dmu(m_);
+      Epetra_SerialDenseVector ds(m_);
 
-      double* dyptr = dy;
-      double* dmuptr = dmu;
-      double* dsptr = ds;
-      delyptr = dely;
-      diagyptr = diagy;
-      double* dlamptr = dlam;
-      mu = mu_;
-      y = y_mma_;
-      s = s_;
-      lam = lam_;
-      dlamptr = dlam;
+      double* dyptr = dy.Values();
+      double* dmuptr = dmu.Values();
+      double* dsptr = ds.Values();
+      delyptr = dely.Values();
+      diagyptr = diagy.Values();
+      double* dlamptr = dlam.Values();
+      mu = mu_->Values();
+      y = y_mma_->Values();
+      s = s_->Values();
+      lam = lam_->Values();
 
       for (int i=0;i<m_;i++)
       {
-        *dyptr = -*delyptr/(*diagyptr) + *dlamptr/(*diagy);
+        *dyptr = -*delyptr/(*diagyptr) + *dlamptr/(*diagyptr);
         *dmuptr = -*mu + tol_sub/(*y) - (*mu**dyptr)/(*y);
         *dsptr = -*s + tol_sub/(*lam) - (*s**dlamptr)/(*lam);
 
@@ -1710,14 +1648,14 @@ void OPTI::GCMMA::SubSolve()
 
       double val = min(dz/z_mma_, dzet/zet_);
 
-      y = y_mma_;
-      dyptr = dy;
-      lam = lam_;
-      dlamptr = dlam;
-      mu = mu_;
-      dmuptr = dmu;
-      s = s_;
-      dsptr = ds;
+      y = y_mma_->Values();
+      dyptr = dy.Values();
+      lam = lam_->Values();
+      dlamptr = dlam.Values();
+      mu = mu_->Values();
+      dmuptr = dmu.Values();
+      s = s_->Values();
+      dsptr = ds.Values();
 
       for (int i=0;i<m_;i++)
       {
@@ -1780,21 +1718,21 @@ void OPTI::GCMMA::SubSolve()
       Epetra_Vector xsi_old(*xsi_);
       Epetra_Vector eta_old(*eta_);
 
-      double* y_old = new double[m_];
-      double* lam_old = new double[m_];
-      double* mu_old = new double[m_];
-      double* s_old = new double[m_];
+      Epetra_SerialDenseVector y_old(m_);
+      Epetra_SerialDenseVector lam_old(m_);
+      Epetra_SerialDenseVector mu_old(m_);
+      Epetra_SerialDenseVector s_old(m_);
       double z_mma_old = z_mma_;
       double zet_old = zet_;
 
-      y = y_mma_;
-      lam = lam_;
-      mu = mu_;
-      s = s_;
-      double* yptr = y_old;
-      double* lamptr = lam_old;
-      double* muptr = mu_old;
-      double* sptr = s_old;
+      y = y_mma_->Values();
+      lam = lam_->Values();
+      mu = mu_->Values();
+      s = s_->Values();
+      double* yptr = y_old.Values();
+      double* lamptr = lam_old.Values();
+      double* muptr = mu_old.Values();
+      double* sptr = s_old.Values();
 
       for (int j=0;j<m_;j++)
       {
@@ -1821,18 +1759,18 @@ void OPTI::GCMMA::SubSolve()
         xsi_->Update(steg,dxsi,1.0,xsi_old,0.0);
         eta_->Update(steg,deta,1.0,eta_old,0.0);
 
-        y = y_mma_;
-        yptr = y_old;
-        dyptr = dy;
-        lam = lam_;
-        lamptr = lam_old;
-        dlamptr = dlam;
-        mu = mu_;
-        muptr = mu_old;
-        dmuptr = dmu;
-        s = s_;
-        sptr = s_old;
-        dsptr = ds;
+        y = y_mma_->Values();
+        yptr = y_old.Values();
+        dyptr = dy.Values();
+        lam = lam_->Values();
+        lamptr = lam_old.Values();
+        dlamptr = dlam.Values();
+        mu = mu_->Values();
+        muptr = mu_old.Values();
+        dmuptr = dmu.Values();
+        s = s_->Values();
+        sptr = s_old.Values();
+        dsptr = ds.Values();
 
         for (int i=0;i<m_;i++)
         {
@@ -1893,8 +1831,8 @@ void OPTI::GCMMA::SubSolve()
 
           for (int j=0;j<m_;j++)
           {
-            plam += (*P_)[j][i]*lam_[j];
-            qlam += (*Q_)[j][i]*lam_[j];
+            plam += (*P_)[j][i]*(*lam_)[j];
+            qlam += (*Q_)[j][i]*(*lam_)[j];
           }
 
           double dpsidx = plam/(*ux2ptr) - qlam/(*xl2ptr);
@@ -1916,12 +1854,12 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        double* resy = new double[m_];
-        double* c = c_;
-        double* d = d_;
-        double* y = y_mma_;
-        double* mu = mu_;
-        double* lam = lam_;
+        Epetra_SerialDenseVector resy(m_);
+        double* c = c_->Values();
+        double* d = d_->Values();
+        double* y = y_mma_->Values();
+        double* mu = mu_->Values();
+        double* lam = lam_->Values();
 
         for (int j=0;j<m_;j++)
         {
@@ -1937,8 +1875,8 @@ void OPTI::GCMMA::SubSolve()
 
         double resz = a0_ - zet_;
 
-        double* a = a_;
-        lam = lam_;
+        double* a = a_->Values();
+        lam = lam_->Values();
 
         for (int j=0;j<m_;j++)
         {
@@ -1949,21 +1887,21 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        double* reslam = new double[m_];
+        Epetra_SerialDenseVector reslam(m_);
 
-        double* gvec1 = new double[m_];
-        double* gvec2 = new double[m_];
+        Epetra_SerialDenseVector gvec1(m_);
+        Epetra_SerialDenseVector gvec2(m_);
 
-        uxinv1.Dot(*P_,gvec1);
-        xlinv1.Dot(*Q_,gvec2);
+        uxinv1.Dot(*P_,gvec1.Values());
+        xlinv1.Dot(*Q_,gvec2.Values());
 
-        double* reslamptr = reslam;
-        double* gvec1ptr = gvec1;
-        double* gvec2ptr = gvec2;
-        a = a_;
-        y = y_mma_;
-        double* s = s_;
-        double* b = b_;
+        double* reslamptr = reslam.Values();
+        double* gvec1ptr = gvec1.Values();
+        double* gvec2ptr = gvec2.Values();
+        a = a_->Values();
+        y = y_mma_->Values();
+        double* s = s_->Values();
+        double* b = b_->Values();
 
         for (int j=0;j<m_;j++)
         {
@@ -2006,15 +1944,15 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        double* resmu = new double[m_];
-        double* res = new double[m_];
+        Epetra_SerialDenseVector resmu(m_);
+        Epetra_SerialDenseVector res(m_);
 
-        double* resmuptr = resmu;
-        double* resptr = res;
-        mu = mu_;
-        y = y_mma_;
-        lam = lam_;
-        s = s_;
+        double* resmuptr = resmu.Values();
+        double* resptr = res.Values();
+        mu = mu_->Values();
+        y = y_mma_->Values();
+        lam = lam_->Values();
+        s = s_->Values();
 
         for (int j=0;j<m_;j++)
         {
@@ -2041,7 +1979,7 @@ void OPTI::GCMMA::SubSolve()
         resX->NormInf(&locnorm);
         resinf = max(locnorm,resinf);
 
-        double* resyptr = resy;
+        double* resyptr = resy.Values();
         for (int j=0;j<m_;j++)
         {
           resnew += *resyptr**resyptr;
@@ -2051,7 +1989,7 @@ void OPTI::GCMMA::SubSolve()
 
         resnew += resz*resz;
 
-        reslamptr = reslam;
+        reslamptr = reslam.Values();
         for (int j=0;j<m_;j++)
         {
           resnew += *reslamptr**reslamptr;
@@ -2069,7 +2007,7 @@ void OPTI::GCMMA::SubSolve()
         resEta->NormInf(&locnorm);
         resinf = max(locnorm,resinf);
 
-        resmuptr = resmu;
+        resmuptr = resmu.Values();
         for (int j=0;j<m_;j++)
         {
           resnew += *resmuptr**resmuptr;
@@ -2080,7 +2018,7 @@ void OPTI::GCMMA::SubSolve()
         resnew += reszet*reszet;
         resinf = max(resinf,abs(reszet));
 
-        resptr = res;
+        resptr = res.Values();
         for (int j=0;j<m_;j++)
         {
           resnew += *resptr**resptr;
@@ -2159,14 +2097,14 @@ void OPTI::GCMMA::Update(
   obj_appr_ += value;
 
   // set new approximation of constraints
-  double* values = new double[m_];
+  Epetra_SerialDenseVector values(m_);
 
-  double* valptr = values;
+  double* valptr = values.Values();
   uxinv.Dot(*P_,valptr);
 
-  double* constrptr = constr_appr_;
-  double* b = b_;
-  valptr = values;
+  double* constrptr = constr_appr_->Values();
+  double* b = b_->Values();
+  valptr = values.Values();
 
   for (int i=0;i<m_;i++)
   {
@@ -2177,11 +2115,11 @@ void OPTI::GCMMA::Update(
     valptr++;
   }
 
-  valptr = values;
+  valptr = values.Values();
   xlinv.Dot(*Q_,valptr);
 
-  constrptr = constr_appr_;
-  valptr = values;
+  constrptr = constr_appr_->Values();
+  valptr = values.Values();
 
   for (int i=0;i<m_;i++)
   {
