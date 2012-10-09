@@ -72,7 +72,6 @@ CONVTOL                         1e-07
 COUPALGO                        iter_stagg_AITKEN_rel_param
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
-IALE                            Pseudo_Structure
 ITEMAX                          8
 MAXTIME                         100000
 NUMSTEP 8 //3 5

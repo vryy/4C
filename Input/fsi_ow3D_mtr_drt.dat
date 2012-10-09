@@ -95,7 +95,6 @@ DEBUGOUTPUT                     No
 ENERGYCHECK                     No
 FLUIDPCITER                     0
 FLUIDPCOMEGA                    1
-IALE                            Pseudo_Structure
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov

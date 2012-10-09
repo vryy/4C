@@ -99,7 +99,6 @@ ENERGYCHECK                     No
 FLUIDPCITER                     1 1 1 1
 FLUIDPCOMEGA                    1.0 1.0 1.0 1.0
 FSIAMGANALYZE                   No
-IALE                            Pseudo_Structure
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov

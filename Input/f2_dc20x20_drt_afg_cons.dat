@@ -81,7 +81,6 @@ REYNOLDS-STRESS                 no_reynolds                     // no_reynolds r
 MAXTIME                         1000.0
 TIMESTEP                        0.05
 NUMSTEP                         200
-IALE                            Pseudo_Structure
 COUPALGO                        basic_sequ_stagg
 PREDICTOR                       d(n)
 ENERGYCHECK                     yes

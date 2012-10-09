@@ -103,7 +103,6 @@ TIMESTEP                        0.0001
 NUMSTEP                         10
 UPRES                           1
 RESTARTEVRY                     20
-IALE                            Pseudo_Structure
 COUPALGO                        iter_monolithicstructuresplit
 PREDICTOR                       d(n)
 ENERGYCHECK                     no

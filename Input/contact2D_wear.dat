@@ -92,7 +92,6 @@ TIMESTEP                        0.05
 NUMSTEP                         200
 UPRES                           1
 RESTARTEVRY                     20
-IALE                            Pseudo_Structure
 COUPALGO                        iter_stagg_AITKEN_rel_param
 PREDICTOR                       d(n)
 ENERGYCHECK                     no

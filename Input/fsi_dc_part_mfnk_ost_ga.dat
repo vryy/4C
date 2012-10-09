@@ -79,7 +79,6 @@ RESULTSEVRY                     1
 MAXTIME                         1000.0
 TIMESTEP                        0.1
 NUMSTEP                         2
-IALE                            Pseudo_Structure
 UPRES                           1
 RESTARTEVRY                     1
 COUPVARIABLE                    Force

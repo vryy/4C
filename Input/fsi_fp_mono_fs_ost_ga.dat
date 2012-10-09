@@ -57,7 +57,6 @@ COUPALGO                        iter_monolithicfluidsplit
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 ENERGYCHECK                     No
-IALE                            Pseudo_Structure
 ITEMAX                          10
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXTIME                         100

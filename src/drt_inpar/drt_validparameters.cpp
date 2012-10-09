@@ -4250,14 +4250,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Energy check for iteration over fields",
                                yesnotuple,yesnovalue,&fsidyn);
 
-  setStringToIntegralParameter<int>("IALE","Pseudo_Structure",
-                               "Treatment of ALE-field (outdated)",
-                               tuple<std::string>(
-                                 "Pseudo_Structure"
-                                 ),
-                               tuple<int>(1),
-                               &fsidyn);
-
   setStringToIntegralParameter<int>("COUPMETHOD","conforming",
                                "Coupling Method Mortar (mtr) or conforming nodes at interface",
                                tuple<std::string>(

@@ -105,7 +105,6 @@ TIMESTEP                        1.0
 NUMSTEP                         1
 UPRES                           1
 RESTARTEVRY                     5
-IALE                            Pseudo_Structure
 COUPALGO                        iter_stagg_AITKEN_rel_param     // iter_monolithicxfem
 PREDICTOR                       d(n)
 RELAX                           1.0

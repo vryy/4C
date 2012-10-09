@@ -99,7 +99,6 @@ DEBUGOUTPUT                     No
 ENERGYCHECK                     No
 FLUIDPCITER                     0
 FLUIDPCOMEGA                    1
-IALE                            Pseudo_Structure
 ITEMAX                          100
 MAXOMEGA                        0
 MAXTIME                         1000

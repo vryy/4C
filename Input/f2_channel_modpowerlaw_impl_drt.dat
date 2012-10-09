@@ -85,7 +85,6 @@ COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
 ENERGYCHECK                     No
-IALE                            Pseudo_Structure
 ITEMAX                          100
 MAXOMEGA                        0
 MAXTIME                         1000

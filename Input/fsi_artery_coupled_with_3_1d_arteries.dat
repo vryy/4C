@@ -103,7 +103,6 @@ RESULTSEVRY                     1
 MAXTIME                         9.0
 TIMESTEP                        0.001
 NUMSTEP                         1000
-IALE                            Pseudo_Structure
 UPRES                           2
 RESTARTEVRY                     2
 COUPALGO                        iter_monolithicfluidsplit       // iter_monolithicstructuresplit iter_monolithicfluidsplit iter_stagg_AITKEN_rel_param

@@ -74,7 +74,6 @@ TIMESTEP                        0.00025
 NUMSTEP                         20
 UPRES                           1
 RESTARTEVRY                     1
-IALE                            Pseudo_Structure
 COUPALGO                        basic_sequ_stagg
 PREDICTOR                       d(n)
 ENERGYCHECK                     yes
