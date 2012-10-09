@@ -76,6 +76,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   const int myRank = bOp->getRangeMap()->getComm()->getRank();
 
   // pick out matrix block (0,1)
+  RCP<CrsMatrix> A00 = bOp->getMatrix(0,0);
   RCP<CrsMatrix> A01 = bOp->getMatrix(0,1);
 
   // 1) check for blocking/striding information
@@ -88,6 +89,18 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
     offset   = strMap->getOffset();
     GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found blockdim=" << blockdim << " from strided maps. offset=" << offset << std::endl;
   } else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information available. Use blockdim=1 with offset=0" << std::endl;
+
+  // 2) check for blocking/striding information of Lagrange block
+  LocalOrdinal blockdim2 = 1;         // block dim for fixed size blocks
+  GlobalOrdinal offset2 = 0;          // global offset of dof gids
+  if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1)) != Teuchos::null) {
+    RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1));
+    TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::CoalesceFactory::Build: cast to strided row map failed.");
+    blockdim2 = strMap->getFixedBlockSize(); // TODO shorten code
+    offset2   = strMap->getOffset();
+    GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found blockdim2=" << blockdim2 << " from strided maps. offset2=" << offset2 << std::endl;
+  } else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information available. Use blockdim2=1 with offset2=0" << std::endl;
+
 
   // loop over all rows
   // extract my values
@@ -105,6 +118,10 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
   slaveDofMap->describe(*fos,Teuchos::VERB_EXTREME);
 
+  /*std::cout << "A00->rowMap" << std::endl;
+  A00->getRowMap()->describe(*fos, Teuchos::VERB_EXTREME);
+  std::cout << "A01->rowMap" << std::endl;
+  A01->getRowMap()->describe(*fos, Teuchos::VERB_EXTREME);*/
 
   // handle slave dofs
   for (size_t r = 0; r < slaveDofMap->getNodeNumElements(); r++) {
@@ -119,6 +136,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
       GlobalOrdinal nodeId = AmalgamationFactory::DOFGid2NodeId(grid, Teuchos::null /* parameter not used */, blockdim, offset);
       LocalOrdinal lnodeId = aggsdata[Alrid/blockdim];
 
+      std::cout << "grid is " << grid << " Alrid " << Alrid << " nodeId " << nodeId << " lnodeId " <<lnodeId << std::endl;
+
       Teuchos::ArrayView<const LocalOrdinal> indices;  // extract entries from local row
       Teuchos::ArrayView<const Scalar> vals;
       A01->getLocalRowView(Alrid, indices, vals);
@@ -132,11 +151,10 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
         }
         std::vector<GlobalOrdinal> & gcids = laggId2gcids[lnodeId];
         gcids.push_back(gcid);
-
-        // displacementAggId2lagrangeMultAggId
-        if(dispAggId2lagAggId.count(lnodeId) == 0) {
-          dispAggId2lagAggId[lnodeId] = nLocalAggregates++;
-        }
+      }
+      // displacementAggId2lagrangeMultAggId
+      if(dispAggId2lagAggId.count(lnodeId) == 0) {
+        dispAggId2lagAggId[lnodeId] = nLocalAggregates++;
       }
 
       if(nodeId2lagAggId.count(nodeId) == 0) {
@@ -168,7 +186,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
     //std::cout << "grid("<<r<<")=" << grid << std::endl;
 
     // translate grid to nodeid
-    GlobalOrdinal nodeId = AmalgamationFactory::DOFGid2NodeId(grid, Teuchos::null /* parameter not used */, blockdim /*TODO */, offset);
+    GlobalOrdinal nodeId = AmalgamationFactory::DOFGid2NodeId(grid, Teuchos::null /* parameter not used */, blockdim2 /*TODO */, offset2);
     //std::cout << "nodeId: " << nodeId << std::endl;
     lagMultNodes.push_back(nodeId);
   }
@@ -212,6 +230,12 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
       vertex2AggId[t] = dispAggId2lagAggId[laggId];
       //vertex2AggId[t] = nodeId2lagAggId[nodeId];
       procWinner[t] = myRank;
+
+      // inefficient and only for 2d
+      /*vertex2AggId[laggId+0] = dispAggId2lagAggId[laggId];
+      vertex2AggId[laggId+1] = dispAggId2lagAggId[laggId];
+      procWinner[laggId+0] = myRank;
+      procWinner[laggId+1] = myRank;*/
     }
   }
 
