@@ -101,7 +101,7 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
 
     // wrap Epetra_CrsMatrix to Xpetra::Operator for use in MueLu
     Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
-    Teuchos::RCP<Xpetra::Operator<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsOperator<SC,LO,GO,NO,LMO>(mueluA));
+    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
 
     // prepare nullspace vector for MueLu
     int numdf = mllist_.get<int>("PDE equations",-1);
@@ -137,7 +137,7 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
 //----------------------------------------------------------------------------------
 Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierarchy(
     const Teuchos::ParameterList & params,
-    const Teuchos::RCP<Operator> & A,
+    const Teuchos::RCP<Matrix> & A,
     const Teuchos::RCP<MultiVector> nsp)
 {
 

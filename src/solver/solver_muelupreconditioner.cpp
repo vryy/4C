@@ -98,9 +98,9 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     // see whether we use standard ml or our own mlapi operator
     //const bool domuelupreconditioner = mllist_.get<bool>("LINALG::MueLu_Preconditioner",false);
 
-    // wrap Epetra_CrsMatrix to Xpetra::Operator for use in MueLu
+    // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
     Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
-    Teuchos::RCP<Xpetra::Operator<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsOperator<SC,LO,GO,NO,LMO>(mueluA));
+    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
 
     // remove unsupported flags
     mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO

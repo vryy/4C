@@ -23,7 +23,7 @@
 //#include <Xpetra_MultiVector.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
-#include <Xpetra_BlockedCrsOperator.hpp>
+#include <Xpetra_BlockedCrsMatrix.hpp>
 #include <Xpetra_StridedEpetraMap.hpp>
 
 // MueLu
@@ -120,7 +120,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     //      }
 
     // adapt null space for constraint equations
-    Teuchos::ParameterList& inv2 = mllist_.sublist("Inverse2");
+    /*Teuchos::ParameterList& inv2 = mllist_.sublist("Inverse2");
     if(inv2.isSublist("ML Parameters"))
     {
       // Schur complement system (1 degree per "node") -> standard nullspace
@@ -139,7 +139,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
       inv2.sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
       inv2.sublist("ML Parameters").remove("nullspace",false);
       inv2.sublist("Michael's secret vault").set<Teuchos::RCP<std::vector<double> > >("pressure nullspace",pnewns);
-    }
+    }*/
 
      // create a Teuchos::Comm from EpetraComm
     Teuchos::RCP<const Teuchos::Comm<int> > comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
@@ -175,7 +175,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<const Xpetra::MapExtractor<Scalar,LO,GO> > map_extractor = Xpetra::MapExtractorFactory<Scalar,LO,GO>::Build(fullrangemap,xmaps);
 
     // build blocked Xpetra operator
-    Teuchos::RCP<BlockedCrsOperator> bOp = Teuchos::rcp(new BlockedCrsOperator(map_extractor,map_extractor,10));
+    Teuchos::RCP<BlockedCrsMatrix> bOp = Teuchos::rcp(new BlockedCrsMatrix(map_extractor,map_extractor,10));
     bOp->setMatrix(0,0,xA11);
     bOp->setMatrix(0,1,xA12);
     bOp->setMatrix(1,0,xA21);
@@ -221,7 +221,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<Hierarchy> H = rcp(new Hierarchy());
     H->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
     H->SetMaxCoarseSize(100); // TODO fix me
-    H->GetLevel(0)->Set("A",Teuchos::rcp_dynamic_cast<Operator>(bOp));
+    H->GetLevel(0)->Set("A",Teuchos::rcp_dynamic_cast<Matrix>(bOp));
     H->GetLevel(0)->Set("Nullspace1",nspVector11);
     H->GetLevel(0)->Set("coarseAggStat",aggStat);
 
@@ -238,8 +238,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     UCAggFact11->SetMaxNeighAlreadySelected(1);
     UCAggFact11->SetOrdering(MueLu::AggOptions::NATURAL);
     Teuchos::RCP<TentativePFactory> P11Fact = Teuchos::rcp(new TentativePFactory(UCAggFact11,amalgFact11)); // check me
-    // TODO
-    //P11Fact->setStridingData(stridingInfo);
+    P11Fact->setStridingData(stridingInfo1);
     //P11Fact->setStridedBlockId(0); // declare this P11Fact to be the transfer operator for the velocity dofs
     Teuchos::RCP<TransPFactory> R11Fact = Teuchos::rcp(new TransPFactory(P11Fact));
     Teuchos::RCP<NullspaceFactory> nspFact11 = Teuchos::rcp(new NullspaceFactory("Nullspace1",P11Fact));
@@ -265,8 +264,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // use TentativePFactory
     Teuchos::RCP<AmalgamationFactory> amalgFact22 = Teuchos::rcp(new AmalgamationFactory(A22Fact));
     Teuchos::RCP<TentativePFactory> P22Fact = Teuchos::rcp(new TentativePFactory(UCAggFact11, amalgFact22));
-    //P22Fact->setStridingData(stridingInfo);
-    //P22Fact->setStridedBlockId(1); // declare this P22Fact to be the transfer operator for the pressure dofs
+    P22Fact->setStridingData(stridingInfo2);
+    //P22Fact->setStridedBlockId(0); // declare this P22Fact to be the transfer operator for the pressure dofs
 
     Teuchos::RCP<TransPFactory> R22Fact = Teuchos::rcp(new TransPFactory(P22Fact));
 
@@ -388,7 +387,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 //----------------------------------------------------------------------------------
 Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactSpPreconditioner::SetupHierarchy(
     const Teuchos::ParameterList & params,
-    const Teuchos::RCP<Operator> & A,
+    const Teuchos::RCP<Matrix> & A,
     const Teuchos::RCP<MultiVector> nsp)
 {
 

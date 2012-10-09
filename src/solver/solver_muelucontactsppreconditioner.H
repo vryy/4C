@@ -13,7 +13,7 @@
 #include "solver_preconditionertype.H"
 
 
-#include <Xpetra_BlockedCrsOperator_fwd.hpp>
+#include <Xpetra_BlockedCrsMatrix_fwd.hpp>
 
 #include <MueLu_Hierarchy.hpp> // for MueLu
 #include <MueLu_SmootherFactory.hpp>
@@ -62,7 +62,7 @@ namespace LINALG
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
 
       // private Setup routine for MueLu Multigrid hierarchy
-      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Operator> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
+      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
 
       Teuchos::ParameterList & mllist_;
 
