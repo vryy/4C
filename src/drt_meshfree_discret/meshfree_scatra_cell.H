@@ -51,11 +51,11 @@ public:
   static MeshfreeTransportType & Instance() { return instance_; };
 
   //!< create parallel object of this element type
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   //!< create element of this element type
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -68,8 +68,6 @@ public:
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
-
-  static void test(){cout<< "hello world, here we are!" << endl; return;};
 
 private:
 
@@ -201,21 +199,21 @@ public:
    * \brief Get vector of RefCountPtrs to the lines of this cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Get vector of RefCountPtrs to the surfaces of this cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Get vector of RefCountPtrs to the volume of this cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual vector<RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -246,7 +244,7 @@ public:
    * \ref Pack and \ref Unpack are used to communicate this cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -358,7 +356,7 @@ public:
    *                     dimensions of that data.
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual void VisNames(map<string,int>& names);
+  virtual void VisNames(std::map<std::string,int>& names);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -376,14 +374,14 @@ public:
    * \param data (out):  data to be filled by element if element recognizes the name
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual bool VisData(const string& name, vector<double>& data);
+  virtual bool VisData(const std::string& name, std::vector<double>& data);
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Add values to the data_ container
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual void AddToData(const string& name, vector<double> data)
+  virtual void AddToData(const std::string& name, std::vector<double> data)
   {
     data_.Add(name,data);
   };
@@ -441,9 +439,9 @@ public:
    * \return 0 if successful, negative otherwise
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList&   params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -467,10 +465,10 @@ public:
    * \return 0 if successful, negative otherwise
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -621,7 +619,7 @@ public:
    *        Dummy - not provided.
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -629,7 +627,7 @@ public:
    *        Dummy - not provided.
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -643,7 +641,7 @@ public:
    * \brief Unpack dummy class - not supported
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -740,9 +738,9 @@ public:
    * \return 0 if successful, negative otherwise
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList&   params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -765,10 +763,10 @@ public:
    * \return 0 if successful, negative otherwise
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 

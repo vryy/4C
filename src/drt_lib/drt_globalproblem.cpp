@@ -777,14 +777,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
       fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
     AddDis("structure", structdis);
     AddDis("fluid", fluiddis);
-    if (xfluiddis!=Teuchos::null)
-      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
     AddDis("ale", aledis);
 
     std::set<std::string> fluidelementtypes;
@@ -794,8 +791,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-    if (xfluiddis!=Teuchos::null)
-      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
@@ -807,8 +802,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     AddDis("fluid", fluiddis);
-    if (xfluiddis!=Teuchos::null)
-      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
+    AddDis("xfluid", xfluiddis);
     AddDis("ale", aledis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
@@ -825,8 +819,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
 
     AddDis("fluid", fluiddis);
-    if (xfluiddis!=Teuchos::null)
-      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
+    AddDis("xfluid", xfluiddis);
     AddDis("ale", aledis);
     AddDis("structure", structdis);
 
@@ -843,8 +836,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
 
     AddDis("fluid", fluiddis);
-    if (xfluiddis!=Teuchos::null)
-      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
+    AddDis("xfluid", xfluiddis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
@@ -940,12 +932,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     else
     {
       fluiddis  = rcp(new DRT::Discretization("fluid",reader.Comm()));
-      //xfluiddis = rcp(new DRT::Discretization("xfluid",reader.Comm()));
     }
 
     AddDis("fluid", fluiddis);
-  //  if ( xfluiddis!=Teuchos::null )
-  //    AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -953,9 +942,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID3");
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-
- //   if (xfluiddis!=Teuchos::null)
- //     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
 
     break;
   }
@@ -1034,14 +1020,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_thermo:
   {
-    {
-      thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
-      AddDis("thermo", thermdis);
+    thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
 
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
+    AddDis("thermo", thermdis);
 
-      break;
-    }
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
+
+    break;
   }
 
   case prb_structure:
