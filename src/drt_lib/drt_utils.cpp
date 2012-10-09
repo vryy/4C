@@ -152,4 +152,56 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
   return;
 }
 
+DRT::UTILS::Random::Random():
+      rand_engine_(0),                        //< set random seed
+      uni_dist_(-1.0, 1.0),                         //< set range of uniform distributed rnd no
+      uni_rand_no_(rand_engine_, uni_dist_),  //< create the actual rnd no generator
+      norm_dist_(0.0, 1.0),                   //< set mean and variance for normal distribution
+      norm_rand_no_(rand_engine_, norm_dist_) //< create the actual rnd no generator
+{}
+
+DRT::UTILS::Random::~Random()
+{}
+
+/// get a random number
+double DRT::UTILS::Random::Uni()
+{
+  return uni_rand_no_();
+}
+
+/// get a random number
+double DRT::UTILS::Random::Normal()
+{
+  return norm_rand_no_();
+}
+
+/// set the random seed
+void DRT::UTILS::Random::SetRandSeed(const unsigned int seed)
+{
+  rand_engine_.seed(seed);
+}
+
+/// set the range for the uniform rng
+void DRT::UTILS::Random::SetRandRange(const double lower, const double upper)
+{
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+  boost::random::uniform_real_distribution<double>::param_type parm(lower, upper);
+  uni_dist_.param(parm);
+  return;
+#else
+  dserror("Your outdated boost version does not support changing the range afterwards!");
+#endif
+}
+
+/// set the mean and variance for the normal rng
+void DRT::UTILS::Random::SetMeanVariance(const double mean, const double var)
+{
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+  boost::random::normal_distribution<double>::param_type parm(mean, var);
+  norm_dist_.param(parm);
+  return;
+#else
+  dserror("Your outdated boost version does not support changing mean or sigma afterwards!");
+#endif
+}
 

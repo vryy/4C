@@ -53,7 +53,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/timeInt_enr.H"
 #include "../linalg/linalg_ana.H"
 #include "../linalg/linalg_serialdensevector.H"
-
+#include "../drt_comm/comm_utils.H"
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 08/08 |
@@ -4365,7 +4365,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         {
           int gid = nodedofset[index];
 
-          double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+          double randomnumber = DRT::Problem::Instance(0)->Random()->Uni();
 
           double noise = perc * bmvel * randomnumber;
 

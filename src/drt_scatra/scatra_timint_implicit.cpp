@@ -1539,7 +1539,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // disturb initial field for all degrees of freedom
       for (int k=0; k < phinp_->MyLength(); ++k)
       {
-        double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+        double randomnumber = DRT::Problem::Instance()->Random()->Uni();
         double noise = perc * range * randomnumber;
         err += phinp_->SumIntoMyValues(1,&noise,&k);
         err += phin_ ->SumIntoMyValues(1,&noise,&k);

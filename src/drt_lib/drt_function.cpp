@@ -1667,7 +1667,7 @@ double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, d
       double myplus = (0.082-xp[1])/ltau;
 
       // generate noise via random number
-      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      randomnumber = DRT::Problem::Instance()->Random()->Uni();
       noise = 0.1778 * randomnumber;
 
       // return velocity value in x-direction
@@ -1695,7 +1695,7 @@ double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, d
     case 1:
     {
       // generate noise via random number
-      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      randomnumber = DRT::Problem::Instance()->Random()->Uni();
       noise = 0.1778 * randomnumber;
 
       // return velocity value in y-direction
@@ -1704,7 +1704,7 @@ double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, d
     case 2:
     {
       // generate noise via random number
-      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      randomnumber = DRT::Problem::Instance()->Random()->Uni();
       noise = 0.1778 * randomnumber;
 
       // return velocity value in z-direction
@@ -1751,7 +1751,7 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
       {
         // noise over complete inlet
         // generate noise via random number between -1 and 1
-        randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+        randomnumber = DRT::Problem::Instance()->Random()->Uni();
         noise = fluc * randomnumber;
       }
       else
@@ -1760,7 +1760,7 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
         if (xp[1]<=delta)
         {
           // generate noise via random number between -1 and 1
-          randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+          randomnumber = DRT::Problem::Instance()->Random()->Uni();
           noise = fluc * randomnumber;
         }
         else
@@ -1793,7 +1793,7 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
       {
         // noise over complete inlet
         // generate noise via random number between -1 and 1
-        randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+        randomnumber = DRT::Problem::Instance()->Random()->Uni();
         noise = fluc * randomnumber;
       }
       else
@@ -1802,7 +1802,7 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
         if (xp[1]<=delta)
         {
           // generate noise via random number between -1 and 1
-          randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+          randomnumber = DRT::Problem::Instance()->Random()->Uni();
           noise = fluc * randomnumber;
         }
         else
@@ -1820,7 +1820,7 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
       {
         // noise over complete inlet
         // generate noise via random number between -1 and 1
-        randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+        randomnumber = DRT::Problem::Instance()->Random()->Uni();
         noise = fluc * randomnumber;
       }
       else
@@ -1829,7 +1829,7 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
         if (xp[1]<=delta)
         {
           // generate noise via random number between -1 and 1
-         randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+         randomnumber = DRT::Problem::Instance()->Random()->Uni();
           noise = fluc * randomnumber;
         }
         else
@@ -1894,7 +1894,7 @@ double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double
       double yplus = y/ltau;
 
       // generate noise via random number between -1 and +1
-      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      randomnumber = DRT::Problem::Instance()->Random()->Uni();
       noise = fluc * randomnumber;
 
       // return velocity value in x-direction
@@ -1914,7 +1914,7 @@ double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double
     case 2:
     {
       // generate noise via random number
-      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      randomnumber = DRT::Problem::Instance()->Random()->Uni();
       noise = umax * fluc * randomnumber;
 
       return noise;

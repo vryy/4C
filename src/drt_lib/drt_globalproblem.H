@@ -27,7 +27,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_function.H"
 #include "drt_timecurve.H"
 #include "drt_resulttest.H"
-
+#include "drt_utils.H"
 
 using namespace std;
 using Teuchos::RCP;
@@ -375,6 +375,9 @@ public:
 
   //@}
 
+  /// Return the class that handles random numbers globally
+  DRT::UTILS::Random* Random() { return &random_; }
+
 private:
 
   /// private default constructor to disallow creation of instances
@@ -436,6 +439,10 @@ private:
   Teuchos::RCP<IO::ErrorFileControl> errorfilecontrol_;  ///< error file handles
 
   //@}
+
+  /// handles all sorts of random numbers
+  DRT::UTILS::Random random_;
+
 };
 
 }

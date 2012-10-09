@@ -291,7 +291,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
     int rs = type.get<int>("RANDSEED");
     if (rs < 0)
       rs = (int)time(NULL) + 42*DRT::Problem::Instance(0)->GetNPGroup()->GlobalComm()->MyPID();
-    srand( (unsigned int)rs );
+
+    srand( (unsigned int)rs ); // Set random seed for stdlibrary. This is deprecated, as it does not produce random numbers on some platforms!
+    Random()->SetRandSeed( (unsigned int)rs ); // Use this instead.
   }
 }
 

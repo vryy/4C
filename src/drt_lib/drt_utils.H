@@ -42,12 +42,15 @@ Maintainer: Michael Gee
 #define UTILS_H
 
 
+#include "drt_node.H"
+#include "drt_element.H"
+
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
-#include "drt_node.H"
-#include "drt_element.H"
+#include <boost/random.hpp>
+
 
 namespace DRT
 {
@@ -166,6 +169,74 @@ namespace UTILS
   }
   return;
 }
+
+
+/*!
+\brief handles random numbers through boost
+
+\author wichmann
+*/
+class Random
+{
+public:
+  Random();
+
+  virtual ~Random();
+
+  /// get a random number
+  double Uni();
+
+  /// get a random number
+  double Normal();
+
+  /// set the random seed
+  void SetRandSeed(const unsigned int seed);
+
+  /// set the range for the uniform rng
+  void SetRandRange(const double lower, const double upper);
+
+  /// set the mean and variance for the normal rng
+  void SetMeanVariance(const double mean, const double var);
+
+protected:
+/// @name Random number generation
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+  /// random number engine
+  boost::random::mt19937 rand_engine_;
+
+  /// uniform random number distribution
+  boost::random::uniform_real_distribution<double> uni_dist_;
+
+  /// uniform random number generator
+  boost::random::variate_generator<boost::random::mt19937&, boost::random::uniform_real_distribution<double> > uni_rand_no_;
+
+  /// normal random number distribution
+  boost::random::normal_distribution<double> norm_dist_;
+
+  /// uniform random number generator
+  boost::random::variate_generator<boost::random::mt19937&, boost::random::normal_distribution<double> > norm_rand_no_;
+#else
+  /********************************************************
+   * The following declarations are deprecated in current *
+   * Boosts, but they are all we got on FC8 and F12       *
+   ********************************************************/
+  /// random number engine
+  boost::mt19937 rand_engine_;
+
+  /// uniform random number distribution
+  boost::uniform_real<double> uni_dist_;
+
+  /// uniform random number generator
+  boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > uni_rand_no_;
+
+  /// normal random number distribution
+  boost::normal_distribution<double> norm_dist_;
+
+  /// uniform random number generator
+  boost::variate_generator<boost::mt19937&, boost::normal_distribution<double> > norm_rand_no_;
+#endif
+//@}
+};
 
 } // namespace UTILS
 } // namespace DRT

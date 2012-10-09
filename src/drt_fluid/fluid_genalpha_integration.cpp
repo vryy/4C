@@ -2371,7 +2371,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
           {
             int gid = nodedofset[index];
 
-            double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+            double randomnumber = DRT::Problem::Instance()->Random()->Uni();
 
             double noise = initialval * randomnumber * perc;
 

@@ -99,6 +99,17 @@ def getSymbols(fname,build_type):
     symbollist.add("HAVE_FFTW")
     return symbollist
 
+def getDefineValue(build_folder):
+    """Get all define flags that specify a value from the CMakeFiles folder"""
+    f = open(build_folder+"/CMakeFiles/drt_lib.dir/flags.make","r")
+    definevaluelist = set()
+    for l in f.readlines():
+        for w in l.split():
+            if w.startswith("-DBOOST_MAJOR_VERSION") or w.startswith("-DBOOST_MINOR_VERSION"):
+                flag = w[2:] #loose the -D
+                definevaluelist.add(flag)
+    return definevaluelist
+
 def adapt(do_configure_file,build_folder,build_type):
     """update .cproject file if existing"""
 
@@ -115,6 +126,10 @@ def adapt(do_configure_file,build_folder,build_type):
         symbollist = [x for x in symbolset]
         symbollist.sort()
         #print symbollist
+        definevalueset = getDefineValue(build_folder)
+        definevaluelist = [x for x in definevalueset]
+        definevaluelist.sort()
+        #print definevaluelist
 
         # iterate over all entries named 'option'
         found_path = False
@@ -136,6 +151,8 @@ def adapt(do_configure_file,build_folder,build_type):
                 for entry in option:
                     option.remove(entry)
                 for entry in symbollist:
+                    option.append(etree.Element("listOptionValue", builtIn="false", value=entry ))
+                for entry in definevaluelist:
                     option.append(etree.Element("listOptionValue", builtIn="false", value=entry ))
                 #print(etree.tostring(option, pretty_print=True))
                 found_symbol = True
