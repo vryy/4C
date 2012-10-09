@@ -24,6 +24,7 @@
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
 #include <Xpetra_BlockedCrsOperator.hpp>
+#include <Xpetra_StridedEpetraMap.hpp>
 
 // MueLu
 #include <MueLu.hpp>
@@ -50,6 +51,11 @@
 #include <MueLu_Aggregates.hpp>
 #include "MueLu_AggStatTransferFactory.hpp"
 #include <MueLu_AggregationExportFactory.hpp>
+#include <MueLu_BlockedPFactory.hpp>
+#include <MueLu_BlockedGaussSeidelSmoother.hpp>
+#include <MueLu_SchurComplementFactory.hpp>
+#include <MueLu_BraessSarazinSmoother.hpp>
+
 
 #include <MueLu_MLParameterListInterpreter.hpp>
 
@@ -147,9 +153,22 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<CrsMatrix> xA21 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1,0).EpetraMatrix()));
     Teuchos::RCP<CrsMatrix> xA22 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1,1).EpetraMatrix()));
 
+    ///////////////////// EXPERIMENTAL
+    std::vector<size_t> stridingInfo1;
+    stridingInfo1.push_back(numdf);
+    Teuchos::RCP<Xpetra::StridedEpetraMap> strMap1 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(0,0).EpetraMatrix()->RowMap()), stridingInfo1, -1 /* stridedBlock */, 0 /*globalOffset*/));
+    std::vector<size_t> stridingInfo2;
+    stridingInfo2.push_back(1);
+    Teuchos::RCP<Xpetra::StridedEpetraMap> strMap2 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(1,1).EpetraMatrix()->RowMap()), stridingInfo2, -1 /* stridedBlock */, 0 /*globalOffset*/));
+    std::cout << *strMap1 << std::endl;
+    std::cout << *strMap2 << std::endl;
+    ///////////////////// EXPERIMENTAL
+
     std::vector<Teuchos::RCP<const Map> > xmaps;
-    xmaps.push_back(xA11->getRowMap()); // TODO introduce strided maps
-    xmaps.push_back(xA22->getRowMap());
+    //xmaps.push_back(xA11->getRowMap()); // TODO introduce strided maps
+    //xmaps.push_back(xA22->getRowMap());
+    xmaps.push_back(strMap1);
+    xmaps.push_back(strMap2);
 
     std::cout << "length of A11 block: " << xA11->getRowMap()->getGlobalNumElements() << std::endl;
 
@@ -181,12 +200,30 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     std::cout << "PDE equations: " << numdf << std::endl;
     std::cout << "nullspace dims: " << dimns << std::endl;
 
+    ///////////////////////////////////////////////////////////////////////
+    // special aggregation strategy
+    //   - use 1pt aggregates for slave nodes
+    ///////////////////////////////////////////////////////////////////////
+
+    // number of node rows (only displacement dofs)
+    const LocalOrdinal nDofRows = strMap1->getNodeNumElements();
+
+    // prepare aggCoarseStat
+    // TODO rebuild node-based map
+    // still problematich for reparitioning
+    Teuchos::ArrayRCP<unsigned int> aggStat;
+    if(nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows/numdf);
+    for(LocalOrdinal i=0; i<nDofRows; ++i) {
+      aggStat[i/numdf] = MueLu::NodeStats::READY;
+    }
+
     // create Hierarchy
     Teuchos::RCP<Hierarchy> H = rcp(new Hierarchy());
     H->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
     H->SetMaxCoarseSize(100); // TODO fix me
     H->GetLevel(0)->Set("A",Teuchos::rcp_dynamic_cast<Operator>(bOp));
     H->GetLevel(0)->Set("Nullspace1",nspVector11);
+    H->GetLevel(0)->Set("coarseAggStat",aggStat);
 
     Teuchos::RCP<SubBlockAFactory> A11Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
     Teuchos::RCP<SubBlockAFactory> A22Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 1, 1));
@@ -197,6 +234,9 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<CoalesceDropFactory> dropFact11 = Teuchos::rcp(new CoalesceDropFactory(A11Fact,amalgFact11));
     dropFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
     Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 = Teuchos::rcp(new UncoupledAggregationFactory(dropFact11));
+    UCAggFact11->SetMinNodesPerAggregate(9);
+    UCAggFact11->SetMaxNeighAlreadySelected(1);
+    UCAggFact11->SetOrdering(MueLu::AggOptions::NATURAL);
     Teuchos::RCP<TentativePFactory> P11Fact = Teuchos::rcp(new TentativePFactory(UCAggFact11,amalgFact11)); // check me
     // TODO
     //P11Fact->setStridingData(stridingInfo);
@@ -221,6 +261,68 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     }
 
     H->GetLevel(0)->Set("Nullspace2",nspVector22);
+
+    // use TentativePFactory
+    Teuchos::RCP<AmalgamationFactory> amalgFact22 = Teuchos::rcp(new AmalgamationFactory(A22Fact));
+    Teuchos::RCP<TentativePFactory> P22Fact = Teuchos::rcp(new TentativePFactory(UCAggFact11, amalgFact22));
+    //P22Fact->setStridingData(stridingInfo);
+    //P22Fact->setStridedBlockId(1); // declare this P22Fact to be the transfer operator for the pressure dofs
+
+    Teuchos::RCP<TransPFactory> R22Fact = Teuchos::rcp(new TransPFactory(P22Fact));
+
+    Teuchos::RCP<NullspaceFactory> nspFact22 = Teuchos::rcp(new NullspaceFactory("Nullspace2",P22Fact));
+
+    //////////////////////////////// define factory manager for (2,2) block
+    Teuchos::RCP<FactoryManager> M22 = Teuchos::rcp(new FactoryManager());
+    M22->SetFactory("A", A22Fact);
+    M22->SetFactory("P", P22Fact);
+    M22->SetFactory("R", R22Fact);
+    M22->SetFactory("Aggregates", UCAggFact11);
+    M22->SetFactory("Nullspace", nspFact22);
+    M22->SetFactory("Ptent", P22Fact);
+    M22->SetIgnoreUserData(true);               // always use data from factories defined in factory manager
+
+    /////////////////////////////////////////// define blocked transfer ops
+    Teuchos::RCP<BlockedPFactory> PFact = Teuchos::rcp(new BlockedPFactory(Teuchos::null)); // use row map index base from bOp
+    PFact->AddFactoryManager(M11);
+    PFact->AddFactoryManager(M22);
+
+    Teuchos::RCP<GenericRFactory> RFact = Teuchos::rcp(new GenericRFactory(PFact));
+
+    Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory(PFact, RFact));
+
+    // create Braess-Sarazin smoother
+    Scalar omega = 1.3;
+    Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(MueLu::NoFactory::getRCP(),omega));
+    Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(3,omega)); // append SC smoother information
+
+    Teuchos::RCP<SmootherFactory> smootherFact = Teuchos::rcp(new SmootherFactory(smootherPrototype));
+
+    // SchurComplement smoother
+    Teuchos::ParameterList SCList;
+    SCList.set("relaxation: sweeps", (LO) 3);
+    SCList.set("relaxation: damping factor", (SC) 1.0);
+    SCList.set("relaxation: type", "Gauss-Seidel");
+    Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",SCList,0,SFact));
+    Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
+
+    Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
+    MB->SetFactory("A", SFact);
+    MB->SetFactory("Smoother", SmooSCFact);
+    MB->SetIgnoreUserData(true);
+    smootherPrototype->SetFactoryManager(MB);  // add SC smoother information
+
+
+    // main factory manager
+    FactoryManager M;
+    M.SetFactory("A", AcFact);
+    M.SetFactory("P", PFact);
+    M.SetFactory("R", RFact);
+    M.SetFactory("Smoother", smootherFact);
+    M.SetFactory("CoarseSolver", smootherFact);
+
+    int maxLevels = 3;
+    H->Setup(M,0,maxLevels);
 
     // set multigrid preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
