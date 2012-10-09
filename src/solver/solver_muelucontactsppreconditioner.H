@@ -13,12 +13,18 @@
 #include "solver_preconditionertype.H"
 
 
+#include <Xpetra_BlockedCrsOperator_fwd.hpp>
+
 #include <MueLu_Hierarchy.hpp> // for MueLu
 #include <MueLu_SmootherFactory.hpp>
+
+
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
+
+
 
 /*class HHierarchy;
 class OOperator;

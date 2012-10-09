@@ -23,6 +23,7 @@
 //#include <Xpetra_MultiVector.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
+#include <Xpetra_BlockedCrsOperator.hpp>
 
 // MueLu
 #include <MueLu.hpp>
@@ -30,9 +31,11 @@
 #include <MueLu_TrilinosSmoother.hpp>
 #include <MueLu_SmootherPrototype_decl.hpp>
 
+#include <MueLu_SubBlockAFactory.hpp>
+#include <MueLu_AmalgamationFactory.hpp>
 #include <MueLu_CoalesceDropFactory.hpp>
 //#include <MueLu_UCAggregationFactory.hpp>
-#include <MueLu_ExperimentalAggregationFactory.hpp>
+#include <MueLu_UncoupledAggregationFactory.hpp>
 #include <MueLu_TentativePFactory.hpp>
 #include <MueLu_SaPFactory.hpp>
 #include <MueLu_PgPFactory.hpp>
@@ -65,6 +68,9 @@
 
 #include "solver_muelucontactsppreconditioner.H"
 
+// BACI includes
+#include "../linalg/linalg_blocksparsematrix.H"
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 LINALG::SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner( FILE * outfile, Teuchos::ParameterList & mllist )
@@ -89,17 +95,16 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // free old matrix first
     P_ = Teuchos::null;
 
-    // temporary hack: distinguish between "old" SIMPLER_Operator (for fluid
-    // only) and "new" more general test implementation
-    /*bool mt = params_.get<bool>("MESHTYING",false);
-    bool co = params_.get<bool>("CONTACT",false);
-    bool cstr = params_.get<bool>("CONSTRAINT",false);
-    bool fl = params_.isSublist("SIMPLER") || params_.get<bool>("FLUID",false); //params_.get<bool>("FLUIDSIMPLE",false); // SIMPLE for fluids
-    bool elch = params_.get<bool>("ELCH",false);*/
-
     // adapt ML null space for contact/meshtying/constraint problems
-    RCP<BlockSparseMatrixBase> A = rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
-    if (A==null) dserror("matrix is not a BlockSparseMatrix");
+    Teuchos::RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+    if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+
+
+    // prepare nullspace vector for MueLu (block A11 only)
+    int numdf = mllist_.get<int>("PDE equations",-1);
+    int dimns = mllist_.get<int>("null space: dimension",-1);
+    if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
+
 
     // fix null space for "Inverse1"
     //      {
@@ -109,14 +114,14 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     //      }
 
     // adapt null space for constraint equations
-    Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
+    Teuchos::ParameterList& inv2 = mllist_.sublist("Inverse2");
     if(inv2.isSublist("ML Parameters"))
     {
       // Schur complement system (1 degree per "node") -> standard nullspace
       inv2.sublist("ML Parameters").set("PDE equations",1);
       inv2.sublist("ML Parameters").set("null space: dimension",1);
       const int plength = (*A)(1,1).RowMap().NumMyElements();
-      RCP<vector<double> > pnewns = rcp(new vector<double>(plength,1.0));
+      Teuchos::RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
       //TODO: vector<double> has zero length for particular cases (e.g. no Lagrange multiplier on this processor)
       //      -> RCP for the null space is set to NULL in Fedora 12 -> dserror
       //      -> RCP points to a random memory field in Fedora 8 -> RCP for null space is not NULL
@@ -127,11 +132,98 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
         pnewns->resize(1,0.0);
       inv2.sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
       inv2.sublist("ML Parameters").remove("nullspace",false);
-      inv2.sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",pnewns);
+      inv2.sublist("Michael's secret vault").set<Teuchos::RCP<std::vector<double> > >("pressure nullspace",pnewns);
     }
 
-    P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
+     // create a Teuchos::Comm from EpetraComm
+    Teuchos::RCP<const Teuchos::Comm<int> > comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
 
+    // TODO build strided maps (using the maps from block matrix A...
+
+    Teuchos::RCP<const Map> fullrangemap = Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
+
+    Teuchos::RCP<CrsMatrix> xA11 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0,0).EpetraMatrix()));
+    Teuchos::RCP<CrsMatrix> xA12 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0,1).EpetraMatrix()));
+    Teuchos::RCP<CrsMatrix> xA21 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1,0).EpetraMatrix()));
+    Teuchos::RCP<CrsMatrix> xA22 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1,1).EpetraMatrix()));
+
+    std::vector<Teuchos::RCP<const Map> > xmaps;
+    xmaps.push_back(xA11->getRowMap()); // TODO introduce strided maps
+    xmaps.push_back(xA22->getRowMap());
+
+    std::cout << "length of A11 block: " << xA11->getRowMap()->getGlobalNumElements() << std::endl;
+
+    Teuchos::RCP<const Xpetra::MapExtractor<Scalar,LO,GO> > map_extractor = Xpetra::MapExtractorFactory<Scalar,LO,GO>::Build(fullrangemap,xmaps);
+
+    // build blocked Xpetra operator
+    Teuchos::RCP<BlockedCrsOperator> bOp = Teuchos::rcp(new BlockedCrsOperator(map_extractor,map_extractor,10));
+    bOp->setMatrix(0,0,xA11);
+    bOp->setMatrix(0,1,xA12);
+    bOp->setMatrix(1,0,xA21);
+    bOp->setMatrix(1,1,xA22);
+    bOp->fillComplete();
+
+    Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = xA11->getRowMap();
+
+    Teuchos::RCP<MultiVector> nspVector11 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+    Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
+
+    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+      Teuchos::ArrayRCP<Scalar> nspVector11i = nspVector11->getDataNonConst(i);
+      const size_t myLength = nspVector11->getLocalLength();
+      for(size_t j=0; j<myLength; j++) {
+        nspVector11i[j] = (*nsdata)[i*myLength+j];
+      }
+    }
+
+
+
+    std::cout << "PDE equations: " << numdf << std::endl;
+    std::cout << "nullspace dims: " << dimns << std::endl;
+
+    // create Hierarchy
+    Teuchos::RCP<Hierarchy> H = rcp(new Hierarchy());
+    H->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
+    H->SetMaxCoarseSize(100); // TODO fix me
+    H->GetLevel(0)->Set("A",Teuchos::rcp_dynamic_cast<Operator>(bOp));
+    H->GetLevel(0)->Set("Nullspace1",nspVector11);
+
+    Teuchos::RCP<SubBlockAFactory> A11Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
+    Teuchos::RCP<SubBlockAFactory> A22Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 1, 1));
+
+    // set up block 11
+    Teuchos::RCP<AmalgamationFactory> amalgFact11 = Teuchos::rcp(new AmalgamationFactory(A11Fact));
+    amalgFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
+    Teuchos::RCP<CoalesceDropFactory> dropFact11 = Teuchos::rcp(new CoalesceDropFactory(A11Fact,amalgFact11));
+    dropFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
+    Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 = Teuchos::rcp(new UncoupledAggregationFactory(dropFact11));
+    Teuchos::RCP<TentativePFactory> P11Fact = Teuchos::rcp(new TentativePFactory(UCAggFact11,amalgFact11)); // check me
+    // TODO
+    //P11Fact->setStridingData(stridingInfo);
+    //P11Fact->setStridedBlockId(0); // declare this P11Fact to be the transfer operator for the velocity dofs
+    Teuchos::RCP<TransPFactory> R11Fact = Teuchos::rcp(new TransPFactory(P11Fact));
+    Teuchos::RCP<NullspaceFactory> nspFact11 = Teuchos::rcp(new NullspaceFactory("Nullspace1",P11Fact));
+
+    //////////////////////////////// define factory manager for (1,1) block
+    Teuchos::RCP<FactoryManager> M11 = Teuchos::rcp(new FactoryManager());
+    M11->SetFactory("A", A11Fact);
+    M11->SetFactory("P", P11Fact);
+    M11->SetFactory("R", R11Fact);
+    M11->SetFactory("Nullspace", nspFact11);
+    M11->SetFactory("Ptent", P11Fact);
+    M11->SetIgnoreUserData(true);               // always use data from factories defined in factory manager
+
+
+    Teuchos::RCP<MultiVector> nspVector22 = MultiVectorFactory::Build(xA22->getRowMap(), 1);  // this is a 2D standard null space
+    Teuchos::ArrayRCP<Scalar> nsValues22 = nspVector22->getDataNonConst(0);
+    for (int j=0; j< nsValues22.size(); ++j) {
+      nsValues22[j] = 1.0;
+    }
+
+    H->GetLevel(0)->Set("Nullspace2",nspVector22);
+
+    // set multigrid preconditioner
+    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
   }
 
   dserror("EXIT");
