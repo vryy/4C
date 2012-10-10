@@ -25,6 +25,7 @@ Maintainer: Georg Bauer
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
 #if 0
 #include "../drt_io/io_gmsh.H"
 #endif
@@ -163,8 +164,8 @@ void elch_dyn(int restart)
           if (fluidmatmap.size() == 0)
             dserror("Key pair 'fluid/ale' was not found in input file.");
 
-          Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-            Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+          Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
+            Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
 
           alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
         }

@@ -33,6 +33,8 @@
 
 #include "../drt_scatra/scatra_utils.H"
 
+#include "../drt_ale/ale_utils_clonestrategy.H"
+
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_resulttest.H"
@@ -95,8 +97,8 @@ void fluid_ale_drt()
             dserror("Key pair 'fluid/ale' was not found in input file.");
 
       // create cloning object
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
 
       // Clone ALE discretization from fluid discretization
       alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
@@ -456,8 +458,8 @@ void fluid_fluid_ale_drt()
         dserror("Key pair 'fluid/ale' was not found in input file.");
 
       // create cloning object
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
 
       // Clone ALE discretization from fluid discretization
       alecreator->CreateMatchingDiscretization(embfluiddis,aledis,fluidmatmap);
@@ -744,8 +746,8 @@ void fluid_fluid_fsi_drt()
         dserror("Key pair 'fluid/ale' was not found in input file.");
 
       // create cloning object
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
 
       // Clone ALE discretization from fluid discretization
       alecreator->CreateMatchingDiscretization(embfluiddis,aledis,fluidmatmap);
@@ -863,8 +865,8 @@ void fluid_freesurf_drt()
         dserror("Key pair 'fluid/ale' was not found in input file.");
 
       // create cloning object
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
 
       // Clone ALE discretization from fluid discretization
       alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
@@ -978,8 +980,8 @@ void fsi_ale_drt()
         dserror("Key pair 'fluid/ale' was not found in input file.");
 
       // create cloning object
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
 
       // Clone ALE discretization from fluid discretization
       alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);

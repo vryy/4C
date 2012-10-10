@@ -38,6 +38,8 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 
+#include "../drt_ale/ale_utils_clonestrategy.H"
+
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "fs3i_partitioned.H"
@@ -100,8 +102,8 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       dserror("Key pair 'fluid/ale' was not found in input file.");
 
     // create cloning object
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
 
     // clone
     alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);

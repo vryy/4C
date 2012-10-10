@@ -62,45 +62,6 @@ namespace FSI
         );
 
     /*!
-    \brief implementation of special clone strategy for automatic generation
-           of an ALE-mesh from a given fluid discretization
-     */
-    class AleFluidCloneStrategy
-    {
-    public:
-
-      /// constructor
-      explicit AleFluidCloneStrategy(){}
-      /// destructor
-      virtual ~AleFluidCloneStrategy() {}
-
-    protected:
-
-      /// determine element type string and whether element is copied or not
-      bool DetermineEleType(
-          DRT::Element* actele,
-          const bool ismyele,
-          vector<string>& eletype);
-
-      /// set element-specific data (material etc.)
-      void SetElementData(
-          Teuchos::RCP<DRT::Element> newele,
-          DRT::Element* oldele,
-          const int matid,
-          const bool nurbsdis);
-
-      /// returns conditions names to be copied (source and target name)
-      map<string,string> ConditionsToCopy();
-
-      /// check for correct material
-      void CheckMaterialType(const int matid);
-
-    private:
-
-    }; // class AleFluidCloneStrategy
-
-
-    /*!
     \brief implementation of sliding ALE stuff
      */
     class SlideAleUtils
