@@ -77,29 +77,16 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   const bool isnurbs
   )
 {
-  // We must not add a new material type here because that might move
-  // the internal material vector. And each element material might
-  // have a pointer to that vector. Too bad.
-  // So we search for a Fourier material and take the first one we find.
-  // => matid from outside remains unused!
-  //const int matnr =
-  //  DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_th_fourier_iso);
-  //if (matnr==-1)
-  //  dserror("No isotropic Fourier material defined. Cannot generate thermo mesh.");
-
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
-
-  RCP<MAT::Material > mat = oldele->Material();
-  const int matnr = (mat->Parameter()->Id())+1;
 
   // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)
       DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(newele.get());
       if (therm!=NULL)
       {
-        therm->SetMaterial(matnr);
+        therm->SetMaterial(matid);
         therm->SetDisType(oldele->Shape()); // set distype as well!
       }
       else
@@ -147,22 +134,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   // create thermo elements if the temperature discretization is empty
   if (thermdis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
-
-    // fetch the desired material id for the thermo elements
-    const int matid = -1;
-
-    // create the thermo discretization
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy> > clonewizard
-        = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<TSI::UTILS::ThermoStructureCloneStrategy>() );
-
-      clonewizard->CreateMatchingDiscretization(structdis,thermdis,matid);
-    }
-
-    if (comm.MyPID()==0)
-      cout<<"Created thermo discretization from structure field in...."
-      <<time.ElapsedTime() << " secs\n\n";
+    DRT::UTILS::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(structdis,thermdis);
   }
   else
       dserror("Structure AND Thermo discretization present. This is not supported.");

@@ -23,7 +23,6 @@ NUMDF                           6
 ----------------------------------------------------------COMBUSTION CONTROL
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
--------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
 NUMALEDIS                       0
@@ -197,6 +196,8 @@ SOLVER                          UMFPACK                         // Amesos_KLU_sy
 //parameters in [N,m,s,K]
 MAT 1 MAT_Struct_ThrStVenantK YOUNG 10 NUE 0.0 DENS 0 THEXPANS 1.0e-05 CAPA 420 CONDUCT 52 INITTEMP 293
 MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

@@ -272,6 +272,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.0 DENS 1 THEXPANS 0.0001 CAPA 42 CONDUCT 5.2 INITTEMP 0
 MAT 2 THERM_FourierIso CAPA 42 CONDUCT 5.2
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1 t1 0.0 t2 4.0
 CURVE1 on EXPR FUNC 0 t1 4.0 t2 20.0

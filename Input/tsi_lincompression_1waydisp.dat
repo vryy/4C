@@ -225,6 +225,8 @@ SOLVER                          UMFPACK                         // Amesos_KLU_sy
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNG 1.0e11 NUE 0.0 DENS 1.0 THEXPANS 1.0e-05 CAPA 420 CONDUCT 52.0 INITTEMP 293.0
 MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52.0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 0.0
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 1.0 FACTOR 0.0 -4.0e7

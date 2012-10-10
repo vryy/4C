@@ -142,21 +142,7 @@ void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
     // create fluid elements if the fluid discretization is empty
     if (fluiddis->NumGlobalNodes()==0)
     {
-      Epetra_Time time(comm);
-
-      // create the fluid discretization
-      {
-        Teuchos::RCP<DRT::UTILS::DiscretizationCreator<POROELAST::UTILS::PoroelastCloneStrategy> > clonewizard
-        = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<POROELAST::UTILS::PoroelastCloneStrategy>() );
-
-        std::pair<string,string> key("structure","fluid");
-        std::map<int,int> structmatmap = clonefieldmatmap[key];
-        clonewizard->CreateMatchingDiscretization(structdis,fluiddis,structmatmap);
-      }
-
-      if (comm.MyPID()==0)
-      cout<<"Created fluid discretization from structure field in...."
-      <<time.ElapsedTime() << " secs\n\n";
+      DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
     }
     else
     dserror("Structure AND Fluid discretization present. This is not supported.");

@@ -62,24 +62,7 @@ void fluid_topopt_dyn()
 
   if (optidis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
-
-    //get the material map for cloning
-    std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
-
-    // create the fluid discretization
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<TOPOPT::TopoptFluidCloneStrategy> > clonewizard
-      = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<TOPOPT::TopoptFluidCloneStrategy>() );
-
-      std::pair<string,string> key("fluid","scatra");
-      std::map<int,int> matmap = clonefieldmatmap[key];
-      clonewizard->CreateMatchingDiscretization(fluiddis,optidis,matmap);
-    }
-
-    if (comm.MyPID()==0)
-      cout<<"Created optimization discretization from fluid discretization in...."
-          <<time.ElapsedTime() << " secs\n\n";
+    DRT::UTILS::CloneDiscretization<TOPOPT::TopoptFluidCloneStrategy>(fluiddis,optidis);
   }
   else
     dserror("Optimization discretization is not empty as it should be!");

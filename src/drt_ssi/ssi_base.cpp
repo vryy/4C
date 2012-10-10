@@ -93,17 +93,7 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
 
   if (scatradis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
-    // create the fluid scatra discretization
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
-      std::pair<string,string> key("structure","scatra");
-      std::map<int,int> structmatmap = problem->ClonedMaterialMap()[key];
-      clonewizard->CreateMatchingDiscretization(structdis,scatradis,structmatmap);
-    }
-    if (comm.MyPID()==0)
-    cout <<"Created scalar transport discretization from structure discretization in... "<< time.ElapsedTime() << " secs\n\n";
+    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
   }
   else
   dserror("Structure AND ScaTra discretization present. This is not supported.");

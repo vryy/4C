@@ -35,7 +35,6 @@ discretisation: circumferential x radial(Cu) x radial(Ni) x depth = 100x10x10x2
 //ELEMENTS                      4000
 //NODES                         8442
 DIM                             3
--------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
 NUMALEDIS                       0
@@ -320,6 +319,9 @@ MAT 3 MAT_Struct_ThrStVenantK YOUNG 1.93e8 NUE 0.3 DENS 8.910e-6 THEXPANS 1.22e-
 MAT 0 MAT_Struct_PlasticLinElast YOUNG 0 NUE 0 DENS 0 YIELD 0 ISOHARD 0 KINHARD 0 TOL 0
 MAT 2 THERM_FourierIso CAPA 3405.49 CONDUCT 3.1e5 // Cu
 MAT 4 THERM_FourierIso CAPA 3956.04 CONDUCT 7.5e4 // Ni
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
+SRC_FIELD structure SRC_MAT 3 TAR_FIELD thermo TAR_MAT 4
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0 2 FACTOR 0.0 0.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 2 3 FACTOR 0.0 10000.0

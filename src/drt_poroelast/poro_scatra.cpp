@@ -197,20 +197,8 @@ void PORO_SCATRA::PartPORO_SCATRA::SetupDiscretizations(const Epetra_Comm& comm)
 
   if (fluiddis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
     // create the fluid discretization
-
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<POROELAST::UTILS::PoroelastCloneStrategy> > clonewizard
-      = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<POROELAST::UTILS::PoroelastCloneStrategy>() );
-
-      std::pair<string,string> key("structure","fluid");
-      std::map<int,int> solidtofluidmap = problem->ClonedMaterialMap()[key];
-      clonewizard->CreateMatchingDiscretization(structdis,fluiddis,solidtofluidmap);
-    }
-
-    if (comm.MyPID()==0)
-    cout<<"Created fluid discretization from structure field in... "<<time.ElapsedTime() << " secs\n\n";
+    DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
   }
   else
   dserror("Structure AND Fluid discretization present. This is not supported.");
@@ -223,17 +211,8 @@ void PORO_SCATRA::PartPORO_SCATRA::SetupDiscretizations(const Epetra_Comm& comm)
 
   if (scatradis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
     // create the fluid scatra discretization
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
-      std::pair<string,string> key("structure","scatra");
-      std::map<int,int> structmatmap = problem->ClonedMaterialMap()[key];
-      clonewizard->CreateMatchingDiscretization(structdis,scatradis,structmatmap);
-    }
-    if (comm.MyPID()==0)
-    cout <<"Created fluid-based scalar transport discretization from structure discretization in... "<< time.ElapsedTime() << " secs\n\n";
+    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,fluiddis);
   }
   else
   dserror("Structure AND ScaTra discretization present. This is not supported.");

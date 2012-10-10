@@ -287,6 +287,8 @@ SOLVER                          Aztec_MSR                       // Amesos_KLU_sy
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNG 2.1e08 NUE 0.3 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 6.445 CONDUCT 1031.2 INITTEMP 273.15
 MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/4)-(pi/2)))+0.5 t1 0.0 t2 4.0 // Tmax=4
 ----------------------------------------------------------------------CURVE2
