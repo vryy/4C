@@ -144,6 +144,8 @@ MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4
 MAT 2 MAT_scatra DIFFUSIVITY 0.000000001 // 1*10E-9
 MAT 3 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 // plus side (right)
 MAT 4 MAT_fluid DYNVISCOSITY 2.0 DENSITY 2.0 // minus side (left)
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0 // sin curve with zero derivatives
 ----------------------------------------------------------------------CURVE2
