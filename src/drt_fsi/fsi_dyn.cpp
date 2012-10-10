@@ -61,7 +61,9 @@
 /*----------------------------------------------------------------------*/
 void fluid_ale_drt()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  const Epetra_Comm& comm = problem->GetDis("fluid")->Comm();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -70,29 +72,50 @@ void fluid_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  RCP<DRT::Discretization> aledis   = DRT::Problem::Instance()->GetDis("ale");
+  RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  RCP<DRT::Discretization> aledis   = problem->GetDis("ale");
   fluiddis->FillComplete();
   aledis->FillComplete();
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
+    Epetra_Time time(comm);
+
     {
+      // get material cloning map
+      std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+      if (clonefieldmatmap.size() == 0)
+        dserror("No CLONING MATERIAL MAP defined in input file. "
+            "This is necessary to assign a material to the ALE elements.");
+
+      std::pair<string,string> key("fluid","ale");
+      std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+      if (fluidmatmap.size() == 0)
+            dserror("Key pair 'fluid/ale' was not found in input file.");
+
+      // create cloning object
       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
-      alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+      // Clone ALE discretization from fluid discretization
+      alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
     }
 
     if (comm.MyPID()==0)
-    {
-      cout << "\n\nCreating ALE discretisation ....\n\n";
-    }
+      cout <<"Created fluid-based ALE discretization from fluid discretization in...."
+           << time.ElapsedTime() << " secs\n\n";
+  }
+  else  // filled ale discretization
+  {
+    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
+      dserror("Fluid and ALE nodes have the same node numbers. "
+          "This it not allowed since it causes problems with Dirichlet BCs. "
+          "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
-  const int restart = DRT::Problem::Instance()->Restart();
+  const int restart = problem->Restart();
   if (restart)
   {
     // read the restart information, set vectors and variables
@@ -188,14 +211,14 @@ void fluid_xfem2_drt()
 /*----------------------------------------------------------------------*/
 void fluid_fluid_ale_drt()
 {
+  DRT::Problem* problem = DRT::Problem::Instance();
+
   // create a communicator
   #ifdef PARALLEL
-   RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
+   RCP<Epetra_Comm> comm = rcp(problem->GetDis("fluid")->Comm().Clone());
   #else
     Epetra_SerialComm comm;
   #endif
-
-    DRT::Problem* problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
   bgfluiddis->FillComplete();
@@ -418,17 +441,34 @@ void fluid_fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
+    Epetra_Time time(*comm);
+
     {
+      // get material cloning map
+      std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+      if (clonefieldmatmap.size() == 0)
+        dserror("No CLONING MATERIAL MAP defined in input file. "
+            "This is necessary to assign a material to the ALE elements.");
+
+      std::pair<string,string> key("fluid","ale");
+      std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+      if (fluidmatmap.size() == 0)
+        dserror("Key pair 'fluid/ale' was not found in input file.");
+
+      // create cloning object
       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
-      alecreator->CreateMatchingDiscretization(embfluiddis,aledis,-1);
+      // Clone ALE discretization from fluid discretization
+      alecreator->CreateMatchingDiscretization(embfluiddis,aledis,fluidmatmap);
     }
+
     if (comm->MyPID()==0)
-    {
-      cout << "\n\nCreating ALE discretisation ....\n\n";
-    }
+          cout <<"Created fluid-based ALE discretization from fluid discretization in...."
+               << time.ElapsedTime() << " secs\n\n";
   }
+  else  // ale discretization in input file
+    dserror("Providing an ALE mesh is not supported for this problemtype.");
 
   aledis->FillComplete();
 
@@ -801,16 +841,45 @@ void fluid_freesurf_drt()
   problem->GetDis("fluid")->FillComplete();
   problem->GetDis("ale")->FillComplete();
 
-  // create ale elements if the ale discretization is empty
+  // get discretizations
   RCP<DRT::Discretization> aledis = problem->GetDis("ale");
+  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+
+  // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
-    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    Epetra_Time time(comm);
 
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+    {
+      // get material cloning map
+      std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
+      if (clonefieldmatmap.size() == 0)
+        dserror("No CLONING MATERIAL MAP defined in input file. "
+            "This is necessary to assign a material to the ALE elements.");
 
-    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+      std::pair<string,string> key("fluid","ale");
+      std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+      if (fluidmatmap.size() == 0)
+        dserror("Key pair 'fluid/ale' was not found in input file.");
+
+      // create cloning object
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+      // Clone ALE discretization from fluid discretization
+      alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
+    }
+
+    if (comm.MyPID()==0)
+          cout <<"Created fluid-based ALE discretization from fluid discretization in...."
+               << time.ElapsedTime() << " secs\n\n";
+  }
+  else  // filled ale discretization
+  {
+    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
+      dserror("Fluid and ALE nodes have the same node numbers. "
+          "This it not allowed since it causes problems with Dirichlet BCs. "
+          "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
@@ -868,13 +937,13 @@ void fluid_freesurf_drt()
 /*----------------------------------------------------------------------*/
 void fsi_ale_drt()
 {
-#ifdef PARALLEL
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  #ifdef PARALLEL
+  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 #else
   Epetra_SerialComm comm;
 #endif
-
-  DRT::Problem* problem = DRT::Problem::Instance();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
