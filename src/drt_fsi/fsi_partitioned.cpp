@@ -581,7 +581,7 @@ FSI::Partitioned::CreateLinearSystem(ParameterList& nlParams,
       if (dirParams.get("Method","Newton")!="User Defined")
       {
         if (Comm().MyPID()==0)
-          utils->out() << RED "Warning: No Jacobian for solver " << dirParams.get("Method","Newton") << END_COLOR "\n";
+          utils->out() << "Warning: No Jacobian for solver " << dirParams.get("Method","Newton") << "\n";
       }
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, noxSoln));
     }
@@ -596,7 +596,7 @@ FSI::Partitioned::CreateLinearSystem(ParameterList& nlParams,
     if (lsParams.get("Preconditioner", "None")=="None")
     {
       if (Comm().MyPID()==0)
-        utils->out() << RED "Warning: Preconditioner turned off in linear solver settings." END_COLOR "\n";
+        utils->out() << "Warning: Preconditioner turned off in linear solver settings.\n";
     }
 
     Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
@@ -713,10 +713,10 @@ bool FSI::Partitioned::computeF(const Epetra_Vector &x, Epetra_Vector &F, const 
   if (Comm().MyPID()==0)
   {
     utils_->out() << "\n "
-                  << YELLOW_LIGHT << "FSI residual calculation" << END_COLOR
+                  << "FSI residual calculation"
                   << ".\n";
     if (fillFlag!=Residual)
-      utils_->out() << " fillFlag = " RED << flags[fillFlag] << END_COLOR "\n";
+      utils_->out() << " fillFlag = " << flags[fillFlag] << "\n";
   }
 
   // we count the number of times the residuum is build
@@ -760,7 +760,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidOp(Teuchos::RCP<Epetra_Vector
                                                       const FillType fillFlag)
 {
   if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
-    utils_->out() << endl << BLUE2_LIGHT << "Fluid operator" << END_COLOR << endl;
+    utils_->out() << endl << "Fluid operator" << endl;
   return Teuchos::null;
 }
 
@@ -771,7 +771,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(Teuchos::RCP<Epetra_Vecto
                                                        const FillType fillFlag)
 {
   if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
-    utils_->out() << endl << BLUE2_LIGHT << "Structural operator" << END_COLOR << endl;
+    utils_->out() << endl << "Structural operator" << endl;
   return Teuchos::null;
 }
 

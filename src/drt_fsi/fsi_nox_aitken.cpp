@@ -9,8 +9,6 @@
 #include <Teuchos_ParameterList.hpp>
 #include <NOX_GlobalData.H>
 
-#include "../drt_lib/drt_colors.H"
-
 #include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
@@ -90,7 +88,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   nu_ = nu_ + (nu_ - 1.)*top/den;
   step = 1. - nu_;
 
-  utils_->out() << "          RELAX = " YELLOW_LIGHT << setw(5) << step << END_COLOR "\n";
+  utils_->out() << "          RELAX = " << setw(5) << step << "\n";
 
   grp.computeX(oldGrp, dir, step);
 

@@ -12,8 +12,6 @@
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
 
-#include "../drt_lib/drt_colors.H"
-
 #include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
@@ -67,7 +65,7 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
                        .innerProduct(dir);
 
   step = - numerator / denominator;
-  utils_->out() << "          RELAX = " YELLOW_LIGHT << setw(5) << step << END_COLOR "\n";
+  utils_->out() << "          RELAX = " << setw(5) << step << "\n";
 
   newgrp.computeX(oldgrp, dir, step);
   newgrp.computeF();

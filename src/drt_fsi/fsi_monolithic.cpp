@@ -16,7 +16,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_lib/drt_colors.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
 #include "../drt_adapter/adapter_coupling.H"
