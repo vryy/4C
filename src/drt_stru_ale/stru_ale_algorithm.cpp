@@ -20,7 +20,7 @@ Maintainer: Markus Gitterle
  | headers                                                   mgit 04/11 |
  *----------------------------------------------------------------------*/
 #include "stru_ale_algorithm.H"
-#include "stru_ale_utils.H"
+#include "../drt_lib/drt_discret.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"

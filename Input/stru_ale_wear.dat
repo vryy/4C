@@ -87,6 +87,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 1 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 1 THEXPANS 0.0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0 t1 0.0 t2 1
 CURVE1 on EXPR FUNC sin(2*pi/10*(t-1)) t1 1.0 t2 100

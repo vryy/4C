@@ -50,9 +50,9 @@ namespace ALE
 
     /// determine element type string and whether element is copied or not
     bool DetermineEleType(
-        DRT::Element* actele,
-        const bool ismyele,
-        std::vector<std::string>& eletype);
+        DRT::Element* actele,               ///< current element
+        const bool ismyele,                 ///< true if element belongs to my proc
+        std::vector<std::string>& eletype); ///< element type
 
     /// set element-specific data (material etc.)
     void SetElementData(

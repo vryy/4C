@@ -15,7 +15,6 @@ Maintainer: Mirella Coroneo
 #include "ad_str_bio.H"
 #include "adapter_coupling.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_stru_ale/stru_ale_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fsi/fsi_utils.H"
@@ -38,8 +37,8 @@ ADAPTER::StructureBio::StructureBio(
 	// create ale elements for the structure
 	RefCountPtr<DRT::Discretization> aledis = null;
 
-	Teuchos::RCP<DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy> > alecreator =
-   	Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy>() );
+//	Teuchos::RCP<DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy> > alecreator =
+//   	Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy>() );
 
 	//alecreator->CreateMatchingDiscretization(structuredis,aledis,-1); //not working
 

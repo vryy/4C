@@ -26,8 +26,9 @@ Maintainer: Markus Gitterle
  |  headers                                                  mgit 04/11 |
  *----------------------------------------------------------------------*/
 #include "stru_ale_dyn.H"
-#include "stru_ale_utils.H"
 #include "stru_ale_algorithm.H"
+
+#include "../drt_ale/ale_utils_clonestrategy.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -66,20 +67,13 @@ void stru_ale_dyn_drt(int restart)
   // we use the structure discretization as layout for the ale discretization
   if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
   
-  // duplication of structure discretization will follow
+  // clone ale mesh from structure discretization
   if (aledis->NumGlobalNodes()==0)
   { 
-    // fetch the desired material id for the thermo elements
-    const int matid = -1;
-    
-    // create the ale discretization
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy> > clonewizard
-        = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy>() );
-
-      clonewizard->CreateMatchingDiscretization(structdis,aledis,matid);
-    }
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(structdis,aledis);
   }
+  else
+    dserror("Reading an ALE mesh from the input file is not supported for this problem type.");
   
   // structure ale object
   Teuchos::RCP<STRU_ALE::Algorithm> stru_ale = Teuchos::rcp(new STRU_ALE::Algorithm(comm));

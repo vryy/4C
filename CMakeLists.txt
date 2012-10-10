@@ -1371,7 +1371,6 @@ set(OBJS_GRAPH_TEST
 set(OBJS_DRT_STRU_ALE
   src/drt_stru_ale/stru_ale_algorithm.cpp  
   src/drt_stru_ale/stru_ale_dyn.cpp
-  src/drt_stru_ale/stru_ale_utils.cpp
 )  
 set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_dyn.cpp

@@ -30,19 +30,20 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<string,string> ALE::UTILS::AleFluidCloneStrategy::ConditionsToCopy()
+std::map<std::string,std::string> ALE::UTILS::AleFluidCloneStrategy::ConditionsToCopy()
 {
-  std::map<string,string> conditions_to_copy;
+  std::map<std::string,std::string> conditions_to_copy;
 
-  conditions_to_copy.insert(pair<string,string>("ALEDirichlet","Dirichlet"));
-  conditions_to_copy.insert(pair<string,string>("FSICoupling","FSICoupling"));
-  conditions_to_copy.insert(pair<string,string>("FREESURFCoupling","FREESURFCoupling"));
-  conditions_to_copy.insert(pair<string,string>("StructAleCoupling","StructAleCoupling"));
-  conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
-  conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
-  conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
-  conditions_to_copy.insert(pair<string,string>("XFEMCoupling","XFEMCoupling"));
-  conditions_to_copy.insert(pair<string,string>("FluidFluidCoupling","FluidFluidCoupling"));
+  conditions_to_copy.insert(pair<std::string,std::string>("ALEDirichlet","Dirichlet"));
+  conditions_to_copy.insert(pair<std::string,std::string>("FSICoupling","FSICoupling"));
+  conditions_to_copy.insert(pair<std::string,std::string>("FREESURFCoupling","FREESURFCoupling"));
+  conditions_to_copy.insert(pair<std::string,std::string>("StructAleCoupling","StructAleCoupling"));
+  conditions_to_copy.insert(pair<std::string,std::string>("LinePeriodic","LinePeriodic"));
+  conditions_to_copy.insert(pair<std::string,std::string>("SurfacePeriodic","SurfacePeriodic"));
+  conditions_to_copy.insert(pair<std::string,std::string>("ElectrodeKinetics","ElectrodeKinetics"));
+  conditions_to_copy.insert(pair<std::string,std::string>("XFEMCoupling","XFEMCoupling"));
+  conditions_to_copy.insert(pair<std::string,std::string>("FluidFluidCoupling","FluidFluidCoupling"));
+  conditions_to_copy.insert(pair<std::string,std::string>("AleWear","AleWear"));
 
   return conditions_to_copy;
 }
@@ -127,32 +128,30 @@ bool ALE::UTILS::AleFluidCloneStrategy::DetermineEleType(
     const bool ismyele,
     vector<string>& eletype)
 {
-  bool isale = false;
-  bool found = false;
+  bool cloneit = true;
 
-#ifdef D_FLUID3
-    DRT::ELEMENTS::Fluid* f3 = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
-    if (not found and f3!=NULL)
-    {
-      const int  nsd = DRT::UTILS::getDimension(f3->Shape());
-      found = true;
-      isale = f3->IsAle();
+  // Fluid meshes may be split into Eulerian and ALE regions.
+  // Check, whether actele is a fluid element in order to account for
+  // the possible split in Eulerian an ALE regions
+  DRT::ELEMENTS::Fluid* f3 = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
+  if (f3!=NULL)
+  {
+    cloneit = f3->IsAle(); // if not ALE, element will not be cloned
+                           // --> theoretically, support of Eulerian sub meshes
+  }
 
-      if (isale and ismyele)
-      {
-        if (nsd == 3)
-          eletype.push_back("ALE3");
-        else if (nsd == 2)
-          eletype.push_back("ALE2");
-        else
-          dserror("%i D Dimension not supported", nsd);
-      }
-    }
-#endif
+  // Clone it now.
+  if (cloneit and ismyele)
+  {
+    const int  nsd = DRT::UTILS::getDimension(actele->Shape());
+    if (nsd == 3)
+      eletype.push_back("ALE3");
+    else if (nsd == 2)
+      eletype.push_back("ALE2");
+    else
+      dserror("%i D Dimension not supported", nsd);
+  }
 
-    if (not found)
-      dserror("unsupported fluid element type '%s'", typeid(*actele).name());
-
-  return isale;
+  return cloneit;
 }
 
