@@ -151,30 +151,7 @@ void elch_dyn(int restart)
       // create ale elements only if the ale discretization is empty
       if (aledis->NumGlobalNodes()==0)
       {
-        Epetra_Time time(comm);
-        {
-          // get material cloning map
-          std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
-          if (clonefieldmatmap.size() == 0)
-            dserror("No CLONING MATERIAL MAP defined in input file. "
-                "This is necessary to assign a material to the ALE elements.");
-
-          std::pair<string,string> key("fluid","ale");
-          std::map<int,int> fluidmatmap = clonefieldmatmap[key];
-          if (fluidmatmap.size() == 0)
-            dserror("Key pair 'fluid/ale' was not found in input file.");
-
-          Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
-            Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
-
-          alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
-        }
-
-        if(comm.MyPID()==0)
-        {
-          cout << "\n\nCreated ALE discretization from fluid field in........"
-          <<time.ElapsedTime() << " secs\n\n";
-        }
+        DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(fluiddis,aledis);
       }
       else
         dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");

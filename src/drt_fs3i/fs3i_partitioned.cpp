@@ -83,43 +83,25 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   problem->GetDis("scatra2")->FillComplete();
 
   //---------------------------------------------------------------------
-  // create ale elements if not yet existing
-  //---------------------------------------------------------------------
-  RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-  if (aledis->NumGlobalNodes()==0)
-  {
-    RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
-
-    // get material cloning map
-    std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
-    if (clonefieldmatmap.size() == 0)
-      dserror("No CLONING MATERIAL MAP defined in input file. "
-          "This is necessary to assign a material to the ALE elements.");
-
-    std::pair<string,string> key("fluid","ale");
-    std::map<int,int> fluidmatmap = clonefieldmatmap[key];
-    if (fluidmatmap.size() == 0)
-      dserror("Key pair 'fluid/ale' was not found in input file.");
-
-    // create cloning object
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy> > alecreator =
-      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleFluidCloneStrategy>() );
-
-    // clone
-    alecreator->CreateMatchingDiscretization(fluiddis,aledis,fluidmatmap);
-  }
-  else
-    dserror("Providing an ALE mesh is not supported for problemtype FS3I.");
-
-  //---------------------------------------------------------------------
-  // access discretizations for structure, fluid as well as fluid- and
-  // structure-based scalar transport and get material map for scalar
-  // transport elements
+  // access discretizations for structure, fluid, ale as well as fluid-
+  // and structure-based scalar transport and get material map for fluid
+  // and scalar transport elements
   //---------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> fluiddis = problem->GetDis("fluid");
   RefCountPtr<DRT::Discretization> structdis = problem->GetDis("structure");
   RefCountPtr<DRT::Discretization> fluidscatradis = problem->GetDis("scatra1");
   RefCountPtr<DRT::Discretization> structscatradis = problem->GetDis("scatra2");
+  RefCountPtr<DRT::Discretization> aledis = problem->GetDis("ale");
+
+  //---------------------------------------------------------------------
+  // create ale discretization as a clone from fluid discretization
+  //---------------------------------------------------------------------
+  if (aledis->NumGlobalNodes()==0)
+  {
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(fluiddis,aledis);
+  }
+  else
+    dserror("Providing an ALE mesh is not supported for problemtype FS3I.");
 
   std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
   if (clonefieldmatmap.size() < 2)
