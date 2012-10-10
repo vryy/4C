@@ -23,6 +23,7 @@ Maintainer: Georg Bauer
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_parameter.H"
+
 // required for utility function CloneDiscretization()
 #include "drt_globalproblem.H"
 #include <Epetra_Time.h>
@@ -334,12 +335,12 @@ private:
      std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap
      = DRT::Problem::Instance()->ClonedMaterialMap();
      if (clonefieldmatmap.size() < 1)
-       dserror("At least one material pairing required!");
+       dserror("At least one material pairing required in --CLONING MATERIAL MAP.");
 
      std::pair<string,string> key(sourcedis->Name(),targetdis->Name());
      std::map<int,int> matmap = clonefieldmatmap[key];
      if (matmap.size() < 1)
-       dserror("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP",sourcedis->Name().c_str(),targetdis->Name().c_str());
+       dserror("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.",sourcedis->Name().c_str(),targetdis->Name().c_str());
 
      clonewizard->CreateMatchingDiscretization(sourcedis,targetdis,matmap);
    }
