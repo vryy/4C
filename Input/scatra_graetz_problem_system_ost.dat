@@ -186,6 +186,8 @@ MAT 4 MAT_scatra DIFFUSIVITY 0.01
 // MAT 5 MAT_matlist LOCAL No NUMMAT 3 MATIDS 2 3 4
 // allocate materials individually per element: just for nightly testing!!
 MAT 5 MAT_matlist LOCAL Yes NUMMAT 3 MATIDS 2 3 4
+-----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

@@ -23,6 +23,9 @@ Maintainer: Georg Bauer
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_parameter.H"
+// required for utility function CloneDiscretization()
+#include "drt_globalproblem.H"
+#include <Epetra_Time.h>
 
 namespace DRT
 {
@@ -310,6 +313,42 @@ private:
   vector<string> eletype_;
 
 }; // class DiscretizationCreator
+
+
+ /// clone target discretization from a given source discretization
+ template <class CloneStrategy>
+ void CloneDiscretization(
+     Teuchos::RCP<DRT::Discretization> sourcedis, ///< source discretization
+     Teuchos::RCP<DRT::Discretization> targetdis ///< target discretization
+ )
+ {
+   // access the communicator for time measurement
+   const Epetra_Comm& comm = sourcedis->Comm();
+   Epetra_Time time(comm);
+
+   // create target discretization using a given clone strategy
+   {
+     Teuchos::RCP<DRT::UTILS::DiscretizationCreator<CloneStrategy> > clonewizard =
+         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>() );
+
+     std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap
+     = DRT::Problem::Instance()->ClonedMaterialMap();
+     if (clonefieldmatmap.size() < 1)
+       dserror("At least one material pairing required!");
+
+     std::pair<string,string> key(sourcedis->Name(),targetdis->Name());
+     std::map<int,int> matmap = clonefieldmatmap[key];
+     if (matmap.size() < 1)
+       dserror("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP",sourcedis->Name().c_str(),targetdis->Name().c_str());
+
+     clonewizard->CreateMatchingDiscretization(sourcedis,targetdis,matmap);
+   }
+   if (comm.MyPID()==0)
+     cout<<"Created discretization "<<sourcedis->Name()<<" from discretization "<<targetdis->Name()<<" in...."
+     <<time.ElapsedTime() << " secs\n\n";
+
+   return;
+ }
 
 
 } // namespace UTILS

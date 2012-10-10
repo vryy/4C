@@ -187,6 +187,8 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.0055556 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_scatra DIFFUSIVITY 0.0018519 REACOEFF 0.0 SCNUM 3.0 // Sc=3
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 0.4 c2 0.0
 ----------------------------------------------------------------------CURVE2
