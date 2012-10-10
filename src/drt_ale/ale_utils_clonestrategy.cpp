@@ -30,7 +30,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string,std::string> ALE::UTILS::AleFluidCloneStrategy::ConditionsToCopy()
+std::map<std::string,std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCopy()
 {
   std::map<std::string,std::string> conditions_to_copy;
 
@@ -51,7 +51,7 @@ std::map<std::string,std::string> ALE::UTILS::AleFluidCloneStrategy::ConditionsT
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ALE::UTILS::AleFluidCloneStrategy::CheckMaterialType(const int matid)
+void ALE::UTILS::AleCloneStrategy::CheckMaterialType(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -63,7 +63,7 @@ void ALE::UTILS::AleFluidCloneStrategy::CheckMaterialType(const int matid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ALE::UTILS::AleFluidCloneStrategy::SetElementData(
+void ALE::UTILS::AleCloneStrategy::SetElementData(
     Teuchos::RCP<DRT::Element> newele,
     DRT::Element* oldele,
     const int matid,
@@ -123,7 +123,7 @@ void ALE::UTILS::AleFluidCloneStrategy::SetElementData(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool ALE::UTILS::AleFluidCloneStrategy::DetermineEleType(
+bool ALE::UTILS::AleCloneStrategy::DetermineEleType(
     DRT::Element* actele,
     const bool ismyele,
     vector<string>& eletype)

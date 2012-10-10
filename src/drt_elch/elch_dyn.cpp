@@ -136,7 +136,7 @@ void elch_dyn(int restart)
       // create ale elements only if the ale discretization is empty
       if (aledis->NumGlobalNodes()==0)
       {
-        DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(fluiddis,aledis);
+        DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
       }
       else
         dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");

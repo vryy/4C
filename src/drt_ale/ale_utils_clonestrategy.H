@@ -37,14 +37,14 @@ namespace ALE
            of ale from a given fluid discretization
 
     */
-    class AleFluidCloneStrategy
+    class AleCloneStrategy
     {
     public:
 
     /// constructor
-    explicit AleFluidCloneStrategy(){}
+    explicit AleCloneStrategy(){}
     /// destructor
-    virtual ~AleFluidCloneStrategy(){}
+    virtual ~AleCloneStrategy(){}
 
     protected:
 
@@ -69,7 +69,7 @@ namespace ALE
 
     private:
 
-    }; // class AleFluidCloneStrategy
+    }; // class AleCloneStrategy
   } // namespace UTILS
 } // namespace ALE
 

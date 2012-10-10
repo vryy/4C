@@ -81,7 +81,7 @@ void fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
   }
   else  // filled ale discretization
   {
@@ -418,7 +418,7 @@ void fluid_fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(embfluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(embfluiddis,aledis);
   }
   else  // ale discretization in input file
     dserror("Providing an ALE mesh is not supported for this problemtype.");
@@ -682,7 +682,7 @@ void fluid_fluid_fsi_drt()
   RCP<DRT::Discretization> aledis = problem->GetDis("ale");
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(embfluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(embfluiddis,aledis);
   }
   else  // ale discretization in input file
     dserror("Providing an ALE mesh is not supported for problemtype Fluid_Fluid_FSI.");
@@ -777,7 +777,7 @@ void fluid_freesurf_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
   }
   else  // filled ale discretization
   {
@@ -868,7 +868,7 @@ void fsi_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0) // empty ale discretization
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
   }
   else  // filled ale discretization
   {

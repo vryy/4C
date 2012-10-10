@@ -70,7 +70,7 @@ void stru_ale_dyn_drt(int restart)
   // clone ale mesh from structure discretization
   if (aledis->NumGlobalNodes()==0)
   { 
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleFluidCloneStrategy>(structdis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis,aledis);
   }
   else
     dserror("Reading an ALE mesh from the input file is not supported for this problem type.");
