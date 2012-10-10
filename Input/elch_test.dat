@@ -31,6 +31,8 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 --------------------------------------------------------------------------IO
 OUTPUT_OUT                      No
 OUTPUT_GID                      No

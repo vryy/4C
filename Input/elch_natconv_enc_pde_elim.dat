@@ -243,6 +243,8 @@ MAT 2 MAT_ion DIFFUSIVITY 5e-6 VALENCE 1.0 DENSIFICATION 0.5
 MAT 3 MAT_ion DIFFUSIVITY 5e-6 VALENCE -2.0
 MAT 4 MAT_ion DIFFUSIVITY 1e-6 VALENCE 0.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 5.0e-6 ELIM_VALENCE -2.0
 MAT 5 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 4
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0
 ----------------------------------------------------------------------CURVE2

@@ -245,7 +245,8 @@ MAT 3 MAT_ion DIFFUSIVITY 0.000423 VALENCE 2.0
 MAT 4 MAT_ion DIFFUSIVITY 0.001065 VALENCE -2.0
 MAT 5 MAT_ion DIFFUSIVITY 0.009312 VALENCE 1.0
 MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
------------------------------------------------CLONING MATERIAL MAP
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 6
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 1.0

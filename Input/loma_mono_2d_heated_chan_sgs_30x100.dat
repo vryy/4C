@@ -208,6 +208,8 @@ ML_DAMPMED                      0.67                            // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_sutherland REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0 THERMPRESS 98100.0 GASCON 287.0
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 1
 ----------------------------------------------------------------------CURVE1
 // c1: start-up period, c2: ratio of initial and final value
 CURVE1 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 15.0 c2 0.666666666667

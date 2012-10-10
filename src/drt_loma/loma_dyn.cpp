@@ -115,20 +115,7 @@ void loma_dyn(int restart)
     // create scatra elements if scatra discretization is empty (typical case)
     if (scatradis->NumGlobalNodes()==0)
     {
-      Epetra_Time time(comm);
-
-      // fetch the desired material id for the transport elements
-      const int matid = scatradyn.get<int>("MATID");
-
-      // create scatra discretization
-      {
-        Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
-
-        clonewizard->CreateMatchingDiscretization(fluiddis,scatradis,matid);
-      }
-      if (comm.MyPID()==0)
-        cout << "Created scalar transport discretization from fluid discretization in ... "
-        << time.ElapsedTime() << " secs\n\n";
+      DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
     }
     else dserror("Fluid AND ScaTra discretization present. This is not supported.");
 

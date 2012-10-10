@@ -117,19 +117,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // transport discretization is empty
   if (fluidscatradis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
-
-    // create the fluid scatra discretization
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
-      std::pair<string,string> key("fluid","scatra1");
-      std::map<int,int> fluidmatmap = clonefieldmatmap[key];
-      clonewizard->CreateMatchingDiscretization(fluiddis,fluidscatradis,fluidmatmap);
-    }
-    if (comm.MyPID()==0)
-      cout <<"Created fluid-based scalar transport discretization from fluid discretization in...."
-           << time.ElapsedTime() << " secs\n\n";
+    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,fluidscatradis);
   }
   else
     dserror("Fluid AND ScaTra discretization present. This is not supported.");
@@ -144,17 +132,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // scalar transport discretization is empty
   if (structscatradis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
-    {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
-      std::pair<string,string> key("structure","scatra2");
-      std::map<int,int> structmatmap = clonefieldmatmap[key];
-      clonewizard->CreateMatchingDiscretization(structdis,structscatradis,structmatmap);
-    }
-    if (comm.MyPID()==0)
-      cout <<"Created structure-based scalar transport discretization from structure discretization in...."
-           << time.ElapsedTime() << " secs\n\n";
+    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,structscatradis);
   }
   else
     dserror("Structure AND ScaTra discretization present. This is not supported.");

@@ -201,6 +201,8 @@ NAME                            Sca_Tra_Electrical_Potential
 //MAT 1 MAT_fluid DYNVISCOSITY 1e-2 DENSITY 1.0
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 10.0
 MAT 2 MAT_ion DIFFUSIVITY 5e-6 VALENCE 0.0 DENSIFICATION 0.5
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0
 ----------------------------------------------------------------------CURVE2

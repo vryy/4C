@@ -18,14 +18,13 @@ Maintainer: Georg Bauer
 #include "elch_moving_boundary_algorithm.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include "../drt_fsi/fsi_utils.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_ale/ale_utils_clonestrategy.H"
 #if 0
 #include "../drt_io/io_gmsh.H"
 #endif
@@ -115,21 +114,7 @@ void elch_dyn(int restart)
     // create scatra elements if the scatra discretization is empty
     if (scatradis->NumGlobalNodes()==0)
     {
-      Epetra_Time time(comm);
-
-      // fetch the desired material id for the transport elements
-      const int matid = scatradyn.get<int>("MATID");
-
-      // create the scatra discretization
-      {
-      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
-            Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
-      clonewizard->CreateMatchingDiscretization(fluiddis,scatradis,matid);
-      }
-
-      if (comm.MyPID()==0)
-        cout<<"Created scalar transport discretization from fluid field in...."
-        <<time.ElapsedTime() << " secs\n\n";
+      DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
     }
     else
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
