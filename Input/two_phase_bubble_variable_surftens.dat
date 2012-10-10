@@ -148,6 +148,8 @@ MAT       1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4
 MAT       2 MAT_scatra DIFFUSIVITY 0.0000000001 // 1*10E-9
 MAT       3 MAT_fluid   DYNVISCOSITY 0.048 DENSITY 1000 GAMMA 0.59
 MAT       4 MAT_fluid   DYNVISCOSITY 0.024 DENSITY 500 GAMMA 0.59
+-----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
