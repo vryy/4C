@@ -1240,6 +1240,7 @@ set(OBJS_DRT_ALEALG
   src/drt_ale/ale_springs.cpp
   src/drt_ale/ale_springs_fixed_ref.cpp
   src/drt_ale/ale_utils_mapextractor.cpp
+  src/drt_ale/ale_utils_clonestrategy.cpp
 )
 set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1.cpp
