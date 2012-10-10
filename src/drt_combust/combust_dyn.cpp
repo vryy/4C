@@ -54,23 +54,7 @@ void combust_dyn()
 
   if (gfuncdis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm);
-
-    // access the scalar transport parameter list
-    const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-    // fetch the desired material id for the transport elements
-    const int matid = scatracontrol.get<int>("MATID");
-
-    // create the scatra discretization
-    {
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
-          Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
-
-    clonewizard->CreateMatchingDiscretization(fluiddis,gfuncdis,matid);
-    }
-    if (comm.MyPID()==0)
-      cout<<"Created G-function discretization from fluid discretization in...."
-          <<time.ElapsedTime() << " secs\n\n";
+    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,gfuncdis);
   }
   else
     dserror("G-function discretization is not empty. Fluid and G-function already present!");
