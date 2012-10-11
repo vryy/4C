@@ -121,6 +121,12 @@ namespace OPTI
 
     void SubSolve();
 
+    void Res(
+        double& resnorm,
+        double& resinf,
+        const double& tol_sub
+    );
+
     void Update();
 
     bool KKTCond(
@@ -148,6 +154,7 @@ namespace OPTI
     //! @name size of optimization problem
 
     const int m_; /// number of constraints
+    const int n_loc_; /// number of local optimization variables TODO auch bei periodischen RBs?
     const int n_; /// number of optimization variables (=number of nodes) TODO auch bei periodischen RBs?
     //@}
 
