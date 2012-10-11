@@ -212,7 +212,7 @@ void PORO_SCATRA::PartPORO_SCATRA::SetupDiscretizations(const Epetra_Comm& comm)
   if (scatradis->NumGlobalNodes()==0)
   {
     // create the fluid scatra discretization
-    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,fluiddis);
+    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
   }
   else
   dserror("Structure AND ScaTra discretization present. This is not supported.");
