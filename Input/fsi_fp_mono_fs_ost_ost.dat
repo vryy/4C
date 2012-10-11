@@ -21,7 +21,6 @@ NUMSTEP                         41
 NUM_INITSTEP                    0
 RESULTSEVRY                     1
 TIMESTEP                        0.1
-----------------------------------------------------CONDITION NAMES
 -----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1

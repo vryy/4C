@@ -24,7 +24,6 @@ LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 1
 NAME                            ALE_Solver
 SOLVER                          Aztec_MSR
--------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1

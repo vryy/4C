@@ -37,7 +37,6 @@ UPRES                           1
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                0
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
--------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1

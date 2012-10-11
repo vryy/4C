@@ -34,11 +34,6 @@ ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
--------------------------------------------------------------CONDITION NAMES
-NUMALEDIS                       1
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 SIMPLER_SOLVER                  3

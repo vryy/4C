@@ -17,8 +17,6 @@ NODES                           162
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
--------------------------------------------------------------CONDITION NAMES
-// number of nodal clouds
 --------------------------------------------------------------DISCRETISATION
 // Number of meshes in ale field
 NUMALEDIS                       1

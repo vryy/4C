@@ -20,7 +20,6 @@ NODES                           16
 DIM                             3
 MATERIALS                       62
 NUMDF                           6
--------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
 NUMFLUIDDIS                     0

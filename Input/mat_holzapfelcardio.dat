@@ -17,7 +17,6 @@ NODES                           512
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
--------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
