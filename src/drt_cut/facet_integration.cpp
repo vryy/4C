@@ -1,3 +1,9 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file facet_integration.cpp
+
+\brief Integrates base functions over the facet for both volumecell facets and for boundarycells
+equations
+ *------------------------------------------------------------------------------------------------*/
 #include "line_integration.H"
 #include "boundarycell_integration.H"
 
@@ -31,6 +37,20 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
   }
 
   CUT::KERNEL::DeleteInlinePts( ptlist );
+
+  // For some geometries, cut produces a facet with all points
+  // lying on a line. all coefficients are zero in such cases
+  if( ptlist.size()==0 )
+  {
+#if DEBUGCUTLIBRARY
+    std::cout<<"WARNING:::cut algorithm produced a facet with all points on a line\n";
+#endif
+    for( unsigned i=0;i<4;i++ )
+      eqn_plane[i] = 0.0;
+
+    return eqn_plane;
+  }
+
   concavePts = KERNEL::CheckConvexity(  ptlist, geoType, false );
 
   unsigned mm=0;
@@ -71,6 +91,7 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
     }
 
   }
+
   return eqn_plane;
 }
 
