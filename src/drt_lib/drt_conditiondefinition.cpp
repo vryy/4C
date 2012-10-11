@@ -884,8 +884,6 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
               section.size()-1,condcount,sectionname_.c_str());
     }
 
-    const Teuchos::ParameterList& conditionnames = problem.ConditionNamesParams();
-
     for (std::vector<const char*>::iterator i=section.begin()+1;
          i!=section.end();
          ++i)
@@ -901,9 +899,6 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
         dserror("invalid condition line in '%s'",sectionname_.c_str());
 
       int dobjid = -1;
-      if (conditionnames.isParameter(number))
-        dobjid = conditionnames.get<int>(number) - 1;
-      else
       {
         char* ptr;
         dobjid = strtol(number.c_str(),&ptr,10);
