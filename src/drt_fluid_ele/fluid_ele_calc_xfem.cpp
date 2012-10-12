@@ -457,6 +457,70 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     }
     else dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
   }
+  case INPAR::FLUID::kimmoin_stat_stokes:
+  case INPAR::FLUID::kimmoin_stat_navier_stokes:
+  {
+
+    // function evaluation requires a 3D position vector!!
+    double position[3];
+
+    if(my::nsd_ == 3)
+    {
+      position[0] = xyzint(0);
+      position[1] = xyzint(1);
+      position[2] = xyzint(2);
+    }
+    else dserror("invalid nsd %d", my::nsd_);
+
+    // evaluate velocity and pressure
+    RCP<DRT::UTILS::Function> function = Teuchos::null;
+
+    // evaluate the velocity gradient
+    RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
+
+    // evaluate velocity and pressure
+    // evaluate the velocity gradient
+    if(calcerr == INPAR::FLUID::kimmoin_stat_stokes)
+    {
+      function      = rcp(new DRT::UTILS::KimMoinStatStokesUP());
+      function_grad = rcp(new DRT::UTILS::KimMoinStatStokesGradU());
+    }
+    else if(calcerr == INPAR::FLUID::kimmoin_stat_navier_stokes)
+    {
+      // we use the same analytical solution for the navier-stokes equations
+      // remark: just the rhs is different
+      function      = rcp(new DRT::UTILS::KimMoinStatStokesUP());
+      function_grad = rcp(new DRT::UTILS::KimMoinStatStokesGradU());
+    }
+
+    if(my::nsd_==3)
+    {
+      u(0) = function->Evaluate(0,position,t,NULL);
+      u(1) = function->Evaluate(1,position,t,NULL);
+      u(2) = function->Evaluate(2,position,t,NULL);
+      p = function->Evaluate(3,position,t,NULL);
+    }
+    else dserror("case 'kimmoin_stat' is a 3D specific case");
+
+
+    if(my::nsd_==3)
+    {
+      grad_u(0,0) = function_grad->Evaluate(0,position,t,NULL); // u,x
+      grad_u(0,1) = function_grad->Evaluate(1,position,t,NULL); // u,y
+      grad_u(0,2) = function_grad->Evaluate(2,position,t,NULL); // u,z
+
+      grad_u(1,0) = function_grad->Evaluate(3,position,t,NULL); // v,x
+      grad_u(1,1) = function_grad->Evaluate(4,position,t,NULL); // v,y
+      grad_u(1,2) = function_grad->Evaluate(5,position,t,NULL); // v,z
+
+      grad_u(2,0) = function_grad->Evaluate(6,position,t,NULL); // w,x
+      grad_u(2,1) = function_grad->Evaluate(7,position,t,NULL); // w,y
+      grad_u(2,2) = function_grad->Evaluate(8,position,t,NULL); // w,z
+    }
+    else dserror("case 'kimmoin_stat' is a 3D specific case");
+
+  }
+  break;
   break;
   case INPAR::FLUID::shear_flow:
   {
@@ -3330,6 +3394,11 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
   {
     //      | u*n |
     conv_stabfac =  fabs(veln_normal);
+  }
+  else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_max_abs_normal_vel)
+  {
+    //      max(1.0,| u*n |)
+    conv_stabfac =  max(1.0, fabs(veln_normal));
   }
   else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow)
   {

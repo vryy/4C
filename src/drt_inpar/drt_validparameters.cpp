@@ -2347,7 +2347,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "jeffery_hamel_flow",
                                  "byfunct1",
                                  "beltrami_stat_stokes",
-                                 "beltrami_stat_navier_stokes"),
+                                 "beltrami_stat_navier_stokes",
+                                 "kimmoin_stat_stokes",
+                                 "kimmoin_stat_navier_stokes"),
                                tuple<int>(
                                    INPAR::FLUID::no_error_calculation,
                                    INPAR::FLUID::beltrami_flow,
@@ -2357,7 +2359,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::jeffery_hamel_flow,
                                    INPAR::FLUID::byfunct1,
                                    INPAR::FLUID::beltrami_stat_stokes,
-                                   INPAR::FLUID::beltrami_stat_navier_stokes),
+                                   INPAR::FLUID::beltrami_stat_navier_stokes,
+                                   INPAR::FLUID::kimmoin_stat_stokes,
+                                   INPAR::FLUID::kimmoin_stat_navier_stokes),
                                &fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",
@@ -4614,10 +4618,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONV_STAB_FAC",       1.0, "define stabilization parameter for convective part of interface stabilization (inflow, inflow and outflow)",&xfluid_stab);
 
   setStringToIntegralParameter<int>("CONV_STAB_SCALING","abs_normal_vel","scaling factor for viscous interface stabilization (Nitsche, MSH)",
-                                    tuple<std::string>("inflow", "abs_normal_vel", "const", "averaged" , "none"),
+                                    tuple<std::string>("inflow", "abs_normal_vel", "max_abs_normal_vel", "const", "averaged" , "none"),
                                     tuple<int>(
                                       INPAR::XFEM::ConvStabScaling_inflow,           // scaling with max(0,-u*n)
                                       INPAR::XFEM::ConvStabScaling_abs_normal_vel,   // scaling with |u*n|
+                                      INPAR::XFEM::ConvStabScaling_max_abs_normal_vel,// scaling with max(1.0, |u*n|)
                                       INPAR::XFEM::ConvStabScaling_const,            // scaling with 1.0=const
                                       INPAR::XFEM::ConvStabScaling_averaged,         // scaling with u*n
                                       INPAR::XFEM::ConvStabScaling_none              // no convective stabilization

@@ -2013,7 +2013,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                 // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
 #ifdef BOUNDARYCELL_TRANSFORMATION_OLD
                 // original Axel's transformation
-                e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+                e->BoundaryCellGaussPoints( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #else
                 // new Benedikt's transformation
                 e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
@@ -2322,7 +2322,8 @@ void FLD::XFluid::CheckXFluidParams( ParameterList& params_xfem,
     if(conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
       std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << endl;
     if(conv_stab_fac_ != 1.0 and (    conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_inflow
-                                   or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_abs_normal_vel) )
+                                   or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_abs_normal_vel
+                                   or conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_max_abs_normal_vel) )
     {
       std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC is set to 1.0" << END_COLOR << endl;
       conv_stab_fac_ = 1.0;

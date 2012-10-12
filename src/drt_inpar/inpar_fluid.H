@@ -171,7 +171,9 @@ namespace INPAR
       jeffery_hamel_flow,
       byfunct1,
       beltrami_stat_stokes,
-      beltrami_stat_navier_stokes
+      beltrami_stat_navier_stokes,
+      kimmoin_stat_stokes,
+      kimmoin_stat_navier_stokes
     };
 
     /// initial field
