@@ -603,6 +603,10 @@ namespace FLD
     double ghost_penalty_fac_;
     enum INPAR::XFEM::EOS_GP_Pattern eos_gp_pattern_;
 
+    /// penalty term for pressure coupling at the interface
+    bool presscoupling_interface_stab_;
+    double presscoupling_interface_fac_;
+
     /// penalty term for velocity gradients at the interface
     bool velgrad_interface_stab_;
 

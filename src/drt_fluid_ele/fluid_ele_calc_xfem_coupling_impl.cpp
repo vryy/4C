@@ -30,8 +30,6 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 #include "fluid_ele_calc_xfem_coupling_impl.H"
 
 
-
-
 namespace DRT
 {
 namespace ELEMENTS
@@ -54,7 +52,7 @@ void SideImpl<distype, side_distype, numdof>::addeidisp(
   if(matrix_state == null)
     dserror("Cannot get state vector %s", state.c_str());
 
-  // extract local values of the global vectors
+  // extract local values of the global vector
   std::vector<double> mymatrix(lm.size());
   DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
 
@@ -2727,11 +2725,15 @@ void EmbImpl<distype, emb_distype>::EvaluateEmb( LINALG::Matrix<nsd_,1> & xside 
   LINALG::Matrix<nsd_,nsd_> emb_xjm(true);
   LINALG::Matrix<nsd_,nsd_> emb_xji(true);
 
+
   emb_xjm.MultiplyNT(emb_deriv_,emb_xyze_);
   emb_xji.Invert(emb_xjm);
 
   // compute global first derivates
   emb_derxy_.Multiply(emb_xji,emb_deriv_);
+
+  // get pressure derivatives at integration point
+  emb_prederxy_.MultiplyNN(emb_derxy_, emb_pres_);
 
   // get velocity derivatives at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -2758,12 +2760,14 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     double &                      kappa2,         // mortaring weighting
     double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
     double &                      stabfac_conv,   // Nitsche convective non-dimensionless stabilization factor
-    bool &                        velgrad_interface_stab, // penalty term for velocity gradients at the interface
-    double &                      velgrad_interface_fac,//velgrad_interface_stab stabilization factor
+    bool &                        velgrad_interface_stab,// penalty term for velocity gradients at the interface
+    double &                      velgrad_interface_fac, //stabilization fac for velocity gradients at the interface
+    bool &                        presscoupling_interface_stab,// penalty term for pressure coupling at the interface
+    double &                      presscoupling_interface_fac,//stabilization fac for pressure coupling at the interface
     LINALG::Matrix<nen_,1> &      funct_,         // bg shape functions
     LINALG::Matrix<nsd_,nen_> &   derxy_,         // bg deriv
     LINALG::Matrix<nsd_,nsd_> &   vderxy_,        // bg deriv^n
-    double &                      press,          // bg p^n
+    double &                      press,          // bg pressure at integration point
     LINALG::Matrix<nsd_,1> &      velint,         // bg u^n
     LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP, // Dirichlet velocity vector or prescribed jump vector
     INPAR::XFEM::ConvStabScaling  conv_stab_scaling // Inflow term strategies
@@ -3583,7 +3587,6 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       rhC_ui_(idVelz,0) += timefacfac_visc* (     emb_derxy_(Velx,ir) * 0.5* (normal(Velx) * velint(Velz) + normal(Velz)*velint(Velx))
           + emb_derxy_(Vely,ir) * 0.5* (normal(Vely) * velint(Velz) + normal(Velz)*velint(Vely))
           + emb_derxy_(Velz,ir) *       normal(Velz) * velint(Velz));
-
     }
 
     //-----------------------------------------------
@@ -3896,16 +3899,11 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       }
     } // end coupling
 
-
-
   }
-
-
 
   //-----------------------------------------------------------------
   // penalty term for velocity gradients at the interface
-
-  if(velgrad_interface_stab)
+  if (velgrad_interface_stab)
   {
     double tau_timefacfac = velgrad_interface_fac * timefacfac;
 
@@ -3958,7 +3956,6 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
           C_uu_(vi*4+ijdim, col) += tau_timefacfac*e_normal_deriv(vi)*e_normal_deriv(ui);
         }
       }
-
     }
 
     LINALG::Matrix<3,1> emb_grad_u_n(true);
@@ -3966,10 +3963,8 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     LINALG::Matrix<3,1> e_grad_u_n(true);
     e_grad_u_n.Multiply(vderxy_,normal);
 
-
     for(int idim = 0; idim <3; ++idim)
     {
-
       double diff_grad_u_n = tau_timefacfac * (e_grad_u_n(idim)-emb_grad_u_n(idim));
 
       // v_parent (u_neighbor-u_parent)
@@ -3984,8 +3979,62 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
         rhs_Cu_(vi*4+idim,0) -=  e_normal_deriv(vi)*diff_grad_u_n;
       }
     }
-  }
+  }// velgrad_interface_fac
 
+  // --------------------------------------------------------
+  // pressure coupling penalty term at the interface
+  if (presscoupling_interface_stab)
+  {
+    double tau_timefacfac_press = presscoupling_interface_fac * timefacfac;
+    for (int ui=0; ui<emb_nen_; ++ui)
+    {
+      int col = ui*4+3;
+      // v_parent * u_parent
+      //parent row
+      for (int vi=0; vi<emb_nen_; ++vi)
+      {
+        C_uiui_(vi*4+3, col) += tau_timefacfac_press*emb_funct_(vi)*emb_funct_(ui);
+      }
+
+      // neighbor row
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        C_uui_(vi*4+3, col) -= tau_timefacfac_press*funct_(vi)*emb_funct_(ui);
+      }
+    }
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+       int col = ui*4+3;
+       // v_parent * u_parent
+       //parent row
+       for (int vi=0; vi<emb_nen_; ++vi)
+       {
+         C_uiu_(vi*4+3, col) -= tau_timefacfac_press*emb_funct_(vi)*funct_(ui);
+       }
+
+       //neighbor row
+       for (int vi=0; vi<nen_; ++vi)
+       {
+         C_uu_(vi*4+3, col) += tau_timefacfac_press*funct_(vi)*funct_(ui);
+       }
+    }
+
+    double press_jump = press - emb_press;
+
+    for (int vi=0; vi<emb_nen_; ++vi)
+    {
+      int row = vi*4+3;
+      rhC_ui_(row,0) += emb_funct_(vi)*press_jump*tau_timefacfac_press;
+    }
+
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      int row = vi*4+3;
+      rhs_Cu_(row,0) -= funct_(vi)*press_jump*tau_timefacfac_press;
+    }
+
+  } // presscoupling_interface_stab
 
    // Inflow stabilization term for fluidfluidcoupling
    if(stabfac_conv > 0)

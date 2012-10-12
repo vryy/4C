@@ -269,8 +269,10 @@ namespace DRT
             double &                      kappa2,         // mortaring weighting
             double &                      stabfac,        // Nitsche non-dimensionless stabilization factor
             double &                      stabfac_conv,   // Nitsche convective non-dimensionless stabilization factor
-            bool &                        velgrad_interface_stab,  /// penalty term for velocity gradients at the interface
-            double &                      velgrad_interface_fac,  /// velgrad_interface_stab stabilization factor
+            bool &                        velgrad_interface_stab,// penalty term for velocity gradients at the interface
+            double &                      velgrad_interface_fac, //stabilization fac for velocity gradients at the interface
+            bool &                        presscoupling_interface_stab,// penalty term for pressure coupling at the interface
+            double &                      presscoupling_interface_fac,//stabilization fac for pressure coupling at the interfac
             LINALG::Matrix<nen_,1> &      funct_,         // bg shape functions
             LINALG::Matrix<nsd_,nen_> &   derxy_,         // bg deriv
             LINALG::Matrix<nsd_,nsd_> &   vderxy_,        // bg deriv^n

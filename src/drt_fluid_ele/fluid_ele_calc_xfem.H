@@ -233,6 +233,8 @@ private:
         const double                    veln_normal,
         const double                    gamma_ghost_penalty,
         double &                        velgrad_interface_fac,
+        const double                    gamma_press_coupling,
+        double &                        press_coupling_fac,
         const double                    h_k
     );
 

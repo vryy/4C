@@ -286,9 +286,14 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   eleparams.set("velgrad_interface_stab",xfluid_.velgrad_interface_stab_);
 
+  eleparams.set("PRESSCOUPLING_INTERFACE_STAB",xfluid_.presscoupling_interface_stab_);
+
+  eleparams.set("PRESSCOUPLING_INTERFACE_FAC",xfluid_.presscoupling_interface_fac_);
+
   eleparams.set("msh_l2_proj", xfluid_.msh_l2_proj_);
 
   eleparams.set("GHOST_PENALTY_FAC",xfluid_.ghost_penalty_fac_);
+
 
   //----------------------------------------------------------------------
 
@@ -312,7 +317,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     rhC_ui_col= LINALG::CreateVector(*alediscret.DofColMap(),true);
   }
 
-
   DRT::Element::LocationArray la( 1 );
   DRT::Element::LocationArray alela( 1 );
   DRT::Element::LocationArray ila ( 1 );
@@ -334,7 +338,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     {
       dserror( "expect fluid element" );
     }
-
     DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem");
 
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
@@ -479,6 +482,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             couplingmatrices[2].Reshape(ndof_i,1);     //rhC_ui
 
           }
+
           const size_t nui = patchelementslm.size();
           Epetra_SerialDenseMatrix  Cuiui(nui,nui);
           if (xfluid_.action_ == "coupling stress based")
@@ -524,6 +528,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elevector1(),
                                               Cuiui,
                                               cells);
+
 
 
           for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
@@ -789,9 +794,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     else
     {
       TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
-
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(discret,la,false);
+
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
       strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
@@ -1791,6 +1796,9 @@ FLD::XFluidFluid::XFluidFluid(
 
   velgrad_interface_stab_ =  (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"VELGRAD_INTERFACE_STAB");
 
+  presscoupling_interface_stab_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"PRESSCOUPLING_INTERFACE_STAB");
+  presscoupling_interface_fac_  = params_xf_stab.get<double>("PRESSCOUPLING_INTERFACE_FAC", 0.0);
+
   // get general XFEM specific parameters
 
   monolithic_approach_= DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>(params_->sublist("XFLUID DYNAMIC/GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
@@ -2555,16 +2563,21 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( ParameterList& params_xfem,
     if (velgrad_interface_stab_ and action_ != "coupling nitsche embedded sided" )
       dserror("VELGRAD_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
 
+    if (presscoupling_interface_stab_ and action_ != "coupling nitsche embedded sided")
+      dserror("PRESSCOUPLING_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
+
     cout << endl;
     cout << "XFEM Stabilization parameters: " << endl;
     cout << "                               " << endl;
-    cout << "                                 GHOST_PENALTY              : " << params_xf_stab.get<string>("GHOST_PENALTY_STAB")    << endl;
-    cout << "                                 GHOST_PENALTY_FAC          : " << ghost_penalty_fac_ << endl;
-    cout << "                                 INFLOW_CONV_STAB_STRATEGY  : " << params_xf_stab.get<string>("CONV_STAB_SCALING") << endl;
-    cout << "                                 INFLOW_CONV_STAB_FAC       : " << conv_stab_fac_ << endl;
-    cout << "                                 VELGRAD_INTERFACE_STAB     : " << params_xf_stab.get<string>("VELGRAD_INTERFACE_STAB")<< endl;
-    cout << "                                 NITSCHE_STAB_FAC           : " << visc_stab_fac_ << endl;
-    cout << "                                 VISC_STAB_HK               : " << params_xf_stab.get<string>("VISC_STAB_HK")  << endl;
+    cout << "                                 GHOST_PENALTY               : " << params_xf_stab.get<string>("GHOST_PENALTY_STAB")    << endl;
+    cout << "                                 GHOST_PENALTY_FAC           : " << ghost_penalty_fac_ << endl;
+    cout << "                                 INFLOW_CONV_STAB_STRATEGY   : " << params_xf_stab.get<string>("CONV_STAB_SCALING") << endl;
+    cout << "                                 INFLOW_CONV_STAB_FAC        : " << conv_stab_fac_ << endl;
+    cout << "                                 VELGRAD_INTERFACE_STAB      : " << params_xf_stab.get<string>("VELGRAD_INTERFACE_STAB")<< endl;
+    cout << "                                 PRESSCOUPLING_INTERFACE_STAB: " << params_xf_stab.get<string>("PRESSCOUPLING_INTERFACE_STAB")<< endl;
+    cout << "                                 PRESSCOUPLING_INTERFACE_FAC : " << presscoupling_interface_fac_ << endl;
+    cout << "                                 NITSCHE_STAB_FAC            : " << visc_stab_fac_ << endl;
+    cout << "                                 VISC_STAB_HK                : " << params_xf_stab.get<string>("VISC_STAB_HK")  << endl;
     cout << endl;
 
   return;
@@ -4738,9 +4751,83 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           <<"\n";
         f.flush();
         f.close();
-      }
+        }
+      ostringstream temp;
+      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string fname = simulation+"_time.xfem_abserror";
 
-    }
+      if(step_==1)
+      {
+        std::ofstream f;
+        f.open(fname.c_str());
+        f << "#| " << simulation << "\n";
+        f << "#| Step"
+          << " | Time"
+          << " | || u - u_b ||_L2(Omega)"
+          << " | || grad( u - u_b ) ||_L2(Omega)"
+          << " | || u - u_b ||_H1(Omega)"
+          << " | || p - p_b ||_L2(Omega)"
+          << " | || nu^(+1/2) grad( u - u_b ) ||_L2(Omega)"
+          << " | || nu^(-1/2) ( p - p_b ) ||_L2(Omega)"
+          << " | || u - u_e ||_L2(Omega)"
+          << " | || grad( u - u_e ) ||_L2(Omega)"
+          << " | || u - u_e ||_H1(Omega)"
+          << " | || p - p_e ||_L2(Omega)"
+          << " | || nu^(+1/2) grad( u - u_e ) ||_L2(Omega)"
+          << " | || nu^(-1/2) ( p - p_e) ||_L2(Omega)"
+          << " | || nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)"
+          << " | || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)"
+          << " | || nu^(-1/2) (p_b - p_e)*n |_H-1/2(Gamma)"
+          << " |\n";
+        f << step_ << " "
+          << time_ << " "
+          << dom_bg_err_vel_L2 << " "
+          << dom_bg_err_vel_H1_semi << " "
+          << dom_bg_err_vel_H1 << " "
+          << dom_bg_err_pre_L2 << " "
+          << dom_bg_err_vel_H1_semi_nu_scaled << " "
+          << dom_bg_err_pre_L2_nu_scaled << " "
+          << dom_emb_err_vel_L2 << " "
+          << dom_emb_err_vel_H1_semi << " "
+          << dom_emb_err_vel_H1 << " "
+          << dom_emb_err_pre_L2 << " "
+          << dom_emb_err_vel_H1_semi_nu_scaled << " "
+          << dom_emb_err_pre_L2_nu_scaled << " "
+          << interf_err_Honehalf << " "
+          << interf_err_Hmonehalf_u << " "
+          << interf_err_Hmonehalf_p << " "
+          <<"\n";
+
+        f.flush();
+        f.close();
+      }
+      else
+      {
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << step_ << " "
+          << time_ << " "
+          << dom_bg_err_vel_L2 << " "
+          << dom_bg_err_vel_H1_semi << " "
+          << dom_bg_err_vel_H1 << " "
+          << dom_bg_err_pre_L2 << " "
+          << dom_bg_err_vel_H1_semi_nu_scaled << " "
+          << dom_bg_err_pre_L2_nu_scaled << " "
+          << dom_emb_err_vel_L2 << " "
+          << dom_emb_err_vel_H1_semi << " "
+          << dom_emb_err_vel_H1 << " "
+          << dom_emb_err_pre_L2 << " "
+          << dom_emb_err_vel_H1_semi_nu_scaled << " "
+          << dom_emb_err_pre_L2_nu_scaled << " "
+          << interf_err_Honehalf << " "
+          << interf_err_Hmonehalf_u << " "
+          << interf_err_Hmonehalf_p << " "
+          <<"\n";
+
+        f.flush();
+        f.close();
+      }
+    } // myrank = 0
 
   }
 }

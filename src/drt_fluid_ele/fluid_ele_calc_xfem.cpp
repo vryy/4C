@@ -1762,6 +1762,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
         double stabfac_conv = 0.0;
         double velgrad_interface_fac = 0.0;
         double gamma_ghost_penalty = 0.0;
+        double presscoupling_interface_fac = 0.0;
+        double gamma_press_coupling = 0.0;
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
@@ -1772,6 +1774,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
                            my::velint_.Dot(normal),    // velocity in normal direction
                            gamma_ghost_penalty,
                            velgrad_interface_fac,
+                           gamma_press_coupling,
+                           presscoupling_interface_fac,
                            h_k);
 
         //--------------------------------------------
@@ -2632,6 +2636,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         double stabfac_conv = 0.0;
         double velgrad_interface_fac = 0.0;
         double gamma_ghost_penalty = 0.0;
+        double presscoupling_interface_fac = 0.0;
+        double gamma_press_coupling = 0.0;
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
@@ -2642,6 +2648,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
                            my::velint_.Dot(normal),    // velocity in normal direction
                            gamma_ghost_penalty,
                            velgrad_interface_fac,
+                           gamma_press_coupling,
+                           presscoupling_interface_fac,
                            h_k);
 
 
@@ -2816,6 +2824,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
 
   bool velgrad_interface_stab = params.get<bool>("velgrad_interface_stab");
+
+  bool presscoupling_interface_stab = params.get<bool>("PRESSCOUPLING_INTERFACE_STAB");
 
   if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
   {
@@ -3178,10 +3188,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         double stabfac_conv = 0.0;
         double stabfac_visc = 0.0;
         double velgrad_interface_fac = 0.0;
+        double presscoupling_interface_fac = 0.0;
 
         double gamma_ghost_penalty= 0.0;
         if (velgrad_interface_stab)
           gamma_ghost_penalty = params.get<double>("GHOST_PENALTY_FAC");
+
+        double gamma_press_coupling = 0.0;
+        if (presscoupling_interface_stab)
+          gamma_press_coupling = params.get<double>("PRESSCOUPLING_INTERFACE_FAC");
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
@@ -3192,8 +3207,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
                            my::velint_.Dot(normal),    // velocity in normal direction
                            gamma_ghost_penalty,
                            velgrad_interface_fac,
+                           gamma_press_coupling,
+                           presscoupling_interface_fac,
                            h_k);
-
 
         if(fluidfluidcoupling)
         {
@@ -3206,27 +3222,29 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
 
           emb->NIT2_buildCouplingMatrices(
-              elemat1_epetra,          // standard bg-bg-matrix
-              elevec1_epetra,          // standard bg-rhs
-              fluidfluidcoupling,      // assemble coupling terms (yes/no)
-              bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
-              normal,                  // normal vector
-              timefacfac,              // theta*dt
+              elemat1_epetra,              // standard bg-bg-matrix
+              elevec1_epetra,              // standard bg-rhs
+              fluidfluidcoupling,          // assemble coupling terms (yes/no)
+              bg_mortaring,                // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
+              normal,                      // normal vector
+              timefacfac,                  // theta*dt
               my::visceff_,                // viscosity in background fluid
               my::visceff_,                // viscosity in embedded fluid
-              kappa1,                  // mortaring weighting
-              kappa2,                  // mortaring weighting
-              stabfac_visc,            // Nitsche non-dimensionless stabilization factor
-              stabfac_conv,            // Nitsche convective non-dimensionless stabilization factor
-              velgrad_interface_stab,  // yes: stabilization term for velocity gradients at the interface
-              velgrad_interface_fac,  // velgrad_interface_stab stabilization factor
+              kappa1,                      // mortaring weighting
+              kappa2,                      // mortaring weighting
+              stabfac_visc,                // Nitsche non-dimensionless stabilization factor
+              stabfac_conv,                // Nitsche convective non-dimensionless stabilization factor
+              velgrad_interface_stab,      // yes: stabilization term for velocity gradients at the interface
+              velgrad_interface_fac,       // velgrad_interface_stab stabilization factor
+              presscoupling_interface_stab,// yes: stabilization term for pressure coupling at the interface
+              presscoupling_interface_fac, // pressure coupling stabilization factor at the interface
               my::funct_,                  // bg shape functions
               my::derxy_,                  // bg deriv
               my::vderxy_,                 // bg deriv^n
-              press,                   // bg p^n
+              press,                       // bg p^n
               my::velint_,                 // bg u^n
-              ivelint_WDBC_JUMP,         // Dirichlet velocity vector or prescribed jump vector
-              conv_stab_scaling          // Inflow term strategies
+              ivelint_WDBC_JUMP,           // Dirichlet velocity vector or prescribed jump vector
+              conv_stab_scaling            // Inflow term strategies
             );
 
 
@@ -3301,6 +3319,8 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     const double                    veln_normal,
     const double                    gamma_ghost_penalty,
     double &                        velgrad_interface_fac,
+    const double                    gamma_press_coupling,
+    double &                        press_coupling_fac,
     const double                    h_k)
 {
   // additional stabilization for convective stabilization
@@ -3356,6 +3376,13 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
   {
     // stabilization parameter for velocity-gradients penalty term
     velgrad_interface_fac = gamma_ghost_penalty*my::visc_*h_k;
+
+    // stabilization parameter for pressure-gradients penalty term
+//     double gamma_p = 5.0 / 100;
+//     pressgrad_interface_fac = gamma_p*(1/my::visc_)*h_k*h_k*h_k;
+
+    // stabilization parameter for pressure-coupling penalty term
+    press_coupling_fac = gamma_press_coupling*(1/my::visc_)*h_k;
 
     /*
     //      viscous_Nitsche-part
