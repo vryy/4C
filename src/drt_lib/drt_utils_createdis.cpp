@@ -16,6 +16,7 @@ Maintainer: Georg Bauer
 
 #include "drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_parallel.H"
+#include "drt_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -208,5 +209,27 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
   return;
 }
 
+Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::ValidCloningMaterialMapLines()
+{
+  // this defines the valid input line
+  DRT::INPUT::LineDefinition structure;
+  structure
+    .AddNamedString("SRC_FIELD")
+    .AddNamedInt("SRC_MAT")
+    .AddNamedString("TAR_FIELD")
+    .AddNamedInt("TAR_MAT")
+  ;
+  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("CLONING MATERIAL MAP"));
+  lines->Add(structure);
 
+  return lines;
+}
+
+void DRT::UTILS::PrintCloningMaterialMapDatHeader()
+{
+  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidCloningMaterialMapLines();
+  lines->Print(std::cout);
+
+  return;
+}
 

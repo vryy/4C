@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_parobjectregister.H"
+#include "../drt_lib/drt_utils_createdis.H"
 
 #ifdef TRAP_FE
 #include <fenv.h>
@@ -156,6 +157,7 @@ int main(int argc, char *argv[])
       PrintDefaultDatHeader();
       PrintConditionDatHeader();
       PrintMaterialDatHeader();
+      DRT::UTILS::PrintCloningMaterialMapDatHeader();
       PrintElementDatHeader();
       PrintFunctionDatHeader();
       PrintTimeCurveDatHeader();

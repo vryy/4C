@@ -39,8 +39,6 @@ EXODUS::Mesh::Mesh(const string exofilename)
   CPU_word_size = sizeof(double);     /* size of a double */
   IO_word_size = 0;                   /* use what is stored in file */
 
-  //cout << "meshfilename: " << exofilename << endl;
-
   const char *exofilenamechar = exofilename.c_str();
 
   // open EXODUS II file
@@ -49,7 +47,7 @@ EXODUS::Mesh::Mesh(const string exofilename)
     dserror("Error while opening EXODUS II file %s",exofilenamechar);
 
   // print version
-  cout<<exofilename<<" was created with EXODUS II library version "<<exoversion<<endl;
+  cout<<"File "<<exofilename<<" was created with EXODUS II library version "<<exoversion<<endl;
 
   // read database parameters
   int num_elem_blk,num_node_sets,num_side_sets,num_nodes;

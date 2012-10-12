@@ -81,12 +81,8 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"FLUID");
   PrintElementLines(stream,"FLUID2");
   PrintElementLines(stream,"FLUID3");
-  PrintElementLines(stream,"XDIFF3");
-  PrintElementLines(stream,"XFLUID3");
 
   PrintSectionHeader(stream,"TRANSPORT ELEMENTS");
-  //PrintElementLines(stream,"CONDIF2");
-  //PrintElementLines(stream,"CONDIF3");
   PrintElementLines(stream,"TRANSP");
   PrintElementLines(stream,"METRANSP");
 

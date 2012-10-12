@@ -65,8 +65,8 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
   problem->ReadTimeFunctionResult(reader);
   problem->ReadConditions(reader);
 
-  /* input of materials of cloned fields (if needed) */
-  problem->ReadClonedMaterials(reader);
+  // input of materials of cloned fields (if needed)
+  problem->ReadCloningMaterialMap(reader);
 
   // read all knot information for isogeometric analysis
   // and add it to the (derived) nurbs discretization

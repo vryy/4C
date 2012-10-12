@@ -31,8 +31,10 @@ Maintainer: Ulrich Kuettler
 #include "drt_nodereader.H"
 #include "drt_timecurve.H"
 #include "drt_utils_parallel.H"
+#include "drt_utils_createdis.H"
 #include "drt_discret.H"
 #include "drt_discret_xfem.H"
+#include "drt_linedefinition.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/drt_validconditions.H"
@@ -257,15 +259,12 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
   reader.ReadGidSection("--UMFPACK SOLVER",*list);
 
-  // a special section for condition names that contains a list of key-integer
-  // pairs but is not validated since the keys are arbitrary.
-  reader.ReadGidSection("--CONDITION NAMES", *list);
-
+  // check for invalid parameters
   setParameterList(list);
-
 
   //---------------------------------------------------------------------
   // Now we have successfully read the whole input file. It's time to access some data
+
   // 1) get the problem type
   const Teuchos::ParameterList& type = ProblemTypeParams();
   probtype_ = DRT::INPUT::IntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
@@ -414,64 +413,32 @@ void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadClonedMaterials(DRT::INPUT::DatFileReader& reader)
+void DRT::Problem::ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader)
 {
-  const std::string name = "--CLONING MATERIAL MAP";
-  std::vector<const char*> section = reader.Section(name);
-  if (section.size() > 0)
+  Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
+
+  // perform the actual reading and extract the input parameters
+  std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> > input = lines->Read(reader);
+  for (size_t i =0 ; i < input.size(); i++)
   {
-    for (std::vector<const char*>::iterator i=section.begin();
-         i!=section.end();
-         ++i)
-    {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+    // extract what was read from the input file
+    string src_field;
+    (input[i])->ExtractString("SRC_FIELD",src_field);
+    int src_matid(-1);
+    (input[i])->ExtractInt("SRC_MAT",src_matid);
+    string tar_field;
+    (input[i])->ExtractString("TAR_FIELD",tar_field);
+    int tar_matid(-1);
+    (input[i])->ExtractInt("TAR_MAT",tar_matid);
 
-      std::string field_sep1;
-      std::string src_field;
-      std::string num_sep1;
-      std::string src_num;
-      std::string field_sep2;
-      std::string tar_field;
-      std::string num_sep2;
-      std::string tar_num;
+    // create the key pair
+    std::pair<string,string> fields(src_field,tar_field);
 
-      (*condline) >> field_sep1 >> src_field >> num_sep1 >> src_num >>
-        field_sep2 >> tar_field >> num_sep2 >> tar_num;
-      if ( (not (*condline)) or (field_sep1 != "SRC_FIELD" and
-                                 field_sep2 != "TAR_FIELD" and
-                                 num_sep1 != "SRC_MAT" and
-                                 num_sep2 != "TAR_MAT") )
-        dserror("invalid material line in '%s'",name.c_str());
-
-      std::pair<string,string> fields(src_field,tar_field);
-
-      // extract material IDs
-      int src_matid = -1;
-      int tar_matid = -1;
-      {
-        char* src_ptr;
-        src_matid = strtol(src_num.c_str(),&src_ptr,10);
-        if (src_ptr == src_num.c_str())
-          dserror("failed to read material object number '%s'",
-                  src_num.c_str());
-
-        char* tar_ptr;
-        tar_matid = strtol(tar_num.c_str(),&tar_ptr,10);
-        if (tar_ptr == tar_num.c_str())
-          dserror("failed to read material object number '%s'",
-                  tar_num.c_str());
-      }
-
-      // processed?
-      if (materials_->Find(src_matid) == -1)
-        dserror("Source material 'MAT %d' could not be identified", src_matid);
-      if (materials_->Find(tar_matid) == -1)
-        dserror("Target material 'MAT %d' could not be identified", src_matid);
-
-      pair<int,int> matmap(src_matid,tar_matid);
-      clonefieldmatmap_[fields].insert(matmap);
-    }
+    // enter the material pairing into the map
+    pair<int,int> matmap(src_matid,tar_matid);
+    clonefieldmatmap_[fields].insert(matmap);
   }
+  return;
 }
 
 
@@ -479,11 +446,11 @@ void DRT::Problem::ReadClonedMaterials(DRT::INPUT::DatFileReader& reader)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadTimeFunctionResult(DRT::INPUT::DatFileReader& reader)
 {
-  /*---------------------------------------------- input of time curves */
+  //---------------------------------------------- input of time curves
   timecurvemanager_.ReadInput(reader);
-  /*---------------------------------------- input of spatial functions */
+  //---------------------------------------- input of spatial functions
   functionmanager_.ReadInput(reader);
-  /*-------------------------------------- input of result descriptions */
+  //-------------------------------------- input of result descriptions
   resulttest_.ReadInput(reader);
   return;
 }
@@ -1000,8 +967,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID3");
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
-    if (xfluiddis!=Teuchos::null)
-      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;

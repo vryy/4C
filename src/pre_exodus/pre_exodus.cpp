@@ -30,6 +30,7 @@ its parameters and conditions.
 #include "Teuchos_TimeMonitor.hpp"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_resulttest.H"
+#include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_inpar/drt_validconditions.H"
@@ -153,8 +154,11 @@ int main(
     return 0;
   }
 
-  // create error files
-  problem->OpenErrorFile(*comm, datfile);
+  // create error file
+  if (datfile!="")
+    problem->OpenErrorFile(*comm, datfile);
+  else
+    problem->OpenErrorFile(*comm, "xxx");
 
   // centerline related: transfer separate doubles into vector
   cline_coordcorr[0] = clinedx;
@@ -268,15 +272,51 @@ int main(
       DRT::INPUT::PrintEmptyMaterialDefinitions(defaulthead, *mlist,false);
     }
 
+    // print cloning material map default lines (right after the materials)
+    Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
+    lines->Print(defaulthead);
+
+    // print time curves
     defaulthead <<
-    "------------------------------------------------------------CURVE1"<<endl<<
-    "------------------------------------------------------------CURVE2"<<endl<<
-    "------------------------------------------------------------CURVE3"<<endl<<
-    "------------------------------------------------------------CURVE4"<<endl<<
-    "------------------------------------------------------------FUNCT1"<<endl<<
-    "------------------------------------------------------------FUNCT2"<<endl<<
-    "------------------------------------------------------------FUNCT3"<<endl<<
-    "------------------------------------------------------------FUNCT4"<<endl;
+    "-------------------------------------------------------------CURVE1"<<endl<<
+    "-------------------------------------------------------------CURVE2"<<endl<<
+    "-------------------------------------------------------------CURVE3"<<endl<<
+    "-------------------------------------------------------------CURVE4"<<endl;
+    {
+      stringstream tmp;
+      DRT::UTILS::TimeCurveManager timecurvemanager;
+      Teuchos::RCP<DRT::INPUT::Lines> tlines = timecurvemanager.ValidTimeCurveLines();
+      tlines->Print(tmp);
+      string tmpstring = tmp.str();
+      string removeit = "--------------------------------------------------------------CURVE\n";
+      size_t pos = tmpstring.find(removeit);
+      if (pos !=string::npos)
+      {
+        tmpstring.erase(pos,removeit.length());
+      }
+      defaulthead<<tmpstring;
+    }
+
+    // print spatial functions
+    defaulthead<<
+    "-------------------------------------------------------------FUNCT1"<<endl<<
+    "-------------------------------------------------------------FUNCT2"<<endl<<
+    "-------------------------------------------------------------FUNCT3"<<endl<<
+    "-------------------------------------------------------------FUNCT4"<<endl;
+    {
+      stringstream tmp;
+      DRT::UTILS::FunctionManager functionmanager;
+      Teuchos::RCP<DRT::INPUT::Lines> flines = functionmanager.ValidFunctionLines();
+      flines->Print(tmp);
+      string tmpstring = tmp.str();
+      string removeit = "--------------------------------------------------------------FUNCT\n";
+      size_t pos = tmpstring.find(removeit);
+      if (pos !=string::npos)
+      {
+        tmpstring.erase(pos,removeit.length());
+      }
+      defaulthead<<tmpstring;
+    }
 
     // default result-test lines
     {

@@ -804,18 +804,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NDSURF",0,"number of surface clouds",&design);
   IntParameter("NDVOL",0,"number of volume clouds",&design);
 
-  /*----------------------------------------------------------------------*/
-  // An empty list. The actual list is arbitrary and not validated.
-  Teuchos::ParameterList& condition =
-    list->sublist("CONDITION NAMES",false,
-                "Names of conditions from exodus file.\n"
-                "This section is not validated, any variable is allowed here.\n"
-                "The names defined in this section can be used by all conditions instead of\n"
-                "a design object number. This section assigns the respective numbers to\n"
-                "the names.");
-
-  condition.disableRecursiveValidation();
-
   /*--------------------------------------------------------------------*/
   /* parameters for NOX - non-linear solution */
   Teuchos::ParameterList& snox = list->sublist("STRUCT NOX",false,"");

@@ -193,7 +193,7 @@ public:
   void ReadMaterials(DRT::INPUT::DatFileReader& reader);
 
   /// setup map between materials of original and cloned elements
-  void ReadClonedMaterials(DRT::INPUT::DatFileReader& reader);
+  void ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader);
 
   /// input of conditions
   void ReadConditions(DRT::INPUT::DatFileReader& reader);
@@ -314,7 +314,6 @@ public:
   const Teuchos::ParameterList& OptimizationControlParams() const { return getParameterList()->sublist("TOPOLOGY OPTIMIZATION CONTROL"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
   const Teuchos::ParameterList& StructuralNoxParams() const { return getParameterList()->sublist("STRUCT NOX"); }
-  const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
 
@@ -349,7 +348,8 @@ public:
 
   //@}
 
-  std::map<std::pair<string,string>,std::map<int,int> > ClonedMaterialMap() { return clonefieldmatmap_; }
+  std::map<std::pair<string,string>,std::map<int,int> > CloningMaterialMap()
+      { return clonefieldmatmap_; }
 
   /// @name Spatial Functions
 

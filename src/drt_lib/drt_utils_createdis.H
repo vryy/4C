@@ -30,6 +30,12 @@ Maintainer: Georg Bauer
 
 namespace DRT
 {
+
+namespace INPUT
+{
+  class LineDefinition;
+}
+
 namespace UTILS
 {
 
@@ -333,7 +339,7 @@ private:
          Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>() );
 
      std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap
-     = DRT::Problem::Instance()->ClonedMaterialMap();
+     = DRT::Problem::Instance()->CloningMaterialMap();
      if (clonefieldmatmap.size() < 1)
        dserror("At least one material pairing required in --CLONING MATERIAL MAP.");
 
@@ -350,6 +356,11 @@ private:
 
    return;
  }
+
+
+ Teuchos::RCP<DRT::INPUT::Lines> ValidCloningMaterialMapLines();
+
+ void PrintCloningMaterialMapDatHeader();
 
 
 } // namespace UTILS

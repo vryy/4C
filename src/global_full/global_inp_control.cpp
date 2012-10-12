@@ -47,7 +47,7 @@ void ntainp_ccadiscret(
   // input of time curves, functions and result tests
   problem->ReadTimeFunctionResult(reader);
 
-  switch(npType)	
+  switch(npType)
   {
   case no_nested_parallelism:
   case every_group_read_dat_file:
@@ -56,7 +56,7 @@ void ntainp_ccadiscret(
     problem->ReadFields(reader);
 
     // input of materials of cloned fields (if needed)
-    problem->ReadClonedMaterials(reader);
+    problem->ReadCloningMaterialMap(reader);
 
     // read all types of geometry related conditions (e.g. boundary conditions)
     // Also read time and space functions and local coord systems
@@ -75,7 +75,7 @@ void ntainp_ccadiscret(
       problem->ReadFields(reader);
 
       // input of materials of cloned fields (if needed)
-      problem->ReadClonedMaterials(reader);
+      problem->ReadCloningMaterialMap(reader);
 
       // read all types of geometry related conditions (e.g. boundary conditions)
       // Also read time and space functions and local coord systems

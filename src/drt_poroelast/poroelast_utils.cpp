@@ -132,19 +132,16 @@ void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
   if (!fluiddis->Filled())
     fluiddis->FillComplete();
 
-  //get the material map for cloning
-  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->ClonedMaterialMap();
-
   // we use the structure discretization as layout for the fluid discretization
   if (structdis->NumGlobalNodes() == 0)
     dserror("Structure discretization is empty!");
 
-    // create fluid elements if the fluid discretization is empty
-    if (fluiddis->NumGlobalNodes()==0)
-    {
-      DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
-    }
-    else
+  // create fluid elements if the fluid discretization is empty
+  if (fluiddis->NumGlobalNodes()==0)
+  {
+    DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
+  }
+  else
     dserror("Structure AND Fluid discretization present. This is not supported.");
   }
 
