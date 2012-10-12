@@ -648,8 +648,9 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   double time = sti_->GetTime();
   const double timemax = sti_->GetTimeEnd();
   int step = sti_->GetStep();
+  int writestep=0;
   const int stepmax = sti_->GetTimeNumStep();
-  Epetra_SerialDenseVector cvector(ndofs_*stepmax);
+  Epetra_SerialDenseVector cvector(nmp_);
 
   // time loop
   while ( (time < timemax) && (step < stepmax) )
@@ -665,17 +666,6 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     // after this call we will have disn_==dis_, etc
     sti_->UpdateStepState();
 
-    // gets the displacments per timestep
-    {
-      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
-            if (!myrank)
-              for (int j=0; j<ndofs_; ++j)
-                cvector[step*ndofs_+j] = cvector_arg[j];
-
-
-      //Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(sti_->DisNew());
-    }
-    //dserror("Halt");
     // update time and step
     sti_->UpdateStepTime();
 
@@ -692,7 +682,22 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     time = sti_->GetTime();
     // ... and step
     step = sti_->GetStep();
+
+    // get the displacements of the monitored timesteps
+    {
+      if (abs(time-timesteps_[writestep]) < 1.0e-12)
+      {
+        Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
+        if (!myrank)
+          for (int j=0; j<ndofs_; ++j)
+            cvector[writestep*ndofs_+j] = cvector_arg[j];
+        writestep+=1;
+      }
+    }
   }
+
+  if (!writestep*ndofs_==nmp_) dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+
   return cvector;
 }
 
@@ -733,8 +738,9 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   double time = sti_->GetTime();
   const double timemax = sti_->GetTimeEnd();
   int step = sti_->GetStep();
+  int writestep=0;
   const int stepmax = sti_->GetTimeNumStep();
-  Epetra_SerialDenseVector cvector(ndofs_*stepmax);
+  Epetra_SerialDenseVector cvector(nmp_);
 
   // time loop
   while ( (time < timemax) && (step < stepmax) )
@@ -750,13 +756,6 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
     // after this call we will have disn_==dis_, etc
     sti_->UpdateStepState();
 
-    // gets the displacments per timestep
-    {
-      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
-      if (!lmyrank)
-        for (int j=0; j<ndofs_; ++j)
-          cvector[step*ndofs_+j] = cvector_arg[j];
-    }
     // update time and step
     sti_->UpdateStepTime();
 
@@ -773,7 +772,22 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
     time = sti_->GetTime();
     // ... and step
     step = sti_->GetStep();
+
+    // get the displacements of the monitored timesteps
+    {
+      if (abs(time-timesteps_[writestep]) < 1.0e-12)
+      {
+        Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
+        if (!lmyrank)
+          for (int j=0; j<ndofs_; ++j)
+            cvector[writestep*ndofs_+j] = cvector_arg[j];
+        writestep+=1;
+      }
+    }
   }
+
+  if (!writestep*ndofs_==nmp_) dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+
   return cvector;
 }
 
