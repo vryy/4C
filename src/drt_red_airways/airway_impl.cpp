@@ -327,7 +327,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
   for (int i = 0; i<2; i++)
   {
-    if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
+    if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond")||ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
     {
       // find the acinus condition
       int    gid = ele->Id();

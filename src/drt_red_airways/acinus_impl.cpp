@@ -274,6 +274,16 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   // get the generation numbers
   //--------------------------------------------------------------------
   //  if(myrank == ele->Owner())
+  for (int i = 0; i<2; i++)
+  {
+    if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond")||ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+    {
+      // find the acinus condition
+      int    gid = ele->Id();
+      double val = 1.0;
+      a_bc->ReplaceGlobalValues(1,&val,&gid);
+    }
+  }
   {
     int    gid = ele->Id();
     int    generation = -1;
@@ -552,9 +562,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     cout<<"+------------- DEBUG -------------+"<<endl;
 #endif
 
+
     sysmat(0,0) = -1.0*( kp_np/kq_np)*NumOfAcini;   sysmat(0,1) =  1.0*( kp_np/kq_np)*NumOfAcini; 
     sysmat(1,0) =  1.0*( kp_np/kq_np)*NumOfAcini;   sysmat(1,1) = -1.0*( kp_np/kq_np)*NumOfAcini; 
-    
+
     rhs(0)      = -1.0*(-(kp_n*(p1n-p2n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
     rhs(1)      =  1.0*(-(kp_n*(p1n-p2n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
    

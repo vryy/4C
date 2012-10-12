@@ -476,8 +476,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
   double error_norm1 = 1.e7;
   double error_norm2 = 1.e7;
 
+  double s_lung_volume_np = 0.0;
+  acini_e_volumenp_->MeanValue(&s_lung_volume_np);
+
   double lung_volume_np = 0.0;
-  acini_e_volumenp_->MeanValue(&lung_volume_np);
+  discret_->Comm().SumAll(&s_lung_volume_np,&lung_volume_np,1);
+
   lung_volume_np *= double(acini_e_volumenp_->GlobalLength());
 
   if(!myrank_)
@@ -596,6 +600,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qout_nm",qout_nm_ );
 
     // get lung volume
+    double s_lung_volume_np = 0.0;
+    double s_lung_volume_n  = 0.0;
+    double s_lung_volume_nm = 0.0;
     double lung_volume_np = 0.0;
     double lung_volume_n  = 0.0;
     double lung_volume_nm = 0.0;
@@ -603,7 +610,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     acini_e_volumenp_->MeanValue(&lung_volume_np);
     acini_e_volumen_->MeanValue(&lung_volume_n);
     acini_e_volumenm_->MeanValue(&lung_volume_nm);
-
+    
+    discret_->Comm().SumAll(&s_lung_volume_np,&lung_volume_np,1);
+    discret_->Comm().SumAll(&s_lung_volume_n ,&lung_volume_n ,1);
+    discret_->Comm().SumAll(&s_lung_volume_nm,&lung_volume_nm,1);
+    
     lung_volume_np *= double(acini_e_volumenp_->GlobalLength());
     lung_volume_n  *= double(acini_e_volumenp_->GlobalLength());
     lung_volume_nm *= double(acini_e_volumenp_->GlobalLength());
@@ -1262,10 +1273,17 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     double lung_volume_np = 0.0;
     double lung_volume_n  = 0.0;
     double lung_volume_nm = 0.0;
+    double s_lung_volume_np = 0.0;
+    double s_lung_volume_n  = 0.0;
+    double s_lung_volume_nm = 0.0;
 
     acini_e_volumenp_->MeanValue(&lung_volume_np);
     acini_e_volumen_->MeanValue(&lung_volume_n);
     acini_e_volumenm_->MeanValue(&lung_volume_nm);
+
+    discret_->Comm().SumAll(&s_lung_volume_np,&lung_volume_np,1);
+    discret_->Comm().SumAll(&s_lung_volume_n ,&lung_volume_n ,1);
+    discret_->Comm().SumAll(&s_lung_volume_nm,&lung_volume_nm,1);
 
     lung_volume_np *= double(acini_e_volumenp_->GlobalLength());
     lung_volume_n  *= double(acini_e_volumenp_->GlobalLength());
