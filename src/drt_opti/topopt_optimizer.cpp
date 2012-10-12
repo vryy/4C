@@ -458,3 +458,10 @@ const Epetra_Map* TOPOPT::Optimizer::ColMap()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> TOPOPT::Optimizer::CreateFieldTest()
+{
+  return Teuchos::rcp(new OPTI::OptiResultTest(*optimizer_));
+}
+
