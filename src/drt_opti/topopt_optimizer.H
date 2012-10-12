@@ -34,6 +34,7 @@ namespace Teuchos
 namespace DRT
 {
   class Discretization;
+  class ResultTest;
 
   namespace ELEMENTS
   {
@@ -124,6 +125,8 @@ namespace TOPOPT
     bool Converged(
         bool& doGradient
     );
+
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
     Teuchos::RCP<const DRT::Discretization> OptiDis(){return optidis_;}
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return fluidvel_;} /// fluid velocity

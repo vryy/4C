@@ -15,6 +15,7 @@ Maintainer: Martin Winklmaier
 #include "topopt_optimizer.H"
 #include "topopt_fluidAdjoint3_impl_parameter.H"
 #include "opti_GCMMA.H"
+#include "opti_resulttest.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -53,7 +54,21 @@ params_(params)
   obj_grad_ = rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
 
   /// number of constraints
-  num_constr_ = 1;
+  switch (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(optimizer_params,"TESTCASE"))
+  {
+  case INPAR::TOPOPT::optitest_no:
+  case INPAR::TOPOPT::optitest_snake_one_constr:
+  {
+    num_constr_ = 1;
+    break;
+  }
+  case INPAR::TOPOPT::optitest_snake_multiple_constr:
+  {
+    num_constr_ = 5;
+    break;
+  }
+  }
+
   // value of the constraint(s);
   constr_ = rcp(new Epetra_SerialDenseVector(num_constr_));
   // gradient of the constraint(s)
@@ -362,73 +377,6 @@ bool TOPOPT::Optimizer::Converged(
     );
   }
 
-  // TODO only for test case!!!
-  if (converged)
-  {
-    const Epetra_BlockMap& map(dens_->Map());
-
-    Epetra_Vector test(map);
-    if (test.GlobalLength()!=45)
-      dserror("not this test case");
-
-    if (map.MyGID(0)) test[dens_->Map().LID(0)] = -0.58486879416677884;
-    if (map.MyGID(1)) test[dens_->Map().LID(1)] = -0.6658105828976032;
-    if (map.MyGID(2)) test[dens_->Map().LID(2)] = -0.73945794895939454;
-    if (map.MyGID(3)) test[dens_->Map().LID(3)] = -0.8050020242569359;
-    if (map.MyGID(4)) test[dens_->Map().LID(4)] = -0.86172754319766565;
-    if (map.MyGID(5)) test[dens_->Map().LID(5)] = -0.90901179393246911;
-    if (map.MyGID(6)) test[dens_->Map().LID(6)] = -0.94633671856544455;
-    if (map.MyGID(7)) test[dens_->Map().LID(7)] = -0.97329337722737463;
-    if (map.MyGID(8)) test[dens_->Map().LID(8)] = -0.98958642483445491;
-    if (map.MyGID(9)) test[dens_->Map().LID(9)] = -0.99503734859668147;
-    if (map.MyGID(10)) test[dens_->Map().LID(10)] = -0.98958642598267244;
-    if (map.MyGID(11)) test[dens_->Map().LID(11)] = -0.97329337968199503;
-    if (map.MyGID(12)) test[dens_->Map().LID(12)] = -0.94633672206365094;
-    if (map.MyGID(13)) test[dens_->Map().LID(13)] = -0.90901179684382238;
-    if (map.MyGID(14)) test[dens_->Map().LID(14)] = -0.86172754262886575;
-    if (map.MyGID(15)) test[dens_->Map().LID(15)] = 0.80500152161380123;
-    if (map.MyGID(16)) test[dens_->Map().LID(16)] = 0.73945773415626703;
-    if (map.MyGID(17)) test[dens_->Map().LID(17)] = 0.66581152374562846;
-    if (map.MyGID(18)) test[dens_->Map().LID(18)] = 0.58486919581686125;
-    if (map.MyGID(19)) test[dens_->Map().LID(19)] = 0.49751903680630627;
-    if (map.MyGID(20)) test[dens_->Map().LID(20)] = 0.4047179897107967;
-    if (map.MyGID(21)) test[dens_->Map().LID(21)] = 0.30748328728814911;
-    if (map.MyGID(22)) test[dens_->Map().LID(22)] = 0.2068797935321639;
-    if (map.MyGID(23)) test[dens_->Map().LID(23)] = 0.10400940734672008;
-    if (map.MyGID(24)) test[dens_->Map().LID(24)] = 5.0524674665405017e-06;
-    if (map.MyGID(25)) test[dens_->Map().LID(25)] = -0.10400940739984108;
-    if (map.MyGID(26)) test[dens_->Map().LID(26)] = -0.20687987630592483;
-    if (map.MyGID(27)) test[dens_->Map().LID(27)] = -0.30748397609820727;
-    if (map.MyGID(28)) test[dens_->Map().LID(28)] = -0.40471839245568175;
-    if (map.MyGID(29)) test[dens_->Map().LID(29)] = -0.49751878692586643;
-    if (map.MyGID(30)) test[dens_->Map().LID(30)] = 0.099503416228730518;
-    if (map.MyGID(31)) test[dens_->Map().LID(31)] = 0.09950332463637232;
-    if (map.MyGID(32)) test[dens_->Map().LID(32)] = 0.099503230163660555;
-    if (map.MyGID(33)) test[dens_->Map().LID(33)] = 0.099503193214642363;
-    if (map.MyGID(34)) test[dens_->Map().LID(34)] = 0.099503273915171206;
-    if (map.MyGID(35)) test[dens_->Map().LID(35)] = 0.099503416235824343;
-    if (map.MyGID(36)) test[dens_->Map().LID(36)] = 0.099503416243059306;
-    if (map.MyGID(37)) test[dens_->Map().LID(37)] = 0.099503416264629607;
-    if (map.MyGID(38)) test[dens_->Map().LID(38)] = 0.099503416299382738;
-    if (map.MyGID(39)) test[dens_->Map().LID(39)] = 0.099503416345105733;
-    if (map.MyGID(40)) test[dens_->Map().LID(40)] = 0.099503416364954425;
-    if (map.MyGID(41)) test[dens_->Map().LID(41)] = 0.099503416292521962;
-    if (map.MyGID(42)) test[dens_->Map().LID(42)] = 0.099503416094423022;
-    if (map.MyGID(43)) test[dens_->Map().LID(43)] = 0.099503415854523714;
-    if (map.MyGID(44)) test[dens_->Map().LID(44)] = 0.099503415744033097;
-
-    test.Update(-1.0,*dens_,1.0);
-    double value = 0.0;
-    test.Norm2(&value);
-
-    if (value > 1.0e-15)
-    {
-      cout.precision(17);
-      cout << "current optimization variable is " << *dens_ << endl;
-      dserror("Test failed with difference to reference solution in L2-norm: %e",value);
-    }
-  }
-
   return converged;
 }
 
@@ -508,4 +456,5 @@ const Epetra_Map* TOPOPT::Optimizer::ColMap()
 {
   return optidis_->NodeColMap();
 }
+
 

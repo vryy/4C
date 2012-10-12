@@ -14,6 +14,8 @@ Maintainer: Martin Winklmaier
 
 #include "opti_GCMMA.H"
 
+#include "../drt_inpar/inpar_topopt.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../headers/definitions.h"
 #include <Epetra_SerialDenseSolver.h>
@@ -30,6 +32,7 @@ OPTI::GCMMA::GCMMA(
     Teuchos::RCP<Epetra_Vector> x_max
 ) :
 discret_(discret),
+params_(params),
 total_iter_(0),
 outer_iter_(0),
 inner_iter_(0),
@@ -71,7 +74,7 @@ a_(rcp(new Epetra_SerialDenseVector(m_))),
 c_(rcp(new Epetra_SerialDenseVector(m_))),
 d_(rcp(new Epetra_SerialDenseVector(m_))),
 tol_sub_min_(1.0e-09),
-tol_(1.0e-5),
+tol_(1.0e-8),
 res_norm_(1.0e-6),
 inc_norm_(1.0e-6),
 facmin_(1.0e-10),
@@ -97,9 +100,13 @@ s_(rcp(new Epetra_SerialDenseVector(m_)))
   else
     x_max_ = rcp(new Epetra_Vector(*x_max));
 
-  // TODO remove these two lines!!!
-  x_min_->PutScalar(-2.0);
-  x_max_->PutScalar(2.0);
+  // test case modification
+  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
+  {
+    x_min_->PutScalar(-2.0);
+    x_max_->PutScalar(2.0);
+  }
 
   if ((not x_min_->Map().SameAs(x_max_->Map())) or
       (not x_min_->Map().SameAs(x_->Map())))
@@ -167,7 +174,6 @@ void OPTI::GCMMA::InitIter(
     Teuchos::RCP<Epetra_MultiVector> constraintsgrad
 )
 {
-  // currently gradients are always computed
   if ((inner_iter_==0) and // new outer_iter
       (objectivegrad == Teuchos::null or constraintsgrad == Teuchos::null))
     dserror("gradients must be given in new outer iteration");
@@ -175,19 +181,23 @@ void OPTI::GCMMA::InitIter(
   // initialization of old values
   if (outer_iter_ == 0)
   {
-    // TODO test case
-    if (x_->Map().NumGlobalElements()%3!=0)
-      dserror("cannot be tested");
-
-    int l = x_->Map().NumGlobalElements()/3;
-
-    for(int i=0;i<l;i++)
+    // reset of optimization variable for test cases
+    if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+        (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
     {
-      double alphai = (3*(i+1)-2*l)*M_PI/(6*l);
+      if (x_->Map().NumGlobalElements()%3!=0)
+        dserror("cannot be tested");
 
-      if (x_->Map().MyGID(i))     (*x_)[x_->Map().LID(i)] = cos(alphai + M_PI/12);
-      if (x_->Map().MyGID(i+l))   (*x_)[x_->Map().LID(i+l)] = sin(alphai + M_PI/12);
-      if (x_->Map().MyGID(i+2*l)) (*x_)[x_->Map().LID(i+2*l)] = sin(2*alphai + M_PI/6);
+      int l = x_->Map().NumGlobalElements()/3;
+
+      for(int i=0;i<l;i++)
+      {
+        double alphai = (3*(i+1)-2*l)*M_PI/(6*l);
+
+        if (x_->Map().MyGID(i))     (*x_)[x_->Map().LID(i)] = cos(alphai + M_PI/12);
+        if (x_->Map().MyGID(i+l))   (*x_)[x_->Map().LID(i+l)] = sin(alphai + M_PI/12);
+        if (x_->Map().MyGID(i+2*l)) (*x_)[x_->Map().LID(i+2*l)] = sin(2*alphai + M_PI/6);
+      }
     }
 
 
@@ -199,51 +209,109 @@ void OPTI::GCMMA::InitIter(
 
 
 
-  // TODO testing example -> remove
-  double locobj = 0.0;
-  Epetra_SerialDenseVector locconstr(m_);
-  objective = 0.0;
-  (*constraints)[0] = 0.0;
-
-  int l = x_mma_->Map().NumGlobalElements()/3;
-
-  double alpha = 0.0;
-  for (int i=0;i<l;i++)
+  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
-    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+    double locobj = 0.0;
+    Epetra_SerialDenseVector locconstr(m_);
 
-    if (x_->Map().MyGID(i))
+    int l = x_mma_->Map().NumGlobalElements()/3;
+
+    double delta = 0.1;
+    double alpha = 0.0;
+    double locg = 0.0;double locx1 = 0.0;double locx2 = 0.0; double locx3 = 0.0;
+    for (int i=0;i<l;i++)
     {
-      int lid = x_mma_->Map().LID(i);
-      locobj += cos(alpha)*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
-      if (inner_iter_==0) (*objectivegrad)[lid] = cos(alpha);
+      alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+
+      if (x_->Map().MyGID(i))
+      {
+        int lid = x_mma_->Map().LID(i);
+        double x = (*x_mma_)[lid];
+        locobj += cos(alpha)*x;
+        locconstr(0) += x*x;
+        if (inner_iter_==0) (*objectivegrad)[lid] = cos(alpha);
+        if (i==0) {locg+=x*x;locx1=x;}
+      }
+
+      if (x_->Map().MyGID(i+l))
+      {
+        int lid = x_mma_->Map().LID(i+l);
+        double x = (*x_mma_)[lid];
+        locobj += sin(alpha)*x;
+        locconstr(0) += x*x;
+        if (inner_iter_==0) (*objectivegrad)[lid] = sin(alpha);
+        if (i==0) {locg+=x*x;locx2=x;}
+      }
+
+      if (x_->Map().MyGID(i+2*l))
+      {
+        int lid = x_mma_->Map().LID(i+2*l);
+        double x = (*x_mma_)[lid];
+        locobj += -0.1*x;
+        locconstr(0) += x*x;
+        if (inner_iter_==0) (*objectivegrad)[lid] = -0.1;
+        if (i==0) locx3=x;
+      }
     }
+    discret_->Comm().SumAll(&locobj,&objective,1);
+    discret_->Comm().SumAll(locconstr.Values(),constraints->Values(),m_);
 
-    if (x_->Map().MyGID(i+l))
-    {
-      int lid = x_mma_->Map().LID(i+l);
-      locobj += sin(alpha)*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
-      if (inner_iter_==0) (*objectivegrad)[lid] = sin(alpha);
-    }
 
-    if (x_->Map().MyGID(i+2*l))
+    double g = 0.0;
+    discret_->Comm().SumAll(&locg,&g,1);
+    g -= 1;
+    g /= delta;
+
+    double h = 0.0;double x1 = 0.0;double x2 = 0.0; double x3 = 0.0;
+    discret_->Comm().SumAll(&locx1,&x1,1);
+    discret_->Comm().SumAll(&locx2,&x2,1);
+    discret_->Comm().SumAll(&locx3,&x3,1);
+    h = (x3-2*x1*x2)/delta;
+
+    (*constraints)(0) -= l + 1.0e-5;
+
+    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
     {
-      int lid = x_mma_->Map().LID(i+2*l);
-      locobj += -0.1*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
-      if (inner_iter_==0) (*objectivegrad)[lid] = -0.1;
+      (*constraints)(1) = +g + pow(g,7) - 2 - 1.0e-5;
+      (*constraints)(2) = -g - pow(g,7) - 2 - 1.0e-5;
+      (*constraints)(3) = +h + pow(h,7) - 2 - 1.0e-5;
+      (*constraints)(4) = -h - pow(h,7) - 2 - 1.0e-5;
     }
 
     if (inner_iter_==0)
+    {
       (*constraintsgrad)(0)->Update(2.0,*x_mma_,0.0);
+
+      if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
+      {
+        if (x_->Map().MyGID(0))
+        {
+          int lid = x_mma_->Map().LID(0);
+          (*(*constraintsgrad)(1))[lid] = +2*x1/delta * (1+7*pow(g,6));
+          (*(*constraintsgrad)(2))[lid] = -2*x1/delta * (1+7*pow(g,6));
+          (*(*constraintsgrad)(3))[lid] = -2*x2/delta * (1+7*pow(h,6));
+          (*(*constraintsgrad)(4))[lid] = +2*x2/delta * (1+7*pow(h,6));
+        }
+
+        if (x_->Map().MyGID(l))
+        {
+          int lid = x_mma_->Map().LID(l);
+          (*(*constraintsgrad)(1))[lid] = +2*x2/delta * (1+7*pow(g,6));
+          (*(*constraintsgrad)(2))[lid] = -2*x2/delta * (1+7*pow(g,6));
+          (*(*constraintsgrad)(3))[lid] = -2*x1/delta * (1+7*pow(h,6));
+          (*(*constraintsgrad)(4))[lid] = +2*x1/delta * (1+7*pow(h,6));
+        }
+
+        if (x_->Map().MyGID(2*l))
+        {
+          int lid = x_mma_->Map().LID(2*l);
+          (*(*constraintsgrad)(3))[lid] = +1.0/delta * (1+7*pow(h,6));
+          (*(*constraintsgrad)(4))[lid] = -1.0/delta * (1+7*pow(h,6));
+        }
+      }
+    }
   }
-
-  discret_->Comm().SumAll(&locobj,&objective,1);
-  discret_->Comm().SumAll(locconstr.Values(),constraints->Values(),1);
-
-  (*constraints)[0] -= l + 1.0e-5;
 
 
 
@@ -261,10 +329,10 @@ void OPTI::GCMMA::InitIter(
     *constr_deriv_ = *constraintsgrad;
     obj_ = objective;
     *obj_deriv_ = *objectivegrad;
-    cout << "new obj is " << obj_ << endl;
-    cout << "new obj deriv is " << *obj_deriv_ << endl;
-    cout << "new constr are " << (*constr_)[0] << endl;
-    cout << "new constr deriv are " << *constr_deriv_ << endl;
+//    cout << "new obj is " << obj_ << endl;
+//    cout << "new obj deriv is " << *obj_deriv_ << endl;
+//    cout << "new constr are " << *constr_ << endl;
+//    cout << "new constr deriv are " << *constr_deriv_ << endl;
 
     // reset optimization variables
     *x_old2_ = *x_old_;
@@ -277,8 +345,8 @@ void OPTI::GCMMA::InitIter(
   }
   else
   {
-cout << "new obj is " << objective << endl;
-cout << "new constr are " << (*constraints)[0] << endl;
+//cout << "new obj is " << objective << endl;
+//cout << "new constr are " << *constraints << endl;
     UpdateRho(objective,constraints);
   }
 }
@@ -333,8 +401,8 @@ void OPTI::GCMMA::Asymptotes()
       xdiff++;
     }
   }
-  cout << "low is " << *asymp_min_ << endl;
-  cout << "upp is " << *asymp_max_ << endl;
+//  cout << "low is " << *asymp_min_ << endl;
+//  cout << "upp is " << *asymp_max_ << endl;
 }
 
 
@@ -398,8 +466,8 @@ void OPTI::GCMMA::InitRho()
     rho++;
     rhomin++;
   }
-  cout << "rho0 is " << rho0_ << endl;
-  cout << "rho is " << (*rho_)[0] << endl;
+//  cout << "rho0 is " << rho0_ << endl;
+//  cout << "rho is " << *rho_ << endl;
 }
 
 
@@ -455,8 +523,8 @@ void OPTI::GCMMA::UpdateRho(
     constr_appr++;
     rho++;
   }
-  cout << "rho0 is " << rho0_ << endl;
-  cout << "rho is " << (*rho_)[0] << endl;
+//  cout << "rho0 is " << rho0_ << endl;
+//  cout << "rho is " << *rho_ << endl;
 }
 
 
@@ -467,49 +535,17 @@ bool OPTI::GCMMA::Converged(
     Teuchos::RCP<Epetra_MultiVector> constraintsgrad
 )
 {
-  // TODO testing example -> remove
-  double locobj = 0.0;
-  Epetra_SerialDenseVector locconstr(m_);
-  objective = 0.0;
-  (*constraints)[0] = 0.0;
-
-  int l = x_mma_->Map().NumGlobalElements()/3;
-
-  double alpha = 0.0;
-
-  for (int i=0;i<l;i++)
+  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
-    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+    double locobj = 0.0;
+    Epetra_SerialDenseVector locconstr(m_);
 
-    if (x_->Map().MyGID(i))
-    {
-      int lid = x_mma_->Map().LID(i);
-      locobj += cos(alpha)*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
-    }
+    int l = x_mma_->Map().NumGlobalElements()/3;
 
-    if (x_->Map().MyGID(i+l))
-    {
-      int lid = x_mma_->Map().LID(i+l);
-      locobj += sin(alpha)*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
-    }
-
-    if (x_->Map().MyGID(i+2*l))
-    {
-      int lid = x_mma_->Map().LID(i+2*l);
-      locobj += -0.1*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
-    }
-  }
-
-  discret_->Comm().SumAll(&locobj,&objective,1);
-  discret_->Comm().SumAll(locconstr.Values(),constraints->Values(),1);
-
-  (*constraints)[0] -= l + 1.0e-5;
-
-  if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
-  {
+    double delta = 0.1;
+    double alpha = 0.0;
+    double locg = 0.0;double locx1 = 0.0;double locx2 = 0.0; double locx3 = 0.0;
     for (int i=0;i<l;i++)
     {
       alpha = M_PI*(3*(i+1)-2*l)/(6*l);
@@ -517,35 +553,123 @@ bool OPTI::GCMMA::Converged(
       if (x_->Map().MyGID(i))
       {
         int lid = x_mma_->Map().LID(i);
-        (*objectivegrad)[lid] = cos(alpha);
+        double x = (*x_mma_)[lid];
+        locobj += cos(alpha)*x;
+        locconstr(0) += x*x;
+        if (i==0) {locg+=x*x;locx1=x;}
       }
 
       if (x_->Map().MyGID(i+l))
       {
         int lid = x_mma_->Map().LID(i+l);
-        (*objectivegrad)[lid] = sin(alpha);
+        double x = (*x_mma_)[lid];
+        locobj += sin(alpha)*x;
+        locconstr(0) += x*x;
+        if (i==0) {locg+=x*x;locx2=x;}
       }
 
       if (x_->Map().MyGID(i+2*l))
       {
         int lid = x_mma_->Map().LID(i+2*l);
-        (*objectivegrad)[lid] = -0.1;
+        double x = (*x_mma_)[lid];
+        locobj += -0.1*x;
+        locconstr(0) += x*x;
+        if (i==0) locx3=x;
+      }
+    }
+    discret_->Comm().SumAll(&locobj,&objective,1);
+    discret_->Comm().SumAll(locconstr.Values(),constraints->Values(),m_);
+
+    double g = 0.0;
+    discret_->Comm().SumAll(&locg,&g,1);
+    g -= 1;
+    g /= delta;
+
+    double h = 0.0;double x1 = 0.0;double x2 = 0.0; double x3 = 0.0;
+    discret_->Comm().SumAll(&locx1,&x1,1);
+    discret_->Comm().SumAll(&locx2,&x2,1);
+    discret_->Comm().SumAll(&locx3,&x3,1);
+    h = (x3-2*x1*x2)/delta;
+
+    (*constraints)(0) -= l + 1.0e-5;
+
+    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
+    {
+      (*constraints)(1) = +g + pow(g,7) - 2 - 1.0e-5;
+      (*constraints)(2) = -g - pow(g,7) - 2 - 1.0e-5;
+      (*constraints)(3) = +h + pow(h,7) - 2 - 1.0e-5;
+      (*constraints)(4) = -h - pow(h,7) - 2 - 1.0e-5;
+    }
+
+
+
+    if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
+    {
+      for (int i=0;i<l;i++)
+      {
+        alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+
+        if (x_->Map().MyGID(i))
+        {
+          int lid = x_mma_->Map().LID(i);
+          (*objectivegrad)[lid] = cos(alpha);
+        }
+
+        if (x_->Map().MyGID(i+l))
+        {
+          int lid = x_mma_->Map().LID(i+l);
+          (*objectivegrad)[lid] = sin(alpha);
+        }
+
+        if (x_->Map().MyGID(i+2*l))
+        {
+          int lid = x_mma_->Map().LID(i+2*l);
+          (*objectivegrad)[lid] = -0.1;
+        }
+
+        (*constraintsgrad)(0)->Update(2.0,*x_mma_,0.0);
       }
 
-      (*constraintsgrad)(0)->Update(2.0,*x_mma_,0.0);
+      if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
+      {
+        if (x_->Map().MyGID(0))
+        {
+          int lid = x_mma_->Map().LID(0);
+          (*(*constraintsgrad)(1))[lid] = +2*x1/delta * (1+7*pow(g,6));
+          (*(*constraintsgrad)(2))[lid] = -2*x1/delta * (1+7*pow(g,6));
+          (*(*constraintsgrad)(3))[lid] = -2*x2/delta * (1+7*pow(h,6));
+          (*(*constraintsgrad)(4))[lid] = +2*x2/delta * (1+7*pow(h,6));
+        }
+
+        if (x_->Map().MyGID(l))
+        {
+          int lid = x_mma_->Map().LID(l);
+          (*(*constraintsgrad)(1))[lid] = +2*x2/delta * (1+7*pow(g,6));
+          (*(*constraintsgrad)(2))[lid] = -2*x2/delta * (1+7*pow(g,6));
+          (*(*constraintsgrad)(3))[lid] = -2*x1/delta * (1+7*pow(h,6));
+          (*(*constraintsgrad)(4))[lid] = +2*x1/delta * (1+7*pow(h,6));
+        }
+
+        if (x_->Map().MyGID(2*l))
+        {
+          int lid = x_mma_->Map().LID(2*l);
+          (*(*constraintsgrad)(3))[lid] = +1.0/delta * (1+7*pow(h,6));
+          (*(*constraintsgrad)(4))[lid] = -1.0/delta * (1+7*pow(h,6));
+        }
+      }
     }
   }
 
 
 
-  if (discret_->Comm().MyPID()==0)
-  {
-    cout << "test if iter counters works well: total iter always increases by 1," << endl;
-    cout << "either inner or outer iter increase by 1, in second case inner iter shall be 1" << endl;
-    cout << "total iter is " << total_iter_ << endl;
-    cout << "inner iter is " << inner_iter_ << endl;
-    cout << "outer iter is " << outer_iter_ << endl;
-  }
+//  if (discret_->Comm().MyPID()==0)
+//  {
+//    cout << "test if iter counters works well: total iter always increases by 1," << endl;
+//    cout << "either inner or outer iter increase by 1, in second case inner iter shall be 1" << endl;
+//    cout << "total iter is " << total_iter_ << endl;
+//    cout << "inner iter is " << inner_iter_ << endl;
+//    cout << "outer iter is " << outer_iter_ << endl;
+//  }
 
   if (total_iter_==max_total_iter_)
   {
@@ -580,44 +704,72 @@ void OPTI::GCMMA::FinishIteration(
     bool& doGradient
 )
 {
-  // TODO testing example -> remove
-  double locobj = 0.0;
-  Epetra_SerialDenseVector locconstr(m_);
-  objective = 0.0;
-  (*constraints)[0] = 0.0;
-
-  int l = x_mma_->Map().NumGlobalElements()/3;
-
-  double alpha = 0.0;
-  for (int i=0;i<l;i++)
+  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
-    alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+    double locobj = 0.0;
+    Epetra_SerialDenseVector locconstr(m_);
 
-    if (x_->Map().MyGID(i))
+    int l = x_mma_->Map().NumGlobalElements()/3;
+
+    double delta = 0.1;
+    double alpha = 0.0;
+    double locg = 0.0;double locx1 = 0.0;double locx2 = 0.0; double locx3 = 0.0;
+    for (int i=0;i<l;i++)
     {
-      int lid = x_mma_->Map().LID(i);
-      locobj += cos(alpha)*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
+      alpha = M_PI*(3*(i+1)-2*l)/(6*l);
+
+      if (x_->Map().MyGID(i))
+      {
+        int lid = x_mma_->Map().LID(i);
+        double x = (*x_mma_)[lid];
+        locobj += cos(alpha)*x;
+        locconstr(0) += x*x;
+        if (i==0) {locg+=x*x;locx1=x;}
+      }
+
+      if (x_->Map().MyGID(i+l))
+      {
+        int lid = x_mma_->Map().LID(i+l);
+        double x = (*x_mma_)[lid];
+        locobj += sin(alpha)*x;
+        locconstr(0) += x*x;
+        if (i==0) {locg+=x*x;locx2=x;}
+      }
+
+      if (x_->Map().MyGID(i+2*l))
+      {
+        int lid = x_mma_->Map().LID(i+2*l);
+        double x = (*x_mma_)[lid];
+        locobj += -0.1*x;
+        locconstr(0) += x*x;
+        if (i==0) locx3=x;
+      }
     }
+    discret_->Comm().SumAll(&locobj,&objective,1);
+    discret_->Comm().SumAll(locconstr.Values(),constraints->Values(),m_);
 
-    if (x_->Map().MyGID(i+l))
-    {
-      int lid = x_mma_->Map().LID(i+l);
-      locobj += sin(alpha)*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
-    }
+    double g = 0.0;
+    discret_->Comm().SumAll(&locg,&g,1);
+    g -= 1;
+    g /= delta;
 
-    if (x_->Map().MyGID(i+2*l))
+    double h = 0.0;double x1 = 0.0;double x2 = 0.0; double x3 = 0.0;
+    discret_->Comm().SumAll(&locx1,&x1,1);
+    discret_->Comm().SumAll(&locx2,&x2,1);
+    discret_->Comm().SumAll(&locx3,&x3,1);
+    h = (x3-2*x1*x2)/delta;
+
+    (*constraints)(0) -= l + 1.0e-5;
+
+    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
     {
-      int lid = x_mma_->Map().LID(i+2*l);
-      locobj += -0.1*(*x_mma_)[lid];
-      locconstr[0] += (*x_mma_)[lid]*(*x_mma_)[lid];
+      (*constraints)(1) = +g + pow(g,7) - 2 - 1.0e-5;
+      (*constraints)(2) = -g - pow(g,7) - 2 - 1.0e-5;
+      (*constraints)(3) = +h + pow(h,7) - 2 - 1.0e-5;
+      (*constraints)(4) = -h - pow(h,7) - 2 - 1.0e-5;
     }
   }
-  discret_->Comm().SumAll(&locobj,&objective,1);
-  discret_->Comm().SumAll(locconstr.Values(),constraints->Values(),1);
-
-  (*constraints)[0] -= l + 1.0e-5;
 
 
 
@@ -729,17 +881,18 @@ bool OPTI::GCMMA::KKTCond(
   discret_->Comm().SumAll(&locresetanorm,&value,1);
   resnorm += value*value;
 
-
-
   double reszet = zet_*z_mma_;
   resnorm += reszet*reszet;
 
-
-
   resnorm = sqrt(resnorm);
-  cout << "resnorm is " << resnorm << endl;
+cout << "checking KKT conditions: residuum is " << resnorm << endl;
+cout << "tolerance is " << tol_ << endl;
   if (resnorm<tol_)
+  {
+    cout << "converged after " <<  total_iter_ << " iterations with " <<
+        outer_iter_ << " iterations containing the adjoint equations" << endl;
     return true;
+  }
 
   return false;
 }
@@ -895,7 +1048,7 @@ void OPTI::GCMMA::InitSubSolve()
     double* q = q_i.Values();
     double* constr_der = constr_deriv.Values();
 
-    double pq; // tmp variable
+    double pq = 0.0; // tmp variable
 
     xdiff = x_diff_->Values();
 
@@ -915,8 +1068,6 @@ void OPTI::GCMMA::InitSubSolve()
       *p = (*p + fac*pq + *rho*xdiffinv)**ux2ptr;
       *q = (*q + fac*pq + *rho*xdiffinv)**xl2ptr;
 
-      *b -= *p/(*ux1ptr) + *q/(*xl1ptr);
-
       p++;
       q++;
       constr_der++;
@@ -927,20 +1078,37 @@ void OPTI::GCMMA::InitSubSolve()
       xl2ptr++;
     }
 
-    b++;
     rho++;
   }
-  discret_->Comm().SumAll(bloc.Values(),b_->Values(),1);
+  for (int i=0;i<m_;i++)
+  {
+    Epetra_Vector p_i(View,*P_,i);
+    Epetra_Vector q_i(View,*Q_,i);
+    double* p = p_i.Values();
+    double* q = q_i.Values();
+    ux1ptr = ux1.Values();
+    xl1ptr = xl1.Values();
+    for (int j=0;j<n_loc_;j++)
+    {
+      *b -= *p/(*ux1ptr) + *q/(*xl1ptr);
+      p++;
+      q++;
+      ux1ptr++;
+      xl1ptr++;
+    }
+    b++;
+  }
+  discret_->Comm().SumAll(bloc.Values(),b_->Values(),m_);
   *b_ += *constr_;
   b_->Scale(-1.0);
 
-  cout << "init subsolve: " << endl;
-  cout << "m is " << m_ << ", n is " << n_ << ", epsimin is " << tol_sub_min_ << endl;
-  cout << "low asy is " << *asymp_min_ << "upp asy is " << *asymp_max_ << endl;
-  cout << "alpha is " << *alpha_ << "beta is " << *beta_ << endl;
-  cout << "p0 is " << *p0_ << "q0 is " << *q0_ << endl;
-  cout << "p is " << *P_ << "q is " << *Q_ << endl;
-  cout << "a0 is " << a0_ << ", a is " << *a_ << ", b is " << *b_ << ", c is " << *c_ << ", d is " << *d_ << endl;
+//  cout << "init subsolve: " << endl;
+//  cout << "m is " << m_ << ", n is " << n_ << ", epsimin is " << tol_sub_min_ << endl;
+//  cout << "low asy is " << *asymp_min_ << "upp asy is " << *asymp_max_ << endl;
+//  cout << "alpha is " << *alpha_ << "beta is " << *beta_ << endl;
+//  cout << "p0 is " << *p0_ << "q0 is " << *q0_ << endl;
+//  cout << "p is " << *P_ << "q is " << *Q_ << endl;
+//  cout << "a0 is " << a0_ << ", a is " << *a_ << ", b is " << *b_ << ", c is " << *c_ << ", d is " << *d_ << endl;
 }
 
 
@@ -1101,14 +1269,6 @@ void OPTI::GCMMA::SubSolve()
         eta++;
       }
 
-      Epetra_SerialDenseVector gvec(m_);
-      {
-        uxinv1.Dot(*P_,gvec.Values());
-
-      Epetra_SerialDenseVector gvec2(m_);
-      xlinv1.Dot(*Q_,gvec2.Values());
-        gvec += gvec2;
-      }
 
       Epetra_MultiVector GG(x_->Map(),m_);
 
@@ -1157,7 +1317,8 @@ void OPTI::GCMMA::SubSolve()
       y = y_mma_->Values();
       lam = lam_->Values();
       double* a = a_->Values();
-      double* gvecptr = gvec.Values();
+      double gvec1 = 0.0;
+      double gvec2 = 0.0;
       double* b = b_->Values();
       mu = mu_->Values();
       s = s_->Values();
@@ -1168,7 +1329,9 @@ void OPTI::GCMMA::SubSolve()
 
         delz -= *a**lam;
 
-        *dellamptr = *gvecptr - *a*z_mma_ - *y - *b + tol_sub/(*lam);
+        uxinv1.Dot(*(*P_)(i),&gvec1);
+        xlinv1.Dot(*(*Q_)(i),&gvec2);
+        *dellamptr = gvec1 + gvec2 - *a*z_mma_ - *y - *b + tol_sub/(*lam);
 
         *diagyptr = *d + *mu/(*y);
 
@@ -1183,7 +1346,6 @@ void OPTI::GCMMA::SubSolve()
         y++;
         lam++;
         a++;
-        gvecptr++;
         b++;
         mu++;
         s++;
@@ -1416,9 +1578,7 @@ void OPTI::GCMMA::SubSolve()
         dsptr++;
         s++;
         lam++;
-        dlamptr++;
       }
-
 
       double dzet = -zet_ + tol_sub/z_mma_ - zet_*dz/z_mma_;
 
@@ -1497,38 +1657,13 @@ void OPTI::GCMMA::SubSolve()
       Epetra_Vector xsi_old(*xsi_);
       Epetra_Vector eta_old(*eta_);
 
-      Epetra_SerialDenseVector y_old(m_);
-      Epetra_SerialDenseVector lam_old(m_);
-      Epetra_SerialDenseVector mu_old(m_);
-      Epetra_SerialDenseVector s_old(m_);
+      Epetra_SerialDenseVector y_old(*y_mma_);
+      Epetra_SerialDenseVector lam_old(*lam_);
+      Epetra_SerialDenseVector mu_old(*mu_);
+      Epetra_SerialDenseVector s_old(*s_);
       double z_mma_old = z_mma_;
       double zet_old = zet_;
 
-      y = y_mma_->Values();
-      lam = lam_->Values();
-      mu = mu_->Values();
-      s = s_->Values();
-      double* yptr = y_old.Values();
-      double* lamptr = lam_old.Values();
-      double* muptr = mu_old.Values();
-      double* sptr = s_old.Values();
-
-      for (int j=0;j<m_;j++)
-      {
-        *yptr = *y;
-        *lamptr = *lam;
-        *muptr = *mu;
-        *sptr = *s;
-
-        yptr++;
-        lamptr++;
-        muptr++;
-        sptr++;
-        y++;
-        lam++;
-        mu++;
-        s++;
-      }
 
       while ((resnorm<resnew) and (it<max_it))
       {
@@ -1539,16 +1674,16 @@ void OPTI::GCMMA::SubSolve()
         eta_->Update(steg,deta,1.0,eta_old,0.0);
 
         y = y_mma_->Values();
-        yptr = y_old.Values();
+        double* yptr = y_old.Values();
         dyptr = dy.Values();
         lam = lam_->Values();
-        lamptr = lam_old.Values();
+        double* lamptr = lam_old.Values();
         dlamptr = dlam.Values();
         mu = mu_->Values();
-        muptr = mu_old.Values();
+        double* muptr = mu_old.Values();
         dmuptr = dmu.Values();
         s = s_->Values();
-        sptr = s_old.Values();
+        double* sptr = s_old.Values();
         dsptr = ds.Values();
 
         for (int i=0;i<m_;i++)
@@ -1601,12 +1736,12 @@ void OPTI::GCMMA::SubSolve()
     else
       tol_reached = true;
   }
-  cout << "after subsolv:" << endl;
-  cout << "x is " << *x_mma_ << endl;
-  cout << "y is " << *y_mma_ << ", z is " << z_mma_ << ", lam is " << *lam_ << endl;
-  cout << "xsi is " << *xsi_ << endl;
-  cout << "eta is " << *eta_ << endl;
-  cout << "mu is " << *mu_ << ", zet is " << zet_ << ", s is " << *s_ << endl;
+//  cout << "after subsolv:" << endl;
+//  cout << "x is " << *x_mma_ << endl;
+//  cout << "y is " << *y_mma_ << ", z is " << z_mma_ << ", lam is " << *lam_ << endl;
+//  cout << "xsi is " << *xsi_ << endl;
+//  cout << "eta is " << *eta_ << endl;
+//  cout << "mu is " << *mu_ << ", zet is " << zet_ << ", s is " << *s_ << endl;
 }
 
 
@@ -1684,16 +1819,6 @@ void OPTI::GCMMA::Res(
   Epetra_SerialDenseVector reslam(m_);
   double* reslamptr = reslam.Values();
 
-  Epetra_SerialDenseVector gvec(m_);
-  {
-    uxinv1.Dot(*P_,gvec.Values());
-
-    Epetra_SerialDenseVector gvec2(m_);
-    xlinv1.Dot(*Q_,gvec2.Values());
-    gvec += gvec2;
-  }
-  double* gvecptr = gvec.Values();
-
   Epetra_SerialDenseVector resmu(m_);
   double* resmuptr = resmu.Values();
 
@@ -1708,6 +1833,8 @@ void OPTI::GCMMA::Res(
   double* a = a_->Values();
   double* s = s_->Values();
   double* b = b_->Values();
+  double gvec1 = 0.0;
+  double gvec2 = 0.0;
 
   for (int j=0;j<m_;j++)
   {
@@ -1715,7 +1842,9 @@ void OPTI::GCMMA::Res(
 
     resz -= *a**lam;
 
-    *reslamptr = *gvecptr - *a*z_mma_ - *y + *s - *b;
+    uxinv1.Dot(*(*P_)(j),&gvec1);
+    xlinv1.Dot(*(*Q_)(j),&gvec2);
+    *reslamptr = gvec1 + gvec2 - *a*z_mma_ - *y + *s - *b;
 
     *resmuptr = *mu**y - tol_sub;
 
@@ -1725,7 +1854,6 @@ void OPTI::GCMMA::Res(
     reslamptr++;
     resmuptr++;
     resptr++;
-    gvecptr++;
     c++;
     d++;
     y++;
@@ -1835,52 +1963,57 @@ void OPTI::GCMMA::Update(
   // Update data
 
   // helper vectors
-  Epetra_Vector uxinv(x_->Map());
-  Epetra_Vector xlinv(x_->Map());
+  Epetra_Vector uxinv1(x_->Map());
+  Epetra_Vector xlinv1(x_->Map());
 
   double* asymp_max = asymp_max_->Values();
   double* asymp_min = asymp_min_->Values();
   double* x = x_mma_->Values();
 
-  double* uxinvptr = uxinv.Values();
-  double* xlinvptr = xlinv.Values();
+  double* uxinv1ptr = uxinv1.Values();
+  double* xlinv1ptr = xlinv1.Values();
 
 
   for (int i=0;i<n_loc_;i++)
   {
-    *uxinvptr = 1.0/(*asymp_max-*x);
-    *xlinvptr = 1.0/(*x-*asymp_min);
+    *uxinv1ptr = 1.0/(*asymp_max-*x);
+    *xlinv1ptr = 1.0/(*x-*asymp_min);
 
     asymp_max++;
     asymp_min++;
     x++;
-    uxinvptr++;
-    xlinvptr++;
+    uxinv1ptr++;
+    xlinv1ptr++;
   }
 
   // set new approximation of objective value
   double value = 0.0;
 
-  uxinv.Dot(*p0_,&value);cout << "1. objapp is " << value << endl;
-  obj_appr_ = r0_ + value;cout << "2. objapp is " << r0_ << endl;
+  uxinv1.Dot(*p0_,&value);
+  obj_appr_ = r0_ + value;
 
-  xlinv.Dot(*q0_,&value);
-  obj_appr_ += value;cout << "3. objapp is " << value << endl;
+  xlinv1.Dot(*q0_,&value);
+  obj_appr_ += value;
 
 
   // set new approximation of constraints
-  *constr_appr_ = *b_;cout << "1. constrapp is " << *constr_appr_ << endl;
+  *constr_appr_ = *b_;
   constr_appr_->Scale(-1.0);
 
-  Epetra_SerialDenseVector values(m_);
-  uxinv.Dot(*P_,values.Values());
-  *constr_appr_ += values;cout << "2. constrapp is " << values << endl;
+  double* constr = constr_appr_->Values();
+  for (int i=0;i<m_;i++)
+  {
+    uxinv1.Dot(*(*P_)(i),&value);
+    *constr += value;
 
-  xlinv.Dot(*Q_,values.Values());
-  *constr_appr_ += values;cout << "3. constrapp is " << values << endl;
+    xlinv1.Dot(*(*Q_)(i),&value);
+    *constr += value;
+
+    constr++;
+  }
+
 //  cout << "obj_appr is " << obj_appr_ << endl;
 //  cout << "constr_appr is " << *constr_appr_ << endl;
 }
-
 
 

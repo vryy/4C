@@ -60,7 +60,7 @@ namespace INPAR
       initadjointfield_field_by_function
     };
 
-    /// type of initial fluid field
+    /// test configurations for adjoint equations
     enum AdjointTestCases
     {
       adjointtest_no,
@@ -72,6 +72,14 @@ namespace INPAR
       adjointtest_instat_varying_theta,
       adjointtest_instat_all_terms_all_constants,
       adjointtest_instat_primal_and_dual
+    };
+
+    /// test configuration for optimizer
+    enum OptiTestCases
+    {
+      optitest_no,
+      optitest_snake_one_constr,
+      optitest_snake_multiple_constr
     };
   }
 }

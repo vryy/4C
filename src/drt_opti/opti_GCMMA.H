@@ -95,6 +95,16 @@ namespace OPTI
         bool& doGradient
     );
 
+    const Teuchos::RCP<const DRT::Discretization> Discretization() const
+    {
+      return discret_;
+    }
+
+    const Teuchos::RCP<const Epetra_Vector> X() const
+    {
+      return x_;
+    }
+
   private:
 
     void InitIter(
@@ -139,6 +149,7 @@ namespace OPTI
     //! @name problem data
 
     Teuchos::RCP<const DRT::Discretization> discret_; /// dof-map of optimization variable
+    const Teuchos::ParameterList& params_; /// optimizer parameter list
     //@}
 
     //! @name iteration counter

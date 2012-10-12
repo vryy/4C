@@ -18,6 +18,7 @@ Maintainer: Martin Winklmaier
 
 #include "topopt_dyn.H"
 #include "topopt_algorithm.H"
+#include "topopt_optimizer.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "topopt_utils.H"
@@ -104,7 +105,7 @@ cout << "test restart action: 0=fluid,1=adjoint,2=grad,3=opti-step: " << restart
   // perform the result test
   problem->AddFieldTest(topopt_->FluidField().CreateFieldTest());
   problem->AddFieldTest(topopt_->AdjointFluidField()->CreateFieldTest());
-
+  problem->AddFieldTest(topopt_->Optimizer()->CreateFieldTest());
   problem->TestAll(comm);
 
   return;

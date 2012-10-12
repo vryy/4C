@@ -3737,6 +3737,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::TOPOPT::initdensfield_zero_field,
                                    INPAR::TOPOPT::initdensfield_field_by_function),
                                &topoptoptimizer);
+
+  setStringToIntegralParameter<int>("TESTCASE","test_no","test case for optimizer",
+      tuple<std::string>(
+          "test_no",
+          "test_snake_one_constr",
+          "test_snake_multiple_constr"),
+          tuple<int>(
+              INPAR::TOPOPT::optitest_no,
+              INPAR::TOPOPT::optitest_snake_one_constr,
+              INPAR::TOPOPT::optitest_snake_multiple_constr),
+              &topoptoptimizer);
+
   IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);
   DoubleParameter("VOLUME_BOUNDARY",0.7,"maximal percentage of fluid volume in background domain",&topoptoptimizer);
   /*----------------------------------------------------------------------*/

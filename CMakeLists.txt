@@ -982,6 +982,7 @@ set(OBJS_DRT_TOPOPT_ADJOINT
 set(OBJS_OPTI
   src/drt_opti/topopt_optimizer.cpp
   src/drt_opti/opti_GCMMA.cpp
+  src/drt_opti/opti_resulttest.cpp
 )
 
 set(OBJS_DRT_LOMA
@@ -2404,6 +2405,10 @@ baci_test(topopt_adjoint_channel_stat_lin_vel_quad_pres 1 "")
 baci_test(topopt_adjoint_channel_stat_quad_vel_lin_pres 1 "")
 baci_test(topopt_adjoint_channel_stat_quad_vel_lin_pres_dens2_visc3 1 "")
 baci_test(topopt_adjoint_channel_stat_quad_vel_lin_pres_dens2_visc3 2 "")
+baci_test(topopt_opti_snake_one_constr 1 "")
+baci_test(topopt_opti_snake_one_constr 2 "")
+baci_test(topopt_opti_snake_multiple_constr 1 "")
+baci_test(topopt_opti_snake_multiple_constr 2 "")
 baci_test(topopt_reaction_channel 1 "")
 baci_test(topopt_reaction_channel 2 "")
 baci_test(topopt_reaction_plate 1 "")
