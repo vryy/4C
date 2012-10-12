@@ -1478,21 +1478,64 @@ LINALG::Matrix<6,1> Beam3ContactOctTree::GetRootBox()
               lim(j) = (*allbboxes_)[j][i];
             else if(j%2!=0 && (*allbboxes_)[j][i]>lim(j)) // maxes
               lim(j) = (*allbboxes_)[j][i];
+        // determine bounds for cubic root box
+        LINALG::Matrix<3,1> maxdist;
+        for(int i=0; i<(int)maxdist.M(); i++)
+          maxdist(i) = fabs(lim(2*i)+lim(2*i+1) / 2.0 - lim(2*i));
+        for(int i=0; i<(int)maxdist.M(); i++)
+        {
+          lim(2*i) = lim(2*i)+lim(2*i+1) / 2.0 - maxdist.MaxValue()*extrusionfactor_;
+          lim(2*i+1) = lim(2*i) + 2.0 * maxdist.MaxValue()*extrusionfactor_;
+        }
       }
       break;
       case Beam3ContactOctTree::cyloriented:
       {
-        double globalmax = -1e13;
         for(int i=0; i<allbboxes_->MyLength(); i++) // loop boxes
-        for(int j=0; j<allbboxes_->NumVectors()-1; j++)
-        if((*allbboxes_)[j][i]>globalmax)
-        globalmax = (*allbboxes_)[j][i];
-
-        for(int i=0; i<(int)lim.M(); i++)
-          if(i%2==0)
-            lim(i) = -extrusionfactor_*globalmax;
-          else
-            lim(i) = extrusionfactor_*globalmax;
+        {
+          for(int j=0; j<allbboxes_->NumVectors()-1; j++)
+          {
+            // x
+            if(j%3==0)
+            {
+              // min
+              if((*allbboxes_)[j][i]<lim(0))
+                lim(0) = (*allbboxes_)[j][i];
+              // max
+              else if((*allbboxes_)[j][i]>lim(1))
+                lim(1) = (*allbboxes_)[j][i];
+            }
+            // y
+            else if(j%3-1==0)
+            {
+              // min
+              if((*allbboxes_)[j][i]<lim(2))
+                lim(2) = (*allbboxes_)[j][i];
+              // max
+              else if((*allbboxes_)[j][i]>lim(3))
+                lim(3) = (*allbboxes_)[j][i];
+            }
+            // z
+            else if(j%3-2==0)
+            {
+              // min
+              if((*allbboxes_)[j][i]<lim(4))
+                lim(4) = (*allbboxes_)[j][i];
+              // max
+              else if((*allbboxes_)[j][i]>lim(5))
+                lim(5) = (*allbboxes_)[j][i];
+            }
+          }
+        }
+        // determine bounds for cubic root box
+        LINALG::Matrix<3,1> maxdist;
+        for(int i=0; i<(int)maxdist.M(); i++)
+          maxdist(i) = fabs(lim(2*i)+lim(2*i+1) / 2.0 - lim(2*i));
+        for(int i=0; i<(int)maxdist.M(); i++)
+        {
+          lim(2*i) = lim(2*i)+lim(2*i+1) / 2.0 - maxdist.MaxValue()*extrusionfactor_;
+          lim(2*i+1) = lim(2*i) + 2.0 * maxdist.MaxValue()*extrusionfactor_;
+        }
       }
       break;
       case Beam3ContactOctTree::spherical:

@@ -1333,21 +1333,21 @@ void CONTACT::Beam3contact::ComputeTangentsAndDerivs
   Epetra_SerialDenseMatrix nodetangent1(NDIM,numnode1);
   Epetra_SerialDenseMatrix nodetangent2(NDIM,numnode2);
 
-  cout << "nodetangent";
-  for (int i=0;i<NDIM;i++)
-    for (int j=0;j<numnode1;j++)
-      cout << nodetangent1(i,j) << endl;
-  for (int i=0;i<NDIM;i++)
-    for (int j=0;j<numnode2;j++)
-      cout << nodetangent1(i,j) << endl;
-
-  cout << "eletangent";
-    for (int i=0;i<NDIM;i++)
-      for (int j=0;j<numnode1;j++)
-        cout << ele1tangent_(i,j) << endl;
-    for (int i=0;i<NDIM;i++)
-      for (int j=0;j<numnode2;j++)
-        cout << ele2tangent_(i,j) << endl;
+//  cout << "nodetangent";
+//  for (int i=0;i<NDIM;i++)
+//    for (int j=0;j<numnode1;j++)
+//      cout << nodetangent1(i,j) << endl;
+//  for (int i=0;i<NDIM;i++)
+//    for (int j=0;j<numnode2;j++)
+//      cout << nodetangent1(i,j) << endl;
+//
+//  cout << "eletangent";
+//    for (int i=0;i<NDIM;i++)
+//      for (int j=0;j<numnode1;j++)
+//        cout << ele1tangent_(i,j) << endl;
+//    for (int i=0;i<NDIM;i++)
+//      for (int j=0;j<numnode2;j++)
+//        cout << ele2tangent_(i,j) << endl;
 
 
   // full coord1 and coord2
