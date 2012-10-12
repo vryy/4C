@@ -644,6 +644,9 @@ void STR::TimInt::PrepareStatMech()
         default: dserror("Undefined thermalbath type!");
         break;
       }
+      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+      if(!ioparams.get<int>("STDOUTEVRY",0))
+        cout<<"STDOUT SUPPRESSED!"<<endl;
     }
   }
   return;

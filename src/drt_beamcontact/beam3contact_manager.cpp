@@ -264,7 +264,8 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     }
 
     double t_end = Teuchos::Time::wallTime() - t_start;
-    if(!pdiscret_.Comm().MyPID())
+    Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+    if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
       cout << "           Octree Search: " << t_end << " seconds, "<<(int)(pairs_.size()) << " pairs" << endl;;
   }
   else
@@ -1223,7 +1224,8 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
       updatepp = IncreaseCurrentpp(globnorm);
   
    // print results to screen
-  if (Comm().MyPID()==0 && cnorm==NULL)
+  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+  if (Comm().MyPID()==0 && cnorm==NULL && ioparams.get<int>("STDOUTEVRY",0))
   {
     cout << endl << "*********************************************"<<endl;
     cout << "Global Constraint Norm = " << globnorm << endl;
@@ -1329,46 +1331,49 @@ bool CONTACT::Beam3cmanager::IncreaseCurrentpp(const double& globnorm)
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ConsoleOutput()
 {
-  // begin output
-  if (Comm().MyPID()==0)
-    cout << "\nActive contact set--------------------------------------------------------------\n";
-  Comm().Barrier();
-    
-  // loop over all pairs
-  for (int i=0;i<(int)pairs_.size();++i)
-  {  
-    // check if this pair is active
-    if (pairs_[i]->GetContactFlag())
+  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+  if(ioparams.get<int>("STDOUTEVRY",0))
+  {
+    // begin output
+    if (Comm().MyPID()==0)
+      cout << "\nActive contact set--------------------------------------------------------------\n";
+    Comm().Barrier();
+      
+    // loop over all pairs
+    for (int i=0;i<(int)pairs_.size();++i)
     {
-      // get coordinates of contact point of each element
-      Epetra_SerialDenseVector x1 = pairs_[i]->GetX1();
-      Epetra_SerialDenseVector x2 = pairs_[i]->GetX2();
-      
-      // make sure to print each pair only once
-      // (TODO: this is not yet enough...)
-      int firsteleid = (pairs_[i]->Element1())->Id();
-      bool firstisinrowmap = RowElements()->MyGID(firsteleid);
-      
-      // abbreviations
-      int id1 = (pairs_[i]->Element1())->Id();
-      int id2 = (pairs_[i]->Element2())->Id();
-      double gap = pairs_[i]->GetGap();
-      double lm = pairs_[i]->Getlmuzawa() - currentpp_ * pairs_[i]->GetGap();
-      
-      // print some output (use printf-method for formatted output)
-      if (firstisinrowmap)
+      // check if this pair is active
+      if (pairs_[i]->GetContactFlag())
       {
-        printf("ACTIVE PAIR: %d & %d \t gap: %e \t lm: %e \n",id1,id2,gap,lm);
-        //printf("x1 = %e %e %e \t x2 = %e %e %e \n",x1[0],x1[1],x1[2],x2[0],x2[1],x2[2]);
-        fflush(stdout);
-      }  
+        // get coordinates of contact point of each element
+        Epetra_SerialDenseVector x1 = pairs_[i]->GetX1();
+        Epetra_SerialDenseVector x2 = pairs_[i]->GetX2();
+
+        // make sure to print each pair only once
+        // (TODO: this is not yet enough...)
+        int firsteleid = (pairs_[i]->Element1())->Id();
+        bool firstisinrowmap = RowElements()->MyGID(firsteleid);
+
+        // abbreviations
+        int id1 = (pairs_[i]->Element1())->Id();
+        int id2 = (pairs_[i]->Element2())->Id();
+        double gap = pairs_[i]->GetGap();
+        double lm = pairs_[i]->Getlmuzawa() - currentpp_ * pairs_[i]->GetGap();
+
+        // print some output (use printf-method for formatted output)
+        if (firstisinrowmap)
+        {
+          printf("ACTIVE PAIR: %d & %d \t gap: %e \t lm: %e \n",id1,id2,gap,lm);
+          //printf("x1 = %e %e %e \t x2 = %e %e %e \n",x1[0],x1[1],x1[2],x2[0],x2[1],x2[2]);
+          fflush(stdout);
+        }
+      }
     }
+
+    // end output
+    Comm().Barrier();
+    if (Comm().MyPID()==0) cout << endl;
   }
-  
-  // end output
-  Comm().Barrier();
-  if (Comm().MyPID()==0) cout << endl;
-  
   return;
 }
 

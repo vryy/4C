@@ -1581,7 +1581,8 @@ void STR::TimIntStatMech::BeamContactAugLag()
   beamcman_->ResetAlllmuzawa();
   beamcman_->ResetUzawaIter();
 
-  if(!discret_->Comm().MyPID())
+  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+  if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
     cout<<"Predictor:"<<endl;
   Predict();
 
@@ -1595,7 +1596,7 @@ void STR::TimIntStatMech::BeamContactAugLag()
     if(BeamContactExitUzawaAt(maxuzawaiter))
       break;
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY",0))
       cout << endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << endl;
 
     if(ndim_ ==3)
@@ -1606,7 +1607,7 @@ void STR::TimIntStatMech::BeamContactAugLag()
     // in case uzawa step did not converge
     if(!isconverged_)
     {
-      if(!discret_->Comm().MyPID())
+      if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
         std::cout<<"\n\nNewton iteration in Uzawa Step "<<beamcman_->GetUzawaIter()<<" unconverged - leaving Uzawa loop and restarting time step...!\n\n";
       // reset pairs to size 0 since the octree is being constructed completely anew
       beamcman_->ResetPairs();
@@ -1638,7 +1639,11 @@ bool STR::TimIntStatMech::BeamContactExitUzawaAt(int& maxuzawaiter)
     if(beamcman_->GetConstrNorm()<0.5)
       isconverged_ = true;
     else
-      cout << "Uzawa unconverged in "<< beamcman_->GetUzawaIter() << " iterations" << endl;
+    {
+      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+      if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
+        cout << "Uzawa unconverged in "<< beamcman_->GetUzawaIter() << " iterations" << endl;
+    }
     exituzawa = true;
     //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
   }
