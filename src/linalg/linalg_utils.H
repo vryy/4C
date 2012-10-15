@@ -900,6 +900,15 @@ namespace LINALG
       const bool newfile = true);
 
   /*!
+  \brief Print content of SerialDenseMatrix in Matlab format
+
+  */
+  void PrintSerialDenseMatrixInMatlabFormat(
+      std::string fname,
+      const Epetra_SerialDenseMatrix& A,
+      const bool newfile = true);
+
+  /*!
   \brief Print content of a block sparse matrix in Matlab format
 
   The block sparse matrix is printed in Matlab sparse format to

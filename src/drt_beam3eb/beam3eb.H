@@ -79,7 +79,6 @@ using namespace cln;
 #define ScaleFactorLine 1.0;    // Scale factor for each line of the equation system for better conditioning
 #define ScaleFactorColumn 1.0;  // Scale factor for each column of the stiffness matrix for better conditioning
 #define PreConditioning false;  // Flag to switch preconditioning of element stiffness matrix on or off
-//#define ORIGINALCALC ;
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT

@@ -379,9 +379,8 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
                                               Epetra_SerialDenseMatrix* massmatrix,
                                               Epetra_SerialDenseVector* force)
 {
-#ifdef ORIGINALCALC
-{
-  //dimensions of freedom per node
+
+   //dimensions of freedom per node
   const int dofpn = 6;
 
   //number of nodes fixed for these element
@@ -390,23 +389,40 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
   //matrix for current positions and tangents
   vector<double> disp_totlag(nnode*dofpn);
 
-  //abbreviated matrices for clearness
-  LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde;
-  LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde_x;
-  LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde_xx;
-  LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde_aux;
+  LINALG::Matrix<3,1> r_;
+  LINALG::Matrix<3,1> r_x;
+  LINALG::Matrix<3,1> r_xx;
 
-  //matrices helping to assemble above
-  LINALG::Matrix<3,nnode*dofpn> N_x;
-  LINALG::Matrix<3,nnode*dofpn> N_xx;
+  LINALG::Matrix<3,1> f1;
+  LINALG::Matrix<3,1> f2;
+  LINALG::Matrix<3,1> n1;
+
+  double rxrxx;
+  double rxxrxx;
+  double rxrx;
+  double tension;
+
+  LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde;
+  LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTildex;
+  LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTildexx;
+
+  LINALG::Matrix<dofpn*nnode,1> NxTrx;
+  LINALG::Matrix<dofpn*nnode,1> NxTrxx;
+  LINALG::Matrix<dofpn*nnode,1> NxxTrx;
+  LINALG::Matrix<dofpn*nnode,1> NxxTrxx;
+
+  LINALG::Matrix<dofpn*nnode,dofpn*nnode> M1;
+  LINALG::Matrix<dofpn*nnode,dofpn*nnode> M2;
+  LINALG::Matrix<dofpn*nnode,dofpn*nnode> M3;
+  LINALG::Matrix<dofpn*nnode,dofpn*nnode> NxTrxrxTNx;
 
   //Matrices for N_i,xi and N_i,xixi. 2*nnode due to hermite shapefunctions
   LINALG::Matrix<1,2*nnode> N_i;
   LINALG::Matrix<1,2*nnode> N_i_x;
   LINALG::Matrix<1,2*nnode> N_i_xx;
-  LINALG::Matrix<3,1> r_;
-  LINALG::Matrix<3,1> r_x;
-  LINALG::Matrix<3,1> r_xx;
+
+  LINALG::Matrix<3,nnode*dofpn> N_x;
+  LINALG::Matrix<3,nnode*dofpn> N_xx;
 
   //stiffness due to tension and bending
   LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_tension;
@@ -415,23 +431,6 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
   //internal force due to tension and bending
   LINALG::Matrix<nnode*dofpn,1> Res_tension;
   LINALG::Matrix<nnode*dofpn,1> Res_bending;
-
-  //algebraic operations
-  LINALG::Matrix<nnode*dofpn,1> NTilded;
-  LINALG::Matrix<nnode*dofpn,1> NTilde_xd;
-  LINALG::Matrix<nnode*dofpn,1> NTilde_xxd;
-  LINALG::Matrix<nnode*dofpn,1> NTilde_auxd;
-
-  LINALG::Matrix<1,nnode*dofpn> dTNTilde_x;
-  LINALG::Matrix<1,nnode*dofpn> dTNTilde_xx;
-  LINALG::Matrix<1,nnode*dofpn> dTNTilde_aux;
-
-  LINALG::Matrix<nnode*dofpn,nnode*dofpn> NTilde_xddTNTilde_x;
-  LINALG::Matrix<nnode*dofpn,nnode*dofpn> NTilde_xddTNTilde_aux;
-  LINALG::Matrix<nnode*dofpn,nnode*dofpn> NTilde_auxddTNTilde_x;
-  LINALG::Matrix<nnode*dofpn,nnode*dofpn> NTilde_xxddTNTilde_x;
-  LINALG::Matrix<nnode*dofpn,nnode*dofpn> NTilde_xddTNTilde_xx;
-  LINALG::Matrix<nnode*dofpn,nnode*dofpn> NTilde_auxddTNTilde_aux;
 
   //first of all we get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -481,26 +480,44 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
         disp_totlag[node*dofpn + dof] = (Tref_[node](dof-3) + disp[node*dofpn + dof])*ScaleFactorColumn;
       }
     }
-  }	//for (int node = 0 ; node < nnode ; node++)
+  } //for (int node = 0 ; node < nnode ; node++)
 
   //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
     //all matrices and scalars are set to zero again!!!
+    //factors for stiffness assembly
 
     r_.Clear();
     r_x.Clear();
     r_xx.Clear();
 
-    double dTNTilded  = 0.0;
-    double dTNTilde_xd = 0.0;
-    double dTNTilde_xxd = 0.0;
+    f1.Clear();
+    f2.Clear();
+    n1.Clear();
 
-    //initialize all matrices
+    rxrxx=0;
+    rxxrxx=0;
+    rxrx=0;
+    tension=0;
+
     NTilde.Clear();
-    NTilde_x.Clear();
-    NTilde_xx.Clear();
-    NTilde_aux.Clear();
+    NTildex.Clear();
+    NTildexx.Clear();
+
+    NxTrx.Clear();
+    NxTrxx.Clear();
+    NxxTrx.Clear();
+    NxxTrxx.Clear();
+
+    M1.Clear();
+    M2.Clear();
+    M3.Clear();
+    NxTrxrxTNx.Clear();
+
+    N_i.Clear();
+    N_i_x.Clear();
+    N_i_xx.Clear();
 
     N_x.Clear();
     N_xx.Clear();
@@ -511,167 +528,121 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
     Res_tension.Clear();
     Res_bending.Clear();
 
-    N_i.Clear();
-    N_i_x.Clear();
-    N_i_xx.Clear();
-
-    NTilded.Clear();
-    NTilde_xd.Clear();
-    NTilde_xxd.Clear();
-    NTilde_auxd.Clear();
-
-    dTNTilde_x.Clear();
-    dTNTilde_xx.Clear();
-    dTNTilde_aux.Clear();
-
-    NTilde_xddTNTilde_x.Clear();
-    NTilde_xddTNTilde_aux.Clear();
-    NTilde_auxddTNTilde_x.Clear();
-    NTilde_xxddTNTilde_x.Clear();
-    NTilde_xddTNTilde_xx.Clear();
-    NTilde_auxddTNTilde_aux.Clear();
-
     //Get location and weight of GP in parameter space
     const double xi = gausspoints.qxg[numgp][0];
     const double wgt = gausspoints.qwgt[numgp];
 
-    //cout << "Gaußpunkt: " << numgp << "xi: " << xi << "Gewicht: " << wgt << endl;
-
     //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-    DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
+    //DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,xi,jacobi_*2.0,distype);
     DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xx,xi,jacobi_*2.0,distype);
-
-    //assemble test and trial functions
-    for (int r=0; r<3; ++r)
-    {
-      for (int d=0; d<4; ++d)
-      {
-        //include jacobi factor due to coordinate transformation from local in global system
-        N_x(r,r+3*d) = N_i_x(d)/jacobi_;
-        N_xx(r,r+3*d) = N_i_xx(d)/pow(jacobi_,2.0);
-      }	//for (int d=0; d<4; ++d)
-    }	//for (int r=0; r<3; ++r)
 
     //calculate r' and r''
     for (int i=0 ; i < 3 ; i++)
     {
       for (int j=0; j<4; j++)
       {
-        r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
-        r_x(i,0)+= N_i_x(j)/jacobi_ * disp_totlag[3*j + i];
-        r_xx(i,0)+= N_i_xx(j)/pow(jacobi_,2.0) * disp_totlag[3*j + i];
+        //r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
+        r_x(i,0)+= N_i_x(j) * disp_totlag[3*j + i];
+        r_xx(i,0)+= N_i_xx(j) * disp_totlag[3*j + i];
       }
     }
 
-    //create matrices to help assemble the stiffness matrix and internal force vector:: NTilde_x = N'^T * N'; NTilde_xx = N''^T * N''; NTilde = N'^T * N''
-    NTilde_x.MultiplyTN(N_x,N_x);
-    NTilde_xx.MultiplyTN(N_xx,N_xx);
+    for (int i= 0; i<3; i++)
+    {
+      rxrxx+=r_x(i)*r_xx(i);
+      rxxrxx+=r_xx(i)*r_xx(i);
+      rxrx+=r_x(i)*r_x(i);
+    }
+
+    tension = 1/jacobi_ - 1/pow(rxrx,0.5);
+
+    for (int i=0; i<3; ++i)
+    {
+      for (int j=0; j<4; ++j)
+      {
+        N_x(i,i+3*j) += N_i_x(j);
+        N_xx(i,i+3*j) += N_i_xx(j);
+        NxTrx(i+3*j)+=N_i_x(j)*r_x(i);
+        NxTrxx(i+3*j)+=N_i_x(j)*r_xx(i);
+        NxxTrx(i+3*j)+=N_i_xx(j)*r_x(i);
+        NxxTrxx(i+3*j)+=N_i_xx(j)*r_xx(i);
+      }
+    }
+
     NTilde.MultiplyTN(N_x,N_xx);
+    NTildex.MultiplyTN(N_x,N_x);
+    NTildexx.MultiplyTN(N_xx,N_xx);
 
-    //NTilde_aux = N + N^T
-    NTilde_aux = NTilde;
-    NTilde_aux.UpdateT(1.0, NTilde,1.0);
-
-    //calculate factors
-    //row
-    for (int i=0 ; i < dofpn*nnode ; i++)
+    for (int i= 0; i<12; i++)
     {
-      //column
-      for (int j=0 ; j < dofpn*nnode ; j++)
+      for (int j= 0; j<12; j++)
       {
-        NTilded(i)     += NTilde(i,j)*disp_totlag[j];
-        NTilde_xd(i)    += NTilde_x(i,j)*disp_totlag[j];
-        NTilde_xxd(i)    += NTilde_xx(i,j)*disp_totlag[j];
-        NTilde_auxd(i) += NTilde_aux(i,j)*disp_totlag[j];
-
-        dTNTilde_x(i)    += disp_totlag[j]*NTilde_x(j,i);
-        dTNTilde_xx(i)    += disp_totlag[j]*NTilde_xx(j,i);
-        dTNTilde_aux(i) += disp_totlag[j]*NTilde_aux(j,i);
-      }	//for (int j=0 ; j < dofpn*nnode ; j++)
-
-      dTNTilded  += disp_totlag[i] * NTilded(i);
-      dTNTilde_xd += disp_totlag[i] * NTilde_xd(i);
-      dTNTilde_xxd += disp_totlag[i] * NTilde_xxd(i);
-    }	//for (int i=0 ; i < dofpn*nnode ; i++)
-
-    //calculate factors
-    //row
-    for (int i=0 ; i < dofpn*nnode ; i++)
-    {
-      //column
-      for (int j=0 ; j < dofpn*nnode ; j++)
-      {
-        NTilde_xddTNTilde_x(j,i)       = NTilde_xd(j)*dTNTilde_x(i);
-        NTilde_xddTNTilde_aux(j,i)    = NTilde_xd(j)*dTNTilde_aux(i);
-        NTilde_auxddTNTilde_x(j,i)    = NTilde_auxd(j)*dTNTilde_x(i);
-        NTilde_xxddTNTilde_x(j,i)       = NTilde_xxd(j)*dTNTilde_x(i);
-        NTilde_xddTNTilde_xx(j,i)       = NTilde_xd(j)*dTNTilde_xx(i);
-        NTilde_auxddTNTilde_aux(j,i) = NTilde_auxd(j)*dTNTilde_aux(i);
-      }	//for (int j=0 ; j < dofpn*nnode ; j++)
-    }	//for (int i=0 ; i < dofpn*nnode ; i++)
+        M1(i,j)+= NxTrx(i)*(NxxTrx(j)+NxTrxx(j));
+        M2(i,j)+= NxxTrxx(i)*NxTrx(j);
+        M3(i,j)+= (NxTrxx(i)+NxxTrx(i))*(NxTrxx(j)+NxxTrx(j));
+        NxTrxrxTNx(i,j)+= NxTrx(i)*NxTrx(j);
+      }
+    }
 
     //assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
     if (stiffmatrix != NULL)
     {
       //assemble parts from tension
-      R_tension = NTilde_x;
-      R_tension.Scale(1.0 - 1.0/pow(dTNTilde_xd,0.5));
-      R_tension.Update(1.0 / pow(dTNTilde_xd,1.5),NTilde_xddTNTilde_x,1.0);
+      R_tension = NTildex;
+      R_tension.Scale(tension);
+      R_tension.Update(1.0 / pow(rxrx,1.5),NxTrxrxTNx,1.0);
 
-      R_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
+      R_tension.Scale(ym * crosssec_ * wgt);
 
       //assemble parts from bending
-      R_bending = NTilde_x;
-      R_bending.Scale(2.0 * pow(dTNTilded,2.0) / pow(dTNTilde_xd,3.0));
-      R_bending.Update(-dTNTilde_xxd/pow(dTNTilde_xd,2.0),NTilde_x,1.0);
-      R_bending.Update(-dTNTilded/pow(dTNTilde_xd,2.0),NTilde_aux,1.0);
-      R_bending.Update(1.0/dTNTilde_xd,NTilde_xx,1.0);
-      R_bending.Update(-12.0 * pow(dTNTilded,2.0)/pow(dTNTilde_xd,4.0),NTilde_xddTNTilde_x,1.0);
-      R_bending.Update(4.0 * dTNTilded / pow(dTNTilde_xd,3.0) , NTilde_xddTNTilde_aux , 1.0);
-      R_bending.Update(4.0 * dTNTilded / pow(dTNTilde_xd,3.0) , NTilde_auxddTNTilde_x , 1.0);
-      R_bending.Update(4.0 * dTNTilde_xxd / pow(dTNTilde_xd,3.0) , NTilde_xddTNTilde_x , 1.0);
-      R_bending.Update(- 2.0 / pow(dTNTilde_xd,2.0) , NTilde_xxddTNTilde_x , 1.0);
-      R_bending.Update(- 2.0 / pow(dTNTilde_xd,2.0) , NTilde_xddTNTilde_xx , 1.0);
-      R_bending.Update(- 1.0 / pow(dTNTilde_xd,2.0) , NTilde_auxddTNTilde_aux , 1.0);
+      R_bending = NTildex;
+      R_bending.Scale(2.0 * pow(rxrxx,2.0) / pow(rxrx,3.0));
+      R_bending.Update(-rxxrxx/pow(rxrx,2.0),NTildex,1.0);
+      R_bending.Update(-rxrxx/pow(rxrx,2.0),NTilde,1.0);
+      R_bending.UpdateT(-rxrxx/pow(rxrx,2.0),NTilde,1.0);
+      R_bending.Update(1.0/rxrx,NTildexx,1.0);
+      R_bending.Update(-12.0 * pow(rxrxx,2.0)/pow(rxrx,4.0),NxTrxrxTNx,1.0);
+      R_bending.Update(4.0 * rxrxx / pow(rxrx,3.0) , M1 , 1.0);
+      R_bending.UpdateT(4.0 * rxrxx / pow(rxrx,3.0) , M1 , 1.0);
+      R_bending.Update(4.0 * rxxrxx / pow(rxrx,3.0) , NxTrxrxTNx, 1.0);
+      R_bending.Update(- 2.0 / pow(rxrx,2.0) , M2 , 1.0);
+      R_bending.UpdateT(- 2.0 / pow(rxrx,2.0) , M2 , 1.0);
+      R_bending.Update(- 1.0 / pow(rxrx,2.0) , M3 , 1.0);
 
-      R_bending.Scale(ym * Izz_ * jacobi_ * wgt);
+      R_bending.Scale(ym * Izz_ * wgt / jacobi_);
 
       //shifting values from fixed size matrix to epetra matrix *stiffmatrix
       for(int i = 0; i < dofpn*nnode; i++)
       {
         for(int j = 0; j < dofpn*nnode; j++)
         {
-
           (*stiffmatrix)(i,j) += R_tension(i,j) ;
           (*stiffmatrix)(i,j) += R_bending(i,j) ;
         }
-
-      }	//for(int i = 0; i < dofpn*nnode; i++)
-
+      } //for(int i = 0; i < dofpn*nnode; i++)
     }//if (stiffmatrix != NULL)
+
+    for (int i= 0; i<3; i++)
+    {
+      f1(i)=2*r_x(i)*pow(rxrxx,2.0)/pow(rxrx,3.0)-(r_x(i)*rxxrxx+r_xx(i)*rxrxx)/pow(rxrx,2.0);
+      f2(i)=r_xx(i)/rxrx-r_x(i)*rxrxx/pow(rxrx,2.0);
+      n1(i)=r_x(i)*tension;
+    }
 
     //assemble internal force vector f_internal / Res in thesis Meier
     if (force != NULL)
     {
-      //assemble parts from tension
-      Res_tension = NTilde_xd;
-      Res_tension.Scale(1.0 - 1.0 /pow(dTNTilde_xd,0.5));
-
-      Res_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
-
-      //assemble parts from bending
-      Res_bending = NTilde_xd;
-      Res_bending.Scale(2.0 * pow(dTNTilded,2.0)/pow(dTNTilde_xd,3.0));
-      Res_bending.Update(-dTNTilde_xxd / pow(dTNTilde_xd,2.0),NTilde_xd,1.0);
-      Res_bending.Update(-dTNTilded / pow(dTNTilde_xd,2.0),NTilde_auxd,1.0);
-      Res_bending.Update(1.0 / dTNTilde_xd,NTilde_xxd,1.0);
-
-      Res_bending.Scale(ym * Izz_ * jacobi_ * wgt);
-
-      //cout << "Gaußpunkt: " << numgp << "xi: " << xi << "Gewicht: " << wgt << endl;
-      //cout << "Res_tension alt: " << Res_tension << endl;
-      //cout << "Res_bending alt: " << Res_bending << endl;
+      for (int i=0;i<3;i++)
+      {
+        for (int j=0;j<4;j++)
+        {
+          Res_bending(j*3 + i)+= N_i_x(j)*f1(i) + N_i_xx(j)*f2(i);
+          Res_tension(j*3 + i)+= N_i_x(j)*n1(i);
+        }
+      }
+      Res_bending.Scale(ym * Izz_ * wgt / jacobi_);
+      Res_tension.Scale(ym * crosssec_ * wgt);
 
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < dofpn*nnode; i++)
@@ -679,26 +650,28 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
           (*force)(i) += Res_tension(i) ;
           (*force)(i) += Res_bending(i) ;
       }
-    }	//if (force != NULL)
+    } //if (force != NULL)
 
     //assemble massmatrix if requested
     if (massmatrix != NULL)
     {
       cout << "\n\nWarning: Massmatrix not implemented yet!";
     }//if (massmatrix != NULL)
-  }	//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
-
-/*  const std::string fname = "stiffmatrixele.mtl";
+  //Uncomment the following line to print the elment stiffness matrix to matlab format
+  /*
+  const std::string fname = "stiffmatrixele.mtl";
   cout<<"Printing stiffmatrixele to file"<<endl;
-  LINALG::PrintSerialDenseMatrixInMatlabFormat(fname,*stiffmatrix);*/
+  LINALG::PrintSerialDenseMatrixInMatlabFormat(fname,*stiffmatrix);
+  */
 
+  //with the following lines the conditioning of the stiffness matrix should be improved: its not fully tested up to now!!!
   bool precond = PreConditioning;
   if (precond)
   {
     double length = jacobi_*2.0;
     double radius = pow(crosssec_/M_PI,0.5);
-    //cout << "Ele length, Ele radius: " << length << ", " << radius << endl;
     for (int zeile=0; zeile <2; zeile++)
     {
       for (int spalte=0; spalte<12; spalte++)
@@ -717,6 +690,8 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
     }
   }
 
+  //with the following lines the conditioning of the stiffness matrix can be improved by multiplying the lines and columns with the factors
+  //ScaleFactorLine and ScaleFactorColumn
   double Factor = ScaleFactorLine;
   Factor = Factor * ScaleFactorColumn;
 
@@ -728,345 +703,6 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
     }
     (*force)(zeile)=(*force)(zeile)*ScaleFactorLine;
   }
-
-
-}
-#else
-{
-  //**************************************************************************************************************************************
-  //***************************************Begin: alternative Berechnung des Residuums****************************************************
-  //**************************************************************************************************************************************
-
-       //dimensions of freedom per node
-      const int dofpn = 6;
-
-      //number of nodes fixed for these element
-      const int nnode = 2;
-
-      //matrix for current positions and tangents
-      vector<double> disp_totlag(nnode*dofpn);
-
-      LINALG::Matrix<3,1> r_;
-      LINALG::Matrix<3,1> r_x;
-      LINALG::Matrix<3,1> r_xx;
-
-      LINALG::Matrix<3,1> f1;
-      LINALG::Matrix<3,1> f2;
-      LINALG::Matrix<3,1> n1;
-
-      double rxrxx;
-      double rxxrxx;
-      double rxrx;
-      double tension;
-
-      LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde;
-      LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTildex;
-      LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTildexx;
-
-      LINALG::Matrix<dofpn*nnode,1> NxTrx;
-      LINALG::Matrix<dofpn*nnode,1> NxTrxx;
-      LINALG::Matrix<dofpn*nnode,1> NxxTrx;
-      LINALG::Matrix<dofpn*nnode,1> NxxTrxx;
-
-      LINALG::Matrix<dofpn*nnode,dofpn*nnode> M1;
-      LINALG::Matrix<dofpn*nnode,dofpn*nnode> M2;
-      LINALG::Matrix<dofpn*nnode,dofpn*nnode> M3;
-      LINALG::Matrix<dofpn*nnode,dofpn*nnode> NxTrxrxTNx;
-
-      //Matrices for N_i,xi and N_i,xixi. 2*nnode due to hermite shapefunctions
-      LINALG::Matrix<1,2*nnode> N_i;
-      LINALG::Matrix<1,2*nnode> N_i_x;
-      LINALG::Matrix<1,2*nnode> N_i_xx;
-
-      LINALG::Matrix<3,nnode*dofpn> N_x;
-      LINALG::Matrix<3,nnode*dofpn> N_xx;
-
-      //stiffness due to tension and bending
-      LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_tension;
-      LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_bending;
-
-      //internal force due to tension and bending
-      LINALG::Matrix<nnode*dofpn,1> Res_tension;
-      LINALG::Matrix<nnode*dofpn,1> Res_bending;
-
-      //first of all we get the material law
-      Teuchos::RCP<const MAT::Material> currmat = Material();
-      double ym = 0;
-      //Uncomment the next line for the dynamic case: so far only the static case is implemented
-      //double density = 0;
-
-      //assignment of material parameters; only St.Venant material is accepted for this beam
-      switch(currmat->MaterialType())
-      {
-        case INPAR::MAT::m_stvenant:// only linear elastic material supported
-        {
-          const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-          ym = actmat->Youngs();
-          //Uncomment the next line for the dynamic case: so far only the static case is implemented
-          //density = actmat->Density();
-        }
-        break;
-        default:
-        dserror("unknown or improper type of material law");
-        break;
-      }
-
-      //TODO: The integration rule should be set via input parameter and not hard coded as here
-      //Get integrationpoints for exact integration
-      DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
-
-      //Get DiscretizationType of beam element
-      const DRT::Element::DiscretizationType distype = Shape();
-
-      //clear disp_totlag vector before assembly
-      disp_totlag.clear();
-
-      //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
-      for (int node = 0 ; node < nnode ; node++)
-      {
-        for (int dof = 0 ; dof < dofpn ; dof++)
-        {
-          if(dof < 3)
-          {
-            //position of nodes
-            disp_totlag[node*dofpn + dof] = (Nodes()[node]->X()[dof] + disp[node*dofpn + dof])*ScaleFactorColumn;
-          }
-          else if(dof>=3)
-          {
-            //tangent at nodes
-            disp_totlag[node*dofpn + dof] = (Tref_[node](dof-3) + disp[node*dofpn + dof])*ScaleFactorColumn;
-          }
-        }
-      } //for (int node = 0 ; node < nnode ; node++)
-
-      //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
-      for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-      {
-        //all matrices and scalars are set to zero again!!!
-        //factors for stiffness assembly
-
-        r_.Clear();
-        r_x.Clear();
-        r_xx.Clear();
-
-        f1.Clear();
-        f2.Clear();
-        n1.Clear();
-
-        rxrxx=0;
-        rxxrxx=0;
-        rxrx=0;
-        tension=0;
-
-        NTilde.Clear();
-        NTildex.Clear();
-        NTildexx.Clear();
-
-        NxTrx.Clear();
-        NxTrxx.Clear();
-        NxxTrx.Clear();
-        NxxTrxx.Clear();
-
-        M1.Clear();
-        M2.Clear();
-        M3.Clear();
-        NxTrxrxTNx.Clear();
-
-        N_i.Clear();
-        N_i_x.Clear();
-        N_i_xx.Clear();
-
-        N_x.Clear();
-        N_xx.Clear();
-
-        R_tension.Clear();
-        R_bending.Clear();
-
-        Res_tension.Clear();
-        Res_bending.Clear();
-
-        //Get location and weight of GP in parameter space
-        const double xi = gausspoints.qxg[numgp][0];
-        const double wgt = gausspoints.qwgt[numgp];
-
-        //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-        //DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
-        DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,xi,jacobi_*2.0,distype);
-        DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xx,xi,jacobi_*2.0,distype);
-
-        //calculate r' and r''
-        for (int i=0 ; i < 3 ; i++)
-        {
-          for (int j=0; j<4; j++)
-          {
-            //r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
-            r_x(i,0)+= N_i_x(j) * disp_totlag[3*j + i];
-            r_xx(i,0)+= N_i_xx(j) * disp_totlag[3*j + i];
-          }
-        }
-
-        for (int i= 0; i<3; i++)
-        {
-          rxrxx+=r_x(i)*r_xx(i);
-          rxxrxx+=r_xx(i)*r_xx(i);
-          rxrx+=r_x(i)*r_x(i);
-        }
-
-        tension = 1/jacobi_ - 1/pow(rxrx,0.5);
-
-        for (int i=0; i<3; ++i)
-        {
-          for (int j=0; j<4; ++j)
-          {
-            N_x(i,i+3*j) += N_i_x(j);
-            N_xx(i,i+3*j) += N_i_xx(j);
-            NxTrx(i+3*j)+=N_i_x(j)*r_x(i);
-            NxTrxx(i+3*j)+=N_i_x(j)*r_xx(i);
-            NxxTrx(i+3*j)+=N_i_xx(j)*r_x(i);
-            NxxTrxx(i+3*j)+=N_i_xx(j)*r_xx(i);
-          }
-        }
-
-        NTilde.MultiplyTN(N_x,N_xx);
-        NTildex.MultiplyTN(N_x,N_x);
-        NTildexx.MultiplyTN(N_xx,N_xx);
-
-        for (int i= 0; i<12; i++)
-        {
-          for (int j= 0; j<12; j++)
-          {
-            M1(i,j)+= NxTrx(i)*(NxxTrx(j)+NxTrxx(j));
-            M2(i,j)+= NxxTrxx(i)*NxTrx(j);
-            M3(i,j)+= (NxTrxx(i)+NxxTrx(i))*(NxTrxx(j)+NxxTrx(j));
-            NxTrxrxTNx(i,j)+= NxTrx(i)*NxTrx(j);
-          }
-        }
-
-        //assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
-        if (stiffmatrix != NULL)
-        {
-          //assemble parts from tension
-          R_tension = NTildex;
-          R_tension.Scale(tension);
-          R_tension.Update(1.0 / pow(rxrx,1.5),NxTrxrxTNx,1.0);
-
-          R_tension.Scale(ym * crosssec_ * wgt);
-
-          //assemble parts from bending
-          R_bending = NTildex;
-          R_bending.Scale(2.0 * pow(rxrxx,2.0) / pow(rxrx,3.0));
-          R_bending.Update(-rxxrxx/pow(rxrx,2.0),NTildex,1.0);
-          R_bending.Update(-rxrxx/pow(rxrx,2.0),NTilde,1.0);
-          R_bending.UpdateT(-rxrxx/pow(rxrx,2.0),NTilde,1.0);
-          R_bending.Update(1.0/rxrx,NTildexx,1.0);
-          R_bending.Update(-12.0 * pow(rxrxx,2.0)/pow(rxrx,4.0),NxTrxrxTNx,1.0);
-          R_bending.Update(4.0 * rxrxx / pow(rxrx,3.0) , M1 , 1.0);
-          R_bending.UpdateT(4.0 * rxrxx / pow(rxrx,3.0) , M1 , 1.0);
-          R_bending.Update(4.0 * rxxrxx / pow(rxrx,3.0) , NxTrxrxTNx, 1.0);
-          R_bending.Update(- 2.0 / pow(rxrx,2.0) , M2 , 1.0);
-          R_bending.UpdateT(- 2.0 / pow(rxrx,2.0) , M2 , 1.0);
-          R_bending.Update(- 1.0 / pow(rxrx,2.0) , M3 , 1.0);
-
-          R_bending.Scale(ym * Izz_ * wgt / jacobi_);
-
-          //shifting values from fixed size matrix to epetra matrix *stiffmatrix
-          for(int i = 0; i < dofpn*nnode; i++)
-          {
-            for(int j = 0; j < dofpn*nnode; j++)
-            {
-              (*stiffmatrix)(i,j) += R_tension(i,j) ;
-              (*stiffmatrix)(i,j) += R_bending(i,j) ;
-            }
-          } //for(int i = 0; i < dofpn*nnode; i++)
-        }//if (stiffmatrix != NULL)
-
-        for (int i= 0; i<3; i++)
-        {
-          f1(i)=2*r_x(i)*pow(rxrxx,2.0)/pow(rxrx,3.0)-(r_x(i)*rxxrxx+r_xx(i)*rxrxx)/pow(rxrx,2.0);
-          f2(i)=r_xx(i)/rxrx-r_x(i)*rxrxx/pow(rxrx,2.0);
-          n1(i)=r_x(i)*tension;
-        }
-
-        //assemble internal force vector f_internal / Res in thesis Meier
-        if (force != NULL)
-        {
-          for (int i=0;i<3;i++)
-          {
-            for (int j=0;j<4;j++)
-            {
-              Res_bending(j*3 + i)+= N_i_x(j)*f1(i) + N_i_xx(j)*f2(i);
-              Res_tension(j*3 + i)+= N_i_x(j)*n1(i);
-            }
-          }
-          Res_bending.Scale(ym * Izz_ * wgt / jacobi_);
-          Res_tension.Scale(ym * crosssec_ * wgt);
-
-          //shifting values from fixed size vector to epetra vector *force
-          for(int i = 0; i < dofpn*nnode; i++)
-          {
-              (*force)(i) += Res_tension(i) ;
-              (*force)(i) += Res_bending(i) ;
-          }
-        } //if (force != NULL)
-
-        //assemble massmatrix if requested
-        if (massmatrix != NULL)
-        {
-          cout << "\n\nWarning: Massmatrix not implemented yet!";
-        }//if (massmatrix != NULL)
-      } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-
-      //Uncomment the following line to print the elment stiffness matrix to matlab format
-      /*
-      const std::string fname = "stiffmatrixele.mtl";
-      cout<<"Printing stiffmatrixele to file"<<endl;
-      LINALG::PrintSerialDenseMatrixInMatlabFormat(fname,*stiffmatrix);
-      */
-
-      //with the following lines the conditioning of the stiffness matrix should be improved: its not fully tested up to now!!!
-      bool precond = PreConditioning;
-      if (precond)
-      {
-        double length = jacobi_*2.0;
-        double radius = pow(crosssec_/M_PI,0.5);
-        for (int zeile=0; zeile <2; zeile++)
-        {
-          for (int spalte=0; spalte<12; spalte++)
-          {
-            (*stiffmatrix)(6*zeile,spalte)=(*stiffmatrix)(6*zeile,spalte)*length;
-            (*stiffmatrix)(6*zeile+1,spalte)=(*stiffmatrix)(6*zeile+1,spalte)*pow(length,3.0)/pow(radius,2.0);
-            (*stiffmatrix)(6*zeile+2,spalte)=(*stiffmatrix)(6*zeile+2,spalte)*pow(length,3.0)/pow(radius,2.0);
-            (*stiffmatrix)(6*zeile+4,spalte)=(*stiffmatrix)(6*zeile+4,spalte)*pow(length,2.0)/pow(radius,2.0);
-            (*stiffmatrix)(6*zeile+5,spalte)=(*stiffmatrix)(6*zeile+5,spalte)*pow(length,2.0)/pow(radius,2.0);
-          }
-          (*force)(6*zeile)=(*force)(6*zeile)*length;
-          (*force)(6*zeile+1)=(*force)(6*zeile+1)*pow(length,3.0)/pow(radius,2.0);
-          (*force)(6*zeile+2)=(*force)(6*zeile+2)*pow(length,3.0)/pow(radius,2.0);
-          (*force)(6*zeile+4)=(*force)(6*zeile+4)*pow(length,2.0)/pow(radius,2.0);
-          (*force)(6*zeile+5)=(*force)(6*zeile+5)*pow(length,2.0)/pow(radius,2.0);
-        }
-      }
-
-      //with the following lines the conditioning of the stiffness matrix can be improved by multiplying the lines and columns with the factors
-      //ScaleFactorLine and ScaleFactorColumn
-      double Factor = ScaleFactorLine;
-      Factor = Factor * ScaleFactorColumn;
-
-      for (int zeile=0; zeile <12; zeile++)
-      {
-        for (int spalte=0; spalte<12; spalte++)
-        {
-          (*stiffmatrix)(zeile,spalte)=(*stiffmatrix)(zeile,spalte)*Factor;
-        }
-        (*force)(zeile)=(*force)(zeile)*ScaleFactorLine;
-      }
-
-  //**************************************************************************************************************************************
-  //***************************************End: alternative Berechnung des Residuums******************************************************
-  //**************************************************************************************************************************************
-
-}
-#endif
 
   //Uncomment the next line if the implementation of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
   //FADCheckStiffMatrix(disp, stiffmatrix, force);
