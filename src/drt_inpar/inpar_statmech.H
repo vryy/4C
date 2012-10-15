@@ -45,7 +45,8 @@ namespace INPAR
       statout_structpolymorph, ///< writing special output in order to determine network structure
       statout_densitydensitycorr, ///< writing sepcial output in order to visualize density-density-corr.-function
       statout_octree, ///< writing output for octree visualization and checks
-      statout_loom ///< writing output for loom setup: a) nearest neighbor b) attractive forces c) coverage
+      statout_loom, ///< writing output for loom setup: a) nearest neighbor b) attractive forces c) coverage
+      statout_loomelnrg ///< writing output for filament elastic energy
     };
 
     /// (this enum represents the input file parameter STAT_OUTPUT)

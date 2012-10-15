@@ -498,6 +498,16 @@ void STATMECH::StatMechManager::Output(const int ndim,
       }
     }
     break;
+    case INPAR::STATMECH::statout_loomelnrg:
+    {
+      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
+      {
+        std::ostringstream filename;
+        filename << "./LoomElasticEnergy.dat";
+        LoomOutputElasticEnergy(dis,dt,filename);
+      }
+    }
+    break;
     case INPAR::STATMECH::statout_none:
     default:
     break;
@@ -4254,6 +4264,45 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
 //      }
     }
   }
+  return;
+}
+/*------------------------------------------------------------------------------*                                                 |
+ | simply counts the number of free, one-bonded, and two-bonded crosslinkers    |
+ |                                                        (public) mueller 4/11 |
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& disrow, const double& dt, const std::ostringstream& filename)
+{
+  Epetra_Vector discol(*discret_->DofColMap(), true);
+  LINALG::Export(disrow, discol);
+
+  // Compute internal energy
+  double internalenergy;
+  const RCP<Epetra_Vector> disp = rcp(new Epetra_Vector(disrow));
+  ComputeInternalEnergy(disp, internalenergy,dt, filename, false, false);
+
+  // retrieve distance between fixed end (at x=0) and hoop position (x=x_hoop)
+  if(!discret_->Comm().MyPID())
+  {
+    for(int i=0; i<filamentnumber_->MyLength(); i++)
+    {
+      if((*filamentnumber_)[i]>0)
+      {
+        DRT::Node* ringnode = discret_->lColNode(i);
+        std::vector<int> dofnode = discret_->Dof(ringnode);
+        double xring = discret_->lColNode(i)->X()[0] + discol[discret_->DofColMap()->LID(dofnode[0])];
+
+        FILE* fp = NULL;
+        fp = fopen(filename.str().c_str(), "a");
+        std::stringstream elasticenergy;
+
+        elasticenergy << scientific << std::setprecision(15) << xring << " " << internalenergy <<endl;
+        fprintf(fp, elasticenergy.str().c_str());
+        fclose(fp);
+        break;
+      }
+    }
+  }
+  discret_->Comm().Barrier();
   return;
 }
 

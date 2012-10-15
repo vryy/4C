@@ -226,7 +226,7 @@ public:
   bool DBCStart(Teuchos::ParameterList& params);
 
   //! brief computes the internal energy of the network
-  void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename, bool fillzeros=true);
+  void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename, bool fillzeros=true, bool writefile=true);
 
   //! \brief return number of initial elements
   const int& NumBasisElements() const {return basiselements_;}
@@ -403,6 +403,9 @@ protected:
 
   //! \brief measure the force between two loom filaments and output it
   void LoomOutputAttraction(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
+
+  //! \brief measure the filaments' internal elastic energy and separation between the hoop and the fixed end
+  void LoomOutputElasticEnergy(const Epetra_Vector& disrow, const double& dt, const std::ostringstream& filename);
 
   //! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
   void CrosslinkCount(const std::ostringstream& filename);

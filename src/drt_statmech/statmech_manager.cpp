@@ -2609,7 +2609,7 @@ std::vector<int> STATMECH::StatMechManager::Permutation(const int& N)
 /*----------------------------------------------------------------------*
  | Computes current internal energy of discret_ (public)     cyron 12/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename, bool fillzeros)
+void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename, bool fillzeros, bool writefile)
 {
   ParameterList p;
   p.set("action", "calc_struct_energy");
@@ -2632,7 +2632,7 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
   discret_->ClearState();
   energy = (*energies)(0);
 
-  if(!discret_->Comm().MyPID())
+  if(!discret_->Comm().MyPID() && writefile)
   {
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
