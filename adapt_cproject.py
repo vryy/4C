@@ -85,8 +85,10 @@ def getSymbols(fname,build_type):
                 flags = words[1].split("=")
                 flag = flags[0]
                 status = flags[1]
-                valid_flag = flag[0:2] == "D_"
-                if valid_flag == True and status == "ON":
+                #valid_flag = flag[0:2] == "D_"
+                #if valid_flag == True and status == "ON":
+                #    symbollist.add(flag.split(":")[0])
+                if status == "ON":
                     symbollist.add(flag.split(":")[0])
 
     if build_type == "DEBUG":

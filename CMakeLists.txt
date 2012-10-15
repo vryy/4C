@@ -107,6 +107,12 @@ if (HAVE_Stratimikos)
   add_definitions("-DHAVE_Stratimikos")
 endif (HAVE_Stratimikos)
 
+option (ENABLE_STACKTR "Enable printing of a stacktrace in case of a dserror" ON)
+if (ENABLE_STACKTR)
+  MESSAGE("II Print stacktrace in dserror")
+  add_definitions("-DENABLE_STACKTR")
+endif (ENABLE_STACKTR)
+
 option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" OFF)
 
 #   additional features

@@ -48,6 +48,7 @@ Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/kaiser-openmpi-gcc-1.5.5-acml/lib/cma
     -D D_SHELL8:BOOL=ON \
     -D D_THERMO:BOOL=ON \
     -D D_ALE_BFLOW:BOOL=ON \
+    -D ENABLE_STACKTR:BOOL=OFF \
     -D INCLUDE_INSTALL_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D LIB_INSTALL_DIR:FILEPATH=$LIB_INSTALL_DIR \
     -D Trilinos_DIR:FILEPATH=$Trilinos_PREFIX \

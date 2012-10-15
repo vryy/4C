@@ -40,10 +40,14 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
+#include "drt_dserror.H"
+
 #include <stdexcept>
 
-#include "drt_dserror.H"
 #include <mpi.h>
+#include <execinfo.h>
+#include <unistd.h>
+
 
 static int         latest_line = -1;
 static std::string latest_file = "{dserror_func call without prototype}";
@@ -111,19 +115,31 @@ extern "C"
 void cpp_dserror_func(const char* text, ...)
 {
   int myrank;
-#ifdef PARALLEL
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-#else
-  myrank=0;
-#endif
 
-  char errbuf[2048];
+  char errbuf[4096];
 
   va_list ap;
   va_start(ap, text);
 
   sprintf(errbuf,"PROC %d ERROR in %s, line %i:\n",myrank,latest_file.c_str(),latest_line);
   vsprintf(&errbuf[strlen(errbuf)],text,ap);
+
+#ifdef ENABLE_STACKTR
+// print stacktrace
+  int nptrs;
+  void *buffer[100];
+  char **strings;
+
+  nptrs   = backtrace(buffer, 100);
+  strings = backtrace_symbols(buffer, nptrs);
+
+  sprintf(&errbuf[strlen(errbuf)], "\n\n--- stacktrace ---");
+  for (int j = 0; j < nptrs; ++j)
+    sprintf(&errbuf[strlen(errbuf)], "\n%s", strings[j]);
+
+  free(strings);
+#endif
 
   va_end(ap);
 
@@ -137,19 +153,31 @@ void cpp_dserror_func(const char* text, ...)
 void cpp_dserror_func(const std::string text, ...)
 {
   int myrank;
-#ifdef PARALLEL
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-#else
-  myrank=0;
-#endif
 
-  char errbuf[2048];
+  char errbuf[4096];
 
   va_list ap;
   va_start(ap, text);
 
   sprintf(errbuf,"PROC %d ERROR in %s, line %i:\n",myrank,latest_file.c_str(),latest_line);
   vsprintf(&errbuf[strlen(errbuf)],text.c_str(),ap);
+
+#ifdef ENABLE_STACKTR
+  // print stacktrace
+  int nptrs;
+  void *buffer[100];
+  char **strings;
+
+  nptrs   = backtrace(buffer, 100);
+  strings = backtrace_symbols(buffer, nptrs);
+
+  sprintf(&errbuf[strlen(errbuf)], "\n\n--- stacktrace ---");
+  for (int j = 0; j < nptrs; ++j)
+    sprintf(&errbuf[strlen(errbuf)], "\n%s", strings[j]);
+
+  free(strings);
+#endif
 
   va_end(ap);
 
