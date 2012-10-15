@@ -4206,7 +4206,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fsidyn);
 
   setStringToIntegralParameter<int>("DEBUGOUTPUT","No",
-                                    "Output of unconverged interface values during partitioned FSI iteration.\n"
+                                    "Output of unconverged interface values during FSI iteration.\n"
                                     "There will be a new control file for each time step.\n"
                                     "This might be helpful to understand the coupling iteration.",
                                     tuple<std::string>(
