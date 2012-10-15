@@ -175,6 +175,10 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
   if (disp==null) dserror("Cannot get state vector 'displacement new'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+  for (int i=0; i<14;i++)
+  {
+    mydisp[i] = mydisp[i]*ScaleFactorColumntor;
+  }
 
   // get element velocities (UNCOMMENT IF NEEDED)
   /*
@@ -237,7 +241,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
     //add forces to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 0; i < 3 ; i++)
     {
-      elevec1(insert*(dofpn+1) + i) += (*onoff)[i]*(*val)[i]*curvefac;
+      elevec1(insert*(dofpn+1) + i) += (*onoff)[i]*(*val)[i]*curvefac*ScaleFactorLinetor;
     }
 
     //matrix for current tangent, moment at node and crossproduct
@@ -296,11 +300,11 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
     //add moments to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 3; i < 6 ; i++)
     {
-      elevec1(insert*(dofpn+1) + i) -= crossproduct(i-3,0) / pow(abs_tangent,2.0);
+      elevec1(insert*(dofpn+1) + i) -= crossproduct(i-3,0) / pow(abs_tangent,2.0)*ScaleFactorLinetor;
     }
 
     //There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
-    elevec1(insert*(dofpn+1) + 6) += tTM;
+    elevec1(insert*(dofpn+1) + 6) += tTM*ScaleFactorLinetor;
 
     //assembly for stiffnessmatrix
     LINALG::Matrix<3,3> crossxtangent;
@@ -325,18 +329,20 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
     //all parts have been evaluated at the boundaries which helps simplifying the matrices
     //In contrast to the Neumann part of the residual force here is NOT a factor of (-1) needed, as elemat1 is directly added to the stiffness matrix
     //without sign change
+    double Factor = ScaleFactorLinetor;
+    Factor = Factor * ScaleFactorColumntor;
     for(int i = 3; i < 6 ; i++)
     {
       for(int j = 3; j < 6 ; j++)
       {
-        (*elemat1)(insert*(dofpn+1) + i, insert*(dofpn+1) + j) -= 2.0 * crossxtangent(i-3,j-3) / pow(abs_tangent,4.0);
-        (*elemat1)(insert*(dofpn+1) + i, insert*(dofpn+1) + j) -= spinmatrix(i-3,j-3) / pow(abs_tangent,2.0);
+        (*elemat1)(insert*(dofpn+1) + i, insert*(dofpn+1) + j) -= 2.0 * crossxtangent(i-3,j-3) / pow(abs_tangent,4.0)*Factor;
+        (*elemat1)(insert*(dofpn+1) + i, insert*(dofpn+1) + j) -= spinmatrix(i-3,j-3) / pow(abs_tangent,2.0)*Factor;
       }
     }
 
     for(int j = 3; j < 6 ; j++)
     {
-      (*elemat1)(insert*(dofpn+1) +6, insert*(dofpn+1) + j) -= momentrxrxTNx(0,j-3);
+      (*elemat1)(insert*(dofpn+1) +6, insert*(dofpn+1) + j) -= momentrxrxTNx(0,j-3)*Factor;
     }
 
 
@@ -480,16 +486,16 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass( ParameterList& params,
       if(dof < 3)
       {
         //position of nodes
-        disp_totlag[node*dofpn + dof] = Nodes()[node]->X()[dof] + disp[node*(dofpn+1) + dof];
+        disp_totlag[node*dofpn + dof] = (Nodes()[node]->X()[dof] + disp[node*(dofpn+1) + dof])*ScaleFactorColumntor;
       }
       else if(dof>=3 && dof < 6)
       {
         //tangent at nodes
-        disp_totlag[node*dofpn + dof] = Tref_[node](dof-3) + disp[node*(dofpn+1) + dof];
+        disp_totlag[node*dofpn + dof] = (Tref_[node](dof-3) + disp[node*(dofpn+1) + dof])*ScaleFactorColumntor;
       }
     }
     //twist_totlag[node]= disp[node*(dofpn+1) + 6];
-    twist_totlag[node]= disp[node*(dofpn+1) + 6];
+    twist_totlag[node]= disp[node*(dofpn+1) + 6]*ScaleFactorColumntor;
 
   }	//for (int node = 0 ; node < nnode ; node++)
 
@@ -867,6 +873,19 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass( ParameterList& params,
     }//if (massmatrix != NULL)
 
   }	//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+  //Scaling of Residuum and Tangent for better conditioning
+  double Factor = ScaleFactorLinetor;
+  Factor = Factor * ScaleFactorColumntor;
+  for (int zeile=0; zeile <14; zeile++)
+  {
+    for (int spalte=0; spalte<14; spalte++)
+    {
+      (*stiffmatrix)(zeile,spalte)=(*stiffmatrix)(zeile,spalte)*Factor;
+    }
+    (*force)(zeile)=(*force)(zeile)*ScaleFactorLinetor;
+  }
+
 
   //Uncomment the next line if the implementation of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
   //FADCheckStiffMatrix(disp, stiffmatrix, force);

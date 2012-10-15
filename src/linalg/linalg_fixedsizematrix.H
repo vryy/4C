@@ -2473,6 +2473,7 @@ namespace LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void clearMatrix(value_type* mat)
     {
+      //the memset method is needed for arbitrary precision (cln) data types instead of the fill method
       //std::memset(mat,0,i*j*sizeof(value_type));
       std::fill(mat,mat+i*j,0);
     }

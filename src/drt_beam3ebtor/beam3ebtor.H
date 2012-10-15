@@ -38,6 +38,9 @@ be set to 0, otherwise the axial tension at the boundary would be prescribed. Th
 #include "Epetra_Vector.h"
 #include "../drt_lib/drt_elementtype.H"
 
+#define ScaleFactorLinetor 1;
+#define ScaleFactorColumntor 1;
+
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {

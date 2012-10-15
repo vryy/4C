@@ -25,6 +25,30 @@ As the beam curve has to be C1 it is interpolated with hermitien polynomials of 
 vector of the node (3 dofs) and the tangent vector to the curve at the node (3 dofs). If Dirichlet BC are applied one has to make sure that
 the last three flags refer to the tangent at the node (rotational defree of freedom). The flag of the tangent in beam centerline direction must
 be set to 0, otherwise the axial tension at the boundary would be prescribed.
+
+ARBITRARY PRECISSION: This element offers the method HighPrecissionCalc() which has to be uncommented in Beam3eb::Evaluate. With this method the whole
+FEM calculation can be done (for simple problems) in an element intern routine which calculates with a prescribed arbitrary precision. This can
+be used for debugging reasons to identify the sources of ill-conditioning and rounding errors. All intern methods with the ending ...prec belong to this
+high precission calculation. The following facts have to be considered when doing a high precision calculation:
+
+- for high precision calculations the cln libraries (cln/float.h, cln/io.h, cln/float_io.h, cln/real.h) have to be included which are standard linux
+  libraries for f16 machines (and higher). An instruction manual can be found at: "http://www.ginac.de/CLN/cln.html#SEC_Top". The libraries can be
+  found at "/usr/include/cln" at your f16 machine.
+
+- The cln libraries are not compatible with the Sacado library which offers the FAD (Forward Automatic Differentiation) data type. Therefore
+  automatic differentiation can not be done with arbitrary precision!
+
+- Please make sure that the line -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl " is replaced by -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl -lcln"
+  in your do-configure file.
+
+- There may be some standard methods which are not compatible with arbitrary precision. The only method for which this has been recognized so far
+  is the method std::fill. Therefore the following code block in linalg_fixedsizematrix.H has to be adapted:
+
+      //this line is needed for arbitrary precision (cln) data types
+      std::memset(mat,0,i*j*sizeof(value_type));
+      //this line is needed for FAD data type
+      //std::fill(mat,mat+i*j,0);
+
 *----------------------------------------------------------------------*/
 
 
@@ -39,8 +63,23 @@ be set to 0, otherwise the axial tension at the boundary would be prescribed.
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-
 #include "../drt_lib/drt_elementtype.H"
+
+//#define PRECISION ;           // Flag to switch on arbitrary precision calculation. To use this functionality two
+                                // slight modification in the do-configure file and in linalg_fixesizematrix.H are
+                                // necessary. Read the text above for more information
+#ifdef PRECISION
+#include <cln/float.h>
+#include <cln/io.h>
+#include <cln/float_io.h>
+#include <cln/real.h>
+using namespace cln;
+#endif
+
+#define ScaleFactorLine 1.0;    // Scale factor for each line of the equation system for better conditioning
+#define ScaleFactorColumn 1.0;  // Scale factor for each column of the stiffness matrix for better conditioning
+#define PreConditioning false;  // Flag to switch preconditioning of element stiffness matrix on or off
+//#define ORIGINALCALC ;
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
@@ -332,6 +371,19 @@ private:
   //! Matrix holding tangents at each node in reference configuration
   vector<LINALG::Matrix<3,1> > Tref_;
 
+  // some quantities nessecary for high precission calculation
+  #ifdef PRECISION
+  cl_F jacobiprec_;
+  cl_F crosssecprec_;
+  cl_F Izzprec_;
+  vector<cl_F> Xrefprec_;
+  cl_F Eprec_;
+  cl_F balkenradiusprec_;
+  LINALG::TMatrix<cl_F,3,1> Trefprec_;
+  LINALG::TMatrix<cl_F,12,12> stifftest_;
+  LINALG::TMatrix<cl_F,12,1> restest_;
+  #endif
+
   //! @name methods for initilization of the element
 
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
@@ -356,6 +408,23 @@ private:
                         Epetra_SerialDenseMatrix* massmatrix,
                         Epetra_SerialDenseVector* force);
 
+  #ifdef PRECISION
+  //!calculation of nonlinear stiffness matrix with high precision
+  void eb_nlnstiffmassprec( LINALG::TMatrix<cl_F,12,1>* displocal,
+                            LINALG::TMatrix<cl_F,12,12>* stifflocal,
+                            LINALG::TMatrix<cl_F,12,1>* reslocal,
+                            LINALG::TMatrix<cl_F,6,1>* xreflocal);
+
+  //!calculation of moment Neumann BC with high precision
+  void EvaluateNeumannPrec( LINALG::TMatrix<cl_F,3,1> tangentdisp,
+                            LINALG::TMatrix<cl_F,3,1> mextvec,
+                            LINALG::TMatrix<cl_F,3,1>* fextm,
+                            LINALG::TMatrix<cl_F,3,3>* stiffextm);
+
+  //!calculation of the entire problem with high precision
+  void HighPrecissionCalc();
+  #endif
+
   //!check of stiffness matrix via FAD
   void FADCheckStiffMatrix(vector<double>& disp,
                            Epetra_SerialDenseMatrix* stiffmatrix,
@@ -371,6 +440,14 @@ private:
 
   //! lump mass matrix
   void lumpmass(Epetra_SerialDenseMatrix* emass);
+
+/*  float_precision power(float_precision zahl, float_precision exponent)
+  {
+    if (zahl<float_precision(0.0))
+      return pow(-zahl, exponent);
+    else
+      return pow(zahl, exponent);
+  }*/
 
 
   // don't want = operator

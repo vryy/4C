@@ -247,73 +247,127 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const vector<double>& xrefe,
 
   const int nnode = 2;
 
-  if(!isinit_ || secondinit)
+  //low precission
+
   {
-	  isinit_ = true;
+    if(!isinit_ || secondinit)
+        {
+          //isinit_ = true;
 
-	  //Get DiscretizationType
-	  DRT::Element::DiscretizationType distype = Shape();
+          //Get DiscretizationType
+          DRT::Element::DiscretizationType distype = Shape();
 
-	  //Get integrationpoints for exact integration
-	  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
+          //Get integrationpoints for exact integration
+          DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
 
-	  Tref_.resize(gausspoints.nquad);
+          Tref_.resize(gausspoints.nquad);
 
-	  //create Matrix for the derivates of the shapefunctions at the GP
-	  LINALG::Matrix<1,nnode> shapefuncderiv;
+          //create Matrix for the derivates of the shapefunctions at the GP
+          LINALG::Matrix<1,nnode> shapefuncderiv;
 
-	  //Loop through all GPs and compute jacobi at the GPs
-	  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	  {
-			//Get position xi of GP
-			const double xi = gausspoints.qxg[numgp][0];
+          //Loop through all GPs and compute jacobi at the GPs
+          for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+          {
+            //Get position xi of GP
+            const double xi = gausspoints.qxg[numgp][0];
 
-			//Get derivatives of shapefunctions at GP --> for simplicity here are Lagrange polynomials instead of
-			//Hermite polynomials used to calculate the reference geometry. Since the reference geometry for this
-			//beam element must always be a straight line there is no difference between theses to types of interpolation functions.
-			DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+            //Get derivatives of shapefunctions at GP --> for simplicity here are Lagrange polynomials instead of
+            //Hermite polynomials used to calculate the reference geometry. Since the reference geometry for this
+            //beam element must always be a straight line there is no difference between theses to types of interpolation functions.
+            DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
 
-			Tref_[numgp].Clear();
+            Tref_[numgp].Clear();
 
-			//calculate vector dxdxi
-			for(int node=0; node<nnode; node++)
-			{
-				for(int dof=0; dof<3 ; dof++)
-				{
-					Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3*node+dof];
-				}//for(int dof=0; dof<3 ; dof++)
-			}//for(int node=0; node<nnode; node++)
+            //calculate vector dxdxi
+            for(int node=0; node<nnode; node++)
+            {
+              for(int dof=0; dof<3 ; dof++)
+              {
+                Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+              }//for(int dof=0; dof<3 ; dof++)
+            }//for(int node=0; node<nnode; node++)
 
-			//Store length factor for every GP
-			//note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
-			jacobi_= Tref_[numgp].Norm2();
+            //Store length factor for every GP
+            //note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
+            jacobi_= Tref_[numgp].Norm2();
 
-			Tref_[numgp].Scale(1/jacobi_);
+            Tref_[numgp].Scale(1/jacobi_);
 
-		}//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+          }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
 
-		//compute tangent at each node
-		double norm2 = 0.0;
+          //compute tangent at each node
+          double norm2 = 0.0;
 
-		Tref_.resize(nnode);
+          Tref_.resize(nnode);
 
-		for(int node = 0; node<nnode ; node++)
-		{
+          for(int node = 0; node<nnode ; node++)
+          {
 
-			Tref_[node].Clear();
-			for(int dof = 0; dof< 3 ; dof++ )
-			{
-				Tref_[node](dof) =  xrefe[3+dof] - xrefe[dof];
-			}
-			norm2 = Tref_[node].Norm2();
-			Tref_[node].Scale(1/norm2);
+            Tref_[node].Clear();
+            for(int dof = 0; dof< 3 ; dof++ )
+            {
+              Tref_[node](dof) =  xrefe[3+dof] - xrefe[dof];
+            }
+            norm2 = Tref_[node].Norm2();
+            Tref_[node].Scale(1/norm2);
 
-		}
+          }
 
-		return;
+        }//if(!isinit_)
+  }
+  //end low precission
+  /*//begin high precission
+  {
+    if(!isinit_ || secondinit)
+    {
+      isinit_ = true;
 
-  }//if(!isinit_)
+        for (int i=0; i<3;i++)
+        {
+          Trefprec_(i)="0.0e+0_40";
+        }
+          Trefprec_(0) = "1.0e+0_40";
+          jacobiprec_ = "10.0_40";
+          Izzprec_ = "0.785398_40";
+          crosssecprec_ = "3.14159_40";
+
+  //Xrefprec_.resize(6);
+
+
+  for (int i=0;i<6;i++)
+  {
+
+    std::ostringstream strs;
+    strs << std::scientific << std::setw( 12 ) << xrefe[i];
+    std::string str = strs.str();
+    //std::string str2 = str.substr( 0, 8 )+ "_40";
+    std::string str2 = str + "_40";
+    //cout << "xrefe" << i << ": "<< xrefe[i] << endl;
+    //cout << "str2: " << str2 << endl;
+    if(xrefe[i]==0.0)
+      Xrefprec_[i]="0.0_40";
+    else
+    Xrefprec_[i]= str2.c_str();
+    //cout << "Xrefprec_: " << Xrefprec_[i] << endl;
+
+  }
+
+
+        jacobiprec_ = cl_float(0.0,float_format(40));
+        for (int i=0;i<3;i++)
+        {
+          jacobiprec_+= Trefprec_(i)*Trefprec_(i);
+        }
+        jacobiprec_= sqrt(jacobiprec_);
+
+        Trefprec_.Scale(cl_float(1.0,float_format(40))/jacobiprec_);
+
+
+
+    }//if(!isinit_)
+  }//end high precission*/
+  return;
 
 }//DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry()
 
