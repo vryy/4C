@@ -351,7 +351,7 @@ private:
      clonewizard->CreateMatchingDiscretization(sourcedis,targetdis,matmap);
    }
    if (comm.MyPID()==0)
-     cout<<"Created discretization "<<sourcedis->Name()<<" from discretization "<<targetdis->Name()<<" in...."
+     cout<<"Created discretization "<<targetdis->Name()<<" as a clone of discretization "<<sourcedis->Name()<<" in...."
      <<time.ElapsedTime() << " secs\n\n";
 
    return;
