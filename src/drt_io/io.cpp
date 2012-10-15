@@ -1114,18 +1114,17 @@ void IO::DiscretizationWriter::WriteElementData()
     if (fool->second<1) dserror("Dimension of data must be at least 1");
 
   // loop all names aquired form the elements and fill data vectors
-  std::vector<double> eledata(0);
   for (fool = names.begin(); fool!= names.end(); ++fool)
   {
     const int dimension = fool->second;
-    eledata.resize(dimension);
+    std::vector<double> eledata(dimension);
 
     // MultiVector stuff from the elements is put in
     Epetra_MultiVector sysdata(*elerowmap,dimension,true);
 
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {
-      // zero is the default value for different material laws where not all write element data
+      // zero is the default value if not all elements write the same element data
       for (int idim=0; idim<dimension; ++idim) eledata[idim] = 0.0;
 
       // get data for a given name from element & put in sysdata
