@@ -1103,7 +1103,7 @@ void IO::DiscretizationWriter::WriteElementData()
     // get names and dimensions from every element
     dis_->lRowElement(i)->VisNames(names);
   }
-  
+
   // By applying GatherAll we get the combined map including all elemental values
   // which where found by VisNames
   const Epetra_Comm& comm = dis_->Comm();
@@ -1119,13 +1119,15 @@ void IO::DiscretizationWriter::WriteElementData()
   {
     const int dimension = fool->second;
     eledata.resize(dimension);
-    for (int i=0; i<dimension; ++i) eledata[i] = 0.0;
 
     // MultiVector stuff from the elements is put in
     Epetra_MultiVector sysdata(*elerowmap,dimension,true);
 
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {
+      // zero is the default value for different material laws where not all write element data
+      for (int idim=0; idim<dimension; ++idim) eledata[idim] = 0.0;
+
       // get data for a given name from element & put in sysdata
       dis_->lRowElement(i)->VisData(fool->first,eledata);
       if ((int)eledata.size() != dimension)
