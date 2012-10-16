@@ -76,6 +76,7 @@ high precission calculation. The following facts have to be considered when doin
 using namespace cln;
 #endif
 
+//#define SIMPLECALC ;             // simplified residuum and stiffness calculation for the small tension case
 #define ScaleFactorLine 1.0;    // Scale factor for each line of the equation system for better conditioning
 #define ScaleFactorColumn 1.0;  // Scale factor for each column of the stiffness matrix for better conditioning
 #define PreConditioning false;  // Flag to switch preconditioning of element stiffness matrix on or off
@@ -257,7 +258,6 @@ public:
                    DRT::INPUT::LineDefinition* linedef);
 
   //@}
-
 
   //! @name Evaluation methods
 
