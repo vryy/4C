@@ -365,9 +365,9 @@ DLINE                           0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           2
 //                              anode
-E 9 - pot 1.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 -964.853399 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
+E 9 - pot 1.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
 //                              cathode
-E 10 - pot 0.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 -964.853399 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
+E 10 - pot 0.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D

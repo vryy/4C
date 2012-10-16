@@ -139,10 +139,10 @@ XFLUIDFLUID_TIMEINT             Xff_TimeInt_ProjIfMoved         // Xff_TimeInt_F
 MONOLITHIC_XFFSI_APPROACH xffsi_fixedALE_partitioned// xffsi_full_newton // xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 1000000  NUE 0.3 DENS 1 THEXPANS 0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.3 DENS 1 THEXPANS 0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD xfluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
-------------------------------------------------------------CURVE1
+----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0 t1 1.0 t2 1.0
 CURVE1 on EXPR FUNC 0.03*t t1 2.0 t2 55
 ----------------------------------------------------------------------CURVE2
@@ -182,13 +182,13 @@ E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // bgFluid volume
-E 1 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid 2 volume
-E 2 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // Fluid 2 volume
-E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
 // Fluid 2 xfem

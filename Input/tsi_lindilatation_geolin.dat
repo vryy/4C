@@ -280,7 +280,7 @@ DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            1
 // homogeneous heating of the body (heating of 1K)
-E 1 - 1 1 294.0 none 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 294.0 CURVE none FUNCT 0
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
 DLINE                           0
 -------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
