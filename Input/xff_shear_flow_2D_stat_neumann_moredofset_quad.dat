@@ -163,17 +163,17 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // Fluid 1 upper surface
-E 1 - 4 1 1 1 0 5.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid 1 lower surface
-E 2 - 4 1 1 1 0 4.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid 1 inflow
-E 3 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 1 0 0 0 
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // Fluid 1 volume
-E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // Fluid 2 volume
-E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
 // Fluid 2 surfaces

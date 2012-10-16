@@ -129,7 +129,7 @@ DVOL                            0
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
----------------------------------------------------------DNODE-NODE TOPOLOGY 
+---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 5 DNODE 2
 NODE 6 DNODE 3

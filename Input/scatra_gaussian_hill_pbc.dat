@@ -174,7 +174,7 @@ DLINE                           0
 DSURF                           0
 ------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
 DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS 
+------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           2
 //                              inflow
 E 1 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9

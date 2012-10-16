@@ -130,23 +130,23 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 //                              fixxz
-E 1 - 3 1 0 1 0.0 0.0 0.0           none none none 0 0 0 
-//                        fixyz
-E 2 - 3 0 1 1 0.0 0.0 0.0           none none none 0 0 0 
-//                        topsymy
-E 3 - 3 0 1 1 0.0 0.0 0.002666666   none none 1    0 0 0 
-//                        topsymx
-E 4 - 3 1 0 1 0.0 0.0 0.002666666   none none 1    0 0 0 
+E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//                              fixyz
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//                              topsymy
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.002666666 CURVE none none 1 FUNCT 0 0 0
+//                              topsymx
+E 4 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.002666666 CURVE none none 1 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 //                              bottom
-E 1 - 3 0 0 1 0.0     0.0 0.0 	  none none none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 //                              top
-E 2 - 3 0 0 1 0.0 0.0 0.002666666 none none 1    0 0 0 
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.002666666 CURVE none none 1 FUNCT 0 0 0
 //                              symy
-E 4 - 3 0 1 0 0.0     0.0 0.0     none none none 0 0 0 
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 //                              symx
-E 5 - 3 1 0 0 0.0     0.0 0.0     none none none 0 0 0 
+E 5 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

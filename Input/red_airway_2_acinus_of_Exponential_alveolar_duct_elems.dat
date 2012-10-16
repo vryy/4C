@@ -7,9 +7,9 @@ NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ReducedDimensionalAirWays
 NUMFIELD                        1
-RESTART                        0 // 599
+RESTART                         0                               // 599
 --------------------------------------------------------------------------IO
------------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC 
+-----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      CrankNicolson
 NUMSTEP                         600
@@ -80,12 +80,12 @@ E 3 - pressure 0.0 1
 4 RED_ACINUS LINE2 3 5 MAT 2 TYPE Exponential AcinusVolume 0.1116 AlveolarDuctVolume 0.0372
 5 RED_ACINUS LINE2 4 6 MAT 2 TYPE Exponential AcinusVolume 0.1488 AlveolarDuctVolume 0.0372
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD -5.0  0.0 0.0
-NODE 2 COORD  0.0  0.0 0.0
-NODE 3 COORD  2.5  2.5 0.0
-NODE 4 COORD  2.5 -2.5 0.0
-NODE 5 COORD  3.0  2.5 0.0
-NODE 6 COORD  3.0 -2.5 0.0
+NODE 1 COORD -5.0 0.0 0.0
+NODE 2 COORD 0.0 0.0 0.0
+NODE 3 COORD 2.5 2.5 0.0
+NODE 4 COORD 2.5 -2.5 0.0
+NODE 5 COORD 3.0 2.5 0.0
+NODE 6 COORD 3.0 -2.5 0.0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 5 DNODE 2

@@ -34,15 +34,15 @@ FILESTEPS                       1000
 ------------------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER			1
+LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     0
-NLNSOL                          fullnewton                      
+NLNSOL                          fullnewton
 TIMESTEP                        0.01
 NUMSTEP                         5
-MAXTIME                         0.1                             
+MAXTIME                         0.1
 DAMPING                         no
 M_DAMP                          0.001
 K_DAMP                          0.0001
@@ -58,7 +58,7 @@ MAXITER                         100
 UZAWAPARAM                      1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Aztec_MSR                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
@@ -111,23 +111,23 @@ DPOINT                          0
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           17
-E 1 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 2 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 3 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 9 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 10 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 14 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 15 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 16 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 17 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 18 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 20 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 21 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 24 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 26 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 27 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 28 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
-E 29 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 10 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 14 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 15 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 16 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 17 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 18 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 20 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 21 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 24 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 26 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 27 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 28 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 29 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
@@ -138,7 +138,7 @@ DLINE                           0
 DSURF                           2
 E 5 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
 E 7 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
-------------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
+-------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
 DSURF                           1
 E 13 - stiff 1.0e3 offset 0.0 lin
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
@@ -19915,4 +19915,4 @@ NODE 5500 COORD -16.9669470958 -1.06746977491 9.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 -------------------------------------------------------------------------END
-// END
+//                              END

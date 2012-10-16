@@ -175,9 +175,9 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 // xFluid inflow
-E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 1 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
 // xFluid upper and lower surface
-E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -195,7 +195,7 @@ DLINE                           0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
 // Fluid xfem
-E 2 - 4 1 1 1 0 0.2 0 0.0 0.0 1 none none none 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // Fluid volume

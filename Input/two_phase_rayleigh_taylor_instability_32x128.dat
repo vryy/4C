@@ -194,54 +194,54 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // left point
-E 1 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
-E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
-E 3 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
-E 4 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
-E 5 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
-E 6 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
-E 7 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
-E 8 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           12
 // line top front
-E 1 -  4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line bottom font
-E 2 -  4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line bottom back
-E 3 -  4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line top back
-E 4 -  4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 4 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line left top
-E 5 -  4 1 1 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 5 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line left front
-E 6 -  4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 6 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line left bottom
-E 7 -  4 1 1 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 7 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line left back
-E 8 -  4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 8 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line right top
-E 9 -  4 1 1 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 9 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line right front
-E 10 - 4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 10 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line right bottom
-E 11 - 4 1 1 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 11 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line right back
-E 12 - 4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
--------------------------------------------DESIGN SURF DIRICH CONDITIONS
+E 12 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top
-E 1 - 4 0 1 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface bottom
-E 2 - 4 0 1 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface left
-E 3 - 4 1 0 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 3 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface right
-E 4 - 4 1 0 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 4 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface front
-E 5 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface back
-E 6 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

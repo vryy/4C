@@ -139,7 +139,7 @@ COUPVARIABLE                    Temperature                     // Displacement,
 ITEMAX                          100
 MAXTIME                         1.0
 NUMSTEP                         2000
-NORM_INC                        Abs  // Rel
+NORM_INC                        Abs                             // Rel
 RESTARTEVRY                     1
 TIMESTEP                        0.1
 UPRES                           1
@@ -289,7 +289,7 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // left surface fixed
-E 4 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 E 1 - 3 0 1 1 0.0 0.0 0.0 none none none 0 0 0

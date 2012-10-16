@@ -40,30 +40,30 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
------------------------------------------------------FLUID DYNAMIC
+---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD     field_by_function //zero_field
-STARTFUNCNO      1
-TIMEINTEGR       One_Step_Theta
-NONLINITER       Newton
-ITEMAX           10
-CONVCHECK        L_2_norm
-CONVTOL          1.0E-13
-UPRES            1
-RESTARTEVRY      5
-NUMSTEP          80
-NUMSTASTEPS      0
-MAXTIME          2.0               // 2.0 * (T=1.0)
-TIMESTEP         0.025             // 80 timesteps with 0.025
-THETA            0.5               //0.5
-START_THETA      1.0               // start theta = 1.0
-STARTINGALGO     One_Step_Theta
-ALPHA_F          1.00
-ALPHA_M          1.00
-LIFTDRAG         yes
-ADAPTCONV        Yes
-ADAPTCONV_BETTER 0.1
-SIMPLER          No
+INITIALFIELD field_by_function //zero_field
+STARTFUNCNO                     1
+TIMEINTEGR                      One_Step_Theta
+NONLINITER                      Newton
+ITEMAX                          10
+CONVCHECK                       L_2_norm
+CONVTOL                         1.0E-13
+UPRES                           1
+RESTARTEVRY                     5
+NUMSTEP                         80
+NUMSTASTEPS                     0
+MAXTIME                         2.0                             // 2.0 * (T=1.0)
+TIMESTEP                        0.025                           // 80 timesteps with 0.025
+THETA 0.5 //0.5
+START_THETA                     1.0                             // start theta = 1.0
+STARTINGALGO                    One_Step_Theta
+ALPHA_F                         1.00
+ALPHA_M                         1.00
+LIFTDRAG                        yes
+ADAPTCONV                       Yes
+ADAPTCONV_BETTER                0.1
+SIMPLER                         No
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        edge_based
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Barrenechea_Franca_Valentin_Wall
@@ -72,7 +72,7 @@ TRANSIENT                       no_transient
 PSPG                            no_pspg
 SUPG                            no_supg//yes_supg
 VSTAB                           no_vstab
-CSTAB                           no_cstab //cstab_qs //cstab_qs
+CSTAB no_cstab //cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------FSI DYNAMIC
@@ -85,22 +85,22 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY                 xfluid_moving_boundary      // moving_boundary
+XFLUID_BOUNDARY                 xfluid_moving_boundary          // moving_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_zero
-INTERFACE_VEL         interface_vel_by_disp
-INTERFACE_DISP        interface_disp_by_funct
-DISP_FUNCT_NO         3
-DISP_CURVE_NO         1
+INTERFACE_VEL                   interface_vel_by_disp
+INTERFACE_DISP                  interface_disp_by_funct
+DISP_FUNCT_NO                   3
+DISP_CURVE_NO                   1
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 VISC_STAB_FAC                   10.0
-VISC_STAB_SCALING               visc_div_by_hk // inv_hk // const
-VISC_STAB_HK                    vol_equivalent // vol_div_by_surf // longest_ele_length
+VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
+VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
 CONV_STAB_FAC                   1.0
-CONV_STAB_SCALING               abs_normal_vel //abs_normal_vel // inflow // const // none
+CONV_STAB_SCALING abs_normal_vel //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.1 // in [0.1;0.5]
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
+GHOST_PENALTY_FAC               0.1                             // in [0.1;0.5]
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -110,9 +110,9 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 //                              MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1.0-cos(2.0*pi*t/1.0))  t1 0.0 t2 100.0
+CURVE1 on EXPR FUNC 0.5*(1.0-cos(2.0*pi*t/1.0)) t1 0.0 t2 100.0
 ----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC -0.1*t  t1 0.0 t2 100.0
+CURVE2 on EXPR FUNC -0.1*t t1 0.0 t2 100.0
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
@@ -126,9 +126,9 @@ FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //5.0+30.0*y+60.0*z
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
-------------------------------------------------------------FUNCT3 // displacement function
+---------------------------------------------FUNCT3 // displacement function
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -0.75
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
+FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT4
@@ -144,7 +144,7 @@ DSURF                           1
 // surface inflow
 E 3 - none 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Mid 0 0 0 0 0 0
 //-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-//DVOL                            1
+//DVOL                          1
 //E 1 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Mid 0 0 0 0 0 0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
 DPOINT                          0
@@ -187,16 +187,16 @@ DLINE                           2
 // line outflow back
 //E 8 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // top edges side walls
-E 9 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 9 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // bottom edges side walls
-E 10 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 10 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 // surface top
-E 1 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //E 1 - 0 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface bottom
-E 2 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //E 2 - 1 0 0 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface inflow
 //E 3 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
@@ -204,10 +204,10 @@ E 2 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 
 //E 4 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //E 4 - 1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface front
-E 5 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //E 5 - 1 0 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface back
-E 6 - 6 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //E 6 - 1 0 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0

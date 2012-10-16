@@ -167,45 +167,45 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // vertex bottom front right
-E 1 - 3 0 1 1 0.0 -0.1 0.0 none 2 none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // vertex bottom front left
-E 2 - 3 1 1 1 0.0 -0.1 0.0 none 2 none 0 0 0 
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // vertex bottom back right
-E 3 - 3 0 1 0 0.0 -0.1 0.0 none 2 none 0 0 0 
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // vertex bottom back left
-E 4 - 3 1 1 0 0.0 -0.1 0.0 none 2 none 0 0 0 
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // vertex top front right
-E 5 - 3 0 1 1 0.0 0.1  0.0 none 2 none 0 0 0 
+E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // vertex top front left
-E 6 - 3 1 1 1 0.0 0.1  0.0 none 2 none 0 0 0 
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // vertex top back right
-E 7 - 3 0 1 0 0.0 0.1  0.0 none 2 none 0 0 0 
+E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // vertex top back left
-E 8 - 3 1 1 0 0.0 0.1  0.0 none 2 none 0 0 0 
+E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           8
 // edge bottom front
-E 1 - 3 0 1 1 0.0 -0.1 0.0 none 2 none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // edge bottom back
-E 2 - 3 0 1 0 0.0 -0.1 0.0 none 2 none 0 0 0 
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // edge bottom left
-E 3 - 3 1 1 0 0.0 -0.1 0.0 none 2 none 0 0 0 
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // edge bottom right
-E 4 - 3 0 1 0 0.0 -0.1 0.0 none 2 none 0 0 0 
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // edge top front
-E 5 - 3 0 1 1 0.0 0.1  0.0 none 2 none 0 0 0 
+E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // edge top back
-E 6 - 3 0 1 0 0.0 0.1  0.0 none 2 none 0 0 0 
+E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // edge top left
-E 7 - 3 1 1 0 0.0 0.1  0.0 none 2 none 0 0 0 
+E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 // edge top right
-E 8 - 3 0 1 0 0.0 0.1  0.0 none 2 none 0 0 0 
+E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // surface bottom
-E 1 - 3 0 1 0 0.0 -0.1 0.0 none 2 none 0 0 0 
-// surface top                                 
-E 2 - 3 0 1 0 0.0 0.1  0.0 none 2 none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+// surface top
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

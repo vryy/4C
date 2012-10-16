@@ -185,7 +185,7 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           1
-E 4 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -203,7 +203,7 @@ DSURF                           2
 E 1 - 1 0 1 0 0 0 0 0.0 -0.5 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 //E 5 - 2 0 1 0 0 0 0 0.0 -1.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 E 6 - 1 0 1 0 0 0 0 0.0 -0.5 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS 
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -4244,8 +4244,8 @@ NODE 762 COORD 0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+01
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_NeoHooke
-MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.001
-MAT 2   ELAST_CoupNeoHooke YOUNG 1000000 NUE 0.45
+MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
+MAT 2 ELAST_CoupNeoHooke YOUNG 1000000 NUE 0.45
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 2.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 2.0 0.0

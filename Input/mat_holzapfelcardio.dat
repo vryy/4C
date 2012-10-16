@@ -130,27 +130,27 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // structure vertex front right
-E 1 - 3 0 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // structure vertex front left
-E 2 - 3 1 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // structure vertex back right
-E 3 - 3 0 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // structure vertex back left
-E 4 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0 
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 // structure edge front
-E 1 - 3 0 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // structure edge back
-E 2 - 3 0 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // structure edge left
-E 3 - 3 1 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // structure edge right
-E 4 - 3 0 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // structure surface bottom
-E 1 - 3 0 1 0 0.0 0.0 0.0 none none none 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

@@ -288,7 +288,7 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 // exterior nodes
-E 1 - 4  1 1 1 0  1.0 1.0 1.0 0.0  none none none none  1 2 3 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 1.0 0.0 CURVE none none none none FUNCT 1 2 3 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS

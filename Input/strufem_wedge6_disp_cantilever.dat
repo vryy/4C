@@ -171,7 +171,7 @@ DPOINT                          0
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 6 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
@@ -4239,8 +4239,8 @@ NODE 1056 COORD 5.11197128013 -1.0 4.8299866628
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 0.001
-MAT 3   ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.001
+MAT 3 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 ----------------------------------------------------------RESULT DESCRIPTION
 // with NUMSTEP=300
 //STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE 2.307328550810935042e+01 TOLERANCE 1e-5

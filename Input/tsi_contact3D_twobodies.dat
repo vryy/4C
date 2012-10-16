@@ -317,9 +317,9 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //                              dirichlet1
-E 1 - 3 1 1 1 0.0 0.0 -0.15 none none 1    0 0 0 
-//                        dirichlet2
-E 2 - 3 1 1 1 0.0 0.0  0.0  none none none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -0.15 CURVE none none 1 FUNCT 0 0 0
+//                              dirichlet2
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -343,9 +343,9 @@ DLINE                           0
 ----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
 DSURF                           2
 //                              dirichlet1
-E 1 - 3 1 0 0 20.0 0.0 0.0 none none none 0 0 0
-//                        dirichlet2
-E 2 - 3 1 0 0 40.0 0.0 0.0 none none none 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 20.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//                              dirichlet2
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 40.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
 -------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D

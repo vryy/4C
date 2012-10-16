@@ -308,17 +308,17 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              fix_pressure
-E 1 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 //                              left_electrode
-E 1 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 //                              right_electrode
-E 2 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 //                              bottom_phi
-E 3 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 //                              top_phi
-E 4 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
@@ -326,9 +326,9 @@ DVOL                            0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 1 - pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 -964.85 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
+E 1 - pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
 //                              anode
-E 2 - pot 0.5 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 -964.85 gamma 1.0 refcon 1.0 dlcap 0.0
+E 2 - pot 0.5 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dlcap 0.0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

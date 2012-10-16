@@ -78,8 +78,8 @@ SOLVER                          UMFPACK
 NAME                            Meshtying_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 7.8e-6
-MAT 2   ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
+MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6
+MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------------------CURVE2
@@ -124,11 +124,11 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              dbx_xy
-E 1 - 2 1 1 0.0 0.0 none none 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              dbc_y
-E 1 - 2 0 1 0 0 0.0 0.0 none none 0 0
+E 1 - NUMDOF 2 ONOFF 0 1 VAL 0 0 CURVE 0.0 0.0 FUNCT none none
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS

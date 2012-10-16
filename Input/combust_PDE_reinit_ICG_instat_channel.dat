@@ -317,7 +317,7 @@ DLINE                           0
 DSURF                           0
 -------------------------------DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS
 DLINE                           0
-----------------------------DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS 
+----------------------------DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS
 DSURF                           0
 -----------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
 DSURF                           0

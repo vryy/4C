@@ -99,8 +99,8 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           2
-E 1 -  3 1 1 1 0.0 0.0  0.0 none none none 0 0 0 
-E 12 - 3 1 1 1 1.0 1.0 -1.0 1    1    2    0 0 0 
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 CURVE 1 1 2 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -4463,10 +4463,10 @@ NODE 1472 COORD -1.999999911791123e+00 -1.999999911791122e+00 1.000000000000000e
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
-MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 7.8e-6
-MAT 3   ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
-MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 4 DENS 7.8e-6
-MAT 4   ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
+MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
+MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
+MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.8 FACTOR 0.0 0.6

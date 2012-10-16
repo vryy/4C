@@ -64,13 +64,13 @@ TOLCONSTR                       1.0E-03
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         25
-//-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-//GENAVG                          ImrLike
-//ALPHA_F                         0
-//ALPHA_M                         0
-//BETA                            0.5
-//GAMMA                           1
--------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+//-------------------------------------------------STRUCTURAL  DYNAMIC/GENALPHA
+//GENAVG                        ImrLike
+//ALPHA_F                       0
+//ALPHA_M                       0
+//BETA                          0.5
+//GAMMA                         1
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
 -------------------------------------------------------MESHTYING AND CONTACT
 LINEAR_SOLVER                   2
@@ -106,12 +106,12 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          2
-E 1 - 6 1 1 1 1 1 1 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-E 2 - 6 1 1 1 1 1 1 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           1
-E 2 - 6 1 1 1 0 0 0 -0.4 0 -2.5 0.0 0.0 0.0 1 none 1 none none none 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.4 0 -2.5 0.0 0.0 0.0 CURVE 1 none 1 none none none FUNCT 0 0 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 20 DNODE 2
@@ -244,8 +244,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -2.35333102583439896e-01 TOLERANCE 1e-6  
-STRUCTURE DIS 1 NODE 8 POSITION dispy NAME dispy VALUE  8.03771982791052081e-02 TOLERANCE 1e-6 
-STRUCTURE DIS 1 NODE 8 POSITION dispz NAME dispz VALUE -1.64146681279954576e+00 TOLERANCE 1e-6 
+STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -2.35333102583439896e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 8 POSITION dispy NAME dispy VALUE 8.03771982791052081e-02 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 8 POSITION dispz NAME dispz VALUE -1.64146681279954576e+00 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

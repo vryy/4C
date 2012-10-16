@@ -101,20 +101,20 @@ NDSURF                          2
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          6
-E 1 - 3 1 1 0 0.0 0.0 0.0 none none none 
-E 2 - 3 1 1 0 0.0 0.0 0.0 none none none 
-E 3 - 3 1 0 0 0.0 0.0 0.0 none none none 
-E 4 - 3 1 0 0 0.0 0.0 0.0 none none none 
-E 5 - 3 1 1 0 0.0 0.0 0.0 none none none 
-E 6 - 3 1 1 0 0.0 0.0 0.0 none none none 
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           6
-E 1 - 3 0 1 0 0.0 0.0 0.0 none none none 
-E 2 - 3 1 0 0 0.0 0.0 0.0 none none none 
-E 4 - 3 1 0 0 0.0 0.0 0.0 none none none 
-E 5 - 3 1 1 0 0.0 0.0 0.0 none none none 
-E 6 - 3 1 0 0 0.0 0.0 0.0 none none none 
-E 8 - 3 1 0 0 0.0 0.0 0.0 none none none 
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 6 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 8 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS

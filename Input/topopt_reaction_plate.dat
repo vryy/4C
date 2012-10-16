@@ -35,7 +35,7 @@ MAX_ITER                        1
 MATID                           2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
--------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
+------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
 TESTCASE                        test_primal
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
@@ -80,11 +80,11 @@ VSTAB                           no_vstab
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver_for_Top_Opt
 SOLVER                          UMFPACK
------------------------------------------------CLONING MATERIAL MAP
+--------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
----------------------------------------------------------MATERIALS
-MAT     1       MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0
-MAT     2       MAT_opti        MINPORO 1       MAXPORO 1       SMEARFAC        1
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
+MAT 2 MAT_opti MINPORO 1 MAXPORO 1 SMEARFAC 1
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
@@ -132,13 +132,13 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          3
-E 1 - 3 1 1 0 1.0 1.0 0.0 none none none 3 4 0 
-E 2 - 3 1 1 0 1.0 1.0 0.0 none none none 3 4 0 
-E 3 - 3 1 1 0 1.0 1.0 0.0 none none none 3 4 0 
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
-E 1 - 3 1 1 0 1.0 1.0 0.0 none none none 3 4 0 
-E 2 - 3 1 1 0 1.0 1.0 0.0 none none none 3 4 0 
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 28 POSITION velx NAME velx VALUE -0.05 TOLERANCE 1.0e-13
 FLUID DIS 1 NODE 28 POSITION vely NAME vely VALUE 0.4 TOLERANCE 1.0e-13

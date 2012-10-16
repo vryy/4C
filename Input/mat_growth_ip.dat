@@ -149,8 +149,8 @@ ML_SMOTIMES 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_GROWTH DENS 0.0001 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0 TOL 1.0E-10 KPLUS 1.0 MPLUS 2.0 KMINUS 2.0 MMINUS 3.0 HOMMANDEL 0.0
-MAT 2 MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 0
-MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3 
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0
+MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0. 1.
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 100.0 FACTOR 1. 1.
@@ -196,45 +196,45 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // front upper left
-E 1 - 3 0 1 0 0.0 0.0  0.0 none none none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // back upper left
-E 2 - 3 1 1 0 0.0 0.0  0.0 none none none 0 0 0 
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // front lower left
-E 3 - 3 0 1 0 0.0 0.0  0.0 none none none 0 0 0 
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // back lower left
-E 4 - 3 1 1 1 0.0 0.0  0.0 none none none 0 0 0 
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // front upper right
-E 5 - 3 0 1 0 0.0 0.25 0.0 none 1    none 0 0 0 
-// back upper right                      
-E 6 - 3 0 1 0 0.0 0.25 0.0 none 1    none 0 0 0 
-// front lower right                     
-E 7 - 3 0 1 0 0.0 0.25 0.0 none 1    none 0 0 0 
-// back lower right                      
-E 8 - 3 0 1 0 0.0 0.25 0.0 none 1    none 0 0 0 
+E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// back upper right
+E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// front lower right
+E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// back lower right
+E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           8
 // right upper
-E 1 - 3 0 1 0 0.0 0.25 0.0 none 1    none 0 0 0 
-// right lower                           
-E 2 - 3 0 1 0 0.0 0.25 0.0 none 1    none 0 0 0 
-// right back                            
-E 3 - 3 0 1 0 0.0 0.25 0.0 none 1    none 0 0 0 
-// right front                           
-E 4 - 3 0 1 0 0.0 0.25 0.0 none 1    none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// right lower
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// right back
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// right front
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
 // left upper
-E 5 - 3 0 1 0 0.0 0.0  0.0 none none none 0 0 0 
-// left lower              
-E 6 - 3 0 1 0 0.0 0.0  0.0 none none none 0 0 0 
-// left back               
-E 7 - 3 1 1 00 0.0 0.0  0.0 none none none 0 0 0 
-// left front              
-E 8 - 3 0 1 0 0.0 0.0  0.0 none none none 0 0 0 
+E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// left lower
+E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// left back
+E 7 - NUMDOF 3 ONOFF 1 1 00 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// left front
+E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // left surface
-E 1 - 3 0 1 0 0.0 0.0  0.0 none none none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // right surface
-E 2 - 3 0 1 0 0.0 0.25 0.0 none none none 0 0 0 
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

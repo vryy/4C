@@ -6,9 +6,9 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: 2D Driven cavity with flexible bottom
-FSI:        iter_monolithicstructuresplit
-Fluid:      One_Step_Theta
-Structure:  GenAlpha
+FSI:                            iter_monolithicstructuresplit
+Fluid:                          One_Step_Theta
+Structure:                      GenAlpha
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2080
 NODES                           2244
@@ -62,16 +62,16 @@ INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 LINEAR_SOLVER                   3
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE                        residual_based                  
-TDS                             quasistatic                     
+STABTYPE                        residual_based
+TDS                             quasistatic
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
-TRANSIENT                       no_transient                    
-SUPG                            yes_supg                        
-PSPG                            yes_pspg                        
-VSTAB                           no_vstab                        
-CSTAB                           cstab_qs                        
-CROSS-STRESS                    no_cross                        
-REYNOLDS-STRESS                 no_reynolds                     
+TRANSIENT                       no_transient
+SUPG                            yes_supg
+PSPG                            yes_pspg
+VSTAB                           no_vstab
+CSTAB                           cstab_qs
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         41
@@ -108,28 +108,28 @@ NDSURF                          3
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          14
-E 1 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 2 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 3 - 6  0 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 4 - 6  1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none
-E 5 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 6 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 7 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 8 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 9 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 10 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 11 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 12 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 13 - 6  0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 14 - 6  0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none
+E 5 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 7 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 8 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 9 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 10 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 11 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 12 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 13 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 14 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           6
-E 2 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 3 - 6  1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none
-E 6 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 7 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 8 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
-E 13 - 6  1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none
+E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 7 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 8 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+E 13 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DLINE                           3
@@ -139,18 +139,18 @@ E 9 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2242 DNODE 1
 NODE 1671 DNODE 2
-NODE 2    DNODE 3
+NODE 2 DNODE 3
 NODE 1670 DNODE 4
 NODE 2243 DNODE 5
 NODE 1669 DNODE 6
-NODE 1    DNODE 7
+NODE 1 DNODE 7
 NODE 1668 DNODE 8
 NODE 2241 DNODE 9
 NODE 1667 DNODE 10
 NODE 1690 DNODE 11
 NODE 2244 DNODE 12
 NODE 1688 DNODE 13
-NODE 12   DNODE 14
+NODE 12 DNODE 14
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 2242 DLINE 1
 NODE 2238 DLINE 1
@@ -7066,7 +7066,7 @@ NODE 2244 COORD 0.000000000000000e+000 -2.000000000000000e-003 0.000000000000000
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.0 DENS 500.0
------------------------------------------------CLONING MATERIAL MAP
+--------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 //CURVE1 on Explicit FUNC f(t)=exp(1-1:t) c1 1.0 c2 1.0

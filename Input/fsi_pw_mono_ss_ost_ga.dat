@@ -6,9 +6,9 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pressure wave
-FSI:        iter_monolithicstructuresplit
-Fluid:      One_Step_Theta
-Structure:  GenAlpha
+FSI:                            iter_monolithicstructuresplit
+Fluid:                          One_Step_Theta
+Structure:                      GenAlpha
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        4080
 NODES                           5565
@@ -84,12 +84,12 @@ RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6
 BASETOL                         1.0E-3
-STRUCTPCOMEGA                   1.0 1.0
-STRUCTPCITER                    1 1
-FLUIDPCOMEGA                    1.0 1.0 1.0
-FLUIDPCITER                     1 1 1
-PCITER                          1 1 2
-PCOMEGA                         0.89 0.95 0.95
+STRUCTPCOMEGA 1.0 1.0
+STRUCTPCITER 1 1
+FLUIDPCOMEGA 1.0 1.0 1.0
+FLUIDPCITER 1 1 1
+PCITER 1 1 2
+PCOMEGA 0.89 0.95 0.95
 SHAPEDERIVATIVES                Yes
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
@@ -127,7 +127,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 Chebychev                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  Chebychev                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               KLU                             // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -160,7 +160,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 Chebychev                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  Chebychev                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               KLU                             // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -193,7 +193,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               KLU                             // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     1 1 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES 1 1 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -204,23 +204,23 @@ NDSURF                          14
 NDVOL                           3
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-E 3 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-E 4 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-E 5 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-E 6 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
-E 9 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-E 10 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-E 11 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-E 12 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 10 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 11 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 12 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           2
-E 3 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-E 4 - 6  1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 3 - 1  1 0 0 0 0 0  1.3332e4 0.0 0.0 0.0 0.0 0.0 Live Mid
+E 3 - 1 1 0 0 0 0 0 1.3332e4 0.0 0.0 0.0 0.0 0.0 Live Mid
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           4
 E 1 - 1
@@ -228,22 +228,22 @@ E 2 - 1
 E 5 - 1
 E 6 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 726  DNODE 1
+NODE 726 DNODE 1
 NODE 5513 DNODE 2
-NODE 101  DNODE 3
+NODE 101 DNODE 3
 NODE 5362 DNODE 4
-NODE 725  DNODE 5
+NODE 725 DNODE 5
 NODE 5514 DNODE 6
-NODE 100  DNODE 7
+NODE 100 DNODE 7
 NODE 5361 DNODE 8
-NODE 911  DNODE 9
+NODE 911 DNODE 9
 NODE 5548 DNODE 10
-NODE 123  DNODE 11
+NODE 123 DNODE 11
 NODE 5369 DNODE 12
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
-NODE 726  DLINE 1
-NODE 793  DLINE 1
-NODE 961  DLINE 1
+NODE 726 DLINE 1
+NODE 793 DLINE 1
+NODE 961 DLINE 1
 NODE 1154 DLINE 1
 NODE 1391 DLINE 1
 NODE 1635 DLINE 1
@@ -262,11 +262,11 @@ NODE 4718 DLINE 1
 NODE 4980 DLINE 1
 NODE 5251 DLINE 1
 NODE 5513 DLINE 1
-NODE 101  DLINE 2
-NODE 136  DLINE 2
-NODE 275  DLINE 2
-NODE 510  DLINE 2
-NODE 870  DLINE 2
+NODE 101 DLINE 2
+NODE 136 DLINE 2
+NODE 275 DLINE 2
+NODE 510 DLINE 2
+NODE 870 DLINE 2
 NODE 1264 DLINE 2
 NODE 1573 DLINE 2
 NODE 1860 DLINE 2
@@ -283,27 +283,27 @@ NODE 4565 DLINE 2
 NODE 4825 DLINE 2
 NODE 5101 DLINE 2
 NODE 5362 DLINE 2
-NODE 726  DLINE 3
-NODE 669  DLINE 3
-NODE 605  DLINE 3
-NODE 546  DLINE 3
-NODE 478  DLINE 3
-NODE 399  DLINE 3
-NODE 324  DLINE 3
-NODE 266  DLINE 3
-NODE 215  DLINE 3
-NODE 145  DLINE 3
-NODE 103  DLINE 3
-NODE 74   DLINE 3
-NODE 41   DLINE 3
-NODE 22   DLINE 3
-NODE 12   DLINE 3
-NODE 6    DLINE 3
-NODE 9    DLINE 3
-NODE 19   DLINE 3
-NODE 38   DLINE 3
-NODE 71   DLINE 3
-NODE 101  DLINE 3
+NODE 726 DLINE 3
+NODE 669 DLINE 3
+NODE 605 DLINE 3
+NODE 546 DLINE 3
+NODE 478 DLINE 3
+NODE 399 DLINE 3
+NODE 324 DLINE 3
+NODE 266 DLINE 3
+NODE 215 DLINE 3
+NODE 145 DLINE 3
+NODE 103 DLINE 3
+NODE 74 DLINE 3
+NODE 41 DLINE 3
+NODE 22 DLINE 3
+NODE 12 DLINE 3
+NODE 6 DLINE 3
+NODE 9 DLINE 3
+NODE 19 DLINE 3
+NODE 38 DLINE 3
+NODE 71 DLINE 3
+NODE 101 DLINE 3
 NODE 5513 DLINE 4
 NODE 5506 DLINE 4
 NODE 5490 DLINE 4

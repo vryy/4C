@@ -104,8 +104,8 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
-VOLUME_GAUSS_POINTS_BY			DirectDivergence
-BOUNDARY_GAUSS_POINTS_BY		Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 2DFLOW                          yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -173,17 +173,17 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // Fluid 1 upper surface
-E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid 1 lower surface
-E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid 1 inflow
-E 4 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 2 0 0 0 
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // Fluid 1 volume
-E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // Fluid 2 volume
-E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT                          0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
@@ -400,7 +400,7 @@ DLINE                           0
 DLINE                           0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           0
-------------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
+-------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY

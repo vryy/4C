@@ -72,7 +72,7 @@ TRANSIENT                       no_transient
 PSPG                            no_pspg
 SUPG                            no_supg//yes_supg
 VSTAB                           no_vstab
-CSTAB                           no_cstab //cstab_qs
+CSTAB no_cstab //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
@@ -84,7 +84,7 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY                 xfluid_moving_boundary //stationary_boundary
+XFLUID_BOUNDARY xfluid_moving_boundary //stationary_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
 VEL_INIT_FUNCT_NO               2
 INTERFACE_VEL                   interface_vel_by_funct
@@ -99,35 +99,35 @@ CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        50           // output every so often, 0 no output
-AZSOLVE                         GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         1            // how often to recompute some preconditioners
-AZDROP                          0.0          // drop tolerance for ILUT
-IFPACKFILL                      1.0          // fill-in for ILUT
-IFPACKGFILL                     3            // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-08      // tolerance in unscaled residual
-AZCONV                          AZ_r0        // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000         // max iterations
-//AZSUB                           150           // size of krylov space for gmres
-IFPACKOVERLAP                   0            // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE                1  //2500    // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
-ML_MAXLEVEL                     3            // ML max number of levels
-ML_COARSEN                      UC           // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27           // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0          // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0          // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU          // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU          // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack      // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     3 3 1        // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.2         // damping fine grid
-ML_DAMPMED                      0.2         // damping med grids
-ML_DAMPCOARSE                   1.0          // damping coarse grid
+SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                              // output every so often, 0 no output
+AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1                               // how often to recompute some preconditioners
+AZDROP                          0.0                             // drop tolerance for ILUT
+IFPACKFILL                      1.0                             // fill-in for ILUT
+IFPACKGFILL                     3                               // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-08                         // tolerance in unscaled residual
+AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                            // max iterations
+//AZSUB                         150                             // size of krylov space for gmres
+IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE 1 //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3                               // ML max number of levels
+ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2                             // damping fine grid
+ML_DAMPMED                      0.2                             // damping med grids
+ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
@@ -212,16 +212,16 @@ DLINE                           2
 // line outflow back
 //E 8 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // top edges side walls
-E 9 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 // bottom edges side walls
-E 10 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+E 10 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 // surface top
-E 1 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 //E 1 - 6 0 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface bottom
-E 2 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 //E 2 - 6 1 0 0 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface inflow
 //E 3 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
@@ -229,10 +229,10 @@ E 2 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 
 //E 4 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //E 4 - 6 1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface front
-E 5 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 //E 5 - 6 1 0 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface back
-E 6 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 //E 6 - 6 1 0 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0

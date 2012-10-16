@@ -203,25 +203,25 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           10
 //                              back
-E 1 -  4 0 0 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              front
-E 2 -  4 0 0 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // inflow top
-E 3 -  4 1 1 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // inflow bottom
-E 4 -  4 1 1 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              outflow
-E 5 -  4 0 1 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // outflow top
-E 6 -  4 1 1 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // outflow bottom
-E 7 -  4 1 1 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              inflow
-E 8 -  4 1 1 1 0  1.0 0.0 0.0 0.0  3 none none none  1 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 3 none none none FUNCT 1 0 0 0
 //                              anode
-E 9 -  4 1 1 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              cathode
-E 10 - 4 1 1 1 0  0.0 0.0 0.0 0.0  none none none none  0 0 0 0
+E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS

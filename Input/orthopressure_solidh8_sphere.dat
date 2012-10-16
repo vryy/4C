@@ -237,7 +237,7 @@ DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1082 DNODE 1
 NODE 1 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY 
+---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1082 DLINE 1
 NODE 1078 DLINE 1
 NODE 1073 DLINE 1
@@ -10290,8 +10290,8 @@ NODE 3246 COORD 36.5727050949 24.9639572832 25.312987653
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 0.001
-MAT 3   ELAST_CoupNeoHooke YOUNG 1.044E6 NUE 0.45
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.001
+MAT 3 ELAST_CoupNeoHooke YOUNG 1.044E6 NUE 0.45
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.60 FACTOR 0.0 16132.0
 ----------------------------------------------------------------------CURVE2

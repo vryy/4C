@@ -358,7 +358,7 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // No STR Neumann right surf x=6
-E 1 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 // STR fix vol in y,z
@@ -474,7 +474,7 @@ DLINE                           0
 DSURF                           1
 // THR left surf heat convection
 E 8 - Tempnp coeff -6.444497425 surtemp 373.15 surtempcurve none curve none // 1
-------------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
+-------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY

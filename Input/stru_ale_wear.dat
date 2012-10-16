@@ -143,11 +143,11 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
 //                              obenoben
-E 1 - 2 1 1 0.05 -0.05 1    2    0 0 
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.05 -0.05 CURVE 1 2 FUNCT 0 0
 //                              untenoben
-E 3 - 2 1 1 0.0   0.0  none none 0 0 
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 //                              untenunten
-E 4 - 2 1 1 0.0   0.0  none none 0 0 
+E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
@@ -156,7 +156,7 @@ DVOL                            0
 DPOINT                          0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE                           1
-E 1 - 2 1 1 0.0 0.0 none none 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------DESIGN LINE ALE WEAR CONDITIONS 2D

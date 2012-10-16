@@ -60,14 +60,14 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 9
 NAME                            Micro_Struct_Solver
-SOLVER                          Belos //Aztec_MSR // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER Belos //Aztec_MSR // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        1                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         8                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT 
-IFPACKFILL                      1.0                             // fill-in for ILUT 
-IFPACKGFILL                     0                               // graph fill for ILU 
+AZDROP                          0.0                             // drop tolerance for ILUT
+IFPACKFILL                      1.0                             // fill-in for ILUT
+IFPACKGFILL                     0                               // graph fill for ILU
 AZTOL                           1.0E-4                          // tolerance in unscaled residual
 AZITER                          600                             // max iterations
 AZSUB                           25                              // size of krylov space for gmres
@@ -87,7 +87,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 SGS                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               KLU                             // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 3 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES 2 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.89                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -162,7 +162,7 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG 
+-------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE                           0
 -------------------------------------------------DESIGN FLUID SURF LIFT&DRAG

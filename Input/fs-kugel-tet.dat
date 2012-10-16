@@ -288,7 +288,7 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS 
+-----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DSURF                           0
 ------------------------------------------------DESIGN VOL LOCSYS CONDITIONS

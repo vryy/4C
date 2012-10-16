@@ -184,67 +184,67 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // brick vertex left top
-E 1 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick vertex right top
-E 2 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick vertex left bottom
-E 3 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick vertex right bottom
-E 4 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // cylinder vertex top
-E 5 - 3 1 1 1 1.0 -1.0 0.0 3 1 none 2 1 0
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 -1.0 0.0 CURVE 3 1 none FUNCT 2 1 0
 // cylinder vertex back
-E 6 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // cylinder vertex left
-E 7 - 3 1 1 1 1.0 -1.0 0.0 3 1 none 2 1 0
+E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 -1.0 0.0 CURVE 3 1 none FUNCT 2 1 0
 // cylinder vertex right
-E 8 - 3 1 1 1 1.0 -1.0 0.0 3 1 none 2 1 0
+E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 -1.0 0.0 CURVE 3 1 none FUNCT 2 1 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           11
 // brick curve top front
-E 1 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick curve top back
-E 2 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick curve bottom front
-E 3 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick curve bottom back
-E 4 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick curve left back
-E 5 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick curve right front
-E 6 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick curve right back
-E 7 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // cylinder outline front
-E 8 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // cylinder outline back
-E 9 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 9 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // cylinder diameter front
-E 10 - 3 1 1 1 1.0 -1.0 0.0 3 1 none 2 1 0
+E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 -1.0 0.0 CURVE 3 1 none FUNCT 2 1 0
 // cylinder diameter back
-E 11 - 3 1 1 1 1.0 -1.0 0.0 3 1 none 2 1 0
+E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 -1.0 0.0 CURVE 3 1 none FUNCT 2 1 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           10
 // brick front
-E 1 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick back
-E 2 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick top
-E 3 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick bottom
-E 4 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick left
-E 5 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // brick right
-E 6 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // cylinder front
-E 7 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 7 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // cylinder back
-E 8 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // cylinder top
-E 9 - 3 1 1 1 1.0 -1.0 0.0 3 1 none 2 1 0
+E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 -1.0 0.0 CURVE 3 1 none FUNCT 2 1 0
 // cylinder mantel
-E 10 - 3 0 0 1 0.0 0.0 0.0 none none none 0 0 0
+E 10 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

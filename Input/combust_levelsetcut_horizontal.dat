@@ -14,19 +14,19 @@ description test case:
 - check if cut algorithm and enrichment strategy work together properly
 - check functionality for a almost horizontal cut close to element boundaries
 - only the nodes marked enriched (+) must be enriched
-  -> check Gmsh file 'numdof_coupled_system.pos'
+-> check Gmsh file 'numdof_coupled_system.pos'
 - domain integration cells belonging to plus and minus domain must only be created for bisected elements
-  -> check Gmsh file 'domains.pos'
+-> check Gmsh file 'domains.pos'
 - check if upper and lower elements for each position get the correct cut status (uncut, touched, bisected)
 
 6x20 elements, enriched nodes (+)
-x=-1                                    x=0                                     x=1
- +---+---+---+---+---+---+---+---+---|---|---|---|---|---|---|---|---|---|---|---|
- | b | b | b | b | b | b | b | b | t | t | t | u | u | u | u | u | u | u | u | u |
- +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
- | u | u | u | u | u | u | u | u | u | t | t | t | b | b | b | b | b | b | b | b |
- |---|---|---|---|---|---|---|---|---|---|---|---+---+---+---+---+---+---+---+---+
-   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20
+x=-1 x=0 x=1
++---+---+---+---+---+---+---+---+---|---|---|---|---|---|---|---|---|---|---|---|
+| b | b | b | b | b | b | b | b | t | t | t | u | u | u | u | u | u | u | u | u |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+| u | u | u | u | u | u | u | u | u | t | t | t | b | b | b | b | b | b | b | b |
+|---|---|---|---|---|---|---|---|---|---|---|---+---+---+---+---+---+---+---+---+
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        120
 NODES                           294
@@ -110,7 +110,7 @@ MAXTIME                         1.0
 NUMSTEP                         30
 TIMESTEP                        0.01
 NEUMANNINFLOW                   no
-GMSH_OUTPUT                     no // yes
+GMSH_OUTPUT                     no                              // yes
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
@@ -195,45 +195,45 @@ E 1 - none 1 1 1 0 0 0 0.0 -4.0 0.0 0.0 0.0 0.0 Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // top inflow points
-E 1 - 4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // bottom inflow points
-E 2 - 4 1 1 1 0 0.0 2.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 2.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // top outflow points
-E 3 - 4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // bottom outflow points
-E 4 - 4 1 1 1 0 0.0 2.0 0.0 0.0 none none none none 0 0 0 0 
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 2.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           9                               // 10
 // line inflow top
-E 1 -  4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line inflow front
-E 2 -  4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line inflow bottom
-E 3 -  4 1 1 1 0 0.0 2.0 0.0 0.0 none none none none 0 0 0 0 
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 2.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line inflow back
-E 4 -  4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 4 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line outflow top
-E 5 -  4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 5 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line outflow front
-E 6 -  4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 6 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line outflow bottom
-E 7 -  4 1 1 1 0 0.0 2.0 0.0 0.0 none none none none 0 0 0 0 
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 2.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // line outflow back
-E 8 -  4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 8 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // bottom edges side walls
-E 10 - 4 1 1 1 0 0.0 2.0 0.0 0.0 none none none none 0 0 0 0 
+E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 2.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           5                               // 6
 // surface bottom
-E 2 - 4 1 1 1 0 0.0 2.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 2.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface inflow
-E 3 - 4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface outflow
-E 4 - 4 1 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 4 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface front
-E 5 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // surface back
-E 6 - 4 0 0 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 25 DNODE 1

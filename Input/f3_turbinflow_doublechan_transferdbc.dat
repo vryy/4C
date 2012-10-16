@@ -154,19 +154,19 @@ E 2 - none 1 0 0 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 Dead
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // turbulent inflow
-E 1 - 4 1 1 1 1 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           5
 // turbulent inflow
-E 1 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // upper wall outflow
-E 3 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // lower wall outflow
-E 4 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // upper wall inflow
-E 7 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // lower wall inflow
-E 8 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           6
 // outflow periodic boundary

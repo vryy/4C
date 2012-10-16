@@ -122,7 +122,7 @@ SOLVER                          UMFPACK
 EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none
-------------------------------------------------XFLUID DYNAMIC/GENERAL
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_ProjIfMoved
 MONOLITHIC_XFFSI_APPROACH xffsi_full_newton //xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS
@@ -190,11 +190,11 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // xFluid upper surface
-E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // xFluid lower surface
-E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // xFluid inflow
-E 3 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 3 0 0 0 
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 3 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // XFluid volume
@@ -208,7 +208,7 @@ DLINE                           0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
 // Fluid xfem
-E 4 - 4 1 1 1 0 0.2 0.0 0.0 0.0 1 none none none 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // Fluid volume
@@ -433,7 +433,7 @@ DLINE                           0
 DLINE                           0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           0
-------------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
+-------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY

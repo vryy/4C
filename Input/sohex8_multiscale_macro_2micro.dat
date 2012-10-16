@@ -118,7 +118,7 @@ DLINE                           0
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS 
+-----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 //                              DOBJECT
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS

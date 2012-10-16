@@ -152,13 +152,13 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none
-------------------------------------------------XFLUID DYNAMIC/GENERAL
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT Xff_TimeInt_FullProj //Xff_TimeInt_ProjIfMoved
 MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50 NUE 0.4 DENS 2.0 THEXPANS 0.0
------------------------------------------------CLONING MATERIAL MAP
+--------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD xfluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin((t*pi)/2) t1 0.0 t2 20
@@ -225,13 +225,13 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // bgFluid inflow
-E 1 - 6 1 1 1 0 0 0 0.5 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.5 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // str dirichlet
-E 3 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // bgfluid volume
@@ -469,7 +469,7 @@ DLINE                           0
 DLINE                           0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           0
-------------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
+-------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
@@ -573,7 +573,7 @@ FLUID DIS 1 NODE 8 POSITION pressure NAME pressure VALUE 2.53837305052599191e+01
 FLUID DIS 1 NODE 9 POSITION velx NAME velx VALUE 4.99999999999913736e-01 TOLERANCE 1e-6
 FLUID DIS 1 NODE 9 POSITION pressure NAME pressure VALUE 2.53837305052599191e+01 TOLERANCE 1e-6
 FLUID DIS 1 NODE 15 POSITION velx NAME velx VALUE 5.00000000000159650e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 15 POSITION pressure NAME pressure VALUE  2.53837305052599191e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 15 POSITION pressure NAME pressure VALUE 2.53837305052599191e+01 TOLERANCE 1e-6
 FLUID DIS 2 NODE 18 POSITION velx NAME velx VALUE 5.00000000000054290e-01 TOLERANCE 1e-6
 FLUID DIS 2 NODE 18 POSITION pressure NAME pressure VALUE 2.53837305052599191e+01 TOLERANCE 1e-6
 FLUID DIS 2 NODE 17 POSITION velx NAME velx VALUE 4.99999999999825029e-01 TOLERANCE 1e-6
@@ -581,7 +581,7 @@ FLUID DIS 2 NODE 17 POSITION pressure NAME pressure VALUE 2.53837305052599191e+0
 FLUID DIS 2 NODE 21 POSITION velx NAME velx VALUE 5.00000000000433653e-01 TOLERANCE 1e-6
 FLUID DIS 2 NODE 21 POSITION pressure NAME pressure VALUE 2.53837305052599191e+01 TOLERANCE 1e-6
 FLUID DIS 2 NODE 26 POSITION velx NAME velx VALUE 5.00000000007036260e-01 TOLERANCE 1e-6
-FLUID DIS 2 NODE 26 POSITION pressure NAME pressure VALUE  2.53837305052599191e+01 TOLERANCE 1e-6
+FLUID DIS 2 NODE 26 POSITION pressure NAME pressure VALUE 2.53837305052599191e+01 TOLERANCE 1e-6
 STRUCTURE DIS 1 NODE 26 POSITION dispx NAME dispx VALUE 3.99999999999217926e-01 TOLERANCE 1e-6
 STRUCTURE DIS 1 NODE 28 POSITION dispx NAME dispx VALUE 3.99999999999192613e-01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END

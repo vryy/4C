@@ -187,17 +187,17 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 // fixed dirich points
-E 1 - 3 1 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // dirich overflow points
-E 2 - 3 1 1 0 1.0 0.0 0.0 1    none none 0 0 0 
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
 // fixed dirich lines
-E 1 - 3 1 1 0 0.0 0.0 0.0 none none none 0 0 0 
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // curve inflow
-E 2 - 3 1 1 0 1.0 0.0 0.0 1    none none 1 0 0 
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 1 0 0
 // curve overflow
-E 3 - 3 1 1 0 1.0 0.0 0.0 1    none none 0 0 0 
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS

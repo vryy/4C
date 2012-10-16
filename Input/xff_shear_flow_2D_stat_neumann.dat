@@ -65,17 +65,17 @@ TIMEINTEGR Stationary //One_Step_Theta
 TIMESTEP                        1.0
 UPRES                           1
 LINEAR_SOLVER                   1
----------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE              residual_based //   edge_based // 
-DEFINITION_TAU        Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
-TDS                   quasistatic
-TRANSIENT             no_transient
-PSPG                  yes_pspg //no_pspg /
-SUPG                  yes_supg //no_supg//yes_supg
-VSTAB                 no_vstab
-CSTAB                 no_cstab //cstab_qs
-CROSS-STRESS          no_cross
-REYNOLDS-STRESS       no_reynolds
+-------------------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE                        residual_based                  // edge_based //
+DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+TDS                             quasistatic
+TRANSIENT                       no_transient
+PSPG yes_pspg //no_pspg /
+SUPG yes_supg //no_supg//yes_supg
+VSTAB                           no_vstab
+CSTAB no_cstab //cstab_qs
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
@@ -117,16 +117,16 @@ VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 2DFLOW                          yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeSigma  // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-//VISC_STAB_FAC                   100.0 // (relevant for nitsche)
-//VISC_STAB_SCALING               visc_div_by_hk // inv_hk // const (relevant for nitsche)
-//VISC_STAB_HK                    vol_equivalent // vol_div_by_surf // longest_ele_length (relevant for nitsche)
-CONV_STAB_FAC                   0.0 // 1.0
-CONV_STAB_SCALING               none // abs_normal_vel //abs_normal_vel // inflow // const 
-//GHOST_PENALTY_STAB              Yes
-//GHOST_PENALTY_FAC               0.001
-//MSH_L2_PROJ                     part_ele_proj //full_ele_proj (K_ss whole element or just partial) 
-//EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
+EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+//VISC_STAB_FAC                 100.0                           // (relevant for nitsche)
+//VISC_STAB_SCALING             visc_div_by_hk                  // inv_hk // const (relevant for nitsche)
+//VISC_STAB_HK                  vol_equivalent                  // vol_div_by_surf // longest_ele_length (relevant for nitsche)
+CONV_STAB_FAC                   0.0                             // 1.0
+CONV_STAB_SCALING               none                            // abs_normal_vel //abs_normal_vel // inflow // const
+//GHOST_PENALTY_STAB            Yes
+//GHOST_PENALTY_FAC             0.001
+//MSH_L2_PROJ part_ele_proj //full_ele_proj (K_ss whole element or just partial)
+//EOS_GP_PATTERN                u-v-w-p-diagonal-block          // u-p-block // full
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
@@ -178,17 +178,17 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // Fluid 1 upper surface
-E 1 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid 1 lower surface
-E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid 1 inflow
-E 4 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 2 0 0 0 
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // Fluid 1 volume
-E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 1 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 // Fluid 2 volume
-E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0 
+E 2 - 4 0 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
 // xfem surfaces

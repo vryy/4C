@@ -117,38 +117,38 @@ NDVOL                           1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          8
-E 1 - 4 1 1 1 1 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 3 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 4 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 5 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 6 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 7 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 8 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           12
-E 1 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 2 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 3 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 4 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 5 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 6 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 7 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 8 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 9 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 10 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 11 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 12 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 11 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 12 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           6
-E 1 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 2 - 4 0 1 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 3 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 4 - 4 0 1 0 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 5 - 4 1 1 1 0 0.0 0.0 0.0 0.0 none none none none 0 0 0 0
-E 6 - 4 1 1 1 0 1.0 0.0 0.0 0.0 none none none none 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0

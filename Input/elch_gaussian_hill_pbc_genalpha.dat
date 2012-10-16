@@ -224,7 +224,7 @@ DSURF                           2
 E 1 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 //                              outflow
 E 2 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS 
+---------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           0
