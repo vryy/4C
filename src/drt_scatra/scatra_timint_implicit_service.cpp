@@ -1129,6 +1129,8 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   eleparams.set("currentintegral",0.0);
   eleparams.set("boundaryintegral",0.0);
   eleparams.set("overpotentialintegral",0.0);
+  eleparams.set("electrodedifferencepotentialintegral",0.0);
+  eleparams.set("opencircuitpotentialintegral",0.0);
   eleparams.set("concentrationintegral",0.0);
   eleparams.set("currentderiv",0.0);
   eleparams.set("currentresidual",0.0);
@@ -1142,6 +1144,10 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   double boundaryint = eleparams.get<double>("boundaryintegral");
   // get integral of overpotential on this proc
   double overpotentialint = eleparams.get<double>("overpotentialintegral");
+  // get integral of overpotential on this proc
+  double epdint = eleparams.get<double>("electrodedifferencepotentialintegral");
+  // get integral of overpotential on this proc
+  double ocpint = eleparams.get<double>("opencircuitpotentialintegral");
   // get integral of reactant concentration on this proc
   double cint = eleparams.get<double>("concentrationintegral");
   // tangent of current w.r.t. electrode potential on this proc
@@ -1156,6 +1162,10 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
   double paroverpotentialint = 0.0;
   discret_->Comm().SumAll(&overpotentialint,&paroverpotentialint,1);
+  double parepdint = 0.0;
+  discret_->Comm().SumAll(&epdint,&parepdint,1);
+  double parocpint = 0.0;
+  discret_->Comm().SumAll(&ocpint,&parocpint,1);
   double parcint = 0.0;
   discret_->Comm().SumAll(&cint,&parcint,1);
   double parcurrderiv = 0.0;
@@ -1204,14 +1214,15 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
       if (Step() <= 1)
       {
         f.open(fname.c_str(),std::fstream::trunc);
-        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n";
+        f << "#| ID | Step | Time | Total current | Area of boundary | Mean current density | Mean overpotential | Mean electrode pot. diff. | Mean opencircuit pot. | Electrode pot. | Mean Concentr. |\n";
       }
       else
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-      f << condid << " " << Step() << " " << Time() << " " << parcurrentintegral << " " << parboundaryint
-      << " " << parcurrentintegral/parboundaryint << " " << paroverpotentialint/parboundaryint << " "
-      << pot << " " << parcint/parboundaryint << " " <<"\n";
+      f << condid << "  " << Step() << "  " << Time() << "  " << parcurrentintegral << "  " << parboundaryint
+      << "  " << parcurrentintegral/parboundaryint << "  " << paroverpotentialint/parboundaryint << "  " <<
+      parepdint/parboundaryint << "  " << parocpint/parboundaryint << "  " << pot << "  "
+      << parcint/parboundaryint << "  " <<"\n";
       f.flush();
       f.close();
     }
@@ -2309,10 +2320,11 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       }
 
       // Newton step:  Jacobian * \Delta pot = - Residual
-      const double potinc_cathode = newtonrhs/currtangent_cathode;
+      cout << "currtangent_cathode:  " << currtangent_cathode << endl;
+      const double potinc_cathode = newtonrhs/((-1)*currtangent_cathode);
       double potinc_anode = 0.0;
       if (abs(currtangent_anode)>EPS13) // anode surface overpotential is optional
-        potinc_anode = newtonrhs/currtangent_anode;
+        potinc_anode = newtonrhs/((-1)*currtangent_anode);
       gstatincrement_ = (potinc_cathode+potinc_anode+potinc_ohm);
       // update electric potential
       potnew += gstatincrement_;
@@ -2506,7 +2518,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
     // extract the ML parameters
     ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
-    // remark: we create a new solver with ML preconditioner here, since this allows for also using other solver setups 
+    // remark: we create a new solver with ML preconditioner here, since this allows for also using other solver setups
     // to solve the system of equations
     // get the solver number used form the multifractal subgrid-scale model parameter list
     const int scale_sep_solvernumber = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
@@ -2677,14 +2689,14 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     // global sums
     double global_sumCai = 0.0;
     double global_sumVol = 0.0;
-    
+
     // define element matrices and vectors --- dummies
     Epetra_SerialDenseMatrix emat1;
     Epetra_SerialDenseMatrix emat2;
     Epetra_SerialDenseVector evec1;
     Epetra_SerialDenseVector evec2;
     Epetra_SerialDenseVector evec3;
-   
+
     // generate a parameterlist for communication and control
     ParameterList myparams;
     // action for elements
@@ -2717,21 +2729,21 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
                             emat1,emat2,
                             evec1,evec2,evec2);
       if (err) dserror("Proc %d: Element %d returned err=%d",myrank_,ele->Id(),err);
-   
+
       // get contributions of this element and add it up
       local_sumCai += myparams.get<double>("Cai_int");
-      local_sumVol += myparams.get<double>("ele_vol");   
+      local_sumVol += myparams.get<double>("ele_vol");
     }
-  
+
     // gather contibutions of all procs
     discret_->Comm().SumAll(&local_sumCai,&global_sumCai,1);
     discret_->Comm().SumAll(&local_sumVol,&global_sumVol,1);
 
     // calculate mean Cai
     meanCai = global_sumCai/global_sumVol;
-  
-    //std::cout << "Proc:  " << myrank_ << "  local vol and Cai   " 
-    //<< local_sumVol << "   " << local_sumCai << "  global vol and Cai   " 
+
+    //std::cout << "Proc:  " << myrank_ << "  local vol and Cai   "
+    //<< local_sumVol << "   " << local_sumCai << "  global vol and Cai   "
     //<< global_sumVol << "   " << global_sumCai << "  mean   " << meanCai << std::endl;
 
     if (myrank_ == 0)
