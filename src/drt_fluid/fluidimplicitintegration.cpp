@@ -1053,8 +1053,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
   const bool   isadapttol    = params_->get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
 
-  const bool fluidrobin = params_->get<bool>("fluidrobin", false);
-
   int  itnum = 0;
   int  itemax = 0;
   bool stopnonliniter = false;
@@ -1067,7 +1065,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 //       itemax  = 2;
 //  else
   itemax  = params_->get<int>   ("max nonlin iter steps");
-  
+
   // -------------------------------------------------------------------
   // option for multifractal subgrid-scale modeling approach within
   // variable-density flow at low Mach number:
@@ -1449,51 +1447,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         // finalize the complete matrix
         sysmat_->Complete();
-
-        // If we have a robin condition we need to modify both the rhs and the
-        // matrix diagonal corresponding to the dofs at the robin interface.
-        if (fluidrobin)
-        {
-          // Add structral part of Robin force
-          // (combination of structral force and velocity)
-          residual_->Update(theta_*dta_,*robinrhs_,1.0);
-
-          double alphaf = params_->get<double>("alpharobinf",-1.0);
-          double scale = alphaf*theta_*dta_;
-
-          // Add fluid part of Robin force
-          // (scaled fluid velocity)
-          surfacesplitter_->AddFSICondVector(-1.*scale,
-                                             surfacesplitter_->ExtractFSICondVector(velnp_),
-                                             residual_);
-
-          // Note: It is the right thing to test the robin enhanced residual_
-          // for convergence, since the velocity terms are to vanish and the
-          // structural forces are to cancel with the internal forces.
-          //
-          // Note: We do not add any external (robin) loads to
-          // trueresidual_. This way we get the unbalanced forces at the
-          // interface, which can be applied to the structure later on.
-
-          const Epetra_Map& robinmap = *surfacesplitter_->FSICondMap();
-          int numrdofs = robinmap.NumMyElements();
-          int* rdofs = robinmap.MyGlobalElements();
-          for (int lid=0; lid<numrdofs; ++lid)
-          {
-            int gid = rdofs[lid];
-            // We assemble with a global id into a filled matrix here. This is
-            // fine as we know we do not add new entries but just add to the
-            // diagonal.
-            //
-            // Note: The matrix lives in the full fluid map whereas
-            // we loop the robin interface map here, so our local ids are very
-            // different from the matrix local ids.
-            //
-            // Note: This assemble might fail if we have a block matrix here.
-            // (No, it won't since the matrix is already filled. :] )
-            sysmat_->Assemble(scale,gid,gid);
-          }
-        }
       }
 
       // end time measurement for element
@@ -4240,7 +4193,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
     // extract the ML parameters:
     ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
-    // remark: we create a new solver with ML preconditioner here, since this allows for also using other solver setups 
+    // remark: we create a new solver with ML preconditioner here, since this allows for also using other solver setups
     // to solve the system of equations
     // get the solver number used form the multifractal subgrid-scale model parameter list
     const int scale_sep_solvernumber = params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
@@ -6375,8 +6328,8 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
 
 
 //-------------------------------------------------------------------------
-// calculate mean CsgsB to estimate CsgsD                                  
-// for multifractal subgrid-scale model                    rasthofer 08/12 
+// calculate mean CsgsB to estimate CsgsD
+// for multifractal subgrid-scale model                    rasthofer 08/12
 //-------------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
 {
@@ -6392,26 +6345,26 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
     // global sums
     double global_sumCai = 0.0;
     double global_sumVol = 0.0;
-    
+
     // define element matrices and vectors --- dummies
     Epetra_SerialDenseMatrix emat1;
     Epetra_SerialDenseMatrix emat2;
     Epetra_SerialDenseVector evec1;
     Epetra_SerialDenseVector evec2;
     Epetra_SerialDenseVector evec3;
-   
+
     // generate a parameterlist for communication and control
     ParameterList myparams;
     // action for elements
     myparams.set<int>("action",FLD::calc_mean_Cai);
     myparams.set<int>("physical type",physicaltype_);
-    
+
     // set state vector to pass distributed vector to the element
     // set velocity
     discret_->ClearState();
     if (is_genalpha_)
       discret_->SetState("velocity",velaf_);
-    else 
+    else
       discret_->SetState("velocity",velnp_);
     // set temperature
     discret_->SetState("scalar",scaaf_);
@@ -6435,22 +6388,22 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
                             emat1,emat2,
                             evec1,evec2,evec2);
       if (err) dserror("Proc %d: Element %d returned err=%d",myrank_,ele->Id(),err);
-   
+
       // get contributions of this element and add it up
       local_sumCai += myparams.get<double>("Cai_int");
-      local_sumVol += myparams.get<double>("ele_vol");   
+      local_sumVol += myparams.get<double>("ele_vol");
     }
     discret_->ClearState();
-  
+
     // gather contibutions of all procs
     discret_->Comm().SumAll(&local_sumCai,&global_sumCai,1);
     discret_->Comm().SumAll(&local_sumVol,&global_sumVol,1);
 
     // calculate mean Cai
     meanCai = global_sumCai/global_sumVol;
-  
-    //std::cout << "Proc:  " << myrank_ << "  local vol and Cai   " 
-    //<< local_sumVol << "   " << local_sumCai << "  global vol and Cai   " 
+
+    //std::cout << "Proc:  " << myrank_ << "  local vol and Cai   "
+    //<< local_sumVol << "   " << local_sumCai << "  global vol and Cai   "
     //<< global_sumVol << "   " << global_sumCai << "  mean   " << meanCai << std::endl;
 
     if (myrank_ == 0)
@@ -6478,7 +6431,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
       int err = ele->Evaluate(myparams,*discret_,lm,
                             emat1,emat2,
                             evec1,evec2,evec2);
-      if (err) dserror("Proc %d: Element %d returned err=%d",myrank_,ele->Id(),err);  
+      if (err) dserror("Proc %d: Element %d returned err=%d",myrank_,ele->Id(),err);
     }
   }
 
