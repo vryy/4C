@@ -290,25 +290,38 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // Dirichlet
 
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > dirichletintsepveccomponents;
   std::vector<Teuchos::RCP<IntVectorConditionComponent> > dirichletintveccomponents;
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > dirichletrealsepveccomponents;
   std::vector<Teuchos::RCP<RealVectorConditionComponent> > dirichletrealveccomponents;
   std::vector<Teuchos::RCP<ConditionComponent> > dirichletbundcomponents;
 
+  dirichletintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
   dirichletintveccomponents.push_back(
     Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
+  dirichletrealsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("VAL")));
   dirichletrealveccomponents.push_back(
     Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+  dirichletintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
   dirichletintveccomponents.push_back(
     Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
+  dirichletintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
   dirichletintveccomponents.push_back(
     Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
 
+  dirichletbundcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
   dirichletbundcomponents.push_back(
       Teuchos::rcp(
         new DirichletNeumannBundle(
             "dirichbund",
             Teuchos::rcp(new IntConditionComponent("numdof")),
+            dirichletintsepveccomponents,
             dirichletintveccomponents,
+            dirichletrealsepveccomponents,
             dirichletrealveccomponents)));
 
   Teuchos::RCP<ConditionDefinition> pointdirichlet =

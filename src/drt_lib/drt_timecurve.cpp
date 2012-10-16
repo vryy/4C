@@ -601,7 +601,11 @@ DRT::UTILS::TimeCurve& DRT::UTILS::TimeCurveManager::Curve(int num)
 {
   // ensure that desired curve is available (prevents segmentation fault)
   if ((curves_.size()< (unsigned int)(num+1)) || num<0)
-    dserror("time curve %d not available",num+1);
+    dserror("time curve %d not available \n"
+        "possible problems: \n"
+        "a) Dirichlet condition: \n "
+        "   defined NUMDOF's does not match number of dof's defined by "
+        "   the problem type / material / space dimensions",num+1);
 
   return *(curves_[num]);
 }
@@ -957,18 +961,18 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
     {
       SampleNumber.push_back(ArrayLength_[p]*flowrate_);
     }
-    
+
     for (int p=0; p<=DataLength/2; p++)
     {
       EvenCoefficient.push_back(0);
       OddCoefficient.push_back(0);
     }
-    
+
     for (int p=0; p<=DataLength/2; p++)
     {
       EvenCoefficient[p] = 0;
       OddCoefficient[p] = 0;
-      
+
       for (int num=0; num<=DataLength-1; num++)
       {
         EvenCoefficient[p] = EvenCoefficient[p]
@@ -977,11 +981,11 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
           + 2/C*SampleNumber[num]*sin(2*PI*p*(num+1)/C);
       }
     }
-    
+
     EvenCoefficient[DataLength/2] = EvenCoefficient[DataLength/2]/2;
     OddCoefficient[DataLength/2] = 0;
     fac = EvenCoefficient[0]/2;
-    
+
     for (int h=1; h<=DataLength/2; h++)
     {
       fac = fac
@@ -1014,7 +1018,7 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
 
     // get values the interpolation values
     double val1 = ArrayLength_[index_1];
-   
+
     if (index_1 != DataLength - 1)
     {
       index_2 = index_1 + 1;
@@ -1031,13 +1035,13 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
     fac  =  (time_2 - loc_time)*val1 + (loc_time - time_1)*val2;
     fac /=  (time_2 - time_1);
     fac *= flowrate_;
-    
+
   }
   else
   {
     dserror("[%s]: \"PhysiologicalWaveform\" can have only \"Fourier\" or \"Linear\" interpolations",interp_type_.c_str());
   }
-    
+
   return fac;
 }
 

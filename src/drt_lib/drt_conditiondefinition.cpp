@@ -351,7 +351,10 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(DR
           condline = PushBack(number,condline);
           break;
         }
-        dserror("failed to read number '%s' while reading variable '%s' in '%s'",
+        dserror("Expected %i input parameters for variable '%s' in '%s'\n"
+                "or \n"
+                "Failed to read number '%s' while reading variable '%s' in '%s'",
+                length_,Name().c_str(),def->SectionName().c_str(),
                 number.c_str(),Name().c_str(),def->SectionName().c_str());
       }
     }
@@ -469,12 +472,16 @@ DRT::INPUT::DirichletNeumannBundle::DirichletNeumannBundle
 (
   std::string name,
   Teuchos::RCP<IntConditionComponent> intcomp,
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > intvectsepcomp,
   std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp,
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > realvectsepcomp,
   std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp
 )
   : ConditionComponent(name),
     intcomp_(intcomp),
+    intvectsepcomp_(intvectsepcomp),
     intvectcomp_(intvectcomp),
+    realvectsepcomp_(realvectsepcomp),
     realvectcomp_(realvectcomp)
 {};
 
@@ -482,11 +489,19 @@ void DRT::INPUT::DirichletNeumannBundle::DefaultLine(std::ostream& stream)
 {
   intcomp_->DefaultLine(stream);
   stream << "  ";
+  intvectsepcomp_[0]->DefaultLine(stream);
+  stream << " ";
   intvectcomp_[0]->DefaultLine(stream);
+  stream << " ";
+  realvectsepcomp_[0]->DefaultLine(stream);
   stream << " ";
   realvectcomp_[0]->DefaultLine(stream);
   stream << " ";
+  intvectsepcomp_[1]->DefaultLine(stream);
+  stream << " ";
   intvectcomp_[1]->DefaultLine(stream);
+  stream << " ";
+  intvectsepcomp_[2]->DefaultLine(stream);
   stream << " ";
   intvectcomp_[2]->DefaultLine(stream);
   stream << " ";
@@ -496,11 +511,19 @@ void DRT::INPUT::DirichletNeumannBundle::Print(std::ostream& stream, const DRT::
 {
   intcomp_->Print(stream,cond);
   stream << "  ";
+  intvectsepcomp_[0]->Print(stream,cond);
+  stream << " ";
   intvectcomp_[0]->Print(stream,cond);
+  stream << " ";
+  realvectsepcomp_[0]->Print(stream,cond);
   stream << " ";
   realvectcomp_[0]->Print(stream,cond);
   stream << " ";
+  intvectsepcomp_[1]->Print(stream,cond);
+  stream << " ";
   intvectcomp_[1]->Print(stream,cond);
+  stream << " ";
+  intvectsepcomp_[2]->Print(stream,cond);
   stream << " ";
   intvectcomp_[2]->Print(stream,cond);
   stream << " ";
@@ -513,12 +536,16 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(Conditi
   intcomp_->Read(def,condline,condition);
   int length = condition->GetInt(intcomp_->Name());
 
+  intvectsepcomp_[0]->Read(def,condline,condition);
   intvectcomp_[0]->SetLength(length);
   intvectcomp_[0]->Read(def,condline,condition);
+  realvectsepcomp_[0]->Read(def,condline,condition);
   realvectcomp_[0]->SetLength(length);
   realvectcomp_[0]->Read(def,condline,condition);
+  intvectsepcomp_[1]->Read(def,condline,condition);
   intvectcomp_[1]->SetLength(length);
   intvectcomp_[1]->Read(def,condline,condition);
+  intvectsepcomp_[2]->Read(def,condline,condition);
   intvectcomp_[2]->SetLength(length);
   intvectcomp_[2]->Read(def,condline,condition);
 

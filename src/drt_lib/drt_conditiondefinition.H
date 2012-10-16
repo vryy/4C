@@ -347,7 +347,9 @@ namespace INPUT
     (
       std::string name,
       Teuchos::RCP<IntConditionComponent> intcomp,
+      std::vector<Teuchos::RCP<SeparatorConditionComponent> > intvectsepcomp,
       std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp,
+      std::vector<Teuchos::RCP<SeparatorConditionComponent> > realvectsepcomp,
       std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp
     );
 
@@ -362,7 +364,9 @@ namespace INPUT
     int numintvectcomp_;
     int numrealvectcomp_;
     Teuchos::RCP<IntConditionComponent> intcomp_;
+    std::vector<Teuchos::RCP<SeparatorConditionComponent> > intvectsepcomp_;
     std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp_;
+    std::vector<Teuchos::RCP<SeparatorConditionComponent> > realvectsepcomp_;
     std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp_;
   };
 
