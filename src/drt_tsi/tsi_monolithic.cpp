@@ -974,7 +974,7 @@ bool TSI::Monolithic::Converged()
       convinc = norminc_ < tolinc_;
       break;
     default:
-      dserror("Cannot check for convergence of residual values!");
+      dserror("Cannot check for convergence of increments!");
   }
 
   // structural and thermal residual forces
@@ -987,7 +987,11 @@ bool TSI::Monolithic::Converged()
     convfres = ( ((normstrrhs_/ns_) < tolfres_) and ((normthrrhs_/nt_) < tolfres_) );
     break;
   case INPAR::TSI::convnorm_reliter0:
-    convfres = (normrhs_/normrhsiter0_ < tolfres_);
+    // when Converged() is called the first time, normrhsiter0_ is not filled
+    // with the norm includes its initial value, i.e. 0.0 used in the denominator
+    // in convfres leading to infinity
+    // convfres := normrhs_/normrhsiter0_ < tolfres_
+    convfres = ( normrhs_ < (tolfres_ * normrhsiter0_ ));
     break;
   case INPAR::TSI::convnorm_mix:
     convfres = ( (normstrrhs_ < tolfres_) and (normthrrhs_ < tolfres_) );
