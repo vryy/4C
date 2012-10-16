@@ -309,7 +309,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   dirichletintveccomponents.push_back(
     Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
   dirichletintsepveccomponents.push_back(
-      Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+      Teuchos::rcp(new SeparatorConditionComponent("FUNCT",true)));
   dirichletintveccomponents.push_back(
     Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
 
