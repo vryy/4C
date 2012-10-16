@@ -348,7 +348,6 @@ namespace MAT
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
       const int firstiter,  ///< iteration index, different for explicit and implicit integration
-      double dt,  ///< delta time
       double time  ///< time
     );
 
@@ -362,7 +361,6 @@ namespace MAT
       LINALG::Matrix<3,1> a,  ///< fiber vector
       double* currmassdens,  ///< current massdensity
       const int firstiter,  ///< iteration index, different for explicit and implicit integration
-      double dt,  ///< delta time
       double time,  ///< time
       const int idfiber  ///< number of fiber family 0,1,2,3
      );

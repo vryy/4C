@@ -35,6 +35,7 @@ Maintainer: Susanna Tinkl
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H" // for debug plotting with gmsh
 #include "../drt_fem_general/drt_utils_integration.H" // for debug plotting with gmsh
 #include "../drt_lib/drt_utils.H" // for debug plotting with gmsh
+#include "../drt_inpar/inpar_structure.H"  // for pstime
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -260,6 +261,9 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
     visrefmassdens_->at(gp)(0) = params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/4.0;
     visrefmassdens_->at(gp)(1) = params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/4.0;
     visrefmassdens_->at(gp)(2) = params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/4.0;
+//    visrefmassdens_->at(gp)(0) = params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/10.0;
+//    visrefmassdens_->at(gp)(1) = params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/10.0;
+//    visrefmassdens_->at(gp)(2) = params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/5.0*2.0;
   }
 
   // history
@@ -333,6 +337,15 @@ void MAT::ConstraintMixture::SetupHistory (const int numgp)
     numpast = static_cast<int>(round(taumax / dt)) + firstiter;
   }
 
+  // prestress time
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(timeintegr,"PRESTRESS");
+  if (pstype == INPAR::STR::prestress_mulf)
+  {
+    double pstime = timeintegr.get<double>("PRESTRESSTIME");
+    if (pstime > params_->starttime_ + dt)
+      dserror("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
+  }
+
   // basal mass production rate determined by DENS, PHIE and degradation function
   double intdegr = 0.0;
   for (int idpast = 0; idpast < numpast - firstiter; idpast++)
@@ -342,6 +355,7 @@ void MAT::ConstraintMixture::SetupHistory (const int numgp)
     intdegr += degr * dt;
   }
   massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 4.0 / intdegr;
+//  massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 10.0 / intdegr;
 
   // history
   history_ = Teuchos::rcp(new vector<ConstraintMixtureHistory> (numpast));
@@ -453,23 +467,20 @@ void MAT::ConstraintMixture::Evaluate
 
   if (!output) {
     // set actual time as it might have changed after an restart etc. but just once
-    // in remodeling time might be wrong depending on the time integration used
-    // correct this for the computation but do not store it
     double temptime = 0.0;
     double tempdt = 0.0;
     history_->back().GetTime(&temptime, &tempdt);
     if (temptime == 0.0 && tempdt == 0.0)
     {
-      int size = history_->size();
-      history_->at(size-2).GetTime(&temptime, &tempdt);
-      // for restart ApplyForceInternal calls the material with the old time
-      // thus make sure not to store it
+      int numpast = history_->size();
+      history_->at(numpast-2).GetTime(&temptime, &tempdt);
+      // for restart the function ApplyForceInternal calls the material with the old time
+      // (i.e. time = temptime) thus make sure not to store it
       if (time > temptime + 1.0e-12)
       {
         history_->back().SetTime(time, dt);
         // if you change your time step size the basal mass production rate changes
         // basal mass production rate determined by DENS, PHIE and degradation function
-        int numpast = history_->size();
         double intdegr = 0.0;
         double degrtime = 0.0;
         double degrdt = 0.0;
@@ -488,10 +499,31 @@ void MAT::ConstraintMixture::Evaluate
           intdegr += degr * degrdt;
         }
         massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 4.0 / intdegr;
+//        massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 10.0 / intdegr;
       }
     }
     else if (time > temptime)
-      time = temptime;
+    {
+      // might be the case in prestressing as Update is not called during prestress
+      // thus time has to be adapted and nothing else, as there is no growth & remodeling during prestress
+      const ParameterList& pslist = DRT::Problem::Instance()->StructuralDynamicParams();
+      INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+      if (pstype == INPAR::STR::prestress_mulf)
+      {
+        // overwrite time
+        int sizehistory = history_->size();
+        for (int idpast = 0; idpast < sizehistory; idpast++)
+        {
+          history_->at(idpast).SetTime(time - (sizehistory-1-idpast)*dt, dt);
+        }
+      }
+      else
+      {
+        // in remodeling time might be wrong depending on the time integration used
+        // correct this for the computation but do not store it
+        time = temptime;
+      }
+    }
 
     //--------------------------------------------------------------------------------------
     // build identity tensor I
@@ -544,9 +576,11 @@ void MAT::ConstraintMixture::Evaluate
     LINALG::Matrix<4,1> massprodstart(true);
     for (int id = 0; id < 4; id++)
       massprodstart(id) = massprodbasal_;
+//    massprodstart(2) = massprodstart(2)*4;
+//    massprodstart(3) = massprodstart(3)*4;
     history_->back().SetMass(gp, massprodstart);
 
-    EvaluateStress(glstrain, gp, cmat, stress, firstiter, dt, time);
+    EvaluateStress(glstrain, gp, cmat, stress, firstiter, time);
 
     //--------------------------------------------------------------------------------------
     // compute new deposition rates
@@ -561,22 +595,22 @@ void MAT::ConstraintMixture::Evaluate
       LINALG::Matrix<NUM_STRESS_3D,1> stresstemp(true);
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmattemp(true);
       double masstemp = 0.0;
-      EvaluateFiberFamily(glstrain, gp, &cmattemp, &stresstemp, a1_->at(gp), &masstemp, firstiter, dt, time, 0);
+      EvaluateFiberFamily(glstrain, gp, &cmattemp, &stresstemp, a1_->at(gp), &masstemp, firstiter, time, 0);
       MassProductionSingleFiber(gp, C, stresstemp, &massstresstemp, &massprodtemp, a1_->at(gp), 0);
       massstress(0) = massstresstemp;
       massprodcomp(0) = massprodtemp;
       stresstemp.Scale(0.0);
-      EvaluateFiberFamily(glstrain, gp, &cmattemp, &stresstemp, a2_->at(gp), &masstemp, firstiter, dt, time, 1);
+      EvaluateFiberFamily(glstrain, gp, &cmattemp, &stresstemp, a2_->at(gp), &masstemp, firstiter, time, 1);
       MassProductionSingleFiber(gp, C, stresstemp, &massstresstemp, &massprodtemp, a2_->at(gp), 1);
       massstress(1) = massstresstemp;
       massprodcomp(1) = massprodtemp;
       stresstemp.Scale(0.0);
-      EvaluateFiberFamily(glstrain, gp, &cmattemp, &stresstemp, a3_->at(gp), &masstemp, firstiter, dt, time, 2);
+      EvaluateFiberFamily(glstrain, gp, &cmattemp, &stresstemp, a3_->at(gp), &masstemp, firstiter, time, 2);
       MassProductionSingleFiber(gp, C, stresstemp, &massstresstemp, &massprodtemp, a3_->at(gp), 2);
       massstress(2) = massstresstemp;
       massprodcomp(2) = massprodtemp;
       stresstemp.Scale(0.0);
-      EvaluateFiberFamily(glstrain, gp, &cmattemp, &stresstemp, a4_->at(gp), &masstemp, firstiter, dt, time, 3);
+      EvaluateFiberFamily(glstrain, gp, &cmattemp, &stresstemp, a4_->at(gp), &masstemp, firstiter, time, 3);
       MassProductionSingleFiber(gp, C, stresstemp, &massstresstemp, &massprodtemp, a4_->at(gp), 3);
       massstress(3) = massstresstemp;
       massprodcomp(3) = massprodtemp;
@@ -620,7 +654,22 @@ void MAT::ConstraintMixture::Evaluate
     // in case of output everything is fully converged, we just have to evaluate stress etc.
     // should be independent of order of update and output, as new steps are set with dt = 0.0
     // and oldest fibers are carefully erased
-    EvaluateStress(glstrain, gp, cmat, stress, firstiter, dt, time);
+    double temptime = 0.0;
+    double tempdt = 0.0;
+    history_->back().GetTime(&temptime,&tempdt);
+    if (time != temptime)
+    {
+      if (temptime == 0.0)
+      {
+        int size = history_->size();
+        history_->at(size-2).GetTime(&temptime,&tempdt);
+        EvaluateStress(glstrain, gp, cmat, stress, firstiter, temptime);
+        dserror("has to be checked, update called before output");
+      } else
+        dserror("times do not match: %f actual time, %f deposition time of last fiber",time,temptime);
+    }
+    else
+      EvaluateStress(glstrain, gp, cmat, stress, firstiter, time);
   }
 } // Evaluate
 
@@ -634,7 +683,6 @@ void MAT::ConstraintMixture::EvaluateStress
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
   LINALG::Matrix<NUM_STRESS_3D,1>* stress,
   const int firstiter,
-  double dt,
   double time
 )
 {
@@ -665,13 +713,13 @@ void MAT::ConstraintMixture::EvaluateStress
 
   // 2nd step: collagen
   //==========================
-  EvaluateFiberFamily(glstrain, gp, cmat, stress, a1_->at(gp), &currmassdens, firstiter, dt, time, 0);
+  EvaluateFiberFamily(glstrain, gp, cmat, stress, a1_->at(gp), &currmassdens, firstiter, time, 0);
 
-  EvaluateFiberFamily(glstrain, gp, cmat, stress, a2_->at(gp), &currmassdens, firstiter, dt, time, 1);
+  EvaluateFiberFamily(glstrain, gp, cmat, stress, a2_->at(gp), &currmassdens, firstiter, time, 1);
 
-  EvaluateFiberFamily(glstrain, gp, cmat, stress, a3_->at(gp), &currmassdens, firstiter, dt, time, 2);
+  EvaluateFiberFamily(glstrain, gp, cmat, stress, a3_->at(gp), &currmassdens, firstiter, time, 2);
 
-  EvaluateFiberFamily(glstrain, gp, cmat, stress, a4_->at(gp), &currmassdens, firstiter, dt, time, 3);
+  EvaluateFiberFamily(glstrain, gp, cmat, stress, a4_->at(gp), &currmassdens, firstiter, time, 3);
 
   // 3rd step: smooth muscle
   //==========================
@@ -710,7 +758,6 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
   LINALG::Matrix<3,1> a,
   double* currmassdens,
   const int firstiter,
-  double dt,
   double time,
   const int idfiber
  )
@@ -755,9 +802,11 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
     LINALG::Matrix<4,1> collstretch(true);
     history_->at(idpast).GetStretches(gp, &collstretch);
     double stretch = prestretchcollagen / collstretch(idfiber);
-    // we already have prestretch in prestress time, thus the prestretch from the inputfile is not applied
-//    if (deptime <= pstime + 1.0e-12)
-//      stretch = 1.0 / collstretch(idfiber);
+
+    // prestretch of collagen fibers is not apllied, might be reasonable combined with prestress
+    if (*params_->initstretch_ == "experimental" && deptime <= params_->starttime_ + eps)
+      stretch = 1.0 / collstretch(idfiber);
+
     LINALG::Matrix<NUM_STRESS_3D,1> Saniso(true);
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso(true);
     EvaluateSingleFiber(glstrain, & cmataniso, & Saniso, a, stretch);
@@ -1148,9 +1197,10 @@ void MAT::ConstraintMixture::MassProduction
   }
   massstress3 = sqrt(massstress3) / currentstretch(2);
   if (params_->homstress_ != 0.0)
-    (*massprodcomp)(2) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress3 / params_->homstress_ - 1.0));
+    (*massprodcomp)(2) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress3 / params_->homstress_ - 1.0)); // /4.0 massstress3
   else
     (*massprodcomp)(2) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress3);
+//  (*massprodcomp)(2) = 4. * (*massprodcomp)(2);
 
   double massstress4 = 0.0;
   for (int i=0; i < 3; i++){
@@ -1160,9 +1210,10 @@ void MAT::ConstraintMixture::MassProduction
   }
   massstress4 = sqrt(massstress4) / currentstretch(3);
   if (params_->homstress_ != 0.0)
-    (*massprodcomp)(3) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress4 / params_->homstress_ - 1.0));
+    (*massprodcomp)(3) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress4 / params_->homstress_ - 1.0)); // /4.0 massstress4
   else
     (*massprodcomp)(3) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress4);
+//  (*massprodcomp)(3) = 4. * (*massprodcomp)(3);
 
   (*massstress)(0) = massstress1;
   (*massstress)(1) = massstress2;
@@ -1228,10 +1279,15 @@ void MAT::ConstraintMixture::MassProductionSingleFiber
 
   (*massstress) = temp(0);
   (*massstress) = sqrt(*massstress) / currentstretch(idfiber);
+  double homstress = params_->homstress_;
+//  if (idfiber == 2 || idfiber == 3)
+//    homstress = 4. * homstress;
   if (params_->homstress_ != 0.0)
-    (*massprodcomp) = massprodbasal_ * (1.0 + params_->growthfactor_ * ((*massstress) / params_->homstress_ - 1.0));
+    (*massprodcomp) = massprodbasal_ * (1.0 + params_->growthfactor_ * ((*massstress) / homstress - 1.0));
   else
     (*massprodcomp) = massprodbasal_ * (1.0 + params_->growthfactor_ * (*massstress));
+//  if (idfiber == 2 || idfiber == 3)
+//    (*massprodcomp) = 4. * (*massprodcomp);
 }
 
 /*----------------------------------------------------------------------*
@@ -1343,7 +1399,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll
   history_->back().SetMass(gp,massprod);
   LINALG::Matrix<NUM_STRESS_3D,1> stressresidual(true);
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmattemp(true);
-  EvaluateStress(glstrain, gp, &cmattemp, &stressresidual, firstiter, dt, time);
+  EvaluateStress(glstrain, gp, &cmattemp, &stressresidual, firstiter, time);
 
   // determine residual
   LINALG::Matrix<NUM_STRESS_3D,1> Residual(*stress);
@@ -1422,7 +1478,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll
       MassProduction(gp, C, stepstress, &massstress, &massprod);
       history_->back().SetMass(gp, massprod);
       stressresidual.Scale(0.0);
-      EvaluateStress(glstrain, gp, &cmattemp, &stressresidual, firstiter, dt, time);
+      EvaluateStress(glstrain, gp, &cmattemp, &stressresidual, firstiter, time);
 
       Residualtemp.Update(1.0,stepstress,-1.0,stressresidual);
     }
@@ -1457,7 +1513,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll
     dserror("local Newton iteration did not converge %e", Residual.Norm2());
 
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
-  EvaluateStress(glstrain, gp, &cmatelastic, stress, firstiter, dt, time);
+  EvaluateStress(glstrain, gp, &cmatelastic, stress, firstiter, time);
 
   //--------------------------------------------------------------------------------------
   // compute cmat
@@ -1619,14 +1675,14 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
     double currmassdenstemp = 0.0;
     double massprodfiber = 0.0;
     double massstressfiber = 0.0;
-    EvaluateFiberFamily(glstrain, gp, &cmatfiber, &stressfiber, a, &currmassdensfiber, firstiter, dt, time, idfiber);
+    EvaluateFiberFamily(glstrain, gp, &cmatfiber, &stressfiber, a, &currmassdensfiber, firstiter, time, idfiber);
     // mass always corresponds to the current stress
     MassProductionSingleFiber(gp, C, stressfiber, &massstressfiber, &massprodfiber, a, idfiber);
     massprod(idfiber) = massprodfiber;
     history_->back().SetMass(gp, massprod);
     massstress(idfiber) = massstressfiber;
     // compute stresses for the computed mass
-    EvaluateFiberFamily(glstrain, gp, &cmattemp, &stressresidual, a, &currmassdenstemp, firstiter, dt, time, idfiber);
+    EvaluateFiberFamily(glstrain, gp, &cmattemp, &stressresidual, a, &currmassdenstemp, firstiter, time, idfiber);
 
     LINALG::Matrix<3,3> Smatrix(true);
     Smatrix(0,0) = stressfiber(0);
@@ -1697,7 +1753,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
         massstress(idfiber) = massstressfiber;
         // compute stresses for the computed mass
         stressresidual.Scale(0.0);
-        EvaluateFiberFamily(glstrain, gp, &cmattemp, &stressresidual, a, &currmassdenstemp, firstiter, dt, time, idfiber);
+        EvaluateFiberFamily(glstrain, gp, &cmattemp, &stressresidual, a, &currmassdenstemp, firstiter, time, idfiber);
 
         Residualtemp.Update(1.0,stepstress,-1.0,stressresidual);
       }
@@ -1730,7 +1786,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
     currmassdensfiber = 0.0;
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
     stressfiber.Scale(0.0);
-    EvaluateFiberFamily(glstrain, gp, &cmatelastic, &stressfiber, a, &currmassdensfiber, firstiter, dt, time, idfiber);
+    EvaluateFiberFamily(glstrain, gp, &cmatelastic, &stressfiber, a, &currmassdensfiber, firstiter, time, idfiber);
 
     //--------------------------------------------------------------------------------------
     // compute cmat
@@ -2098,8 +2154,8 @@ void MAT::ConstraintMixtureHistory::Setup(const int ngp,const double massprodbas
     collagenstretch4_->at(gp) = 1.0;
     massprod1_->at(gp) = massprodbasal;
     massprod2_->at(gp) = massprodbasal;
-    massprod3_->at(gp) = massprodbasal;
-    massprod4_->at(gp) = massprodbasal;
+    massprod3_->at(gp) = massprodbasal; //*4.;
+    massprod4_->at(gp) = massprodbasal; //*4.;
   }
 }
 
