@@ -3423,27 +3423,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ViscousGalPart(
           const int fvi_p_idim = fvi+idim;
 
           estif_u(fvi_p_idim,fui+jdim) += temp*derxy_(idim, ui);
-        } // end for (jdim)
-      } // end for (idim)
-    } // ui
-  } //vi
-
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi   = nsd_*vi;
-
-    for (int jdim= 0; jdim<nsd_;++jdim)
-    {
-      const double temp=visceff_timefacfac*derxy_(jdim,vi);
-
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui   = nsd_*ui;
-
-        for (int idim = 0; idim <nsd_; ++idim)
-        {
-          const int fvi_p_idim = fvi+idim;
-
           estif_u(fvi_p_idim,fui+idim) += temp*derxy_(jdim, ui);
         } // end for (jdim)
       } // end for (idim)
