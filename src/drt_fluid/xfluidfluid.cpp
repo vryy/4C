@@ -4080,7 +4080,7 @@ double FLD::XFluidFluid::TimIntParam() const
   break;
   case INPAR::FLUID::timeint_one_step_theta:
     // this is the interpolation weight for quantities from last time step
-    retval = 0.0;
+    retval = 1.0 - theta_;
   break;
   case INPAR::FLUID::timeint_bdf2:
     // this is the interpolation weight for quantities from last time step
