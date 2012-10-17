@@ -1,3 +1,10 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file direct_divergence.cpp
+
+\brief Generate main Gauss points when using "DirectDivergence" approach.
+equations
+ *------------------------------------------------------------------------------------------------*/
+
 #include "direct_divergence.H"
 #include "facet_integration.H"
 #include "volume_integration.H"

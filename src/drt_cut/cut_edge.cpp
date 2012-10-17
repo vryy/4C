@@ -7,7 +7,9 @@
 #include <string>
 #include <stack>
 
-//Computes the points at which both the sides intersect
+/*------------------------------------------------------------------------*
+ *  Find points at which this edge which is in "side" cuts the "other"
+ *------------------------------------------------------------------------*/
 bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
                                     Element * element,
                                     Side & side,
@@ -54,6 +56,9 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
   return cut_points.size()>0;
 }
 
+/*---------------------------------------------------------------------------------------*
+ * Cut points falling on this edge that are common to the two given sides are extracted
+ *---------------------------------------------------------------------------------------*/
 void GEO::CUT::Edge::GetCutPoints( Element * element,
                                    Side & side,
                                    Side & other,
@@ -69,6 +74,9 @@ void GEO::CUT::Edge::GetCutPoints( Element * element,
   }
 }
 
+/*---------------------------------------------------------------------------------------*
+ * Cut points falling on this edge that are common to the given edge are extracted
+ *---------------------------------------------------------------------------------------*/
 void GEO::CUT::Edge::GetCutPoints( Edge * other, PointSet & cuts )
 {
   for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )

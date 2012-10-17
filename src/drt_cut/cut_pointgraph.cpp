@@ -44,10 +44,10 @@ GEO::CUT::IMPL::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * s
 #endif
 #endif
 
-  if ( graph_.HasSinglePoints() )
+  if ( graph_.HasSinglePoints() ) // if any edge in graph has single point
   {
 #if 1
-    graph_.FixSinglePoints( cycle );
+    graph_.FixSinglePoints( cycle ); // delete singe point edges
 #else
     graph_.TestClosed();
 #endif
@@ -73,22 +73,34 @@ GEO::CUT::IMPL::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * s
   graph_.FindCycles( element, side, cycle, location, strategy );
 }
 
+/*--------------------------------------------------------------------------------------------------*
+ * Get all edges created on this side after cut, store cycle of points on this side to create facet
+ * Also add cut lines to the graph
+ *--------------------------------------------------------------------------------------------------*/
 void GEO::CUT::IMPL::PointGraph::FillGraph( Element * element, Side * side, Cycle & cycle, Strategy strategy )
 {
   const std::vector<Node*> & nodes = side->Nodes();
   const std::vector<Edge*> & edges = side->Edges();
   int end_pos = 0;
+
+  // loop over all edges of the parent side
   for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
   {
     Edge * e = *i;
 
+    // get start and end node numbers corresponding to this edge
     int begin_pos = end_pos;
     end_pos = ( end_pos + 1 ) % nodes.size();
 
     std::vector<Point*> edge_points;
+
+    // get all points on this edge including start and end points
+    // points are already sorted
     e->CutPoint( nodes[begin_pos], nodes[end_pos], edge_points );
 
-    for ( unsigned i=1; i<edge_points.size(); ++i )
+    // when edge of a side has "n" cut points, the edge itself is split into (n+1) edges
+    // store all (n+1) edges to graph
+    for ( unsigned i=1; i<edge_points.size(); ++i ) // no of edges = no of points-1
     {
       Point * p1 = edge_points[i-1];
       Point * p2 = edge_points[i];
@@ -104,12 +116,16 @@ void GEO::CUT::IMPL::PointGraph::FillGraph( Element * element, Side * side, Cycl
 
   const std::vector<Line*> & cut_lines = side->CutLines();
 
+  // add cut lines to graph
+  // no need to add any more point to cycle because cut lines just join already existing points
+  // on the edge. making cut lines do not introduce additional points
   for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
   {
     Line * l = *i;
     bool element_cut = l->IsCut( element );
     if ( strategy==all_lines or element_cut )
       graph_.AddEdge( l->BeginPoint(), l->EndPoint() );
+#if DEBUGCUTLIBRARY
     if ( element_cut )
     {
       Point * p1 = l->BeginPoint();
@@ -124,6 +140,7 @@ void GEO::CUT::IMPL::PointGraph::FillGraph( Element * element, Side * side, Cycl
         throw std::runtime_error( str.str() );
       }
     }
+#endif
   }
 }
 
@@ -221,6 +238,9 @@ bool FindCycles( graph_t & g, Cycle & cycle, std::map<vertex_t, LINALG::Matrix<3
       std::map<double, vertex_t>::iterator j = arcs.find( arc );
       if ( j!=arcs.end() )
       {
+        // this occured once when more than one nodes of the background element
+        // has same coordinates (sudhakar)
+        // check input file for two nodes (in same domain) having same coordinates
         throw std::runtime_error( "numeric error: double arc" );
       }
 
@@ -311,7 +331,8 @@ bool FindCycles( graph_t & g, Cycle & cycle, std::map<vertex_t, LINALG::Matrix<3
   }
 }
 
-void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Element * element, Side * side, Cycle & cycle, Location location, Strategy strategy )
+void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Element * element, Side * side, Cycle & cycle,
+                                                    Location location, Strategy strategy )
 {
   graph_t g;
 
@@ -511,6 +532,9 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Element * element, Side * si
   }
 }
 
+/*---------------------------------------------------------------------------------*
+ * In graph, if any edge has a single point, it will be deleted
+ *---------------------------------------------------------------------------------*/
 void GEO::CUT::IMPL::PointGraph::Graph::FixSinglePoints( Cycle & cycle )
 {
   for ( ;; )

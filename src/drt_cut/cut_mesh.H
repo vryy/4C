@@ -98,7 +98,7 @@ public:
   Facet* NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface );
 
   VolumeCell* NewVolumeCell( const plain_facet_set & facets,
-                             const std::map<std::pair<Point*, Point*>, plain_facet_set> & volume_lines,
+  													 const std::map<std::pair<Point*, Point*>, plain_facet_set> & volume_lines,
                              Element * element );
 
   Tri3BoundaryCell* NewTri3Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
@@ -118,6 +118,9 @@ public:
 
   Pyramid5IntegrationCell* NewPyramid5Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
+  /*!
+  \brief Returns true if any one of the cut sides cuts another side
+   */
   bool DetectSelfCut();
 
   /*!
@@ -207,8 +210,15 @@ public:
 
   void GetNodeMap( std::map<int, Node*> & nodemap);
 
+  /*!
+  \brief Returns the node with given id
+   */
   Node* GetNode( int nid ) const;
 
+  /*!
+  \brief If node with the given id exists return the node, else create a new node with
+  given coordinates and levelset value
+   */
   Node* GetNode( int nid, const double * xyz, double lsv=0.0 );
 
 #if 0
@@ -237,8 +247,15 @@ public:
                  const std::vector<Node*> & nodes,
                  const CellTopologyData * top_data );
 
+  /*!
+  \brief Returns the element with given id
+   */
   Element* GetElement( int eid );
 
+  /*!
+  \brief  If element with the given id exists return the element, else create a new element
+  with given node ids and details given in cell topology data
+   */
   Element* GetElement( int eid,
                        const std::vector<int> & nids,
                        const CellTopologyData & top_data,
@@ -257,8 +274,12 @@ public:
                        const CellTopologyData & top_data );
 #endif
 
+  /*!
+  \brief Create a new element with given nodes. All details of the element are in
+   cell topology data
+   */
   Element* GetElement( int eid,
-                       const std::vector<Node*> & nids,
+                       const std::vector<Node*> & nodes,
                        const CellTopologyData & top_data,
                        bool active=true );
 
@@ -295,6 +316,9 @@ private:
                  const std::vector<Edge*> & edges,
                  const CellTopologyData & side_topology );
 
+  /*!
+  \brief Create new line between the two given cut points that are in given two cut sides
+  */
   GEO::CUT::Line * NewLineInternal( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
 
   /// setup phase flag

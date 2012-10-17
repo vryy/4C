@@ -1,3 +1,9 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file facet_integration.H
+
+\brief Integrates base functions over the facet for both volumecell facets and for boundarycells
+equations
+ *------------------------------------------------------------------------------------------------*/
 #ifndef FACET_INTEGRATION_H
 #define FACET_INTEGRATION_H
 
@@ -107,14 +113,31 @@ namespace GEO
                              std::string alreadyDone,
                              Mesh &mesh );
 
+        //! considered facet
         Facet *face1_;
+
+        //! background element which was cut to produce this facet
         Element *elem1_;
+
+        //! position of the facet
         const GEO::CUT::Point::PointPosition position_;
+
+        //! True for boundarycell integration
         bool bcellInt_;
+
+        //! True if performing integration in global coordinates
         bool global_;
+
+        //! set the base function to be integrated
         int inte_num_;
+
+        //! True if nodes of facet are arranged to give inward normal
         bool clockwise_;
-        bool orderingComputed_; // whether the clockwise or ACW ordering computed already
+
+        //! whether the clockwise or ACW ordering of facet computed already
+        bool orderingComputed_;
+
+        //! equation of plane that contains the facet
         std::vector<double> eqn_plane_;
 
     };

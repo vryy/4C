@@ -526,10 +526,13 @@ void GEO::CUT::Facet::GetLines( const std::vector<Point*> & points,
     {
       lines[std::make_pair( p1, p2 )].insert( this );
     }
-    else
+    else if ( p1->Id() > p2->Id() )
     {
       lines[std::make_pair( p2, p1 )].insert( this );
     }
+    else
+      dserror( "line creation with identical begin and end points\n" );
+
   }
 }
 

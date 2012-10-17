@@ -1,3 +1,10 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file volume_integration.cpp
+
+\brief Integrates base functions over volume, distribute Gauss points and solve moment fitting
+equations
+ *------------------------------------------------------------------------------------------------*/
+
 #include<fstream>
 #include <cmath>
 #include<algorithm>

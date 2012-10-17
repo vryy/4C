@@ -125,8 +125,14 @@ public:
     facets_.insert( facet );
   }
 
+  /*!
+  \brief Identifies the edges that are cut by considered point and given point
+  */
   void CommonEdge( Point * other, plain_edge_set & edges );
 
+  /*!
+  \brief Identifies the sides that are cut by considered point and given point
+  */
   void CommonSide( Point * other, plain_side_set & sides );
 
   Line * CommonLine( Point * other );

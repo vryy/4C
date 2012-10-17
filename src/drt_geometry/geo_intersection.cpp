@@ -10,6 +10,7 @@ Maintainer: Benedikt Schott
             089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
+#include <Teuchos_Time.hpp>
 
 #include "../drt_fluid/xfluid_defines.H"
 
@@ -120,8 +121,15 @@ void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype
   // SECOND step: find node positions and create dofset in PARALLEL
   CutParallel_FindPositionDofSets( include_inner, communicate );
 
+  const double t_start = Teuchos::Time::wallTime();
   // THIRD step: perform tessellation or moment fitting on the mesh
   mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype );
+
+  const double t_end = Teuchos::Time::wallTime()-t_start;
+  //if ( backdis_.Comm().MyPID() == 0 )
+  //{
+    std::cout << "\n XFEM::FluidWizard::Quadrature construction time = " <<t_end<<"\n";
+  //}
 
 
   mesh_->Status(VCellgausstype);

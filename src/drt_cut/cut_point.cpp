@@ -79,6 +79,9 @@ void GEO::CUT::Point::AddSide( Side* s )
   }
 }
 
+/*-----------------------------------------------------------------------------------*
+ *    Identifies the edges that are cut by considered point and given point
+ *-----------------------------------------------------------------------------------*/
 void GEO::CUT::Point::CommonEdge( Point * other, plain_edge_set & edges )
 {
   for ( plain_edge_set::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
@@ -91,6 +94,9 @@ void GEO::CUT::Point::CommonEdge( Point * other, plain_edge_set & edges )
   }
 }
 
+/*-----------------------------------------------------------------------------------*
+ *    Identifies the sides that are cut by considered point and given point
+ *-----------------------------------------------------------------------------------*/
 void GEO::CUT::Point::CommonSide( Point * other, plain_side_set & sides )
 {
   for ( plain_side_set::iterator i=cut_sides_.begin(); i!=cut_sides_.end(); ++i )

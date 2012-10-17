@@ -84,8 +84,11 @@ public:
   /*!
   \brief Cutting the element with the given cut side
    */
-  bool Cut( Mesh & mesh, Side & side, int recursion );
+  bool Cut( Mesh & mesh, Side & cut_side, int recursion );
 
+  /*!
+  \brief Create cut lines over this element by connecting appropriate cut points
+  */
   void MakeCutLines( Mesh & mesh, Creator & creator );
 
   void MakeFacets( Mesh & mesh );
@@ -237,7 +240,7 @@ protected:
 private:
 
   /*!
-  \brief Check whether side is cut by other, or other is cut by side
+  \brief Returns true if there is atleast one cut point between the background element side and the cut side ("other")
    */
   bool FindCutPoints( Mesh & mesh, Side & side, Side & other, int recursion );
 

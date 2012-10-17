@@ -1,3 +1,10 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file line_integration.cpp
+
+\brief Integrates base functions over a line using one-dimensional Gauss quadrature
+equations
+ *------------------------------------------------------------------------------------------------*/
+
 #include "line_integration.H"
 #include "base.H"
 #include "base_boundarycell.H"

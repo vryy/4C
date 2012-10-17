@@ -11,6 +11,9 @@
 #include <stack>
 
 
+/*-----------------------------------------------------------------------------------------*
+      Returns the edge of this side with given begin and end points
+ *-----------------------------------------------------------------------------------------*/
 GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
 {
   for ( std::vector<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
@@ -23,8 +26,9 @@ GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
   }
   return NULL;
 }
-
-//Calculate the points at which the other side intersects with this considered side
+/*-----------------------------------------------------------------------------------------*
+    Calculate the points at which the other side intersects with this considered side
+ *-----------------------------------------------------------------------------------------*/
 bool GEO::CUT::Side::FindCutPoints( Mesh & mesh, Element * element, Side & other, int recursion )
 {
   bool cut = false;
@@ -44,6 +48,7 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
 {
 #if 1
   bool cut = false;
+  // check whether cut lines are already created
   for ( std::vector<Line*>::iterator i=cut_lines_.begin(); i!=cut_lines_.end(); ++i )
   {
     Line * l = *i;
@@ -60,6 +65,7 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
   }
 #endif
 
+  // creating cut lines between the given sides for the first time
   PointSet cuts;
   GetCutPoints( element, other, cuts );
 
@@ -399,6 +405,10 @@ void GEO::CUT::Side::GetBoundaryCells( plain_boundarycell_set & bcells )
   }
 }
 
+/*-----------------------------------------------------------------------------------------------*
+                create facets on the background sides of the element
+                For all these facets, parent side is an element side
+ *-----------------------------------------------------------------------------------------------*/
 void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
   if ( facets_.size()==0 )
@@ -439,6 +449,10 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_
   std::copy( facets_.begin(), facets_.end(), std::inserter( facets, facets.begin() ) );
 }
 
+/*-----------------------------------------------------------------------------------------------*
+                     create facets on the cut sides of the element
+                     For all these facets, parent side is a cut side
+ *-----------------------------------------------------------------------------------------------*/
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
   IMPL::PointGraph pg( mesh, element, this, IMPL::PointGraph::cut_side, IMPL::PointGraph::all_lines );

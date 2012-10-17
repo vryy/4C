@@ -95,6 +95,10 @@ public:
 
   void GetLines( std::map<std::pair<Point*, Point*>, plain_facet_set> & lines );
 
+
+  void GetLines( const std::vector<Point*> & points,
+                 std::map<std::pair<Point*, Point*>, plain_facet_set> & lines );
+
   bool IsLine( Point * p1, Point * p2 );
 
   bool Contains( Point * p ) const;
@@ -243,8 +247,6 @@ private:
 
   bool IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 );
 
-  void GetLines( const std::vector<Point*> & points,
-                 std::map<std::pair<Point*, Point*>, plain_facet_set> & lines );
 
   bool Equals( const std::vector<Point*> & my_points, const std::vector<Point*> & facet_points );
 

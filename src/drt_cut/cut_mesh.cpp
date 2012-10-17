@@ -151,6 +151,9 @@ void GEO::CUT::Mesh::GetNodeMap( std::map<int, Node *> & nodemap )
 }
 
 
+/*-------------------------------------------------------------------------------------*
+    Returns the node with given id
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid ) const
 {
   std::map<int, Teuchos::RCP<Node> >::const_iterator i = nodes_.find( nid );
@@ -161,6 +164,10 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid ) const
   return NULL;
 }
 
+/*-------------------------------------------------------------------------------------*
+    If node with the given id exists return the node, else create a new node with
+    given coordinates and levelset value
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz, double lsv )
 {
   std::map<int, Teuchos::RCP<Node> >::iterator i = nodes_.find( nid );
@@ -430,6 +437,9 @@ GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
   return s;
 }
 
+/*-------------------------------------------------------------------------------------*
+    Returns the element with given id
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid )
 {
   std::map<int, Teuchos::RCP<Element> >::iterator ie = elements_.find( eid );
@@ -440,6 +450,10 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid )
   return NULL;
 }
 
+/*-------------------------------------------------------------------------------------*
+    If element with the given id exists return the element, else create a new element
+    with given node ids. All details of the element are in cell topology data
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
                                                const std::vector<int> & nids,
                                                const CellTopologyData & top_data,
@@ -452,6 +466,10 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
   }
 
   unsigned nc = top_data.node_count;
+
+  /*if( nc != nids.size() )
+    dserror("node details does not match with topology data");*/
+
   std::vector<Node*> nodes;
   nodes.reserve( nc );
 
@@ -512,6 +530,10 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
 }
 #endif
 
+/*-------------------------------------------------------------------------------------*
+    Create a new element with given nodes. All details of the element are in
+    cell topology data
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
                                                const std::vector<Node*> & nodes,
                                                const CellTopologyData & top_data,
@@ -710,7 +732,8 @@ GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Si
   return p;
 }
 
-void GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines )
+void GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element,
+                              std::vector<Line*> * newlines )
 {
   if ( p1==p2 )
     throw std::runtime_error( "no line between same point" );
@@ -738,7 +761,11 @@ void GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut
   //return line;
 }
 
-GEO::CUT::Line * GEO::CUT::Mesh::NewLineInternal( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element )
+/*-------------------------------------------------------------------------------------------------*
+ *      Create new line between the two given cut points that are in given two cut sides
+ *-------------------------------------------------------------------------------------------------*/
+GEO::CUT::Line * GEO::CUT::Mesh::NewLineInternal( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2,
+                                                  Element * cut_element )
 {
   if ( p1==p2 )
     throw std::runtime_error( "no line between same point" );
@@ -758,7 +785,7 @@ GEO::CUT::Line * GEO::CUT::Mesh::NewLineInternal( Point* p1, Point* p2, Side * c
     std::cout << "\n";
 #endif
   }
-  else
+  else // line already exists. just add cut side details to the line
   {
     if ( cut_side1 )
       line->AddSide( cut_side1 );
@@ -770,7 +797,8 @@ GEO::CUT::Line * GEO::CUT::Mesh::NewLineInternal( Point* p1, Point* p2, Side * c
   return line;
 }
 
-bool GEO::CUT::Mesh::NewLinesBetween( const std::vector<Point*> & line, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines )
+bool GEO::CUT::Mesh::NewLinesBetween( const std::vector<Point*> & line, Side * cut_side1,
+                                      Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines )
 {
   bool hasnewlines = false;
   std::vector<Point*>::const_iterator i = line.begin();
@@ -836,7 +864,7 @@ GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, S
 }
 
 GEO::CUT::VolumeCell* GEO::CUT::Mesh::NewVolumeCell( const plain_facet_set & facets,
-                                                     const std::map<std::pair<Point*, Point*>, plain_facet_set > & volume_lines,
+																										 const std::map<std::pair<Point*, Point*>, plain_facet_set > & volume_lines,
                                                      Element * element )
 {
   VolumeCell * c = new VolumeCell( facets, volume_lines, element );
@@ -975,6 +1003,10 @@ GEO::CUT::Pyramid5IntegrationCell* GEO::CUT::Mesh::NewPyramid5Cell( Point::Point
   return c;
 }
 
+/*---------------------------------------------------------------*
+ * check whether any one of the cut sides cuts another cut side
+ * Our algorithm fails in such cases
+ *---------------------------------------------------------------*/
 bool GEO::CUT::Mesh::DetectSelfCut()
 {
   std::vector<Side*> mysides;
@@ -988,7 +1020,7 @@ bool GEO::CUT::Mesh::DetectSelfCut()
     mysides.push_back( side );
   }
 
-  std::sort( mysides.begin(), mysides.end() );
+  std::sort( mysides.begin(), mysides.end() ); // sorting to use std::binary_search
 
   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
@@ -998,13 +1030,13 @@ bool GEO::CUT::Mesh::DetectSelfCut()
     {
       BoundingBox sidebox( side );
       plain_side_set sides;
-      pp_->CollectSides( sidebox, sides );
+      pp_->CollectSides( sidebox, sides );  // all sides that fall within BB of considered side
       sides.erase( &side );
       for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); )
       {
         Side * s = *i;
         if ( not std::binary_search( mysides.begin(), mysides.end(), s ) or
-             side.HaveCommonNode( *s ) )
+             side.HaveCommonNode( *s ) )  // if common nodes exist -- these sides are connected (always??)
         {
           set_erase( sides, i );
         }
@@ -1809,17 +1841,44 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
     }
 
 #if 0 //to print the number of gauss points in each volumecell
-    std::vector<int> numgpeach;
-    numgpeach.reserve(cells.size());
+    std::vector<int> numgpeach(cells.size()), hex(cells.size()), tet(cells.size()),
+        pyramid(cells.size()), wedge(cells.size());
+
+    for( unsigned i=0;i<cells.size();i++ )
+    {
+      hex[i] = 0; tet[i] = 0;
+      pyramid[i] = 0; wedge[i] = 0;
+    }
+
     for ( plain_volumecell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
     {
       VolumeCell * vc = *i;
       numic += vc->IntegrationCells().size();
+
+      for( unsigned j=0;j<vc->IntegrationCells().size();j++ )
+      {
+        IntegrationCell * icc = vc->IntegrationCells()[j];
+        if( icc->Shape() == DRT::Element::hex8 )
+          hex[i-cells.begin()]++;
+        if( icc->Shape() == DRT::Element::tet4 )
+          tet[i-cells.begin()]++;
+        if( icc->Shape() == DRT::Element::pyramid5 )
+          pyramid[i-cells.begin()]++;
+        if( icc->Shape() == DRT::Element::wedge6 )
+          wedge[i-cells.begin()]++;
+      }
+
       numgpeach[i-cells.begin()] = vc->NumGaussPoints( shape );
     }
     std::cout<<"Number of Gauss points in each volume = \n";
     for(unsigned i=0;i<cells.size();i++)
+    {
       std::cout<<"vc no = "<<i<<"\t"<<"numgp = "<<numgpeach[i]<<"\n";
+      std::cout<<"\tnumber of Hex     = "<<hex[i]<<"\n";
+      std::cout<<"\tnumber of Tet     = "<<tet[i]<<"\n";
+      std::cout<<"\tnumber of Pyramid = "<<pyramid[i]<<"\n";
+      std::cout<<"\tnumber of Wedge   = "<<wedge[i]<<"\n";
+    }
 #endif
 
     double volume_error = ( ev-cv )/ev;

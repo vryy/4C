@@ -16,6 +16,8 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
   bool ltz = false;
   bool gtz = false;
 
+  // make sure element has LSV +ve and -ve in one of its nodes
+  // ensures this is a cut element
   for ( int i=0; i<numnode; ++i )
   {
     if ( lsv[i] <=   TOLERANCE )
@@ -26,7 +28,7 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
 
   if ( ltz and gtz )
   {
-    // make sure all nodes are there
+    // add all nodes to mesh
     for ( int i=0; i<numnode; ++i )
     {
       NormalMesh().GetNode( nids[i], &xyz( 0, i ), lsv[i] );

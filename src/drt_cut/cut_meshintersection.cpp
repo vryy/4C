@@ -24,6 +24,10 @@ Maintainer: Benedikt Schott
 
 #include <Teuchos_TimeMonitor.hpp>
 
+/*-----------------------------------------------------------------------------------------*
+ * Add this background element if it falls within the bounding box of cut mesh
+ * If it is not within BB, this element is never cut
+ *-----------------------------------------------------------------------------------------*/
 GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement( int eid,
                                                                   const std::vector<int> & nids,
                                                                   const Epetra_SerialDenseMatrix & xyz,
@@ -35,6 +39,9 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement( int eid,
   {
     MeshHandle & cut_mesh_handle = **i;
     Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
+
+    // element is to be added only when it falls within bounding box
+    // generated over cut mesh. otherwise this element is never cut
     if ( cut_mesh.WithinBB( xyz ) )
     {
       int numnode = nids.size();

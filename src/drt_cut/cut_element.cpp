@@ -6,18 +6,20 @@
 #include "cut_volumecellgenerator.H"
 #include "cut_facetgraph.H"
 
+//#include "cut_createVolumeCell.H"
+
 #include <string>
 #include <stack>
 
 /*--------------------------------------------------------------------*
  *            cut this element with given cut_side
  *--------------------------------------------------------------------*/
-bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
+bool GEO::CUT::Element::Cut( Mesh & mesh, Side & cut_side, int recursion )
 {
   bool cut = false;
 
   // find nodal points inside the element
-  const std::vector<Node*> side_nodes = side.Nodes();
+  const std::vector<Node*> side_nodes = cut_side.Nodes();
 
   for ( std::vector<Node*>::const_iterator i=side_nodes.begin(); i!=side_nodes.end(); ++i )
   {
@@ -32,18 +34,18 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
         cut = true;
       }
     }
-    else // point inside this element, already determined by another side
+    else // point cuts this element, already determined by another side
     {
       cut = true;
     }
   }
 
-  // all the other cut points lie on sides of the element (s is an element side, side is the cutter side)
+  // all the other cut points lie on sides of the element (s is an element side, cut_side is the cutter side)
   const std::vector<Side*> & sides = Sides();
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     Side * s = *i;
-    if ( FindCutPoints( mesh, *s, side, recursion ) )
+    if ( FindCutPoints( mesh, *s, cut_side, recursion ) )
     {
       cut = true;
     }
@@ -52,7 +54,7 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
   // insert this side into cut_faces_
   if ( cut )
   {
-    cut_faces_.insert( &side );
+    cut_faces_.insert( &cut_side );
     return true;
   }
   else
@@ -61,32 +63,37 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
   }
 }
 
+/*---------------------------------------------------------------------------*
+ * After all cut points are found, create cut lines for this element by
+ * connecting appropriate cut points
+ *---------------------------------------------------------------------------*/
 void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
 {
   for ( plain_side_set::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
   {
-    Side & side = **i;
+    Side & cut_side = **i;
 
     bool cut = false;
 
     const std::vector<Side*> & sides = Sides();
+    // create cut lines over each side of background element
     for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
     {
       Side * s = *i;
-      if ( FindCutLines( mesh, *s, side ) )
+      if ( FindCutLines( mesh, *s, cut_side ) )
       {
         cut = true;
       }
     }
 
     // find lines inside the element
-    const std::vector<Edge*> & side_edges = side.Edges();
+    const std::vector<Edge*> & side_edges = cut_side.Edges();
     for ( std::vector<Edge*>::const_iterator i=side_edges.begin(); i!=side_edges.end(); ++i )
     {
       Edge * e = *i;
       std::vector<Point*> line;
       e->CutPointsInside( this, line );
-      mesh.NewLinesBetween( line, &side, NULL, this );
+      mesh.NewLinesBetween( line, &cut_side, NULL, this );
     }
 
     if ( cut )
@@ -97,17 +104,24 @@ void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
   }
 }
 
-bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & side, Side & other, int recursion )
+/*------------------------------------------------------------------------------------------*
+ * Find cut points between a background element side and a cut side
+ * Cut points are stored correspondingly
+ *------------------------------------------------------------------------------------------*/
+bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & ele_side, Side & cut_side, int recursion )
 {
-  bool cut = side.FindCutPoints( mesh, this, other, recursion );
-  bool reverse_cut = other.FindCutPoints( mesh, this, side, recursion );
+  bool cut = ele_side.FindCutPoints( mesh, this, cut_side, recursion );         // edges of element side cuts through cut side
+  bool reverse_cut = cut_side.FindCutPoints( mesh, this, ele_side, recursion ); // edges of cut side cuts through element side
   return cut or reverse_cut;
 }
 
-bool GEO::CUT::Element::FindCutLines( Mesh & mesh, Side & side, Side & other )
+/*------------------------------------------------------------------------------------------*
+ *     Returns true if cut lines exist between the cut points produced by the two sides
+ *------------------------------------------------------------------------------------------*/
+bool GEO::CUT::Element::FindCutLines( Mesh & mesh, Side & ele_side, Side & cut_side )
 {
-  bool cut = side.FindCutLines( mesh, this, other );
-  bool reverse_cut = other.FindCutLines( mesh, this, side );
+  bool cut = ele_side.FindCutLines( mesh, this, cut_side );
+  bool reverse_cut = cut_side.FindCutLines( mesh, this, ele_side );
   return cut or reverse_cut;
 }
 
@@ -560,8 +574,17 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
   VolumeCellGenerator vcg( sides_, facets_ );
   vcg.CreateVolumeCells( mesh, this, cells_ );
 #else
+
+#if 1
   FacetGraph fg( sides_, facets_ );
   fg.CreateVolumeCells( mesh, this, cells_ );
+#endif
+
+#if 0
+  volumecellCreator vcc( facets_ );
+  vcc.createCells( mesh, this, cells_ );
+#endif
+
 #endif
 }
 

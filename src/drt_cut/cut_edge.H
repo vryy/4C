@@ -193,8 +193,14 @@ public:
    */
   bool FindCutPoints( Mesh & mesh, Element * element, Side & side, Side & other, int recursion );
 
+  /*!
+  \brief Cut points falling on this edge that are common to the two given sides are extracted
+  */
   void GetCutPoints( Element * element, Side & side, Side & other, PointSet & cuts );
 
+  /*!
+  \brief Cut points falling on this edge that are common to the given edge are extracted
+  */
   void GetCutPoints( Edge * other, PointSet & cuts );
 
   const PointPositionSet & CutPoints() const { return cut_points_; }
@@ -208,7 +214,7 @@ private:
 
   plain_side_set sides_;
 
-  //std::vector<Point*> cut_points_;
+  //! sorted vector contains all points (end points and cut points) on this edge
   PointPositionSet cut_points_;
 };
 

@@ -148,6 +148,10 @@ public:
 
   const std::vector<Edge*> & Edges() const { return edges_; }
 
+  /*!
+  \
+  brief Returns the edge of this side with given begin and end points
+   */
   Edge * FindEdge( Point * begin, Point * end );
 
   const std::vector<Node*> & Nodes() const { return nodes_; }

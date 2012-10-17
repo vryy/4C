@@ -1,3 +1,10 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file volume_integration.H
+
+\brief Integrates base functions over volume, distribute Gauss points and solve moment fitting
+equations
+ *------------------------------------------------------------------------------------------------*/
+
 #ifndef VOLUME_INTEGRATION_H
 #define VOLUME_INTEGRATION_H
 
@@ -101,10 +108,15 @@ namespace GEO
         void get_zcoordinates(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord);
 
         /*
-        \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with in the facet area
+        \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with
+        in the facet area
         */
         int pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y);
 
+        /*
+        \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with
+        in the facet area
+        */
         int pnpoly(vector<vector<double> >xp, LINALG::Matrix<3,1> pt,string projType);
 
         /*!
@@ -142,11 +154,22 @@ namespace GEO
         */
         void ErrorForSpecificFunction(Epetra_SerialDenseVector rhs_moment,Epetra_SerialDenseVector weights,int numeach);
 
+        //! considered volumecell
         VolumeCell* volcell_;
+
+        //! background element that contains this volumecell
         Element* elem1_;
+
+        //! position (inside or outside) of volumecell
         const GEO::CUT::Point::PointPosition position_;
+
+        //! defines the base function to be integrated
         int num_func_;
+
+        //! position of Gauss points
         std::vector<std::vector<double> > gaus_pts_;
+
+        //! equations of plane in which facets of volumecell are contained
         std::vector<std::vector<double> > eqn_facets_;
     };
   }

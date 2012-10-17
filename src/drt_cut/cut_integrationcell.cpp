@@ -500,21 +500,21 @@ int GEO::CUT::Hex8IntegrationCell::CubatureDegree( DRT::Element::DiscretizationT
   switch ( elementshape )
   {
   case DRT::Element::hex8:
-    return 5;
+    return 6;
   case DRT::Element::hex20:
     return 15;
   case DRT::Element::hex27:
-    return 4;
+    return 15;
   case DRT::Element::tet4:
-    return 5;
+    return 6;
   case DRT::Element::tet10:
-    return 7;
+    return 6;
   case DRT::Element::wedge6:
-    return 11;
+    return 6;
   case DRT::Element::wedge15:
     return 14;
   case DRT::Element::pyramid5:
-    return 11;
+    return 6;
   default:
     throw std::runtime_error( "no rule defined for this element type" );
   }
@@ -525,21 +525,21 @@ int GEO::CUT::Tet4IntegrationCell::CubatureDegree( DRT::Element::DiscretizationT
   switch ( elementshape )
   {
   case DRT::Element::hex8:
-    return 11;
+    return 6;
   case DRT::Element::hex20:
     return 15;
   case DRT::Element::hex27:
-    return 14;
+    return 15;
   case DRT::Element::tet4:
-    return 5;
+    return 6;
   case DRT::Element::tet10:
     return 7;
   case DRT::Element::wedge6:
-    return 11;
+    return 6;
   case DRT::Element::wedge15:
     return 14;
   case DRT::Element::pyramid5:
-    return 11;
+    return 6;
   default:
     throw std::runtime_error( "no rule defined for this element type" );
   }

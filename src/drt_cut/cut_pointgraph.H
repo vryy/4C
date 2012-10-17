@@ -32,7 +32,7 @@ public:
   enum Strategy
   {
     all_lines,
-    own_lines
+    own_lines     // used in levelset cut to create internal facets
   };
 
 private:
@@ -53,6 +53,9 @@ private:
 
     void FindCycles( Element * element, Side * side, Cycle & cycle, Location location, Strategy strategy );
 
+    /*!
+    \brief Any edge with single point in the graph is deleted
+     */
     void FixSinglePoints( Cycle & cycle );
 
     bool HasSinglePoints();
@@ -87,6 +90,9 @@ public:
 
 private:
 
+  /*!
+  \brief Graph is filled with all edges that are created due to additional cut points and cut lines
+   */
   void FillGraph( Element * element, Side * side, Cycle & cycle, Strategy strategy );
 
   Element * element_;

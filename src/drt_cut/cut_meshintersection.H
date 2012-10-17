@@ -122,6 +122,9 @@ public:
 
   void GetOptions(Options & options){options = options_;};
 
+  /*!
+  \brief Add this background element if it falls within the bounding box of cut mesh
+  */
   ElementHandle * AddElement( int eid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype );
 
   SideHandle * AddCutSide( int sid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype, int mi=0 );

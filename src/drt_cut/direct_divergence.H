@@ -1,3 +1,9 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file direct_divergence.H
+
+\brief Generate main Gauss points when using "DirectDivergence" approach.
+equations
+ *------------------------------------------------------------------------------------------------*/
 #ifndef DIRECT_DIVERGENCE_H
 #define DIRECT_DIVERGENCE_H
 
