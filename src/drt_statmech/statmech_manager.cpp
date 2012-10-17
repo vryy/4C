@@ -378,7 +378,6 @@ void STATMECH::StatMechManager::Update(const int& istep,
     double standarddev = sqrt(statmechparams_.get<double> ("KT", 0.0) / (2*M_PI * statmechparams_.get<double> ("ETA", 0.0) * statmechparams_.get<double> ("R_LINK", 0.0)) * dt);
     CrosslinkerDiffusion(disrow, 0.0, standarddev, dt);
 
-
     /*the following tow rcp pointers are auxiliary variables which are needed in order provide in the very end of the
      * crosslinker administration a node row and column map; these maps have to be taken here before the first modification
      * by deleting and adding elements have been carried out with the discretization since after such modifications the maps
@@ -404,10 +403,10 @@ void STATMECH::StatMechManager::Update(const int& istep,
         beamcmanager->OcTree()->OctTreeSearch(currentpositions);
 
       SearchAndSetCrosslinkers(istep, timen, dt, noderowmap, nodecolmap, currentpositions,currentrotations,beamcmanager,printscreen);
-
+      
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->ResetPairs();
-
+      
       SearchAndDeleteCrosslinkers(timen, dt, noderowmap, nodecolmap, currentpositions, discol,beamcmanager,printscreen);
     }
 
@@ -415,23 +414,9 @@ void STATMECH::StatMechManager::Update(const int& istep,
     if(fabs(timen-statmechparams_.get<double>("KTSWITCHTIME",0.0))<(dt/1e3))
       statmechparams_.set("KT",statmechparams_.get<double>("KTACT",statmechparams_.get<double>("KT",0.0)));
 
-    // actions taken when reaching STARTTIMEACT
-    if(fabs(timen-statmechparams_.get<double>("STARTTIMEACT",0.0))<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
-    {
-      if(!discret_->Comm().MyPID())
-      {
-        cout<<"\n\n==========================================================="<<endl;
-        cout<<"-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules in volume"<<endl;
-        cout<<"-- removing "<<statmechparams_.get<int>("REDUCECROSSLINKSBY",0)<<" crosslinkers...\n"<<endl;
-      }
-      // Set a certain number of double-bonded crosslinkers free
+    // // Set a certain number of double-bonded crosslinkers free
+    if(fabs(timen-dt-statmechparams_.get<double>("STARTTIMEACT",0.0))<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
       ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0));
-      if(!discret_->Comm().MyPID())
-      {
-        cout<<"\n-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules left in volume"<<endl;
-        cout<<"===========================================================\n"<<endl;
-      }
-    }
 
     // force dependent unlinking: store displacement vector of current time step for next one
     if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FORCEDEPUNLINKING"))
@@ -1094,10 +1079,10 @@ void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axi
  | (private)                                              mueller (7/10)|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep, const double& timen, const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-                                               const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
-                                               const std::map<int,LINALG::Matrix<3, 1> >& currentrotations,
-                                               Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
-                                               bool printscreen)
+                                                         const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
+                                                         const std::map<int,LINALG::Matrix<3, 1> >& currentrotations,
+                                                         Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                                         bool printscreen)
 {
   double t_search = Teuchos::Time::wallTime();
   /*preliminaries*/
@@ -1944,6 +1929,13 @@ void STATMECH::StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottr
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
 {
+  if(!discret_->Comm().MyPID())
+  {
+    cout<<"\n\n==========================================================="<<endl;
+    cout<<"-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules in volume"<<endl;
+    cout<<"-- removing "<<statmechparams_.get<int>("REDUCECROSSLINKSBY",0)<<" crosslinkers...\n"<<endl;
+  }
+  
   int ncrosslink = statmechparams_.get<int>("N_crosslink", 0);
 
   // check for the correctness of the given input value
@@ -2038,8 +2030,6 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
   CommunicateVector(bspotstatusrow, *bspotstatus_);
   CommunicateVector(delcrosselementtrans, delcrosselement);
   CommunicateVector(delcrossmoleculestrans, delcrossmolecules);
-
-
 
   //PREPARE REBUILDING OF CROSSLINKER MAPS AND CORRESPONDING VECTORS
   // std::vectors for transfer of data to new maps and vectors
@@ -2148,7 +2138,12 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
     cout<<"-- "<<numdelmolecules<<" free/one-bonded crosslinker molecules removed"<<endl;
     cout<<"------------------------------------------------------"<<endl;
     cout<<"-- "<<numdelelements+numdelmolecules<<" crosslinkers removed"<<endl;
+    cout<<"\n-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules left in volume"<<endl;
+    cout<<"===========================================================\n"<<endl;
   }
+  // ReduceNumberOfCrosslinkersBy() is called at the beginning of the time step. Hence, we can just call WriteConv() again to update the converged state
+  WriteConv();
+  
   return;
 }//ReduceNumberOfCrosslinkersBy()
 
@@ -2373,7 +2368,7 @@ void STATMECH::StatMechManager::CommunicateMultiVector(Epetra_MultiVector& InVec
   // first, export the values of OutVec on Proc 0 to InVecs of all participating processors
   Epetra_Export exporter(OutVec.Map(), InVec.Map());
   Epetra_Import importer(OutVec.Map(), InVec.Map());
-
+  
   if(doexport)
   {
     // zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
@@ -2729,7 +2724,6 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, d
   // diffusion processed by Proc 0
   if (discret_->Comm().MyPID()==0)
   {
-
     // bonding cases
     for (int i=0; i<crosslinkerpositions_->MyLength(); i++)
     {
@@ -2798,11 +2792,10 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, d
     if (periodlength_->at(0) > 0.0)
       CrosslinkerPeriodicBoundaryShift(*crosslinkerpositions_);
   } // if(discret_->Comm().MyPID()==0)
-
   // Update by Broadcast: copy this information to all processors
   Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
   CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_);
-
+  
   return;
 }// StatMechManager::CrosslinkerDiffusion
 
