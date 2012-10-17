@@ -2392,7 +2392,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   // FD check of weighted gap g derivatives (non-penetr. condition)
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    std::cout << *smatrix_ << endl;
     interface_[i]->FDCheckGapDeriv();
   }
 #endif // #ifdef CONTACTFDGAP
