@@ -217,11 +217,6 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupRHS");
 
-  // get time integration parameters of structure an fluid time integrators
-  // to enable consistent time integration among the fields
-  double stiparam = StructureField()->TimIntParam();
-  double ftiparam = FluidField().TimIntParam();
-
   SetupVector(f,
               StructureField()->RHS(),
               FluidField().RHS(),
@@ -254,6 +249,11 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     LINALG::SparseMatrix& fgg = blockf->Matrix(1,1); // F_{\Gamma\Gamma}
     LINALG::SparseMatrix& aig = blocka->Matrix(0,1); // A_{I\Gamma}
 
+    // get time integration parameters of structure an fluid time integrators
+    // to enable consistent time integration among the fields
+    const double stiparam = StructureField()->TimIntParam();
+    const double ftiparam = FluidField().TimIntParam();
+
     // some scaling factors for fluid
     const double timescale  = FluidField().TimeScaling();
     const double scale      = FluidField().ResidualScaling();
@@ -271,7 +271,7 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     dugpre_->Update(-1.0, *fveln, 1.0);
 
     // some often re-used vectors
-    Teuchos::RCP<Epetra_Vector> rhs   = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::null;
 
     // Different contributions/terms to the rhs are separated by the following comment line
     // ---------- structural interface DOFs
@@ -551,11 +551,11 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     stcmat = StructureField()->GetSTCMat();
 
   // get single field block matrices
-  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix(); // can't be 'const' --> is modified by STC
   if (s==Teuchos::null) { dserror("expect structure block matrix"); }
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> f = FluidField().BlockSystemMatrix();
+  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> f = FluidField().BlockSystemMatrix();
   if (f==Teuchos::null) { dserror("expect fluid block matrix"); }
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
   if (a==Teuchos::null) { dserror("expect ale block matrix"); }
 
   // extract submatrices
@@ -565,12 +565,12 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   LINALG::SparseMatrix& fgg = f->Matrix(1,1);
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
-
-  //  print stiffness matrix to *.mtl-file
+  
+  //  print stiffness matrix to *.mtl-file that can be read in matlab
 //  const std::string fname = "stiffmatrix.mtl";
 //  cout << __LINE__ << __FILE__ << endl;
 //  cout << "Printing stiffmatrix to file" << endl;
-//  LINALG::PrintMatrixInMatlabFormat(fname,*fii.EpetraMatrix());
+//  LINALG::PrintBlockMatrixInMatlabFormat(fname,*f);
 //  exit(0);
 
   // scaling factors for fluid
@@ -812,7 +812,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   fgicur_ = rcp(new LINALG::SparseMatrix(f->Matrix(1,0)));
   fggcur_ = rcp(new LINALG::SparseMatrix(f->Matrix(1,1)));
 
-  // store parts of ALE matrix to know them in the next iteration as previous iteration matrices
+  // store parts of fluid shape derivative matrix to know them in the next iteration as previous iteration matrices
   fmgipre_ = fmgicur_;
   fmggpre_ = fmggcur_;
   if (mmm!=Teuchos::null)
@@ -1011,8 +1011,8 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
-  double stiparam = StructureField()->TimIntParam();
-  double ftiparam = FluidField().TimIntParam();
+  const double stiparam = StructureField()->TimIntParam();
+  const double ftiparam = FluidField().TimIntParam();
 
   // extract the inner and boundary dofs of all three fields
 
@@ -1031,7 +1031,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
-      modsv->Update(stiparam-(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStruct(lambda_), 1.0);
+      modsv->Update(stiparam+(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStruct(lambda_), 1.0);
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
     LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
