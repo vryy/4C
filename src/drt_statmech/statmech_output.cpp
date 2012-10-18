@@ -761,6 +761,9 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
       if(step>0)
         GmshNetworkStructVolume(nline, gmshfileend, 0.875);
     }
+    // add black dot for correct coloring...
+    if(periodlength_->at(0)==0.0)
+      gmshfileend << "SP("<<periodlength_->at(0)<<",0,"<<periodlength_->at(2)<<"){0,0};"<<endl;
     gmshfileend << "};" << endl;
     fprintf(fp, gmshfileend.str().c_str());
     fclose(fp);
