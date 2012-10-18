@@ -33,7 +33,7 @@ OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
+STRUCT_STRESS                   Cauchy
 STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
