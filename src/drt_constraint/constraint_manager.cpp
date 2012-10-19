@@ -314,10 +314,10 @@ void UTILS::ConstrManager::UpdateLagrMult(double factor)
     vector<int> volconID = volconstr3d_->GetActiveCondID();
     for (unsigned int i = 0; i < volconID.size(); i++)
     {
-      if (constrmap_->LID(i-offsetID_)!=-1)
+      if (constrmap_->LID(int(i-offsetID_))!=-1)
       {
         cout<< "Multiplier for Volume Constraint: "<<volconID.at(i)<<":  "<<
-              (*lagrMultVec_)[constrmap_->LID(i-offsetID_)]<<endl;
+              (*lagrMultVec_)[constrmap_->LID(int(i-offsetID_))]<<endl;
       }
     }
   }
