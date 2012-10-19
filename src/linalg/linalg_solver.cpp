@@ -1415,6 +1415,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
       muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
       muelulist.set("MueLu: Prec Type", "ContactSP"); // not used?
+      // append AMGBS information
+      muelulist.set("amgbs: prolongator smoother (vel)",inparams.get<string>("AMGBS_PSMOOTHER_VEL"));
+      muelulist.set("amgbs: prolongator smoother (pre)",inparams.get<string>("AMGBS_PSMOOTHER_PRE"));
+      std::cout << muelulist << std::endl;
     }
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact2 )
     {

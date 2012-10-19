@@ -45,7 +45,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   currentLevel.DeclareInput("A", AFact_.get(), this);
   currentLevel.DeclareInput("Aggregates", aggregatesFact_.get(), this);
   currentLevel.DeclareInput("UnAmalgamationInfo", amalgFact_.get(), this);
-  currentLevel.DeclareInput("MasterDofMap", MueLu::NoFactory::get(),this); // TODO don't forget to transfer these maps!
+  //currentLevel.DeclareInput("MasterDofMap", MueLu::NoFactory::get(),this); // TODO don't forget to transfer these maps!
   currentLevel.DeclareInput("SlaveDofMap", MueLu::NoFactory::get(),this);
 
 }
@@ -250,7 +250,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
   currentLevel.Set("Aggregates", aggregates, this);
 
-#else
+#else // outdated
   // extract block matrix (must be a 2x2 block matrix)
   RCP<Matrix> Ain = currentLevel.Get< RCP<Matrix> >("A", AFact_.get());
   RCP<BlockedCrsMatrix> bOp = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(Ain);

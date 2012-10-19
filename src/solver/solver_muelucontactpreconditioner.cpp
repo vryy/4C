@@ -32,8 +32,6 @@
 #include <MueLu_SmootherPrototype_decl.hpp>
 
 #include <MueLu_CoalesceDropFactory.hpp>
-//#include <MueLu_UCAggregationFactory.hpp>
-//#include <MueLu_ExperimentalAggregationFactory.hpp>
 #include <MueLu_UncoupledAggregationFactory.hpp>
 #include <MueLu_TentativePFactory.hpp>
 #include <MueLu_SaPFactory.hpp>
@@ -44,7 +42,6 @@
 #include <MueLu_VerbosityLevel.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_NullspaceFactory.hpp>
-//#include <MueLu_SegregationAFilterFactory.hpp>
 #include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
 #include <MueLu_Aggregates.hpp>
 #include "MueLu_AggStatTransferFactory.hpp"
@@ -195,13 +192,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   //Teuchos::RCP<Xpetra::EpetraMap> xActiveDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epActiveDofMap ));
   //Teuchos::RCP<Xpetra::EpetraMap> xInnerDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epInnerDofMap  )); // TODO check me
 
-  /*std::vector<Teuchos::RCP<const Xpetra::Map<LO,GO,Node> > > xmaps;
-  xmaps.push_back(xMasterDofMap);
-  xmaps.push_back(xSlaveDofMap );
-  //xmaps.push_back(xInnerDofMap ); // TODO check me
-
-  Teuchos::RCP<const Xpetra::MapExtractor<Scalar,LO,GO,Node> > map_extractor = Xpetra::MapExtractorFactory<Scalar,LO,GO>::Build(xfullmap,xmaps);*/
-
   ///////////////////////////////////////////////////////////
 
   // fill hierarchy
@@ -264,7 +254,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // prepare aggCoarseStat
   // TODO rebuild node-based map
-  // still problematich for reparitioning
+  // still problematic for reparitioning
   Teuchos::ArrayRCP<unsigned int> aggStat;
   if(nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows/nDofsPerNode);
   for(LocalOrdinal i=0; i<nDofRows; ++i) {
@@ -301,8 +291,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory());
 
   // aggregation factory
-  //Teuchos::RCP<UCAggregationFactory> UCAggFact = Teuchos::rcp(new UCAggregationFactory(dropFact));
-  //Teuchos::RCP<ExperimentalAggregationFactory> UCAggFact = Teuchos::rcp(new ExperimentalAggregationFactory(dropFact));
   Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(dropFact));
   UCAggFact->SetMinNodesPerAggregate(minPerAgg);
   UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
