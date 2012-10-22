@@ -136,6 +136,9 @@ namespace ADAPTER
     /// return mortar D matrix
     RCP<LINALG::SparseMatrix> GetDMatrix() const { return D_;}
 
+    /// return inverted mortar matrix \f$D^{-1}\f$
+    RCP<LINALG::SparseMatrix> GetDinvMatrix() const { return Dinv_;}
+
 
   private:
 
