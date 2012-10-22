@@ -85,7 +85,7 @@ namespace FSI
     virtual void PrepareTimeStep();
 
     /// recover Lagrange multiplier at the interface needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplier(){};
+    virtual void RecoverLagrangeMultiplier();
 
   protected:
 
@@ -120,6 +120,10 @@ namespace FSI
   private:
 
     /// build block vector from field vectors
+    /* Here, all contributions to rhs vector, that are used in every Newton iteration, are assembled.
+     *  a) residuals from single fields
+     *  b) Lagrange multiplier \f$\lambda^n\f$ from last time step
+     */
     void SetupVector(
         Epetra_Vector &f,                       ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector> sv,   ///< structural displacements
@@ -129,6 +133,10 @@ namespace FSI
     );
 
     /// block system matrix
+    /* System matrix has a 4x4-block structure corresponding to the vector of unknowns
+     *
+     * \f$\Delta x^T = [\Delta d_I^{S,n+1}~\Delta d_\Gamma^{S,n+1}~\Delta u_I^{F,n+1}~\Delta d_I^{G,n+1}]\f$
+     */
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     ///communicator
@@ -174,6 +182,68 @@ namespace FSI
 
     Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of fluid side of the interface
     Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of fluid side of the interface
+
+    /// @name Recovery of Langrange multiplier at the end of each time step
+
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the fluid)
+    //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> lambda_;
+
+    //! interface force \f$f_{\Gamma,i+1}^{F,n+1}\f$ onto the fluid at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const Epetra_Vector> fgcur_;
+
+    //! interface force \f$f_{\Gamma,i}^{F,n+1}\f$ onto the fluid at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const Epetra_Vector> fgpre_;
+
+    //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> ddginc_;
+
+    //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> duiinc_;
+
+    //! interface displacement solution of the structure at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> disgpre_;
+
+    //! inner velocity solution of fluid at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> velipre_;
+
+    //! interface velocity solution of the fluid at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> velgpre_;
+
+    //! inner ALE displacement solution at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> aleipre_;
+
+    //! interface ALE displacement solution at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> alegpre_;
+
+    //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> ddialeinc_;
+
+    //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fgicur_;
+
+    //! block \f$F_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fgipre_;
+
+    //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fggcur_;
+
+    //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fggpre_;
+
+    //! block \f$F_{\Gamma I,i+1}^G\f$ of ALE matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmgicur_;
+
+    //! block \f$F_{\Gamma I,i}^G\f$ of ALE matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmgipre_;
+
+    //! block \f$F_{\Gamma\Gamma,i+1}^G\f$ of ALE matrix at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmggcur_;
+
+    //! block \f$F_{\Gamma\Gamma,i}^G\f$ of ALE matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmggpre_;
+
+    //@}
 
   };
 }
