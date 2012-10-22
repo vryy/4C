@@ -22,6 +22,8 @@ Be careful if you want to compare these results with Tanaka: coupling term in
 thermal equation depends only on initial temperature T_0, whereas:
 in BACI the coupling term depends on current temperature T
 Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
+Switch off time curve in heat convection boundary condition. Tanaka apply the
+full load at the beginning of the simulation, does not increase it gradually
 
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        192
@@ -54,7 +56,7 @@ THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        2
+NUMFIELD                        2  // thr+str
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -63,11 +65,11 @@ LINEAR_SOLVER                   2
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       No
-DYNAMICTYP                      OneStepTheta                    // ExplicitEuler,Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DYNAMICTYP                      OneStepTheta  // ExplicitEuler,Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
 EIGEN                           0
 ITERNORM                        L2
 ITWANT                          0
@@ -78,16 +80,16 @@ MAXITER                         50
 MAXTIME                         1
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton
+NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
-NORM_RESF                       Abs
+NORM_RESF                       Abs  // Abs,Rel,Mix
 NUMSTEP                         200
-PREDICT                         ConstDis                        // TangDis
+PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -111,9 +113,9 @@ LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       No
-DYNAMICTYP                      OneStepTheta                    // Statics,ExplicitEuler
+DYNAMICTYP                      OneStepTheta  // Statics,ExplicitEuler
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function               // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
@@ -123,7 +125,7 @@ NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp                       // TangTemp
+PREDICT                         ConstTemp  // TangTemp
 RESEVRYERGY                     0
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
@@ -134,30 +136,31 @@ TOLTEMP                         1e-10
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
-COUPALGO                        tsi_iterstagg                   // tsi_oneway,tsi_sequstagg,tsi_monolithic
-COUPVARIABLE                    Displacement                    // Temperature
-ITEMAX                          4
+COUPALGO                        tsi_iterstagg  // tsi_oneway,tsi_sequstagg,tsi_monolithic
+COUPVARIABLE                    Displacement  // Temperature
+ITEMAX                          30
 ITEMIN                          1
+LINEAR_SOLVER                   3
 MAXTIME                         4
 NORMCOMBI_RESFINC               And
-NORM_INC                        Rel                             // Abs
+NORM_INC                        Rel  // Abs
 NORM_RESF                       Abs
-NUMSTEP                         10                              // 400
+NUMSTEP                         20  // 400
 RESTARTEVRY                     5
 TIMESTEP                        0.01
 UPRES                           5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
-AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_DAMPING                1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0
 AMGBS_BS_PCFINE                 Umfpack
 AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_BS_PCSWEEPS               2 2 2
 AMGBS_PSMOOTHER_PRE             PA-AMG
 AMGBS_PSMOOTHER_VEL             PA-AMG
 AZBDIAG                         0
-AZCONV                          AZ_r0
+AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
 AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
@@ -166,8 +169,8 @@ AZOUTPUT                        0
 AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
+AZSCAL                          none  // none,sym,infnorm
+AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
 AZTOL                           1e-08
 DWINDTAU                        1.5
@@ -188,16 +191,16 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
-SOLVER                          UMFPACK
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_DAMPING                1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0
 AMGBS_BS_PCFINE                 Umfpack
 AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_BS_PCSWEEPS               2 2 2
 AMGBS_PSMOOTHER_PRE             PA-AMG
 AMGBS_PSMOOTHER_VEL             PA-AMG
 AZBDIAG                         0
@@ -232,8 +235,53 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
-SOLVER                          UMFPACK
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+--------------------------------------------------------------------SOLVER 3
+NAME                            TSI_MONOLITHIC_SOLVER
+AMGBS_BS_DAMPING                1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS               2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZREUSE                         0
+AZSCAL                          none  // none,sym,infnorm
+AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+BGS2X2_FLIPORDER                block1_block0_order
+IFPACKCOMBINE                   Add  // Add,Insert,Zero
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                1000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          Aztec_MSR  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNG 210 NUE 0.3 DENS 7.85e-06 THEXPANS 1.1e-05 CAPA 6.445e-05 CONDUCT 1.0312e-03 INITTEMP 273.15
 MAT 2 THERM_FourierIso CAPA 6.445e-05 CONDUCT 1.0312e-03
@@ -243,7 +291,7 @@ MAT 2 THERM_FourierIso CAPA 6.445e-05 CONDUCT 1.0312e-03
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/4.0)-(pi/2)))+0.5 t1 0.0 t2 4.0 // Tmax=4
+CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 t1 0.0 t2 0.1 // Tmax=0.5
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
@@ -267,12 +315,6 @@ DSURF                           1
 E 2 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
 --------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
 DPOINT                          0
 ---------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
@@ -303,12 +345,6 @@ E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 DVOL                            1
 // STR fix vol in y,z
 E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           0
 ---------------------------------------DESIGN POINT THERMO DIRICH CONDITIONS
 DPOINT                          0
 ----------------------------------------DESIGN LINE THERMO DIRICH CONDITIONS
@@ -317,84 +353,14 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
-DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF                           0
----------------------------------------DESIGN SURF TURBULENT INFLOW TRANSFER
-DSURF                           0
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF                           0
--------------------------------DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS
-DLINE                           0
-----------------------------DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS
-DSURF                           0
------------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF                           0
-----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
-------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           0
---------------------------------DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS
-DLINE                           0
---------------------------------DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS
-DSURF                           0
------------------------------DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS
-DLINE                           0
------------------------------DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
--------------------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
-DSURF                           0
------------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
----------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            0
------------------------------------DESIGN ALE FLUID COUPLING SURF CONDITIONS
-DSURF                           0
---------------------------------------------------SURFACE TENSION CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN SURFACE INV ANALYSIS
-DSURF                           0
 ------------------------------------DESIGN THERMO CONVECTION LINE CONDITIONS
 DLINE                           0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           1
 // THR left surface heat convection:
-E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempcurve none curve none // 1
+//E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempcurve none curve none
+// nightly test case
+E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempcurve none curve 1 // 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
@@ -1603,16 +1569,13 @@ NODE 325 COORD 6.00000000e+00 4.00000000e+00 2.00000000e+00
 190 SOLIDH8 HEX8 244 245 258 257 309 310 323 322 MAT 1 KINEM linear EAS none
 191 SOLIDH8 HEX8 245 246 259 258 310 311 324 323 MAT 1 KINEM linear EAS none
 192 SOLIDH8 HEX8 246 247 260 259 311 312 325 324 MAT 1 KINEM linear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx_x0 VALUE -1.3463742437459088e-05 TOLERANCE 1.0e-8 // NUMSTEP=400:-5.2526531576586552e-04
+STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx_x0 VALUE -2.0293528396763651e-05 TOLERANCE 1.0e-8 // NUMSTEP=400:-5.2526531576586552e-04
 STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy_x0 VALUE 0.0 TOLERANCE 1.0e-8 // NUMSTEP=400: 0
 STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz_x0 VALUE 0.0 TOLERANCE 1.0e-8 // NUMSTEP=400: 0
-STRUCTURE DIS 1 NODE 135 POSITION dispx NAME dispx_x1 VALUE -3.8315232136334509e-06 TOLERANCE 1.0e-8 // NUMSTEP=400: -4.1923438448410096e-04
-THERMAL DIS 1 NODE 1 POSITION temp NAME Temp_x0 VALUE 273.87052789755126 TOLERANCE 1.0e-8 // NUMSTEP=400: 278.61762745544900
-THERMAL DIS 1 NODE 135 POSITION temp NAME Temp_x1 VALUE 273.41147855167725 TOLERANCE 1.0e-8 // NUMSTEP=400: 278.07541828855801
+STRUCTURE DIS 1 NODE 135 POSITION dispx NAME dispx_x1 VALUE -7.5828931724407825e-06 TOLERANCE 1.0e-8 // NUMSTEP=400: -4.1923438448410096e-04
+THERMAL DIS 1 NODE 1 POSITION temp NAME Temp_x0 VALUE 274.03116886628425 TOLERANCE 1.0e-8 // NUMSTEP=400: 278.61762745544900
+THERMAL DIS 1 NODE 135 POSITION temp NAME Temp_x1 VALUE 273.54623291602979 TOLERANCE 1.0e-8 // NUMSTEP=400: 278.07541828855801
 -------------------------------------------------------------------------END
-//                              END
+//  END
