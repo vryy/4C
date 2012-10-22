@@ -38,77 +38,37 @@ FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 ALE_DISP                        No
-THERM_HEATFLUX                  Initial                         // None, Current, Initial
+THERM_HEATFLUX                  Initial  // None, Current, Initial
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial                         // None, Current, Initial
+THERM_TEMPGRAD                  Initial  // None, Current, Initial
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------MESHTYING AND CONTACT
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-----------------------------------------------------------------ELCH CONTROL
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       No
-DYNAMICTYP                      Statics                         // Statics,OneStepTheta,GEMM
-ITERNORM                        L2                              // L1,L2,Rms,Inf
+DYNAMICTYP                      Statics  // Statics,OneStepTheta
+ITERNORM                        L2  // L1,L2,Rms,Inf
 INITFUNCNO                      1
-INITIALFIELD                    zero_field                      // field_by_function, field_by_condition
+INITIALFIELD                    zero_field  // field_by_function, field_by_condition
+LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
 NLNSOL                          fullnewton
-NORMCOMBI_RESFTEMP              And                             // And,Or
-NORM_RESF                       Abs                             // Abs,Rel,Mix
-NORM_TEMP                       Abs                             // Abs,Rel,Mix
+NORMCOMBI_RESFTEMP              And  // And,Or
+NORM_RESF                       Abs  // Abs,Rel,Mix
+NORM_TEMP                       Abs  // Abs,Rel,Mix
 NUMSTEP                         1
-PREDICT                         ConstTemp                       // Vague,ConstTemp,ConstTempRateTangTemp
+PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRateTangTemp
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-08
 TOLTEMP                         1e-10
-LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 1
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none                            // none,sym,infnorm
-AZSOLVE                         GMRES                           // CG,GMRES,CGS,TFQMR,BiCGSTAB,LU
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_COARSEN                      UC                              // UC,METIS,VBMETIS,MIS
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0                               // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU                             // SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
-ML_SMOOTHERFINE                 ILU                             // SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
-ML_SMOOTHERMED                  ILU                             // SGS,Jacobi,Chebychev,MLS,ILU,KLU,Superlu,GS,DGS
-ML_SMOTIMES 1 1 1 1 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+NAME                            THERMAL_SOLVER
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
@@ -142,92 +102,6 @@ DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
 DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF                           0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
-DSURF                           0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-// DOBJECT COUPLING BCFLUID
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-// DOBJECT COUPLING BCFLUID
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
-DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
-DSURF                           0
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
----------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
-------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DVOL                            0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-// DOBJECT PBC_ID ORIENTATION
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-// DOBJECT PBC_ID ORIENTATION
-DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 11 DNODE 2
@@ -258,8 +132,6 @@ NODE 9 COORD 8.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
 NODE 10 COORD 9.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
 NODE 11 COORD 1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 1 THERMO LINE2 1 2 MAT 1
 2 THERMO LINE2 2 3 MAT 1
@@ -295,4 +167,4 @@ THERMAL DIS 1 NODE 9 POSITION temp NAME temp VALUE 0.2 TOLERANCE 1e-9
 THERMAL DIS 1 NODE 10 POSITION temp NAME temp VALUE 0.1 TOLERANCE 1e-9
 THERMAL DIS 1 NODE 11 POSITION temp NAME temp VALUE 0.0 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
-//                              END
+//  END
