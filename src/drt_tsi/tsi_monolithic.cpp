@@ -95,9 +95,14 @@ TSI::Monolithic::Monolithic(
   INPAR::THR::DynamicType thermotimealgo
     = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
 
-  if ( structtimealgo != INPAR::STR::dyna_onesteptheta or
-       thermotimealgo != INPAR::THR::dyna_onesteptheta )
-    dserror("monolithic TSI is limited in functionality (only one-step-theta scheme possible)");
+  // use for both fields the same time integrator
+  if ( ( structtimealgo!=INPAR::STR::dyna_onesteptheta ||
+         thermotimealgo!=INPAR::THR::dyna_onesteptheta )
+         &&
+       ( structtimealgo!=INPAR::STR::dyna_statics ||
+         thermotimealgo!=INPAR::THR::dyna_statics )
+      )
+    dserror("same time integration scheme for STR and THR required for monolithic.");
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
@@ -1272,7 +1277,10 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   // create specific time integrator
   const Teuchos::ParameterList& tdyn
     = DRT::Problem::Instance()->ThermalDynamicParams();
-  tparams.set<int>("time integrator", DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP"));
+  tparams.set<int>(
+    "time integrator",
+    DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP")
+    );
   switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
   {
     // static analysis

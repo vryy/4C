@@ -1989,17 +1989,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check",&tsidyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&tsidyn);
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&tsidyn);
+  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&tsidyn);
   IntParameter("UPRES",1,"increment for writing solution",&tsidyn);
 
   // Iterationparameters
-  setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",
+  setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check in partitioned TSI",
                                tuple<std::string>(
                                  "Abs",
                                  "Rel"
                                  ),
                                tuple<int>(
                                  INPAR::TSI::convnorm_abs,
-                                 INPAR::TSI::convnorm_rel
+                                 INPAR::TSI::convnorm_rel // used for convergence test in partitioned TSI
                                  ),
                                &tsidyn);
 
