@@ -1651,14 +1651,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             &statmech);
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
-  //time after which certain action in simulation (e.g. DBCs in viscoelastic simulations) are started
-  DoubleParameter("STARTTIMEACT",0.0,"Time after which certain action in simulation is started",&statmech);
-  //time after which certain action in simulation (e.g. DBCs in viscoelastic simulations) are started
-  DoubleParameter("EQUILIBTIME",0.0,"Time until which no crosslinkers are set",&statmech);
-  //time after which certain action in simulation (e.g. DBCs in viscoelastic simulations) are started
-  DoubleParameter("KTSWITCHTIME",0.0,"Time when KT value is changed to KTACT",&statmech);
-  //alternative post-STARTTIME time step size
-  DoubleParameter("DELTA_T_NEW",0.0,"A new time step size that comes into play once DBCs are have been activated",&statmech);
+  // Time values at which certain actions are carried out
+  setNumericStringParameter("ACTIONTIME","0.0 0.0 10000.0","Points in time (corresponding to ACTIONDT values), where certain actions are carried out. Order: [t_equilib; t_ktswitch; ...; t_act]",&statmech);
+  // time step sizes corresponding to ACTIONTIME
+  setNumericStringParameter("ACTIONDT","0.01 0.01 0.01","Time step sizes corresponding to ACTIONTIME values.",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);

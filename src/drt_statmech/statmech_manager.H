@@ -253,7 +253,7 @@ protected:
   StatMechManager(const StatMechManager& old);
 
   //! \brief Initialize periodlength_ vector and search resolution
-  void InitializePLengthAndSearchRes();
+  void InitializeStatMechValues();
 
   /*! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
    *  \param istep            (in) time step
@@ -561,11 +561,17 @@ protected:
   //! \brief how often a time step had to be restarted with new random numbers due to unconverged solution of nonlinear system of equations since simulation start
   int unconvergedsteps_;
 
-  //! \brief time step size
-  double dt_;
-
-  //! \brief point of time at which writing special statistical output is started
+  //! \brief time at which output starts
   double starttimeoutput_;
+
+  //! \brief time step size vector (entries are sorted as: [t_eq; t_ktswith; t_i; t_i+1; t_act]
+  Teuchos::RCP<std::vector<double> > timestepsizes_;
+
+  //! \brief points in time associated with certain actions
+  Teuchos::RCP<std::vector<double> > actiontime_;
+
+  //! \brief holds current position in ACTIONTIME / ACTIONDT
+  int timeintervalstep_;
 
   //! \brief end to end distance of a single filament at the beginning of statistical output
   double endtoendref_;

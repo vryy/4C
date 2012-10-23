@@ -319,6 +319,7 @@ void STR::TimIntStatMech::UpdateAndOutput()
 //  if(!discret_->Comm().MyPID())
 //    cout<<"pre UpdateStepTime           : time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<endl;
   UpdateStepTime();
+
   // update time and step
 //  if(!discret_->Comm().MyPID())
 //    cout<<"pre UpdateStepElement        : time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<"\n\n"<<endl;
@@ -703,16 +704,6 @@ void STR::TimIntStatMech::FullNewton()
 //      p.set("alpha f",1-theta_);
 //
 //      //passing statistical mechanics parameters to elements
-////      p.set("ETA",(statmechman_->statmechparams_).get<double>("ETA",0.0));
-////      p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechman_->statmechparams_,"THERMALBATH"));
-////      p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechman_->statmechparams_,"FRICTION_MODEL"));
-////      p.set("RandomNumbers",randomnumbers_);
-////      p.set("SHEARAMPLITUDE",(statmechman_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
-////      p.set("CURVENUMBER",(statmechman_->statmechparams_).get<int>("CURVENUMBER",-1));
-////      p.set("STARTTIMEACT",(statmechman_->statmechparams_).get<double>("STARTTIMEACT",0.0));
-////      p.set("DELTA_T_NEW",(statmechman_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
-////      p.set("OSCILLDIR",(statmechman_->statmechparams_).get<int>("OSCILLDIR",-1));
-////      p.set("PERIODLENGTH",statmechman_->GetPeriodLength());
 //      statmechman_->AddStatMechParamsTo(p, randomnumbers_);
 //
 //      // set vector values needed by elements
@@ -880,18 +871,6 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
       p.set("total time",timen_);
       p.set("delta time",(*dt_)[0]);
       p.set("alpha f",1-theta_);
-
-      //passing statistical mechanics parameters to elements
-//      p.set("ETA",(statmechman_->statmechparams_).get<double>("ETA",0.0));
-//      p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechman_->statmechparams_,"THERMALBATH"));
-//      p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechman_->statmechparams_,"FRICTION_MODEL"));
-//      p.set("RandomNumbers",randomnumbers_);
-//      p.set("SHEARAMPLITUDE",(statmechman_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
-//      p.set("CURVENUMBER",(statmechman_->statmechparams_).get<int>("CURVENUMBER",-1));
-//      p.set("STARTTIMEACT",(statmechman_->statmechparams_).get<double>("STARTTIMEACT",0.0));
-//      p.set("DELTA_T_NEW",(statmechman_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
-//      p.set("OSCILLDIR",(statmechman_->statmechparams_).get<int>("OSCILLDIR",-1));
-//      p.set("PERIODLENGTH",statmechman_->GetPeriodLength());
 
       statmechman_->AddStatMechParamsTo(p, randomnumbers_);
 

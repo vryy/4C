@@ -48,8 +48,8 @@ Maintainer: Kei Müller
 STATMECH::StatMechManager::StatMechManager(Teuchos::RCP<DRT::Discretization> discret):
 statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
 unconvergedsteps_(0),
-dt_(-1e9),
 starttimeoutput_(-1.0),
+timeintervalstep_(0),
 endtoendref_(0.0),
 istart_(0),
 basisnodes_(discret->NumGlobalNodes()),
@@ -65,7 +65,7 @@ useinitdbcset_(false)
 
   // retrieve the dimensions of the periodic boundary box and
   // set spatial resolution for search algorithm binding spots x crosslinkers
-  InitializePLengthAndSearchRes();
+  InitializeStatMechValues();
 
   /*setting and deleting dynamic crosslinkers needs a special code structure for parallel search trees
    * here we provide a fully overlapping column map which is required by the search tree to look for each
@@ -246,10 +246,42 @@ useinitdbcset_(false)
    * Calculations are made on Proc 0, only.*/
   CrosslinkerMoleculeInit();
 
-  // initialize istart_ with step number of the beginning of statistical mechanics output
-  dt_ = parameters.get<double>("delta time",0.01);
-  istart_ = (int)(statmechparams_.get<double>("STARTTIMEOUT", 0.0) / dt_);
-
+  // set istart_, the number of steps after which we start writing output
+  double starttimeout = statmechparams_.get<double>("STARTTIMEOUT", 0.0);
+  // intermediate time intervals
+  for(int i=0; i<(int)actiontime_->size(); i++)
+  {
+    // first time interval
+    if(i==0)
+    {
+      if(starttimeout>=actiontime_->front())
+        istart_ = (int)(round(actiontime_->front()/parameters.get<double>("delta time",0.01)));
+      else
+      {
+        istart_ = (int)(round((starttimeout)/parameters.get<double>("delta time",0.01)));
+        break;
+      }
+    }
+    // last time interval
+    else if(i==(int)actiontime_->size()-1)
+    {
+      if(starttimeout>=actiontime_->at(i))
+        istart_ += (int)(round((actiontime_->back()-actiontime_->at(i-1))/timestepsizes_->at(i-1)) + (int)((starttimeout-actiontime_->back())/timestepsizes_->back()));
+      else
+        istart_ += (int)(round((starttimeout-actiontime_->at(i-1)) / timestepsizes_->at(i-1)));
+    }
+    // intermediate time intervals
+    else
+    {
+      if(starttimeout>=actiontime_->at(i))
+        istart_ += (int)(round((actiontime_->at(i)-actiontime_->at(i-1)) / timestepsizes_->at(i-1)));
+      else
+      {
+        istart_ += (int)(round((starttimeout-actiontime_->at(i-1)) / timestepsizes_->at(i-1)));
+        break;
+      }
+    }
+  }
   return;
 }// StatMechManager::StatMechManager
 
@@ -304,7 +336,7 @@ void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter)
 /*----------------------------------------------------------------------*
  | Set Period Length and Search Resolution       mueller (public)  04/12|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::InitializePLengthAndSearchRes()
+void STATMECH::StatMechManager::InitializeStatMechValues()
 {
   periodlength_ = Teuchos::rcp(new std::vector<double>);
   periodlength_->clear();
@@ -343,6 +375,40 @@ void STATMECH::StatMechManager::InitializePLengthAndSearchRes()
     for(int i=0; i<(int)searchres_->size(); i++)
       searchres_->at(i) = (int)(floor((periodlength_->at(i)/Hmax) * (double)(statmechparams_.get<int>("SEARCHRES",1))));
   }
+
+  // read times for actions and the corresponding step sizes from input file
+  actiontime_ = Teuchos::rcp(new std::vector<double>);
+  actiontime_->clear();
+  {
+    std::istringstream TIME(Teuchos::getNumericStringParameter(statmechparams_,"ACTIONTIME"));
+    std::string word;
+    char* input;
+    while (TIME >> word)
+      actiontime_->push_back(std::strtod(word.c_str(), &input));
+  }
+  timestepsizes_ = Teuchos::rcp(new std::vector<double>);
+  timestepsizes_->clear();
+  {
+    std::istringstream DT(Teuchos::getNumericStringParameter(statmechparams_,"ACTIONDT"));
+    std::string word;
+    char* input;
+    while (DT >> word)
+      timestepsizes_->push_back(std::strtod(word.c_str(), &input));
+  }
+
+  // sanity checks for time points and time step sizes
+  for(int i=0; i<(int)actiontime_->size()-1; i++)
+    if(actiontime_->at(i)>actiontime_->at(i+1))
+      dserror("ACTIONTIME values must be monotonously increasing!");
+  if((int)actiontime_->size()!=(int)timestepsizes_->size())
+    dserror("ACTIONTIME and ACTIONDT have to be equal in number in the input file!");
+  if((int)actiontime_->size()<2)
+    dserror("ACTIONTIME has to have at least 2 values");
+
+  // increase the vector position if time values are equal
+  for(int i=0; i<(int)actiontime_->size()-1; i++)
+    if(fabs(actiontime_->at(i)-actiontime_->at(i+1))<timestepsizes_->at(i)/1e3)
+      timeintervalstep_++;
 
 //  if(!discret_->Comm().MyPID())
 //  {
@@ -397,7 +463,7 @@ void STATMECH::StatMechManager::Update(const int& istep,
     GetNodePositions(discol, currentpositions, currentrotations);
 
     // set crosslinkers, i.e. considering crosslink molecule diffusion after filaments had time to equilibrate
-    if(timen>=statmechparams_.get<double>("EQUILIBTIME",0.0) || fabs(timen-statmechparams_.get<double>("EQUILIBTIME",0.0))<(dt/1e3))
+    if(timen>=actiontime_->front() || fabs(timen-actiontime_->front())<(dt/1e3))
     {
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->OcTree()->OctTreeSearch(currentpositions);
@@ -411,11 +477,11 @@ void STATMECH::StatMechManager::Update(const int& istep,
     }
 
     // reset thermal energy to new value (simple value change for now, maybe Load Curve later on)
-    if(fabs(timen-statmechparams_.get<double>("KTSWITCHTIME",0.0))<(dt/1e3))
+    if(fabs(timen-actiontime_->at(1))<(dt/1e3))
       statmechparams_.set("KT",statmechparams_.get<double>("KTACT",statmechparams_.get<double>("KT",0.0)));
 
     // // Set a certain number of double-bonded crosslinkers free
-    if(fabs(timen-dt-statmechparams_.get<double>("STARTTIMEACT",0.0))<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
+    if(fabs(timen-dt-actiontime_->back())<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
       ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0));
 
     // force dependent unlinking: store displacement vector of current time step for next one
@@ -450,12 +516,17 @@ void STATMECH::StatMechManager::Update(const int& istep,
 void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt, double& timeconverged)
 {
   // update time step
-  // note: default value sufficiently large to crash the simulation in the event of maldefinition
-  double dtnew = statmechparams_.get<double>("DELTA_T_NEW",1.0);
-  double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
+  double dtnew = timestepsizes_->at(timeintervalstep_);
+  // update step size
+  double nexttimethreshold = actiontime_->at(timeintervalstep_);
   double eps = 1.0e-10;
-  if((timeconverged>=starttime || fabs(timeconverged-starttime)<eps) && dtnew>0.0)
+  if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
+  {
+    if(!discret_->Comm().MyPID())
+      cout<<"dtnew = "<<timestepsizes_->at(timeintervalstep_)<<", nexttimethreshold = "<<nexttimethreshold<<endl;
     dt = dtnew;
+    timeintervalstep_++;
+  }
   return;
 }
 
@@ -582,7 +653,7 @@ void STATMECH::StatMechManager::UpdateBindingSpots(const Epetra_Vector& discol,s
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &timen, const double &dt)
 {
-  double starttime = statmechparams_.get<double>("STARTTIMEACT",0.0);
+  double starttime = actiontime_->at((int)(actiontime_->size()-1));
   double shearamplitude = statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0);
   int curvenumber = statmechparams_.get<int> ("CURVENUMBER", -1);
   int oscilldir = statmechparams_.get<int> ("OSCILLDIR", -1);
@@ -1093,7 +1164,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep, const
 
   //get current on-rate for crosslinkers
   double kon = 0;
-  double starttime = statmechparams_.get<double>("KTSWITCHTIME", 0.0);
+  double starttime = actiontime_->at(1);
 
   if(timen <= starttime || (timen>starttime && fabs(timen-starttime) < dt/1e4))
     kon = statmechparams_.get<double>("K_ON_start",0.0);
@@ -1602,7 +1673,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& timen,
 {
 //get current off-rate for crosslinkers
   double koff = 0;
-  double starttime = statmechparams_.get<double>("KTSWITCHTIME", 0.0);
+  double starttime = actiontime_->at(1);
 
   if (timen <= starttime || (timen>starttime && fabs(starttime)<dt/1e4))
     koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
@@ -2175,6 +2246,7 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
 void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output, double& dt)
 {
   output->WriteInt("istart", istart_);
+  output->WriteInt("timeintervalstep", timeintervalstep_);
   output->WriteInt("unconvergedsteps", unconvergedsteps_);
   output->WriteDouble("starttimeoutput", starttimeoutput_);
   output->WriteDouble("endtoendref", endtoendref_);
@@ -2241,6 +2313,7 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader, do
 
   // read restart information for statistical mechanics
   istart_ = reader.ReadInt("istart");
+  timeintervalstep_ = reader.ReadInt("timeintervalstep");
   unconvergedsteps_ = reader.ReadInt("unconvergedsteps");
   starttimeoutput_ = reader.ReadDouble("starttimeoutput");
   endtoendref_ = reader.ReadDouble("endtoendref");
@@ -2565,8 +2638,8 @@ void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& para
   params.set("SHEARAMPLITUDE",statmechparams_.get<double>("SHEARAMPLITUDE",0.0));
   params.set("CURVENUMBER",statmechparams_.get<int>("CURVENUMBER",-1));
   params.set("OSCILLDIR",statmechparams_.get<int>("OSCILLDIR",-1));
-  params.set("STARTTIMEACT",statmechparams_.get<double>("STARTTIMEACT",0.0));
-  params.set("DELTA_T_NEW",statmechparams_.get<double>("DELTA_T_NEW",0.0));
+  params.set("STARTTIMEACT",actiontime_->back());
+  params.set("DELTA_T_NEW",timestepsizes_->back());
   params.set("PERIODLENGTH",GetPeriodLength());
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FORCEDEPUNLINKING") || DRT::INPUT::IntegralValue<int>(statmechparams_,"LOOMSETUP"))
     params.set<string>("internalforces","yes");
@@ -3679,7 +3752,7 @@ bool STATMECH::StatMechManager::DBCStart(Teuchos::ParameterList& params)
 {
   // get the current time
   double time = params.get<double>("total time", 0.0);
-  double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
+  double starttime = actiontime_->at((int)(actiontime_->size()-1));
   double dt = params.get<double>("delta time", 0.01);
   if (time<0.0) dserror("t = %f ! Something is utterly wrong here. The total time should be positive!", time);
 
