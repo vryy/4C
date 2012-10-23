@@ -552,11 +552,14 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
   // get single field block matrices
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix(); // can't be 'const' --> is modified by STC
-  if (s==Teuchos::null) { dserror("expect structure block matrix"); }
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> f = FluidField().BlockSystemMatrix();
-  if (f==Teuchos::null) { dserror("expect fluid block matrix"); }
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+
+#ifdef DEBUG
+  if (s==Teuchos::null) { dserror("expect structure block matrix"); }
+  if (f==Teuchos::null) { dserror("expect fluid block matrix"); }
   if (a==Teuchos::null) { dserror("expect ale block matrix"); }
+#endif
 
   // extract submatrices
   LINALG::SparseMatrix& fii = f->Matrix(0,0);
@@ -1014,8 +1017,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   const double stiparam = StructureField()->TimIntParam();
   const double ftiparam = FluidField().TimIntParam();
 
-  // extract the inner and boundary dofs of all three fields
-
+  // extract inner dofs
   Teuchos::RCP<Epetra_Vector> fov = FluidField().Interface()->ExtractOtherVector(fv);
 #ifdef FLUIDSPLITAMG
   fov = FluidField().Interface()->InsertOtherVector(fov);
@@ -1031,7 +1033,13 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
-      modsv->Update(stiparam+(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStruct(lambda_), 1.0);
+    {
+      Teuchos::RCP<Epetra_Vector> lambdaglobal = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(lambda_));
+      int err = modsv->Update(stiparam+(ftiparam*(1.0-stiparam))/(1.0-ftiparam), *lambdaglobal, 1.0);
+      if (err != 0) { dserror("modsv->Update() returned err = %i.",err); }
+
+      //      modsv->Update(stiparam+(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStruct(lambda_), 1.0);
+    }
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
     LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
