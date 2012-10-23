@@ -869,7 +869,7 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
                                          double fluidscale)
 {
 
-  // extract the inner and boundary dofs of all three fields
+  // extract inner dofs
   Teuchos::RCP<Epetra_Vector> fov = FluidField().Interface()->ExtractOtherVector(fv);
 #ifdef FLUIDSPLITAMG
   fov = FluidField().Interface()->InsertOtherVector(fov);
@@ -902,10 +902,15 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
       // get the Mortar matrix M
       Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
 
-      Teuchos::RCP<Epetra_Vector> tmprhs = rcp(new Epetra_Vector(modsv->Map()));
+      Teuchos::RCP<Epetra_Vector> tmprhs = rcp(new Epetra_Vector(mortarm->DomainMap(),true));
 
-      mortarm->Multiply(true,*lambda_,*tmprhs);
-      modsv->Update(stiparam+(1.0-stiparam)*ftiparam/(1.0-ftiparam), *tmprhs, 1.0);
+      int err = mortarm->Multiply(true,*lambda_,*tmprhs);
+      if (err!=0) { dserror("mortarm->Multiply() failed with err=%i.",err); }
+
+      Teuchos::RCP<Epetra_Vector> tmprhsfull = StructureField()->Interface()->InsertFSICondVector(tmprhs);
+
+      err = modsv->Update(stiparam+(ftiparam*(1.0-stiparam))/(1.0-ftiparam), *tmprhsfull, 1.0);
+      if (err!=0) { dserror("modsv->Update() failed with err=%i.",err); }
     }
 
 
@@ -1290,9 +1295,8 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
 
   // some often re-used vectors
-  Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null; // stores intermediate result of terms (3)-(8)
-  Teuchos::RCP<Epetra_Vector> auxvec = Teuchos::null; // just for convenience
-  Teuchos::RCP<Epetra_Vector> auxvec2 = Teuchos::null; // just for convenience
+  Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null;   // stores intermediate result of terms (3)-(8)
+  Teuchos::RCP<Epetra_Vector> auxvec = Teuchos::null;   // just for convenience
 
 
   /* Recovery of Lagrange multiplier lambda^{n+1} is done by the following
@@ -1323,6 +1327,10 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
    * Hence, it will usually not be computed since in general we need more
    * than one nonlinear iteration until convergence.
    *
+   * * Remark on all terms:
+   * Division by (1. - ftiparam) will be done in the end
+   * since this is common to all terms
+   *
    *                                                 Matthias Mayr (10/2012)
    */
 
@@ -1343,9 +1351,8 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   // ---------Addressing term (5)
   auxvec = rcp(new Epetra_Vector(mortarp->RangeMap(),true));
   mortarp->Apply(*ddginc_,*auxvec);
-  auxvec2 = rcp(new Epetra_Vector(auxvec->Map(),true));
-  fggpre_->Multiply(false,*auxvec,*auxvec2);
-  tmpvec->Update(timescale,*auxvec2,1.0);
+  fggpre_->Multiply(false,*auxvec,*auxvec);
+  tmpvec->Update(timescale,*auxvec,1.0);
   // ---------End of term (5)
 
   // ---------Addressing term (6)
@@ -1354,9 +1361,8 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
     auxvec = rcp(new Epetra_Vector(mortarp->RangeMap(),true));
     mortarp->Multiply(false,*ddginc_,*auxvec);
     LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
-    auxvec2 = rcp(new Epetra_Vector(auxvec->Map(),true));
-    fmgg.Multiply(false,*auxvec,*auxvec2);
-    tmpvec->Update(1.0,*auxvec2,1.0);
+    fmgg.Multiply(false,*auxvec,*auxvec);
+    tmpvec->Update(1.0,*auxvec,1.0);
   }
   // ---------End of term (6)
 
