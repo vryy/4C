@@ -10,6 +10,7 @@ Maintainer: Benedikt Schott
             089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
+#include <Teuchos_TimeMonitor.hpp>
 
 #include <boost/bind.hpp>
 
@@ -1135,6 +1136,8 @@ void GEO::CUT::Mesh::SelfCut()
  *-----------------------------------------------------------------*/
 void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int recursion )
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- CUT (incl. tetmesh-cut)" );
+
   if ( DetectSelfCut() )
     throw std::runtime_error( "cut surface with self cut not supported" );
 
@@ -1161,7 +1164,64 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
 {
   BoundingBox sidebox( side ); // define a bounding box around the maybe twisted side to find involved elements
   plain_element_set elements;
-  pp_->CollectElements( sidebox, elements ); // find involved elements (octree-based)
+  
+#if(0)
+  // REMARK: do not use pp_->CollectElements anymore
+  // it can happen that some intersections between elements and sides
+  // are not detected, because the octtree bounding boxes can lie
+  // within a real background element. Such small bounding boxes
+  // do not have to contain any points adjacent to elements,
+  // then elements have not been found
+  //
+  // schott 10/2012
+  
+  //pp_->CollectElements( sidebox, elements ); // find involved elements (octree-based)
+
+#else
+  // use a brute force preselection
+  //
+  // is there an overlap between the side's bounding box
+  // and the elements bounding box ?
+  // if yes -> try to find a cut
+  //
+  // REMARK: if the brute force preselection is to slow, one could think about
+  // an additional octtree for elements to get a logartithmic complexity
+  // 
+
+
+  // preselection of possible cut between linear elements and the current side
+  for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end(); i++)
+  {
+    Element* e= &*(i->second);
+    BoundingBox elementbox;
+    elementbox.Assign(*e);
+    if(elementbox.Within(1.0, sidebox))
+    {
+      if(elements.count(e) == 0)
+      {
+        elements.insert(e);
+      }
+    }
+  }
+  // preselection of possible cut between shadow elements of quadratic elements and the current side
+  for(std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+      i!=shadow_elements_.end();
+      i++)
+  {
+    Element* e= &**i;
+    BoundingBox elementbox;
+    elementbox.Assign(*e);
+    if(elementbox.Within(1.0, sidebox))
+    {
+      if(elements.count(e) == 0)
+      {
+        elements.insert(e);
+      }
+    }
+  }
+
+#endif
+
 
   // perform the cut of this side for each involved element
   for ( plain_element_set::iterator i=elements.begin(); i!=elements.end(); ++i )
@@ -1232,6 +1292,8 @@ void GEO::CUT::Mesh::RectifyCutNumerics()
 
 void GEO::CUT::Mesh::MakeCutLines()
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- MakeCutLines" );
+
   Creator creator;
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -1277,6 +1339,8 @@ void GEO::CUT::Mesh::MakeCutLines()
 
 void GEO::CUT::Mesh::MakeFacets()
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- MakeFacets" );
+
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
@@ -1319,6 +1383,8 @@ void GEO::CUT::Mesh::MakeFacets()
 
 void GEO::CUT::Mesh::MakeVolumeCells()
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- MakeVolumeCells" );
+
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
@@ -1409,7 +1475,6 @@ void GEO::CUT::Mesh::FindNodePositions()
   // * for parallel simulations there can be some undecided nodes
 //  CheckForUndecidedNodePositions();
 
-//  FindFacetPositions();
 }
 
 void GEO::CUT::Mesh::FindLSNodePositions()

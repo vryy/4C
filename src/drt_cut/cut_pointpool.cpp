@@ -231,6 +231,9 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, plain_sid
 
 void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, plain_element_set & elements )
 {
+  // see REMARK in cut_mesh.cpp
+  dserror("collecting elements via the OctTreeNode does not find all possible element-side intersections");
+
   if ( not IsLeaf() )
   {
     if ( sidebox.Within( norm_, bb_ ) )
