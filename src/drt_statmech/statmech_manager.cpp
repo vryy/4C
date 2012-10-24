@@ -522,8 +522,6 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt, double& timeco
   double eps = 1.0e-10;
   if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
   {
-    if(!discret_->Comm().MyPID())
-      cout<<"dtnew = "<<timestepsizes_->at(timeintervalstep_)<<", nexttimethreshold = "<<nexttimethreshold<<endl;
     dt = dtnew;
     timeintervalstep_++;
   }

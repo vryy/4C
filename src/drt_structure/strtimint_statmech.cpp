@@ -444,15 +444,21 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::EvaluateForceStiffResidual(bool predict)
 {
+  // initialise stiffness matrix to zero
+  stiff_->Zero();
+
   // theta-interpolate state vectors
   EvaluateMidState();
 
   // build new external forces
+  fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
 
+  // initialise internal forces
+  fintn_->PutScalar(0.0);
   // internal forces and stiffness matrix
   ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_);
 
@@ -539,10 +545,7 @@ void STR::TimIntStatMech::ApplyForceStiffInternal(const double                  
   p.set("total time", time);
   p.set("delta time", dt);
 
-  // reset displacement increments, internal forces and stiffness matrix in order to be evaluated anew
   //disi->PutScalar(0.0);
-  fint->PutScalar(0.0);
-  stiff->Zero();
 
   //passing statistical mechanics parameters to elements
   statmechman_->AddStatMechParamsTo(p, randomnumbers_);
