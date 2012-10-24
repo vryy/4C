@@ -15,6 +15,15 @@
 #define LINSOLVETOL 1e-13
 #define VOLUMETOL   1e-14
 
+// special tolerances for some special cut situations
+
+// tolerance in cut_kernel to decide if there is a cut between side and line (dependent on det of system)
+// or if these lie on each other or are parallel
+#define PARALLEL_DET_TOL 1e-16 // has to be smaller than 1e-14 -> cut_test
+
+// tolerance to identify points of volumecells between processors
+#define PARALLEL_COORD_TOL 1e-10
+
 // Special tolerance to distinguish planar facets from curved ones.
 #define PLANARTOL   1e-6
 

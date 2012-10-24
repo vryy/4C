@@ -851,7 +851,7 @@ namespace GEO
           if ( debug )
             std::cout << "  det=" << std::setprecision( 15 ) << det << "\n";
 
-          if ( fabs( det ) == 0 )
+          if ( fabs( det ) < PARALLEL_DET_TOL )
           {
             if ( iter < 3 )
             {
