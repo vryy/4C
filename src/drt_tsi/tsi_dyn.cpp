@@ -72,6 +72,7 @@ void tsi_dyn_drt()
   case INPAR::TSI::IterStagg :
   case INPAR::TSI::IterStaggAitken :
   case INPAR::TSI::IterStaggAitkenIrons :
+  case INPAR::TSI::IterStaggFixedRel :
   {
     // Any partitioned algorithm. Stable of working horses.
     // create an TSI::Algorithm instance
