@@ -68,6 +68,7 @@ void ALE::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
     // Dirichlet boundaries != 0 are not supported.
 
     incr_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
+    dispnp_->Update(1.0,*incr_,0.0);
   }
 
   EvaluateElements();
