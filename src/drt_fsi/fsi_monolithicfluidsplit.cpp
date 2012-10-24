@@ -65,7 +65,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap()));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
   fmgipre_ = Teuchos::null;
   fmgicur_ = Teuchos::null;
   fmggpre_ = Teuchos::null;
@@ -1029,16 +1029,15 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
     Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(fcv));
-    modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
+    int err = modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
+    if (err != 0) { dserror("modsv->Update() returned err = %i.",err); }
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> lambdaglobal = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(lambda_));
-      int err = modsv->Update(stiparam+(ftiparam*(1.0-stiparam))/(1.0-ftiparam), *lambdaglobal, 1.0);
+      err = modsv->Update(stiparam+(ftiparam*(1.0-stiparam))/(1.0-ftiparam), *lambdaglobal, 1.0);
       if (err != 0) { dserror("modsv->Update() returned err = %i.",err); }
-
-      //      modsv->Update(stiparam+(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStruct(lambda_), 1.0);
     }
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
@@ -1318,24 +1317,23 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   Teuchos::RCP<Epetra_Vector> fgialeddi = LINALG::CreateVector(*AleField().Interface()->FSICondMap(),true);
   // compute the above mentioned product
   if (fmgipre_ != Teuchos::null)
-    (fmgipre_->EpetraMatrix())->Multiply(false, *ddialeinc_, *fgialeddi);
+    fmgipre_->Apply(*ddialeinc_, *fgialeddi);
 
   // store the prodcut F_{\Gamma I}^{n+1} \Delta u_I^{n+1} in here
   Teuchos::RCP<Epetra_Vector> fgidui = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
   // compute the above mentioned product
-  (fgipre_->EpetraMatrix())->Multiply(false, *duiinc_, *fgidui);
-
+  fgipre_->Apply(*duiinc_, *fgidui);
 
   // store the prodcut F_{\Gamma\Gamma}^{n+1} \Delta d_Gamma^{n+1} in here
   Teuchos::RCP<Epetra_Vector> fggddg = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
   // compute the above mentioned product
-  (fggpre_->EpetraMatrix())->Multiply(false, *ddgaleinc_, *fggddg);
+  fggpre_->Apply(*ddgaleinc_, *fggddg);
 
   // store the prodcut F_{\Gamma\Gamma}^{G,n+1} \Delta d_Gamma^{n+1} in here
   Teuchos::RCP<Epetra_Vector> fggaleddg = LINALG::CreateVector(*AleField().Interface()->FSICondMap(),true);
   // compute the above mentioned product
   if (fmggpre_ != Teuchos::null)
-    (fmggpre_->EpetraMatrix())->Multiply(false, *ddgaleinc_, *fggaleddg);
+    fmggpre_->Apply(*ddgaleinc_, *fggaleddg);
 
   // Update the Lagrange multiplier:
   /* \lambda^{n+1} =  1/d * [ - c*\lambda^n - f_\Gamma^F

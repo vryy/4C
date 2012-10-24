@@ -44,7 +44,7 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& c
   fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap()));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
   lambda_->PutScalar(0.0);
   fmgipre_ = Teuchos::null;
   fmgicur_ = Teuchos::null;
@@ -894,7 +894,8 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
     mortarp->Multiply(true,*fcv,*scv);
 
     Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(scv);
-    modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
+    int err = modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
+    if (err!=0) { dserror("modsv->Update()) failed with err=%i.",err); }
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
@@ -904,7 +905,7 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
       Teuchos::RCP<Epetra_Vector> tmprhs = rcp(new Epetra_Vector(mortarm->DomainMap(),true));
 
-      int err = mortarm->Multiply(true,*lambda_,*tmprhs);
+      err = mortarm->Multiply(true,*lambda_,*tmprhs);
       if (err!=0) { dserror("mortarm->Multiply() failed with err=%i.",err); }
 
       Teuchos::RCP<Epetra_Vector> tmprhsfull = StructureField()->Interface()->InsertFSICondVector(tmprhs);
@@ -1344,14 +1345,14 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
 
   // ---------Addressing term (4)
   auxvec = rcp(new Epetra_Vector(fgipre_->RangeMap(),true));
-  fgipre_->Multiply(false,*duiinc_,*auxvec);
+  fgipre_->Apply(*duiinc_,*auxvec);
   tmpvec->Update(1.0,*auxvec,1.0);
   // ---------End of term (4)
 
   // ---------Addressing term (5)
   auxvec = rcp(new Epetra_Vector(mortarp->RangeMap(),true));
   mortarp->Apply(*ddginc_,*auxvec);
-  fggpre_->Multiply(false,*auxvec,*auxvec);
+  fggpre_->Apply(*auxvec,*auxvec);
   tmpvec->Update(timescale,*auxvec,1.0);
   // ---------End of term (5)
 
@@ -1359,9 +1360,9 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   if (mmm!=Teuchos::null)
   {
     auxvec = rcp(new Epetra_Vector(mortarp->RangeMap(),true));
-    mortarp->Multiply(false,*ddginc_,*auxvec);
+    mortarp->Apply(*ddginc_,*auxvec);
     LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
-    fmgg.Multiply(false,*auxvec,*auxvec);
+    fmgg.Apply(*auxvec,*auxvec);
     tmpvec->Update(1.0,*auxvec,1.0);
   }
   // ---------End of term (6)
@@ -1371,7 +1372,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   {
     LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
     auxvec = rcp(new Epetra_Vector(fmgi.RangeMap(),true));
-    fmgi.Multiply(false,*ddialeinc_,*auxvec);
+    fmgi.Apply(*ddialeinc_,*auxvec);
     tmpvec->Update(1.0,*auxvec,1.0);
   }
   // ---------End of term (7)
@@ -1380,7 +1381,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   if (firstcall_)
   {
     auxvec = rcp(new Epetra_Vector(fggpre_->RangeMap(),true));
-    fggpre_->Multiply(false,*FluidField().ExtractInterfaceVeln(),*auxvec);
+    fggpre_->Apply(*FluidField().ExtractInterfaceVeln(),*auxvec);
     tmpvec->Update(1.0,*auxvec,1.0);
   }
   // ---------End of term (8)
