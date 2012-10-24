@@ -38,6 +38,7 @@ namespace TSI
     IterStagg,
     IterStaggAitken,
     IterStaggAitkenIrons,
+    IterStaggFixedRel,
     Monolithic
   };
 

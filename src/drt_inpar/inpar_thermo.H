@@ -16,12 +16,12 @@ Maintainer: Caroline Danowski
 #define INPAR_THERMO_H
 
 
-#include "inpar_parameterlist_utils.H"
-
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 06/09 |
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_dserror.H"
+#include "inpar_parameterlist_utils.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 06/09 |
@@ -33,23 +33,23 @@ namespace INPAR
 namespace THR
 {
 
-  /// @name Time integration
+  //! @name Time integration
   //@{
 
-  /// Type of time integrator including statics
+  //! Type of time integrator including statics
   enum DynamicType
   {
-    dyna_undefined,                  ///< undefined integrator (sth like a default)
-    dyna_statics,                    ///< static analysis
-    dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
-    dyna_gemm,                       ///< generalised energy-momementum method (implicit)
-    dyna_genalpha,                   ///< generalised-alpha time integrator (implicit)
-    dyna_expleuler                   ///< forward Euler (explicit)  
+    dyna_undefined,  //!< undefined integrator (sth like a default)
+    dyna_statics,  //!< static analysis
+    dyna_onesteptheta,  //!< one-step-theta time integrator (implicit)
+    dyna_gemm,  //!< generalised energy-momementum method (implicit)
+    dyna_genalpha,  //!< generalised-alpha time integrator (implicit)
+    dyna_expleuler  //!< forward Euler (explicit)
   };
 
-  /// Map time integrator to string
+  //! Map time integrator to string
   static inline const std::string DynamicTypeString(
-    const enum DynamicType name  ///< enum to convert
+    const enum DynamicType name  //!< enum to convert
     )
   {
     switch (name)
@@ -78,7 +78,7 @@ namespace THR
     }
   }
 
-  /// initial field for scalar transport problem
+  //! initial field for scalar transport problem
   enum InitialField
   {
     initfield_zero_field,
@@ -86,41 +86,41 @@ namespace THR
     initfield_field_by_condition
   };
 
-  /// Mid-average type of internal forces for generalised-alpha-like
-  /// time integration schemes
-  ///
-  /// \author bborn
-  /// \date 11/08
+  //! Mid-average type of internal forces for generalised-alpha-like
+  //! time integration schemes
+  //!
+  //! \author bborn
+  //! \date 11/08
   enum MidAverageEnum
   {
-    midavg_vague = 0,  ///< undefined mid-averaging type
-    midavg_imrlike,  ///< alphaf-mid-averaging is done IMR-like, i.e.
-                     ///< \f$F_{int,m}\f$
-                     ///< \f$= F_{int}(D_m)\f$
-                     ///< \f$= F_{int}( (1-\alpha_f)*D_{n+1} + \alpha_f*D_n )\f$
-                     ///< (IMR means implicit mid-point rule.)
-    midavg_trlike    ///< alphaf-mid-averaging is done TR-like, i.e.
-                     ///< \f$F_{int,m}\f$
-                     ///< \f$= (1-\alpha_f)*F_{int,n+1} + \alpha_f*F_{int,n}\f$
-                     ///<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
-                     ///<  (TR means trapezoidal rule.)
+    midavg_vague = 0,  //!< undefined mid-averaging type
+    midavg_imrlike,  //!< alphaf-mid-averaging is done IMR-like, i.e.
+                     //!< \f$F_{int,m}\f$
+                     //!< \f$= F_{int}(D_m)\f$
+                     //!< \f$= F_{int}( (1-\alpha_f)*D_{n+1} + \alpha_f*D_n )\f$
+                     //!< (IMR means implicit mid-point rule.)
+    midavg_trlike  //!< alphaf-mid-averaging is done TR-like, i.e.
+                   //!< \f$F_{int,m}\f$
+                   //!< \f$= (1-\alpha_f)*F_{int,n+1} + \alpha_f*F_{int,n}\f$
+                   //!<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
+                   //!<  (TR means trapezoidal rule.)
   };
 
   //@}
 
-  /// @name Solution technique and related
+  //! @name Solution technique and related
   //@{
 
-  /// type of solution techniques
+  //! type of solution techniques
   enum NonlinSolTech
   {
-    soltech_vague,  ///< undefined
-    soltech_newtonfull  ///< full Newton-Raphson iteration
+    soltech_vague,  //!< undefined
+    soltech_newtonfull  //!< full Newton-Raphson iteration
   };
 
-  /// Map solution technique enum to string
+  //! Map solution technique enum to string
   static inline const std::string NonlinSolTechString(
-    const enum NonlinSolTech name  ///< enum to convert
+    const enum NonlinSolTech name  //!< enum to convert
     )
   {
     switch (name)
@@ -137,22 +137,22 @@ namespace THR
     }
   }
 
-  /// Type of predictor
+  //! Type of predictor
   enum PredEnum
   {
-    pred_vague,  ///< undetermined
-    pred_consttemp,  ///< constant temperatures
-    pred_consttemprate, ///< constant temperatures and rates
-    pred_tangtemp  ///< linearised solution obeying DBC temperature via tangent
-                  ///< T_{n+1}^{<0>} = T_{n} + Ktang_{n,eff}^{-1} . (- Ktang_{n} . (T_{n+1}^{DBC} - T_{n}))
-                  ///< This looks hilarious, but remember Ktan_{n,eff}^{-1} is not
-                  ///< the inverse of Ktan_{n} due to the application of the
-                  ///< Dirichlet BCs (i.e. the reduction to the test space).
+    pred_vague,  //!< undetermined
+    pred_consttemp,  //!< constant temperatures
+    pred_consttemprate, //!< constant temperatures and rates
+    pred_tangtemp  //!< linearised solution obeying DBC temperature via tangent
+                   //!< T_{n+1}^{<0>} = T_{n} + Ktang_{n,eff}^{-1} . (- Ktang_{n} . (T_{n+1}^{DBC} - T_{n}))
+                   //!< This looks hilarious, but remember Ktan_{n,eff}^{-1} is not
+                   //!< the inverse of Ktan_{n} due to the application of the
+                   //!< Dirichlet BCs (i.e. the reduction to the test space).
   };
 
-  /// Map predictor enum term to string
+  //! Map predictor enum term to string
   static inline const std::string PredEnumString(
-    const PredEnum name  ///< identifier
+    const PredEnum name  //!< identifier
     )
   {
     switch (name)
@@ -175,38 +175,38 @@ namespace THR
     }
   }
 
-  /// type of norm to check for convergence
+  //! type of norm to check for convergence
   enum ConvNorm
   {
-    convnorm_abs,         ///< absolute norm
-    convnorm_rel,         ///< relative norm
-    convnorm_mix          ///< mixed absolute-relative norm
+    convnorm_abs,  //!< absolute norm
+    convnorm_rel,  //!< relative norm
+    convnorm_mix  //!< mixed absolute-relative norm
   };
 
-  /// type of norm to check for convergence
+  //! type of norm to check for convergence
   enum BinaryOp
   {
-    bop_or,         ///<  or
-    bop_and         ///<  and
+    bop_or,  //!<  or
+    bop_and  //!<  and
   };
 
   //@}
 
-   /// @name Output
+   //! @name Output
   //@{
 
-  /// Type of thermal flux output
-  /// (this enum represents the input file parameter THERM_HEATFLUX) CHECK IT!
+  //! Type of thermal flux output
+  //! (this enum represents the input file parameter THERM_HEATFLUX) CHECK IT!
   enum HeatFluxType
   {
-    heatflux_none,    ///< no heatflux output
-    heatflux_current,  ///< output of heatflux in current configuration
-    heatflux_initial      ///< output of heat flux in initial configuration
+    heatflux_none,  //!< no heatflux output
+    heatflux_current,  //!< output of heatflux in current configuration
+    heatflux_initial  //!< output of heat flux in initial configuration
   };
 
-  /// Map predictor enum term to string
+  //! Map predictor enum term to string
   static inline const std::string HeatFluxString(
-    const HeatFluxType& name  ///< identifier
+    const HeatFluxType& name  //!< identifier
     )
   {
     switch (name)
@@ -226,18 +226,18 @@ namespace THR
     }
   }
 
-  /// Type of thermal gradient output
-  /// (this enum represents the input file parameter THERM_TEMPGRAD) CHECK IT!
+  //! Type of thermal gradient output
+  //! (this enum represents the input file parameter THERM_TEMPGRAD) CHECK IT!
   enum TempGradType
   {
-    tempgrad_none,    ///< no thermal gradient output
-    tempgrad_current,  ///< output of thermal gradient in current configuration
-    tempgrad_initial      ///< output of thermal gradient in initial configuration
+    tempgrad_none,  //!< no thermal gradient output
+    tempgrad_current,  //!< output of thermal gradient in current configuration
+    tempgrad_initial  //!< output of thermal gradient in initial configuration
   };
 
-  /// Map predictor enum term to string
+  //! Map predictor enum term to string
   static inline const std::string TempGradString(
-    const TempGradType& name  ///< identifier
+    const TempGradType& name  //!< identifier
     )
   {
    switch (name)
@@ -259,22 +259,22 @@ namespace THR
 
   //@}
 
-  /// @name General
+  //! @name General
   //@{
 
-  /// type of vector norm used for error/residual vectors
+  //! type of vector norm used for error/residual vectors
   enum VectorNorm
   {
-    norm_vague = 0,  ///< undetermined norm
-    norm_l1,         ///< L1/linear norm
-    norm_l2,         ///< L2/Euclidean norm
-    norm_rms,        ///< root mean square (RMS) norm
-    norm_inf         ///< Maximum/infinity norm
+    norm_vague = 0,  //!< undetermined norm
+    norm_l1,  //!< L1/linear norm
+    norm_l2,  //!< L2/Euclidean norm
+    norm_rms,  //!< root mean square (RMS) norm
+    norm_inf  //!< Maximum/infinity norm
   };
 
-  /// map enum term to string
+  //! map enum term to string
   static inline const std::string VectorNormString(
-    const enum VectorNorm norm  ///< input enum term
+    const enum VectorNorm norm  //!< input enum term
     )
   {
     switch (norm)

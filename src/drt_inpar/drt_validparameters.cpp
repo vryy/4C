@@ -1954,6 +1954,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 "tsi_iterstagg",
                                 "tsi_iterstagg_aitken",
                                 "tsi_iterstagg_aitkenirons",
+                                "tsi_iterstagg_fixedrelax",
                                 "tsi_monolithic"
                                 ),
                               tuple<int>(
@@ -1962,6 +1963,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 INPAR::TSI::IterStagg,
                                 INPAR::TSI::IterStaggAitken,
                                 INPAR::TSI::IterStaggAitkenIrons,
+                                INPAR::TSI::IterStaggFixedRel,
                                 INPAR::TSI::Monolithic
                                 ),
                               &tsidyn);
@@ -1985,8 +1987,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check",&tsidyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&tsidyn);
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&tsidyn);
-  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&tsidyn);
   IntParameter("UPRES",1,"increment for writing solution",&tsidyn);
+  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&tsidyn);
+  DoubleParameter("FIXEDOMEGA",1.0,"fixed relaxation parameter",&tsidyn);
 
   // Iterationparameters
   setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check in partitioned TSI",
