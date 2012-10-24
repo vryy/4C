@@ -2696,6 +2696,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   std::vector<Teuchos::RCP<ConditionComponent> > redairwayinletcomponents;
   redairwayinletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
   redairwayinletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  redairwayinletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",1, false, false, true)));
   for (unsigned i=0; i<redairwayinletcomponents.size(); ++i)
     raw_in_bc->AddComponent(redairwayinletcomponents[i]);
 
@@ -2734,6 +2735,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   std::vector<Teuchos::RCP<ConditionComponent> > acinus_pleural_p_components;
   acinus_pleural_p_components.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
   acinus_pleural_p_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  acinus_pleural_p_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",1, false, false, true)));
   for (unsigned i=0; i<acinus_pleural_p_components.size(); ++i)
     acinus_bc->AddComponent(acinus_pleural_p_components[i]);
 

@@ -726,7 +726,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
           double curvefac = 1.0;
           const  vector<double>* vals   = condition->Get<vector<double> >("val");
-          
+          const vector<int>*     functions = condition->Get<vector<int> >("funct");
+
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
           // -----------------------------------------------------------------
@@ -741,6 +742,17 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
           
+          int functnum = -1;
+          if (functions) functnum = (*functions)[0];
+          else functnum = -1;
+          
+          double functionfac = 0.0;
+          if(functnum>0)
+          {
+            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
+          }
+          BCin += functionfac;
+
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
           // -----------------------------------------------------------------------------

@@ -67,7 +67,7 @@ NDSURF                          0
 NDVOL                           0
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          1
-E 1 - flow 1.0 1
+E 1 - flow 1.0 1 0
 //E 2 - pressure 0.0 1
 //E 3 - pressure 0.0 1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS

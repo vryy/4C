@@ -69,7 +69,7 @@ CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 ----------------------------------------------------------------------CURVE5
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          1
-E 1 - flow 1.0 2
+E 1 - flow 1.0 2 0
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
 1 RED_AIRWAY LINE2 1 2 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.12 Area 1.0 Generation 0
 -----------------------------------------------------------------NODE COORDS
@@ -80,7 +80,7 @@ NODE 1 DNODE 1
 NODE 2 DNODE 2
 --------------------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
 DPOINT                          1
-E 2 - Exponential Acinus_Volume 0.0372 VolumePerArea 0.1116 Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023 FromCurve 0.0 1
+E 2 - Exponential Acinus_Volume 0.0372 VolumePerArea 0.1116 Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023 FromCurve 0.0 1 0
 ----------------------------------------------------------RESULT DESCRIPTION
 RED_AIRWAY DIS 1 NODE 1 POSITION pressure NAME pressure VALUE -3.37489810215513387e+02 TOLERANCE 1e-6
 RED_AIRWAY DIS 1 NODE 2 POSITION pressure NAME pressure VALUE -3.37489810215513330e+02 TOLERANCE 1e-6

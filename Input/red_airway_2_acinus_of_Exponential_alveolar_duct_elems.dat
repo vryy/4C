@@ -70,9 +70,9 @@ CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 ----------------------------------------------------------------------CURVE5
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          3
-E 1 - flow 1.0 2
-E 2 - pressure 0.0 1
-E 3 - pressure 0.0 1
+E 1 -     flow 1.0 2 0
+E 2 - pressure 0.0 1 0
+E 3 - pressure 0.0 1 0
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
 1 RED_AIRWAY LINE2 1 2 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.20 Area 1.0 Generation 0
 2 RED_AIRWAY LINE2 2 3 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.15 Area 1.0 Generation 0
@@ -80,12 +80,12 @@ E 3 - pressure 0.0 1
 4 RED_ACINUS LINE2 3 5 MAT 2 TYPE Exponential AcinusVolume 0.1116 AlveolarDuctVolume 0.0372
 5 RED_ACINUS LINE2 4 6 MAT 2 TYPE Exponential AcinusVolume 0.1488 AlveolarDuctVolume 0.0372
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD -5.0 0.0 0.0
-NODE 2 COORD 0.0 0.0 0.0
-NODE 3 COORD 2.5 2.5 0.0
-NODE 4 COORD 2.5 -2.5 0.0
-NODE 5 COORD 3.0 2.5 0.0
-NODE 6 COORD 3.0 -2.5 0.0
+NODE 1 COORD -5.0  0.0 0.0
+NODE 2 COORD  0.0  0.0 0.0
+NODE 3 COORD  2.5  2.5 0.0
+NODE 4 COORD  2.5 -2.5 0.0
+NODE 5 COORD  3.0  2.5 0.0
+NODE 6 COORD  3.0 -2.5 0.0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 5 DNODE 2

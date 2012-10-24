@@ -695,8 +695,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       // -------------------------------------------------------------
       // Read in the pleural pressure
       // -------------------------------------------------------------
-      const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
-      const  vector<double>* vals   = condition->Get<vector<double> >("val");
+      const vector<int>*    curve     = condition->Get<vector<int> >("curve");
+      const vector<double>* vals      = condition->Get<vector<double> >("val");
+      const vector<int>*    functions = condition->Get<vector<int> >("funct");
 
       double Pp_nm = 0.0;
       double Pp_n  = 0.0;
@@ -721,13 +722,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       double curvefac_n  = 1.0;
       double curvefac_nm = 1.0;
 
-
-      if(curvenum)
+      if(curvenum>0)
       {
         curvefac_nm = DRT::Problem::Instance()->Curve(curvenum).f(time - 2.0*dt);
         curvefac_n  = DRT::Problem::Instance()->Curve(curvenum).f(time -     dt);
         curvefac_np = DRT::Problem::Instance()->Curve(curvenum).f(time         );
       }
+      
       if (pleuralPType == "FromCurve")
       {
         Pp_nm = curvefac_nm*(*vals)[0];
@@ -761,6 +762,24 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         dserror("[%s] at Node (%d) in elem(%d) is not defined as a plueral pressure type",pleuralPType.c_str(),ele->Nodes()[i]->Id(),ele->Id());
         exit(1);
       }
+
+      int functnum = -1;
+      if (functions) functnum = (*functions)[0];
+      else functnum = -1;
+      
+      double functionfac_nm = 0.0;
+      double functionfac_n  = 0.0;
+      double functionfac_np = 0.0;
+      if(functnum>0)
+      {
+        functionfac_nm = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time - 2.0*dt,NULL);
+        functionfac_n  = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time -     dt,NULL);
+        functionfac_np = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time         ,NULL);
+      }
+      
+      Pp_nm += functionfac_nm;
+      Pp_n  += functionfac_n ;
+      Pp_np += functionfac_np;
 
       if (i==0)
       {
@@ -1063,6 +1082,17 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 
           BCin = (*vals)[0]*curvefac;
 
+          const vector<int>*    functions = condition->Get<vector<int> >("funct");
+          int functnum = -1;
+          if (functions) functnum = (*functions)[0];
+          else functnum = -1;
+
+          double functionfac = 0.0;
+          if(functnum>0)
+          {
+            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
+          }
+          BCin += functionfac;
 
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
