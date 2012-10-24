@@ -640,11 +640,13 @@ namespace FLD
 
     //--------------------------------------------------------------------
 
+    //! @name general algorithm parameters
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;
-    bool                          dynamic_smagorinsky_;
-    bool                          scale_similarity_;
+    //! do we have a turblence model?
+    enum INPAR::FLUID::TurbModelAction turbmodel_;
     //@}
+
 
     /// number of spatial dimensions
     int numdim_;

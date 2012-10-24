@@ -627,11 +627,12 @@ namespace FLD
 
     Teuchos::RCP<IO::DiscretizationWriter>     emboutput_;
 
+    //! @name general algorithm parameters
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;
     bool                          embfluid_;
-    bool                          dynamic_smagorinsky_;
-    bool                          scale_similarity_;
+    //! do we have a turblence model?
+    enum INPAR::FLUID::TurbModelAction turbmodel_;
     //@}
 
     /// number of spatial dimensions

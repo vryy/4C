@@ -1839,6 +1839,13 @@ FLD::XFluid::XFluid(
 
 
 
+
+  //----------------------------------------------------------------------
+  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+  //----------------------------------------------------------------------
+
+
+
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
   // ---------------------------------------------------------------------
@@ -2828,14 +2835,14 @@ void FLD::XFluid::NonlinearSolve()
     // debug output (after Dirichlet conditions)
 //    if(gmsh_debug_out_) state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual", step_, itnum, state_->residual_ );
 
-    double incvelnorm_L2;
-    double incprenorm_L2;
+    double incvelnorm_L2 = 0.0;
+    double incprenorm_L2 = 0.0;
 
-    double velnorm_L2;
-    double prenorm_L2;
+    double velnorm_L2 = 0.0;
+    double prenorm_L2 = 0.0;
 
-    double vresnorm;
-    double presnorm;
+    double vresnorm = 0.0;
+    double presnorm = 0.0;
 
     Teuchos::RCP<Epetra_Vector> onlyvel = state_->velpressplitter_->ExtractOtherVector(state_->residual_);
     onlyvel->Norm2(&vresnorm);
@@ -2871,7 +2878,7 @@ void FLD::XFluid::NonlinearSolve()
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
         printf(" (      --     ,te=%10.3E",dtele_);
-        if (dynamic_smagorinsky_ or scale_similarity_)
+        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
         {
           printf(",tf=%10.3E",dtfilter_);
         }
@@ -2896,7 +2903,7 @@ void FLD::XFluid::NonlinearSolve()
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (dynamic_smagorinsky_ or scale_similarity_)
+          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
           {
             printf(",tf=%10.3E",dtfilter_);
           }
@@ -2920,7 +2927,7 @@ void FLD::XFluid::NonlinearSolve()
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (dynamic_smagorinsky_ or scale_similarity_)
+          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
           {
             printf(",tf=%10.3E",dtfilter_);
           }
@@ -3729,7 +3736,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (dynamic_smagorinsky_ or scale_similarity_)
+          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
           {
             printf(",tf=%10.3E",dtfilter_);
           }

@@ -2169,6 +2169,11 @@ FLD::XFluidFluid::XFluidFluid(
   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
   idispnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
 
+
+  //----------------------------------------------------------------------
+  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+  //----------------------------------------------------------------------
+
   // -----------------------------------------------------------------
   // set general fluid parameter defined before
   // -----------------------------------------------------------------
@@ -2790,14 +2795,14 @@ void FLD::XFluidFluid::NonlinearSolve()
     state_->fluidfluidsplitter_->InsertXFluidVector(state_->residual_,state_->fluidfluidresidual_);
     state_->fluidfluidsplitter_->InsertFluidVector(aleresidual_,state_->fluidfluidresidual_);
 
-    double incvelnorm_L2;
-    double incprenorm_L2;
+    double incvelnorm_L2 = 0.0;
+    double incprenorm_L2 = 0.0;
 
-    double velnorm_L2;
-    double prenorm_L2;
+    double velnorm_L2 = 0.0;
+    double prenorm_L2 = 0.0;
 
-    double vresnorm;
-    double presnorm;
+    double vresnorm = 0.0;
+    double presnorm = 0.0;
 
 
     Teuchos::RCP<Epetra_Vector> onlyvel = state_->fluidfluidvelpressplitter_.ExtractOtherVector(state_->fluidfluidresidual_);
@@ -2836,7 +2841,7 @@ void FLD::XFluidFluid::NonlinearSolve()
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
         printf(" (      --     ,te=%10.3E",dtele_);
-        if (dynamic_smagorinsky_ or scale_similarity_)
+        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
         {
           printf(",tf=%10.3E",dtfilter_);
         }
@@ -2861,7 +2866,7 @@ void FLD::XFluidFluid::NonlinearSolve()
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (dynamic_smagorinsky_ or scale_similarity_)
+          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
           {
             printf(",tf=%10.3E",dtfilter_);
           }
@@ -2882,10 +2887,10 @@ void FLD::XFluidFluid::NonlinearSolve()
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+              itnum,itemax,ittol,vresnorm,presnorm,
+              incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (dynamic_smagorinsky_ or scale_similarity_)
+          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
           {
             printf(",tf=%10.3E",dtfilter_);
           }
@@ -4598,7 +4603,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
       DRT::Element::LocationArray la( 1 );
 
-      DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
+//      DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
 
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*embdis_,la,false);
