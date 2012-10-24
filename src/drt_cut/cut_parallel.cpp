@@ -55,9 +55,12 @@ void GEO::CUT::Parallel::CommunicateNodePositions()
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::CommunicateNodePositions" );
 
-  if(myrank_==0) std::cout << "\n\t ... CommunicateNodePositions" << std::flush;
+//  if(myrank_==0) std::cout << "\n\t ... CommunicateNodePositions" << std::flush;
+//
+//  const double t_start = Teuchos::Time::wallTime();
 
-  const double t_start = Teuchos::Time::wallTime();
+  //----------------------------------------------------------
+
 
   // check if there are undecided node positions on this proc
   mesh_.CheckForUndecidedNodePositions(curr_undecidedNodePos_);
@@ -113,11 +116,13 @@ void GEO::CUT::Parallel::CommunicateNodePositions()
 
   discret_.Comm().Barrier();
 
-  const double t_diff = Teuchos::Time::wallTime()-t_start;
-  if ( myrank_ == 0 )
-  {
-    std::cout << " ... Success (" << t_diff  <<  " secs)";
-  }
+  //----------------------------------------------------------
+
+//  const double t_diff = Teuchos::Time::wallTime()-t_start;
+//  if ( myrank_ == 0 )
+//  {
+//    std::cout << " ... Success (" << t_diff  <<  " secs)";
+//  }
 
 
   return;
@@ -336,9 +341,9 @@ void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers()
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::CommunicateNodeDofSetNumbers" );
 
-  if(myrank_==0) std::cout << "\n\t ... CommunicateNodeDofSetNumbers" << std::flush;
-
-  const double t_start = Teuchos::Time::wallTime();
+//  if(myrank_==0) std::cout << "\n\t ... CommunicateNodeDofSetNumbers" << std::flush;
+//
+//  const double t_start = Teuchos::Time::wallTime();
 
 
 
@@ -360,11 +365,11 @@ void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers()
 
   discret_.Comm().Barrier();
 
-  const double t_diff = Teuchos::Time::wallTime()-t_start;
-  if ( myrank_ == 0 )
-  {
-    std::cout << " ... Success (" << t_diff  <<  " secs)\n";
-  }
+//  const double t_diff = Teuchos::Time::wallTime()-t_start;
+//  if ( myrank_ == 0 )
+//  {
+//    std::cout << " ... Success (" << t_diff  <<  " secs)\n";
+//  }
 
 
   return;
@@ -459,173 +464,107 @@ void GEO::CUT::Parallel::exportDofSetData()
     //---------------------------------------------------------------------------------------------------------------
     //---------------------------------- fill maps with data from current proc  -------------------------------------
     //---------------------------------------------------------------------------------------------------------------
-    // find node positions for received nodes and set position if possible
     for(std::vector<MeshIntersection::DofSetData>::iterator vc_data=dofSetData_->begin();
         vc_data != dofSetData_->end();
         vc_data++)
     {
+      bool find_volumecell = false; // do we have to identify the received volumecell on myrank?
+
       std::map<int,int>& node_dofsetnumber_map = vc_data->node_dofsetnumber_map_;
 
+
+      // check if it necessary to find the received volumecell on myrank
+      // required, if at least one node in the received node_dofsetnumber_map is a row node on myrank
       for(std::map<int,int>::iterator node_dofsetnumber_it = node_dofsetnumber_map.begin();
           node_dofsetnumber_it != node_dofsetnumber_map.end();
           node_dofsetnumber_it++)
       {
         int nid = node_dofsetnumber_it->first;
-        int curr_dofset_number = node_dofsetnumber_it->second;
 
-        VolumeCell * my_vc = NULL;
+        bool haveGlobalNode = discret_.HaveGlobalNode(nid);
+
+        if(haveGlobalNode)
+        {
+          DRT::Node* node = discret_.gNode(nid);
+
+          if(node->Owner() == myrank_)
+          {
+            find_volumecell = true;
+            //cout << "find the vc!!!" << endl;
+            break; // at least one node found as row node, we have to identify the received volumecell on myrank
+          }
+        }
+      }
+
+      //----------------------------------------------------------------------
+      if(!find_volumecell) continue; // check the next received dofSetData_
+      //----------------------------------------------------------------------
+
+      //parent element Id for current vc data
+      int peid = vc_data->peid_;
+
+      // find the volumecell on myrank
+      VolumeCell * my_vc = NULL;
+      my_vc = findVolumeCell( *vc_data);
+
+      if(my_vc == NULL) dserror("no corresponding volumecell for vc in element %d found", peid);
+
+
+      for(std::map<int,int>::iterator node_dofsetnumber_it = node_dofsetnumber_map.begin();
+          node_dofsetnumber_it != node_dofsetnumber_map.end();
+          node_dofsetnumber_it++)
+      {
+        //cout << "loop the node_dofsetnumber_map" << endl;
+        int nid = node_dofsetnumber_it->first;
+        int curr_dofset_number = node_dofsetnumber_it->second;
 
         bool haveGlobalNode = discret_.HaveGlobalNode(nid);
 
         // decide if the current proc carries the required information
         if(haveGlobalNode) // node on this proc available as row or col node
         {
+          //cout << "in haveGlobalNode for node " << nid << endl;
           DRT::Node* node = discret_.gNode(nid);
           if(node->Owner() == myrank_)
           {
-          //parent element Id for current
 
-          int peid = vc_data->peid_;
+            int new_dofset_number = -1;
 
-          if(my_vc == NULL)
-          {
+            // find the local index of the current node w.r.t the element
+            int index = -1;
 
-            ElementHandle* pele = meshintersection_.GetElement(peid);
+            index = getDofSetVecIndex(nid, peid);
 
-            if(pele == NULL) dserror("element with Id %i not found on proc %i", peid, myrank_);
+            //cout << "index for node " << nid << " is: " << index << endl;
 
-            plain_volumecell_set my_vcs;
-
-            pele->VolumeCells(my_vcs);
-
-            bool vc_found = true;
-
-            // find all the received volumecell's points
-            for(plain_volumecell_set::iterator c = my_vcs.begin(); c!=my_vcs.end(); c++)
+            // get the right dofsetnumber for the node
+            if(my_vc != NULL)
             {
-              VolumeCell* cell = *c;
+              //cout << "in my_vc != NULL" << endl;
+              const std::vector<int> nds = my_vc->NodalDofSet();
 
-              // assume that the corresponding vc on myrank_ has been found
-              vc_found = true;
+              if(index >= (int)nds.size()) dserror(" index can not be read in nds vector of size %d ", index, nds.size());
 
-              // get points for my_vc
-              std::vector<GEO::CUT::Point* > my_cut_points;
-              const plain_facet_set facets = cell->Facets();
+              new_dofset_number = nds[index];
 
-              for(plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); i++)
-              {
-
-                Facet* f = *i;
-                std::vector<Point*> facetpoints = f->Points();
-                std::copy(facetpoints.begin(), facetpoints.end(), std::inserter(my_cut_points, my_cut_points.begin()));
-              }
-
-
-              //-----------------------------------------------------------------------------
-              // find received cut_points in my_cut_points
-
-              // compare the size of vecs
-              if(my_cut_points.size() != (vc_data->cut_points_coords_).size())
-              {
-                // no identical number of points found!
-                // this volumecell is not a candidate
-                vc_found = false;
-              }
-              else
-              {
-                // identical number of points found! this vc is a candidate: check the points"
-
-                // brute force search for identical point coords
-                for(std::vector<GEO::CUT::Point*>::iterator my_it=my_cut_points.begin(); my_it!=my_cut_points.end(); my_it++)
-                {
-                  bool point_found = true;
-
-                  for(std::vector<LINALG::Matrix<3,1> >::iterator rec_it=(vc_data->cut_points_coords_).begin();
-                      rec_it != (vc_data->cut_points_coords_).end();
-                      rec_it++)
-                  {
-                    point_found = true;
-
-                    //compare the coordinates
-                    for(int i=0; i<3; i++)
-                    {
-                      if(fabs((*my_it)->X()[i] - (*rec_it)(i)) > 1e-10)
-                      {
-                        point_found = false;
-                        break;
-                      }
-                    }
-
-                    if(point_found==true) break;
-
-                  } // loop over points
-
-                  if(point_found == false)
-                  {
-                    vc_found=false;
-                    break; // not not search for the next point
-                  }
-                } // end loop over my_points
-              } // end else
-
-
-              if(vc_found == true)
-              {
-                my_vc = *c;
-                //cout << "volumecell is found!!! Happy :-)" << endl;
-                break;
-              }
-              else
-              {
-                //cout << "volumecell is not found!!! :-(" << endl;
-              }
-
-              //-----------------------------------------------------------------------------
-            }// it over volumecells
-
-            if(vc_found == false) dserror("no corresponding volumecell for vc in element %d found for node %d", peid, nid);
-
-          } // if(my_vc == NULL)
-          else
-          {
-            //vc already found for the last node
-          }
-
-
-          int new_dofset_number = -1;
-          int index=0;
-
-          getDofSetVecIndex(index, nid, peid);
-
-
-          // get the right dofsetnumber for the node
-          if(my_vc != NULL)
-          {
-            const std::vector<int> nds = my_vc->NodalDofSet();
-            new_dofset_number = nds[index];
-
-            if(new_dofset_number==-1) dserror("the new dofset number for node %d is not valid", nid);
-          }
-          else dserror("Volumecell Pointer is NULL");
+              if(new_dofset_number==-1) dserror("the new dofset number for node %d is not valid", nid);
+            }
+            else dserror("Volumecell Pointer is NULL");
 
 
 
-          // set the new dofset-number
-          if(curr_dofset_number == -1)
-          {
-            node_dofsetnumber_it->second = new_dofset_number;
-          }
-          else dserror("dofset for this node for this volumecell already set by another proc, this should be done just by the row-node proc");
+            // set the new dofset-number
+            if(curr_dofset_number == -1)
+            {
+              node_dofsetnumber_it->second = new_dofset_number;
+            }
+            else dserror("dofset for this node for this volumecell already set by another proc, this should be done just by the row-node proc");
 
 
           } // end if myrank_
-        }
-        else
-        {
-          //cout << "not myrank" <<endl;
-        }
-      } // end loop dofset_data
-    }// end loop dofSetData_
+        } // have global node on this proc
+      } // end loop node_dofsetnumber_it ( some elemental nodes for the current received volumecell)
+    }// end loop dofSetData_ (data for volumecells)
 
 
 //    cout << "replaced data: " << endl;
@@ -636,9 +575,7 @@ void GEO::CUT::Parallel::exportDofSetData()
 
   } // end loop over procs
 
-
-
-
+  return;
 } // end exportNodePositionData
 
 
@@ -711,6 +648,120 @@ void GEO::CUT::Parallel::distributeDofSetData()
 
   return;
 }
+
+/*------------------------------------------------------------------------------------------------*
+ * find the volumecell on myrank for which we received data stored in vc_data        schott 10/12 *
+ *------------------------------------------------------------------------------------------------*/
+GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(
+    MeshIntersection::DofSetData& vc_data           ///< volumecell data which have to be identified on myrank
+    )
+{
+  bool vc_found = true;
+
+  VolumeCell* my_vc = NULL;
+
+  ElementHandle* pele = meshintersection_.GetElement(vc_data.peid_);
+
+  if(pele == NULL) dserror("element with Id %i not found on proc %i", vc_data.peid_, myrank_);
+
+  plain_volumecell_set my_vcs;
+
+  pele->VolumeCells(my_vcs);
+
+  // find all the received volumecell's points
+  for(plain_volumecell_set::iterator c = my_vcs.begin(); c!=my_vcs.end(); c++)
+  {
+    VolumeCell* cell = *c;
+
+    // assume that the corresponding vc on myrank_ has been found
+    vc_found = true;
+
+    // get points for my_vc
+    std::vector<GEO::CUT::Point* > my_cut_points;
+    const plain_facet_set facets = cell->Facets();
+
+    for(plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); i++)
+    {
+      Facet* f = *i;
+      std::vector<Point*> facetpoints = f->Points();
+      std::copy(facetpoints.begin(), facetpoints.end(), std::inserter(my_cut_points, my_cut_points.begin()));
+    }
+
+
+    //-----------------------------------------------------------------------------
+    // find received cut_points in my_cut_points
+
+    // compare the size of vecs
+    if(my_cut_points.size() != (vc_data.cut_points_coords_).size())
+    {
+
+      //cout << "my_cut_points.size() != (vc_data->cut_points_coords_).size()" << endl;
+      // no identical number of points found!
+      // this volumecell is not a candidate
+      vc_found = false;
+    }
+    else
+    {
+      //cout << "my_cut_points.size() == (vc_data->cut_points_coords_).size()" << endl;
+      // identical number of points found! this vc is a candidate: check the points"
+
+      // brute force search for identical point coords
+      for(std::vector<GEO::CUT::Point*>::iterator my_it=my_cut_points.begin(); my_it!=my_cut_points.end(); my_it++)
+      {
+        bool point_found = true;
+
+        for(std::vector<LINALG::Matrix<3,1> >::iterator rec_it=(vc_data.cut_points_coords_).begin();
+            rec_it != (vc_data.cut_points_coords_).end();
+            rec_it++)
+        {
+
+          point_found = true;
+
+          //compare the coordinates
+          for(int i=0; i<3; i++)
+          {
+            if(fabs((*my_it)->X()[i] - (*rec_it)(i)) > PARALLEL_COORD_TOL)
+            {
+              point_found = false;
+              break; // stop the loop over coordinates
+            }
+          }
+
+          if(point_found==true) break; // stop the inner! loop over received vc's points if the point is already found
+
+        } // inner loop over received vc's points
+
+        if(point_found == false)
+        {
+          vc_found=false;
+          break; // do not search for the next points, it is the wrong volumecell
+        }
+      } // end loop over my_points
+    } // end else
+
+
+    if(vc_found == true)
+    {
+      my_vc = cell;
+      //cout << "volumecell has been found!!! Happy :-)" << endl;
+      break; // stop the loop over volumecells
+    }
+    else
+    {
+      //my_vc = NULL;
+      //cout << "volumecell has not been found!!! :-(" << endl;
+    }
+
+
+    //-----------------------------------------------------------------------------
+  }// it over volumecells
+
+
+  if(vc_found == false) dserror("no corresponding volumecell for vc in element %d found for node %d", vc_data.peid_);
+
+  return my_vc;
+}
+
 
 
 void GEO::CUT::Parallel::ReplaceNdsVectors (ElementHandle*                            e,
@@ -882,7 +933,7 @@ void GEO::CUT::Parallel::printDofSetData()
 /*------------------------------------------------------------------------------------------------*
  * get the index of nid in the vector of elements (eid) node Ids                     schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::Parallel::getDofSetVecIndex(int & index, int nid, int eid)
+int GEO::CUT::Parallel::getDofSetVecIndex(int nid, int eid)
 {
   DRT::Element* ele = discret_.gElement(eid);
 
@@ -892,15 +943,21 @@ void GEO::CUT::Parallel::getDofSetVecIndex(int & index, int nid, int eid)
 
   const int* ele_n_ids = ele->NodeIds();
 
+  int index = 0;
 
-  // finde local node Index for received nid
+  // find the local node Index for received nid w.r.t the element
   for(; index< numnode; ++index)
   {
-    if(ele_n_ids[index] == nid) break;
+    if(ele_n_ids[index] == nid) return index;
   }
-  if(index > numnode) dserror("nid %d not found in nodes for element %d!", nid, eid);
 
-  return;
+  if(index > numnode)
+  {
+    dserror("nid %d not found in nodes for element %d!", nid, eid);
+    return -1;
+  }
+
+  return -1;
 }
 
 

@@ -106,9 +106,10 @@ public:
 
 
 
-  explicit MeshIntersection( int numcutmesh=1 )
+  explicit MeshIntersection( int numcutmesh=1, int myrank = -1)
     : pp_( Teuchos::rcp( new PointPool ) ),
-      mesh_( options_, 1, pp_, false )
+      mesh_( options_, 1, pp_, false ),
+      myrank_(myrank)
   {
     cut_mesh_.reserve( numcutmesh );
     for ( int i=0; i<numcutmesh; ++i )
@@ -138,6 +139,11 @@ public:
   \brief Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
    */
   void Cut_Mesh( bool include_inner );
+
+  /*!
+  \brief Routine for deciding the inside-outside position. This creates the dofset data, just serial
+   */
+  void Cut_Positions_Dofsets( bool include_inner );
 
   /*!
   \brief The routine which splits the volumecell into integrationcells by tessellation, or create Gaussian
@@ -223,6 +229,7 @@ private:
   MeshHandle mesh_;
   std::vector<Teuchos::RCP<MeshHandle> > cut_mesh_;
 
+  int myrank_;
 
 };
 

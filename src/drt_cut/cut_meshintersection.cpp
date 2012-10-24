@@ -123,23 +123,15 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string VCellgauss
 {
   Status();
 
+  // cut the mesh and create cutlines, facets, volumecells
   Cut_Mesh( include_inner );
 
-  Mesh & m = NormalMesh();
+  // determine inside-outside position and dofset-data, parallel communication if required
+  Cut_Positions_Dofsets( include_inner );
 
-  if ( options_.FindPositions() )
-  {
-    // find inside and outside positions of nodes
-    m.FindNodePositions();
-
-    m.FindFacetPositions();
-
-    // find number and connection of dofsets at nodes from cut volumes
-    m.FindNodalDOFSets( include_inner );
-
-  }
-
+  // create integration points and/or subtetrahedralization
   Cut_Finalize( include_inner, VCellgausstype, BCellgausstype);
+
 
   Status(VCellgausstype);
 }
@@ -153,6 +145,15 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string VCellgauss
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh" );
+
+
+  if(myrank_==0) std::cout << "\n\t ... 1/3 Cut_Mesh" << std::flush;
+
+  const double t_start = Teuchos::Time::wallTime();
+
+  //----------------------------------------------------------
 
   Mesh & m = NormalMesh();
 
@@ -172,8 +173,57 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
   m.MakeFacets();
   m.MakeVolumeCells();
 
+  //----------------------------------------------------------
+
+  const double t_diff = Teuchos::Time::wallTime()-t_start;
+  if ( myrank_ == 0 )
+  {
+    std::cout << " ... Success (" << t_diff  <<  " secs)\n";
+  }
 
 }
+
+/*------------------------------------------------------------------------------------------------*
+ * Routine for deciding the inside-outside position. This creates the dofset data,                *
+ * also in parallel                                                                  schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner )
+{
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (serial)" );
+
+  if(myrank_==0) std::cout << "\n\t ... 2/3 Cut_Positions_Dofsets" << std::flush;
+
+  const double t_start = Teuchos::Time::wallTime();
+
+  //----------------------------------------------------------
+
+
+  Mesh & m = NormalMesh();
+
+  if ( options_.FindPositions() )
+  {
+
+    // find inside and outside positions of nodes, corresponding facets and volumecells using a DFS-algorithm
+    m.FindNodePositions();
+
+    // find the positions for all remaining facets ( and points, volumecells)
+    m.FindFacetPositions();
+
+    // find number and connection of dofsets at nodes from cut volumes, also in parallel
+    m.FindNodalDOFSets( include_inner );
+
+  }
+
+
+  //----------------------------------------------------------
+
+   const double t_diff = Teuchos::Time::wallTime()-t_start;
+   if ( myrank_ == 0 )
+   {
+     std::cout << " ... Success (" << t_diff  <<  " secs)";
+   }
+}
+
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -182,6 +232,13 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string VCellgausstype, std::string BCellgausstype)
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 3/3 --- Cut_Finalize" );
+
+  if(myrank_==0) std::cout << "\n\t ... 3/3 Cut_Finalize" << std::flush;
+
+  const double t_start = Teuchos::Time::wallTime();
+
+  //----------------------------------------------------------
 
   Mesh & m = NormalMesh();
 
@@ -216,6 +273,18 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
   else
     dserror("Undefined option of volumecell gauss points generation");
 
+
+  //----------------------------------------------------------
+
+  const double t_diff = Teuchos::Time::wallTime()-t_start;
+  if ( myrank_ == 0 )
+  {
+    std::cout << " ... Success (" << t_diff  <<  " secs)\n";
+  }
+
+#if(0)
+  std::cout << "\n XFEM::FluidWizard::Quadrature construction time = " << t_diff <<"\n";
+#endif
 }
 
 
@@ -391,7 +460,7 @@ void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::
 
 
 #if(0)
-    DumpGmshNumDOFSets(include_inner, eids, dis);
+    DumpGmshNumDOFSets("numdofsets_debug", include_inner, dis);
 #endif
 }
 

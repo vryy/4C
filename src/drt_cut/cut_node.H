@@ -18,17 +18,16 @@ namespace CUT
     bool operator()( plain_volumecell_set s1, plain_volumecell_set s2 );
 
     /// compare operator for sets of plain_volumecell_sets
-    bool operator()( std::set<plain_volumecell_set, Cmp> set1, std::set<plain_volumecell_set, Cmp> set2);
-
+    bool operator()( const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2);
 
 
   private:
 
     /// compare routine for sets of plain_volumecell_set
-    bool Compare(std::set<plain_volumecell_set, Cmp> set1, std::set<plain_volumecell_set, Cmp> set2 );
+    bool Compare(const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2 );
 
     /// compare routine for plain_volumecell_sets
-    bool Compare(plain_volumecell_set s1, plain_volumecell_set s2 );
+    bool Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2 );
 
     /// compare routine for volumecells based on point ids
     bool Compare( VolumeCell* vc1, VolumeCell* vc2 );
@@ -48,7 +47,7 @@ class Node
 {
 public:
 
-  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ) {}
+  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ), first_set_is_std_set_(true) {}
 
   int Id() const { return nid_; }
 
@@ -150,8 +149,8 @@ private:
   /// stores for each set of dofs, that has to be created, all its volume_sets which has been connected over all adjacent elements
   std::vector<std::set<plain_volumecell_set, Cmp> > dof_cellsets_;
 
-  /// boolian if the first set in dof_cellsets_ is a std set or not, if it is then the first set must not be changed during sorting
-  /// elements without eh assume the first set as std set!
+  /// boolian if the first set in dof_cellsets_ is a std set or not. If it is, then the first set must not be changed during sorting
+  /// elements without elementhandle assume the first set as std set!
   bool first_set_is_std_set_;
 };
 

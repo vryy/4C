@@ -12,6 +12,9 @@ Maintainer: Benedikt Schott
  *------------------------------------------------------------------------------------------------*/
 #include <Teuchos_Time.hpp>
 
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
+
 #include "../drt_fluid/xfluid_defines.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -39,7 +42,9 @@ GEO::CutWizard::CutWizard( DRT::Discretization & dis, bool include_inner, int nu
   : dis_( dis ),
     include_inner_( include_inner )
 {
-  mesh_ = Teuchos::rcp( new GEO::CUT::MeshIntersection( numcutmesh ) );
+  myrank_ = dis_.Comm().MyPID();
+
+  mesh_ = Teuchos::rcp( new GEO::CUT::MeshIntersection( numcutmesh, myrank_ ) );
 }
 
 void GEO::CutWizard::SetFindPositions( bool positions )
@@ -115,21 +120,14 @@ void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype
   mesh_->Status();
 
 
-  // FIRST step: cut the mesh
+  // FIRST step (1/3): cut the mesh
   mesh_->Cut_Mesh( include_inner );
 
-  // SECOND step: find node positions and create dofset in PARALLEL
+  // SECOND step (2/3): find node positions and create dofset in PARALLEL
   CutParallel_FindPositionDofSets( include_inner, communicate );
 
-  const double t_start = Teuchos::Time::wallTime();
-  // THIRD step: perform tessellation or moment fitting on the mesh
+  // THIRD step (3/3): perform tessellation or moment fitting on the mesh
   mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype );
-
-  const double t_end = Teuchos::Time::wallTime()-t_start;
-  //if ( backdis_.Comm().MyPID() == 0 )
-  //{
-    std::cout << "\n XFEM::FluidWizard::Quadrature construction time = " <<t_end<<"\n";
-  //}
 
 
   mesh_->Status(VCellgausstype);
@@ -141,6 +139,15 @@ void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype
  *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool communicate)
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (parallel)" );
+
+
+  if(myrank_==0) std::cout << "\n\t ... 2/3 Cut_Positions_Dofsets (parallel)" << std::flush;
+
+  const double t_start = Teuchos::Time::wallTime();
+
+  //----------------------------------------------------------
+
   GEO::CUT::Options options;
   mesh_->GetOptions(options);
 
@@ -170,8 +177,19 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
       m.FindNodalDOFSets( include_inner );
     #endif
 
+    //DumpGmshNumDOFSets(false);
+
     if(communicate) cut_parallel->CommunicateNodeDofSetNumbers();
 
+
+  }
+
+  //----------------------------------------------------------
+
+  const double t_diff = Teuchos::Time::wallTime()-t_start;
+  if ( myrank_ == 0 )
+  {
+    std::cout << " ... Success (" << t_diff  <<  " secs)";
   }
 
 }

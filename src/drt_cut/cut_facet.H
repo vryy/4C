@@ -39,6 +39,9 @@ public:
     {
       Point & p = **i;
       std::cout << p.Pid() << " ";
+      LINALG::Matrix<3,1> x(true);
+      p.Coordinates(x.A());
+      cout << x << endl;
     }
     std::cout << "\n";
   }
@@ -246,7 +249,6 @@ private:
   void FindCornerPoints();
 
   bool IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 );
-
 
   bool Equals( const std::vector<Point*> & my_points, const std::vector<Point*> & facet_points );
 

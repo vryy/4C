@@ -459,23 +459,38 @@ bool GEO::CUT::Facet::IsCutSide( Side * side )
 
 void GEO::CUT::Facet::Position( Point::PointPosition pos )
 {
-  if ( position_ != pos )
+
+#ifdef DEBUGCUTLIBRARY
+  // safety check, if the position of a facet changes from one side to the other
+  if( (position_ == Point::inside and pos == Point::outside) or
+      (position_ == Point::outside and pos == Point::inside) )
   {
-    position_ = pos;
-    if ( pos==Point::outside or pos==Point::inside )
+    //this->Print(std::cout);
+    dserror("Are you sure that you want to change the facet-position from inside to outside or vice versa?");
+  }
+#endif
+
+  if( position_ == Point::undecided)
+  {
+
+    if ( position_ != pos )
     {
-      for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )
+      position_ = pos;
+      if ( pos==Point::outside or pos==Point::inside )
       {
-        Point * p = *i;
-        if ( p->Position()==Point::undecided )
+        for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )
         {
-          p->Position( pos );
+          Point * p = *i;
+          if ( p->Position()==Point::undecided )
+          {
+            p->Position( pos );
+          }
         }
-      }
-      for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
-      {
-        VolumeCell * c = *i;
-        c->Position( pos );
+        for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+        {
+          VolumeCell * c = *i;
+          c->Position( pos );
+        }
       }
     }
   }

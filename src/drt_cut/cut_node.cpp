@@ -185,23 +185,27 @@ void GEO::CUT::Node::SortDOFCellSets()
   if(dof_cellsets_.size() > 1)
   {
 
-    std::vector<std::set<plain_volumecell_set, Cmp> >::iterator it_start;
-
     // set the start iterator for sorting
     if(first_set_is_std_set_)
     {
-      it_start = (dof_cellsets_.begin())+1;
+      std::vector<std::set<plain_volumecell_set, Cmp> >::iterator it_start = (dof_cellsets_.begin())+1;
+
+      // sort the cellsets w.r.t point ids in first vc in first set of sorted sets of plain volume cells sets
+      // REMARK: do not sort the first dofset, it has to be kept the standard dofset
+      sort(it_start, dof_cellsets_.end(), Cmp());
     }
     else
     {
-      it_start = dof_cellsets_.begin();
+
+      std::vector<std::set<plain_volumecell_set, Cmp> >::iterator it_start = dof_cellsets_.begin();
+
+      // sort the cellsets w.r.t point ids in first vc in first set of sorted sets of plain volume cells sets
+      sort(it_start, dof_cellsets_.end(), Cmp());
+
     }
-
-    // sort the cellsets w.r.t point ids in first vc in first set of sorted sets of plain volume cells sets
-    sort(it_start, dof_cellsets_.end(), Cmp());
-
   }
 
+  return;
 }
 
 void GEO::CUT::Node::BuildDOFCellSets( Point * p,
@@ -332,18 +336,16 @@ int GEO::CUT::Node::DofSetNumberNEW( plain_volumecell_set & cells )
 //  VolumeCell* cell = cells[0];
   VolumeCell* cell = *(cells.begin());
 
-  for ( unsigned i=0; i<dof_cellsets_.size(); ++i ) // loop over sets
+  for ( unsigned int i=0; i<dof_cellsets_.size(); ++i ) // loop over sets
   {
     std::set< plain_volumecell_set, GEO::CUT::Cmp >& cellsets = dof_cellsets_[i];
 
     for(std::set<plain_volumecell_set, GEO::CUT::Cmp >::iterator j = cellsets.begin();
-    		j!=cellsets.end();
-    		j++)
+        j!=cellsets.end();
+        j++)
     {
-    	plain_volumecell_set set = *j;
 
-
-        if ( set.count( cell ) > 0 )
+        if ( j->count( cell ) > 0 )
         {
           if ( dofset==-1 )
           {
@@ -423,26 +425,27 @@ bool GEO::CUT::Cmp::operator()(
 
 }
 
+
 /*------------------------------------------------------------------------------*
   | Operator () compare operator for sets of plain_volumecell_sets
   |                                                             shahmiri 06/12
   *-----------------------------------------------------------------------------*/
 bool GEO::CUT::Cmp::operator()(
-    std::set<plain_volumecell_set, Cmp> set1,
-    std::set<plain_volumecell_set, Cmp> set2
+    const std::set<plain_volumecell_set, Cmp>& set1,
+    const std::set<plain_volumecell_set, Cmp>& set2
 )
 {
   // call Compare function for two sets of plain_volumecell_sets
-
   return Compare(set1, set2);
-
 }
 
 /*------------------------------------------------------------------------------*
   | Compare() to compare two sets of plain_volumecell_set via comparing their first plain_volumecell_sets
   |                                                             shahmiri 06/12
   *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(std::set<plain_volumecell_set, Cmp> set1, std::set<plain_volumecell_set, Cmp> set2 )
+bool GEO::CUT::Cmp::Compare(
+    const std::set<plain_volumecell_set, Cmp>& set1,
+    const std::set<plain_volumecell_set, Cmp>& set2 )
 {
 
   // compare two sets of plain_volumecell_set
@@ -461,7 +464,9 @@ bool GEO::CUT::Cmp::Compare(std::set<plain_volumecell_set, Cmp> set1, std::set<p
   | Compare() to compare two plain_volumecell_set via the ids of their first volumecell's points
   |                                                             shahmiri 06/12
   *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(plain_volumecell_set s1, plain_volumecell_set s2 )
+bool GEO::CUT::Cmp::Compare(
+    const plain_volumecell_set& s1,
+    const plain_volumecell_set& s2 )
 {
 
   // take the first vc in plain_volumecell_set. In case of linear elements
@@ -469,10 +474,10 @@ bool GEO::CUT::Cmp::Compare(plain_volumecell_set s1, plain_volumecell_set s2 )
   // but we just compare the first vc of each plain_volumecell_set. So for
   // quadratic elements the  plain_volumecell_set is not sorted!
 
-  plain_volumecell_set::iterator it1 = s1.begin();
+  plain_volumecell_set::const_iterator it1 = s1.begin();
   VolumeCell * vc1 = *it1;
 
-  plain_volumecell_set::iterator it2 = s2.begin();
+  plain_volumecell_set::const_iterator it2 = s2.begin();
   VolumeCell * vc2 = *it2;
 
   return Compare(vc1, vc2);
@@ -483,7 +488,9 @@ bool GEO::CUT::Cmp::Compare(plain_volumecell_set s1, plain_volumecell_set s2 )
   |                                                             shahmiri 06/12
   *-----------------------------------------------------------------------------*/
 
-bool GEO::CUT::Cmp::Compare( VolumeCell* vc1, VolumeCell* vc2 )
+bool GEO::CUT::Cmp::Compare(
+    VolumeCell* vc1,
+    VolumeCell* vc2 )
 {
   // compare the point ids of the two volumecells
 
@@ -494,49 +501,49 @@ bool GEO::CUT::Cmp::Compare( VolumeCell* vc1, VolumeCell* vc2 )
   if (vc1 == vc2)
      return false;
 
-   // first build two minimized sets which don't have any points in common
-   std::set<int> vc1pointsmin;
-   std::set<int> vc2pointsmin;
-   for( set<int>::iterator iter=vc1points.begin(); iter!=vc1points.end(); iter++ )
-   {
-     set<int>::iterator iter2 = vc2points.find(*iter);
-     if (iter2 == vc2points.end())
-     {
-       vc1pointsmin.insert(*iter);
-     }
-   }
+  // first build two minimized sets which don't have any points in common
+  std::set<int> vc1pointsmin;
+  std::set<int> vc2pointsmin;
+  for( set<int>::iterator iter=vc1points.begin(); iter!=vc1points.end(); iter++ )
+  {
+    set<int>::iterator iter2 = vc2points.find(*iter);
+    if (iter2 == vc2points.end())
+    {
+      vc1pointsmin.insert(*iter);
+    }
+  }
 
-   for( set<int>::iterator iter=vc2points.begin(); iter!=vc2points.end(); iter++ )
-   {
-     set<int>::iterator iter2 = vc1points.find(*iter);
-     if (iter2 == vc1points.end())
-     {
-       vc2pointsmin.insert(*iter);
-     }
-   }
+  for( set<int>::iterator iter=vc2points.begin(); iter!=vc2points.end(); iter++ )
+  {
+    set<int>::iterator iter2 = vc1points.find(*iter);
+    if (iter2 == vc1points.end())
+    {
+      vc2pointsmin.insert(*iter);
+    }
+  }
 
-   std::set<int>::iterator p1=vc1pointsmin.begin();
-   std::set<int>::iterator p2=vc2pointsmin.begin();
+  std::set<int>::iterator p1=vc1pointsmin.begin();
+  std::set<int>::iterator p2=vc2pointsmin.begin();
 
-   while ( p1!=vc1pointsmin.end() and p2!=vc2pointsmin.end() )
-   {
-     int id1 = *p1;
-     int id2 = *p2;
+  while ( p1!=vc1pointsmin.end() and p2!=vc2pointsmin.end() )
+  {
+    int id1 = *p1;
+    int id2 = *p2;
 
-     if( id1 < id2)
-     {
-       return true;
-       break;
-     }
-     if( id1 > id2)
-     {
-       return false;
-       break;
-     }
+    if( id1 < id2)
+    {
+      return true;
+      break;
+    }
+    if( id1 > id2)
+    {
+      return false;
+      break;
+    }
 
-     p1++;
-     p2++;
-   }
+    p1++;
+    p2++;
+  }
 
    return false;
 }

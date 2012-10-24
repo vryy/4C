@@ -93,6 +93,13 @@ public:
   void exportDofSetData();
 
   /*!
+  \brief find the volumecell on myrank for which we received data stored in vc_data
+   */
+  VolumeCell* findVolumeCell(
+      MeshIntersection::DofSetData& vc_data           ///< volumecell data which have to be identified on myrank
+      );
+
+  /*!
   \brief distribute received dofset data for volumecells my processor
    */
   void distributeDofSetData();
@@ -132,8 +139,7 @@ public:
   /*!
   \brief Get the index of nid in the vector of element's (eid) node Ids
    */
-  void getDofSetVecIndex(int & index,  //!< index in vector
-                         int nid,      //!< nid for which index has to be found
+  int getDofSetVecIndex( int nid,      //!< nid for which index has to be found
                          int eid       //!< element id
                          );
 

@@ -105,8 +105,9 @@ namespace GEO
 
 //     Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap );
 
-    Teuchos::RCP<Epetra_Map> CutElementMap() const { return cutelementmap_; }
-
+    /*!
+    \brief get the mesh intersection object
+     */
     GEO::CUT::MeshIntersection & Mesh() { return *mesh_; }
 
     /*!
@@ -131,10 +132,10 @@ namespace GEO
 
   private:
 
-    DRT::Discretization & dis_;
-    Teuchos::RCP<GEO::CUT::MeshIntersection> mesh_;
-    Teuchos::RCP<Epetra_Map> cutelementmap_;
-    bool include_inner_;
+    DRT::Discretization & dis_;                             ///< discretization
+    int myrank_;                                            ///< my processor Id
+    Teuchos::RCP<GEO::CUT::MeshIntersection> mesh_;         ///< mesh intersection object
+    bool include_inner_;                                    ///< include the inner part
   };
 }
 
