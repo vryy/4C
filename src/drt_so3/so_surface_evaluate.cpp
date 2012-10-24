@@ -657,6 +657,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_rotation")         act = StructuralSurface::calc_struct_rotation;
   else if (action=="calc_undo_struct_rotation")    act = StructuralSurface::calc_undo_struct_rotation;
   else if (action=="calc_struct_area") 	           act = StructuralSurface::calc_struct_area;
+  else if (action=="calc_ref_nodal_normals")       act = StructuralSurface::calc_ref_nodal_normals;
+  else if (action=="calc_cur_nodal_normals")       act = StructuralSurface::calc_cur_nodal_normals;
   else
   {
     cout << action << endl;
@@ -1330,6 +1332,22 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     params.set("area",a);
   }
   break;
+  case calc_ref_nodal_normals:
+  {
+    // dummy vector
+    std::vector<double> dummy(lm.size());
+    BuildNormalsAtNodes(elevector1,dummy,true);
+  }
+  break;
+  case calc_cur_nodal_normals:
+  {
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    BuildNormalsAtNodes(elevector1,mydisp,false);
+  }
+  break;
   default:
     dserror("Unimplemented type of action for StructuralSurface");
     break;
@@ -1647,3 +1665,45 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
   return;
 }
 
+
+void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(Epetra_SerialDenseVector& nodenormals,
+                                                           std::vector<double> mydisp,
+                                                           bool refconfig)
+{
+  const int numnode = NumNode();
+  const int numdim = 3;
+
+  LINALG::SerialDenseMatrix x(numnode,3);
+  if (refconfig)
+    MaterialConfiguration(x);
+  else
+  {
+    SpatialConfiguration(x,mydisp);
+  }
+
+  for (int i=0; i<numnode; ++i)
+  {
+    LINALG::Matrix<3,1> loc_coor;
+    loc_coor = DRT::UTILS::getNodeCoordinates(i,Shape());
+
+    const double e0 = loc_coor(0);
+    const double e1 = loc_coor(1);
+
+    // allocate vector for shape functions and matrix for derivatives
+    LINALG::SerialDenseVector  funct(numnode);
+    LINALG::SerialDenseMatrix  deriv(2,numnode);
+
+    // get shape functions and derivatives in the plane of the element
+    DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
+    DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+
+    double detA;
+    std::vector<double> normal(3);
+    SurfaceIntegration(detA,normal,x,deriv);
+
+    for (int j=0; j<numdim; ++j)
+    {
+      nodenormals(numdim*i+j) = normal[j];
+    }
+  }
+}

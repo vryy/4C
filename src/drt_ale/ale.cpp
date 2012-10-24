@@ -235,8 +235,19 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  if (disnum > 0) dserror("Disnum > 0");
+
+  if (disnum == 0)
+  {
   actdis = DRT::Problem::Instance()->GetDis("ale");
+  }
+  else if (disnum == 1)
+  {
+  actdis = DRT::Problem::Instance()->GetDis("structale");
+  }
+  else dserror("Disnum > 1");
+
+//  if (disnum > 0) dserror("Disnum > 0");
+//  actdis = DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

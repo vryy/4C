@@ -2297,6 +2297,54 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(surfscatracoup);
 
+  std::vector<Teuchos::RCP<ConditionComponent> > linescatracoupcomp;
+
+     linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
+     linescatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+     linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELDNUM")));
+     linescatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("field number")));
+     linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
+     linescatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("permeability coefficient")));
+
+     Teuchos::RCP<ConditionDefinition> linescatracoup =
+       Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA COUPLING LINE CONDITIONS",
+                                            "ScaTraCoupling",
+                                            "ScaTra Coupling",
+                                            DRT::Condition::ScaTraCoupling,
+                                            true,
+                                            DRT::Condition::Line));
+
+     for (unsigned i=0; i<linescatracoupcomp.size(); ++i)
+     {
+       linescatracoup->AddComponent(linescatracoupcomp[i]);
+     }
+
+     condlist.push_back(linescatracoup);
+
+     std::vector<Teuchos::RCP<ConditionComponent> > pointscatracoupcomp;
+
+     pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
+     pointscatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+     pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELDNUM")));
+     pointscatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("field number")));
+     pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
+     pointscatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("permeability coefficient")));
+
+     Teuchos::RCP<ConditionDefinition> pointscatracoup =
+       Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA COUPLING POINT CONDITIONS",
+                                            "ScaTraCoupling",
+                                            "ScaTra Coupling",
+                                            DRT::Condition::ScaTraCoupling,
+                                            true,
+                                            DRT::Condition::Point));
+
+     for (unsigned i=0; i<pointscatracoupcomp.size(); ++i)
+     {
+       pointscatracoup->AddComponent(pointscatracoupcomp[i]);
+     }
+
+     condlist.push_back(pointscatracoup);
+
   /*--------------------------------------------------------------------*/
   // flow rate through line
 

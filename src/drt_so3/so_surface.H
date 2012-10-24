@@ -156,7 +156,7 @@ public:
   { return StructuralSurfaceType::Instance(); }
 
   virtual vector<RCP<DRT::Element> > Lines();
-  
+
   virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
 
   /*!
@@ -213,7 +213,9 @@ protected:
     calc_struct_centerdisp,
     calc_struct_rotation,
     calc_undo_struct_rotation,
-    calc_struct_area
+    calc_struct_area,
+    calc_ref_nodal_normals,
+    calc_cur_nodal_normals
   };
 
   // don't want = operator
@@ -362,6 +364,12 @@ protected:
       const int minind = 0,  ///<minimal index to compute enclosed volume with
       const int maxind = 2   ///<maximal index to compute enclosed volume with
   );
+
+  /// Submethod to compute normal vectors at nodes (for reference configuration) which can be assembled
+  /// (i.e., added) to obtain averaged nodal normal vectors
+  void BuildNormalsAtNodes(Epetra_SerialDenseVector& nodenormals,
+                           std::vector<double> mydisp,
+                           bool refconfig);
 
 }; // class StructuralSurface : public DRT::Element
 

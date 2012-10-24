@@ -716,6 +716,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   RCP<DRT::Discretization> fluiddis        = null;
   RCP<DRT::Discretization> xfluiddis       = null;
   RCP<DRT::Discretization> aledis          = null;
+  RCP<DRT::Discretization> structaledis    = null;
   RCP<DRT::Discretization> boundarydis     = null;
   RCP<DRT::Discretization> thermdis        = null;
   RCP<DRT::Discretization> scatradis       = null;
@@ -813,7 +814,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_gas_fsi:
-  case prb_biofilm_fsi:
   case prb_thermo_fsi:
   {
     if(distype == "Nurbs")
@@ -854,6 +854,49 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
+
+  case prb_biofilm_fsi:
+  {
+      if(distype == "Nurbs")
+      {
+        dserror("Nurbs discretization not possible for biofilm problems!");
+      }
+      else
+      {
+        structdis    = rcp(new DRT::Discretization("structure",reader.Comm()));
+        fluiddis     = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+        aledis       = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+        structaledis = rcp(new DRT::Discretization("structale",reader.Comm()));
+      }
+
+      AddDis("structure", structdis);
+      AddDis("fluid", fluiddis);
+      AddDis("ale", aledis);
+      AddDis("structale", structaledis);
+
+      std::set<std::string> fluidelementtypes;
+      fluidelementtypes.insert("FLUID");
+      fluidelementtypes.insert("FLUID2");
+      fluidelementtypes.insert("FLUID3");
+
+      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+      //nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+
+  #ifdef EXTENDEDPARALLELOVERLAP
+      structdis->CreateExtendedOverlap(false,false,false);
+  #endif
+
+      // fluid scatra field
+      fluidscatradis = rcp(new DRT::Discretization("scatra1",reader.Comm()));
+      AddDis("scatra1", fluidscatradis);
+
+      // structure scatra field
+      structscatradis = rcp(new DRT::Discretization("scatra2",reader.Comm()));
+      AddDis("scatra2", structscatradis);
+
+      break;
+    }
   case prb_fsi_xfem:
   case prb_fluid_xfem2:
   {

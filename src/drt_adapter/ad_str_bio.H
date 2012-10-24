@@ -45,38 +45,6 @@ namespace ADAPTER
     /// virtual destructor to support polymorph destruction
     virtual ~StructureBio();
 
-    /// solve structure-ale
-    virtual void StructAleSolve(Teuchos::RCP<Epetra_Vector> idisp);
-
-    /// provide access to algorithm parameters
-    virtual const Teuchos::ParameterList& AlgoParameters(){
-        return params_;
-    }
-
-    /// apply the displacements at the interface
-    void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
-
-    void ChangeConfig(Teuchos::RCP<Epetra_Vector> structdisp);
-
-    virtual void ReadRestart(int step);
-
-  protected:
-
-    //! @name Transfer helpers
-
-    /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToStructField(Teuchos::RCP<Epetra_Vector> iv) const;
-
-    /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToStructField(Teuchos::RCP<const Epetra_Vector> iv) const;
-
-    /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
-
-    /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-
-
   private:
 
     /// problem-specific parameter list
