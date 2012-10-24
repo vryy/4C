@@ -339,7 +339,7 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       for (int u=0; u<allbboxes_->MyLength(); u++)
       {
         for (int v=0; v<allbboxes_->NumVectors(); v++)
-          myfile <<scientific<<(*allbboxes_)[v][u] <<" ";
+          myfile <<scientific<<setprecision(10)<<(*allbboxes_)[v][u] <<" ";
         myfile <<endl;
       }
       fprintf(fp, myfile.str().c_str());
