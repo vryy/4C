@@ -299,13 +299,32 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
 {
   if ( position_ != pos )
   {
-    position_ = pos;
-    if ( pos==Point::outside or pos==Point::inside )
+
+#ifdef DEBUGCUTLIBRARY
+    // safety check, if the position of a facet changes from one side to the other
+    if( (position_ == Point::inside and pos == Point::outside) or
+        (position_ == Point::outside and pos == Point::inside) )
     {
-      for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+//      this->Print(std::cout);
+      cout << "point with changing position inside->outside or vice versa " << pid_ << endl;
+      dserror("Are you sure that you want to change the point-position from inside to outside or vice versa?");
+    }
+#endif
+
+    // do not overwrite oncutsurface points
+    if(position_ == Point::oncutsurface) return;
+
+    // change position for points just in case of undecided point and do not change oncutsurface points
+    if( (position_ == undecided) )
+    {
+      position_ = pos;
+      if ( pos==Point::outside or pos==Point::inside )
       {
-        Facet * f = *i;
-        f->Position( pos );
+        for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+        {
+          Facet * f = *i;
+          f->Position( pos );
+        }
       }
     }
   }
