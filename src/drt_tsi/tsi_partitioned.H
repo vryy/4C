@@ -153,10 +153,8 @@ namespace TSI
     //! difference of difference of last two pair of solutions
     // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
     Teuchos::RCP<Epetra_Vector> delhist_;
-    //! relaxation factor of old iteration step i
-    double omegan_;
-    //! relaxation factor of current iteration step i+1
-    double omeganp_;
+    //! Aitken factor
+    double mu_;
 
     //@}
 

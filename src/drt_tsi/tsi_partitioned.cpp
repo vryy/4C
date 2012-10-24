@@ -46,8 +46,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   temp_(rcp(new Epetra_Vector(*(ThermoField()->Tempn())))),
   del_(Teuchos::null),
   delhist_(Teuchos::null),
-  omegan_(0.0),
-  omeganp_(0.0)
+  mu_(0.0)
 {
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn =
@@ -106,6 +105,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   case INPAR::TSI::IterStagg :
   case INPAR::TSI::IterStaggAitken :
   case INPAR::TSI::IterStaggAitkenIrons :
+  case INPAR::TSI::IterStaggFixedRel :
   {
     // build a proxy of the structure discretization for the temperature field
     Teuchos::RCP<DRT::DofSet> structdofset
@@ -244,6 +244,7 @@ void TSI::Partitioned::TimeLoop()
       case INPAR::TSI::IterStagg :
       case INPAR::TSI::IterStaggAitken :
       case INPAR::TSI::IterStaggAitkenIrons :
+      case INPAR::TSI::IterStaggFixedRel :
       {
         TimeLoopFull();
         break;
@@ -609,12 +610,938 @@ void TSI::Partitioned::OuterIterationLoop()
   const Teuchos::ParameterList& tsidyn =
     DRT::Problem::Instance()->TSIDynamicParams();
   // decide if one-way coupling or full coupling
-  INPAR::TSI::SolutionSchemeOverFields coupling =
-    DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  INPAR::TSI::SolutionSchemeOverFields coupling
+    = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(
+        tsidyn,
+        "COUPALGO"
+        );
 
   // Pure iterative staggered algorithms
   // iterative staggered TSI withOUT Aitken relaxation
-  if ( coupling==INPAR::TSI::IterStagg)
+  if (coupling==INPAR::TSI::IterStagg)
+  {
+    // structural predictor
+    if (displacementcoupling_) // (temperature change due to deformation)
+    {
+      // mechanical predictor for the coupling iteration outside the loop
+      // get structure variables of old time step (d_n, v_n)
+      // d^p_n+1 = d_n, v^p_n+1 = v_n
+      // initialise new time step n+1 with values of old time step n
+      Teuchos::RCP<Epetra_Vector> dispnp
+        = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+      if ( Step()==1 )
+      {
+        dispnp->Update(1.0, *(StructureField()->ExtractDispn()),0.0);
+        veln_ = StructureField()->ExtractVeln();
+      }
+      // else: use the velocity of the last converged step
+
+      // start OUTER ITERATION
+      while (stopnonliniter==false)
+      {
+        itnum ++;
+
+        // store temperature from first solution for convergence check (like in
+        // elch_algorithm: use current values)
+        tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
+
+        // kind of mechanical predictor
+        // 1st iteration: get structure variables of old time step (d_n, v_n)
+        if (itnum==1)
+          dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
+        // else (itnum>1) use the current solution dispnp of old iteration step
+
+        // Begin Nonlinear Solver / Outer Iteration ****************************
+
+        // ------------------------------------------------------- thermo field
+
+        // pass the current displacements and velocities to the thermo field
+        ThermoField()->ApplyStructVariables(dispnp,veln_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          ThermoField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          ThermoField()->PreparePartitionStep();
+
+        // do the nonlinear solve for the time step. All boundary conditions
+        // have been set.
+        DoThermoStep();
+
+        // now extract the current temperatures and pass it to the structure
+        temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
+
+        // ---------------------------------------------------- structure field
+
+        // pass the current temperatures to the structure field
+        // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
+        // just calculated incremental solutions
+        StructureField()->ApplyTemperatures(temp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          StructureField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          StructureField()->PreparePartitionStep();
+
+        // solve coupled structural equation
+        DoStructureStep();
+
+        // extract current displacements
+        dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
+
+        if(quasistatic_)
+          veln_ = CalcVelocity(dispnp);
+        else
+          veln_ = StructureField()->ExtractVelnp();
+
+        // check convergence of both field for "partitioned scheme"
+        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+
+        // end nonlinear solver / outer iteration ******************************
+
+      } // end OUTER ITERATION
+    }  // end displacement predictor
+
+    // temperature is predictor
+    else  // (deformation due to heating)
+    {
+      // thermal predictor for the coupling iteration outside the loop
+      // get temperature of old time step (T_n)
+      // T^p_n+1 = T_n
+      temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
+
+      // start OUTER ITERATION
+      while (stopnonliniter==false)
+      {
+        itnum ++;
+
+        // get current temperatures due to solve thermo step, like predictor in FSI
+        if (itnum==1)
+        {
+          temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
+        }
+        else
+        {
+          temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
+        }
+
+        // store temperature from first solution for convergence check (like in
+        // elch_algorithm: here the current values are needed)
+        tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
+
+        // begin nonlinear solver / outer iteration ****************************
+
+        // ---------------------------------------------------- structure field
+
+        // pass the current temperatures to the structure field
+        // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
+        // just calculated incremental solutions
+        StructureField()->ApplyTemperatures(temp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          StructureField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          StructureField()->PreparePartitionStep();
+
+        // solve coupled structural equation
+        DoStructureStep();
+
+        // Extract current displacements
+        const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
+
+        // extract the velocities of the current solution
+        // the displacement -> velocity conversion
+        if(quasistatic_)
+          velnp_ = CalcVelocity(dispnp);
+        // quasistatic to exlude oszillation
+        else
+          velnp_ = StructureField()->ExtractVelnp();
+
+        // ------------------------------------------------------- thermo field
+
+        // pass the current displacements and velocities to the thermo field
+        ThermoField()->ApplyStructVariables(dispnp,velnp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          ThermoField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          ThermoField()->PreparePartitionStep();
+
+        /// solve coupled thermal system
+        /// do the solve for the time step. All boundary conditions have been set.
+        DoThermoStep();
+
+        // end nonlinear solver / outer iteration ******************************
+
+        // check convergence of both field for "partitioned scheme"
+        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+
+      } // end OUTER ITERATION
+
+    } // temperature predictor
+
+  } // iterstagg WITHOUT relaxation
+
+  // notation according to Aitken relaxation of FSI Mok, Uli
+  // 1. calculate the Aitken factor nu
+  // 2. calculate the relaxation factor omega = 1-nu
+  // 3. T^{i+1} = T^i + omega^{i+1} * ( T^{i+1} - T^i )
+  //            = T^{i+1} - nu^{i+1} * ( T^{i+1} - T^i )
+  // 4. limit Aitken factor nu for next time step with 1.0
+  else if (coupling==INPAR::TSI::IterStaggAitken)
+  {
+    if (Comm().MyPID()==0)
+    {
+      cout << "Iterative staggered TSI with Aitken relaxation" << endl;
+      cout << "Have you set MAXOMEGA to the wished value?" << endl;
+    }
+
+    // structural predictor
+    if (displacementcoupling_) // (temperature change due to deformation)
+    {
+      // mechanical predictor for the coupling iteration outside the loop
+      // get structure variables of old time step (d_n, v_n)
+      // d^p_n+1 = d_n, v^p_n+1 = v_n
+      // initialise new time step n+1 with values of old time step n
+      Teuchos::RCP<Epetra_Vector> dispnp
+        = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+      if ( Step()==1 )
+      {
+        dispnp->Update(1.0, *(StructureField()->ExtractDispn()),0.0);
+        veln_ = StructureField()->ExtractVeln();
+      }
+      // else: use the velocity of the last converged step
+
+      // constrain the Aitken factor in the 1st relaxation step of new time step
+      // n+1 to maximal value maxomega
+      double maxomega = tsidyn.get<double>("MAXOMEGA");
+      // omega_{n+1} = min( omega_n, maxomega ) with omega = 1-mu
+      if ( (maxomega>0.0) && (maxomega<1-mu_) )
+        mu_ = 1 - maxomega;
+
+      // reset in every new time step
+      if (del_!=Teuchos::null)
+      {
+        del_->PutScalar(1.0e20);
+      }
+
+      // start OUTER ITERATION
+      while (stopnonliniter==false)
+      {
+        itnum ++;
+
+        // kind of mechanical predictor
+        // 1st iteration: get structure variables of old time step (d_n, v_n)
+        if (itnum==1)
+          dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
+        // else (itnum>1) use the current solution dispnp of old iteration step
+
+        // store temperature from first solution for convergence check (like in
+        // elch_algorithm: use current values)
+        // n: time indices, i: Newton iteration
+        // calculate increment Delta T^{i+1}_{n+1}
+        // 1. iteration step (i=0): Delta T^{n+1}_{1} = T^{n},
+        //                          so far no solving has occured: T^{n+1} = T^{n}
+        // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
+        //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
+        tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
+
+        // Begin Nonlinear Solver / Outer Iteration ****************************
+
+        // ------------------------------------------------------- thermo field
+
+        // pass the current displacements and velocities to the thermo field
+        ThermoField()->ApplyStructVariables(dispnp,veln_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          ThermoField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          ThermoField()->PreparePartitionStep();
+
+        /// do the nonlinear solve for the time step. All boundary conditions have
+        /// been set.
+        DoThermoStep();
+
+        // now extract the current temperatures and pass it to the structure
+        temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
+
+        // ---------------------------------------------------- structure field
+
+        // pass the current temperatures to the structure field
+        // ApplyTemperatures() also calls PreparePartitionStep() for prediction
+        // with just calculated incremental solutions
+        StructureField()->ApplyTemperatures(temp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          StructureField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          StructureField()->PreparePartitionStep();
+
+        // solve coupled structural equation
+        DoStructureStep();
+
+        // end nonlinear solver / outer iteration ******************************
+
+        // check convergence of both field for "partitioned scheme"
+        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+
+        // ------------------------------------------------------------
+        // if r_{i+1} not converged in ConvergenceCheck()
+        // --> apply Aitken relaxation to displacements
+        // as implemented in FSI by Irons and Tuck (1969)
+
+        // Aitken factor
+        // relaxation can start at i=2, i.e. two vectors inc_{i-1}, inc_i are available
+        // (also stated in Diss Uli, p. 82ff)
+        // we need vectors from iteration step 1,2 to calculate relaxed step
+        // with nu^i_0 = 0.0
+        // Irons & Tuck:
+        // increment r := old - new
+
+        // BACI:
+        // increment inc := new - old
+        // nu^{i+1}_{n+1} = nu^i_{n+1} +
+        //
+        //                     ( r^{i+1}_{n+1} - r^i_{n+1} )^T . ( - r^{i+1}_{n+1} )
+        // + (nu^i_{n+1} - 1) . -------------------------------------------------
+        //                              | r^{i+1}_{n+1} - r^i_{n+1} |^2
+
+        // initialise increment vector with solution of last iteration (i)
+        // update del_ with current residual vector
+        // difference of last two solutions
+        if (del_ == Teuchos::null)  // first iteration, itnum==1
+        {
+          del_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+          delhist_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+          del_->PutScalar(1.0e20);
+          delhist_->PutScalar(0.0);
+        }
+
+        // calculate difference of current (i+1) and old (i) residual vector
+        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+        // update history vector old increment r^i_{n+1}
+        delhist_->Update(1.0,*del_,0.0);  // r^i_{n+1}
+        delhist_->Update(1.0, *dispincnp_, (-1.0));  // update r^{i+1}_{n+1}
+
+        // del_ = r^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
+        del_->Update(1.0,*dispincnp_,0.0);
+        // den = |r^{i+1} - r^{i}|^2
+        double den = 0.0;
+        delhist_->Norm2(&den);
+        // calculate dot product
+        // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+        double top = 0.0;
+        delhist_->Dot(*del_,&top);
+
+        // Aikten factor
+        // nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2
+        // top = ( r^{i+1} - r^i )^T . r^{i+1} --> use -top
+        // Uli's implementation: mu_ = mu_ + (mu_ - 1.0) * top / (den*den). with '-' included in top
+        mu_ = mu_ + (mu_ - 1)*(-top)/(den*den);
+
+        // relaxation parameter
+        // omega^{i+1} = 1- mu^{i+1}
+        double omega = 1.0 - mu_;
+
+        // two previous residuals are required (initial guess and result of 1st
+        // iteration)
+        // --> start relaxation process if two iterative residuals are available
+        if ( itnum==1 )
+        {
+          dispnp->Update(1.0,*(StructureField()->Dispnp()),0.0);
+
+          // calculate the velocities with the updated/relaxed displacements
+          if(quasistatic_)
+            veln_ = CalcVelocity(dispnp);
+          else
+            veln_ = StructureField()->ExtractVelnp();
+        }
+        else  // (itnum > 1)
+        {
+          // relax temperature solution for next iteration step
+          // overwrite temp_ with relaxed solution vector
+          // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
+          //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
+          dispnp->Update(omega,*dispincnp_,1.0);
+
+          // calculate the velocities with the updated/relaxed displacements
+          // if relaxation active, then calculate new velocities using relaxed dispnp
+          veln_ = CalcVelocity(dispnp);
+        }
+        // ---------------------------------------------- end Aitken relaxation
+      } // end OUTER ITERATION
+    }  // end displacement predictor
+
+    // relax the temperatures
+    else // (!displacementcoupling_)
+    {
+      if ( Step()==1 )
+      {
+        // thermal predictor for the coupling iteration outside the loop
+        // get temperature of old time step (T_n)
+        // T^p_n+1 = T_n
+        temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
+      }
+
+      // initial guess for next time step n+1
+      // use minimum between omega_n and maxomega as start value for mu_{n+1}^{i=0}
+      // in case of doubt use 1.0, meaning that direction of new solution vector
+      // tempnp better than old one
+
+      // constrain the Aitken factor in the 1st relaxation step of new time step
+      // n+1 to maximal value maxomega
+      double maxomega = tsidyn.get<double>("MAXOMEGA");
+      // omega_{n+1} = min( omega_n, maxomega )
+      if ( (maxomega>0.0) && (maxomega<1-mu_) )
+        mu_ = 1 - maxomega;
+
+      // reset in every new time step
+      if (del_!=Teuchos::null)
+      {
+        del_->PutScalar(1.0e20);
+      }
+
+      // start OUTER ITERATION
+      while (stopnonliniter==false)
+      {
+        itnum ++;
+
+        // get current temperatures due to solve thermo step, like predictor in FSI
+        // 1. iteration: get newest temperatures, i.e. T_{n+1} == T_n
+        if (itnum==1)
+        {
+          temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
+        }
+        // else: use solution vector temp_ of old iteration step i
+
+        // store temperature from first solution for convergence check (like in
+        // elch_algorithm: use current values)
+        // n: time indices, i: Newton iteration
+        // calculate increment Delta T^{i+1}_{n+1}
+        // 1. iteration step (i=0): Delta T^{n+1}_{1} = T^{n},
+        //                          so far no solving has occured: T^{n+1} = T^{n}
+        // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
+        //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
+        tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
+
+        // begin nonlinear solver / outer iteration ***************************
+
+        // ---------------------------------------------------- structure field
+
+        // pass the current temperatures to the structure field
+        // ApplyTemperatures() also calls PreparePartitionStep() for prediction
+        // with just calculated incremental solutions
+        StructureField()->ApplyTemperatures(temp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          StructureField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          StructureField()->PreparePartitionStep();
+
+        // solve coupled structural equation
+        DoStructureStep();
+
+        // Extract current displacements
+        // now extract the current temperatures and pass it to the structure
+        Teuchos::RCP<Epetra_Vector> dispnp
+          = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+        dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
+
+        // extract the velocities of the current solution
+        // the displacement -> velocity conversion
+        if(quasistatic_)
+          velnp_ = CalcVelocity(dispnp);
+        // quasistatic to exlude oscillation
+        else
+          velnp_ = StructureField()->ExtractVelnp();
+
+        // ------------------------------------------------------- thermo field
+
+        // pass the current displacements and velocities to the thermo field
+        ThermoField()->ApplyStructVariables(dispnp,velnp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          ThermoField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          ThermoField()->PreparePartitionStep();
+
+        /// solve coupled thermal system
+        /// do the solve for the time step. All boundary conditions have been set.
+        DoThermoStep();
+
+        // end nonlinear solver / outer iteration ********************************
+
+        // check convergence of both field for "partitioned scheme"
+        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+        // --> update of tempincnp_ is done in ConvergenceCheck()
+
+        // ------------------------------------------------------------
+        // if r_{i+1} not converged in ConvergenceCheck()
+        // --> apply Aitken relaxation to displacements
+        // as implemented in FSI by Irons and Tuck (1969)
+
+        // Aitken factor
+        // relaxation can start at i=2, i.e. two vectors inc_{i-1}, inc_i are available
+        // (also stated in Diss Uli, p. 82ff)
+        // we need vectors from iteration step 1,2 to calculate relaxed step
+        // with mu^i_0 = 0.0
+        // Irons & Tuck:
+        // increment r := old - new
+
+        // BACI:
+        // increment inc := new - old
+        // mu^{i+1}_{n+1} = mu^i_{n+1} +
+        //
+        //                     ( r^{i+1}_{n+1} - r^i_{n+1} )^T . ( - r^{i+1}_{n+1} )
+        // + (mu^i_{n+1} - 1) . -------------------------------------------------
+        //                              | r^{i+1}_{n+1} - r^i_{n+1} |^2
+
+        // initialise increment vector with solution of last iteration (i)
+        // update del_ with current residual vector
+        // difference of last two solutions
+        if (del_ == Teuchos::null)  // first iteration, itnum==1
+        {
+          del_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+          delhist_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+          del_->PutScalar(1.0e20);
+          delhist_->PutScalar(0.0);
+        }
+
+        // calculate difference of current (i+1) and old (i) residual vector
+        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+        // update history vector old increment r^i_{n+1}
+        delhist_->Update(1.0,*del_,0.0);  // r^i_{n+1}
+        delhist_->Update(1.0, *tempincnp_, (-1.0));  // update r^{i+1}_{n+1}
+
+        // del_ = r^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
+        del_->Update(1.0,*tempincnp_,0.0);
+        // den = |r^{i+1} - r^{i}|^2
+        double den = 0.0;
+        delhist_->Norm2(&den);
+        // calculate dot product
+        // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+        double top = 0.0;
+        delhist_->Dot(*del_,&top);
+
+        // Aikten factor
+        // mu^{i+1} = mu^i + (mu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2
+        // top = ( r^{i+1} - r^i )^T . r^{i+1} --> use -top
+        // Uli's implementation: mu_ = mu_ + (mu_ - 1.0) * top / (den*den). with '-' included in top
+        mu_ = mu_ + (mu_ - 1)*(-top)/(den*den);
+
+        // relaxation parameter
+        // omega^{i+1} = 1- mu^{i+1}
+        double omega = 1.0 - mu_;
+
+        // two previous residuals are required (initial guess and result of 1st
+        // iteration)
+        // --> start relaxation process if two iterative residuals are available
+        if ( itnum==1 )
+          // get temperature T_{n+1}^{i=1}
+          temp_->Update(1.0,*(ThermoField()->Tempnp()),0.0);
+        else  // (itnum > 1)
+        {
+          // relax temperature solution for next iteration step
+          // overwrite temp_ with relaxed solution vector
+          // T^{i+1} = omega^{i+1} . T^{i+1} + (1- omega^{i+1}) T^i
+          //         = T^i + omega^{i+1} * ( T^{i+1} - T^i )
+          temp_->Update(omega,*tempincnp_,1.0);
+        }
+        // ---------------------------------------------- end Aitken relaxation
+
+      } // end OUTER ITERATION
+
+    } // relax temperatures
+  } // iterative staggered TSI with Aitken relaxation
+
+  // another notation of relaxation according to Paper by Irons & Tuck (1969)
+  // 1. calculate an Aitken factor mu == relaxation factor
+  // 2. d^{i+1} = (1 - mu^{i+1}) d^{i+1} + mu^{i+1} d^i
+  // 3. limit Aitken factor mu for next time step with 0.0
+  else if (coupling==INPAR::TSI::IterStaggAitkenIrons)
+  {
+    if (Comm().MyPID()==0)
+    {
+      cout << "Iterative staggered TSI with Aitken relaxation according to Irons & Tuck" << endl;
+      cout << "Have to set MAXOMEGA to the wished value?" << endl;
+    }
+
+    // relax the mechanical variables
+    if (displacementcoupling_)
+    {
+      // mechanical predictor for the coupling iteration outside the loop
+      // get structure variables of old time step (d_n, v_n)
+      // d^p_n+1 = d_n, v^p_n+1 = v_n
+      Teuchos::RCP<Epetra_Vector> dispnp
+        = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+      if ( Step()==1 )
+      {
+        dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
+        veln_ = StructureField()->ExtractVeln();
+      }
+      // else: use the velocity of the last converged step
+
+      // constrain the relaxation factor in the 1st relaxation step of new time step
+      // n+1 to maximal value maxomega
+      double maxomega = tsidyn.get<double>("MAXOMEGA");
+      // omega_{n+1} = min( omega_n, maxomega ) with omega = 1-mu
+      if ( (maxomega>0.0) && (maxomega<1-mu_) )
+        mu_ = 1 - maxomega;
+
+      // reset in every new time step
+      if (del_!=Teuchos::null)
+      {
+        del_->PutScalar(1.0e20);
+      }
+
+      // start OUTER ITERATION
+      while (stopnonliniter==false)
+      {
+        itnum ++;
+
+        // kind of mechanical predictor
+        // 1. iteration: get newest values, (d_{n+1}, v_{n+1})==(d_n, v_n)
+        if (itnum==1)
+          dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
+        // else: use solution np of old iteration step i
+
+        // store temperature from first solution for convergence check (like in
+        // elch_algorithm: use current values)
+        // n: time indices, i: Newton iteration
+        // calculate increment Delta T^{i+1}_{n+1}
+        // 1. iteration step (i=0): Delta T^{n+1}_{1} = T^{n},
+        //                          so far no solving has occured: T^{n+1} = T^{n}
+        // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
+        //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
+        tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
+
+        // Begin Nonlinear Solver / Outer Iteration ****************************
+
+        // ------------------------------------------------------- thermo field
+
+        // pass the current displacements and velocities to the thermo field
+        ThermoField()->ApplyStructVariables(dispnp,veln_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          ThermoField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          ThermoField()->PreparePartitionStep();
+
+        /// solve temperature system
+
+        /// do the nonlinear solve for the time step. All boundary conditions have
+        /// been set.
+        DoThermoStep();
+
+        // now extract the current temperatures and pass it to the structure
+        temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
+
+        // ---------------------------------------------------- structure field
+
+        // pass the current temperatures to the structure field
+        // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
+        // just calculated incremental solutions
+        StructureField()->ApplyTemperatures(temp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          StructureField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          StructureField()->PreparePartitionStep();
+
+        // solve coupled structural equation
+        DoStructureStep();
+
+        // check convergence of both field for "partitioned scheme"
+        // calculate residual vectors
+        // ~ means: not relaxed, newest solution vector after DoStructureStep()
+        // r^{i+1} := Delta d^{i+1} = d^{i+1}^{~} - d^i
+        // r^{i+1} == dispincnp_
+        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+
+        // -------------------------------------------- start Aitken relaxation
+
+        // if r_{i+1} not converged in ConvergenceCheck()
+        // --> apply Aitken relaxation to displacements
+        // as implemented in FSI by Irons and Tuck (1969)
+
+        // Aitken factor
+        // relaxation can start when two vectors are available, starting at i=2
+        // (also stated in Diss Uli, p. 82ff)
+        // we need vectors from iteration step 0,1,2 to calculate relaxed step
+        // with mu^i_0 = 0.0
+        // Irons & Tuck:
+        // increment r := old - new
+
+        // BACI:
+        // increment inc := new - old
+        // mu^{i+1}_{n+1} = mu^i_{n+1} +
+        //
+        //                     ( r^{i+1}_{n+1} - r^i_{n+1} )^T . ( - r^{i+1}_{n+1} )
+        // + (mu^i_{n+1} - 1) . -------------------------------------------------
+        //                              | r^{i+1}_{n+1} - r^i_{n+1} |^2
+
+        // initialise increment vector with solution of last iteration (i)
+        // update del_ with current residual vector
+        // difference of last two solutions
+        if (del_ == Teuchos::null)
+        {
+         del_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+         delhist_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+         del_->PutScalar(1.0e20);
+         delhist_->PutScalar(0.0);
+        }
+
+        // calculate difference of current (i+1) and old (i) residual vector
+        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+        // update history vector old increment r^i_{n+1}
+        // change of increment between 2 iterations
+        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+        delhist_->Update(1.0,*del_,0.0);  // r^i_{n+1}
+        delhist_->Update(1.0, *dispincnp_, (-1.0));  // update r^{i+1}_{n+1}
+        // del = r^{i+1}_{n+1}
+        del_->Update(1.0, *dispincnp_,0.0);
+        // den = |r^{i+1} - r^{i}|^2
+        double den = 0.0;
+        delhist_->Norm2(&den);
+        // calculate dot product
+        // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+        double top = 0.0;
+        delhist_->Dot(*del_,&top);
+
+        // relaxation parameter
+        // mu^{i+1} = mu^i + (mu^i -1) . ( r^{i+1} - r^i )^T . (- r^{i+1} ) / |r^{i+1} - r^{i}|^2
+        // top = ( r^{i+1} - r^i )^T . (- r^{i+1} ) --> use -top
+        // identical to Uli: mu_ = mu_ + (mu_ - 1.0) * top / (den*den);
+        mu_ = mu_ + (mu_ - 1.0) * (-top) / (den*den);
+
+        if ( itnum==1 )
+        {
+          dispnp->Update(1.0,*(StructureField()->Dispnp()),0.0);
+
+          if(quasistatic_)
+            veln_ = CalcVelocity(dispnp);
+          else
+            veln_ = StructureField()->ExtractVelnp();
+        }
+        else  // (itnum > 1)
+        {
+          // relax displacement solution for next iteration step
+          // overwrite dispnp with relaxed solution vector
+          // d^{i+1} = d^{i+1} - mu^{i+1} * r^{i+1}
+          //         = d^{i+1} - mu^{i+1} * ( d^{i+1} - d^i )
+          //         = (1 - mu^{i+1}) d^{i+1} + mu^{i+1} d^i
+          dispnp->Update(1.0,*(StructureField()->Dispnp()),(-mu_),*dispincnp_,0.0);
+
+          // update velocities
+          // if relaxation active, then calculate new velocities using relaxed dispnp
+          veln_ = CalcVelocity(dispnp);
+          // TODO check if velocities have to be relaxed consistently to dispcacements
+        }
+        // ---------------------------------------------- end Aitken relaxation
+
+      } // end OUTER ITERATION
+    }  // relax the displacements --> velocities
+
+    // relax the temperatures
+    else  // (!displacementcoupling_)
+    {
+      // thermal predictor for the coupling iteration outside the loop
+      // get old temperatures T^p_n+1 = T_n
+      if ( Step()==1 )
+      {
+        temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
+      }
+      // else: use the temperature of the last converged step
+
+      // constrain the Aitken factor in the 1st iteration of a new time step
+      // n+1 to maximal value
+      // take omega_n, only if omega_n > maxomega --> maxomega
+      double maxomega = tsidyn.get<double>("MAXOMEGA");
+      // omega_{n+1} = min( omega_n, maxomega ) with omega = 1-mu
+      if ( (maxomega>0.0) && (maxomega<1-mu_) )
+        mu_ = 1 - maxomega;
+
+      // reset in every new time step
+      if (del_!=Teuchos::null)
+      {
+        del_->PutScalar(1.0e20);
+      }
+
+      // start OUTER ITERATION
+      while (stopnonliniter==false)
+      {
+        itnum ++;
+
+        // kind of thermal predictor
+        // 1. iteration: get newest values, T_{n+1}==T_n
+        if (itnum==1)
+          temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
+        // else: use solution np of old iteration step i
+
+        // store temperature from first solution for convergence check (like in
+        // elch_algorithm: use current values)
+        // n: time indices, i: Newton iteration
+        // calculate increment Delta T^{i+1}_{n+1}
+        // 1. iteration step (i=0): Delta T^{n+1}_{1} = T^{n},
+        //                          so far no solving has occured: T^{n+1} = T^{n}
+        // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
+        //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
+        tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
+        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
+
+        // Begin Nonlinear Solver / Outer Iteration ****************************
+
+        // ---------------------------------------------------- structure field
+
+        // pass the current displacements and velocities to the thermo field
+        StructureField()->ApplyTemperatures(temp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          StructureField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          StructureField()->PreparePartitionStep();
+
+        /// do the nonlinear solve for the time step. All boundary conditions have
+        /// been set.
+        DoStructureStep();
+
+        // now extract the current temperatures and pass it to the structure
+        Teuchos::RCP<Epetra_Vector> dispnp
+          = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+        dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
+
+        // extract the velocities of the current solution
+        // the displacement -> velocity conversion
+        if(quasistatic_)
+          velnp_ = CalcVelocity(dispnp);
+        // quasistatic to exlude oscillation
+        else
+          velnp_ = StructureField()->ExtractVelnp();
+
+        // ------------------------------------------------------- thermo field
+
+        // pass the current displacements and velocities to the thermo field
+        ThermoField()->ApplyStructVariables(dispnp,velnp_);
+
+        // prepare time step with coupled variables
+        if (itnum==1)
+          ThermoField()->PrepareTimeStep();
+        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+        else if (itnum != 1)
+          ThermoField()->PreparePartitionStep();
+
+        /// solve coupled thermal system
+        /// do the solve for the time step. All boundary conditions have been set.
+        DoThermoStep();
+
+        // check convergence of both field for "partitioned scheme"
+        // calculate residual vectors
+        // ~ means: not relaxed, newest solution vector after DoStructureStep()
+        // r^{i+1} := Delta d^{i+1} = d^{i+1}^{~} - d^i
+        // r^{i+1} == dispincnp_
+        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+
+        // --------------------------------------------------- start relaxation
+        // if r_{i+1} not converged in ConvergenceCheck()
+        // --> apply Aitken relaxation to displacements
+        // as implemented in FSI by Irons and Tuck (1969)
+
+        // relaxation can start when two vectors are available, starting at i=2
+        // (also stated in Diss Uli, p. 82ff)
+        // we need vectors from iteration step 0,1,2 to calculate relaxed step
+        // with mu^i_0 = 0.0
+        // Irons & Tuck:
+        // increment r := old - new
+
+        // BACI:
+        // increment inc := new - old
+        // mu^{i+1}_{n+1} = mu^i_{n+1} +
+        //
+        //                     ( r^{i+1}_{n+1} - r^i_{n+1} )^T . ( -r^{i+1}_{n+1} )
+        // + (mu^i_{n+1} - 1) . -------------------------------------------------
+        //                              | r^{i+1}_{n+1} - r^i_{n+1} |^2
+
+        // initialise increment vector with solution of last iteration (i)
+        // update del_ with current residual vector
+        // difference of last two solutions
+        if (del_ == Teuchos::null)
+        {
+         del_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+         delhist_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+         del_->PutScalar(1.0e20);
+         delhist_->PutScalar(0.0);
+        }
+
+        // calculate difference of current (i+1) and old (i) residual vector
+        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+        // update history vector old increment r^i_{n+1}
+        // change of increment between 2 iterations
+        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+        delhist_->Update(1.0,*del_,0.0);  // r^i_{n+1}
+        delhist_->Update(1.0, *tempincnp_, (-1.0));  // update r^{i+1}_{n+1}
+        // del = r^{i+1}_{n+1}
+        del_->Update(1.0, *tempincnp_,0.0);
+        // den = |r^{i+1} - r^{i}|^2
+        double den = 0.0;
+        delhist_->Norm2(&den);
+        // calculate dot product
+        // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+        double top = 0.0;
+        delhist_->Dot(*del_,&top);
+
+        // relaxation parameter
+        // mu^{i+1} = mu^i + (mu^i -1) . ( r^i - r^{i+1} )^T . r^{i+1} / |r^{i+1} - r^{i}|^2
+        // top = ( r^{i+1} - r^i ), but ( r^i - r^{i+1} ) --> use -top
+        mu_ = mu_ + (mu_ - 1.0) * (-top) / (den*den);
+
+        if ( itnum==1 )
+          temp_->Update(1.0,*(ThermoField()->Tempnp()),0.0);
+        else  // (itnum > 1)
+        {
+          // relax displacement solution for next iteration step
+          // overwrite tempnp with relaxed solution vector
+          // T^{i+1} = T^{i+1} - mu^{i+1} * r^{i+1}
+          //         = T^{i+1} - mu^{i+1} * ( T^{i+1} - T^i )
+          //         = (1 - mu^{i+1}) T^{i+1} + mu^{i+1} T^i
+          // --> Irons T^{i+1} = T^{i+1} + mu^{i+1} * DEL^{i+1} with DEL = T^i - T^{i+1}
+          temp_->Update(1.0,*(ThermoField()->Tempnp()),(-mu_),*tempincnp_,0.0);
+        }
+       // ------------------------------------------------------ end relaxation
+
+      } // end OUTER ITERATION
+
+    }  // end temperature relaxation
+
+  }  // IterStagg_AitkenIrons
+
+  // iterative staggered TSI with a fixed relaxation
+  else if (coupling==INPAR::TSI::IterStaggFixedRel)
   {
     // structural predictor
     if (displacementcoupling_) // (temperature change due to deformation)
@@ -648,9 +1575,9 @@ void TSI::Partitioned::OuterIterationLoop()
           dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
         // for itnum>1 use the current solution dispnp of old iteration step
 
-        // Begin Nonlinear Solver / Outer Iteration ******************************
+        // Begin Nonlinear Solver / Outer Iteration ****************************
 
-        // thermo field
+        // ------------------------------------------------------- thermo field
 
         // pass the current displacements and velocities to the thermo field
         ThermoField()->ApplyStructVariables(dispnp,veln_);
@@ -662,8 +1589,6 @@ void TSI::Partitioned::OuterIterationLoop()
         else if (itnum != 1)
           ThermoField()->PreparePartitionStep();
 
-        /// solve temperature system
-
         /// do the nonlinear solve for the time step. All boundary conditions have
         /// been set.
         DoThermoStep();
@@ -671,7 +1596,7 @@ void TSI::Partitioned::OuterIterationLoop()
         // now extract the current temperatures and pass it to the structure
         temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
 
-        /// structure field
+        // ---------------------------------------------------- structure field
 
         // pass the current temperatures to the structure field
         // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
@@ -685,25 +1610,36 @@ void TSI::Partitioned::OuterIterationLoop()
         else if (itnum != 1)
           StructureField()->PreparePartitionStep();
 
+        // get the displacements of the old iteration step d^i_{n+1}
+        dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
+
         // solve coupled structural equation
         DoStructureStep();
 
-        // extract current displacements
-        dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
-
-        // end nonlinear solver / outer iteration ********************************
-
-        if(quasistatic_)
-          veln_ = CalcVelocity(dispnp);
-        else
-          veln_ = StructureField()->ExtractVelnp();
+        // end nonlinear solver / outer iteration ******************************
 
         // check convergence of both field for "partitioned scheme"
         stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
 
-      } // end OUTER ITERATION
-    }  // end displacement predictor
+        // -------------------------------------------- relax the displacements
 
+        // get fixed relaxation parameter
+        double fixedomega = tsidyn.get<double>("FIXEDOMEGA");
+        // fixed relaxation can be applied even in the 1st iteration
+        // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
+        //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
+        dispnp->Update(fixedomega,*dispincnp_,1.0);
+
+        // -------------------------------------------------- end of relaxation
+
+        // update velocities
+        // velocity has to fit the corresponding displacements
+        // if relaxation active --> calculate new velocities using relaxed dispnp
+        veln_ = CalcVelocity(dispnp);
+
+      } // end OUTER ITERATION
+
+    }  // end displacement predictor
     // temperature is predictor
     else  // (deformation due to heating)
     {
@@ -721,23 +1657,20 @@ void TSI::Partitioned::OuterIterationLoop()
         {
           temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
         }
-        else
-        {
-          temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
-        }
+        // else use updated solution
 
         // store temperature from first solution for convergence check (like in
         // elch_algorithm: here the current values are needed)
         tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
         dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
 
-        // begin nonlinear solver / outer iteration ******************************
+        // begin nonlinear solver / outer iteration ****************************
 
-        /// structure field
+        // ---------------------------------------------------- structure field
 
         // pass the current temperatures to the structure field
-        // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
-        // just calculated incremental solutions
+        // ApplyTemperatures() also calls PreparePartitionStep() for prediction
+        // with just calculated incremental solutions
         StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
@@ -761,7 +1694,7 @@ void TSI::Partitioned::OuterIterationLoop()
         else
           velnp_ = StructureField()->ExtractVelnp();
 
-        /// thermo field
+        // ------------------------------------------------------- thermo field
 
         // pass the current displacements and velocities to the thermo field
         ThermoField()->ApplyStructVariables(dispnp,velnp_);
@@ -773,394 +1706,34 @@ void TSI::Partitioned::OuterIterationLoop()
         else if (itnum != 1)
           ThermoField()->PreparePartitionStep();
 
+        // get temperature solution of old iteration step T_{n+1}^i
+        temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
+
         /// solve coupled thermal system
         /// do the solve for the time step. All boundary conditions have been set.
         DoThermoStep();
 
-        // end nonlinear solver / outer iteration ********************************
+        // end nonlinear solver / outer iteration ******************************
 
         // check convergence of both field for "partitioned scheme"
         stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+
+        // ---------------------------------------------- relax the temperature
+
+        // get fixed relaxation parameter
+        double fixedomega = tsidyn.get<double>("FIXEDOMEGA");
+        // fixed relaxation can be applied even in the 1st iteration
+        // T^{i+1} = omega^{i+1} . T^{i+1} + (1- omega^{i+1}) T^i
+        //         = T^i + omega^{i+1} * ( T^{i+1} - T^i )
+        temp_->Update(fixedomega,*tempincnp_,1.0);
+
+        // -------------------------------------------------- end of relaxation
 
       } // end OUTER ITERATION
 
     } // temperature predictor
 
-  } // iterstagg WITHOUT relaxation
-
-  // notation according to Aitken relaxation of FSI and Mok
-  // 1. calculate an Aitken factor omega
-  // 2. relaxation factor relax = 1-omega
-  // 3. T^{i+1} = T^i + relax^{i+1} * ( T^{i+1} - T^i )
-  // 4. limit Aitken factor omega for next time step with 1.0
-  else if ( coupling==INPAR::TSI::IterStaggAitken)
-  {
-    cout << "Iterative staggered TSI with Aitken relaxation" << endl;
-
-    // relax the temperatures
-    if (!displacementcoupling_)
-    {
-      if ( Step()==1 )
-      {
-        // thermal predictor for the coupling iteration outside the loop
-        // get temperature of old time step (T_n)
-        // T^p_n+1 = T_n
-        temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
-      }
-
-      // initalise relaxation parameter for each iteration
-      double relax = 0.0;
-
-      // start OUTER ITERATION
-      while (stopnonliniter==false)
-      {
-        itnum ++;
-
-        // store temperature from first solution for convergence check (like in
-        // elch_algorithm: use current values)
-        // n: time indices, i: Newton iteration
-        // calculate increment Delta T^{i+1}_{n+1}
-        // 1. iteration step (i=0): Delta T^{n+1}_{1} = T^{n},
-        //                          so far no solving has occured: T^{n+1} = T^{n}
-        // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
-        //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
-        tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
-        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
-
-        // get current temperatures due to solve thermo step, like predictor in FSI
-        // 1. iteration: get temperatures of old time step (T_n)
-        if (itnum==1)
-        {
-          temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
-        }
-        // else: use relaxed solution vector temp_
-
-        // begin nonlinear solver / outer iteration ******************************
-
-        /// structure field
-
-        // pass the current temperatures to the structure field
-        // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
-        // just calculated incremental solutions
-        StructureField()->ApplyTemperatures(temp_);
-
-        // prepare time step with coupled variables
-        if (itnum==1)
-          StructureField()->PrepareTimeStep();
-        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
-        else if (itnum != 1)
-          StructureField()->PreparePartitionStep();
-
-        // solve coupled structural equation
-        DoStructureStep();
-
-        // Extract current displacements
-        const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
-
-        // extract the velocities of the current solution
-        // the displacement -> velocity conversion
-        if(quasistatic_)
-          velnp_ = CalcVelocity(dispnp);
-        // quasistatic to exlude oscillation
-        else
-          velnp_ = StructureField()->ExtractVelnp();
-
-        /// thermo field
-
-        // pass the current displacements and velocities to the thermo field
-        ThermoField()->ApplyStructVariables(dispnp,velnp_);
-
-        // prepare time step with coupled variables
-        if (itnum==1)
-          ThermoField()->PrepareTimeStep();
-        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
-        else if (itnum != 1)
-          ThermoField()->PreparePartitionStep();
-
-        /// solve coupled thermal system
-        /// do the solve for the time step. All boundary conditions have been set.
-        DoThermoStep();
-
-        // end nonlinear solver / outer iteration ********************************
-
-        // check convergence of both field for "partitioned scheme"
-        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
-
-        // ------------------------------------------------------------
-        // if r_{i+1} not converged in ConvergenceCheck()
-        // --> apply Aitken relaxation to displacements
-        // as implemented in FSI by Irons and Tuck (1969)
-
-        // Aitken factor
-        // relaxation can start when two vectors are available, starting at i=2
-        // (also stated in Diss Uli, p. 82ff)
-        // we need vectors from iteration step 0,1,2 to calculate relaxed step
-        // with omega^i_0 = 0.0
-        // Irons & Tuck:
-        // increment r := old - new
-
-        // BACI:
-        // increment inc := new - old
-        // omega^{i+1}_{n+1} = omega^i_{n+1} +
-        //
-        //                         ( r^i_{n+1} - r^{i+1}_{n+1} )^T . ( r^{i+1}_{n+1} )
-        // + (omega^i_{n+1} - 1) . -------------------------------------------------
-        //                                 | r^i_{n+1} - r^{i+1}_{n+1} |^2
-        //
-        // | r^i_{n+1} - r^{i+1}_{n+1} |^2
-        // = | (-1)^2*(r^{i+1}_{n+1} - r^i_{n+1} |^2
-        // = | (r^{i+1}_{n+1} - r^i_{n+1} |^2
-
-        // initialise increment vector with solution of last iteration (i)
-        // update del_ with current residual vector
-        // difference of last two solutions
-        if (del_ == Teuchos::null)
-        {
-          del_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
-          delhist_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
-          del_->PutScalar(1.0e20);
-          delhist_->PutScalar(0.0);
-        }
-
-        // calculate difference of current (i+1) and old (i) residual vector
-        // del = r^{i+1}_{n+1}
-        del_->Update(1.0, *tempincnp_,0.0);
-        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
-        delhist_->Update(1.0, *del_, (-1.0));
-        double normdel = 0.0;
-        double dot = 0.0;
-        delhist_->Norm2(&normdel);
-        // calculate dot product
-        // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
-        del_->Dot(*delhist_,&dot);
-
-        // Aikten factor
-        // omega^{i+1}_{n+1} == omeganp_
-        // omega^{i}_{n+1} == omegan_
-        // ome^{i+1} = ome^i + (ome^i -1) . (r^i - r^{i+1})^T . r^{i+1} / |r^{i+1} - r^{i}|^2
-        omeganp_ = omegan_ + (omegan_ - 1.0) * (-dot) / (normdel*normdel);
-
-        // relaxation parameter
-        // omega_relax^{i+1} = 1- omega^{i+1}
-        relax = 1.0 - omeganp_;
-
-        // relax temperature solution for next iteration step
-        // overwrite temp_ with relaxed solution vector
-        // T^{i+1} = relax . T^{i+1} + (1- relax^{i+1}) T^i
-        //         = T^i + relax^{i+1} * ( T^{i+1} - T^i )
-        temp_->Update(relax,*del_,1.0);
-        // alternatively choose a fix relaxation parameter, here e.g. 0.01
-        // temp_->Update(0.01,*del_,1.0);
-
-        // update Aitken parameter omega^{i+1}_{n+1}
-        omegan_ = omeganp_;
-
-        // update history vector with residual displacement of old iteration step
-        delhist_->Update(1.0,*del_,0.0);
-
-        // end Aitken relaxation
-        // ------------------------------------------------------------
-
-      } // end OUTER ITERATION
-
-      // initial guess for next time step n+1
-      // use maximum between omeganp_ and 1.0 as start value for omega_n+1^{i=0}
-      // in case of doubt use 1.0, meaning that direction of new solution vector
-      // dispnp better old one
-      omegan_ = max(omeganp_, 1.0);
-
-    } // relax temperatures
-    else  // relax mechanical variables
-      dserror("Relaxation of mechanical variables not yet implemented.");
-
-  } // iterative staggered TSI with Aitken relaxation
-
-  // another notation of relaxation according to Paper by Irony & Tuck (1969)
-  // 1. calculate an Aitken factor omega == relaxation factor
-  // 2. d^{i+1} = (1 - omega^{i+1}) d^{i+1} + omega^{i+1} d^i
-  // 3. limit Aitken factor omega for next time step with 0.0
-  else if ( coupling==INPAR::TSI::IterStaggAitkenIrons)
-  {
-    cout << "Iterative staggered TSI with Aitken relaxation according to Irons & Tuck" << endl;
-
-    // relax the mechanical variables
-    if (displacementcoupling_)
-    {
-      cout << "Displacements are relax. Be careful: not consistent, because "
-        "velocities are not relaxed." << endl;
-
-      // mechanical predictor for the coupling iteration outside the loop
-      // get structure variables of old time step (d_n, v_n)
-      // d^p_n+1 = d_n, v^p_n+1 = v_n
-      Teuchos::RCP<Epetra_Vector> dispnp
-        = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-      if ( Step()==1 )
-      {
-        dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
-        veln_ = StructureField()->ExtractVeln();
-      }
-      // else: use the velocity of the last converged step
-
-      // start OUTER ITERATION
-      while (stopnonliniter==false)
-      {
-        itnum ++;
-
-        // store temperature from first solution for convergence check (like in
-        // elch_algorithm: use current values)
-        // n: time indices, i: Newton iteration
-        // calculate increment Delta T^{i+1}_{n+1}
-        // 1. iteration step (i=0): Delta T^{n+1}_{1} = T^{n},
-        //                          so far no solving has occured: T^{n+1} = T^{n}
-        // i+1. iteration step:     Inc T^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
-        //                     fill Inc T^{i+1}_{n+1} = T^{i}_{n+1}
-        tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
-        dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
-
-        // kind of mechanical predictor
-        // 1. iteration: get structure variables of old time step (d_n, v_n)
-        if (itnum==1)
-          dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
-        // for itnum>1 use the current solution dispnp of old iteration step
-
-        // Begin Nonlinear Solver / Outer Iteration ******************************
-
-        // thermo field
-
-        // pass the current displacements and velocities to the thermo field
-        ThermoField()->ApplyStructVariables(dispnp,veln_);
-
-        // prepare time step with coupled variables
-        if (itnum==1)
-          ThermoField()->PrepareTimeStep();
-        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
-        else if (itnum != 1)
-          ThermoField()->PreparePartitionStep();
-
-        /// solve temperature system
-
-        /// do the nonlinear solve for the time step. All boundary conditions have
-        /// been set.
-        DoThermoStep();
-
-        // now extract the current temperatures and pass it to the structure
-        temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
-
-        /// structure field
-
-        // pass the current temperatures to the structure field
-        // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
-        // just calculated incremental solutions
-        StructureField()->ApplyTemperatures(temp_);
-
-        // prepare time step with coupled variables
-        if (itnum==1)
-          StructureField()->PrepareTimeStep();
-        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
-        else if (itnum != 1)
-          StructureField()->PreparePartitionStep();
-
-        // solve coupled structural equation
-        DoStructureStep();
-
-        // check convergence of both field for "partitioned scheme"
-        // calculate residual vectors
-        // ~ means: not relaxed, newest solution vector after DoStructureStep()
-        // r^{i+1} := Delta d^{i+1} = d^{i+1}^{~} - d^i
-        // r^{i+1} == dispincnp_
-        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
-
-        // ------------------------------------------------------------
-        // if r_{i+1} not converged in ConvergenceCheck()
-        // --> apply Aitken relaxation to displacements
-        // as implemented in FSI by Irons and Tuck (1969)
-
-        // Aitken factor
-        // relaxation can start when two vectors are available, starting at i=2
-        // (also stated in Diss Uli, p. 82ff)
-        // we need vectors from iteration step 0,1,2 to calculate relaxed step
-        // with omega^i_0 = 0.0
-        // Irons & Tuck:
-        // increment r := old - new
-
-        // BACI:
-        // increment inc := new - old
-        // omega^{i+1}_{n+1} = omega^i_{n+1} +
-        //
-        //                         ( r^i_{n+1} - r^{i+1}_{n+1} )^T . ( r^{i+1}_{n+1} )
-        // + (omega^i_{n+1} - 1) . -------------------------------------------------
-        //                                 | r^i_{n+1} - r^{i+1}_{n+1} |^2
-        //
-        // | r^i_{n+1} - r^{i+1}_{n+1} |^2
-        // = | (-1)^2*(r^{i+1}_{n+1} - r^i_{n+1} |^2
-        // = | (r^{i+1}_{n+1} - r^i_{n+1} |^2
-
-        // initialise increment vector with solution of last iteration (i)
-        // update del_ with current residual vector
-        // difference of last two solutions
-        if (del_ == Teuchos::null)
-        {
-         del_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-         delhist_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-         del_->PutScalar(1.0e20);
-         delhist_->PutScalar(0.0);
-        }
-
-        // calculate difference of current (i+1) and old (i) residual vector
-        // del = r^{i+1}_{n+1}
-        del_->Update(1.0, *dispincnp_,0.0);
-        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
-        delhist_->Update(1.0, *del_, (-1.0));
-        double normdel = 0.0;
-        double dot = 0.0;
-        delhist_->Norm2(&normdel);
-        // calculate dot product
-        // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
-        del_->Dot(*delhist_,&dot);
-
-        if ((Step()==1) && (itnum == 1))
-         dispnp->Update(1.0,*(StructureField()->Dispnp()),0.0);
-        else  // (itnum > 1)
-        {
-         // relaxation parameter
-         // omega^{i+1}_{n+1} == omeganp_
-         // omega^{i}_{n+1} == omegan_
-         // ome^{i+1} = ome^i + (ome^i -1) . (r^i - r^{i+1})^T . r^{i+1} / |r^{i+1} - r^{i}|^2
-         omeganp_ = omegan_ + (omegan_ - 1.0) * (-dot) / (normdel*normdel);
-         // relax displacement solution for next iteration step
-         // overwrite dispnp with relaxed solution vector
-         // d^{i+1} = d^{i+1} - omega^{i+1} * r^{i+1}
-         //         = d^{i+1} - omega^{i+1} * ( d^{i+1} - d^i )
-         //         = (1 - omega^{i+1}) d^{i+1} + omega^{i+1} d^i
-         dispnp->Update(1.0,*(StructureField()->Dispnp()),(-omeganp_),*del_,0.0);
-        }
-
-        // update Aitken parameter omega^{i+1}_{n+1}
-        omegan_ = omeganp_;
-
-        // update history vector with residual displacement of old iteration step
-        delhist_->Update(1.0,*del_,0.0);
-
-        // end Aitken relaxation
-        // ------------------------------------------------------------
-
-        // update velocities
-        // if relaxation active, then calculate new velocities using relaxed dispnp
-        veln_ = CalcVelocity(dispnp);
-        // TODO check if velocities have to be relaxed consistently to dispcacements
-
-      } // end OUTER ITERATION
-
-      // initial guess for next time step n+1
-      // use minimum between omeganp_ and 1.0 as start value for omega_n+1^{i=0}
-      // in case of doubt use 0.0, meaning that direction of new solution vector
-      // dispnp better old one
-      omegan_ = min(omeganp_, 0.0);
-
-    }  // relax the displacements --> velocities
-    else
-      dserror("Relaxation of temperatures according to Irons & Tuck not available.");
-  }  // end Aitken relaxation by Irons & Tuck
+  }  // IterStaggFixedRel
 
   return;
 }  // OuterIterationLoop()
