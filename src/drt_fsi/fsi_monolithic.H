@@ -322,10 +322,10 @@ namespace UTILS
     /// add a status test to be used for adaptive linear solver convergence
     void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test) { statustests_.push_back(test); }
 
-    //! @name Predictor/inhomogeneous Dirichlet related stuff
-
     /// flag is true if this is the first Newton iteration, false otherwise
     bool firstcall_;
+
+    //! @name Predictor/inhomogeneous Dirichlet related stuff
 
     //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
     Teuchos::RCP<Epetra_Vector> ddgpre_;
