@@ -1745,6 +1745,7 @@ macro (baci_framework_test arg nproc)
 
   set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES TIMEOUT 1000 )
   set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR:; ERROR ;Error " )
+  set_tests_properties ( ${arg}-p${nproc}-fw PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 
 endmacro (baci_framework_test)
 
@@ -1763,7 +1764,10 @@ macro(post_processing arg nproc stresstype startstep)
   set (RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
   set (RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER\ --stress=${stresstype}\ --start=${startstep})
   add_test(NAME ${arg}-p${nproc}-pp  
-  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && $(which pvpython)\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py")
+  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py")
+
+  set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES TIMEOUT 1000 )
+  set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 endmacro(post_processing)
  
 ###------------------------------------------------------------------ List of tests
