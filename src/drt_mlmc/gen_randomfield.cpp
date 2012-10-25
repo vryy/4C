@@ -305,9 +305,16 @@ void GenRandomField::CalcDiscretePSD()
 
   if(marginal_pdf_!=normal)
   {
-    // compute underlying gaussian distribution based on shields2011
-    //cout << "NO SPECTRAL MATHCING"<< endl;
-   SpectralMatching();
+
+    if(perform_spectral_matching_)
+     {
+       SpectralMatching();
+     }
+     else
+     {
+       cout << RED_LIGHT " WARNING NO SPECTRAL MATCHING BUT PDF NONGAUSS " END_COLOR << endl;
+       sigma_ul_g_cur_it_=sigma_0_;
+     }// compute underlying gaussian distribution based on shields2011
   }
   else
   {
@@ -760,7 +767,7 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
      }
      if (dim_==2)
        index_y=int(floor((location[2]-bb_min_[2])/dx_));
-     index_z=int(floor((location[2]-bb_min_[2])/dx_));
+       index_z=int(floor((location[2]-bb_min_[2])/dx_));
     // check index
     if (index_x>M_||index_y>M_||index_z>M_)
       dserror("Index out of bounds");

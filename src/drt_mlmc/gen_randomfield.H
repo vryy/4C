@@ -2,7 +2,7 @@
 \file randomfield.h
 Created on: November 15, 2011
 \brief Class for generating samples of gaussian and non-gaussian random fields based on spectral representation
-usign FFT algorithms
+using FFT algorithms
 
  <pre>
 Maintainer: Jonas Biehler
@@ -15,7 +15,7 @@ Maintainer: Jonas Biehler
 #ifdef HAVE_FFTW
 #ifndef GENRANDOMFIELD_H_
 #define GENRANDOMFIELD_H_
-//testingGEN
+
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
@@ -38,65 +38,93 @@ Maintainer: Jonas Biehler
 #include <cmath>
 #include <ctime>
 
-
-
-
 class GenRandomField {
 
 private:
   // do we want/need to perform spectral matching
   bool perform_spectral_matching_;
-  // which proc am i on
+
+  // which proc am I on
   int myrank_;
-  // variables of random field
-  int dim_; // dimension of stochastic field
+
+  // dimension of stochastic field
+  int dim_;
+
   enum PROBABILITY_DISTRIBUTIONS
   {
     normal,
     lognormal,
     beta,
   };
+  // target marginal pdf of random field
   PROBABILITY_DISTRIBUTIONS marginal_pdf_;
+
   enum correlation_structure_
   {
     exponential,
     gaussian,
     whatever,
   };
-  double d_; //correlation length
+
+  //correlation length
+  double d_;
+
+  //distribution params of target marginal distribution
+   vector<double> distribution_params_;
+
+  // sigma as calculated from pdf parameters
   double sigma_0_;
-  // sigma of ul gauss process ( changes during spectral matching)
+
+  // sigma of underlying gauss process ( changes during spectral matching)
   double sigma_ul_g_cur_it_;
+
   double mean_;
+
+  // holds the discrete power spectral density of the random field
   vector<double> discrete_PSD_;
-  vector<double> distribution_params_; // other distribution params
 
   // Simulation parameters
-  double periodicity_ ;//
-  int N_; // Number of cos terms
-  int M_; // length of FFT's
+  // length of random field
+  double periodicity_ ;
+
+  // Number of COS terms or size of discrete_PSD
+  int N_;
+
+  // length of the FFT's
+  int M_;
+
+  // smallest frequency
   double dkappa_;
+
+  // cutoff frequency
   double kappa_u_;
+
   double dx_;
 
-  vector<double>  Phi_0_ ;// Vectors to store the random phase angles
+  // vectors to store the random phase angles
+  vector<double>  Phi_0_ ;
   vector<double>  Phi_1_ ;
   vector<double>  Phi_2_ ;
   vector<double>  Phi_3_ ;
+
+  // seed for random number generator
   unsigned int  seed_;
 
-  // parameters for evaluation
-  vector<double> bb_min_;// min Bounding Box
-  vector<double> bb_max_; // max Bounding Box
-  double pi_;// = M_PI;
+  // parameters for evaluation i.e corners of the bounding box of the discretization
+  // min bounding box
+  vector<double> bb_min_;
 
-  // store the values
+  // max bounding box
+  vector<double> bb_max_;
+
+  // we need Pi
+  double pi_;
+
+  // this is where we store the random field in
   double* values_;
-  // define calculation method
+
+  // define calculation method whether we use FFT or COS
   int UseFFT_;
-
-
-
 
 public:
   //! \brief Standard constructor
@@ -151,21 +179,29 @@ private:
   //! \brief perform spectral matching of PSD if random field is non-gaussian for 3D PSD's
   void SpectralMatching3D3D();
 
-  // simulate RandomField using FFT technique
+  //! \brief simulate gaussian RandomField using FFT technique
   void SimGaussRandomFieldFFT();
-  // simulate RandomField using FFT technique
+
+  //! \brief simulate gaussian RandomField using FFT technique 3D field
   void SimGaussRandomFieldFFT3D();
+
+  //! \brief simulate gaussian RandomField using COS technique 3D field
   double SimGaussRandomFieldCOS3D(double x, double y, double z);
-  // Create Translation field with prescribed marginal distribution
+
+  //! \brief create translation field with prescribed marginal distribution
   void TranslateToNonGaussian();
+
+  //! \brief create translation field with prescribed marginal distribution
   void TranslateToNonGaussian( double *value);
-  // Helper Functions for spectral matching
+
+  //! \brief helper functions for spectral matching
   double Integrate(double xmin, double xmax, double ymin, double ymax, double rho);
+
+  //! \brief helper functions for spectral matching
   double Testfunction(double argument_x, double argument_y, double rho);
 
-  // Compute Bounding Box of random field from discretization
+  //! \brief compute bounding box of random field from discretization
   void ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret);
-
 
 }; // class GenRandomField
 
