@@ -13,6 +13,11 @@
 
 As example, we consider a 3d driven cavity example as
 sketched in Fig. \ref{tut_fsi_preexo:1.1} with a depth of 0.05.
+Hint: In case you want or need to see a sample solution for this tutorial 
+you will find corresponding files in the \baci{} subfolder \emph{/tests/framework-tests/}!
+However, it is highly recommended to look at these files only in case you encounter severe problems
+while stepping through the tutorial.
+\newline
 
 \begin{figure}[h]
 \hfil\includegraphics[scale=0.2]{Bilder/Angabeskizze}
@@ -37,10 +42,10 @@ $=======================Define parameters
 # {BottomHeight=0.002}
 # {CavityHeight=1.0}
 # {InflowHeight=0.1}
-# {MeshDepth=2}
-# {MeshWidth=64}
+# {MeshDepth=1}
+# {MeshWidth=32}
 # {MeshBottomHeight=1}
-# {MeshCavityHeight=64}
+# {MeshCavityHeight=32}
 # {MeshInflowHeight=7}
 
 $$GEOMETRY
@@ -169,7 +174,9 @@ nodeset 38 name "lid vertex back left"
 \end{verbatim} \end{small}
 
 Within Cubit, open the Journal-Editor (\emph{Tools}$\to$\emph{Journal
-Editor}), paste the text above and press \emph{play}. Export to an
+Editor}), paste the text above and press \emph{play}. For later usage it is convenient
+to save the current content of the Journal-Editor into a \emph{*.jou} file. 
+Export now the created geometry and mesh to an
 exodus-file of your choice via \emph{File}$\to$\emph{Export...}. 
 During export, set the dimension explicitly to 3d.
 
@@ -233,8 +240,6 @@ Find the following sections in 'default.head' and edit as given:
 
  \verb|PROBLEMTYP Structure|
 
- \item Delete the section \verb|XFLUID DYNAMIC| including sub-sections
-
  \item \verb|STRUCTURAL DYNAMIC|
 
  \verb|DYNAMICTYP     GenAlpha|
@@ -250,10 +255,6 @@ Find the following sections in 'default.head' and edit as given:
  \verb|NAME Solver|
 
  \verb|SOLVER UMFPACK|
- 
- \item Sections \verb|SOLVER 1| to \verb|SOLVER 9| and \verb|UMFPACK SOLVER|
-
- Delete the field \verb|VERBOSITY|
 
  \item \verb|MATERIALS|
 
@@ -285,25 +286,25 @@ Therefore we assign:
  \item \verb|*ns1="CONDITION"| \qquad clamping
  \begin{small} \begin{verbatim}
 sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
  
  \item \verb|*ns2="CONDITION"| \qquad clamping
  \begin{small} \begin{verbatim}
 sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
  
  \item \verb|*ns3="CONDITION"| \qquad fix in z-direction
  \begin{small} \begin{verbatim}
 sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
  
  \item \verb|*ns4="CONDITION"| \qquad fix in z-direction
  \begin{small} \begin{verbatim}
 sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
  
  \item \verb|*ns5="CONDITION"| \qquad the later coupling surface is first loaded with constant vertical surface pressure
@@ -315,25 +316,25 @@ description="none 0 1 0 0 0 0  0.0 -0.01 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0"
  \item \verb|*ns6="CONDITION"| \qquad hierarchically corresponding line condition
  \begin{small} \begin{verbatim}
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
  
  \item \verb|*ns7="CONDITION"| \qquad hierarchically corresponding line condition
  \begin{small} \begin{verbatim}
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
  
  \item \verb|*ns8="CONDITION"| \qquad hierarchically corresponding line condition
  \begin{small} \begin{verbatim}
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
  
  \item \verb|*ns9="CONDITION"| \qquad hierarchically corresponding line condition
  \begin{small} \begin{verbatim}
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
 
 \end{itemize}
@@ -360,8 +361,6 @@ Find the following sections in 'default.head' and edit as given:
 
  \verb|PROBLEMTYP Fluid|
 
- \item Delete the section \verb|XFLUID DYNAMIC| including sub-sections
-
  \item \verb|FLUID DYNAMIC|
 
  \verb|LINEAR_SOLVER 1|
@@ -375,16 +374,12 @@ Find the following sections in 'default.head' and edit as given:
  \verb|NAME Fluid solver|
 
  \verb|SOLVER Aztec_MSR|
- 
- \item Sections \verb|SOLVER 1| to \verb|SOLVER 9| and \verb|UMFPACK SOLVER|
-
- Delete the field \verb|VERBOSITY|
 
  \item \verb|MATERIALS|
 
   insert \verb|MAT 1 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0|
 
-  \item \verb|LOAD CURVES| $\to$ \verb|CURVE1|
+  \item \verb|CURVE1|
 
   insert \verb|CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0| defining time-dependent inflow and lid movement
  
@@ -402,154 +397,154 @@ For the pure fluid simulation we assign:
  \item \verb|*eb2="ELEMENT"| \qquad the fluid elements
  \begin{small} \begin{verbatim}
 sectionname="FLUID"
-description="MAT 1 NA Euler GP 2 2 2"
+description="MAT 1 NA Euler"
 elementname="FLUID3"
 \end{verbatim} \end{small}
 
 
  \item \verb|*ns10="CONDITION"| \qquad No-Slip-Condition
 \begin{small} \begin{verbatim} sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns11="CONDITION"| \qquad No-Slip-Condition
 \begin{small} \begin{verbatim} sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns12="CONDITION"| \qquad Inplane Free-Slip-Condition
 \begin{small} \begin{verbatim} sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns13="CONDITION"| \qquad Inplane Free-Slip-Condition
 \begin{small} \begin{verbatim} sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns14="CONDITION"| \qquad No-Slip-Condition for pure fluid simulation
 \begin{small} \begin{verbatim} sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns15="CONDITION"| \qquad Driving lid, time dependent
 \begin{small} \begin{verbatim} sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns16="CONDITION"| \qquad Inflow, time and space dependent
 \begin{small} \begin{verbatim} sectionname="DESIGN SURF DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns17="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns18="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns19="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns20="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns21="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns22="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small} 
 
 \item \verb|*ns23="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns24="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small} 
 
 \item \verb|*ns25="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns26="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns27="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns28="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns29="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
 \item \verb|*ns30="CONDITION"| \qquad hierarchically corresponding line condition
 \begin{small} \begin{verbatim} sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
 \item \verb|*ns31="CONDITION"| \qquad hierarchically corresponding point condition
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns32="CONDITION"| \qquad hierarchically corresponding point condition
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns33="CONDITION"| \qquad hierarchically corresponding point condition
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small} 
 
 \item \verb|*ns34="CONDITION"| \qquad hierarchically corresponding point condition
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns35="CONDITION"| \qquad hierarchically corresponding point condition
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns36="CONDITION"| \qquad hierarchically corresponding point condition
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
  \item \verb|*ns37="CONDITION"| \qquad hierarchically corresponding point condition
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small} 
 
 \item \verb|*ns38="CONDITION"| \qquad hierarchically corresponding point condition
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
-description="6 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
 \end{verbatim} \end{small}
 
 \end{itemize}
@@ -571,11 +566,6 @@ Again edit 'default.head', however to create the \bc we copy together the existi
 \subsection{\head}
 Find the following sections in 'default.head' and edit as given:
 \begin{itemize}
- \item \verb|PROBLEM TYP|
-
- \verb|NUMFIELD = 3|
-
- \item Delete the section \verb|XFLUID DYNAMIC| including sub-sections
 
  \item \verb|ALE DYNAMIC|
 
@@ -587,9 +577,9 @@ Find the following sections in 'default.head' and edit as given:
 
  \item \verb|FSI DYNAMIC|
 
- \verb|NUMSTEP = 100|
+ \verb|NUMSTEP = 10|
 
- \verb|TIMESTEP = 0.05|
+ \verb|TIMESTEP = 0.5|
 
  \item \verb|STRUCTURAL DYNAMIC|
 
@@ -603,11 +593,17 @@ Find the following sections in 'default.head' and edit as given:
   
   insert \verb|MAT 2 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0|
 
-  \item \verb|LOAD CURVES| $\to$ \verb|CURVE1|
+  insert \verb|MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.3 DENS 500|
+
+  \item \verb|CLONING MATERIAL MAP|
+
+  insert \verb|SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3|
+
+  \item \verb|CURVE1|
 
   insert \verb|CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0| defining time-dependent inflow and lid movement
  
-   \item \verb|FUNCT1|
+  \item \verb|FUNCT1|
 
   insert \verb|FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)| representing the spatial inflow distribution
 
@@ -629,10 +625,6 @@ Find the following sections in 'default.head' and edit as given:
 
  \verb|SOLVER UMFPACK|
 
- \item Sections \verb|SOLVER 1| to \verb|SOLVER 9| and \verb|UMFPACK SOLVER|
-
- Delete the field \verb|VERBOSITY|
-
 \end{itemize}
 Safe the file under a different name, e.g. 'dc\_fsi.head'.
 
@@ -650,43 +642,161 @@ We assume that you merged the 'bc-files', so the following entities have to be c
  \item \verb|*eb2="ELEMENT"| \qquad the fluid elements with ALE and their material
  \begin{small} \begin{verbatim}
 sectionname="FLUID"
-description="MAT 2 NA ALE GP 2 2 2"
+description="MAT 2 NA ALE"
 elementname="FLUID3"
 \end{verbatim} \end{small}
 
 \item \verb|*ns5="CONDITION"|  \qquad the coupling surface from the structure side
 \begin{small} \begin{verbatim}
 sectionname="DESIGN FSI COUPLING SURF CONDITIONS"
-description="1 structure conforming fsi_real"
+description="1 "
  \end{verbatim} \end{small}
  
 \item \verb|*ns14="CONDITION"| \qquad the coupling surface from the fluid side
 \begin{small} \begin{verbatim}
 sectionname="DESIGN FSI COUPLING SURF CONDITIONS"
-description="1 fluid conforming fsi_real"
+description="1 "
  \end{verbatim} \end{small}
  
 \item \verb|*ns21="CONDITION"| \qquad release the 'coupling-line' for inplane directions
 \begin{small} \begin{verbatim}
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
  
 \item \verb|*ns22="CONDITION"| \qquad release the 'coupling-line' for inplane directions
 \begin{small} \begin{verbatim}
 sectionname="DESIGN LINE DIRICH CONDITIONS"
-description="6 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+description="NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
  \end{verbatim} \end{small}
 \end{itemize}
 
-Further, you need to apply Dirichlet conditions to the automatically created ALE field. This is done via the corresponding fluid field. Therefore, copy all fluid Dirirchlet conditions, change the \verb|sectionname| to the corresponding \verb|ALE DIRICH|. Also do not forget to erase the VAL, FUNCTION, and CURVE assignments which represent the moving lid and inflow. Otherwise you would prescribe a displacement to the fluid mesh at the lid and inflow. As any of them matches an already defined NodeSet it will also match the corresponding 'E-id' in the later \baci{} input file.
+Further, you need to provide Dirichlet conditions to the automatically created ALE field. The displacement of the 
+ALE field is restricted to zero at the left, right and top of the computational domain. At the front and the back plane,
+zero displacement in z-direction is demanded. Important: There are no Dirichlet conditions for ALE
+at the bottom of the cavity, since this is the FSI coupling interface. Thus, please add the following condition definitions to your new 'bc-file':
 
-Safe the file under a different name, e.g. 'dc\_fsi.bc'.
+\begin{itemize}
+ \item \verb|*ns10="CONDITION"| 
+\begin{small} \begin{verbatim} sectionname="DESIGN SURF ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns11="CONDITION"| 
+\begin{small} \begin{verbatim} sectionname="DESIGN SURF ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns12="CONDITION"| 
+\begin{small} \begin{verbatim} sectionname="DESIGN SURF ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns13="CONDITION"| 
+\begin{small} \begin{verbatim} sectionname="DESIGN SURF ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns15="CONDITION"| 
+\begin{small} \begin{verbatim} sectionname="DESIGN SURF ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns16="CONDITION"|
+\begin{small} \begin{verbatim} sectionname="DESIGN SURF ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns17="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns18="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns19="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns20="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+\item \verb|*ns23="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns24="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small} 
+
+\item \verb|*ns25="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns26="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns27="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns28="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns29="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+\item \verb|*ns30="CONDITION"| \qquad hierarchically corresponding line condition
+\begin{small} \begin{verbatim} sectionname="DESIGN LINE ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns35="CONDITION"| \qquad hierarchically corresponding point condition
+\begin{small} \begin{verbatim} sectionname="DESIGN POINT ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns36="CONDITION"| \qquad hierarchically corresponding point condition
+\begin{small} \begin{verbatim} sectionname="DESIGN POINT ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+ \item \verb|*ns37="CONDITION"| \qquad hierarchically corresponding point condition
+\begin{small} \begin{verbatim} sectionname="DESIGN POINT ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small} 
+
+\item \verb|*ns38="CONDITION"| \qquad hierarchically corresponding point condition
+\begin{small} \begin{verbatim} sectionname="DESIGN POINT ALE DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0"
+\end{verbatim} \end{small}
+
+\end{itemize}
+
+As any of these conditions matches an already defined NodeSet it will also match the corresponding 'E-id' in the later \baci{} input file.
+Finally save the file under a different name, e.g. 'dc\_fsi.bc'.
 
 \subsection{Creating \baci{} Input File and Running the Simulation}
-Run in a shell \verb|pre_exodus --exo=dc.exo --head=dc_fsi.head --bc=dc_fsi.bc --dat=dc_fsi.dat| where the filenames might have to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured.
+Run in a shell \verb|pre_exodus --exo=dc.exo --head=dc_fsi.head --bc=dc_fsi.bc --dat=dc_fsi.dat| where the filenames might have to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured. Hint: When you have an already existing input file, you can always validate it by simply executing
+\verb|pre_exodus --dat=inputfile.dat|, before(!) you start a parallel \baci{} computation on a cluster, for example. \newline 
 
-Run the simulation by providing this dat-file and an output file to \baci{} and postprocess the results (refer to \ref{tut_fsi_preexo:baci} and \ref{tut_fsi_preexo:postprocess}).
+Run the simulation by providing the created dat-file and an output file to \baci{} and postprocess the results (refer to \ref{tut_fsi_preexo:baci} and \ref{tut_fsi_preexo:postprocess}).
 
 \section{Postprocessing}
 \label{tut_fsi_preexo:postprocess}

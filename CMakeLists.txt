@@ -1732,7 +1732,7 @@ endmacro (baci_test_Nested_Par)
 
 # FRAMEWORK TESTS
 macro (baci_framework_test arg nproc)
-  set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/tutorial_fluid.jou)
+  set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.jou)
   set (RUNPREEXODUS ./pre_exodus\ --exo=xxx_${arg}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.head\ --dat=xxx.dat)
   set (RUNPRECURVE ./pre_curve\ --datfile=xxx.dat)
   set (RUNBACI ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx)
@@ -2644,6 +2644,7 @@ baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport 
 
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
 baci_framework_test(tutorial_fluid 2)
+baci_framework_test(tutorial_fsi 2)
 
 # cut test 
 cut_test(2)
