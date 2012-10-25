@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file opti_resulttest.cpp
 
-\brief 
+\brief Result test for optimization algorithms
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -12,26 +12,9 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-/*!------------------------------------------------------------------------------------------------*
-\file topopt_fluidAdjointResulttest.cpp
-
-\brief
-
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
- *------------------------------------------------------------------------------------------------*/
-
-
-//#include <string>
-//
 #include "opti_resulttest.H"
 #include "opti_GCMMA.H"
 #include "../drt_lib/drt_discret.H"
-//#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 

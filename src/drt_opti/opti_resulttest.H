@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file opti_resulttest.H
 
-\brief 
+\brief Result test for optimization algorithms
 
 <pre>
 Maintainer: Martin Winklmaier

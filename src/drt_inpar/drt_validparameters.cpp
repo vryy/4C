@@ -3731,7 +3731,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& topoptoptimizer = topoptcontrol.sublist("TOPOLOGY OPTIMIZER",false,
       "control parameters for the optimizer of a topology optimization problem");
 
-  IntParameter("MAX_ITER",-1,"Maximal number of optimization steps",&topoptoptimizer);
+  IntParameter("MAX_ITER",100,"Maximal number of optimization steps",&topoptoptimizer);
+  IntParameter("MAX_GRAD_ITER",100,"Maximal number of optimization steps containing the gradient",&topoptoptimizer);
+  IntParameter("MAX_INNER_ITER",20,"Maximal number of inner optimization steps",&topoptoptimizer);
   IntParameter("MATID",-1,"Material ID for automatic mesh generation",&topoptoptimizer);
 
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
@@ -3757,6 +3759,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);
   DoubleParameter("VOLUME_BOUNDARY",0.7,"maximal percentage of fluid volume in background domain",&topoptoptimizer);
+  DoubleParameter("TOL_KKT",1.0e-5,"tolerance of optimization problem (for KKT-conditions)",&topoptoptimizer);
+  DoubleParameter("TOL_SUB",1.0e-9,"tolerance of subproblem",&topoptoptimizer);
+  DoubleParameter("X_DIFF_MIN",1.0e-5,"minimal difference of upper and lower boundary of optimization variable",&topoptoptimizer);
+  DoubleParameter("RHOMIN",1.0e-6,"minimal parameter value",&topoptoptimizer);
+  DoubleParameter("FACMIN",1.0e-10,"minimal parameter value",&topoptoptimizer);
+  IntParameter("UPRES",1,"Increment for writing solution",&topoptoptimizer);
+  BoolParameter("GMSH_OUTPUT","No","Write Gmsh files",&topoptoptimizer);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptadjointfluiddyn = topoptcontrol.sublist("TOPOLOGY ADJOINT FLUID",false,
       "control parameters for the adjoint fluid of a topology optimization problem");

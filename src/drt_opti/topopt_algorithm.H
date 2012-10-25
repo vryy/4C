@@ -29,7 +29,7 @@ namespace TOPOPT
 
     \detailed
 
-    This combustion algorithm derives from the TopOpt Fluid Coupling Algorithm.
+    This topopt algorithm derives from the TopOpt Fluid Coupling Algorithm.
     Therefore it has a Fluid Base Algorithm and a TopOptForFluid Base Algorithm
 
     This algorithm handles the various interactions between the required steps
@@ -96,7 +96,7 @@ namespace TOPOPT
     void UpdatePorosity();
 
     /// write output
-    void Output() const;
+    void Output();
 
     /// update optimization procedure
     void Update();

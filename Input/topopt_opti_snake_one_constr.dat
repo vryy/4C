@@ -24,15 +24,15 @@ o v_2 = 0
 - constant adjoint pressure field:
 q = 10
 - all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      20
 //NODES                         33
 DIM                             2
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Top_Opt
 NUMFIELD                        1
 RESTART                         0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
@@ -47,7 +47,7 @@ ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL
 CONV_CHECK_TYPE                 Residuum
 INCTOL                          1e-6
 MAXTIME                         0.5
@@ -57,16 +57,17 @@ RESTOL                          1e-6
 RESTART_ACTION                  Fluid_Time_Step
 TIMESTEP                        0.05
 UPRES                           1
-----------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
 MAX_ITER                        1000
 MATID                           2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 TESTCASE                        test_snake_one_constr
-------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
+TOL_KKT                         1e-7
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
 INITIALFIELD                    field_by_function
 INITFUNCNO                      3
----------------------------------------------------------------FLUID DYNAMIC
+------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
@@ -83,7 +84,7 @@ STEADYTOL                       1e-6
 THETA                           0.5
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Topology_optimization
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+---------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
@@ -99,47 +100,47 @@ VSTAB                           no_vstab
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver_for_Top_Opt
 SOLVER                          UMFPACK
---------------------------------------------------------CLONING MATERIAL MAP
+-----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 MAT 2 MAT_opti MINPORO 0 MAXPORO 25000 SMEARFAC 1
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-------------------------------------------------FUNCT1 // initial flow field
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------FUNCT1 // initial flow field
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//1.0//
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//0.0//
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//0.0//
----------------------------------------------FUNCT2 // initial density field
+------------------------------------------------------------FUNCT2 // initial density field
 FUNCT2 EXPR 0 0.0 0 FUNCTION 1.0 // 1=fluid,0=no fluid
----------------------------------------------FUNCT3 // initial adjoint field
+------------------------------------------------------------FUNCT3 // initial adjoint field
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//1.0//
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//0.0//
 FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//10.0//
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3
 NDSURF                          1
 NDVOL                           0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 //                              outflow
 E 3 - none 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              inflow
 E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 //                              sides
 E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ----------------------------------------------------------RESULT DESCRIPTION
-OPTI DIS 1 NODE 1 POSITION x NAME x VALUE -5.84868380940821053e-01 TOLERANCE 1e-14
-OPTI DIS 1 NODE 10 POSITION x NAME x VALUE -9.95037521660731117e-01 TOLERANCE 1e-14
-OPTI DIS 1 NODE 21 POSITION x NAME x VALUE 4.04718221278367152e-01 TOLERANCE 1e-14
-OPTI DIS 1 NODE 35 POSITION x NAME x VALUE 9.95037522134585711e-02 TOLERANCE 1e-15
-OPTI DIS 1 NODE 36 POSITION x NAME x VALUE 9.95037522135736596e-02 TOLERANCE 1e-15
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
+OPTI DIS 1 NODE 1 POSITION x NAME x VALUE -5.84868380956455658e-01 TOLERANCE 1e-14
+OPTI DIS 1 NODE 10 POSITION x NAME x VALUE -9.95037521648151957e-01 TOLERANCE 1e-14
+OPTI DIS 1 NODE 21 POSITION x NAME x VALUE 4.04718221301294867e-01 TOLERANCE 1e-14
+OPTI DIS 1 NODE 35 POSITION x NAME x VALUE 9.95037522223679999e-02 TOLERANCE 1e-15
+OPTI DIS 1 NODE 36 POSITION x NAME x VALUE 9.95037522228484628e-02 TOLERANCE 1e-15
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
 NODE 8 DLINE 1
@@ -172,7 +173,7 @@ NODE 25 DLINE 3
 NODE 27 DLINE 3
 NODE 43 DLINE 3
 NODE 44 DLINE 3
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURF 1
 NODE 2 DSURF 1
 NODE 3 DSURF 1
@@ -218,8 +219,8 @@ NODE 42 DSURF 1
 NODE 43 DSURF 1
 NODE 44 DSURF 1
 NODE 45 DSURF 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
------------------------------------------------------------------NODE COORDS
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
 NODE 2 COORD 1.0000000000000001e-01 0.0000000000000000e+00 0.0000000000000000e+00
 NODE 3 COORD 9.9999999999999992e-02 1.0000000000000001e-01 0.0000000000000000e+00
@@ -265,8 +266,8 @@ NODE 42 COORD 3.4999999999999998e-01 2.0000000000000001e-01 0.0000000000000000e+
 NODE 43 COORD 5.0000000000000000e-01 2.0000000000000001e-01 0.0000000000000000e+00
 NODE 44 COORD 5.0000000000000000e-01 1.5000000000000002e-01 0.0000000000000000e+00
 NODE 45 COORD 4.5000000000000001e-01 2.0000000000000001e-01 0.0000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
---------------------------------------------------------------FLUID ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
 1 FLUID2 QUAD8 1 2 3 4 5 6 7 8 MAT 1 NA Euler GP 2 2
 2 FLUID2 QUAD8 2 9 10 3 11 12 13 6 MAT 1 NA Euler GP 2 2
 3 FLUID2 QUAD8 9 14 15 10 16 17 18 12 MAT 1 NA Euler GP 2 2
@@ -277,8 +278,8 @@ NODE 45 COORD 4.5000000000000001e-01 2.0000000000000001e-01 0.0000000000000000e+
 8 FLUID2 QUAD8 10 15 37 34 18 38 39 35 MAT 1 NA Euler GP 2 2
 9 FLUID2 QUAD8 15 20 40 37 23 41 42 38 MAT 1 NA Euler GP 2 2
 10 FLUID2 QUAD8 20 25 43 40 28 44 45 41 MAT 1 NA Euler GP 2 2
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
--------------------------------------------------------------------------END
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------------------END
 //                              END

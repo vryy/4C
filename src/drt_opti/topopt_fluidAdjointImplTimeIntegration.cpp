@@ -345,7 +345,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
 
     neumann_loads_->PutScalar(0.0);
 
-    if (DRT::Problem::Instance()->NDim()==2)
+    if (DRT::Problem::Instance()->NDim()==2) // 2D -> 1D (line) neumann surface
     {
       discret_->EvaluateConditionUsingParentData(
           nbcparams            ,
@@ -356,7 +356,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
           Teuchos::null        ,
           "LineNeumann");
     }
-    else if (DRT::Problem::Instance()->NDim()==3)
+    else if (DRT::Problem::Instance()->NDim()==3) // 3D -> 2D (surface) neumann surface
     {
       discret_->EvaluateConditionUsingParentData(
           nbcparams            ,
@@ -689,11 +689,11 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     // step number and time
     output_->NewStep(step_,time_);
     // velocity/pressure vector
-    output_->WriteVector("velnp",velnp_);
-    output_->WriteVector("neumann_loads",neumann_loads_);
+    output_->WriteVector("adjoint_velnp",velnp_);
+    output_->WriteVector("adjoint_neumann_loads",neumann_loads_);
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
-    output_->WriteVector("pressure", pressure);
+    output_->WriteVector("adjoint_pressure", pressure);
 
     if (params_->get<bool>("GMSH_OUTPUT"))
       OutputToGmsh(step_, time_,false);
@@ -704,8 +704,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-      output_->WriteVector("veln", veln_);
-      output_->WriteVector("velnm",velnm_);
+      output_->WriteVector("adjoint_veln", veln_);
+      output_->WriteVector("adjoint_velnm",velnm_);
 
     }
   }
@@ -716,12 +716,12 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     output_->NewStep(step_,time_);
 
     // velocity/pressure vector
-    output_->WriteVector("velnp",velnp_);
+    output_->WriteVector("adjoint_velnp",velnp_);
 
     // velocity/pressure vector at time n and n-1
-    output_->WriteVector("veln", veln_);
-    output_->WriteVector("velnm",velnm_);
-    output_->WriteVector("neumann_loads",neumann_loads_);
+    output_->WriteVector("adjoint_veln", veln_);
+    output_->WriteVector("adjoint_velnm",velnm_);
+    output_->WriteVector("adjoint_neumann_loads",neumann_loads_);
   }
 
   if (topopt_porosity_!=Teuchos::null)

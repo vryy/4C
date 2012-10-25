@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file opti_GCMMA.H
 
-\brief 
+\brief Optimization algorithm GCMMA
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -25,6 +25,11 @@ class Epetra_Vector;
 namespace DRT
 {
   class Discretization;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
 }
 
 namespace Teuchos
@@ -63,15 +68,16 @@ namespace OPTI
   public:
     /// constructor
     explicit GCMMA(
-        Teuchos::RCP<const DRT::Discretization> discret,
+        Teuchos::RCP<DRT::Discretization> discret,
         const Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> x,
         int numConstraints,
         Teuchos::RCP<Epetra_Vector> x_min,
-        Teuchos::RCP<Epetra_Vector> x_max
+        Teuchos::RCP<Epetra_Vector> x_max,
+        Teuchos::RCP<IO::DiscretizationWriter>& output
     );
 
-    /// desctructor
+    /// destructor
     virtual ~GCMMA(){};
 
     /// Perform one outer iteration step
@@ -82,6 +88,7 @@ namespace OPTI
         Teuchos::RCP<Epetra_MultiVector> constraintsgrad
     );
 
+    /// check if converged
     bool Converged(
         double& objective,
         Teuchos::RCP<Epetra_Vector> objectivegrad,
@@ -89,56 +96,91 @@ namespace OPTI
         Teuchos::RCP<Epetra_MultiVector> constraintsgrad
     );
 
+    /// finish one iteration
     void FinishIteration(
         double& objective,
         Teuchos::RCP<Epetra_SerialDenseVector> constraints,
         bool& doGradient
     );
 
-    const Teuchos::RCP<const DRT::Discretization> Discretization() const
-    {
-      return discret_;
-    }
+    /// write output
+    void Output();
 
-    const Teuchos::RCP<const Epetra_Vector> X() const
-    {
-      return x_;
-    }
+    const Teuchos::RCP<const DRT::Discretization> Discretization() const {return discret_;}
+    const Teuchos::RCP<const Epetra_Vector> X() const {return x_;}
+    const double Step() const {return total_iter_;}
+
 
   private:
 
+    /// initialize one iteration
     void InitIter(
         double& objective,
         Teuchos::RCP<Epetra_Vector> objectivegrad,
         Teuchos::RCP<Epetra_SerialDenseVector> constraints,
         Teuchos::RCP<Epetra_MultiVector> constraintsgrad);
 
+    /// update the moving asymptotes
     void Asymptotes();
 
+    /// initialize rho in new outer iteration
     void InitRho();
 
+    /// initialize rho in new inner iteration
     void UpdateRho(
         double& objective,
         Teuchos::RCP<Epetra_SerialDenseVector> constraints
     );
 
+    /// check convergence of inner iteration loop
     bool InnerConvergence(
         double& objective,
         Teuchos::RCP<Epetra_SerialDenseVector> constraints
     );
 
+    /// initialize solution process of GCMMA subproblem
     void InitSubSolve();
 
+    /// solution process of GCMMA subproblem
     void SubSolve();
 
-    void Res(
+    /// compute residual of GCMMA subproblem
+    void ResApp(
         double& resnorm,
         double& resinf,
         const double& tol_sub
     );
 
+    /// compute L2-norm of residuals
+    double Res2Norm(
+        Epetra_Vector* res1,
+        Epetra_Vector* res2,
+        Epetra_Vector* res3,
+        Epetra_SerialDenseVector* res4,
+        Epetra_SerialDenseVector* res5,
+        Epetra_SerialDenseVector* res6,
+        Epetra_SerialDenseVector* res7,
+        double* res8,
+        double* res9
+    );
+
+    /// compute LInf-norm of residuals
+    double ResInfNorm(
+        Epetra_Vector* res1,
+        Epetra_Vector* res2,
+        Epetra_Vector* res3,
+        Epetra_SerialDenseVector* res4,
+        Epetra_SerialDenseVector* res5,
+        Epetra_SerialDenseVector* res6,
+        Epetra_SerialDenseVector* res7,
+        double* res8,
+        double* res9
+    );
+
+    /// update variables after subsolve finished
     void Update();
 
+    /// check KKT conditions for convergence
     bool KKTCond(
         double& objective,
         Teuchos::RCP<Epetra_Vector> objectivegrad,
@@ -146,9 +188,12 @@ namespace OPTI
         Teuchos::RCP<Epetra_MultiVector> constraintsgrad
     );
 
+    void OutputToGmsh();
+
+
     //! @name problem data
 
-    Teuchos::RCP<const DRT::Discretization> discret_; /// dof-map of optimization variable
+    Teuchos::RCP<DRT::Discretization> discret_; /// dof-map of optimization variable
     const Teuchos::ParameterList& params_; /// optimizer parameter list
     //@}
 
@@ -160,6 +205,7 @@ namespace OPTI
 
     const int max_total_iter_; /// maximal total iterations (outer and inner)
     const int max_inner_iter_; /// maximal inner iterations
+    const int max_outer_iter_; /// maximal outer iterations (containing the gradient)
     //@}
 
     //! @name size of optimization problem
@@ -250,18 +296,18 @@ namespace OPTI
 
     //! @name convergence stuff
 
-    double tol_sub_min_; /// tolerance for MMA subproblem
-
-    double tol_; /// tolerance for outer iterations (KKT-conditions are checked)
-    double res_norm_; /// norm of the residual (KKT-conditions norm)
-    double inc_norm_; /// norm of the increment
+    double tol_sub_; /// tolerance for MMA subproblem
+    double tol_kkt_; /// tolerance for outer iterations (KKT-conditions are checked)
     //@}
-
 
     double facmin_; /// minimal coefficient in a denominator
     Teuchos::RCP<Epetra_SerialDenseVector> s_; /// helper variable
 
+    //! @name output handling
+    const int upres_; /// write solution every upres steps to gmsh
 
+    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    //@}
 
   }; // end class GCMMA
 } // end namespace OPTI

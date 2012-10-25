@@ -27,8 +27,6 @@ Maintainer: Martin Winklmaier
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                    winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
-  /* TODO description (winklmaier)
-  */
 TOPOPT::Algorithm::Algorithm(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& topopt
@@ -83,7 +81,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
     DoOptimizationStep();
 
     // write output of optimization step
-//    Output();
+    Output();
 
     // Update data for new optimization step
 //    Update();
@@ -115,6 +113,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareOptimization()
 {
+  // set parameter required by optimizer, belonging to fluid field(s)
   optimizer_->ImportFlowParams(AdjointFluidField()->AdjointParams());
 
   UpdatePorosity();
@@ -134,6 +133,8 @@ bool TOPOPT::Algorithm::OptimizationFinished()
 
   bool converged = optimizer_->Converged(doGradient_);
 
+  // TODO also update porosity if converged
+  // (is this required finally for some postprocessing???)
   if (converged == false)
   {
     UpdatePorosity();
@@ -289,11 +290,11 @@ void TOPOPT::Algorithm::UpdatePorosity()
 /*------------------------------------------------------------------------------------------------*
  | protected: output                                                             winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
-void TOPOPT::Algorithm::Output() const
+void TOPOPT::Algorithm::Output()
 {
-  dserror("This function is currently unused!\n"
-      "Output of subfields is written by their own output-functions!\n"
-      "Maybe, this will be used for optimization variable(s) or for overview");
+  // write only output of optimizer here!
+  // all other data has been written before by the respective routines
+  Optimizer()->Output();
   return;
 }
 

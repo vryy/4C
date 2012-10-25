@@ -83,30 +83,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::OutputControl> fluidoutput = DRT::Problem::Instance()->OutputControlFile();
-
-  // filename for adjoint equations
-  std::string filename = fluidoutput->FileName();
-  filename = filename + "_adjoint";
-
-  // output control for adjoint equations
-  // equal to output for fluid equations except for the filename
-  // and the - not necessary - input file name
-  Teuchos::RCP<IO::OutputControl> adjointoutput =
-      Teuchos::rcp(new IO::OutputControl(
-          actdis->Comm(),
-          DRT::Problem::Instance()->ProblemName(),
-          DRT::Problem::Instance()->SpatialApproximation(),
-          "unknown_and_unused_input_filename",
-          filename,
-          DRT::Problem::Instance()->NDim(),
-          DRT::Problem::Instance()->Restart(),
-          fluidoutput->FileSteps()
-      )
-  );
-
-  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(actdis,adjointoutput));
-  output->WriteMesh(0,0.0);
+  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(actdis));
+//  output->WriteMesh(0,0.0); TODO make this work again
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -266,7 +244,6 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
         solver,
         fluidadjointtimeparams,
         output));
-
   }
   else
   {
@@ -280,7 +257,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     startfuncno=-1;
 
   adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
-  adjointTimeInt_->Output();
+//  adjointTimeInt_->Output(); TODO make this work again
 
   return;
 }

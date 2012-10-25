@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_fluidAdjointResulttest.cpp
 
-\brief 
+\brief Result test for the adjoint fluid equations
 
 <pre>
 Maintainer: Martin Winklmaier

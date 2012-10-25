@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer_ele_parameter.H
 
-\brief 
+\brief Evaluation of element parameter
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -24,8 +24,14 @@ namespace DRT
 namespace ELEMENTS
 {
 
-/// Evaluation of general parameters
-class TopOptParam
+/*!
+\brief Evaluation of element parameter
+
+This class just sets most of the element parameter of the topopt-element in a
+pre-evaluation step due to performance reasons
+
+\author Martin Winklmaier (winklmaier@lnm.mw.tum.de)
+*/class TopOptParam
 {
 public:
 

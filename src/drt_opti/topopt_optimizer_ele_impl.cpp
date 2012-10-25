@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer_ele_impl.cpp
 
-\brief 
+\brief element routines of the topology optimization element
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -566,10 +566,12 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalPorosityAtIntPoint(
     LINALG::Matrix<nen_,1> edens
 )
 {
+  // poro = poro_max + (poro_min - poro_max) * rho * (1+fac) / (rho+fac)
   double densint = edens.Dot(funct_);
   poroint_ = optiparams_->MaxPoro() + (optiparams_->MinPoro()-optiparams_->MaxPoro())*densint
                                       *(1+optiparams_->SmearFac())/(densint+optiparams_->SmearFac());
 
+  // dporo/ddens = (poro_min - poro_max) * (fac+fac*fac) / (rho+fac)
   poroderdens_ = (optiparams_->MinPoro()-optiparams_->MaxPoro())
                 *(optiparams_->SmearFac()+optiparams_->SmearFac()*optiparams_->SmearFac())
                 /(densint+optiparams_->SmearFac());
@@ -678,14 +680,14 @@ DRT::ELEMENTS::TopOptBoundaryImpl<distype> * DRT::ELEMENTS::TopOptBoundaryImpl<d
 )
 {
   static TopOptBoundaryImpl<distype> * instance;
-  if ( create )
+  if ( create ) // create instance if not present
   {
     if ( instance==NULL )
     {
       instance = new TopOptBoundaryImpl<distype>();
     }
   }
-  else
+  else // delete instance if present
   {
     if ( instance!=NULL )
       delete instance;
@@ -762,108 +764,6 @@ int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryGradients(
   // work is done
   return 0;
 }
-
-
-
-
-
-///*----------------------------------------------------------------------*
-// | evaluate shape functions and int. factor at int. point     gjb 01/09 |
-// *----------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//double DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
-//    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-//    const int                                    iquad,      ///< id of current Gauss point
-//    const int                                    eleid,      ///< the element id
-//    LINALG::Matrix<1 + nsd_,1>*         normalvec ///< normal vector at Gauss point(optional)
-//)
-//{
-//  // coordinates of the current integration point
-//  const double* gpcoord = (intpoints.IP().qxg)[iquad];
-//  for (int idim=0;idim<nsd_;idim++)
-//  {xsi_(idim) = gpcoord[idim];}
-//
-//  if(not DRT::NURBS::IsNurbs(distype))
-//  {
-//    // shape functions and their first derivatives
-//    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-//    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-//  }
-//  else // nurbs elements are always somewhat special...
-//  {
-//    DRT::NURBS::UTILS::nurbs_get_funct_deriv(
-//        funct_  ,
-//        deriv_  ,
-//        xsi_    ,
-//        myknots_,
-//        weights_,
-//        distype );
-//  }
-//
-//  // the metric tensor and the area of an infinitesimal surface/line element
-//  // optional: get normal at integration point as well
-//  // Note: this is NOT yet a unit normal. Its norm corresponds to the area/length of the element
-//  double drs(0.0);
-//  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs,normalvec);
-//
-//  // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-//  if(DRT::NURBS::IsNurbs(distype))
-//  {
-//    if (normalvec != NULL)
-//      normal_.Scale(normalfac_);
-//  }
-//
-//  // return the integration factor
-//  return intpoints.IP().qwgt[iquad] * drs;
-//}
-//
-//
-//
-///*----------------------------------------------------------------------*
-// |  Integrate shapefunctions over surface (private)           gjb 02/09 |
-// *----------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//void DRT::ELEMENTS::TopOptBoundaryImpl<distype>::IntegrateShapeFunctions(
-//    const DRT::Element*        ele,
-//    ParameterList&             params,
-//    Epetra_SerialDenseVector&  elevec1,
-//    const bool                 addarea
-//)
-//{
-//  // access boundary area variable with its actual value
-//  double boundaryint = params.get<double>("boundaryint");
-//
-//  // integrations points and weights
-//  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-//
-//  // loop over integration points
-//  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
-//  {
-//    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
-//
-//    // compute integral of shape functions
-//    for (int node=0;node<nen_;++node)
-//    {
-//      for (int k=0; k< numscal_; k++)
-//      {
-//        elevec1[node*numdofpernode_+k] += funct_(node) * fac;
-//      }
-//    }
-//
-//    if (addarea)
-//    {
-//      // area calculation
-//      boundaryint += fac;
-//    }
-//
-//  } //loop over integration points
-//
-//  // add contribution to the global value
-//  params.set<double>("boundaryint",boundaryint);
-//
-//  return;
-//
-//} //TopOptBoundaryImpl<distype>::IntegrateShapeFunction
 
 
 

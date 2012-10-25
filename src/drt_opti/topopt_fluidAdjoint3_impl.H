@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_fluidAdjoint3_impl.H
 
-\brief 
+\brief Interface for element level of adjoint fluid equations
 
 <pre>
 Maintainer: Martin Winklmaier

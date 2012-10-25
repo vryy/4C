@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_fluidAdjoint3_interface.H
 
-\brief 
+\brief Interface for element level of adjoint fluid equations
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -46,6 +46,8 @@ namespace ELEMENTS
     versions of FluidAdjoint3Impl. The only function
     this class actually defines is Impl, which returns a pointer to
     the appropriate version of FluidAdjoint3Impl.
+
+    \author winklmaier
    */
   class FluidAdjoint3ImplInterface : public DRT::SingletonDestruction
   {

@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_fluidAdjoint3_impl.cpp
 
-\brief 
+\brief Functionality of the element level of the fluid adjoint equations
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -53,14 +53,6 @@ DRT::ELEMENTS::FluidAdjoint3ImplInterface* DRT::ELEMENTS::FluidAdjoint3ImplInter
 //  case DRT::Element::tet10:
 //  {
 //    return FluidAdjoint3Impl<DRT::Element::tet10>::Instance();
-//  }
-//  case DRT::Element::wedge6:
-//  {
-//    return FluidAdjoint3Impl<DRT::Element::wedge6>::Instance();
-//  }
-//  case DRT::Element::pyramid5:
-//  {
-//    return FluidAdjoint3Impl<DRT::Element::pyramid5>::Instance();
 //  }
   case DRT::Element::quad4:
   {

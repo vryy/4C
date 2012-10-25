@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer.cpp
 
-\brief 
+\brief optimizer of the topology optimization
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -16,8 +16,8 @@ Maintainer: Martin Winklmaier
 #include "topopt_fluidAdjoint3_impl_parameter.H"
 #include "opti_GCMMA.H"
 #include "opti_resulttest.H"
-#include "../drt_inpar/inpar_parameterlist_utils.H"
 
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -33,7 +33,8 @@ Maintainer: Martin Winklmaier
 TOPOPT::Optimizer::Optimizer(
     RCP<DRT::Discretization> optidis,
     Teuchos::RCP<DRT::Discretization> fluiddis,
-    const ParameterList& params
+    const ParameterList& params,
+    Teuchos::RCP<IO::DiscretizationWriter>& output
 ) :
 optidis_(optidis),
 fluiddis_(fluiddis),
@@ -84,7 +85,8 @@ params_(params)
       dens_,
       num_constr_,
       Teuchos::null,
-      Teuchos::null
+      Teuchos::null,
+      output
   ));
   return;
 }
@@ -163,6 +165,15 @@ void TOPOPT::Optimizer::ComputeGradients()
   optidis_->Evaluate(params,Teuchos::null,obj_grad_);
 
   optidis_->ClearState();
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TOPOPT::Optimizer::Output()
+{
+  optimizer_->Output();
 }
 
 
@@ -313,6 +324,8 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::Iterate(
     bool& doGradient
 )
@@ -339,6 +352,8 @@ void TOPOPT::Optimizer::Iterate(
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::FinishIteration(
     bool& doGradient
 )
@@ -352,12 +367,15 @@ void TOPOPT::Optimizer::FinishIteration(
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool TOPOPT::Optimizer::Converged(
     bool& doGradient
 )
 {
   bool converged = false;
 
+  // dont use gradients if not needed (safety)
   if (doGradient)
   {
     converged = optimizer_->Converged(

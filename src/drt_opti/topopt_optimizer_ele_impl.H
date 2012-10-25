@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer_ele_impl.H
 
-\brief 
+\brief element routines of the topology optimization element
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -27,17 +27,19 @@ namespace ELEMENTS
 // forward declarations
 class TopOptParam;
 
+/*
+\brief Interface base class for TopOptImpl
 
-//! Interface base class for ScaTraImpl
-/*!
   This class exists to provide a common interface for all template
-  versions of ScaTraImpl. The only function
+  versions of TopOptImpl. The only function
   this class actually defines is Impl, which returns a pointer to
   the appropriate version of ScaTraImpl.
   Deriving from DRT::SingletonDestruction provides proper registration
   of singleton at DRT::Problem instance and - as a result -
   correct memory handling at the end of a BACI run.
-  (correctly delete allocated ScaTraImplInterface instances)
+  (correctly delete allocated TopOptImplInterface instances)
+
+  /author winklmaier (winklmaier@lnm.mw.tum.de)
  */
 class TopOptImplInterface : public DRT::SingletonDestruction
 {
@@ -82,21 +84,19 @@ public:
 
 
 
-//! Internal Scalar transport element implementation
-/*!
+/*
+\brief Internal topology optimization element implementation
+
   This internal class keeps all the working arrays needed to
-  calculate the transport element. Additionally the method Sysmat()
-  provides a clean and fast element implementation.
+  calculate the topopt element.
 
   <h3>Purpose</h3>
 
-  The idea is to separate the element maintenance (class Transport)
-  from the mathematical contents (this class). Of course there are
-  different implementations of the Transport element, this is just one
-  such implementation.
+  The idea is to separate the element maintenance (class TopOpt)
+  from the mathematical contents (this class).
 
-  The Transport element will allocate exactly one object of this class
-  for all transport elements with the same number of nodes in the mesh.
+  The topopt element will allocate exactly one object of this class
+  for all topopt elements with the same number of nodes in the mesh.
   This allows us to use exactly matching working arrays (and keep them
   around.)
 
@@ -107,14 +107,7 @@ public:
 
   <h3>History</h3>
 
-  The implementation here is the standard convection-diffusion element
-  capable of dealing with systems of transported scalars.
-
-  Right now we do not read any stabilization parameters from the
-  input file but have a fixed version.
-
-  \author gjb
-  \date 08/08
+  \author winklmaier
  */
 template<DRT::Element::DiscretizationType distype>
 class TopOptImpl: public TopOptImplInterface
@@ -357,39 +350,30 @@ public:
 
 
 
-/// Internal Scalar transport element implementation
-/*!
-    This internal class keeps all the working arrays needed to
-    calculate the transport element. Additionally the method Sysmat()
-    provides a clean and fast element implementation.
+/*
+\brief Internal topology optimization element implementation
 
-    <h3>Purpose</h3>
+  This internal class keeps all the working arrays needed to
+  calculate the boundary terms of the topopt element.
 
-    The idea is to separate the element maintenance (class Transport)
-    from the mathematical contents (this class). Of course there are
-    different implementations of the Transport element, this is just one
-    such implementation.
+  <h3>Purpose</h3>
 
-    The Transport element will allocate exactly one object of this class
-    for all transport elements with the same number of nodes in the mesh.
-    This allows us to use exactly matching working arrays (and keep them
-    around.)
+  The idea is to separate the element maintenance (class TopOpt)
+  from the mathematical contents (this class).
 
-    The code is meant to be as clean as possible. This is the only way
-    to keep it fast. The number of working arrays has to be reduced to
-    a minimum so that the element fits into the cache. (There might be
-    room for improvements.)
+  The topopt element will allocate exactly one object of this class
+  for all topopt elements with the same number of nodes in the mesh.
+  This allows us to use exactly matching working arrays (and keep them
+  around.)
 
-    <h3>History</h3>
+  The code is meant to be as clean as possible. This is the only way
+  to keep it fast. The number of working arrays has to be reduced to
+  a minimum so that the element fits into the cache. (There might be
+  room for improvements.)
 
-    The implementation here is the standard convection-diffusion element
-    capable of dealing with systems of transported scalars.
+  <h3>History</h3>
 
-    Right now we do not read any stabilization parameters from the
-    input file but have a fixed version.
-
-    \author gjb
-    \date 08/08
+  \author winklmaier
  */
 template<DRT::Element::DiscretizationType distype>
 class TopOptBoundaryImpl: public TopOptBoundaryImplInterface

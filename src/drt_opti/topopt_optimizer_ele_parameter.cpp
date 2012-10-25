@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer_ele_parameter.cpp
 
-\brief 
+\brief Evaluation of element parameter
 
 <pre>
 Maintainer: Martin Winklmaier

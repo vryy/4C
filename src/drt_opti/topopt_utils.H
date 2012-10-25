@@ -67,8 +67,7 @@ namespace TOPOPT
 
   private:
 
-  }; // class ScatraFluidCloneStrategy
-  //TODO check this class! It is just a copy of the scatra equivalent (winklmaier)
+  }; // class TopoptFluidCloneStrategy
 
   // prints the logo of topology optimization
   void printTopOptLogo();

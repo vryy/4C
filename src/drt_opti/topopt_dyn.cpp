@@ -74,7 +74,7 @@ void fluid_topopt_dyn()
   // create a topology optimization algorithm
   //------------------------------------------------------------------------------------------------
   // get the topology optimization parameter list
-  Teuchos::ParameterList topoptdyn = DRT::Problem::Instance()->OptimizationControlParams();
+  Teuchos::ParameterList topoptdyn = problem->OptimizationControlParams();
   // create a COMBUST::Algorithm instance
   Teuchos::RCP<TOPOPT::Algorithm> topopt_ = Teuchos::rcp(new TOPOPT::Algorithm(comm,topoptdyn));
 

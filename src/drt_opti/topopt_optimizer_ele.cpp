@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer_ele.cpp
 
-\brief 
+\brief element routines of the topology optimizer
 
 <pre>
 Maintainer: Martin Winklmaier

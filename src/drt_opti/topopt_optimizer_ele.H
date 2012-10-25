@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer_ele.H
 
-\brief 
+\brief element routines of the topology optimizer
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -63,6 +63,11 @@ private:
 
 /*!
 \brief The topology optimization element
+
+This class computes the domain parts of the values required for an optimization step (currently for
+topology optimization for flow problems).
+These are the objective value, the constraint value(s) and potentially their
+derivatives.
 
 \author Martin Winklmaier (winklmaier@lnm.mw.tum.de)
 */

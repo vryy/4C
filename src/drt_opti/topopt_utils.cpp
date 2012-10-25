@@ -12,10 +12,6 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef TOPOPT_UTILS_CPP_
-#define TOPOPT_UTILS_CPP_
-
-
 #include "topopt_utils.H"
 #include "topopt_optimizer_ele.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -132,5 +128,3 @@ void TOPOPT::printTopOptLogo()
   std::cout << "         \\_________/      " << std::endl;
   std::cout << "                           " << std::endl;
 }
-
-#endif /* TOPOPT_UTILS_CPP_ */

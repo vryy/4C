@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file topopt_optimizer_ele_evaluate.cpp
 
-\brief 
+\brief evaluate interface of the topopt element
 
 <pre>
 Maintainer: Martin Winklmaier

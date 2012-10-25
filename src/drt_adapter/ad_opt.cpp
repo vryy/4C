@@ -13,6 +13,7 @@ Maintainer: Martin Winklmaier
 
 
 #include "ad_opt.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_opti/topopt_optimizer.H"
@@ -40,12 +41,11 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   if (!optidis->Filled()) dserror("optimization discretization should be filled before");
   if (!fluiddis->Filled()) dserror("fluid discretization should be filled before");
 
-//  // -------------------------------------------------------------------
-//  // context for output and restart
-//  // -------------------------------------------------------------------
-//  RCP<IO::DiscretizationWriter> output =
-//    rcp(new IO::DiscretizationWriter(actdis));
-//  output->WriteMesh(0,0.0);
+  // -------------------------------------------------------------------
+  // context for output and restart
+  // -------------------------------------------------------------------
+  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(optidis));
+  output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // create instance of the optimization class (call the constructor)
@@ -53,7 +53,8 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   optimizer_ = rcp(new TOPOPT::Optimizer(
       optidis,
       fluiddis,
-      prbdyn
+      prbdyn,
+      output
   ));
 
   return;

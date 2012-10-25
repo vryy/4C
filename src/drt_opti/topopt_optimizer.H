@@ -42,6 +42,11 @@ namespace DRT
   }
 }
 
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
 namespace OPTI
 {
   class GCMMA;
@@ -86,7 +91,8 @@ namespace TOPOPT
     explicit Optimizer(
         Teuchos::RCP<DRT::Discretization> optidis,
         Teuchos::RCP<DRT::Discretization> fluiddis,
-        const Teuchos::ParameterList& params
+        const Teuchos::ParameterList& params,
+        Teuchos::RCP<IO::DiscretizationWriter>& output
     );
 
     /// desctructor
@@ -97,6 +103,9 @@ namespace TOPOPT
 
     /// compute the gradient of the objective function
     void ComputeGradients();
+
+    /// write output
+    void Output();
 
     /// import time integration parameters
     void ImportFlowParams(Teuchos::RCP<Teuchos::ParameterList>& fluidParams);
@@ -114,18 +123,22 @@ namespace TOPOPT
       adjointvel_->clear();
     }
 
+    /// perform one optimization iteration
     void Iterate(
         bool& doGradient
     );
 
+    /// finish one optimization iteration
     void FinishIteration(
         bool& doGradient
     );
 
+    /// check convergence of the optimization
     bool Converged(
         bool& doGradient
     );
 
+    /// create result test object for optimization variables
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
     Teuchos::RCP<const DRT::Discretization> OptiDis(){return optidis_;}

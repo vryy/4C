@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file opti_GCMMA.cpp
 
-\brief 
+\brief Optimization algorithm GCMMA
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -16,20 +16,24 @@ Maintainer: Martin Winklmaier
 
 #include "../drt_inpar/inpar_topopt.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_discret.H"
 #include "../headers/definitions.h"
 #include <Epetra_SerialDenseSolver.h>
-
+#include <stdio.h>
+#include <stdlib.h>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 OPTI::GCMMA::GCMMA(
-    Teuchos::RCP<const DRT::Discretization> discret,
+    Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> x,
     int numConstraints,
     Teuchos::RCP<Epetra_Vector> x_min,
-    Teuchos::RCP<Epetra_Vector> x_max
+    Teuchos::RCP<Epetra_Vector> x_max,
+    Teuchos::RCP<IO::DiscretizationWriter>& output
 ) :
 discret_(discret),
 params_(params),
@@ -37,7 +41,8 @@ total_iter_(0),
 outer_iter_(0),
 inner_iter_(0),
 max_total_iter_(params.get<int>("MAX_ITER")),
-max_inner_iter_(min(max_total_iter_,100)),
+max_inner_iter_(params.get<int>("MAX_INNER_ITER")),
+max_outer_iter_(params.get<int>("MAX_GRAD_ITER")),
 m_(numConstraints),
 n_loc_(x->MyLength()),
 n_(x->GlobalLength()),
@@ -45,7 +50,7 @@ x_(rcp(new Epetra_Vector(*x))),
 x_old_(rcp(new Epetra_Vector(*x))),
 x_old2_(rcp(new Epetra_Vector(*x))),
 x_mma_(rcp(new Epetra_Vector(*x))),
-x_diff_min_(1.0e-5),
+x_diff_min_(params.get<double>("X_DIFF_MIN")),
 obj_(0.0),
 obj_deriv_(rcp(new Epetra_Vector(x->Map()))),
 obj_appr_(0.0),
@@ -60,7 +65,7 @@ Q_(rcp(new Epetra_MultiVector(x->Map(),m_))),
 b_(rcp(new Epetra_SerialDenseVector(m_))),
 rho0_(0.01),
 rho_(rcp(new Epetra_SerialDenseVector(m_))),
-rho0min_(1.0e-6),
+rho0min_(params.get<double>("RHOMIN")),
 rhomin_(rcp(new Epetra_SerialDenseVector(m_))),
 y_mma_(rcp(new Epetra_SerialDenseVector(m_))),
 z_mma_(0.0),
@@ -73,12 +78,12 @@ a0_(1.0),
 a_(rcp(new Epetra_SerialDenseVector(m_))),
 c_(rcp(new Epetra_SerialDenseVector(m_))),
 d_(rcp(new Epetra_SerialDenseVector(m_))),
-tol_sub_min_(1.0e-09),
-tol_(1.0e-8),
-res_norm_(1.0e-6),
-inc_norm_(1.0e-6),
-facmin_(1.0e-10),
-s_(rcp(new Epetra_SerialDenseVector(m_)))
+tol_sub_(params.get<double>("TOL_SUB")),
+tol_kkt_(params.get<double>("TOL_KKT")),
+facmin_(params.get<double>("FACMIN")),
+s_(rcp(new Epetra_SerialDenseVector(m_))),
+upres_(params_.get<int>("UPRES")),
+output_(output)
 {
   if (m_>100)
     dserror("current implementation inefficient for large number of constraints due to array structure and used solver");
@@ -178,7 +183,7 @@ void OPTI::GCMMA::InitIter(
       (objectivegrad == Teuchos::null or constraintsgrad == Teuchos::null))
     dserror("gradients must be given in new outer iteration");
 
-  // initialization of old values
+  // initialization
   if (outer_iter_ == 0)
   {
     // reset of optimization variable for test cases
@@ -200,15 +205,14 @@ void OPTI::GCMMA::InitIter(
       }
     }
 
-
-
+    // initialization of old values
     *x_old_ = *x_;
     *x_old2_ = *x_;
     *x_mma_ = *x_;
   }
 
 
-
+  // reset of objective function, constraints and their derivatives for test cases
   if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
       (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
@@ -314,12 +318,12 @@ void OPTI::GCMMA::InitIter(
   }
 
 
-
   // update counters
   inner_iter_++;
   total_iter_++;
 
-  if (inner_iter_==1) // new outer iter
+  // new outer iter -> values and derivatives, update asymptotes and re-initialize rho
+  if (inner_iter_==1)
   {
     // update counters
     outer_iter_++;
@@ -343,7 +347,7 @@ void OPTI::GCMMA::InitIter(
 
     InitRho();
   }
-  else
+  else // new inner iter -> new values, update rho
   {
 //cout << "new obj is " << objective << endl;
 //cout << "new constr are " << *constraints << endl;
@@ -356,7 +360,7 @@ void OPTI::GCMMA::InitIter(
  *----------------------------------------------------------------------*/
 void OPTI::GCMMA::Asymptotes()
 {
-  // compute new asymptotes
+  // simplified asymptotes in first two iterations
   if (outer_iter_<3)
   {
     *asymp_min_ = *x_;
@@ -367,6 +371,19 @@ void OPTI::GCMMA::Asymptotes()
   }
   else
   {
+    /*
+     * componentwise:
+     *
+     * asy_min = x - fac*(x_old-asy_min)
+     * asy_min = max(asy_min, x-10*x_diff)
+     * asy_min = min(asy_min, x-0.01*x_diff)
+     *
+     * asy_max = x + fac*(asy_max-x_old)
+     * asy_max = min(asy_max, x+10*x_diff)
+     * asy_max = max(asy_max, x+0.01*x_diff)
+     *
+     * fac = 1.0 / 0.7 / 1.2 depending on sign of (x-x_old)(x_old-x_old2)
+     */
     double* xval = x_->Values();
     double* xold = x_old_->Values();
     double* xold2 = x_old2_->Values();
@@ -410,6 +427,17 @@ void OPTI::GCMMA::Asymptotes()
  *----------------------------------------------------------------------*/
 void OPTI::GCMMA::InitRho()
 {
+  /*
+   * in matrix form:
+   *
+   * rho0 = max(rho0min,(abs(dJ/dx)^T * xdiff)/(10*size(x)))
+   * J: Objective function
+   *
+   * rho = max(rhomin,(abs(dF/dx)^T * xdiff)/(10*size(x)))
+   * F: Constraint function(s)
+   *
+   */
+
   // set rho of objective function
   double rho0loc = 0.0;
   double* obj_deriv = obj_deriv_->Values();
@@ -478,6 +506,15 @@ void OPTI::GCMMA::UpdateRho(
     Teuchos::RCP<Epetra_SerialDenseVector> constraints
 )
 {
+  /*
+   * fac = (x_mma-x)^2*(asy_max-asy_min)/ ((asy_max-x_mma)*(x_mma-asy_min)*max(x_diff_min,xdiff))
+   *
+   * rho0 = min(1.1*(rho0+(J-J_app)/fac, 10*rho0)
+   * rho = min(1.1*(rho+(F-F_app)/fac, 10*rho)
+   *
+   * J/F_app Approximation of J/F
+   */
+
   double fac = 0.0;
   double facloc = 0.0;
 
@@ -503,7 +540,7 @@ void OPTI::GCMMA::UpdateRho(
 
   fac = max(fac,facmin_);
 
-  if (objective > obj_appr_ + 0.5*tol_sub_min_)
+  if (objective > obj_appr_ + 0.5*tol_sub_)
   {
     rho0_ = min(1.1*(rho0_ + (objective-obj_appr_)/fac),10*rho0_);
   }
@@ -514,7 +551,7 @@ void OPTI::GCMMA::UpdateRho(
 
   for (int i=0;i<m_;i++)
   {
-    if (*constr > *constr_appr + 0.5*tol_sub_min_)
+    if (*constr > *constr_appr + 0.5*tol_sub_)
     {
       *rho = min(1.1*((*rho) + (*constr-*constr_appr)/fac),10*(*rho));
     }
@@ -528,6 +565,8 @@ void OPTI::GCMMA::UpdateRho(
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool OPTI::GCMMA::Converged(
     double& objective,
     Teuchos::RCP<Epetra_Vector> objectivegrad,
@@ -535,6 +574,7 @@ bool OPTI::GCMMA::Converged(
     Teuchos::RCP<Epetra_MultiVector> constraintsgrad
 )
 {
+  // reset of objective function, constraints and their derivatives for test cases
   if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
       (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
@@ -600,7 +640,6 @@ bool OPTI::GCMMA::Converged(
       (*constraints)(3) = +h + pow(h,7) - 2 - 1.0e-5;
       (*constraints)(4) = -h - pow(h,7) - 2 - 1.0e-5;
     }
-
 
 
     if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
@@ -661,17 +700,18 @@ bool OPTI::GCMMA::Converged(
   }
 
 
+  if (discret_->Comm().MyPID()==0)
+  {
+    cout << "test if iter counters works well: total iter always increases by 1," << endl;
+    cout << "either inner or outer iter increase by 1, in second case inner iter shall be 1" << endl;
+    cout << "total iter is " << total_iter_ << endl;
+    cout << "inner iter is " << inner_iter_ << endl;
+    cout << "outer iter is " << outer_iter_ << endl;
+  }
 
-//  if (discret_->Comm().MyPID()==0)
-//  {
-//    cout << "test if iter counters works well: total iter always increases by 1," << endl;
-//    cout << "either inner or outer iter increase by 1, in second case inner iter shall be 1" << endl;
-//    cout << "total iter is " << total_iter_ << endl;
-//    cout << "inner iter is " << inner_iter_ << endl;
-//    cout << "outer iter is " << outer_iter_ << endl;
-//  }
-
-  if (total_iter_==max_total_iter_)
+  // stop if total iteration counter or outer iteration counter reaches their
+  // respective maximum number of iterations
+  if ((total_iter_==max_total_iter_) or (outer_iter_ == max_outer_iter_))
   {
     cout << "WARNING: GCMMA optimization algorithm did not converge" << endl;
     return true;
@@ -680,16 +720,17 @@ bool OPTI::GCMMA::Converged(
 
   bool converged = false;
 
-  if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
+  if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0)) // new outer iteration
   {
     inner_iter_ = 0;
 
+    // check if outer iteration converged
     if (KKTCond(objective,objectivegrad,constraints,constraintsgrad)==false)
       converged = false;
     else
       converged = true;
   }
-  else
+  else // new inner iteration -> no global convergence
     converged = false;
 
   // TODO check maybe also increment
@@ -698,12 +739,15 @@ bool OPTI::GCMMA::Converged(
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void OPTI::GCMMA::FinishIteration(
     double& objective,
     Teuchos::RCP<Epetra_SerialDenseVector> constraints,
     bool& doGradient
 )
 {
+  // reset of objective function and constraints for test cases
   if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
       (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
@@ -772,7 +816,7 @@ void OPTI::GCMMA::FinishIteration(
   }
 
 
-
+  // gradient required for new outer iterations
   if (outer_iter_==0)
     doGradient = true;
 
@@ -783,6 +827,8 @@ void OPTI::GCMMA::FinishIteration(
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool OPTI::GCMMA::KKTCond(
     double& objective,
     Teuchos::RCP<Epetra_Vector> objectivegrad,
@@ -792,24 +838,39 @@ bool OPTI::GCMMA::KKTCond(
 {
   /*
    * Global residual of primal dual interior point algorithm consists of:
-   * res x/y/z
-   * res lam/mu/std
-   * res xsi/eta/zet
+   *
+   * resx = eta - xsi + dF/dx^T * lam
+   * resy = c + d.*y - mu - lam
+   * resz = a0 - zet - a^T * lam
+   * reslam = F - z_mma_*a - y + s
+   * resmu = mu.*y
+   * res = lam.*s
+   * resxsi = xsi.*(x-x_min)
+   * reseta = eta.*(x_max-x)
+   * reszet = z*z_mma
+   *
    */
 
   double resnorm = 0.0;
 
 
-  Teuchos::RCP<Epetra_Vector> resX = rcp(new Epetra_Vector(*objectivegrad));
-  resX->Update(-1.0,*xsi_,1.0);
-  resX->Update(+1.0,*eta_,1.0);
+  Epetra_Vector resX(*objectivegrad);
+  resX.Update(-1.0,*xsi_,1.0);
+  resX.Update(+1.0,*eta_,1.0);
 
-  double resy = 0.0; // whole residual is of size m_
+  Epetra_SerialDenseVector resy(m_);
+  double* resyptr = resy.Values();
+
   double resz = a0_ - zet_;
-  double reslam = 0.0; // whole residual is of size m_
-  double resmu = 0.0; // whole residual is of size m_
-  double res = 0.0; // whole residual is of size m_
 
+  Epetra_SerialDenseVector reslam(m_);
+  double* reslamptr = reslam.Values();
+
+  Epetra_SerialDenseVector resmu(m_);
+  double* resmuptr = resmu.Values();
+
+  Epetra_SerialDenseVector res(m_);
+  double* resptr = res.Values();
 
   double* lam = lam_->Values();
   double* c = c_->Values();
@@ -823,16 +884,18 @@ bool OPTI::GCMMA::KKTCond(
   for (int i=0;i<m_;i++)
   {
     Epetra_Vector constr_deriv(View,*constraintsgrad,i);
-    resX->Update(*lam,constr_deriv,1.0);
+    resX.Update(*lam,constr_deriv,1.0);
 
-    resy = *c + *d**y-*mu-*lam;
+    *resyptr = *c + *d**y-*mu-*lam;
     resz -= *a**lam;
-    reslam = *constr - z_mma_**a - *y + *s;
-    resmu = *mu**y;
-    res = *lam**s;
+    *reslamptr = *constr - z_mma_**a - *y + *s;
+    *resmuptr = *mu**y;
+    *resptr = *lam**s;
 
-    resnorm += resy*resy + reslam*reslam + resmu*resmu + res*res;
-
+    resyptr++;
+    reslamptr++;
+    resmuptr++;
+    resptr++;
     c++;
     d++;
     y++;
@@ -842,17 +905,12 @@ bool OPTI::GCMMA::KKTCond(
     constr++;
     s++;
   }
-  resnorm += resz*resz;
 
-  double value = 0.0;
-  resX->Norm2(&value);
-  resnorm += value*value;
+  Epetra_Vector resXsi(x_->Map());
+  double* resXsiptr = resXsi.Values();
 
-
-
-
-  double locresxsinorm = 0.0;
-  double locresetanorm = 0.0;
+  Epetra_Vector resEta(x_->Map());
+  double* resEtaptr = resEta.Values();
 
   double* xsi = xsi_->Values();
   double* eta = eta_->Values();
@@ -862,12 +920,11 @@ bool OPTI::GCMMA::KKTCond(
 
   for (int i=0;i<n_loc_;i++)
   {
-    value = *xsi*(*x-*xmin);
-    locresxsinorm += value*value;
+    *resXsiptr = *xsi*(*x-*xmin);
+    *resEtaptr = *eta*(*xmax-*x);
 
-    value = *eta*(*xmax-*x);
-    locresetanorm += value*value;
-
+    resXsiptr++;
+    resEtaptr++;
     xsi++;
     eta++;
     x++;
@@ -875,19 +932,12 @@ bool OPTI::GCMMA::KKTCond(
     xmin++;
   }
 
-  discret_->Comm().SumAll(&locresxsinorm,&value,1);
-  resnorm += value*value;
-
-  discret_->Comm().SumAll(&locresetanorm,&value,1);
-  resnorm += value*value;
-
   double reszet = zet_*z_mma_;
-  resnorm += reszet*reszet;
 
-  resnorm = sqrt(resnorm);
+  resnorm = Res2Norm(&resX,&resXsi,&resEta,&resy,&resmu,&reslam,&res,&resz,&reszet);
 cout << "checking KKT conditions: residuum is " << resnorm << endl;
-cout << "tolerance is " << tol_ << endl;
-  if (resnorm<tol_)
+cout << "tolerance is " << tol_kkt_ << endl;
+  if (resnorm<tol_kkt_)
   {
     cout << "converged after " <<  total_iter_ << " iterations with " <<
         outer_iter_ << " iterations containing the adjoint equations" << endl;
@@ -898,11 +948,14 @@ cout << "tolerance is " << tol_ << endl;
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool OPTI::GCMMA::InnerConvergence(
     double& objective,
     Teuchos::RCP<Epetra_SerialDenseVector> constraints
 )
 {
+  // initially new outer iter
   if (outer_iter_==0)
     return true;
 
@@ -912,7 +965,9 @@ bool OPTI::GCMMA::InnerConvergence(
     return true;
   }
 
-  if (obj_appr_ + tol_sub_min_ < objective)
+  // if all approximations (constraints and objective) are smaller than the
+  // values itself (modulo a small tolerance), then inner iteration is finished
+  if (obj_appr_ + tol_sub_ < objective)
     return false;
 
   double* constr_appr = constr_appr_->Values();
@@ -920,19 +975,26 @@ bool OPTI::GCMMA::InnerConvergence(
 
   for (int i=0;i<m_;i++)
   {
-    if (*constr_appr + tol_sub_min_ < *constr)
+    if (*constr_appr + tol_sub_ < *constr)
       return false;
 
     constr_appr++;
     constr++;
   }
 
+  // no condition failed -> all conditions ok -> inner iteration finished
   return true;
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void OPTI::GCMMA::InitSubSolve()
 {
+  /*
+   * alpha = (1-albeta)*asymp_min + albeta*x
+   * beta = (1-albeta)*asymp_max + albeta*x
+   */
   double albeta = 0.1;
 
   alpha_->Update(1.0 - albeta,*asymp_min_,0.0);
@@ -958,6 +1020,12 @@ void OPTI::GCMMA::InitSubSolve()
   }
 
 
+  /*
+   * ux1 = asymp_max - x
+   * ux2 = (asymp_max - x).^2
+   * xl1 = x - asymp_min
+   * xl2 = (x - asymp_min).^2
+   */
   double* x = x_->Values();
   double* asymp_max = asymp_max_->Values();
   double* asymp_min = asymp_min_->Values();
@@ -988,6 +1056,16 @@ void OPTI::GCMMA::InitSubSolve()
     asymp_min++;
   }
 
+
+  /* compute
+   * p0 = (max(dJ/dx,0) + fac*p0q0 + rho0/max(x_diff,x_diff_min)).*ux2
+   * q0 = (max(-dJ/dx,0) + fac*p0q0 + rho0/max(x_diff,x_diff_min)).*xl2
+   * r0 = J - p0./ux1 - q0./xl1
+   *
+   * with
+   * p0q0 = (max(dJ/dx,0) + (max(-dJ/dx,0)
+   * fac << 1
+   */
   double* p0 = p0_->Values();
   double* q0 = q0_->Values();
   double* obj_deriv = obj_deriv_->Values();
@@ -1033,6 +1111,15 @@ void OPTI::GCMMA::InitSubSolve()
   r0_ += obj_;
 
 
+  /* compute
+   * P = (max(dF/dx,0) + fac*pq + rho/max(x_diff,x_diff_min)).*ux2
+   * Q = (max(-dF/dx,0) + fac*pq + rho/max(x_diff,x_diff_min)).*xl2
+   * b = F - P^T/ux1 - Q^T/xl1
+   *
+   * with
+   * pq = (max(dF/dx,0) + (max(-dF/dx,0)
+   * fac << 1
+   */
   Epetra_SerialDenseVector bloc(m_);
   double* b = bloc.Values();
 
@@ -1112,10 +1199,21 @@ void OPTI::GCMMA::InitSubSolve()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void OPTI::GCMMA::SubSolve()
 {
   /*
    * Initialisation
+   *
+   * x_mma = 0.5*(alpha+beta)
+   * y = ones
+   * lam = ones
+   * mu = max(ones,0.5*c)
+   * s = ones
+   * z_mma = 1.0
+   * xsi = max(ones,ones/(x-alpha))
+   * eta = max(ones,ones/(beta-x))
    */
   x_mma_->Update(0.5,*alpha_,0.0);
   x_mma_->Update(0.5,*beta_,1.0);
@@ -1181,7 +1279,7 @@ void OPTI::GCMMA::SubSolve()
     // first step: compute norms of all composed residuals
     double resnorm = 0.0;
     double resinf = 0.0;
-    Res(resnorm,resinf,tol_sub);
+    ResApp(resnorm,resinf,tol_sub);
 
     int inner_iter = 0;
     int max_sub_inner_iter_ = 200;
@@ -1192,6 +1290,33 @@ void OPTI::GCMMA::SubSolve()
       inner_iter++;
       total_iter++;
 
+      /*
+       * helper
+       *
+       * plam = P^T * lam
+       * qlam = Q^T * lam
+       */
+      Epetra_Vector plam(*p0_);
+      Epetra_Vector qlam(*q0_);
+      double* lam = lam_->Values();
+      for (int j=0;j<m_;j++)
+      {
+        Epetra_Vector P(View,*P_,j);
+        Epetra_Vector Q(View,*Q_,j);
+
+        plam.Update(*lam,P,1.0);
+        qlam.Update(*lam,Q,1.0);
+
+        lam++;
+      }
+
+
+      /*
+       * helper data
+       *
+       * delx = plam./ux2 - qlam./xl2 - tol_sub/(x-alpha) + tol_sub/(beta-x)
+       * diagx = 2*(plam/(ux1^3) + qlamptr/(xl1^3)) + xsi/(x-alpha) + eta/(beta-x)
+       */
       Epetra_Vector delx(x_->Map(),false);
       Epetra_Vector diagx(x_->Map(),false);
 
@@ -1220,20 +1345,6 @@ void OPTI::GCMMA::SubSolve()
       alpha = alpha_->Values();
       beta = beta_->Values();
 
-      // helper
-      Epetra_Vector plam(*p0_);
-      Epetra_Vector qlam(*q0_);
-      double* lam = lam_->Values();
-      for (int j=0;j<m_;j++)
-      {
-        Epetra_Vector P(View,*P_,j);
-        Epetra_Vector Q(View,*Q_,j);
-
-        plam.Update(*lam,P,1.0);
-        qlam.Update(*lam,Q,1.0);
-
-        lam++;
-      }
 
       double* plamptr = plam.Values();
       double* qlamptr = qlam.Values();
@@ -1270,6 +1381,11 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
+      /*
+       * helper data
+       *
+       * GG = P./(ux1^2) - Q./(xl1^2)
+       */
       Epetra_MultiVector GG(x_->Map(),m_);
 
       for (int i=0;i<m_;i++)
@@ -1298,6 +1414,13 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
+      /*
+       * dely = c + d.*y - lam - tol_sub/y;
+       * delz = a0 - tol_sub/z_mma - a^T*lam
+       * dellam = P^T/ux + Q^T/xl - z_mma*a - y - b + tol_sub/lam
+       * diagy = d + mu/y
+       * diaglamyi = s./lam + 1.0/diagy;
+       */
       Epetra_SerialDenseVector dely(m_);
       double* delyptr = dely.Values();
 
@@ -1358,6 +1481,16 @@ void OPTI::GCMMA::SubSolve()
 
       if (m_ < x_->GlobalLength())
       {
+        /*
+         *
+         * Build final system matrix and solve (size m+1)
+         *
+         * rhs = bb = [dellam + dely./diagy - GG^T*delx./diagx
+         *             delz]
+         * sysmat = AA = [GG^T * diagx(diagmat) * GG + diaglamyi (diagmat) || a
+         *                a^T                                              || -zet/z_mma]
+         * solut = AA^-1 * bb
+         */
         Epetra_SerialDenseVector bb(m_+1);
         double* bbval = bb.A();
 
@@ -1460,10 +1593,17 @@ void OPTI::GCMMA::SubSolve()
         solver.Solve();
 
 
+        /*
+         *
+         * dlam = solut(1:m) // all except for the last entry / first m entries
+         * dz = solut(end) // last entry
+         * dx = (-GG^T*dlam - delx)./diagx
+         *
+         */
         double* dlamptr = dlam.Values();
         double* sol = solut.A();
 
-        for (int i=0;i<m_;i++) // first m entries of sol
+        for (int i=0;i<m_;i++)
         {
           *dlamptr = *sol;
 
@@ -1472,14 +1612,14 @@ void OPTI::GCMMA::SubSolve()
         }
 
 
-        dz = *sol; // last entry (=m+1) of sol
+        dz = *sol;
 
 
         dlamptr = dlam.Values();
         for (int i=0;i<m_;i++)
         {
           Epetra_Vector gg(View,GG,i);
-          dx.Update(-*dlamptr,gg,1.0); // dx = -GG'*dlam
+          dx.Update(-*dlamptr,gg,1.0);
 
           dlamptr++;
         }
@@ -1519,6 +1659,12 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
+      /*
+       *
+       * dxsi = -xsi + (tol_sub - xsi*dx)/(x-alpha)
+       * deta = -eta + (tol_sub + eta*dx)/(beta-x)
+       *
+       */
       Epetra_Vector dxsi(x_->Map());
       Epetra_Vector deta(x_->Map());
 
@@ -1547,6 +1693,13 @@ void OPTI::GCMMA::SubSolve()
       }
 
 
+      /*
+       *
+       * dy = - dely./diagy + dlam./diagy
+       * dmu = -mu + tol_sub/y - mu.*dy./y
+       * ds = -s + tol_sub/lam - s.*dlam./lam
+       *
+       */
       Epetra_SerialDenseVector dy(m_);
       Epetra_SerialDenseVector dmu(m_);
       Epetra_SerialDenseVector ds(m_);
@@ -1579,6 +1732,7 @@ void OPTI::GCMMA::SubSolve()
         s++;
         lam++;
       }
+
 
       double dzet = -zet_ + tol_sub/z_mma_ - zet_*dz/z_mma_;
 
@@ -1645,6 +1799,22 @@ void OPTI::GCMMA::SubSolve()
       double steg = 0.0;
       discret_->Comm().MaxAll(&val,&steg,1);
       steg = 1.0/steg;
+      /*
+       * steg = 1.0/max(1.0
+       *                fac*min(dz/z_mma
+       *                        dzet/zet
+       *                        dy/y
+       *                        dlam/lam
+       *                        dmu/mu
+       *                        ds/s
+       *                        dxsi/xsi
+       *                        deta/eta
+       *                        dx/(x-alpha)
+       *                        dx/(-beta)
+       *                       )
+       *               )
+       */
+
 
 
       int it = 0;
@@ -1712,7 +1882,7 @@ void OPTI::GCMMA::SubSolve()
 
 
         // compute residuals
-        Res(resnew,resinf,tol_sub);
+        ResApp(resnew,resinf,tol_sub);
 
         steg = steg/2.0;
 
@@ -1731,7 +1901,7 @@ void OPTI::GCMMA::SubSolve()
     if (inner_iter==max_sub_inner_iter_)
       cout << "reached maximal number of iterations in inner loop of primal dual interior point optimization algorithm" << endl;
 
-    if (tol_sub > 1.001*tol_sub_min_)
+    if (tol_sub > 1.001*tol_sub_)
       tol_sub *= tol_fac;
     else
       tol_reached = true;
@@ -1745,13 +1915,20 @@ void OPTI::GCMMA::SubSolve()
 }
 
 
-void OPTI::GCMMA::Res(
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void OPTI::GCMMA::ResApp(
     double& resnorm,
     double& resinf,
     const double& tol_sub
 )
 {
-  // prework
+  /*
+   * helper
+   *
+   * plam = P^T*lam
+   * qlam = Q^T*lam
+   */
   Epetra_Vector plam(*p0_);
   Epetra_Vector qlam(*q0_);
 
@@ -1768,7 +1945,10 @@ void OPTI::GCMMA::Res(
     lam++;
   }
 
-  // compute various parts of the residual
+
+  /*
+   * resx = plam/(ux1*ux1) - qlam/(xl1*xl1) - xsi + eta;
+   */
   Epetra_Vector resX(x_->Map());
   double* resxptr = resX.Values();
 
@@ -1811,6 +1991,13 @@ void OPTI::GCMMA::Res(
   }
 
 
+  /*
+   * resy = c + d.*y - mu - lam
+   * resz = a0 - zet - a^T*lam
+   * reslam = P^T/ux1 + Q^T/xl - a*z_mma_ - y + s - b
+   * resmu = mu.*y - tol_sub
+   * res = lam.*s - tol_sub
+   */
   Epetra_SerialDenseVector resy(m_);
   double* resyptr = resy.Values();
 
@@ -1865,11 +2052,16 @@ void OPTI::GCMMA::Res(
   }
 
 
-  Teuchos::RCP<Epetra_Vector> resXsi = rcp(new Epetra_Vector(x_->Map()));
-  Teuchos::RCP<Epetra_Vector> resEta = rcp(new Epetra_Vector(x_->Map()));
+  /*
+   * resxsi = xsi.*(x-alpha) - tol_sub
+   * reseta = eta.*(beta-x) - tol_sub
+   * reszet = zet*z_mma - tol_sub
+   */
+  Epetra_Vector resXsi(x_->Map());
+  Epetra_Vector resEta(x_->Map());
 
-  double* resxsiptr = resXsi->Values();
-  double* resetaptr = resEta->Values();
+  double* resxsiptr = resXsi.Values();
+  double* resetaptr = resEta.Values();
 
   xsi = xsi_->Values();
   eta = eta_->Values();
@@ -1895,73 +2087,72 @@ void OPTI::GCMMA::Res(
   double reszet = zet_*z_mma_ - tol_sub;
 
 
+  resnorm = Res2Norm(&resX,&resXsi,&resEta,&resy,&resmu,&reslam,&res,&resz,&reszet);
+  resinf = ResInfNorm(&resX,&resXsi,&resEta,&resy,&resmu,&reslam,&res,&resz,&reszet);
+}
 
-  // sum up all residuals
+
+double OPTI::GCMMA::Res2Norm(
+    Epetra_Vector* res1,
+    Epetra_Vector* res2,
+    Epetra_Vector* res3,
+    Epetra_SerialDenseVector* res4,
+    Epetra_SerialDenseVector* res5,
+    Epetra_SerialDenseVector* res6,
+    Epetra_SerialDenseVector* res7,
+    double* res8,
+    double* res9
+)
+{
+  double resnorm = *res8**res8 + *res9**res9;
+  resnorm += pow(res4->Norm2(),2) + pow(res5->Norm2(),2) + pow(res6->Norm2(),2) + pow(res7->Norm2(),2);
+
   double locnorm = 0.0;
-  resnorm = 0.0;
-  resinf = abs(resz);
-
-  resX.Norm2(&locnorm);
+  res1->Norm2(&locnorm);
   resnorm += locnorm*locnorm;
-  resX.NormInf(&locnorm);
+  res2->Norm2(&locnorm);
+  resnorm += locnorm*locnorm;
+  res3->Norm2(&locnorm);
+  resnorm += locnorm*locnorm;
+
+  return sqrt(resnorm);
+}
+
+
+double OPTI::GCMMA::ResInfNorm(
+    Epetra_Vector* res1,
+    Epetra_Vector* res2,
+    Epetra_Vector* res3,
+    Epetra_SerialDenseVector* res4,
+    Epetra_SerialDenseVector* res5,
+    Epetra_SerialDenseVector* res6,
+    Epetra_SerialDenseVector* res7,
+    double* res8,
+    double* res9
+)
+{
+  double locnorm = 0.0;
+  double resinf = max(abs(*res8),abs(*res9));
+
+  resinf = max(resinf,res4->NormInf());
+  resinf = max(resinf,res5->NormInf());
+  resinf = max(resinf,res6->NormInf());
+  resinf = max(resinf,res7->NormInf());
+
+  res1->NormInf(&locnorm);
+  resinf = max(locnorm,resinf);
+  res2->NormInf(&locnorm);
+  resinf = max(locnorm,resinf);
+  res3->NormInf(&locnorm);
   resinf = max(locnorm,resinf);
 
-  resyptr = resy.Values();
-  for (int j=0;j<m_;j++)
-  {
-    resnorm += *resyptr**resyptr;
-    resinf = max(resinf,abs(*resyptr));
-    resyptr++;
-  }
-
-  resnorm += resz*resz;
-
-  reslamptr = reslam.Values();
-  for (int j=0;j<m_;j++)
-  {
-    resnorm += *reslamptr**reslamptr;
-    resinf = max(resinf,abs(*reslamptr));
-    reslamptr++;
-  }
-
-  resXsi->Norm2(&locnorm);
-  resnorm += locnorm*locnorm;
-  resXsi->NormInf(&locnorm);
-  resinf = max(locnorm,resinf);
-
-  resEta->Norm2(&locnorm);
-  resnorm += locnorm*locnorm;
-  resEta->NormInf(&locnorm);
-  resinf = max(locnorm,resinf);
-
-  resmuptr = resmu.Values();
-  for (int j=0;j<m_;j++)
-  {
-    resnorm += *resmuptr**resmuptr;
-    resinf = max(resinf,abs(*resmuptr));
-    resmuptr++;
-  }
-
-  resnorm += reszet*reszet;
-  resinf = max(resinf,abs(reszet));
-
-  resptr = res.Values();
-  for (int j=0;j<m_;j++)
-  {
-    resnorm += *resptr**resptr;
-    resinf = max(resinf,abs(*resptr));
-    resptr++;
-  }
-
-  resnorm = sqrt(resnorm);
+  return resinf;
 }
 
 
 void OPTI::GCMMA::Update(
 )
 {
-  // Update data
-
   // helper vectors
   Epetra_Vector uxinv1(x_->Map());
   Epetra_Vector xlinv1(x_->Map());
@@ -1996,7 +2187,11 @@ void OPTI::GCMMA::Update(
   obj_appr_ += value;
 
 
-  // set new approximation of constraints
+  /*
+   * set new approximation of constraints
+   *
+   * constr_app = b + P^T/ux + Q^T/xl
+   */
   *constr_appr_ = *b_;
   constr_appr_->Scale(-1.0);
 
@@ -2015,5 +2210,65 @@ void OPTI::GCMMA::Update(
 //  cout << "obj_appr is " << obj_appr_ << endl;
 //  cout << "constr_appr is " << *constr_appr_ << endl;
 }
+
+
+
+void OPTI::GCMMA::Output()
+{
+  // step number and time
+  output_->NewStep(total_iter_,(double)total_iter_);
+  // velocity/pressure vector
+  output_->WriteVector("x_mma",x_mma_);
+
+//  if ((DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true) and (total_iter_%upres_ == 0))
+//    OutputToGmsh(); // TODO look at this: total_iter_,false);
+//
+  // write domain decomposition for visualization (only once!)
+  if (total_iter_==upres_)
+    output_->WriteElementData();
+//
+  output_->WriteVector("x", x_);
+//  output_->WriteVector("x_old", x_old_);
+//  output_->WriteVector("x_old2",x_old2_);
+//
+//  output_->WriteDouble("obj",obj_);
+//  output_->WriteVector("obj_deriv",obj_deriv_);
+//
+//  double* constr = constr_->Values();
+//  for (int i=0;i<m_;i++)
+//  {
+//    std::ostringstream s; s << i;
+//    std::string name = "constr" + s.str();
+//    output_->WriteDouble(name,*constr);
+//    constr++;
+//  }
+//  output_->WriteVector("constr_deriv",constr_deriv_);
+
+  return;
+}
+
+
+void OPTI::GCMMA::OutputToGmsh()
+{
+  // turn on/off screen output for writing process of Gmsh postprocessing file
+  const bool screen_out = true;
+
+  // create Gmsh postprocessing file
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("optimization_field", total_iter_, 500, screen_out, discret_->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "X \" {" << endl;
+    // draw scalar field 'Phinp' for every element
+    IO::GMSH::ScalarFieldToGmsh(discret_,x_,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+
+  gmshfilecontent.close();
+  if (screen_out) std::cout << " done" << endl;
+}
+
+
 
 
