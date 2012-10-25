@@ -464,7 +464,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   "has 45107 Nodes"<<endl<<
   "'*ns0=\"CONDITION\"'"<<endl<<
   "sectionname=\"DESIGN SURF DIRICH CONDITIONS\""<<endl<<
-  "description=\"6 1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0\""
+  "description=\"NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0\""
   <<endl<<endl;
 
   defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
