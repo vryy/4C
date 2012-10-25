@@ -2220,29 +2220,29 @@ void OPTI::GCMMA::Output()
   // velocity/pressure vector
   output_->WriteVector("x_mma",x_mma_);
 
-//  if ((DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true) and (total_iter_%upres_ == 0))
-//    OutputToGmsh(); // TODO look at this: total_iter_,false);
-//
+  if ((DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true) and (total_iter_%upres_ == 0))
+    OutputToGmsh(); // TODO look at this: total_iter_,false);
+
   // write domain decomposition for visualization (only once!)
   if (total_iter_==upres_)
     output_->WriteElementData();
-//
+
   output_->WriteVector("x", x_);
-//  output_->WriteVector("x_old", x_old_);
-//  output_->WriteVector("x_old2",x_old2_);
-//
-//  output_->WriteDouble("obj",obj_);
-//  output_->WriteVector("obj_deriv",obj_deriv_);
-//
-//  double* constr = constr_->Values();
-//  for (int i=0;i<m_;i++)
-//  {
-//    std::ostringstream s; s << i;
-//    std::string name = "constr" + s.str();
-//    output_->WriteDouble(name,*constr);
-//    constr++;
-//  }
-//  output_->WriteVector("constr_deriv",constr_deriv_);
+  output_->WriteVector("x_old", x_old_);
+  output_->WriteVector("x_old2",x_old2_);
+
+  output_->WriteDouble("obj",obj_);
+  output_->WriteVector("obj_deriv",obj_deriv_);
+
+  double* constr = constr_->Values();
+  for (int i=0;i<m_;i++)
+  {
+    std::ostringstream s; s << i;
+    std::string name = "constr" + s.str();
+    output_->WriteDouble(name,*constr);
+    constr++;
+  }
+  output_->WriteVector("constr_deriv",constr_deriv_);
 
   return;
 }

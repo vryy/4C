@@ -465,6 +465,11 @@ int main(
       PostField* fluidfield = problem.get_discretization(0);
       FluidEnsightWriter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
+
+      PostField* optifield = problem.get_discretization(1);
+      ScaTraEnsightWriter optiwriter(optifield, basename);
+      optiwriter.WriteFiles();
+
       break;
     }
     case prb_none:

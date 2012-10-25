@@ -83,7 +83,7 @@ VSTAB                           no_vstab
 NAME                            Fluid_Solver_for_Top_Opt
 SOLVER                          UMFPACK
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 MAT 2 MAT_opti MINPORO 0 MAXPORO 25000 SMEARFAC 1

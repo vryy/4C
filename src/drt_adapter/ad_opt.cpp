@@ -22,7 +22,7 @@ Maintainer: Martin Winklmaier
 /// constructor
 ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
-    const std::string disname             ///< optimization field discretization name(default: "scatra")
+    const std::string disname             ///< optimization field discretization name(default: "opti")
 )
 {
   // setup topology optimization algorithm

@@ -1154,10 +1154,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-    optidis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    optidis = rcp(new DRT::Discretization("opti",reader.Comm()));
 
     AddDis("fluid", fluiddis);
-    AddDis("scatra", optidis);
+    AddDis("opti", optidis);
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 

@@ -58,7 +58,7 @@ void fluid_topopt_dyn()
     dserror("No fluid discretization found!");
 
   // access optimization discretization (it should be empty if it will be cloned)
-  RCP<DRT::Discretization> optidis = problem->GetDis("scatra");
+  RCP<DRT::Discretization> optidis = problem->GetDis("opti");
   if (!optidis->Filled()) optidis->FillComplete(false,false,false);
 
   if (optidis->NumGlobalNodes()==0)

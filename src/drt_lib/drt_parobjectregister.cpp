@@ -104,6 +104,7 @@
 #include "../drt_mat/damage.H"
 #include "../drt_mat/biofilm.H"
 #include "../drt_mat/spring.H"
+#include "../drt_mat/optimization_density.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_contact/contact_node.H"
@@ -111,6 +112,7 @@
 #include "../drt_contact/contact_element.H"
 #include "../drt_art_net/artery.H"
 #include "../drt_red_airways/red_airway.H"
+#include "../drt_opti/topopt_optimizer_ele.H"
 
 
 std::string DRT::ParObjectList()
@@ -133,28 +135,19 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::Truss2Type::Instance().Name() << " "
     << DRT::ELEMENTS::Torsion3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Torsion2Type::Instance().Name() << " "
-#ifdef D_SHELL8
     << DRT::ELEMENTS::Shell8Type::Instance().Name() << " "
-#endif
     << DRT::ELEMENTS::Wall1Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::Wall1NurbsType::Instance().Name() << " "
-#ifdef D_FLUID3
     << DRT::ELEMENTS::Combust3Type::Instance().Name() << " "
     << DRT::ELEMENTS::FluidType::Instance().Name() << " "
-#endif
-#ifdef D_ALE
     << DRT::ELEMENTS::Ale3Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::Ale3_NurbsType::Instance().Name() << " "
-#endif
-#ifdef D_ALE
     << DRT::ELEMENTS::Ale2Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::Ale2_NurbsType::Instance().Name() << " "
-#endif
     << DRT::ELEMENTS::Bele2Type::Instance().Name() << " "
     << DRT::ELEMENTS::Bele3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Bele3_4Type::Instance().Name() << " "
     << DRT::ELEMENTS::Vele3Type::Instance().Name() << " "
-
     << DRT::ELEMENTS::NStetType::Instance().Name() << " "
     << DRT::ELEMENTS::NStet5Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::So_nurbs27Type::Instance().Name() << " "
@@ -232,9 +225,8 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::ConstraintElement3Type::Instance().Name() << " "
     << DRT::ELEMENTS::TransportType::Instance().Name() << " "
     << DRT::ELEMENTS::MeshfreeTransportType::Instance().Name() << " "
-#ifdef D_THERMO
+    << DRT::ELEMENTS::TopOptType::Instance().Name() << " "
     << DRT::ELEMENTS::ThermoType::Instance().Name() << " "
-#endif
     << MAT::PlasticNeoHookeType::Instance().Name() << " "
     << MAT::PlasticLinElastType::Instance().Name() << " "
     << MAT::RobinsonType::Instance().Name() << " "
@@ -242,6 +234,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::RedAirwayType::Instance().Name() << " "
     << DRT::ELEMENTS::RedAcinusType::Instance().Name() << " "
     << DRT::ELEMENTS::RedInterAcinarDepType::Instance().Name() << " "
+    << MAT::TopOptDensType::Instance().Name() << " "
     ;
   return s.str();
 }

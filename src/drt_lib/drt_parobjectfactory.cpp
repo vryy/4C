@@ -176,7 +176,7 @@ DRT::ParObject* DRT::ParObjectFactory::Create( const vector<char> & data )
   std::map<int, ParObjectType*>::iterator i = type_map_.find( type );
   if ( i==type_map_.end() )
   {
-    dserror( "object id %d undefined", type );
+    dserror( "object id %d undefined. Have you extended DRT::ParObjectList()?", type );
   }
 
   DRT::ParObject* o = i->second->Create( data );

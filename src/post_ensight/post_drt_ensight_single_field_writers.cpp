@@ -139,6 +139,10 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   // additional forces due to lung fsi (volume constraint)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
 
+  // additional fields due to adjoint equations
+  EnsightWriter::WriteResult("adjoint_velnp", "adjoint_velocity", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("adjoint_pressure", "adjoint_pressure", dofbased, 1);
+
   WriteElementResults(field);
 }
 
@@ -244,6 +248,9 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
 
   // write displacement field (always 3D)
   EnsightWriter::WriteResult("dispnp", "ale-displacement", nodebased, 3);
+
+  // write optimization field
+  EnsightWriter::WriteResult("x_mma","optimization_variable", dofbased,1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);
