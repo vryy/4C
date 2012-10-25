@@ -1760,10 +1760,10 @@ endmacro (cut_test)
 # POSTPROCESSING TEST
 macro(post_processing arg nproc stresstype startstep)
 
-  set (RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=PAR\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
-  set (RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=SER\ --stress=${stresstype}\ --start=${startstep})
+  set (RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
+  set (RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER\ --stress=${stresstype}\ --start=${startstep})
   add_test(NAME ${arg}-p${nproc}-pp  
-  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && $(which pvpython)\ comparison.py")
+  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && $(which pvpython)\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py")
 endmacro(post_processing)
  
 ###------------------------------------------------------------------ List of tests
@@ -2382,6 +2382,7 @@ baci_test(soshw6_thin_nonlinear_pinched_hemisphere 2 "")
 post_processing(soshw6_thin_nonlinear_pinched_hemisphere 2 ndxyz 20)
 baci_test(sotet10_cooks_nl 1 "")
 baci_test(sotet10_cooks_nl 2 "")
+post_processing(sotet10_cooks_nl 2 ndxyz 100)
 baci_test(sotet10_patchtest 1 "")
 baci_test(sotet10_patchtest 2 "")
 baci_test(sotet4_patchtest 1 "")
@@ -2401,6 +2402,7 @@ baci_test(strufem_sosh8_eas_cantilever 1 "")
 baci_test(strufem_sosh8_eas_cantilever 2 "")
 baci_test(strufem_tet10_disp_cantilever 1 "")
 baci_test(strufem_tet10_disp_cantilever 2 "")
+post_processing(strufem_tet10_disp_cantilever 2 ndxyz 30)
 baci_test(strufem_tet4_disp_cantilever 1 "")
 baci_test(strufem_tet4_disp_cantilever 2 "")
 post_processing(strufem_tet4_disp_cantilever 2 ndxyz 30)
@@ -2652,7 +2654,7 @@ if (FS3I_INCACouplingTest)
 endif (FS3I_INCACouplingTest)
 
 # remove any output files from our tests
-add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.* PAR* SER* *csv")
+add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.")
 
 
 
