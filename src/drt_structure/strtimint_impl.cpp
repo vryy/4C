@@ -418,22 +418,14 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   stiff_->Complete();
   LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
                                  GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
-#if 0
-  // solve for disi_
-  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  solver_->Reset();
-  solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
-  solver_->Reset();
-#else
-  // solve for disi_
-  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
 
-  // linear solver call (contact / meshtying case or default)
+  // solve for disi_
+  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
   if (HaveContactMeshtying())
-    CmtLinearSolve();
+    CmtLinearSolve();  // use contact/meshtying solver
   else
     solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
-#endif
+
   // extract norm of disi_
   if (pressure_ != Teuchos::null)
   {
