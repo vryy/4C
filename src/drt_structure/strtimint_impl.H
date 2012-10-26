@@ -196,7 +196,7 @@ namespace STR
 
 
     //! evaluate certain potential forces and its stiffness
-    //! and computes an anayltical solution
+    //! and computes an analytical solution
     //!
     //! Evaluation happens internal-force-like.
     //! Which potentials are actually meant can be found
@@ -262,7 +262,7 @@ namespace STR
 
     //! Do full Newton-Raphson iteration
     //!
-    //! This routines expects a prepared negative reisdual force #fres_
+    //! This routines expects a prepared negative residual force #fres_
     //! and associated effective stiffness matrix #stiff_
     void NewtonFull();
 
@@ -448,7 +448,7 @@ namespace STR
     //! Update iteration
     //!
     //! This handles the iterative update of the current
-    //! displacements \f$D_{n+1}\f$ with the residual dispplacements
+    //! displacements \f$D_{n+1}\f$ with the residual displacements
     //! The velocities and accelerations follow on par.
     void UpdateIter
     (
@@ -489,7 +489,7 @@ namespace STR
     //! \f$D_{n} := D_{n+1}\f$, \f$V_{n} := V_{n+1}\f$ and \f$A_{n} := A_{n+1}\f$
     //! Thus the 'last' converged state is lost and a reset
     //! of the time step becomes impossible.
-    //! We are ready and keen awating the next time step.
+    //! We are ready and keen awaiting the next time step.
     virtual void UpdateStepState() = 0;
 
     //! Update Element
@@ -808,7 +808,7 @@ namespace STR
 
     //! @name Pseudo Transient Continuation Parameters
     //@{
-    double ptcdt_; //!< psdeudo stime step size for PTC
+    double ptcdt_; //!< pseudo time step size for PTC
     double dti_;   //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
     //@}
 
