@@ -40,13 +40,9 @@ MAT::PAR::AAAneohooke_stopro::AAAneohooke_stopro(
   youngs_mean_(matdata->GetDouble("YOUNG")),
   nue_(matdata->GetDouble("NUE")),
   beta_mean_(matdata->GetDouble("BETA")),
-  density_(matdata->GetDouble("DENS")),
-  sigma_0_(matdata->GetDouble("SIGMA")),
-  corrlength_(matdata->GetDouble("CORRLENGTH"))
+  density_(matdata->GetDouble("DENS"))
 {
   init_ = 0;
-  //isinit_youngs_ = false;
-  //isinit_beta_ = false;
 }
 
 

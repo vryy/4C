@@ -63,19 +63,8 @@ namespace MAT
       /// mass density
       const double density_;
 
-      // Both stochastic parameters are not actually needed in material routine
-      const double sigma_0_;
-      const double corrlength_;
       //
       int init_;
-      //bool isinit_beta_;
-
-      //bool isinit_youngs_;
-
-
-
-
-
       //@}
 
       /// create material instance of matching type with my parameters
@@ -157,11 +146,6 @@ private:
     // stochastic youngs
     double Youngs() const {return youngs_;}
 
-    // variance of random field
-    double Sigma() const {return params_->sigma_0_;}
-
-    // coreelation length of random field
-    double Corrlength() const {return params_->corrlength_ ;}
     /// material mass density
     virtual double Density() const { return params_->density_; }
 

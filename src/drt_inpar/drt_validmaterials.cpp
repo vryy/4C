@@ -630,9 +630,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       AddNamedReal(m,"BETA","2nd parameter");
       AddNamedReal(m,"NUE","Poisson's ratio");
       AddNamedReal(m,"DENS","mass density");
-      // Stochastic parameters
-      AddNamedReal(m,"SIGMA","Variance");
-      AddNamedReal(m,"CORRLENGTH","Correlation length");
+      // Stochastic properties are set via randomfield class
 
       AppendMaterialDefinition(matlist,m);
     }
