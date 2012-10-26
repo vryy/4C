@@ -2861,10 +2861,10 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
         normedvectors.push_back(normedi);
       }
 
-  /// determine normed vectors as well as output filament element vectors
-      std::ostringstream orientfilename;
-      orientfilename << "./FilamentOrientations_"<<std::setw(6) << setfill('0') << istep <<".dat";
-      FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
+//  /// determine normed vectors as well as output filament element vectors
+//      std::ostringstream orientfilename;
+//      orientfilename << "./FilamentOrientations_"<<std::setw(6) << setfill('0') << istep <<".dat";
+//      FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
 
       // select the vector best fitting the axis of the bundle cylinder: vector with the greatest length -> smallest
       // enclosed angle with the cylinder axis
