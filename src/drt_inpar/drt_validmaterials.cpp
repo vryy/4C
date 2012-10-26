@@ -464,6 +464,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // Hyperelasticity / finite strain von-Mises plasticity
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticHyperElast",
+                                            "hyperelastic / finite strain plastic von Mises material",
+                                            INPAR::MAT::m_plhyperelast));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"ISOHARD","isotropic hardening modulus");
+    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Plastic linear elastic St.Venant Kirchhoff / von Mises
   {
     Teuchos::RCP<MaterialDefinition> m

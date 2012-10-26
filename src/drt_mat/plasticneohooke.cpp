@@ -55,6 +55,7 @@ MAT::PAR::PlasticNeoHooke::PlasticNeoHooke(
   exp_(matdata->GetDouble("EXP")),
   kinhard_(matdata->GetDouble("KINHARD"))
 {
+  dserror("ERROR: PlasticNeoHooke material is not validated and will be deleted soon");
 }
 
 

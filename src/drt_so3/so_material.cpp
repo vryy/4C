@@ -31,6 +31,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/plastichyperelast.H"
 #include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/robinson.H"
 #include "../drt_mat/damage.H"
@@ -123,6 +124,13 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     {
       MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
       plastic->Evaluate(defgrd,gp,params,cmat,stress);
+      *density = plastic->Density();
+      break;
+    }
+    case INPAR::MAT::m_plhyperelast: /*-- plastic hyperelastic Material */
+    {
+      MAT::PlasticHyperElast* plastic = static_cast <MAT::PlasticHyperElast*>(mat.get());
+      plastic->Evaluate(*glstrain,*cmat,*stress);
       *density = plastic->Density();
       break;
     }
