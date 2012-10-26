@@ -69,121 +69,189 @@ class Mesh
 {
 public:
 
+  /// constructor
   Mesh( Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
 
+  /*========================================================================*/
+  //! @name general create-routines for elements and sides
+  /*========================================================================*/
+
+  /// creates a new element, dependent on distype
   Element * CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
+  /// creates a new side, dependent on distype
   Side * CreateSide( int sid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
+  /*========================================================================*/
+  //! @name Create-routines for elements
+  /*========================================================================*/
+
+  /// creates a new tet4 element based on element id and node ids
   Element * CreateTet4( int eid, const std::vector<int> & nids );
 
+  /// creates a new pyramid5 element based on element id and node ids
   Element * CreatePyramid5( int eid, const std::vector<int> & nids );
 
+  /// creates a new wedge6 element based on element id and node ids
   Element * CreateWedge6( int eid, const std::vector<int> & nids );
 
+  /// creates a new hex8 element based on element id and node ids
   Element * CreateHex8( int eid, const std::vector<int> & nids );
 
+
+  /*========================================================================*/
+  //! @name Create-routines for sides
+  /*========================================================================*/
+
+  /// creates a new tri3 side based on side id and node ids
   Side * CreateTri3( int sid, const std::vector<int> & nids );
 
-  Side * CreateTri6( int sid, const std::vector<int> & nids );
-
+  /// creates a new quad4 side based on side id and node ids
   Side * CreateQuad4( int sid, const std::vector<int> & nids );
 
+
+  /*========================================================================*/
+  //! @name Create-routines for points, lines, facets and volumecells
+  /*========================================================================*/
+
+  /// creates a new point, optional information about cut-edge and cut-side
   Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side );
 
+  /// creates a new line
   void NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines=NULL );
 
+  /// ?
   bool NewLinesBetween( const std::vector<Point*> & line, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines=NULL );
 
+  /// creates a new facet, consists of points, additional bool if it is a facet on a cutsurface
   Facet* NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface );
 
+  /// creates a new volumecell, consists of facets
   VolumeCell* NewVolumeCell( const plain_facet_set & facets,
-  													 const std::map<std::pair<Point*, Point*>, plain_facet_set> & volume_lines,
+                             const std::map<std::pair<Point*, Point*>, plain_facet_set> & volume_lines,
                              Element * element );
 
+
+  /*========================================================================*/
+  //! @name Create-routines for 2D boundary cells
+  /*========================================================================*/
+
+  /// creates a new tri3 boundary cell
   Tri3BoundaryCell* NewTri3Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
 
+  /// creates a new quad4 boundary cell
   Quad4BoundaryCell* NewQuad4Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
 
+  /// creates a new ??? boundary cell
   ArbitraryBoundaryCell* NewArbitraryCell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points,
       const DRT::UTILS::GaussIntegration& gaussRule, const LINALG::Matrix<3,1>& normal );
 
+
+  /*========================================================================*/
+  //! @name Create-routines for 3D integration cells
+  /*========================================================================*/
+
+  /// creates a new hex8 integration cell
   Hex8IntegrationCell* NewHex8Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
+  /// creates a new tet4 integration cell, based on points
   Tet4IntegrationCell* NewTet4Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
+  /// creates a new hex8 integration cell, based on xyz coordinates
   Tet4IntegrationCell* NewTet4Cell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, VolumeCell * cell );
 
+  /// creates a new wedge6 integration cell
   Wedge6IntegrationCell* NewWedge6Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
+  /// creates a new pyramid5 integration cell
   Pyramid5IntegrationCell* NewPyramid5Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
-  /*!
-  \brief Returns true if any one of the cut sides cuts another side
-   */
+
+
+  /*========================================================================*/
+  //! @name Basic routines to run the cut, creates a cloud of cut points
+  /*========================================================================*/
+
+  /// Returns true if any one of the cut sides cuts another side
   bool DetectSelfCut();
 
-  /*!
-  \brief Cuts the background elements of the mesh with all the cut sides
-   */
+  /// Cuts the background elements of the mesh with all the cut sides
   void Cut( Mesh & mesh, plain_element_set & elements_done, int recursion );
 
-  /*!
-  \brief Cuts the background elements with this considered side
-  */
+  /// Cuts the background elements with this considered side
   void Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done, int recursion );
 
-  /*!
-  \brief Cuts the background elements with this levelset side
-  */
+  /// Cuts the background elements with this levelset side
   void Cut( LevelSetSide & side );
 
+  /// ???
   void RectifyCutNumerics();
 
+
+  /*========================================================================*/
+  //! @name Basic routines to create lines, facets and volumecells
+  /*========================================================================*/
+
+  /// create cut lines based on the point cloud
   void MakeCutLines();
 
+  /// create facets based on the cut lines
   void MakeFacets();
 
+  /// create volumecells based on created facets
   void MakeVolumeCells();
 
+
+  /*========================================================================*/
+  //! @name Basic routines to determine positions of nodes, facets, volumecells
+  /*========================================================================*/
+
+  /// find node positions and propagate the positions to facets, points and volumecells
   void FindNodePositions();
 
+  /// ?
   void FindLSNodePositions();
 
+  /// find facet positions for remaining facets, points, volumecells that have not been found using FindNodePositions()
   void FindFacetPositions();
 
-  /*!
-  \brief Check if there are nodes whose position is undecided, return whether undecided node positions available
-   */
+  /// Check if there are nodes whose position is undecided (often the case in parallel), return whether undecided node positions available
   bool CheckForUndecidedNodePositions( std::map<int,int> & undecided_node );
 
+
+  /*========================================================================*/
+  //! @name Basic routines to determine nodal dofsets
+  /*========================================================================*/
+
+  /// still used???
   void FindNodalDOFSets( bool include_inner );
 
-//  /// fill parallel DofSetData with information that has to be communicated
-//  void FillParallelDofSetData(RCP<std::vector<DofSetData> > parallel_dofSetData_);
 
-  /*!
-  \brief Execute Tessellation with QHULL for each element to generate integrationcells
-   */
+  /*========================================================================*/
+  //! @name Basic routines to create integration cells and/or integration points
+  /*========================================================================*/
+
+  /// Execute Tessellation with QHULL for each element to generate integrationcells
   void CreateIntegrationCells( int count, bool levelset );
 
-  /*!
-  \brief Call the moment fitting method for each element to generate the Gaussian integration rule
-   */
+  /// Call the moment fitting method for each element to generate the Gaussian integration rule
   void MomentFitGaussWeights(bool include_inner, std::string Bcellgausstype);
 
-  /*!
-  \brief Call the DirectDivergence method for each element to generate the Gaussian integration rule
-   */
+  /// Call the DirectDivergence method for each element to generate the Gaussian integration rule
   void DirectDivergenceGaussRule(bool include_inner, std::string Bcellgausstype);
 
+
+  /*========================================================================*/
+  //! @name others ?
+  /*========================================================================*/
+
+  /// ?
   void RemoveEmptyVolumeCells();
 
-  /*!
-  \brief Not Implemented
-   */
+  /// Not Implemented, is called, but is an empty function
   void SimplifyIntegrationCells();
 
+  /// test if for all elements the element volume is equal to the volume of all integration cells
   void TestElementVolume( bool fatal );
 
   /*!
@@ -192,27 +260,50 @@ public:
    */
   void TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal );
 
+
+  /*========================================================================*/
+  //! @name print statistics
+  /*========================================================================*/
+
+  /// ???
   void PrintCellStats();
 
+  /// ???
   void Status();
 
+  /// print all facets
   void PrintFacets();
 
+
+  /*========================================================================*/
+  //! @name GMSH output routines
+  /*========================================================================*/
+
+  /// ?
   void DumpGmsh( std::string name );
 
+  /// ?
   void DumpGmshVolumeCells( std::string name, bool include_inner );
 
+  /// ?
   void DumpGmshIntegrationCells( std::string name );
 
+  /// ?
   void DumpGmshVolumeCells( std::string name );
 
+
+
+  /*========================================================================*/
+  //! @name Get routines for nodes, sides and elements
+  /*========================================================================*/
+
+  /// ? -> used in cut_tetmeshintersection
   void NewNodesFromPoints( std::map<Point*, Node*> & nodemap );
 
+  /// get a map of node id and the pointer to the node
   void GetNodeMap( std::map<int, Node*> & nodemap);
 
-  /*!
-  \brief Returns the node with given id
-   */
+  /// Returns the node with given id
   Node* GetNode( int nid ) const;
 
   /*!
@@ -225,14 +316,19 @@ public:
   Node* GetNode( int nid, Point * p, double lsv=0.0 );
 #endif
 
+  /// ?
   Node* GetNode( const plain_int_set & nids, const double * xyz, double lsv=0.0 );
 
+  /// get the edge with begin node and end node
   Edge* GetEdge( Node* begin, Node* end );
 
+  /// get all sides (subsides) that belong to the parent side with sid
   const std::vector<GEO::CUT::Side*> & GetSides( int sid );
 
+  /// get the side that contains the nodes with the following node ids
   Side* GetSide( std::vector<int>& nids ) const;
 
+  /// ???
   Side* GetSide( int sid,
                  const std::vector<int> & nids,
                  const CellTopologyData * top_data );
@@ -243,13 +339,12 @@ public:
                  const CellTopologyData * top_data );
 #endif
 
+  /// ???
   Side* GetSide( int sid,
                  const std::vector<Node*> & nodes,
                  const CellTopologyData * top_data );
 
-  /*!
-  \brief Returns the element with given id
-   */
+  /// Returns the element with given id
   Element* GetElement( int eid );
 
   /*!
@@ -283,43 +378,76 @@ public:
                        const CellTopologyData & top_data,
                        bool active=true );
 
-  bool WithinBB( const Epetra_SerialDenseMatrix & xyz );
 
-  bool WithinBB( Element & element );
+  /*========================================================================*/
+  //! @name Get routines for points, edges, volumecells
+  /*========================================================================*/
 
+  /// get the octTree based PointPool that contains all points of the current mesh
   Teuchos::RCP<PointPool> Points() { return pp_; }
 
-  Options & CreateOptions() { return options_; }
-
+  /// get a list of all volumecells
   const std::list<Teuchos::RCP<VolumeCell> > & VolumeCells() const { return cells_; }
 
+  /// ???
   const std::map<plain_int_set, Teuchos::RCP<Edge> > & Edges() const { return edges_; }
 
+
+  /*========================================================================*/
+  //! @name others
+  /*========================================================================*/
+
+  /// check if xyz-coordinates lie within the mesh's bounding box
+  bool WithinBB( const Epetra_SerialDenseMatrix & xyz );
+
+  /// check if the element lies within the bounding box
+  bool WithinBB( Element & element );
+
+  /// ?
   void CreateSideIds();
 
+  /// ?
   void AssignOtherVolumeCells( const Mesh & other );
 
+  /// return the options
+  Options & CreateOptions() { return options_; }
+
+  /// ???
   void TestVolumeSurface();
 
+  /// ???
   void TestFacetArea();
+
+
 
 private:
 
+  /*========================================================================*/
+  //! @name private member functions
+  /*========================================================================*/
+
+  /// ?
   void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );
 
+  /// ?
   Edge* GetEdge( const plain_int_set & nids,
                  const std::vector<Node*> & nodes,
                  const CellTopologyData & edge_topology );
+
+  /// ?
   Side* GetSide( int sid,
                  const plain_int_set & nids,
                  const std::vector<Node*> & nodes,
                  const std::vector<Edge*> & edges,
                  const CellTopologyData & side_topology );
 
-  /*!
-  \brief Create new line between the two given cut points that are in given two cut sides
-  */
+  /// Create new line between the two given cut points that are in given two cut sides
   GEO::CUT::Line * NewLineInternal( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
+
+
+  /*========================================================================*/
+  //! @name private member variables
+  /*========================================================================*/
 
   /// setup phase flag
   bool setup_;
@@ -339,9 +467,11 @@ private:
   /// (output) flag for cut mesh
   bool cutmesh_;
 
+  /*========================================================================*/
   //! @name Containers that hold all those mesh objects
-  /// Plain pointers are used within the library. Memory management is done here.
+  /*========================================================================*/
 
+  /// Plain pointers are used within the library. Memory management is done here.
   std::list<Teuchos::RCP<Line > > lines_;
   std::list<Teuchos::RCP<Facet> > facets_;
   std::list<Teuchos::RCP<VolumeCell> > cells_;
@@ -368,9 +498,6 @@ private:
 
   /// internally generated element (quadratic to linear conversation)
   std::list<Teuchos::RCP<Element> > shadow_elements_;
-
-
-//  RCP<std::vector<DofSetData> > parallel_dofSetData_ ;
 
   //@}
 };

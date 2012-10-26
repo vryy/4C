@@ -25,7 +25,7 @@ Maintainer: Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 
 /*-----------------------------------------------------------------------------------------*
- * Add this background element if it falls within the bounding box of cut mesh
+ * add this background element if it falls within the bounding box of cut mesh
  * If it is not within BB, this element is never cut
  *-----------------------------------------------------------------------------------------*/
 GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement( int eid,
@@ -69,6 +69,9 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement( int eid,
   return NULL;
 }
 
+/*-----------------------------------------------------------------------------------------*
+ * add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for quadratic sides)
+ *-----------------------------------------------------------------------------------------*/
 GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
                                                                const std::vector<int> & nids,
                                                                DRT::Element::DiscretizationType distype,
@@ -78,6 +81,9 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
   return cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
+/*-----------------------------------------------------------------------------------------*
+ * add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for quadratic sides)
+ *-----------------------------------------------------------------------------------------*/
 GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
                                                                const std::vector<int> & nids,
                                                                const Epetra_SerialDenseMatrix & xyz,
@@ -288,7 +294,9 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
 }
 
 
-
+/*------------------------------------------------------------------------------------------------*
+ * Create nodal dofset sets within the parallel cut framework
+ *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::Discretization& dis)
 {
 
@@ -772,31 +780,49 @@ void GEO::CUT::MeshIntersection::ConnectNodalDOFSets( std::vector<Node *> &     
 }
 
 
+/*--------------------------------------------------------------------------------------*
+ * get the node based on node id
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::Node * GEO::CUT::MeshIntersection::GetNode( int nid ) const
 {
   return mesh_.GetNode( nid );
 }
 
+/*--------------------------------------------------------------------------------------*
+ * get the mesh's side based on node ids and return the side
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::Side * GEO::CUT::MeshIntersection::GetSide( std::vector<int>& nodeids ) const
 {
   return mesh_.GetSide( nodeids );
 }
 
+/*--------------------------------------------------------------------------------------*
+ * get the mesh's side based on side id and return the sidehandle
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetSide( int sid ) const
 {
   return mesh_.GetSide( sid );
 }
 
+/*--------------------------------------------------------------------------------------*
+ * get the mesh's element based on element id
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::GetElement( int eid ) const
 {
   return mesh_.GetElement( eid );
 }
 
+/*--------------------------------------------------------------------------------------*
+ * get the cut mesh's side based on side id
+ *-------------------------------------------------------------------------------------*/
 GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi ) const
 {
   return cut_mesh_[mi]->GetSide( sid );
 }
 
+/*--------------------------------------------------------------------------------------*
+ * print cell statistics
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::PrintCellStats()
 {
   NormalMesh().PrintCellStats();
@@ -843,12 +869,15 @@ void GEO::CUT::MeshIntersection::Status(std::string gausstype)
 }
 
 
+/*--------------------------------------------------------------------------------------*
+ * write gmsh debug output for nodal cell sets
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::DumpGmshNodalCellSet( std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets, DRT::Discretization & dis )
 {
-    std::string filename = "hallo"; //DRT::Problem::Instance()->OutputControlFile()->FileName();
+    std::string filename = "cut_test"; //DRT::Problem::Instance()->OutputControlFile()->FileName();
     std::stringstream str;
     str << filename
-        << ".NodalCellSet."
+        << "CUT_NodalCellSet."
         << dis.Comm().MyPID()
         << ".pos";
 
@@ -920,13 +949,15 @@ void GEO::CUT::MeshIntersection::DumpGmshNodalCellSet( std::map<Node*, std::vect
 
 }
 
-
+/*--------------------------------------------------------------------------------------*
+ * write gmsh debug output for CellSets
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::DumpGmshCellSets( std::vector<plain_volumecell_set> & cell_sets,  DRT::Discretization & dis )
 {
-    std::string filename = "hallo"; //DRT::Problem::Instance()->OutputControlFile()->FileName();
+    std::string filename = "cut_test"; //DRT::Problem::Instance()->OutputControlFile()->FileName();
     std::stringstream str;
     str << filename
-        << ".CellSets."
+        << "CUT_CellSets."
         << dis.Comm().MyPID()
         << ".pos";
 
@@ -969,11 +1000,11 @@ void GEO::CUT::MeshIntersection::DumpGmshCellSets( std::vector<plain_volumecell_
 }
 
 
-
-//void GEO::CUT::MeshIntersection::DumpGmshNumDOFSets( bool include_inner, std::set<int> & eids, DRT::Discretization & dis )
+/*--------------------------------------------------------------------------------------*
+ * write gmsh cut output for number of dofsets and the connected vc sets
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::DumpGmshNumDOFSets(std::string filename, bool include_inner, DRT::Discretization & dis )
 {
-//    std::string filename = "hallo"; //DRT::Problem::Instance()->OutputControlFile()->FileName();
     std::stringstream str;
     str << filename
         << ".CUT_NumDOFSets."
@@ -1136,17 +1167,25 @@ void GEO::CUT::MeshIntersection::DumpGmshNumDOFSets(std::string filename, bool i
     file << "};\n";
 }
 
-
+/*--------------------------------------------------------------------------------------*
+ * write gmsh output for volumecells
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::DumpGmshVolumeCells( std::string name, bool include_inner )
 {
   NormalMesh().DumpGmshVolumeCells( name, include_inner );
 }
 
+/*--------------------------------------------------------------------------------------*
+ * write gmsh output for volumecells
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::DumpGmshIntegrationCells( std::string name )
 {
   NormalMesh().DumpGmshIntegrationCells( name );
 }
 
+/*--------------------------------------------------------------------------------------*
+ * write gmsh output for volumecells
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::DumpGmshVolumeCells( std::string name )
 {
   NormalMesh().DumpGmshVolumeCells( name );
