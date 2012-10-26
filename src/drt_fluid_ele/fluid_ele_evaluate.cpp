@@ -719,7 +719,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     {
       if (nsd == 3)
       {
-        if (this->Owner() == discretization.Comm().MyPID()) // don't store values of gosted elements
+        if (this->Owner() == discretization.Comm().MyPID()) // don't store values of ghosted elements
         {
           return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcDissipation(
               this,
@@ -883,7 +883,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     }
     case FLD::calc_divop:
     {
-      // calculate the integrated divergence oprator
+      // calculate the integrated divergence operator
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcDivOp(this, discretization, lm, elevec1);
     }
     case FLD::set_general_fluid_parameter:
