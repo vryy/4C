@@ -376,7 +376,7 @@ public:
   /// provide access to the Dirichlet map
   Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
-  /// implement ADAPTER::Fluid, passthrough DirichMaps()
+  /// implement ADAPTER::Fluid, pass through DirichMaps()
   Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return DirichMaps(); }
 
   /// Expand the Dirichlet DOF set
@@ -397,14 +397,14 @@ public:
 
   /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
   ///
-  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+  /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
   /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   const Teuchos::RCP<const Epetra_Vector> Dirichlet();
 
   /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
   ///
-  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+  /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
   /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
@@ -636,7 +636,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>   c_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
-  //! do we have a turblence model?
+  //! do we have a turbulence model?
   enum INPAR::FLUID::TurbModelAction turbmodel_;
 
   //@}
@@ -778,7 +778,7 @@ protected:
   RCP<Epetra_Vector>    scaam_;
   //@}
 
-  //! @name displacemets at time n+1, n and n-1
+  //! @name displacements at time n+1, n and n-1
   RCP<Epetra_Vector>    dispnp_;
   RCP<Epetra_Vector>    dispn_;
   RCP<Epetra_Vector>    dispnm_;
@@ -811,7 +811,7 @@ protected:
   /// only necessary for LES models including filtered quantities: filter type
   enum INPAR::FLUID::ScaleSeparation scale_sep_;
 
-  /// fine-scale scalar: only necessary for multfractal subgrid-scale modeling in loma
+  /// fine-scale scalar: only necessary for multifractal subgrid-scale modeling in loma
   RCP<Epetra_Vector>    fsscaaf_;
 
   /// grid velocity (set from the adapter!)
@@ -856,25 +856,25 @@ protected:
   /// turbulent inflow profiles from a separate (periodic) domain
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
 
-  /// bio related special (outflow) boudaries
+  /// bio related special (outflow) boundaries
   RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
 
   /// bio related special (outflow) optimization of boundaries
   RCP<UTILS::FluidWkOptimizationWrapper> Wk_optimization_;
 
-  /// bio related special (in/outflow) boudaries
+  /// bio related special (in/outflow) boundaries
   RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
 
   /// bio related special (in/outflow) traction velocity component adder
   RCP<UTILS::TotalTractionCorrector> traction_vel_comp_adder_bc_;
 
-  /// bio related, 3D to redued-D coupling
+  /// bio related, 3D to reduced-D coupling
   RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_art_;
 
   /// 1D arterial network time integration
   RCP<ART::ArtNetExplicitTimeInt>   ART_exp_timeInt_;
 
-  /// bio related, 3D to redued-D coupling
+  /// bio related, 3D to reduced-D coupling
   RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_airways_;
 
   /// 1D arterial network time integration
@@ -954,7 +954,7 @@ private:
   //! @name Special method for turbulent variable-density flow at low Mach number with multifractal subgrid-scale modeling
   /*!
 
-  \brief adpation of CsgsD to CsgsB
+  \brief adaptation of CsgsD to CsgsB
          Since CsgsB depends on the resolution if the near-wall limit is included,
          CsgsD is adapted accordingly by using the mean value of the near-wall  correction.
 

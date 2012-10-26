@@ -159,7 +159,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
      dserror("conservative formulation currently not supported for low-Mach-number flow within generalized-alpha time-integration scheme");
 
   // -------------------------------------------------------------------
-  // account for potential Neuman inflow terms if required
+  // account for potential Neumann inflow terms if required
   // -------------------------------------------------------------------
   neumanninflow_ = false;
   if (params_->get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
@@ -340,7 +340,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
 
-    // evaluate the map of te womersley bcs
+    // evaluate the map of the womersley bcs
     vol_surf_flow_bc_ -> EvaluateMapExtractor(vol_flow_rates_bc_extractor_);
     vol_surf_flow_bc_ -> EvaluateCondMap(vol_surf_flow_bcmaps_);
 
@@ -818,7 +818,7 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     dtp_ = dta_;
 
     // -------------------------------------------------------------------
-    //                    stop criterium for timeloop
+    //                    stop criterion for timeloop
     // -------------------------------------------------------------------
   }
 } // FluidImplicitTimeInt::TimeLoop
@@ -3365,7 +3365,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     // action for elements
     eleparams.set<int>("action",FLD::calc_fluid_genalpha_update_for_subscales);
 
-    // update time paramters
+    // update time parameters
     if (is_genalpha_)
     {
       eleparams.set("gamma"  ,gamma_);
@@ -3480,7 +3480,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   Wk_optimization_->Solve(WkOpt_params);
 
   // -------------------------------------------------------------------
-  // treat the 3D-to-reduced_D couplign condition
+  // treat the 3D-to-reduced_D coupling condition
   // note: these methods return without action, if the problem does not
   //       have any coupling boundary conditions
   // -------------------------------------------------------------------
@@ -4066,7 +4066,7 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
     break;
     case 2:
       /* get gridvelocity from BDF2 time discretisation of mesh motion:
-           -> requires one more previous mesh position or displacemnt
+           -> requires one more previous mesh position or displacement
            -> somewhat more complicated
            -> allows second order accuracy for the overall flow solution  */
       gridv_->Update(1.5/dta_, *dispnp_, -2.0/dta_, *dispn_, 0.0);
@@ -5905,7 +5905,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
   discret_->ClearState();
 
   // -------------------------------------------------------------------
-  // normalise the normal vectors
+  // normalize the normal vectors
   // -------------------------------------------------------------------
   for (int i = 0; i < ndnorm0->MyLength();i+=numdim_+1)
   {
@@ -6088,7 +6088,7 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
   eleparams.set<int>("action",FLD::set_loma_parameter);
 
   // set parameters to update material with subgrid-scale temperature
-  // potential inclusion of addtional subgrid-scale terms in continuity equation
+  // potential inclusion of additional subgrid-scale terms in continuity equation
   eleparams.sublist("LOMA") = params_->sublist("LOMA");
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
@@ -6176,7 +6176,7 @@ double FLD::FluidImplicitTimeInt::TimIntParam() const
   default:
     dserror("Unknown time integration scheme");
   break;
-  } //END switch (TimIntScheme())
+  }
   return retval;
 }
 
@@ -6395,7 +6395,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
     }
     discret_->ClearState();
 
-    // gather contibutions of all procs
+    // gather contributions of all procs
     discret_->Comm().SumAll(&local_sumCai,&global_sumCai,1);
     discret_->Comm().SumAll(&local_sumVol,&global_sumVol,1);
 
