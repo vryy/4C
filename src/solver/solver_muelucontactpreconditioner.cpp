@@ -194,10 +194,15 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   ///////////////////////////////////////////////////////////
 
+  // calculate number of DOFs in xSlaveDofMap to extend maxCoarseSize
+  Xpetra::global_size_t nSlaveDofs = xSlaveDofMap->getGlobalNumElements();
+
+  ///////////////////////////////////////////////////////////
+
   // fill hierarchy
   Teuchos::RCP<Hierarchy> hierarchy = Teuchos::rcp(new Hierarchy(A));
   hierarchy->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
-  hierarchy->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize));
+  hierarchy->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize)+nSlaveDofs);
   //hierarchy->SetDebug(true);
 
   /*int timestep = mllist_.get<int>("time-step");
