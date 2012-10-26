@@ -3,6 +3,151 @@
 #include "cut_volumecell.H"
 
 
+
+
+/*------------------------------------------------------------------------------*
+  | Operator () compare operator for plain_volumecell_sets
+  |                                                             shahmiri 06/12
+  *-----------------------------------------------------------------------------*/
+bool GEO::CUT::Cmp::operator()(
+    plain_volumecell_set s1,
+    plain_volumecell_set s2
+)
+{
+  // call Compare function for two plain_volumecell_sets
+  return Compare(s1, s2);
+}
+
+
+/*------------------------------------------------------------------------------*
+  | Operator () compare operator for sets of plain_volumecell_sets
+  |                                                             shahmiri 06/12
+  *-----------------------------------------------------------------------------*/
+bool GEO::CUT::Cmp::operator()(
+    const std::set<plain_volumecell_set, Cmp>& set1,
+    const std::set<plain_volumecell_set, Cmp>& set2
+)
+{
+  // call Compare function for two sets of plain_volumecell_sets
+  return Compare(set1, set2);
+}
+
+
+/*------------------------------------------------------------------------------*
+  | Compare() to compare two sets of plain_volumecell_set via comparing their first plain_volumecell_sets
+  |                                                             shahmiri 06/12
+  *-----------------------------------------------------------------------------*/
+bool GEO::CUT::Cmp::Compare(
+    const std::set<plain_volumecell_set, Cmp>& set1,
+    const std::set<plain_volumecell_set, Cmp>& set2 )
+{
+
+  // compare two sets of plain_volumecell_set
+  // take the first plain_volumecell_set of each set and compare them
+
+  std::set<plain_volumecell_set, Cmp>::iterator it1 = set1.begin();
+  plain_volumecell_set s1 = *it1;
+
+  std::set<plain_volumecell_set, Cmp>::iterator it2 = set2.begin();
+  plain_volumecell_set s2 = *it2;
+
+  return Compare(s1, s2);
+}
+
+
+/*------------------------------------------------------------------------------*
+  | Compare() to compare two plain_volumecell_set via the ids of their first volumecell's points
+  |                                                             shahmiri 06/12
+  *-----------------------------------------------------------------------------*/
+bool GEO::CUT::Cmp::Compare(
+    const plain_volumecell_set& s1,
+    const plain_volumecell_set& s2 )
+{
+
+  // take the first vc in plain_volumecell_set. In case of linear elements
+  // this is the only volumecell. For quadratic elements this is a set of vcs
+  // but we just compare the first vc of each plain_volumecell_set. So for
+  // quadratic elements the  plain_volumecell_set is not sorted!
+
+  plain_volumecell_set::const_iterator it1 = s1.begin();
+  VolumeCell * vc1 = *it1;
+
+  plain_volumecell_set::const_iterator it2 = s2.begin();
+  VolumeCell * vc2 = *it2;
+
+  return Compare(vc1, vc2);
+}
+
+
+/*------------------------------------------------------------------------------*
+  | Operator () to compare two volume cells via the ids of their points
+  |                                                             shahmiri 06/12
+  *-----------------------------------------------------------------------------*/
+
+bool GEO::CUT::Cmp::Compare(
+    VolumeCell* vc1,
+    VolumeCell* vc2 )
+{
+  // compare the point ids of the two volumecells
+
+  std::set<int> vc1points = vc1->VolumeCellPointIds();
+  std::set<int> vc2points = vc2->VolumeCellPointIds();
+
+
+  if (vc1 == vc2)
+     return false;
+
+  // first build two minimized sets which don't have any points in common
+  std::set<int> vc1pointsmin;
+  std::set<int> vc2pointsmin;
+  for( set<int>::iterator iter=vc1points.begin(); iter!=vc1points.end(); iter++ )
+  {
+    set<int>::iterator iter2 = vc2points.find(*iter);
+    if (iter2 == vc2points.end())
+    {
+      vc1pointsmin.insert(*iter);
+    }
+  }
+
+  for( set<int>::iterator iter=vc2points.begin(); iter!=vc2points.end(); iter++ )
+  {
+    set<int>::iterator iter2 = vc1points.find(*iter);
+    if (iter2 == vc1points.end())
+    {
+      vc2pointsmin.insert(*iter);
+    }
+  }
+
+  std::set<int>::iterator p1=vc1pointsmin.begin();
+  std::set<int>::iterator p2=vc2pointsmin.begin();
+
+  while ( p1!=vc1pointsmin.end() and p2!=vc2pointsmin.end() )
+  {
+    int id1 = *p1;
+    int id2 = *p2;
+
+    if( id1 < id2)
+    {
+      return true;
+      break;
+    }
+    if( id1 > id2)
+    {
+      return false;
+      break;
+    }
+
+    p1++;
+    p2++;
+  }
+
+   return false;
+}
+
+
+/*-----------------------------------------------------------------------------------------*
+ * register cuts
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::RegisterCuts()
 {
   if ( Position()==Point::oncutsurface )
@@ -16,6 +161,9 @@ void GEO::CUT::Node::RegisterCuts()
 }
 
 
+/*-----------------------------------------------------------------------------------------*
+ * Assign the vc_sets to the node if possible
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::AssignNodalCellSet( std::vector<plain_volumecell_set> & ele_vc_sets,
                                          std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets)
 {
@@ -42,6 +190,9 @@ void GEO::CUT::Node::AssignNodalCellSet( std::vector<plain_volumecell_set> & ele
 }
 
 
+/*-----------------------------------------------------------------------------------------*
+ * Find the dofsets required at this node. (old unused version)
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::FindDOFSets( bool include_inner )
 {
   const plain_element_set & elements = Elements();
@@ -129,6 +280,9 @@ void GEO::CUT::Node::FindDOFSets( bool include_inner )
 }
 
 
+/*-----------------------------------------------------------------------------------------*
+ * Find the dofsets required at this node.
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::FindDOFSetsNEW( std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets,
                                      std::vector<plain_volumecell_set> & cell_sets)
 {
@@ -173,6 +327,89 @@ void GEO::CUT::Node::FindDOFSetsNEW( std::map<Node*, std::vector<plain_volumecel
 
 }
 
+
+/*-----------------------------------------------------------------------------------------*
+ * get the dofset number of the Volumecell w.r.t this node (old unused version)
+ *-----------------------------------------------------------------------------------------*/
+int GEO::CUT::Node::DofSetNumber( VolumeCell * cell )
+{
+  int dofset = -1;
+  for ( unsigned i=0; i<dofsets_.size(); ++i )
+  {
+    plain_volumecell_set & cells = dofsets_[i];
+    if ( cells.count( cell ) > 0 )
+    {
+      if ( dofset==-1 )
+      {
+        dofset = i;
+      }
+      else
+      {
+        throw std::runtime_error( "volume dofset not unique" );
+      }
+    }
+  }
+  if ( dofset==-1 )
+  {
+    cout << "dofset not found for node " << this->Id() << endl;
+    throw std::runtime_error( "volume dofset not found" );
+  }
+  return dofset;
+}
+
+
+/*-----------------------------------------------------------------------------------------*
+ * get the dofset number of the Volumecell w.r.t this node
+ *-----------------------------------------------------------------------------------------*/
+int GEO::CUT::Node::DofSetNumberNEW( plain_volumecell_set & cells )
+{
+  int dofset = -1;
+
+  // find the first cell of cells, this is only a volume cell of a subelement
+  if(cells.size() == 0) dserror( "cells is empty");
+
+//  VolumeCell* cell = cells[0];
+  VolumeCell* cell = *(cells.begin());
+
+  for ( unsigned int i=0; i<dof_cellsets_.size(); ++i ) // loop over sets
+  {
+    std::set< plain_volumecell_set, GEO::CUT::Cmp >& cellsets = dof_cellsets_[i];
+
+    for(std::set<plain_volumecell_set, GEO::CUT::Cmp >::iterator j = cellsets.begin();
+        j!=cellsets.end();
+        j++)
+    {
+
+        if ( j->count( cell ) > 0 )
+        {
+          if ( dofset==-1 )
+          {
+            dofset = i;
+          }
+          else
+          {
+            cout << "node: " << Id() << endl;
+            cout << "first dofset id: " << dofset << endl;
+            cout << "new dofset id: " << i << endl;
+            cell->Print(cout);
+            throw std::runtime_error( "volume dofset not unique" );
+          }
+        }
+    }
+  }
+  if ( dofset==-1 )
+  {
+    cout << "dofset not found for node " << this->Id() << endl;
+//    throw std::runtime_error( "volume dofset not found" );
+  }
+  return dofset;
+}
+
+
+
+/*-----------------------------------------------------------------------------------------*
+ * sort all dofsets via xyz point coordinates (use compare functions in cut_node.H)
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::SortDOFCellSets()
 {
   // check if the first set is std set
@@ -208,6 +445,10 @@ void GEO::CUT::Node::SortDOFCellSets()
   return;
 }
 
+
+/*-----------------------------------------------------------------------------------------*
+ * build sets of connected volumecells in a 1-ring around the node
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::BuildDOFCellSets( Point * p,
                                        const std::vector<plain_volumecell_set> & cell_sets,
                                        const plain_volumecell_set & cells,
@@ -274,6 +515,10 @@ void GEO::CUT::Node::BuildDOFCellSets( Point * p,
 
 }
 
+
+/*-----------------------------------------------------------------------------------------*
+ * build sets of connected volumecells in a 1-ring around the node (old unused version)
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::BuildDOFCellSets( Point * p,
                                        const plain_volumecell_set & cells,
                                        const plain_volumecell_set & nodal_cells,
@@ -300,75 +545,7 @@ void GEO::CUT::Node::BuildDOFCellSets( Point * p,
   }
 }
 
-int GEO::CUT::Node::DofSetNumber( VolumeCell * cell )
-{
-  int dofset = -1;
-  for ( unsigned i=0; i<dofsets_.size(); ++i )
-  {
-    plain_volumecell_set & cells = dofsets_[i];
-    if ( cells.count( cell ) > 0 )
-    {
-      if ( dofset==-1 )
-      {
-        dofset = i;
-      }
-      else
-      {
-        throw std::runtime_error( "volume dofset not unique" );
-      }
-    }
-  }
-  if ( dofset==-1 )
-  {
-    cout << "dofset not found for node " << this->Id() << endl;
-    throw std::runtime_error( "volume dofset not found" );
-  }
-  return dofset;
-}
 
-int GEO::CUT::Node::DofSetNumberNEW( plain_volumecell_set & cells )
-{
-  int dofset = -1;
-
-  // find the first cell of cells, this is only a volume cell of a subelement
-  if(cells.size() == 0) dserror( "cells is empty");
-
-//  VolumeCell* cell = cells[0];
-  VolumeCell* cell = *(cells.begin());
-
-  for ( unsigned int i=0; i<dof_cellsets_.size(); ++i ) // loop over sets
-  {
-    std::set< plain_volumecell_set, GEO::CUT::Cmp >& cellsets = dof_cellsets_[i];
-
-    for(std::set<plain_volumecell_set, GEO::CUT::Cmp >::iterator j = cellsets.begin();
-        j!=cellsets.end();
-        j++)
-    {
-
-        if ( j->count( cell ) > 0 )
-        {
-          if ( dofset==-1 )
-          {
-            dofset = i;
-          }
-          else
-          {
-            cout << "node: " << Id() << endl;
-            cout << "first dofset id: " << dofset << endl;
-            cout << "new dofset id: " << i << endl;
-            cell->Print(cout);
-            throw std::runtime_error( "volume dofset not unique" );
-          }
-        }
-    }
-  }
-  if ( dofset==-1 )
-  {
-    cout << "dofset not found for node " << this->Id() << endl;
-//    throw std::runtime_error( "volume dofset not found" );
-  }
-  return dofset;
-}
 
 #if 0
 int GEO::CUT::Node::NumDofSets( bool include_inner )
@@ -410,140 +587,3 @@ int GEO::CUT::Node::NumDofSets( bool include_inner )
 }
 #endif
 
-/*------------------------------------------------------------------------------*
-  | Operator () compare operator for plain_volumecell_sets
-  |                                                             shahmiri 06/12
-  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::operator()(
-    plain_volumecell_set s1,
-    plain_volumecell_set s2
-)
-{
-  // call Compare function for two plain_volumecell_sets
-
-  return Compare(s1, s2);
-
-}
-
-
-/*------------------------------------------------------------------------------*
-  | Operator () compare operator for sets of plain_volumecell_sets
-  |                                                             shahmiri 06/12
-  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::operator()(
-    const std::set<plain_volumecell_set, Cmp>& set1,
-    const std::set<plain_volumecell_set, Cmp>& set2
-)
-{
-  // call Compare function for two sets of plain_volumecell_sets
-  return Compare(set1, set2);
-}
-
-/*------------------------------------------------------------------------------*
-  | Compare() to compare two sets of plain_volumecell_set via comparing their first plain_volumecell_sets
-  |                                                             shahmiri 06/12
-  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(
-    const std::set<plain_volumecell_set, Cmp>& set1,
-    const std::set<plain_volumecell_set, Cmp>& set2 )
-{
-
-  // compare two sets of plain_volumecell_set
-  // take the first plain_volumecell_set of each set and compare them
-
-  std::set<plain_volumecell_set, Cmp>::iterator it1 = set1.begin();
-  plain_volumecell_set s1 = *it1;
-
-  std::set<plain_volumecell_set, Cmp>::iterator it2 = set2.begin();
-  plain_volumecell_set s2 = *it2;
-
-  return Compare(s1, s2);
-}
-
-/*------------------------------------------------------------------------------*
-  | Compare() to compare two plain_volumecell_set via the ids of their first volumecell's points
-  |                                                             shahmiri 06/12
-  *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::Compare(
-    const plain_volumecell_set& s1,
-    const plain_volumecell_set& s2 )
-{
-
-  // take the first vc in plain_volumecell_set. In case of linear elements
-  // this is the only volumecell. For quadratic elements this is a set of vcs
-  // but we just compare the first vc of each plain_volumecell_set. So for
-  // quadratic elements the  plain_volumecell_set is not sorted!
-
-  plain_volumecell_set::const_iterator it1 = s1.begin();
-  VolumeCell * vc1 = *it1;
-
-  plain_volumecell_set::const_iterator it2 = s2.begin();
-  VolumeCell * vc2 = *it2;
-
-  return Compare(vc1, vc2);
-}
-
-/*------------------------------------------------------------------------------*
-  | Operator () to compare two volume cells via the ids of their points
-  |                                                             shahmiri 06/12
-  *-----------------------------------------------------------------------------*/
-
-bool GEO::CUT::Cmp::Compare(
-    VolumeCell* vc1,
-    VolumeCell* vc2 )
-{
-  // compare the point ids of the two volumecells
-
-  std::set<int> vc1points = vc1->VolumeCellPointIds();
-  std::set<int> vc2points = vc2->VolumeCellPointIds();
-
-
-  if (vc1 == vc2)
-     return false;
-
-  // first build two minimized sets which don't have any points in common
-  std::set<int> vc1pointsmin;
-  std::set<int> vc2pointsmin;
-  for( set<int>::iterator iter=vc1points.begin(); iter!=vc1points.end(); iter++ )
-  {
-    set<int>::iterator iter2 = vc2points.find(*iter);
-    if (iter2 == vc2points.end())
-    {
-      vc1pointsmin.insert(*iter);
-    }
-  }
-
-  for( set<int>::iterator iter=vc2points.begin(); iter!=vc2points.end(); iter++ )
-  {
-    set<int>::iterator iter2 = vc1points.find(*iter);
-    if (iter2 == vc1points.end())
-    {
-      vc2pointsmin.insert(*iter);
-    }
-  }
-
-  std::set<int>::iterator p1=vc1pointsmin.begin();
-  std::set<int>::iterator p2=vc2pointsmin.begin();
-
-  while ( p1!=vc1pointsmin.end() and p2!=vc2pointsmin.end() )
-  {
-    int id1 = *p1;
-    int id2 = *p2;
-
-    if( id1 < id2)
-    {
-      return true;
-      break;
-    }
-    if( id1 > id2)
-    {
-      return false;
-      break;
-    }
-
-    p1++;
-    p2++;
-  }
-
-   return false;
-}
