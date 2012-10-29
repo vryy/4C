@@ -4534,7 +4534,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
 
       histogram<<bspotsglob<<"    "<<-99<<"    "<<-99<<endl;
       for(int i=0; i<numbins; i++)
-        histogram<<i+1<<"    "<<angles[i]<<"    "<<std::setprecision(12)<<orderparameter[i][1]<<endl;
+        histogram<<i+1<<"    "<<angles[i]<<"    "<<std::setprecision(12)<<orderparameter[i][1]<<"    "<<orderparameter[i][0]<<endl;
       //write content into file and close it
       fprintf(fp, histogram.str().c_str());
       fclose(fp);
