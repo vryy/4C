@@ -1517,6 +1517,15 @@ public:
     const int condid=-1  ///< condidition ID
   );
 
+  /// Evaluate a specific condition using assemble strategy
+   void EvaluateCondition
+   (
+     ParameterList& params,
+     DRT::AssembleStrategy & strategy,
+     const string& condstring,
+     const int condid=-1
+   );
+
   /*!
   \brief Evaluate a specific condition
 

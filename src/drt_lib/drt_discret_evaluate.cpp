@@ -686,21 +686,36 @@ void DRT::Discretization::EvaluateCondition
   const int condid
 )
 {
+  DRT::AssembleStrategy strategy( 0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3 );
+  EvaluateCondition( params, strategy,condstring,condid );
+
+  return;
+} // end of DRT::Discretization::EvaluateCondition
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateCondition
+(
+  ParameterList& params,
+  DRT::AssembleStrategy & strategy,
+  const string& condstring,
+  const int condid
+)
+{
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  int row = strategy.FirstDofSet();
+  int col = strategy.SecondDofSet();
 
   // get the current time
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  multimap<string,RCP<Condition> >::iterator fool;
+  Element::LocationArray la(dofsets_.size());
 
-  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
-  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
-  const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemvector2!=Teuchos::null;
-  const bool assemblevec3 = systemvector3!=Teuchos::null;
+  multimap<string,RCP<Condition> >::iterator fool;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -742,42 +757,31 @@ void DRT::Discretization::EvaluateCondition
         }
         params.set<RCP<DRT::Condition> >("condition", fool->second);
 
-        // define element matrices and vectors
-        Epetra_SerialDenseMatrix elematrix1;
-        Epetra_SerialDenseMatrix elematrix2;
-        Epetra_SerialDenseVector elevector1;
-        Epetra_SerialDenseVector elevector2;
-        Epetra_SerialDenseVector elevector3;
-
         for (curr=geom.begin(); curr!=geom.end(); ++curr)
         {
           // get element location vector and ownerships
-          vector<int> lm;
-          vector<int> lmowner;
-          vector<int> lmstride;
-          curr->second->LocationVector(*this,lm,lmowner,lmstride);
+          curr->second->LocationVector(*this,la,false);
 
           // get dimension of element matrices and vectors
           // Reshape element matrices and vectors and init to zero
-          const int eledim = (int)lm.size();
-          if (assemblemat1) elematrix1.Shape(eledim,eledim);
-          if (assemblemat2) elematrix2.Shape(eledim,eledim);
-          if (assemblevec1) elevector1.Size(eledim);
-          if (assemblevec2) elevector2.Size(eledim);
-          if (assemblevec3) elevector3.Size(eledim);
+          strategy.ClearElementStorage( la[row].Size(), la[col].Size() );
 
           // call the element specific evaluate method
-          int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
-                                           elevector1,elevector2,elevector3);
+          int err = curr->second->Evaluate(params,*this,la,
+                                     strategy.Elematrix1(),
+                                     strategy.Elematrix2(),
+                                     strategy.Elevector1(),
+                                     strategy.Elevector2(),
+                                     strategy.Elevector3());
           if (err) dserror("error while evaluating elements");
 
           // assembly
           int eid = curr->second->Id();
-          if (assemblemat1) systemmatrix1->Assemble(eid,lmstride,elematrix1,lm,lmowner);
-          if (assemblemat2) systemmatrix2->Assemble(eid,lmstride,elematrix2,lm,lmowner);
-          if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-          if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-          if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+          strategy.AssembleMatrix1( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
+          strategy.AssembleMatrix2( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
+          strategy.AssembleVector1( la[row].lm_, la[row].lmowner_ );
+          strategy.AssembleVector2( la[row].lm_, la[row].lmowner_ );
+          strategy.AssembleVector3( la[row].lm_, la[row].lmowner_ );
         }
       }
     }

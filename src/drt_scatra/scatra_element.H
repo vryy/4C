@@ -585,6 +585,9 @@ public:
   virtual int NumDofPerNode(const DRT::Node& node) const
   {return parent_->NumDofPerNode(node);}
 
+  virtual int NumDofPerNode(const unsigned nds,const DRT::Node& node) const
+  {return parent_->NumDofPerNode(nds,node);}
+
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::ELEMENTS::Transport* ParentElement()
   {return parent_;}

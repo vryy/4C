@@ -353,6 +353,21 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   Epetra_SerialDenseVector& elevec3_epetra
   )
 {
+  //if (la.Size()==1)
+  {
+    return Evaluate(
+      ele,
+      params,
+      discretization,
+      la[0].lm_, // location vector is build by the first column of la
+      elemat1_epetra,
+      elemat2_epetra,
+      elevec1_epetra,
+      elevec2_epetra,
+      elevec3_epetra
+      );
+  }
+
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
   DRT::ELEMENTS::Thermo* parentele = ele->ParentElement();

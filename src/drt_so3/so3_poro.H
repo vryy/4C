@@ -293,12 +293,11 @@ protected:
       LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
       LINALG::Matrix<numdof_,numdof_>* reamatrix, // element reactive matrix
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      //LINALG::Matrix<numdof_,1>* forcerea, // element reactive force vector
       //LINALG::Matrix<numgpt_,numstr_>* elestress, ///< stresses at GP
       //LINALG::Matrix<numgpt_,numstr_>* elestrain, ///< strains at GP
-      ParameterList& params, ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType iostress, ///< stress output option
-      const INPAR::STR::StrainType iostrain); ///< strain output option
+      ParameterList& params ///< algorithmic parameters e.g. time
+  //    const INPAR::STR::StressType iostress ///< stress output option
+      );
 
   //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
   virtual void coupling_poroelast(
@@ -310,7 +309,6 @@ protected:
       LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
       LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* reamatrix, //< element reactive matrix
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      //LINALG::Matrix<numdof_,1>* forcerea, //< element reactive force vector
       ParameterList& params); ///< algorithmic parameters e.g. time
 
   //Gauss integration rule

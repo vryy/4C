@@ -230,8 +230,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(ParameterList& params,
 
       //calculate tangent stiffness matrix
       nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,matptr2,&elevec1,//NULL,//NULL,NULL,
-          params,
-          INPAR::STR::stress_none,INPAR::STR::strain_none);
+          params
+       //   INPAR::STR::stress_none,INPAR::STR::strain_none
+          );
     }
   }
   break;
@@ -336,8 +337,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(ParameterList& params,
       }
 
       nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,NULL,&elevec1,//NULL,//NULL,NULL,
-          params,
-        INPAR::STR::stress_none,INPAR::STR::strain_none);
+          params
+      //  INPAR::STR::stress_none,INPAR::STR::strain_none
+          );
     }
 
   }
@@ -493,8 +495,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(ParameterList& params,
       }
 
       nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,NULL,NULL,&elevec1,//NULL,//NULL,NULL,
-          params,
-          INPAR::STR::stress_none,INPAR::STR::strain_none);
+          params
+         // INPAR::STR::stress_none,INPAR::STR::strain_none
+          );
     }
   }
   break;
@@ -534,12 +537,11 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     LINALG::Matrix<numdof_, numdof_>* stiffmatrix, // element stiffness matrix
     LINALG::Matrix<numdof_, numdof_>* reamatrix, // element reactive matrix
     LINALG::Matrix<numdof_, 1>* force, // element internal force vector
- //   LINALG::Matrix<numdof_, 1>* forcerea, // element reactive force vector
  //   LINALG::Matrix<numgpt_, numstr_>* elestress, // stresses at GP
  //   LINALG::Matrix<numgpt_, numstr_>* elestrain, // strains at GP
-    ParameterList& params, // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress, // stress output option
-    const INPAR::STR::StrainType iostrain) // strain output option
+    ParameterList& params // algorithmic parameters e.g. time
+//    const INPAR::STR::StressType iostress // stress output option
+    )
 {
   // get global id of the structure element
   int id = Id();
