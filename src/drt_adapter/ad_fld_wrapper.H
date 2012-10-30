@@ -179,12 +179,19 @@ namespace ADAPTER
     { return fluid_->PressureRowMap(); }
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
     { dserror("Not implemented in the base class, may be overridden by a subclass."); }
+
+    /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit Newton [N]
     virtual double ResidualScaling() const
     { return fluid_->ResidualScaling(); }
+
+    /// Velocity-displacement conversion at the fsi interface
     virtual double TimeScaling() const
     { return fluid_->TimeScaling(); }
+
+    /// return time integration factor
     virtual double TimIntParam() const
     { return fluid_->TimIntParam(); }
+
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const
     { dserror("Not implemented in the base class, may be overridden by a subclass.");
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;

@@ -354,7 +354,10 @@ public:
   /// monolithic FSI needs to access the linear fluid problem
 
   Teuchos::RCP<const Epetra_Vector> InitialGuess() { return incvel_; }
+
+  /// return implemented residual (is not an actual force in Newton [N])
   Teuchos::RCP<      Epetra_Vector> Residual() { return residual_; }
+
   /// implement adapter fluid
   Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
 
@@ -433,9 +436,8 @@ public:
    *  By multiplication with ResidualScaling() the residual is
    *  converted to the true residual in unit Newton [N], ie a real force.
    *
-   *  See also:
-   *  - trueresidual_
-   *  - TrueResidual()
+   *  \sa trueresidual_
+   *  \sa TrueResidual()
    */
   double ResidualScaling() const
   {

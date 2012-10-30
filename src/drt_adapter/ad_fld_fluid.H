@@ -368,10 +368,20 @@ namespace ADAPTER {
     /// the mesh map contains all velocity dofs that are covered by an ALE node
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm) = 0;
 
-    /// scaling factor between velocity and displacement
+    /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit Newton [N]
     virtual double ResidualScaling() const = 0;
 
-    /// time scaling factor to get back to real forces
+    /// Velocity-displacement conversion at the fsi interface
+    /*! Time integration of the fsi interface reads:
+     *  \f$\mathbf{d}^{n+1} = \mathbf{d}^{n} + \tau(\mathbf{u}^{n+1}-\mathbf{u}^{n}) + \Delta t \mathbf{u}^{n}\f$
+     *
+     *  Currently, two time integration schemes for the fsi interface
+     *  are implemented:
+     *  - Backward-Euler: \f$\tau = \Delta t\f$
+     *  - Trapezoidal rule: \f$\tau = \frac{\Delta t}{2}\f$
+     *
+     *  Use TimeScaling() to get \f$\tau=\frac{1}{\text{TimeScaling()}}\f$
+     */
     virtual double TimeScaling() const = 0;
 
     /// return time integration factor

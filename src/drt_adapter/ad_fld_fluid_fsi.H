@@ -67,6 +67,7 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
 
+    /// Velocity-displacement conversion at the fsi interface
     virtual double TimeScaling() const;
 
     virtual void Update();
