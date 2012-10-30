@@ -176,6 +176,11 @@ public:
 
   Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
+
+  /// Reset state vectors
+  void Reset();
+
+
   //@}
 
 protected:

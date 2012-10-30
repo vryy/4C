@@ -362,6 +362,8 @@ namespace ADAPTER {
     /// reset time and state vectors
     virtual void Reset() { dserror("reset not implemented for this structure adapter"); }
 
+    virtual void ReInitDis() { dserror("ReInitDis not implemented for this structure adapter"); }
+    virtual void ReInitDisn() { dserror("ReInitDis not implemented for this structure adapter"); }
   };
 
 

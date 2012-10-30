@@ -27,12 +27,6 @@ MAT::PAR::Biofilm::Biofilm(
   rearate_(matdata->GetDouble("REARATE")),
   satcoeff_(matdata->GetDouble("SATCOEFF"))
 {
-	  cout<<"*******************"<<endl;
-	  cout<<"diff  = "<<diffusivity_<<endl;
-	  cout<<"kinetic model  = "<<*kinetics_<<endl;
-	  cout<<"rearate  = "<<rearate_<<endl;
-	  cout<<"satcoeff  = "<<satcoeff_<<endl;
-	  cout<<"*******************"<<endl;
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::Biofilm::CreateMaterial()

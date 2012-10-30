@@ -57,6 +57,9 @@ namespace FS3I
     /// interface transform
     virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
 
+    /// solve fluid-ale
+    virtual void FluidAleSolve(Teuchos::RCP<Epetra_Vector> idisp);
+
     /// solve structure-ale
     virtual void StructAleSolve(Teuchos::RCP<Epetra_Vector> idisp);
 
@@ -64,9 +67,7 @@ namespace FS3I
 
     const Epetra_Comm& Comm() { return comm_; }
 
-    void ChangeConfig(Teuchos::RCP<Epetra_Vector> structdisp);
-
-//    void Reinitialize();
+    void ChangeConfig(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
 
 
   private:
@@ -98,6 +99,8 @@ namespace FS3I
     Teuchos::RCP<Epetra_MultiVector> struflux;
 
     Teuchos::RCP<Epetra_Vector> norminflux_;
+
+    std::vector<double> nvector;
 
     // grown volume
     double grownvolume_;

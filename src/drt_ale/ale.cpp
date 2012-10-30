@@ -208,6 +208,15 @@ void ALE::Ale::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
     interface_->InsertAleWearCondVector(idisp,dispnp_);
 }
 
+void ALE::Ale::Reset()
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  dispnp_ = LINALG::CreateVector(*dofrowmap,true);
+  dispn_  = LINALG::CreateVector(*dofrowmap,true);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

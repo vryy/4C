@@ -19,7 +19,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_globalproblem.H"
-
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

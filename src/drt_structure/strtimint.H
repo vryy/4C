@@ -666,6 +666,9 @@ namespace STR
     //! Access to scaling matrix for STC
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0 ;
 
+    void ReInitDis() { (*dis_)(0)->PutScalar(0.0); }
+    void ReInitDisn() { disn_->PutScalar(0.0); }
+
     //@}
 
     //! @name Time step helpers

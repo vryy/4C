@@ -46,6 +46,8 @@
 
 #include "../drt_lib/drt_utils.H"
 
+#include "../drt_io/io.H"
+
 //#define SCATRABLOCKMATRIXMERGE
 
 
@@ -219,12 +221,8 @@ void FS3I::BiofilmFSI::Timeloop()
 	      fsi_->AleField().ApplyInterfaceDisplacements(FluidToAle(idispnp_));
 	    }
 
-      // Note: We do not look for moving ale boundaries (outside the coupling
-      // interface) on the fluid side. Thus if you prescribe time variable ale
-      // Dirichlet conditions the according fluid Dirichlet conditions will not
-      // notice.
-      fsi_->AleField().BuildSystemMatrix();
-      fsi_->AleField().Solve();
+      // do all the settings and solve the fluid on a deforming mesh
+      FluidAleSolve(idispnp_);
 
       if (struidispnp_!=Teuchos::null)
       {
@@ -241,11 +239,13 @@ void FS3I::BiofilmFSI::Timeloop()
 
       fsi_->StructureField()->Reset();
       fsi_->FluidField().Reset();
-
-//      Reinitialize();
+      fsi_->AleField().Reset();
 
       fsi_->AleField().BuildSystemMatrix(false);
 
+
+      //fsi_->StructureField()->DiscWriter()->WriteMesh(step_bio, time_bio);
+      //fsi_->FluidField().DiscWriter()->WriteMesh(step_bio, time_bio);
     }
   }
 
@@ -405,6 +405,9 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
       unitnormal[j] = (*nodalnormals)[strudis->DofRowMap()->LID(globaldofs[j])];
       temp += unitnormal[j]*unitnormal[j];
 
+      // actnode->Print(cout);
+      cout<< strudis->DofRowMap()->LID(globaldofs[j])<<endl;
+      //cout<<"\n unitnormal["<<j<<"]="<<unitnormal[j]<<endl;
     }
     double absval = sqrt(temp);
     int lnodeid = strudis->NodeRowMap()->LID(nodegid);
@@ -421,8 +424,8 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
       {
         unitnormal[j] /= absval;
         Values[j] = grownvolume_ * influx * unitnormal[j];
+//        Values[j] = grownvolume_ * unitnormal[j];
       }
-
     }
 
     int error = struiveln_->ReplaceGlobalValues(numdim,&Values[0],&globaldofs[0]);
@@ -440,16 +443,50 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::FluidAleSolve(
+    Teuchos::RCP<Epetra_Vector> idisp)
+{
+  fsi_->AleField().SetupDBCMapEx(1);
+  fsi_->AleField().BuildSystemMatrix();
+  fsi_->AleField().Solve();
+
+  //change nodes reference position
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField().ExtractDisplacement());
+  RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
+  ChangeConfig(fluiddis, fluiddisp);
+
+  //change nodes reference position also for ale field
+  RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
+  ChangeConfig(fluidaledis, fsi_->AleField().ExtractDisplacement());
+
+  fsi_->AleField().SetupDBCMapEx(0);
+
+  // computation of structure solution
+  //structure_->Solve();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::StructAleSolve(
     Teuchos::RCP<Epetra_Vector> idisp)
 {
   ale_->SetupDBCMapEx(1);
   ale_->BuildSystemMatrix();
   ale_->Solve();
-  Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->ExtractDisplacement());
 
   //change nodes reference position
-  ChangeConfig(structdisp);
+  Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->ExtractDisplacement());
+  RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
+
+  ChangeConfig(structdis, structdisp);
+
+  structdis->FillComplete(false, true, false);
+
+  //change nodes reference position also for ale field
+  RCP<DRT::Discretization> structaledis = ale_->Discretization();
+  ChangeConfig(structaledis, ale_->ExtractDisplacement());
 
   ale_->SetupDBCMapEx(0);
 
@@ -527,47 +564,40 @@ Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::StructToAle(Teuchos::RCP<const Epe
 //}
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::ChangeConfig(Teuchos::RCP<Epetra_Vector> structdisp)
+void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
 {
-  RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
-  const int numnode = (strudis->NodeRowMap())->NumMyElements();
 
-  const Epetra_Vector& gvector =*structdisp;
+  const int numnode = (dis->NodeRowMap())->NumMyElements();
+  const Epetra_Vector& gvector =*disp;
 
   // loop over all nodes
   for (int i = 0; i < numnode; ++i)
   {
     // get current node
-    int gid = (strudis->NodeRowMap())->GID(i);
-    DRT::Node* mynode = strudis->gNode(gid);
+    int gid = (dis->NodeRowMap())->GID(i);
 
-    vector<int> globaldofs = strudis->Dof(mynode);
+    DRT::Node* mynode = dis->gNode(gid);
+
+    vector<int> globaldofs = dis->Dof(mynode);
+    vector<double> nvector(globaldofs.size());
 
     // extract local values from the global vector
-    vector<double> nvector(globaldofs.size());
-    DRT::UTILS::ExtractMyValues(gvector, nvector, globaldofs);
+    //const size_t ldim = globaldofs.size();
+    //nvector.resize(ldim);
+
+    for (size_t i=0; i<3; ++i)
+    {
+      const int lid = gvector.Map().LID(globaldofs[i]);
+
+      if (lid<0)
+      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",gvector.Comm().MyPID(),globaldofs[i]);
+      nvector[i] += gvector[lid];
+
+    }
 
     mynode->ChangePos(nvector);
-
   }
 
   return;
 
 }
-
-
-///*----------------------------------------------------------------------*/
-///*----------------------------------------------------------------------*/
-//void FS3I::BiofilmFSI::Reinitialize()
-//{
-//  fsi_->StructureField()->Dispn()= Teuchos::null;
-//  fsi_->StructureField()->Dispnp()= Teuchos::null;
-//  fsi_->FluidField().Dispn()= Teuchos::null;
-//  fsi_->FluidField().Dispnp()= Teuchos::null;
-//  fsi_->FluidField().Velnp()= Teuchos::null;
-//  fsi_->FluidField().Veln()= Teuchos::null;
-//
-//return;
-//}
