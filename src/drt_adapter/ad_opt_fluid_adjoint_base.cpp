@@ -58,10 +58,12 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::TopOptFluidAdjointAlgorithm::SetupFluid");
   Teuchos::TimeMonitor monitor(*t);
 
+  DRT::Problem* problem = DRT::Problem::Instance();
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("fluid");
+  RCP<DRT::Discretization> actdis = problem->GetDis("fluid");
 
 
   // -------------------------------------------------------------------
@@ -83,17 +85,35 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(actdis));
-//  output->WriteMesh(0,0.0); TODO make this work again
+
+  // output control for optimization field
+  // equal to output for fluid equations except for the filename
+  // and the - not necessary - input file name
+  Teuchos::RCP<IO::OutputControl> adjointoutput =
+      Teuchos::rcp(new IO::OutputControl(
+          actdis->Comm(),
+          problem->ProblemName(),
+          problem->SpatialApproximation(),
+          problem->OutputControlFile()->InputFileName(),
+          problem->OutputControlFile()->FileName() + "_adjoint",
+          problem->NDim(),
+          problem->Restart(),
+          problem->OutputControlFile()->FileSteps()
+      )
+  );
+
+  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(actdis, adjointoutput));
+  output->WriteMesh(0,0.0);
+
 
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   //const Teuchos::ParameterList& probsize    = DRT::Problem::Instance()->ProblemSizeParams();
-  const Teuchos::ParameterList& fdyn        = DRT::Problem::Instance()->FluidDynamicParams();
-  const Teuchos::ParameterList& adjointfdyn = DRT::Problem::Instance()->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
-  const Teuchos::ParameterList& opti        = DRT::Problem::Instance()->OptimizationControlParams();
+  const Teuchos::ParameterList& fdyn        = problem->FluidDynamicParams();
+  const Teuchos::ParameterList& adjointfdyn = problem->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
+  const Teuchos::ParameterList& opti        = problem->OptimizationControlParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -103,9 +123,9 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+    rcp(new LINALG::Solver(problem->SolverParams(linsolvernumber),
                            actdis->Comm(),
-                           DRT::Problem::Instance()->ErrorFile()->Handle()));
+                           problem->ErrorFile()->Handle()));
 
   actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
 
@@ -257,7 +277,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     startfuncno=-1;
 
   adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
-//  adjointTimeInt_->Output(); TODO make this work again
+  adjointTimeInt_->Output();
 
   return;
 }

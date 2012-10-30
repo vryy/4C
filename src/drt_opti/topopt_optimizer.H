@@ -158,13 +158,15 @@ namespace TOPOPT
     const Epetra_Map* RowMap();
     const Epetra_Map* ColMap();
 
+    const double Iter() const;
+
   protected:
 
     /// set the initial density field of the optimization variable
     void SetInitialDensityField(const INPAR::TOPOPT::InitialDensityField init,const int startfuncno);
 
     /// check if all required data for an optimization step is present
-    bool DataComplete() const;
+    bool DataComplete(bool checkAdjoint) const;
 
     void TransformFlowFields();
 

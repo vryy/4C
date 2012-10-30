@@ -910,8 +910,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<int>("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
   // flag for writing fluid field to gmsh
   fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
-  // flag for writing fluid field to gmsh
-  fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
+  // flag for the display of the stabilization parameter
+  fluidtimeparams->set<bool>("DISPLAY_STAB", DRT::INPUT::IntegralValue<bool>(fdyn,"DISPLAY_STAB"));
 
   // ---------------------------------------------------- lift and
   // drag

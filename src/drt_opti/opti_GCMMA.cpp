@@ -91,7 +91,9 @@ output_(output)
   if (x_min==Teuchos::null)
   {
     x_min_ = Teuchos::rcp(new Epetra_Vector(x_->Map(),true));
-    cout  << "WARNING: Initialized lower boundary for optimization variables with zeros" << endl;
+
+    if (discret_->Comm().MyPID()==0)
+      printf("WARNING: Initialized lower boundary for optimization variables with zeros\n");
   }
   else
     x_min_ = rcp(new Epetra_Vector(*x_min));
@@ -99,8 +101,10 @@ output_(output)
   if (x_max==Teuchos::null)
   {
     x_max_ = Teuchos::rcp(new Epetra_Vector(x_->Map(),false));
-    cout << "WARNING: Initialized upper boundary for optimization variables with ones" << endl;
     x_max_->PutScalar(1.0);
+
+    if (discret_->Comm().MyPID()==0)
+      printf("WARNING: Initialized upper boundary for optimization variables with ones\n");
   }
   else
     x_max_ = rcp(new Epetra_Vector(*x_max));
@@ -642,7 +646,8 @@ bool OPTI::GCMMA::Converged(
     }
 
 
-    if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0))
+    int dummy=0;
+    if ((InnerConvergence(objective,constraints,dummy)==true) and (outer_iter_>0))
     {
       for (int i=0;i<l;i++)
       {
@@ -700,40 +705,71 @@ bool OPTI::GCMMA::Converged(
   }
 
 
+  bool converged = false;
+  int num = -1; // number of failed conditions in inner iteration
+
+
   if (discret_->Comm().MyPID()==0)
   {
-    cout << "test if iter counters works well: total iter always increases by 1," << endl;
-    cout << "either inner or outer iter increase by 1, in second case inner iter shall be 1" << endl;
-    cout << "total iter is " << total_iter_ << endl;
-    cout << "inner iter is " << inner_iter_ << endl;
-    cout << "outer iter is " << outer_iter_ << endl;
+    printf("Checking convergence of optimization algorithm GCMMA\n");
+    printf("+-----------------------+-----------+-----------+\n");
+    printf("|     Condition         |   Value   | Max-value |\n");
+  }
+
+  if ((InnerConvergence(objective,constraints,num)==true) and (outer_iter_>0)) // new outer iteration
+  {
+    inner_iter_ = 0;
+
+    // check if outer iteration converged
+    if (KKTCond(objective,objectivegrad,constraints,constraintsgrad))
+      converged = true;
+
+    Epetra_Vector inc(*x_mma_);
+    inc.Update(-1.0,*x_,1.0);
+
+    double inc2norm = 0.0;
+    inc.Norm2(&inc2norm);
+    double incinfnorm = 0.0;
+    inc.NormInf(&incinfnorm);
+
+    if (discret_->Comm().MyPID()==0)
+    {
+      printf("| Increment [L2-norm]   |%10.3E |%10.3E |\n",inc2norm,tol_kkt_);
+      printf("| Increment [LInf-norm] |%10.3E |%10.3E |\n",incinfnorm,tol_kkt_);
+    }
+  }
+  else // new inner iteration -> no global convergence
+    converged = false;
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    printf("+-----------------------+-----------+-----------+\n");
+    printf("| Total iteration       |      %4d |      %4d |\n",total_iter_+1,max_total_iter_);
+
+    if (inner_iter_==0)
+      printf("| Outer iteration       |      %4d |      %4d |\n",outer_iter_+1,max_outer_iter_);
+    else
+      printf("| Outer iteration       |      %4d |      %4d |\n",outer_iter_,max_outer_iter_);
+
+    printf("| Inner iteration       |      %4d |      %4d |\n",inner_iter_,max_inner_iter_);
+
+    if (num>0)
+      printf("| Failing conditions    |      %4d |      %4d |\n",num,m_+1);
+
+    printf("+-----------------------+-----------+-----------+\n");
   }
 
   // stop if total iteration counter or outer iteration counter reaches their
   // respective maximum number of iterations
   if ((total_iter_==max_total_iter_) or (outer_iter_ == max_outer_iter_))
   {
-    cout << "WARNING: GCMMA optimization algorithm did not converge" << endl;
-    return true;
+    if (discret_->Comm().MyPID()==0)
+      printf("WARNING: GCMMA optimization algorithm did not converge\n");
+
+    converged = true;
   }
 
 
-  bool converged = false;
-
-  if ((InnerConvergence(objective,constraints)==true) and (outer_iter_>0)) // new outer iteration
-  {
-    inner_iter_ = 0;
-
-    // check if outer iteration converged
-    if (KKTCond(objective,objectivegrad,constraints,constraintsgrad)==false)
-      converged = false;
-    else
-      converged = true;
-  }
-  else // new inner iteration -> no global convergence
-    converged = false;
-
-  // TODO check maybe also increment
 
   return converged;
 }
@@ -820,7 +856,8 @@ void OPTI::GCMMA::FinishIteration(
   if (outer_iter_==0)
     doGradient = true;
 
-  if (InnerConvergence(objective,constraints))
+  int dummy=0;
+  if (InnerConvergence(objective,constraints,dummy))
     doGradient = true;
   else
     doGradient = false;
@@ -850,10 +887,6 @@ bool OPTI::GCMMA::KKTCond(
    * reszet = z*z_mma
    *
    */
-
-  double resnorm = 0.0;
-
-
   Epetra_Vector resX(*objectivegrad);
   resX.Update(-1.0,*xsi_,1.0);
   resX.Update(+1.0,*eta_,1.0);
@@ -934,15 +967,21 @@ bool OPTI::GCMMA::KKTCond(
 
   double reszet = zet_*z_mma_;
 
+  double resnorm = 0.0;
   resnorm = Res2Norm(&resX,&resXsi,&resEta,&resy,&resmu,&reslam,&res,&resz,&reszet);
-cout << "checking KKT conditions: residuum is " << resnorm << endl;
-cout << "tolerance is " << tol_kkt_ << endl;
-  if (resnorm<tol_kkt_)
+
+  double resinf = 0.0;
+  resinf = ResInfNorm(&resX,&resXsi,&resEta,&resy,&resmu,&reslam,&res,&resz,&reszet);
+
+  if (discret_->Comm().MyPID()==0)
   {
-    cout << "converged after " <<  total_iter_ << " iterations with " <<
-        outer_iter_ << " iterations containing the adjoint equations" << endl;
-    return true;
+    printf("+-----------------------+-----------+-----------+\n");
+    printf("| Res/KKT [L2-norm]     |%10.3E |%10.3E |\n",resnorm,tol_kkt_);
+    printf("| Res/KKT [LInf-norm]   |%10.3E |%10.3E |\n",resinf,tol_kkt_);
   }
+
+  if (resnorm<tol_kkt_)
+    return true;
 
   return false;
 }
@@ -952,23 +991,31 @@ cout << "tolerance is " << tol_kkt_ << endl;
  *----------------------------------------------------------------------*/
 bool OPTI::GCMMA::InnerConvergence(
     double& objective,
-    Teuchos::RCP<Epetra_SerialDenseVector> constraints
+    Teuchos::RCP<Epetra_SerialDenseVector> constraints,
+    int& numNotFinished
 )
 {
   // initially new outer iter
   if (outer_iter_==0)
     return true;
 
-  if (inner_iter_==max_inner_iter_)
+  if ((inner_iter_==max_inner_iter_) and (discret_->Comm().MyPID()==0))
   {
-    cout << "WARNING: inner GCMMA optimization loop did not converge" << endl;
+    printf("WARNING: inner GCMMA optimization loop did not converge\n");
+
     return true;
   }
 
   // if all approximations (constraints and objective) are smaller than the
   // values itself (modulo a small tolerance), then inner iteration is finished
+  bool finished = true;
+  numNotFinished = 0;
+
   if (obj_appr_ + tol_sub_ < objective)
-    return false;
+  {
+    finished = false;
+    numNotFinished++;
+  }
 
   double* constr_appr = constr_appr_->Values();
   double* constr = constraints->Values();
@@ -976,14 +1023,16 @@ bool OPTI::GCMMA::InnerConvergence(
   for (int i=0;i<m_;i++)
   {
     if (*constr_appr + tol_sub_ < *constr)
-      return false;
+    {
+      finished = false;
+      numNotFinished++;
+    }
 
     constr_appr++;
     constr++;
   }
 
-  // no condition failed -> all conditions ok -> inner iteration finished
-  return true;
+  return finished;
 }
 
 
@@ -1886,8 +1935,8 @@ void OPTI::GCMMA::SubSolve()
 
         steg = steg/2.0;
 
-        if (it==max_it)
-          cout << "reached maximal number of iterations in most inner loop of primal dual interior point optimization algorithm" << endl;
+        if ((it==max_it) and (discret_->Comm().MyPID()==0))
+          printf("Reached maximal number of iterations in most inner loop of primal dual interior point optimization algorithm\n");
       }
 
       resnorm = resnew;
@@ -1898,8 +1947,8 @@ void OPTI::GCMMA::SubSolve()
         break;
     }
 
-    if (inner_iter==max_sub_inner_iter_)
-      cout << "reached maximal number of iterations in inner loop of primal dual interior point optimization algorithm" << endl;
+    if ((inner_iter==max_sub_inner_iter_) and (discret_->Comm().MyPID()==0))
+      printf("Reached maximal number of iterations in inner loop of primal dual interior point optimization algorithm\n");
 
     if (tol_sub > 1.001*tol_sub_)
       tol_sub *= tol_fac;
@@ -2251,7 +2300,7 @@ void OPTI::GCMMA::Output()
 void OPTI::GCMMA::OutputToGmsh()
 {
   // turn on/off screen output for writing process of Gmsh postprocessing file
-  const bool screen_out = true;
+  const bool screen_out = false;
 
   // create Gmsh postprocessing file
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("optimization_field", total_iter_, 500, screen_out, discret_->Comm().MyPID());

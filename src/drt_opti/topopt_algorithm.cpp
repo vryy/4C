@@ -84,7 +84,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
     Output();
 
     // Update data for new optimization step
-//    Update();
+    Update();
 
     // prepare data for new optimization iteration
     PrepareFluidField();
@@ -92,7 +92,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
     // solve the primary field
     DoFluidField();
 
-    // handle inner optimization stuff for whick fluid field is required
+    // handle inner optimization stuff for which fluid field is required
     FinishOptimizationStep();
 
     if (doGradient_)
@@ -131,16 +131,15 @@ bool TOPOPT::Algorithm::OptimizationFinished()
   if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointTestCases>(AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE")!=INPAR::TOPOPT::adjointtest_no)
     return true; // special test cases for adjoint equations -> no optimization
 
-  bool converged = optimizer_->Converged(doGradient_);
-
-  // TODO also update porosity if converged
-  // (is this required finally for some postprocessing???)
-  if (converged == false)
+  if (FluidField().Discretization()->Comm().MyPID()==0)
   {
-    UpdatePorosity();
+    printf("\n");
+    printf("          +----------------------------------------------------------------------+          \n");
+    printf("          |                          Optimization Step                           |          \n");
+    printf("          +----------------------------------------------------------------------+          \n");
   }
 
-  return converged;
+  return optimizer_->Converged(doGradient_);
 }
 
 
@@ -150,6 +149,19 @@ bool TOPOPT::Algorithm::OptimizationFinished()
 void TOPOPT::Algorithm::PrepareFluidField()
 {
   FluidField().SetTopOptData(poro_,optimizer_);
+
+  // reset initial field
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+  if(initfield != INPAR::FLUID::initfield_zero_field)
+  {
+    int startfuncno = fdyn.get<int>("STARTFUNCNO");
+    if (initfield != INPAR::FLUID::initfield_field_by_function and
+        initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+      startfuncno=-1;
+    FluidField().SetInitialFlowField(initfield,startfuncno);
+  }
+
   return;
 }
 
@@ -160,6 +172,14 @@ void TOPOPT::Algorithm::PrepareFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoFluidField()
 {
+  if (FluidField().Discretization()->Comm().MyPID()==0)
+  {
+    printf("\n");
+    printf("          +----------------------------------------------------------------------------+          \n");
+    printf("          |                          Solving Fluid Equations                           |          \n");
+    printf("          +----------------------------------------------------------------------------+          \n");
+  }
+
   FluidField().Integrate();
   return;
 }
@@ -172,6 +192,15 @@ void TOPOPT::Algorithm::DoFluidField()
 void TOPOPT::Algorithm::PrepareAdjointField()
 {
   AdjointFluidField()->SetTopOptData(optimizer_->ExportFluidData(),poro_,optimizer_);
+
+  // reset initial field
+  const Teuchos::ParameterList& adjointfdyn = DRT::Problem::Instance()->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
+  INPAR::TOPOPT::InitialAdjointField initfield = DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn,"INITIALFIELD");
+  int startfuncno = adjointfdyn.get<int>("INITFUNCNO");
+  if (initfield != INPAR::TOPOPT::initadjointfield_field_by_function)
+    startfuncno=-1;
+  AdjointFluidField()->SetInitialAdjointField(initfield,startfuncno);
+
   return;
 }
 
@@ -182,6 +211,14 @@ void TOPOPT::Algorithm::PrepareAdjointField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoAdjointField()
 {
+  if (AdjointFluidField()->Discretization()->Comm().MyPID()==0)
+  {
+    printf("\n");
+    printf("          +------------------------------------------------------------------------------+          \n");
+    printf("          |                          Solving Adjoint Equations                           |          \n");
+    printf("          +------------------------------------------------------------------------------+          \n");
+  }
+
   AdjointFluidField()->Integrate();
 }
 
@@ -196,6 +233,15 @@ void TOPOPT::Algorithm::PrepareOptimizationStep()
 
   if (doGradient_)
     optimizer_->ComputeGradients();
+
+  FluidField().Reset(
+      true,
+      DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
+      Optimizer()->Iter());
+
+  AdjointFluidField()->Reset(
+      DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
+      Optimizer()->Iter());
 
   return;
 }
@@ -307,6 +353,11 @@ void TOPOPT::Algorithm::Update()
 {
   // clear the field data of the primal and the dual equations
   optimizer_->ClearFieldData();
+
+  // update porosity field
+  UpdatePorosity();
+
+
   return;
 }
 

@@ -257,6 +257,15 @@ public:
   /// update velocity increment after Newton step
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
+  /// reset data for restart of simulation at beginning
+  virtual void Reset(
+      bool completeReset = false,
+      bool newFiles = false,
+      int iter = -1)
+  {
+    dserror("reset function not implemented for this fluid adapter");
+  };
+
 protected:
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;

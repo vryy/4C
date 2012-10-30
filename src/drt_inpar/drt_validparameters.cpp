@@ -2383,6 +2383,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Scale blocks of matrix with row infnorm?",
                                yesnotuple,yesnovalue,&fdyn);
 
+  BoolParameter("DISPLAY_STAB","Yes","show stabilization setting on screen",&fdyn);
   BoolParameter("GMSH_OUTPUT","No","write output to gmsh files",&fdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
@@ -3726,6 +3727,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("DISSIPATION_FAC",0.0,"factor for the dissipation part of the objective",&topoptcontrol);
   DoubleParameter("PRESSURE_DROP_FAC",0.0,"factor for the mean pressure drop part of the objective",&topoptcontrol);
+
+  BoolParameter("OUTPUT_EVERY_ITER","No","write output of every iteration",&topoptcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptoptimizer = topoptcontrol.sublist("TOPOLOGY OPTIMIZER",false,

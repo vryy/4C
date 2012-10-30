@@ -108,7 +108,7 @@ void TOPOPT::Optimizer::ComputeValues()
   }
 
   // check if all data is present
-  DataComplete();
+  DataComplete(false);
 
   // Transform fluid and adjoint field so that it is better readable at element level
   TransformFlowFields();
@@ -144,7 +144,7 @@ void TOPOPT::Optimizer::ComputeGradients()
   obj_grad_->PutScalar(0.0);
   constr_deriv_->PutScalar(0.0);
 
-  DataComplete();
+  DataComplete(true);
 
   // Transform fluid and adjoint field so that it is better readable at element level
   TransformFlowFields();
@@ -402,7 +402,7 @@ bool TOPOPT::Optimizer::Converged(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool TOPOPT::Optimizer::DataComplete() const
+bool TOPOPT::Optimizer::DataComplete(bool checkAdjoint) const
 {
   // n timesteps
   // -> solutions at time t^0,t^1,...,t^n
@@ -417,7 +417,7 @@ bool TOPOPT::Optimizer::DataComplete() const
   if (num_sols!=fluidvel_->size())
     dserror("fluid field and time step numbers do not fit: n_f = %i, n_t = %i",fluidvel_->size(),num_sols);
 
-  if (num_sols!=adjointvel_->size())
+  if ((num_sols!=adjointvel_->size()) and (checkAdjoint))
     dserror("adjoint field and time step numbers do not fit: n_a = %i, n_t = %i",adjointvel_->size(),num_sols);
 
   return true;
@@ -482,4 +482,10 @@ Teuchos::RCP<DRT::ResultTest> TOPOPT::Optimizer::CreateFieldTest()
 {
   return Teuchos::rcp(new OPTI::OptiResultTest(*optimizer_));
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const double TOPOPT::Optimizer::Iter() const {return optimizer_->Iter();}
+
 

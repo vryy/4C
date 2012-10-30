@@ -77,6 +77,9 @@ namespace IO
     /// number of output steps per binary file
     int FileSteps() const { return filesteps_; }
 
+    /// input filename
+    std::string InputFileName() const { return inputfile_;}
+
     /// overwrites result files for the inverse analysis
     void OverwriteResultFile();
     /// creates new result files for the inverse analysis

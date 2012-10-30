@@ -88,6 +88,7 @@ STEADYTOL                       1e-6
 THETA                           0.5
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Topology_optimization
+DISPLAY_STAB                    No
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs

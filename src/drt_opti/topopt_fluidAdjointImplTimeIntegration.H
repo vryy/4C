@@ -171,6 +171,9 @@ public:
   
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest() const;
 
+  void Reset(bool newFiles=false,int iter=-1);
+
+
 protected:
 
   //! @name time-integration-scheme factors

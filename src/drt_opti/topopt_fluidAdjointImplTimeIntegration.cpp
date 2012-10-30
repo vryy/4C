@@ -167,16 +167,6 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
  *----------------------------------------------------------------------*/
 void TOPOPT::ADJOINT::ImplicitTimeInt::Integrate()
 {
-  // output of stabilization details
-  if (myrank_==0)
-  {
-    cout << "\n\n\n";
-    cout << "           ------------------------------------------------------------------------------           \n";
-    cout << "          |                          solving adjoint equations                           |          \n";
-    cout << "           ------------------------------------------------------------------------------           \n";
-    cout << "\n" << endl;
-  }
-
   // distinguish stationary and instationary case
   if (timealgo_==INPAR::FLUID::timeint_stationary) SolveStationaryProblem();
   else                                             TimeLoop();
@@ -1127,3 +1117,51 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter() const
   discret_->Evaluate(eleparams,null,null,null,null,null);
   return;
 }
+
+
+// ----------------------------------------------------------------------------
+// reset variables for new simulation (complete reset containing time and step)
+// ----------------------------------------------------------------------------
+void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
+    bool newFiles,
+    int iter
+)
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // Vectors passed to the element
+  // -----------------------------
+  // velocity/pressure at time n+1, n and n-1
+  velnp_ = LINALG::CreateVector(*dofrowmap,true);
+  veln_  = LINALG::CreateVector(*dofrowmap,true);
+  velnm_ = LINALG::CreateVector(*dofrowmap,true);
+
+
+  step_ = 0;
+
+  if (timealgo_==INPAR::FLUID::timeint_stationary)
+    time_ = dt_;
+  else
+  {
+    if (fabs(maxtime_-dt_*stepmax_)>1.0e-14)
+      dserror("Fix total simulation time sim_time = %f, time step size dt = %f and number of time steps num_steps = %i\n"
+          "so that: sim_time = dt * num_steps",maxtime_,dt_,stepmax_);
+
+    time_ = maxtime_;
+  }
+
+  if (newFiles)
+  {
+    if (iter<0) dserror("iteration number <0");
+    output_->NewResultFile((iter));
+  }
+  else
+    output_->OverwriteResultFile();
+
+  output_->WriteMesh(0,0.0);
+  return;
+}
+
+
+
+

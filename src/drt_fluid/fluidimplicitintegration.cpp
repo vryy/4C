@@ -680,7 +680,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 void FLD::FluidImplicitTimeInt::Integrate()
 {
   // output of stabilization details
-  if (myrank_==0)
+  if ((myrank_==0) and (params_->get<bool>("DISPLAY_STAB")))
   {
     ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
@@ -6519,7 +6519,10 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
 /*------------------------------------------------------------------------------------------------*
  |
  *------------------------------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Reset()
+void FLD::FluidImplicitTimeInt::Reset(
+    bool completeReset,
+    bool newFiles,
+    int iter)
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -6550,6 +6553,22 @@ void FLD::FluidImplicitTimeInt::Reset()
     dispnm_ = LINALG::CreateVector(*dofrowmap,true);
     gridv_  = LINALG::CreateVector(*dofrowmap,true);
 
+  }
+
+  if (completeReset)
+  {
+    time_ = 0.0;
+    step_ = 0;
+
+    if (newFiles)
+    {
+      if (iter<0) dserror("iteration number <0");
+      output_->NewResultFile((iter));
+    }
+    else
+      output_->OverwriteResultFile();
+
+    output_->WriteMesh(0,0.0);
   }
 
   return;

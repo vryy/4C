@@ -57,8 +57,8 @@ TOPOPT::ADJOINT::FluidAdjointTimeInt::FluidAdjointTimeInt(
   {
     if (fabs(maxtime_-dt_*stepmax_)>1.0e-14)
     {
-      dserror("Fix total simulation time sim_time = %f, time step size dt = %f and number of time steps num_steps = %i\n"
-          "so that: sim_time = dt * num_steps",maxtime_,dt_,stepmax_);
+      dserror("Fix total simulation (T = %f, dt = %f, n = %i\n"
+          "so that: T = dt * n",maxtime_,dt_,stepmax_);
     }
 
     time_ = maxtime_;

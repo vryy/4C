@@ -108,7 +108,7 @@ namespace OPTI
 
     const Teuchos::RCP<const DRT::Discretization> Discretization() const {return discret_;}
     const Teuchos::RCP<const Epetra_Vector> X() const {return x_;}
-    const double Step() const {return total_iter_;}
+    const double Iter() const {return total_iter_;}
 
 
   private:
@@ -135,7 +135,8 @@ namespace OPTI
     /// check convergence of inner iteration loop
     bool InnerConvergence(
         double& objective,
-        Teuchos::RCP<Epetra_SerialDenseVector> constraints
+        Teuchos::RCP<Epetra_SerialDenseVector> constraints,
+        int& numNotFinished
     );
 
     /// initialize solution process of GCMMA subproblem

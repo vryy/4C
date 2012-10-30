@@ -304,7 +304,10 @@ public:
   );
 
   /// Reset state vectors
-  void Reset();
+  void Reset(
+      bool completeReset = false,
+      bool newFiles = false,
+      int iter = -1);
 
   /*!
   \brief calculate error between a analytical solution and the

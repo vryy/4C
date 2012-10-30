@@ -14,6 +14,7 @@ Maintainer: Martin Winklmaier
 
 #include "ad_opt.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_opti/topopt_optimizer.H"
@@ -25,15 +26,15 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
     const std::string disname             ///< optimization field discretization name(default: "opti")
 )
 {
-  // setup topology optimization algorithm
-
+  DRT::Problem* problem = DRT::Problem::Instance();
+  
   // -------------------------------------------------------------------
   // access the fluid and the optimization discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> optidis = null;
-  optidis = DRT::Problem::Instance()->GetDis(disname);
+  optidis = problem->GetDis(disname);
   RCP<DRT::Discretization> fluiddis = null;
-  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  fluiddis = problem->GetDis("fluid");
 
   // -------------------------------------------------------------------
   // check degrees of freedom in the discretization
@@ -44,7 +45,24 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(optidis));
+
+  // output control for optimization field
+  // equal to output for fluid equations except for the filename
+  // and the - not necessary - input file name
+  Teuchos::RCP<IO::OutputControl> optioutput =
+      Teuchos::rcp(new IO::OutputControl(
+          optidis->Comm(),
+          problem->ProblemName(),
+          problem->SpatialApproximation(),
+          problem->OutputControlFile()->InputFileName(),
+          problem->OutputControlFile()->FileName() + "_opti",
+          problem->NDim(),
+          problem->Restart(),
+          problem->OutputControlFile()->FileSteps()
+      )
+  );
+  
+  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(optidis, optioutput));
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
