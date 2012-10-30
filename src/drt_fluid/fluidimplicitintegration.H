@@ -357,7 +357,10 @@ public:
   Teuchos::RCP<      Epetra_Vector> Residual() { return residual_; }
   /// implement adapter fluid
   Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
+
+  /// Return true residual, ie the actual force in Newton [N]
   Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
+
   Teuchos::RCP<const Epetra_Vector> Velnp() { return velnp_; }
   Teuchos::RCP<      Epetra_Vector> ViewOfVelnp() { return velnp_; }
   Teuchos::RCP<const Epetra_Vector> Velaf() { return velaf_; }
@@ -423,13 +426,25 @@ public:
 //  void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 //  double TimeScaling() const;
 
+  /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit Newton [N]
+  /*! In order to avoid division by time step size \f$\Delta t\f$
+   *  the fluid balance of linear momentum is implemented in a way
+   *  that the residual does not have the unit Newton [N].
+   *  By multiplication with ResidualScaling() the residual is
+   *  converted to the true residual in unit Newton [N], ie a real force.
+   *
+   *  See also:
+   *  - trueresidual_
+   *  - TrueResidual()
+   */
   double ResidualScaling() const
   {
     if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
          return 1.0;
     else if (is_genalpha_)
          return alphaM_/(gamma_*dta_);
-    else return 1.0/(theta_*dta_);
+    else
+      return 1.0/(theta_*dta_);
   }
 
   /// return time integration factor
@@ -490,7 +505,7 @@ public:
   /// introduce surface split extractor object
   /*!
     This method must (and will) be called during setup with a properly
-    initialized extractor object iff we are on an ale mesh.
+    initialized extractor object if we are on an ale mesh.
    */
   void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { surfacesplitter_ = surfacesplitter; }
 
@@ -541,9 +556,9 @@ public:
 
   /// set the initial porosity field
   void SetInitialPorosityField(
-    const INPAR::POROELAST::InitialField,  ///< type of initial field
-	//const int,  ///< type of initial field
-    const int startfuncno  ///< number of spatial function
+    const INPAR::POROELAST::InitialField,   ///< type of initial field
+	//const int,                                ///< type of initial field
+    const int startfuncno                   ///< number of spatial function
     );
 
   void UpdateIterIncrementally(
@@ -554,7 +569,7 @@ public:
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
   Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
       Teuchos::RCP<Epetra_Vector> vecn, ///< vector at time level t_n
-      Teuchos::RCP<Epetra_Vector> vecm ///< vector at time level of equilibrium
+      Teuchos::RCP<Epetra_Vector> vecm  ///< vector at time level of equilibrium
       );
   //@}
 
@@ -569,22 +584,6 @@ public:
    *   \f$\int_\Omega div (u) \,\mathrm{d}\Omega = B^T u = 0\f$
    */
   Teuchos::RCP<Epetra_Vector> CalcDivOp();
-
-  /*! \brief Apply projection operator based on vector valued projectors
-   *
-   *  Apply a projection to the vector \f$v\f$ based on two projection vectors \f$a\f$ and \f$b\f$
-   *  \f[ v = a ( a^T b )^{-1} b^T v \f]
-   *
-   *  \param a  - (in) first projection vector
-   *  \param b  - (in) second projection vector
-   *  \param v  - (in) vector that is subjected to the projection
-   *
-   *  \author mayr.mt
-   *  \date 04/12
-   */
-  void ApplyVecProjOp(Teuchos::RCP<Epetra_Vector> op1,
-                      Teuchos::RCP<Epetra_Vector> op2,
-                      Teuchos::RCP<Epetra_Vector> vec);
 
 protected:
 
@@ -754,7 +753,7 @@ protected:
   /// robinrhs_: additional rhs when using robin-BC
   RCP<Epetra_Vector>    robinrhs_;
 
-  /// true (rescaled) residual vector without zeros at dirichlet positions
+  /// true (rescaled) residual vector without zeros at dirichlet positions (Unit: Newton [N])
   RCP<Epetra_Vector>    trueresidual_;
 
   /// Nonlinear iteration increment vector
@@ -818,7 +817,7 @@ protected:
   RCP<Epetra_Vector>    gridv_;
 
   /// initial porosity (poroelasticity)
-    RCP<Epetra_Vector>    initporosityfield_;
+  RCP<Epetra_Vector>    initporosityfield_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
