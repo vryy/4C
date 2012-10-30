@@ -1442,24 +1442,26 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
 
 void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres)
 {
+
   for (int i=0; i<coupmap_->NumMyElements(); i++)
   {
     int condgid = coupmap_->GID(i);
     DRT::Condition * cond = coupcond_[condgid];
     const std::vector<int>* nodes = cond->Nodes();
-
     if (nodes->size()!=1)
       dserror("Too many nodes on coupling with tissue condition ID=[%d]\n",condgid);
-
+    
     int gid = (*nodes)[0];
-    DRT::Node* node = discret_->gNode(gid);
-
     double pressure = 0.0;
-    if (myrank_==node->Owner())
+    if (discret_->HaveGlobalNode(gid))
     {
-      int giddof = discret_->Dof(node, 0);
-      int liddof = pnp_->Map().LID(giddof);
-      pressure = (*pnp_)[liddof];
+      DRT::Node* node = discret_->gNode(gid);
+      if (myrank_==node->Owner())
+      {
+        int giddof = discret_->Dof(node, 0);
+        int liddof = pnp_->Map().LID(giddof);
+        pressure = (*pnp_)[liddof];
+      }
     }
     double parpres = 0.;
     discret_->Comm().SumAll(&pressure,&parpres,1);

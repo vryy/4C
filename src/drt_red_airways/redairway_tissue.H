@@ -84,6 +84,12 @@ private:
   /// redundant vector of outlet fluxes (old iteration step)
   Teuchos::RCP<Epetra_Vector> coupflux_im_;
 
+  /// internal iteration step
+  int itermax_ ;
+
+  /// internal iteration step
+  double tol_ ;
+
 };
 }
 

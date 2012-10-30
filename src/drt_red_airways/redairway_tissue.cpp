@@ -122,6 +122,17 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
       rawdyn.get<int>("NUMSTEP") != timeparams.get<int>("NUMSTEP"))
     dserror("Parameter(s) for time integrators inconsistent");
 
+
+
+  // get coupling parameters
+  const Teuchos::ParameterList& rawtisdyn   = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
+  // get max iterations
+  itermax_ = rawtisdyn.get<int>("MAXITER");
+
+  // get tolarence
+  tol_ = rawtisdyn.get<double>("CONVTOL");;
+  
+
   // determine initial volume
   structure_->InitVol();
 }
@@ -143,6 +154,7 @@ void AIRWAY::RedAirwayTissue::Integrate()
 {
   while (NotFinished())
   {
+    int iter=0;
     IncrementTimeAndStep();
     redairways_->PrepareTimeStep();
 
@@ -150,7 +162,8 @@ void AIRWAY::RedAirwayTissue::Integrate()
     {
       DoRedAirwayStep();
       DoStructureStep();
-    }while (NotConverged());
+      iter++;
+    }while (NotConverged()&&iter<=itermax_);
 
     UpdateAndOutput();
   }
@@ -167,8 +180,9 @@ void AIRWAY::RedAirwayTissue::OutputIteration(double pres_inc_norm, double flux_
     cout << "-------------------------  FIELD ITERATION ---------------------------" << endl;
     for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
     {
-      cout << "\t time:\t" << Time() << "\t ID:\t" << couppres_ip_->Map().GID(i) << "\t P:\t" <<  (*couppres_ip_)[i]
-           << "\t Q:\t" <<  (*coupflux_ip_)[i] << "\t DP2:\t" << pres_inc_norm << "\t DQ2:\t" << flux_inc_norm << endl;
+      //      cout << "\t time:\t" << Time() << "\t ID:\t" << couppres_ip_->Map().GID(i) << "\t P:\t" <<  (*couppres_ip_)[i]
+      //           << "\t Q:\t" <<  (*coupflux_ip_)[i] << "\t DP2:\t" << pres_inc_norm << "\t DQ2:\t" << flux_inc_norm << endl;
+      printf("\t time:\t%f\t ID:\t%d\t P:\t%f\t Q:\t%f\t DP2:\t%f \t DQ2:\t %f\n", Time(), couppres_ip_->Map().GID(i),  (*couppres_ip_)[i],  (*coupflux_ip_)[i], pres_inc_norm , flux_inc_norm);
     }
     cout << "---------------------------------------------------------------------" << endl;
   }
@@ -228,7 +242,6 @@ bool AIRWAY::RedAirwayTissue::NotConverged()
   double flux_inc_norm;
   flux_inc->Norm2(&flux_inc_norm);
 
-  double tol = 1e-6;
 
   OutputIteration(pres_inc_norm, flux_inc_norm);
 
@@ -237,7 +250,7 @@ bool AIRWAY::RedAirwayTissue::NotConverged()
 //  couppres_ip_->PutScalar(0.0);
 //  coupflux_ip_->PutScalar(0.0);
 
-  if (pres_inc_norm < tol and flux_inc_norm < tol)
+  if (pres_inc_norm < tol_ and flux_inc_norm < tol_)
     return false;
 
   return true;
