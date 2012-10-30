@@ -381,7 +381,7 @@ namespace STR
     //! Subsequent calls to the Epetra_Operator::Apply method will apply
     //! this user supplied preconditioner to epetra vectors.
     //! The Epetra_Operator M can also be an Epetra_RowMatrix that can
-    //! be used by internally constructed preconditioner objects such as AztecOO, Ipfack, and ML
+    //! be used by internally constructed preconditioner objects such as AztecOO, Ifpack, and ML
     bool computePreconditioner
     (
       const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
@@ -663,25 +663,17 @@ namespace STR
     //! Called from the previous adapters as InitialGuess()
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() { return disi_; }
 
-
-
-    //! FORMERLY: Called from the previous adapters
-    /* prepare time step */
+    //! Prepare time step for coupled problems with monolithic approach
     virtual void PrepareTimeStep()
     {
       // prepare contact for new time step
       PrepareStepContact();
 
-      // Note: MFSI requires a constant predictor. Otherwise the fields will get
-      // out of sync.
-
       // predict
       Predict();
     }
 
-    //! FORMERLY: Called from the previous adapters
-    /* build linear system stiffness matrix and rhs/force residual
-     * Monolithic FSI accesses the linearised structure problem. */
+    //! Evaluate routine for coupled problems with monolithic approach
     virtual void Evaluate(
       Teuchos::RCP<const Epetra_Vector> disiterinc
     )
@@ -695,8 +687,7 @@ namespace STR
     }
 
 
-    //! FORMERLY: Called from the previous adapters
-    /* update time step */
+    //! Update routine for coupled problems with monolithic approach
     virtual void Update()
     {
       UpdateStepState();
@@ -705,13 +696,11 @@ namespace STR
       return;
     }
 
-    //! FORMERLY: Called from the previous adapters
-    /* output */
+    //! Output routine for coupled problems with monolithic approach
     virtual void Output()
     {
       OutputStep();
     }
-
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     void SetDisResidual
@@ -722,8 +711,7 @@ namespace STR
       if (disi != Teuchos::null) disi_->Update(1.0, *disi, 0.0);
     }
 
-    //! FORMERLY: Return effective residual force \f$R_{n+1}\f$
-    //! Called from the previous adapters as ForceRes()
+    //! Return the rhs-vector (negative sign for Newton is already included.)
     Teuchos::RCP<const Epetra_Vector> RHS() { return fres_; }
 
     virtual Teuchos::RCP<Epetra_Vector> Velaf()

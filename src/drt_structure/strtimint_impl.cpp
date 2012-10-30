@@ -208,7 +208,7 @@ void STR::TimIntImpl::Predict()
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
 
-  // possibly initialise Lagrange multiplicators to zero
+  // possibly initialise Lagrange multipliers to zero
   //  if ( (conman_->HaveConstraint())
   //       and (itertype_ == soltech_uzawalinnewton) )
   //  {
@@ -220,7 +220,7 @@ void STR::TimIntImpl::Predict()
   bool predict = true;
   EvaluateForceStiffResidual(predict);
 
-  // rotate to local co-ordinate systems
+  // rotate to local coordinate systems
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(fres_);
 
@@ -228,13 +228,13 @@ void STR::TimIntImpl::Predict()
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
-  // rotate reaction forces back to global co-ordinate system
+  // rotate reaction forces back to global coordinate system
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateLocalToGlobal(freact_);
 
   // blank residual at DOFs on Dirichlet BC
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
-  // rotate back to global co-ordinate system
+  // rotate back to global coordinate system
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateLocalToGlobal(fres_);
 
@@ -254,7 +254,7 @@ void STR::TimIntImpl::Predict()
   }
 
   // determine characteristic norms
-  // we set the minumum of CalcRefNormForce() and #tolfres_, because
+  // we set the minimum of CalcRefNormForce() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
   normcharforce_ = CalcRefNormForce();
   if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
@@ -2287,7 +2287,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 void STR::TimIntImpl::PrepareSystemForNewtonSolve()
 {
 
-  // rotate residual to local co-ordinate systems
+  // rotate residual to local coordinate systems
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(fres_);
 
@@ -2295,7 +2295,7 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
-  // rotate reaction forces back to global co-ordinate system
+  // rotate reaction forces back to global coordinate system
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateLocalToGlobal(freact_);
 

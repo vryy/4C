@@ -203,8 +203,7 @@ namespace STR
       return;
     }
 
-    //! FORMERLY: Called from the previous adapters
-    /* prepare time step */
+    //! Prepare time step for coupled problems with monolithic approach
     virtual void PrepareTimeStep()
     {
       // do nothing
