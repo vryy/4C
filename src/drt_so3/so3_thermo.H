@@ -18,6 +18,9 @@
 
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "so3_thermo_eletypes.H"
+// include thermal header because number of Gauss points are determined
+// dependent on distype
+#include "../drt_thermo/thermo_ele_impl_utils.H"
 
 
 namespace DRT
@@ -63,23 +66,19 @@ namespace ELEMENTS
     //@}
 
     //! number of element nodes
-    static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
+    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     //! number of space dimensions
-    static const int numdim_ = 3;
-
+    static const int nsd_ = 3;
     //! number of dofs per node
-    static const int noddof_ = 3;
-
+    static const int numdofpernode_ = 3;
     //! total dofs per element
-    static const int numdof_ = noddof_ * numnod_;
-
-    // TODO 2012-07-26 check if thermo has also 6 dofs???
-    //! number of dofs per node
-    static const int numstr_ = 6;
-
-    //!total gauss points per element
+    static const int numdofperelement_ = numdofpernode_ * nen_;
+    //! number of strains/stresses
+    static const int nstr_ = 6;
+    //! number of Gauss points per element (value is added in so3_thermo.cpp)
     int numgpt_;
+    // TODO 2012-10-30 include it
+    static const int numgpt_1 = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
     //! @name Acess methods
 
@@ -133,7 +132,7 @@ namespace ELEMENTS
         return 1;
       }
       // structure, 3D: 3 Dofs per node
-      return 3;
+      return nsd_;
     };
 
     //@}
@@ -167,20 +166,12 @@ namespace ELEMENTS
 
     //@}
 
-    // TODO 2012-07-26 not sure if required for thermo, PreEvaluate undertakes the task to calculate coupling term of matrix
-    //! evaluation
-    void PreEvaluate(
-      ParameterList& params,  //!< ParameterList for communication between control routine and elements
-      DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
-      DRT::Element::LocationArray& la //!< location array for de-assembly
-      );
-
-    // TODO 2012-07-26???
     //! @name Evaluation
-    //! Evaluate an element
-    //!  Evaluate So_tet4fbar element stiffness, mass, internal forces, etc.
+
+    //! evaluate an element
+    //! evaluate element stiffness, mass, internal forces, etc.
     //!
-    //! If NULL on input, the controlling method does not expect the element
+    //! if NULL on input, the controlling method does not expect the element
     //!  to fill these matrices or vectors.
     //!
     //!  \return 0 if successful, negative otherwise
@@ -195,9 +186,24 @@ namespace ELEMENTS
       Epetra_SerialDenseVector& elevec3  //!< vector to be filled by element
       );
 
+    // PreEvaluate undertakes the task to calculate coupling term of matrix
+    //! evaluation
+    void PreEvaluate(
+      ParameterList& params,  //!< ParameterList for communication between control routine and elements
+      DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
+      DRT::Element::LocationArray& la //!< location array for de-assembly
+      );
+
+    //@}
+
     //! init the inverse of the jacobian and its determinant in the material
     //! configuration
     virtual void InitJacobianMapping();
+
+    //! Lump mass matrix (bborn 07/08)
+    void so3_thermo_lumpmass(
+      LINALG::Matrix<numdofperelement_,numdofperelement_>* emass
+      );
 
     //@}
 
@@ -206,16 +212,64 @@ namespace ELEMENTS
     //! don't want = operator
     So3_Thermo& operator = (const So3_Thermo& old);
 
-    //! Evaluate an element
+    //! action parameters recognized by so_hex8
+    enum ActionType
+    {
+      none,
+      // TODO 2012-08-16 check if actions "linstiff/linstiffmass" are required!!
+
+      calc_struct_linstiff,  //!< geometrical linear analysis: stiffness matrix
+      calc_struct_nlnstiff,  //!< stiffness matrix
+      calc_struct_internalforce,  //!< internal force
+      calc_struct_linstiffmass,  //!< geometrical linear analysis: internal force,
+                                 //!< its stiffness and mass matrix
+      calc_struct_nlnstiffmass,  //!< internal force, its stiffness and mass matrix
+      calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
+      calc_struct_stress,  //!< calculate stresses
+      calc_struct_stifftemp,  //!< calculate coupling term k_dT for monolithic TSI
+      calc_struct_update_istep,  //!< update all at element level
+      calc_struct_reset_istep,  //!< reset elementwise internal variables
+                                //!< during iteration to last converged state
+                                //!< needed for predictor TangDis
+      postprocess_stress  //!< postprocess stresses
+    };
+
+    //! vector of inverses of the jacobian in material frame
+    vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
+    //! determinant of Jacobian in material frame
+    vector<double> detJ_;
+    //! container containing all kind of solid3 thisandthat
+    DRT::Container data_;
+    //! vector of coordinates of current integration point in reference coordinates
+    vector<LINALG::Matrix<nsd_,1> > xsi_;
+
+    DRT::UTILS::GaussIntegration intpoints_;
+
+    //! flag indicating higher order element
+    bool ishigherorder_;
+
+    //! kinematic types of the underlying elements
+    //! default: total Lagrange
+    enum KinematicType
+    {
+      so3_thermo_linear,
+      so3_thermo_nonlinear
+    };
+    //! kinematic type
+    KinematicType kintype_;
+
+    //! @name TSI related stuff
+
+    //! evaluate an element
     //!
-    //! Evaluate So3_Thermo element stiffness, mass, internal forces, etc.
-    //! Templated evaluate routine of element matrixes
+    //! evaluate So3_Thermo element stiffness, mass, internal forces, etc.
+    //! templated evaluate routine of element matrixes
     //!
-    //! If NULL on input, the controlling method does not expect the element
+    //! if NULL on input, the controlling method does not expect the element
     //! to fill these matrices or vectors.
     //!
     //! \return 0 if successful, negative otherwise
-    int CouplThrEvaluate(
+    int CouplToThrEvaluate(
       ParameterList& params,  //!< ParameterList for communication between control routine and elements
       DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
       DRT::Element::LocationArray& la,  //!< location array for de-assembly
@@ -226,43 +280,53 @@ namespace ELEMENTS
       Epetra_SerialDenseVector& elevec3  //!< vector to be filled by element
       );
 
-    // TODO 2012-07-26 which actions are required for thermo???
-    //! action parameters recognized by so_hex8
-    enum ActionType
-    {
-      none,
-      calc_struct_linstiff,
-      calc_struct_nlnstiff,
-      calc_struct_internalforce,
-      calc_struct_linstiffmass,
-      calc_struct_nlnstiffmass,
-      calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-      calc_struct_stress,
-      calc_struct_stifftemp,
-      calc_struct_update_istep,
-      calc_struct_reset_istep,  //!< reset elementwise internal variables
-                                //!< during iteration to last converged state
-      calc_struct_reset_discretization,  //!< reset elementwise internal variables
-                                         //!< to state in the beginning of the computation
-      calc_struct_energy,       //!< compute internal energy
-      calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-      postprocess_stress,       //!< postprocess stresses
-      prestress_update,
-    };
+    //! Calculate temperature coupling term for the internal force (geometric linear)
+    virtual void so3_thermo_fint_lin(
+      DRT::Element::LocationArray& la,  //!< location array
+      vector<double>& disp,  //!< current displacements
+      vector<double>& residual,  //!< current residual displ
+      vector<double>& temp, //!< current temperature
+      LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
+      LINALG::Matrix<numgpt_1,nstr_>* elestress,  //!< stresses at GP
+      LINALG::Matrix<numgpt_1,nstr_>* elestrain,  //!< strains at GP
+      Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
+      const INPAR::STR::StressType iostress,  //!< stress output option
+      const INPAR::STR::StrainType iostrain  //!< strain output option
+      );
 
-    //! vector of inverses of the jacobian in material frame
-    vector<LINALG::Matrix<numdim_,numdim_> > invJ_;
-    //! determinant of Jacobian in material frame
-    vector<double> detJ_;
-    //! container containing all kind of solid3 thisandthat
-    DRT::Container data_;
-    //! vector of coordinates of current integration point in reference coordinates
-    vector<LINALG::Matrix<numdim_,1> > xsi_;
-    //! gauss integration rule
-    DRT::UTILS::GaussIntegration intpoints_;
+    //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
+    virtual void so3_thermo_kdt_lin(
+      DRT::Element::LocationArray& la,
+      vector<double>& disp,  //!< (i): current displacement
+      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrixcoupl  //!< (o): mechanical thermal stiffness term at current gp
+      );
 
-    //! flag indicating higher order element
-    bool ishigherorder_;
+    //! \brief Interface to the temperature dependent material law working with soh8.
+    //!
+    //! Here the interface to the first solid material with temperature takes place.
+    //! Stress and material tangent must be retrieved whereas all necessary data
+    //! is passed.
+    //! Add whatever your material needs, but make sure that exchange is not
+    //! overdone performance-wise.
+    void so3_thermo_materialize(
+      LINALG::Matrix<nstr_,1>* stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
+      LINALG::Matrix<nstr_,1>* ctemp,  //!< (o): temperature dependent tangent matrix at current gp
+      LINALG::Matrix<1,1>* Ntemp,  // temperature of element: (shapefcts . element temperature) at current gp
+      LINALG::Matrix<nstr_,nstr_>* cmat,  //!< (o): material tangent matrix at current gp
+      LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< F at current gp, CAUTION! only for disp-based soh8
+      LINALG::Matrix<nstr_,1>* glstrain,  //!< (o): total strain
+      LINALG::Matrix<nstr_,1>* plglstrain,  //!< (o): plastic strain
+      LINALG::Matrix<nstr_,1>& straininc,  //!< (i): total strain increment
+      const double& scalartemp,  //!< scalar-valued temperature of the element
+      double* density,  //!< density of material
+      const int gp,  //!< current Gauss point
+      Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
+      );
+
+    //! calculate the constant temperature tangent for stresstemp
+    void Ctemp(
+      LINALG::Matrix<nstr_,1>* ctemp  //!< temperature dependent material tangent
+      );
 
   private:
     DRT::Node** Nodes();
@@ -271,10 +335,11 @@ namespace ELEMENTS
 
     int Id() const;
 
-  }; // class So3_Thermo
+  };  // class So3_Thermo
 
-} // namespace ELEMENTS
-} // namespace DRT
+}  // namespace ELEMENTS
+}  // namespace DRT
 
 
+/*----------------------------------------------------------------------*/
 #endif  // SO3_THERMO_H

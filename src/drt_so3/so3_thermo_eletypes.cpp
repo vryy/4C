@@ -33,8 +33,8 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8ThermoType::Create(
   const std::vector<char> & data
   )
 {
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* object =
-        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1,-1);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* object
+    = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1,-1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -126,6 +126,7 @@ int DRT::ELEMENTS::So_hex8ThermoType::Initialize(DRT::Discretization& dis)
     if (!actele)
       dserror("cast to So_hex8_thermo* failed");
 
+    // initialise all quantities
     actele->So_hex8::InitJacobianMapping();
     actele->So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>::InitJacobianMapping();
   }

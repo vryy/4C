@@ -17,13 +17,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-//for ReadElement()
-// TODO
-//#include "../drt_mat/structporo.H"
-//for secondDerivativesZero
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-
-
 /*----------------------------------------------------------------------*
  | ctor (public)                                              dano 08/12|
  *----------------------------------------------------------------------*/
@@ -37,6 +30,7 @@ DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
 {
   numgpt_ = intpoints_.NumPoints();
   ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
+  kintype_ = so3_thermo_nonlinear;  // TODO 2012-10-26 default is defined here!!
   return;
 }
 
@@ -50,7 +44,8 @@ DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
   ):
   so3_ele(old),
   intpoints_(distype),
-  ishigherorder_(old.ishigherorder_)
+  ishigherorder_(old.ishigherorder_),
+  kintype_(old.kintype_)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -64,8 +59,8 @@ DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Clone() const
 {
-  DRT::ELEMENTS::So3_Thermo< so3_ele, distype>* newelement =
-      new DRT::ELEMENTS::So3_Thermo< so3_ele, distype>(*this);
+  DRT::ELEMENTS::So3_Thermo< so3_ele, distype>* newelement
+    = new DRT::ELEMENTS::So3_Thermo< so3_ele, distype>(*this);
 
   return newelement;
 }
@@ -82,14 +77,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Pack(
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
 
-  // TODO 2012-07-26 what do we have to pack???
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   so3_ele::AddtoPack(data,type);
   // data_
   so3_ele::AddtoPack(data,data_);
-
+  // kintype_
+  so3_ele::AddtoPack(data,kintype_);
   // detJ_
   so3_ele::AddtoPack(data,detJ_);
 
@@ -115,24 +109,25 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Unpack(
   const vector<char>& data
   )
 {
-  // TODO 2012-07-26 what has to be packed/unpacked???
-
   vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   so3_ele::ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // data_
+
+  // extract base class element data_
   vector<char> tmp(0);
   so3_ele::ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-
+  // kintype_
+//  so3_ele::ExtractfromPack(position,data,kintype_);
+  kintype_ = static_cast<KinematicType>( so3_ele::ExtractInt(position,data) );
   // detJ_
   so3_ele::ExtractfromPack(position,data,detJ_);
   // invJ_
   int size = 0;
   so3_ele::ExtractfromPack(position,data,size);
-  invJ_.resize(size, LINALG::Matrix<numdim_,numdim_>(true));
+  invJ_.resize(size, LINALG::Matrix<nsd_,nsd_>(true));
   for (int i=0; i<size; ++i)
     so3_ele::ExtractfromPack(position,data,invJ_[i]);
 
@@ -169,25 +164,37 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
   DRT::INPUT::LineDefinition* linedef
   )
 {
-  so3_ele::ReadElement(eletype,eledistype,linedef );
+  so3_ele::ReadElement(eletype,eledistype,linedef);
 
   Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
 
-  // TODO 2012-07-26 replace by thermo-materials
-//  if(mat->MaterialType() == INPAR::MAT::m_structporo)
-//  {
-//    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
-//    if(actmat == NULL)
-//      dserror("StructPoro Material Type expected for porous media!");
-//    actmat->Setup(numgpt_);
-//  }
+  // read thermo-materials
+  switch (mat->MaterialType())
+  {
+  // TODO 2012-10-30 plastic materials are already set in L181: so_hex8_input ReadElement
+  // materials without history need no separate Setup()
+  default :
+  break;
+  }
+
+  std::string buffer;
+  linedef->ExtractString("KINEM",buffer);
+
+  // geometrically linear
+  if(buffer=="linear")
+    kintype_ = so3_thermo_linear;
+  // geometrically non-linear with Total Lagrangean approach
+  else if (buffer=="nonlinear")
+    kintype_ = so3_thermo_nonlinear;
+  else
+    dserror("Reading of SO3_THERMO element failed! KINEM unknown");
 
   return true;
 }  // ReadElement()
 
 
 /*----------------------------------------------------------------------*
- | get the nodes (public)                                    dano 08/12 |
+ | get the nodes from so3 (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline DRT::Node** DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Nodes()
@@ -197,7 +204,7 @@ inline DRT::Node** DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Nodes()
 
 
 /*----------------------------------------------------------------------*
- | get the material (public)                                 dano 08/12 |
+ | get the material from so3 (public)                        dano 08/12 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline RCP<MAT::Material>  DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Material(
@@ -208,7 +215,7 @@ inline RCP<MAT::Material>  DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Material(
 
 
 /*----------------------------------------------------------------------*
- | get the nodes (public)                                    dano 08/12 |
+ | get the node Ids from so3 (public)                        dano 08/12 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Id() const
@@ -218,5 +225,5 @@ inline int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Id() const
 
 
 /*----------------------------------------------------------------------*/
-// TODO check if include has to placed at the end of the file 2012-07-26
+// include the file at the end of so3_thermo.cpp
 #include "so3_thermo_fwd.hpp"
