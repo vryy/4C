@@ -484,9 +484,10 @@ void ADAPTER::FluidFSI::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> ma
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::Reset()
+void ADAPTER::FluidFSI::Reset(bool completeReset, bool newFiles, int iter)
+
 {
-  fluidimpl_->Reset();
+  fluidimpl_->Reset(completeReset, newFiles, iter);
   return;
 }
 

@@ -153,7 +153,10 @@ namespace ADAPTER {
     void ProjVelToDivZero();
 
     /// reset state vectors
-    virtual void Reset();
+    virtual void Reset(
+        bool completeReset = false,
+        bool newFiles = false,
+        int iter = -1);
 
   protected:
     /// A castet pointer to the fluid itself

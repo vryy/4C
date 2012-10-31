@@ -239,7 +239,7 @@ void FS3I::BiofilmFSI::Timeloop()
       time_ = time_bio + time_fsi;
 
       fsi_->StructureField()->Reset();
-      fsi_->FluidField().Reset();
+      fsi_->FluidField().Reset(true, false, -1);
       fsi_->AleField().Reset();
 
       fsi_->AleField().BuildSystemMatrix(false);
