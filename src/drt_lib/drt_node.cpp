@@ -233,7 +233,7 @@ DRT::Condition* DRT::Node::GetCondition(const string& name) const
 
 /*----------------------------------------------------------------------*
  |  Change position reference                                  (public) |
- |                                                            mc 	    |
+ |                                                            mc	06/11 |
  *----------------------------------------------------------------------*/
 void DRT::Node::ChangePos(vector<double> nvector)
 {

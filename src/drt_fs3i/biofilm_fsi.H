@@ -69,6 +69,11 @@ namespace FS3I
 
     void ChangeConfig(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
 
+    void ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
+
+    void StructGmshOutput();
+
+    void FluidGmshOutput();
 
   private:
 

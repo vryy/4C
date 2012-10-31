@@ -47,6 +47,7 @@
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/io_gmsh.H"
 
 //#define SCATRABLOCKMATRIXMERGE
 
@@ -243,7 +244,8 @@ void FS3I::BiofilmFSI::Timeloop()
 
       fsi_->AleField().BuildSystemMatrix(false);
 
-
+      StructGmshOutput();
+      FluidGmshOutput();
       //fsi_->StructureField()->DiscWriter()->WriteMesh(step_bio, time_bio);
       //fsi_->FluidField().DiscWriter()->WriteMesh(step_bio, time_bio);
     }
@@ -405,9 +407,6 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
       unitnormal[j] = (*nodalnormals)[strudis->DofRowMap()->LID(globaldofs[j])];
       temp += unitnormal[j]*unitnormal[j];
 
-      // actnode->Print(cout);
-      cout<< strudis->DofRowMap()->LID(globaldofs[j])<<endl;
-      //cout<<"\n unitnormal["<<j<<"]="<<unitnormal[j]<<endl;
     }
     double absval = sqrt(temp);
     int lnodeid = strudis->NodeRowMap()->LID(nodegid);
@@ -424,7 +423,6 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
       {
         unitnormal[j] /= absval;
         Values[j] = grownvolume_ * influx * unitnormal[j];
-//        Values[j] = grownvolume_ * unitnormal[j];
       }
     }
 
@@ -456,8 +454,14 @@ void FS3I::BiofilmFSI::FluidAleSolve(
   ChangeConfig(fluiddis, fluiddisp);
 
   //change nodes reference position also for ale field
+  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField().ExtractDisplacement();
   RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
-  ChangeConfig(fluidaledis, fsi_->AleField().ExtractDisplacement());
+  ChangeConfig(fluidaledis, fluidaledisp);
+
+  //change nodes reference position also for scatra fluid field
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
+  RCP<DRT::Discretization> scatradis = scatra->ScaTraField().Discretization();
+  ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
 
   fsi_->AleField().SetupDBCMapEx(0);
 
@@ -482,11 +486,16 @@ void FS3I::BiofilmFSI::StructAleSolve(
 
   ChangeConfig(structdis, structdisp);
 
-  structdis->FillComplete(false, true, false);
+  structdis->FillComplete(false, true, true);
 
   //change nodes reference position also for ale field
   RCP<DRT::Discretization> structaledis = ale_->Discretization();
   ChangeConfig(structaledis, ale_->ExtractDisplacement());
+
+  //change nodes reference position also for scatra structure field
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
+  RCP<DRT::Discretization> struscatradis = struscatra->ScaTraField().Discretization();
+  ScatraChangeConfig(struscatradis, structdis, structdisp);
 
   ale_->SetupDBCMapEx(0);
 
@@ -563,7 +572,8 @@ Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::StructToAle(Teuchos::RCP<const Epe
 //  }
 //}
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
 {
 
@@ -596,8 +606,150 @@ void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<E
     }
 
     mynode->ChangePos(nvector);
+
   }
 
   return;
 
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::ScatraChangeConfig(RCP<DRT::Discretization> scatradis, RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
+{
+  const int numnode = (scatradis->NodeRowMap())->NumMyElements();
+  const Epetra_Vector& gvector =*disp;
+
+  // loop over all nodes
+  for (int index = 0; index < numnode; ++index)
+  {
+    // get current node
+    int gid = (scatradis->NodeRowMap())->GID(index);
+    DRT::Node* mynode = scatradis->gNode(gid);
+
+    // get local fluid/structure node with the same local node id
+    DRT::Node* lnode = dis->lRowNode(index);
+
+    // get degrees of freedom associated with this fluid/structure node
+    // (first dofset always considered, allowing for using multiple
+    //  dof sets, e.g., for structure-based scalar transport)
+    vector<int> nodedofs = dis->Dof(0,lnode);
+
+    vector<double> nvector(nodedofs.size());
+
+
+    // extract local values from the global vector
+//    const size_t ldim = globaldofs.size();
+    //nvector.resize(ldim);
+
+    for (size_t i=0; i<3; ++i)
+    {
+
+      const int lid = gvector.Map().LID(nodedofs[i]);
+
+      if (lid<0)
+      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",gvector.Comm().MyPID(),nodedofs[i]);
+      nvector[i] += gvector[lid];
+
+    }
+
+    mynode->ChangePos(nvector);
+
+  }
+
+  return;
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::StructGmshOutput()
+{
+  // write the structure mesh
+  const Teuchos::RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
+  const Teuchos::RCP<DRT::Discretization> structaledis = ale_->Discretization();
+  RCP<DRT::Discretization> struscatradis = scatravec_[1]->ScaTraField().Discretization();
+
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("struct", step_bio, 701, true, structdis->Comm().MyPID());
+
+  std::ofstream gmshfilecontent(filename.c_str());
+
+  Teuchos::RCP<Epetra_Vector> structdisp = fsi_->StructureField()->ExtractDispn();
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "struct displacement \" {" << endl;
+    // draw vector field 'struct displacement' for every element
+    IO::GMSH::VectorFieldDofBasedToGmsh(structdis,structdisp,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+
+  Teuchos::RCP<Epetra_Vector> strucaletdisp = ale_->ExtractDisplacement();
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "struct ale displacement \" {" << endl;
+    // draw vector field 'struct ale displacement' for every element
+    IO::GMSH::VectorFieldDofBasedToGmsh(structaledis,strucaletdisp,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "struct phi \" {" << endl;
+    // draw vector field 'struct phi' for every element
+    IO::GMSH::ScalarFieldToGmsh(struscatradis,scatravec_[1]->ScaTraField().Phinp(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  gmshfilecontent.close();
+  std::cout << " done" << endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::FluidGmshOutput()
+{
+
+  //write the fluid mesh
+  const Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
+  const Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
+  RCP<DRT::Discretization> struscatradis = scatravec_[0]->ScaTraField().Discretization();
+
+  const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid", step_bio, 701, true, fluiddis->Comm().MyPID());
+
+  std::ofstream gmshfilecontent(filenamefluid.c_str());
+
+  Teuchos::RCP<const Epetra_Vector> fluidvel = fsi_->FluidField().Velnp();
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "fluid velocity \" {" << endl;
+    // draw vector field 'fluid velocity' for every element
+    IO::GMSH::VectorFieldDofBasedToGmsh(fluiddis,fluidvel,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+
+  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField().ExtractDisplacement();
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "fluid ale displacement \" {" << endl;
+    // draw vector field 'fluid ale displacement' for every element
+    IO::GMSH::VectorFieldDofBasedToGmsh(fluidaledis,fluidaledisp,gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "fluid phi \" {" << endl;
+    // draw vector field 'fluid phi' for every element
+    IO::GMSH::ScalarFieldToGmsh(struscatradis,scatravec_[0]->ScaTraField().Phinp(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+
+  gmshfilecontent.close();
+  std::cout << " done" << endl;
+
+  return;
 }
