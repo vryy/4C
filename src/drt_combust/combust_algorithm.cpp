@@ -153,6 +153,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
   flamefront_->UpdateOldInterfaceHandle();
 
+  // compute initial volume of minus domain
   volume_start_ = ComputeVolume();
 
   if(reinitinitial_)
@@ -281,9 +282,6 @@ COMBUST::Algorithm::~Algorithm()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::TimeLoop()
 {
-  // compute initial volume of minus domain
-  volume_start_ = ComputeVolume();
-
   // get initial field by solving stationary problem first
   // however, calculate it if and only if the problem has not been restarted
   if(DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == true and restart_==false)
@@ -377,9 +375,6 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     dserror("Fluid time integration scheme is not stationary");
   if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
     dserror("Scatra time integration scheme is not stationary");
-
-  // compute initial volume of minus domain
-  volume_start_ = ComputeVolume();
 
   // solve nonlinear Navier-Stokes system
   DoFluidField();
