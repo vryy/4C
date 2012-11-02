@@ -3152,6 +3152,21 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
   }
 
+  // -------------------------------------------------------------------
+  // For af-generalized-alpha: update accelerations
+  // Furthermore, calculate velocities, pressures, scalars and
+  // accelerations at intermediate time steps n+alpha_F and n+alpha_M,
+  // respectively, for next iteration.
+  // This has to be done at the end of the iteration, since we might
+  // need the velocities at n+alpha_F in a potential coupling
+  // algorithm, for instance.
+  // -------------------------------------------------------------------
+  if (is_genalpha_)
+  {
+    GenAlphaUpdateAcceleration();
+
+    GenAlphaIntermediateValues();
+  }
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
