@@ -3202,29 +3202,63 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const doub
   //here calculation of distance (sign is already taken in consideration)
   double distance = 0.0;
 
-  if (xp[0] > -0.146 and xp[1] > 0.067)
+//  if (xp[0] > -0.146 and xp[1] > 0.067)
+//  {
+//     distance = + sqrt(DSQR(-0.146 - xp[0])+DSQR(0.067 - xp[1]));
+//  }
+//  else if (xp[0] >= -0.146 and xp[1] <= 0.067)
+//  {
+//     distance = + fabs(-0.146 - xp[0]);
+//     //std::cout << distance << std::endl;
+//  }
+//  else if (xp[0] <= -0.146 and xp[1] >= 0.067)
+//  {
+//     distance = + fabs(0.067 - xp[1]);
+//  }
+//  else if (xp[0] < -0.146 and xp[1] < 0.067 and xp[1] <= (xp[0] + 0.213))
+//  {
+//     //distance = - fabs(0.067 - xp[1]);
+//     distance = - fabs(-0.146 - xp[0]);
+//  }
+//  else
+//  {
+//     //distance = - fabs(-0.146 - xp[0]);
+//     distance = - fabs(0.067 - xp[1]);
+//     //std::cout << distance << std::endl;
+//  }
+
+  double xp_corner[2];
+  double xp_center[2];
+  double radius=0.03;
+
+  xp_corner[0]=0.146;
+  xp_corner[1]=0.292;
+  xp_center[0]=xp_corner[0]-radius;
+  xp_center[1]=xp_corner[1]-radius;
+
+
+  if (xp[0] <=xp_center[0] and xp[1] >= xp_center[1])
   {
-     distance = + sqrt(DSQR(-0.146 - xp[0])+DSQR(0.067 - xp[1]));
+     distance = xp[1]-xp_corner[1] ;
   }
-  else if (xp[0] >= -0.146 and xp[1] <= 0.067)
+  else if (xp[0] >=xp_center[0] and xp[1] <= xp_center[1] and !(xp[0]==xp_center[0] and xp[1]==xp_center[1]))
   {
-     distance = + fabs(-0.146 - xp[0]);
-     //std::cout << distance << std::endl;
+      distance= xp[0]-xp_corner[0];
   }
-  else if (xp[0] <= -0.146 and xp[1] >= 0.067)
+  else if (xp[0] <xp_center[0] and xp[1] < xp_center[1])
   {
-     distance = + fabs(0.067 - xp[1]);
-  }
-  else if (xp[0] < -0.146 and xp[1] < 0.067 and xp[1] <= (xp[0] + 0.213))
-  {
-     //distance = - fabs(0.067 - xp[1]);
-     distance = - fabs(-0.146 - xp[0]);
+      if(xp[1]>(xp_corner[1]+(xp[0]-xp_corner[0])))
+      {
+          distance = - fabs(xp_corner[1] - xp[1]);
+      }
+      else
+      {
+          distance = - fabs(xp_corner[0] - xp[0]);
+      }
   }
   else
   {
-     //distance = - fabs(-0.146 - xp[0]);
-     distance = - fabs(0.067 - xp[1]);
-     //std::cout << distance << std::endl;
+      distance = sqrt(DSQR(xp[0]-xp_center[0])+DSQR(xp[1]-xp_center[1]))-radius;
   }
 
   return distance;
