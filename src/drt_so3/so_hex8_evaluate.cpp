@@ -151,7 +151,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // special case: geometric linear
       else  // (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
       {
-        soh8_linstiffmass(lm,mydisp,myres,NULL,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+        soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
 
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // special case: geometric linear
       else  // (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
       {
-        soh8_linstiffmass(lm,mydisp,myres,NULL,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+        soh8_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
 
@@ -203,7 +203,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       // standard analysis
-      soh8_linstiffmass(lm,mydisp,myres,NULL,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+      soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
@@ -235,7 +235,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // special case: geometric linear
       else  // (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
       {
-        soh8_linstiffmass(lm,mydisp,myres,NULL,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+        soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
 
@@ -315,7 +315,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         // if a linear analysis is desired
         else  // (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
         {
-          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
 
         {
@@ -1124,7 +1124,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
 
       // if a linear analysis is desired
       if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_linear)
-        soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+        soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {

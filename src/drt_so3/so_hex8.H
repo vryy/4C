@@ -659,7 +659,6 @@ protected:
       vector<int>& lm,  ///< location matrix
       vector<double>& disp,  ///< current displacements
       vector<double>& residual,  ///< current residual displ
-      const vector<double>* tempnp,  // current temperature
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector

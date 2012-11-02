@@ -90,16 +90,6 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     // create a dummy element matrix to apply linearised EAS-stuff onto
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
 
-    // call the purely structural method
-    // If a visco-plastic Robinson's material is used evaluate the element using
-    // the current temperature
-    // that is NOT a beautiful implementation, but it works
-    if (mat->MaterialType() != INPAR::MAT::m_vp_robinson)
-    {
-      soh8_linstiffmass(lm,mydisp,myres,NULL,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
-          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
-    }
-
     // need current temperature state, call the temperature discretization
     // disassemble temperature
     if (discretization.HasState(1,"temperature"))
@@ -122,23 +112,19 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
-      // If a visco-plastic Robinson's material is used evaluate the element using
-      // the current temperature
-      // that is NOT a beautiful implementation, but it works
-      if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
-      {
-        // purely structural method, this is the coupled routine, i.e., a 2nd
-        // discretisation exists, i.e., --> we always have a temperature state
-        soh8_linstiffmass(lm,mydisp,myres,&mytempnp,&myemat,NULL,&elevec1,NULL,NULL,NULL,
-          params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
-      }
-      else
-      {
-        // calculate the THERMOmechanical term for fint
-        soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
-          NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      }
-    }
+      // extract current temperatures declared as RCP<vector> 
+      Teuchos::RCP<std::vector<double> >robtempnp = rcp(new std::vector<double>(la[1].lm_.size()) );
+      DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
+      params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
+
+      // calculate the THERMOmechanical term for fint
+      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none);
+    }  // has temperature state
+
+    // call the purely structural method
+    soh8_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
   }
   break;
 
@@ -167,18 +153,6 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     // build a matrix dummy
     if (elemat1.IsInitialized()) matptr = &elemat1;
 
-    // that is NOT a beautiful implementation, but it works
-    // For all materials apart from the visco-plastic Robinson's material, use the
-    // default routine soh8_linstiffmass() and no temperature, i.e. NULL
-    // If it's a visco-plastic Robinson's material, i.e. the current temperature is required,
-    // pass &mytempnp
-    if (mat->MaterialType() != INPAR::MAT::m_vp_robinson)
-    {
-      // call the purely structural method
-      soh8_linstiffmass(lm,mydisp,myres,NULL,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
-        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
-    }
-
     // need current temperature state, call the temperature discretization
     // disassemble temperature
     if(discretization.HasState(1,"temperature"))
@@ -201,23 +175,18 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
-      // If a visco-plastic Robinson's material is used evaluate the element using
-      // the current temperature
-      // that is NOT a beautiful implementation, but it works
-      if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
-      {
-        // purely structural method, this is the coupled routine, i.e., a 2nd
-        // discretisation exists, i.e., --> we always have a temperature state
-        soh8_linstiffmass(lm,mydisp,myres,&mytempnp,matptr,NULL,&elevec1,NULL,NULL,NULL,
-          params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
-      }
-      else
-      {
-        // calculate the THERMOmechanical term for fint
-        soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
-          NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      }
+      // extract local values of the global vectors
+      Teuchos::RCP<std::vector<double> >robtempnp = rcp(new std::vector<double>(la[1].lm_.size()) );
+      DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
+      params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
+
+      // calculate the THERMOmechanical term for fint
+      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
+        NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
+    // call the purely structural method
+    soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
   }
   break;
 
@@ -249,16 +218,6 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm); // lm now contains only u-dofs
 
-    // If a visco-plastic Robinson's material is used evaluate the element using
-    // the current temperature
-    // that is NOT a beautiful implementation, but it works
-    if (mat->MaterialType() != INPAR::MAT::m_vp_robinson)
-    {
-      // call the purely structural method
-      soh8_linstiffmass(lm,mydisp,myres,NULL,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
-        params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
-    }
-
     // need current temperature state,
     // call the temperature discretization: thermo equates 2nd dofset
     // disassemble temperature
@@ -283,25 +242,20 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
-      // If a visco-plastic Robinson's material is used evaluate the element using
-      // the current temperature
-      // that is NOT a beautiful implementation, but it works
-      if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
-      {
-        // purely structural method, this is the coupled routine, i.e., a 2nd
-        // discretisation exists, i.e., --> we always have a temperature state
-        soh8_linstiffmass(lm,mydisp,myres,&mytempnp,&elemat1,&elemat2,&elevec1,NULL,NULL,
-          NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
-      }
-      else
-      {
-        // build the current temperature vector
-        LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
-        // calculate the THERMOmechanical term for fint
-        soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
-          NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      }
+      // extract local values of the global vectors
+      Teuchos::RCP<std::vector<double> >robtempnp = rcp(new std::vector<double>(la[1].lm_.size()) );
+      DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
+      params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
+
+      // build the current temperature vector
+      LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
+      // calculate the THERMOmechanical term for fint
+      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
+        NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
+    // call the purely structural method
+    soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
+      params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
   }
@@ -356,15 +310,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       INPAR::STR::StrainType ioplstrain
         = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain",
             INPAR::STR::strain_none);
-      // call the purely structural method
-      // If a visco-plastic Robinson's material is used evaluate the element using
-      // the current temperature
-      // that is NOT a beautiful implementation, but it works
-      if (mat->MaterialType() != INPAR::MAT::m_vp_robinson)
-      {
-        soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&stress,&strain,
-          &plstrain,params,iostress,iostrain,ioplstrain);
-      }
+
+      // initialise the temperature-dependent stress
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp(true);
 
       // need current temperature state,
       // call the temperature discretization: thermo equates 2nd dofset
@@ -390,29 +338,23 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         // extract the current temperatures
         DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
-        // purely structural method, this is the coupled routine, i.e., a 2nd
-        // discretisation exists, i.e., --> we always have a temperature state
-        // If a visco-plastic Robinson's material is used evaluate the element using
-        // the current temperature
-        // that is NOT a beautiful implementation, but it works
-        // get the temperature dependent stress
-        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp(true);
-        if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
-        {
-          soh8_linstiffmass(lm,mydisp,myres,&mytempnp,NULL,NULL,NULL,&stress,&strain,
-            &plstrain,params,iostress,iostrain,ioplstrain);
-        }
-        else
-        {
-          // calculate the THERMOmechanical term for fint: temperature stresses
-          soh8_finttemp(la,mydisp,myres,mytempnp,NULL,&stresstemp,NULL,params,
-            iostress,INPAR::STR::strain_none);
-        }
+        // extract local values of the global vectors
+        Teuchos::RCP<std::vector<double> >robtempnp = rcp(new std::vector<double>(la[1].lm_.size()) );
+        DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
+        params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
 
-        // total stress
-        // add stresstemp to the mechanical stress
-        stress.Update(1.0,stresstemp,1.0);
+        // calculate the THERMOmechanical term for fint: temperature stresses
+        soh8_finttemp(la,mydisp,myres,mytempnp,NULL,&stresstemp,NULL,params,
+          iostress,INPAR::STR::strain_none);
       }
+
+      // call the purely structural method
+      soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,
+        &plstrain,params,iostress,iostrain,ioplstrain);
+
+      // total stress
+      // add stresstemp to the mechanical stress
+      stress.Update(1.0,stresstemp,1.0);
 
       {
         DRT::PackBuffer data;
@@ -564,7 +506,6 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
   vector<int>& lm,  // location matrix
   vector<double>& disp,  // current displacements
   vector<double>& residual,  // current residual displacements or displacement increment
-  const vector<double>* tempnp,  // current temperature
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  // element stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
@@ -621,7 +562,6 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
-
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
     **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -750,29 +690,33 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
     {
       // scalar-valued temperature: T = shapefunctions . element temperatures
       // T = N_T^(e) . T^(e)
-      LINALG::Matrix<1,1> Ntemp(false);
-      // vector of the current element temperatures
+      // get the temperature vector by extraction from parameter list
       LINALG::Matrix<NUMNOD_SOH8,1> etemp(true);
+      LINALG::Matrix<1,1> Ntemp(false);
       LINALG::Matrix<NUMSTR_SOH8,1> ctemp(true);
-      // in StructureBaseAlgorithm() temperature not yet available
-      if (tempnp == NULL)
+
+      Teuchos::RCP<vector<double> > temperature_vector
+        = params.get<Teuchos::RCP<vector<double> > >("robinson_tempnp",Teuchos::null);
+      // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
+      if (temperature_vector==Teuchos::null)
       {
         MAT::Robinson* robinson
           = static_cast <MAT::Robinson*>(Material().get());
         // initialise the temperature field
         scalartemp = robinson->InitTemp();
-        soh8_mat_temp(&stress,&ctemp,NULL,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
       }
-      else // (tempnp != NULL)
+      // temperature vector is available
+      else  // (temperature_vector!=Teuchos::null)
       {
         for (int i=0; i<NUMNOD_SOH8; ++i)
-          etemp(i,0) = (*tempnp)[i];
+        {
+          etemp(i,0) = (*temperature_vector)[i+0];
+        }
         // copy structural shape functions needed for the thermo field
         // identical shapefunctions for the displacements and the temperatures
-        double scalartemp  = (shapefcts[gp]).Dot(etemp);
-
-        soh8_mat_temp(&stress,&ctemp,NULL,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
+        scalartemp  = (shapefcts[gp]).Dot(etemp);
       }
+      soh8_mat_temp(&stress,&ctemp,NULL,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
 
     } // end Robinson's material
 
