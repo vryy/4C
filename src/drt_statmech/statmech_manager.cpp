@@ -1209,14 +1209,15 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep, const
         // obtain a random order of neighboursLID indices
         std::vector<int> neighbourorder = Permutation(neighbourslid->NumVectors());
 
-        // loop over neighbour nodes
+        // loop over neighbouring binding spots
         for(int j=0; j<neighbourslid->NumVectors(); j++)
         {
           // random index
           int index = neighbourorder[j];
 
-          // skip this, if neighbourslid entry is '-2', meaning empty
-          if((*neighbourslid)[index][irandom] > -1.9)
+          // skip this, if neighbourslid entry is '-2', meaning empty or binding spot is unavailable due to input file specs
+          int bspotinterval = statmechparams_.get<int>("BSPOTINTERVAL", 1);
+          if((*neighbourslid)[index][irandom] > -1.9 && bspotcolmap_->GID((int)(*neighbourslid)[index][irandom])%bspotinterval==0)
           {
             // current neighbour LID
             int nodeLID = (int)(*neighbourslid)[index][irandom];
@@ -3350,6 +3351,9 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     std::vector<int> randbspot;
     std::vector<int> randlink;
 
+    // consider only every BSPOTINTERVAL-th binding spot for binding
+    int bspotinterval = statmechparams_.get<int>("BSPOTINTERVAL",1);
+
     //1. set singly bound linkers
     int numsinglybound = 0;
     if(discret_->Comm().MyPID()==0)
@@ -3366,7 +3370,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
       {
         int firstbspot = randbspot[i];
         // if this binding spot is still unoccupied
-        if((*bspotstatus_)[firstbspot]<-0.9)
+        if((*bspotstatus_)[firstbspot]<-0.9 && bspotcolmap_->GID(firstbspot)%bspotinterval==0)
         {
           // get the ilink-th random crosslinker
           int currlink = randlink[i];
@@ -3433,8 +3437,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           int currneighbour = neighbourorder[j];
           int secondbspot = (int)(*neighbourslid)[currneighbour][currlink];
 
-          // if second binding exists and spot is unoccupied; mandatory: occupy two binding spots on DIFFERENT filaments
-          if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*filamentnumber_)[secondbspot]!=(*filamentnumber_)[randbspot[i]])
+          // if second binding binding spot exists and spot is unoccupied; mandatory: occupy two binding spots on DIFFERENT filaments
+          if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*filamentnumber_)[secondbspot]!=(*filamentnumber_)[randbspot[i]] && bspotcolmap_->GID(secondbspot)%bspotinterval==0)
           {
             if((*bspotstatus_)[secondbspot] < -0.9)
             {
