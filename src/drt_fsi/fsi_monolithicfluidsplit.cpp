@@ -15,6 +15,11 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
 
+#include "../drt_constraint/constraint_manager.H"
+
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+
 #define FLUIDSPLITAMG
 
 /*----------------------------------------------------------------------*/
@@ -1315,6 +1320,55 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
     ddgaleinc_ = rcp(new Epetra_Vector(*acx));
 
   solgalepre_ = acx;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicFluidSplit::Output()
+{
+  StructureField()->Output();
+  FluidField().    Output();
+
+  // output Lagrange multiplier
+  {
+    Teuchos::RCP<Epetra_Vector> lambdafull = FluidField().Interface()->InsertFSICondVector(lambda_);
+
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    const int uprestart = fsidyn.get<int>("RESTARTEVRY");
+    const int upres = fsidyn.get<int>("UPRES");
+    if (uprestart != 0 && FluidField().Step() % uprestart == 0 || FluidField().Step() % upres)
+      FluidField().DiscWriter()->WriteVector("lambda", lambdafull);
+  }
+
+  AleField().      Output();
+  FluidField().LiftDrag();
+
+  if (StructureField()->GetConstraintManager()->HaveMonitor())
+  {
+    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
+    if(Comm().MyPID() == 0)
+      StructureField()->GetConstraintManager()->PrintMonitorValues();
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicFluidSplit::ReadRestart(int step)
+{
+  StructureField()->ReadRestart(step);
+  FluidField().ReadRestart(step);
+
+  // read Lagrange multiplier
+  {
+    Teuchos::RCP<Epetra_Vector> lambdafull = rcp(new Epetra_Vector(*FluidField().DofRowMap(),true));
+    IO::DiscretizationReader reader = IO::DiscretizationReader(FluidField().Discretization(),step);
+    reader.ReadVector(lambdafull, "lambda");
+    lambda_ = FluidField().Interface()->ExtractFSICondVector(lambdafull);
+  }
+
+  AleField().ReadRestart(step);
+
+  SetTimeStep(FluidField().Time(),FluidField().Step());
 }
 
 /*----------------------------------------------------------------------*/

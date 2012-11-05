@@ -89,6 +89,12 @@ namespace FSI
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
+    /// Output routine accounting for Lagrange multiplier at the interface
+    virtual void Output();
+
+    /// read restart data
+    virtual void ReadRestart(int step);
+
   protected:
 
     /// setup solver for global block system

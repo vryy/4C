@@ -19,6 +19,11 @@
 
 #include "fsi_debugwriter.H"
 
+#include "../drt_constraint/constraint_manager.H"
+
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
@@ -1170,6 +1175,54 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
     ddginc_ = rcp(new Epetra_Vector(*scx));           // first iteration increment
 
   solgpre_ = scx;                                      // store current step increment
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicStructureSplit::Output()
+{
+  StructureField()->Output();
+
+  // output Lagrange multiplier
+  {
+    Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
+
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    const int uprestart = fsidyn.get<int>("RESTARTEVRY");
+    const int upres = fsidyn.get<int>("UPRES");
+    if (uprestart != 0 && FluidField().Step() % uprestart == 0 || FluidField().Step() % upres)
+      StructureField()->DiscWriter()->WriteVector("lambda", lambdafull);
+  }
+
+  FluidField().    Output();
+  AleField().      Output();
+  FluidField().LiftDrag();
+
+  if (StructureField()->GetConstraintManager()->HaveMonitor())
+  {
+    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
+    if(Comm().MyPID() == 0)
+      StructureField()->GetConstraintManager()->PrintMonitorValues();
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicStructureSplit::ReadRestart(int step)
+{
+  // read Lagrange multiplier
+  {
+    Teuchos::RCP<Epetra_Vector> lambdafull = rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
+    IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
+    reader.ReadVector(lambdafull, "lambda");
+    lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
+  }
+
+  StructureField()->ReadRestart(step);
+  FluidField().ReadRestart(step);
+  AleField().ReadRestart(step);
+
+  SetTimeStep(FluidField().Time(),FluidField().Step());
 }
 
 /*----------------------------------------------------------------------*/

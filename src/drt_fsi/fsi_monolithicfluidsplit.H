@@ -103,6 +103,12 @@ namespace FSI
     /// needed for rhs in next time step
     virtual void RecoverLagrangeMultiplier();
 
+    /// Output routine accounting for Lagrange multiplier at the interface
+    virtual void Output();
+
+    /// read restart data
+    virtual void ReadRestart(int step);
+
   protected:
 
     /// setup solver for global block system
