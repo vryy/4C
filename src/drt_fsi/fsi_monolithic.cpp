@@ -1,5 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_monolithic.cpp
 
+\brief General framework for monolithic fsi solution schemes
 
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -519,13 +532,13 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   {
     Epetra_Time ts(Comm());
     StructureField()->Evaluate(sx);
-    Utils()->out() << "structure: " << ts.ElapsedTime() << "\n";
+    Utils()->out() << "structure: " << ts.ElapsedTime() << " s\n";
   }
 
   {
     Epetra_Time ta(Comm());
     AleField()      .Evaluate(ax);
-    Utils()->out() << "ale      : " << ta.ElapsedTime() << "\n";
+    Utils()->out() << "ale      : " << ta.ElapsedTime() << " s\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
@@ -535,7 +548,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   {
     Epetra_Time tf(Comm());
     FluidField().Evaluate(fx);
-    Utils()->out() << "fluid    : " << tf.ElapsedTime() << "\n";
+    Utils()->out() << "fluid    : " << tf.ElapsedTime() << " s\n";
   }
 
   Utils()->out() << "\n";

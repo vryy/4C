@@ -1,4 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_monolithic.h
 
+\brief General framework for monolithic fsi solution schemes
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHIC_H
 #define FSI_MONOLITHIC_H
