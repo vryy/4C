@@ -1567,9 +1567,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::mes_coupanisoneohooke_varprop));
 
     AddNamedReal(m,"C","linear constant");
-    AddNamedReal(m,"GAMMA","angle");
-    AddNamedInt(m,"INIT","initialization modus for fiber alignment");
-    AddNamedInt(m,"ADAPT_ANGLE","adapt angle during remodeling");
+    AddNamedReal(m,"GAMMA","angle",true);
+    AddNamedReal(m,"THETA","angle",true);
+    AddNamedInt(m,"INIT","initialization mode for fiber alignment",1 , true);
 
     AppendMaterialDefinition(matlist,m);
   }

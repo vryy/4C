@@ -15,6 +15,14 @@ Maintainer: Cristobal Bertoglio
 */
 
 /*----------------------------------------------------------------------*/
+/* Local Changes:
+11/2012 A. Nagler:
+	- Added optional angle theta as input in order to use spherical coordinates as fiber initialization
+	- Reorganization of Setup() and SetFiberVecs()
+	- Deleted AAA initialization method via CIR, AXI, RAD
+*/
+
+/*----------------------------------------------------------------------*/
 /* headers */
 #include "elast_coupanisoneohooke_VarProp.H"
 #include "../drt_mat/matpar_material.H"
@@ -29,9 +37,9 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
   )
 : Parameter(matdata),
   c_(matdata->GetDouble("C")),
-  gamma_(matdata->GetDouble("GAMMA")),
   init_(matdata->GetInt("INIT")),
-  adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
+  gamma_(matdata->GetDouble("GAMMA")),
+  theta_(matdata->GetDouble("THETA"))
 {
 }
 
@@ -83,50 +91,48 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::UnpackSummand(const std::vector<ch
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(DRT::INPUT::LineDefinition* linedef)
 {
+  LINALG::Matrix<3,3> Id(true);
+  LINALG::Matrix<3,3> locsys(true);
+
+  for (int i=0; i<3; i++)
+    Id(i,i) = 1.0;
+
+	// generate local fiber coordinate system from given angles
   if (params_->init_ == 0)
   {
-    // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-    LINALG::Matrix<3,3> Id(true);
-    for (int i=0; i<3; i++)
-      Id(i,i) = 1.0;
-    SetFiberVecs(-1.0,Id,Id);
+    // setting up analytical fiber direction via the spherical coordinates gamma (azimuth angle) and theta(polar angle)
+    double gamma = (params_->gamma_ * PI)/180.0;
+    double theta = (params_->theta_ * PI)/180.0;
+
+    locsys(0,0) = sin(theta)*cos(gamma);
+    locsys(1,0) = sin(theta)*sin(gamma);
+    locsys(2,0) = cos(theta);
+
+    SetFiberVecs(0.0, locsys, Id);
   }
   else if (params_->init_ == 1)
   {
-    // fibers aligned in local element cosy with gamma around circumferential direction
-    // -> check whether element supports local element cosy
-    if (linedef->HaveNamed("RAD") and
-        linedef->HaveNamed("AXI") and
-        linedef->HaveNamed("CIR"))
+    if (linedef->HaveNamed("FIBER1"))
     {
-      // read local (cylindrical) cosy-directions at current element
-      // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-    	std::vector<double> rad;
-    	std::vector<double> axi;
-    	std::vector<double> cir;
-      LINALG::Matrix<3,3> locsys(true);
-      linedef->ExtractDoubleVector("RAD",rad);
-      linedef->ExtractDoubleVector("AXI",axi);
-      linedef->ExtractDoubleVector("CIR",cir);
-      double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+    	// Reading of fiber directions
+    	std::vector<double> fiber1;
+      linedef->ExtractDoubleVector("FIBER1",fiber1);
 
+      // Normalization of fiber vectors to 1
+      double norm_f1=0.;
       for (int i = 0; i < 3; ++i)
       {
-        radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+      	norm_f1 += fiber1[i]*fiber1[i];
       }
-      radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+      norm_f1 = sqrt(norm_f1);
 
+      // setting up of local coordinate system
       for (int i=0; i<3; ++i)
       {
-        locsys(i,0) = rad[i]/radnorm;
-        locsys(i,1) = axi[i]/axinorm;
-        locsys(i,2) = cir[i]/cirnorm;
+        locsys(i,0) = fiber1[i]/norm_f1;
       }
 
-      LINALG::Matrix<3,3> Id(true);
-      for (int i=0; i<3; i++)
-        Id(i,i) = 1.0;
-      SetFiberVecs(0.0,locsys,Id);
+      SetFiberVecs(0.0, locsys,Id);
     }
     else
     {
@@ -157,37 +163,20 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetFiberVecs(
-    const double newgamma,
-    const LINALG::Matrix<3,3> locsys,
+		const double newgamma,
+		const LINALG::Matrix<3,3> locsys,
     const LINALG::Matrix<3,3> defgrd
 )
 {
-  if ((params_->gamma_<-90) || (params_->gamma_ >90)) dserror("Fiber angle not in [-90,90]");
-  //convert
-  double gamma = (params_->gamma_*PI)/180.;
 
-  if (params_->adapt_angle_ && newgamma != -1.0)
+	// The first row of locsys is equal to the fiber
+  LINALG::Matrix<3,1> a_0 (true);
+  for (int i=0; i<3; i++)
   {
-    if (gamma*newgamma < 0.0)
-      gamma = -1.0 * newgamma;
-    else
-      gamma = newgamma;
+  	a_0(i) = locsys(i,0);
   }
 
-  LINALG::Matrix<3,1> ca(true);
-  for (int i = 0; i < 3; ++i)
-  {
-    // a = cos gamma e3 + sin gamma e2
-    ca(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
-  }
-  // pull back in reference configuration
-  LINALG::Matrix<3,1> a_0(true);
-  LINALG::Matrix<3,3> idefgrd(true);
-  idefgrd.Invert(defgrd);
-
-  a_0.Multiply(idefgrd,ca);
   a_.Update(1./a_0.Norm2(),a_0);
-
   for (int i = 0; i < 3; ++i)
     A_(i) = a_(i)*a_(i);
 
