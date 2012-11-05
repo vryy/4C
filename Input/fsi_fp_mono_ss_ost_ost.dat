@@ -50,7 +50,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 UPRES                           1
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL                         0.001
+BASETOL                         0.000001
 CONVTOL                         1e-10
 COUPALGO                        iter_monolithicstructuresplit
 COUPMETHOD                      conforming
@@ -64,7 +64,7 @@ NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
 RELAX                           1
-RESTARTEVRY                     1
+RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
@@ -248,6 +248,7 @@ NODE 24 COORD 2.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-
 4 FLUID3 HEX8 9 10 11 12 13 14 15 16 MAT 2 NA ALE GP 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 16 POSITION velx NAME velx VALUE 1.0 TOLERANCE 1e-7
+FLUID DIS 1 NODE 16 POSITION pressure NAME pressure VALUE 1.57880667383145708e-03 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 24 POSITION dispx NAME ux VALUE 0.5 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
