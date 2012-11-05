@@ -74,6 +74,9 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition( std::map<std::strin
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
     .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 }
 

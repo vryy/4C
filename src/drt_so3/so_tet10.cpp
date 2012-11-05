@@ -81,6 +81,9 @@ void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition( std::map<std::string,s
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
     .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 }
 
@@ -296,7 +299,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
 
       // shape functions for the extrapolated coordinates
       // (yes, we REALLY mean DiscretizationType tet10 here!)
-      LINALG::Matrix<NUMGPT_SOTET10,1> funct;
+      LINALG::Matrix<NUMNOD_SOTET10,1> funct;
       DRT::UTILS::shape_function_3D(funct,e1expol,e2expol,e3expol,tet10);
 
       // extrapolation matrix
