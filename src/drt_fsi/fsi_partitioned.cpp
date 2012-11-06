@@ -341,7 +341,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
            << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Aitken") << "\n"
            << "# Predictor      = '" << fsidyn.get<std::string>("PREDICTOR") << "'\n"
            << "#\n"
-           << "# step  time/step  #nliter  |R|  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
+           << "# step | time | time/step | #nliter  |R|  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
       ;
   }
 
@@ -420,6 +420,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     if (Comm().MyPID()==0)
     {
       (*log) << Step()
+             << "\t" << Time()
              << "\t" << timer.totalElapsedTime()
              << "\t" << nlParams.sublist("Output").get("Nonlinear Iterations",0)
              << "\t" << nlParams.sublist("Output").get("2-Norm of Residual", 0.)

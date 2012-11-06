@@ -49,7 +49,7 @@ namespace ADAPTER
     /// time step size
     double Dt() const { return dt_; }
 
-    /// step number
+    /// current time step number
     int Step() const { return step_; }
 
     /// total number of time steps
@@ -99,11 +99,22 @@ namespace ADAPTER
     int printscreen_;
 
     //! @name Time stepping variables
+
+    /// current time step number
     int step_;
+
+    /// total number of time steps
     int nstep_;
+
+    /// current physical time
     double time_;
+
+    /// maximum simulation time
     double maxtime_;
+
+    /// current time step size
     double dt_;
+
     //@}
   };
 }

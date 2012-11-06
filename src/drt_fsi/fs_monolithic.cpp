@@ -165,6 +165,7 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
+           << "# step | time | time/step | #nliter | res-norm | #liter\n"
            << "#\n"
       ;
   }
@@ -225,6 +226,7 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     if (Comm().MyPID()==0)
     {
       (*log) << Step()
+             << "\t" << Time()
              << " " << timer.totalElapsedTime()
              << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
              << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
