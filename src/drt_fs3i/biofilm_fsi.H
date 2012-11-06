@@ -75,6 +75,8 @@ namespace FS3I
 
     void FluidGmshOutput();
 
+    void GrowthOutput();
+
   private:
 
     /// communication (mainly for screen output)
@@ -163,6 +165,12 @@ namespace FS3I
 
     /// structure velocity at interface (always zero!)
     Teuchos::RCP<Epetra_Vector> struiveln_;
+
+    /// structure displacement due to growth
+    Teuchos::RCP<Epetra_Vector> struct_growth_disp;
+
+    /// fluid displacement due to growth
+    Teuchos::RCP<Epetra_Vector> fluid_growth_disp;
 
   };
 

@@ -48,6 +48,7 @@
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_adapter/ad_fld_wrapper.H"
 
 //#define SCATRABLOCKMATRIXMERGE
 
@@ -170,6 +171,9 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   struidispnp_= fsi_->StructureField()->ExtractInterfaceDispn();
   struiveln_= fsi_->StructureField()->ExtractInterfaceDispn();
 
+  struct_growth_disp= AleToStructField(ale_->ExtractDisplacement());
+  fluid_growth_disp= AleToFluidField(fsi_->AleField().ExtractDisplacement());
+
   idispn_->PutScalar(0.0);
   idispnp_->PutScalar(0.0);
   iveln_->PutScalar(0.0);
@@ -177,6 +181,9 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   struidispn_->PutScalar(0.0);
   struidispnp_->PutScalar(0.0);
   struiveln_->PutScalar(0.0);
+
+  struct_growth_disp->PutScalar(0.0);
+  fluid_growth_disp->PutScalar(0.0);
 
   norminflux_ = Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
 }
@@ -239,7 +246,7 @@ void FS3I::BiofilmFSI::Timeloop()
       time_ = time_bio + time_fsi;
 
       fsi_->StructureField()->Reset();
-      fsi_->FluidField().Reset(true, false, -1);
+      fsi_->FluidField().Reset(true, true, step_bio);
       fsi_->AleField().Reset();
 
       fsi_->AleField().BuildSystemMatrix(false);
@@ -248,6 +255,8 @@ void FS3I::BiofilmFSI::Timeloop()
       FluidGmshOutput();
       //fsi_->StructureField()->DiscWriter()->WriteMesh(step_bio, time_bio);
       //fsi_->FluidField().DiscWriter()->WriteMesh(step_bio, time_bio);
+
+      GrowthOutput();
     }
   }
 
@@ -307,14 +316,14 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     // loop over all local interface nodes of structure discretization
     Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, condname);
 
-    for (int lnodeid=0; lnodeid < condnodemap->NumMyElements(); lnodeid++)
+    for (int i=0; i < condnodemap->NumMyElements(); i++)
     {
       // Here we rely on the fact that the scatra discretization
       // is a clone of the fluid mesh. => a scatra node has the same
       // local (and global) ID as its corresponding fluid node!
 
       // get the processor's local node with the same lnodeid
-      int gnodeid = condnodemap->GID(lnodeid);
+      int gnodeid = condnodemap->GID(i);
       DRT::Node* strulnode = strudis->gNode(gnodeid);
       // get the degrees of freedom associated with this node
       vector<int> strunodedofs = strudis->Dof(strulnode);
@@ -333,6 +342,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
       }
       double absval = sqrt(temp);
+      int lnodeid = strudis->NodeRowMap()->LID(gnodeid);
 
       // compute average unit nodal normal
       std::vector<double> Values(numdim);
@@ -422,7 +432,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
       if (absval > TOL)
       {
         unitnormal[j] /= absval;
-        Values[j] = grownvolume_ * influx * unitnormal[j];
+        Values[j] = - grownvolume_ * influx * unitnormal[j];
       }
     }
 
@@ -451,6 +461,9 @@ void FS3I::BiofilmFSI::FluidAleSolve(
   //change nodes reference position
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField().ExtractDisplacement());
   RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
+
+  fluid_growth_disp->Update(1,*fluiddisp,1.0);
+
   ChangeConfig(fluiddis, fluiddisp);
 
   //change nodes reference position also for ale field
@@ -483,6 +496,8 @@ void FS3I::BiofilmFSI::StructAleSolve(
   //change nodes reference position
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->ExtractDisplacement());
   RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
+
+  struct_growth_disp->Update(1,*structdisp,1.0);
 
   ChangeConfig(structdis, structdisp);
 
@@ -752,4 +767,22 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
   std::cout << " done" << endl;
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::GrowthOutput()
+{
+
+//  RCP<DRT::Discretization> actdis;
+//
+//  actdis = fsi_->FluidField().Discretization();
+
+  fsi_->FluidField().DiscWriter()->WriteVector("growth_displ", fluid_growth_disp);
+
+//  actdis = fsi_->StructureField()->Discretization();
+
+  fsi_->StructureField()->DiscWriter()->WriteVector("growth_displ", struct_growth_disp);
+
+  //introduce output also for scatra
 }
