@@ -28,6 +28,7 @@
 #include <MueLu.hpp>
 #include <MueLu_RAPFactory.hpp>
 #include <MueLu_TrilinosSmoother.hpp>
+#include <MueLu_DirectSolver.hpp>
 #include <MueLu_SmootherPrototype_decl.hpp>
 
 #include <MueLu_CoalesceDropFactory.hpp>
@@ -389,8 +390,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   ///////////////////////////////////////////////////////////////////////
 
   // coarse level smoother/solver
+  //Teuchos::RCP<SmootherFactory> coarsestSmooFact;
+  //coarsestSmooFact = MueLu::MLParameterListInterpreter<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetSmootherFactory(params, "coarse");
   Teuchos::RCP<SmootherFactory> coarsestSmooFact;
-  coarsestSmooFact = MueLu::MLParameterListInterpreter<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetSmootherFactory(params, "coarse");
+  coarsestSmooFact = GetContactCoarsestSolverFactory(params);
 
   ///////////////////////////////////////////////////////////////////////
   // prepare factory managers
@@ -525,6 +528,102 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   return SmooFact;
 }
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPreconditioner2::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
+
+  std::string type = ""; // use default defined by AmesosSmoother or Amesos2Smoother
+
+  if(paramList.isParameter("coarse: type")) type = paramList.get<std::string>("coarse: type");
+
+  Teuchos::RCP<SmootherPrototype> smooProto;
+  std::string ifpackType;
+  Teuchos::ParameterList ifpackList;
+  Teuchos::RCP<SmootherFactory> SmooFact;
+
+  if(type == "Jacobi") {
+    if(paramList.isParameter("coarse: sweeps"))
+      ifpackList.set<int>("relaxation: sweeps", paramList.get<int>("coarse: sweeps"));
+    else ifpackList.set<int>("relaxation: sweeps", 1);
+    if(paramList.isParameter("coarse: damping factor"))
+      ifpackList.set("relaxation: damping factor", paramList.get<double>("coarse: damping factor"));
+    else ifpackList.set("relaxation: damping factor", 1.0);
+    ifpackType = "RELAXATION";
+    ifpackList.set("relaxation: type", "Jacobi");
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+  } else if(type == "Gauss-Seidel") {
+    if(paramList.isParameter("coarse: sweeps"))
+      ifpackList.set<int>("relaxation: sweeps", paramList.get<int>("coarse: sweeps"));
+    else ifpackList.set<int>("relaxation: sweeps", 1);
+    if(paramList.isParameter("coarse: damping factor"))
+      ifpackList.set("relaxation: damping factor", paramList.get<double>("coarse: damping factor"));
+    else ifpackList.set("relaxation: damping factor", 1.0);
+    ifpackType = "RELAXATION";
+    ifpackList.set("relaxation: type", "Gauss-Seidel");
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+  } else if (type == "symmetric Gauss-Seidel") {
+    if(paramList.isParameter("coarse: sweeps"))
+      ifpackList.set<int>("relaxation: sweeps", paramList.get<int>("coarse: sweeps"));
+    else ifpackList.set<int>("relaxation: sweeps", 1);
+    if(paramList.isParameter("coarse: damping factor"))
+      ifpackList.set("relaxation: damping factor", paramList.get<double>("coarse: damping factor"));
+    else ifpackList.set("relaxation: damping factor", 1.0);
+    ifpackType = "RELAXATION";
+    ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+  } else if (type == "Chebyshev") {
+    ifpackType = "CHEBYSHEV";
+    if(paramList.isParameter("coarse: sweeps"))
+      ifpackList.set("chebyshev: degree", paramList.get<int>("coarse: sweeps"));
+    if(paramList.isParameter("coarse: Chebyshev alpha"))
+      ifpackList.set("chebyshev: alpha", paramList.get<double>("coarse: Chebyshev alpha"));
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+  } else if(type == "IFPACK") {
+#ifdef HAVE_MUELU_IFPACK
+    // TODO change to TrilinosSmoother as soon as Ifpack2 supports all preconditioners from Ifpack
+   /* ifpackType = paramList.get<std::string>("coarse: ifpack type");
+    if(ifpackType == "ILU") {
+      ifpackList.set<int>("fact: level-of-fill", (int)paramList.get<double>("coarse: ifpack level-of-fill"));
+      ifpackList.set("partitioner: overlap", paramList.get<int>("coarse: ifpack overlap"));
+      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap"), AFact);
+    }
+    else*/
+      TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown ML smoother type " + type + " (IFPACK) not supported by MueLu. Only ILU is supported.");
+#else // HAVE_MUELU_IFPACK
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: MueLu compiled without Ifpack support");
+#endif // HAVE_MUELU_IFPACK
+  } else if(type == "Amesos-Superlu") {
+    smooProto = Teuchos::rcp( new DirectSolver("Superlu",Teuchos::ParameterList(),AFact) );
+  } else if(type == "Amesos-Superludist") {
+    smooProto = Teuchos::rcp( new DirectSolver("Superludist",Teuchos::ParameterList(),AFact) );
+  } else if(type == "Amesos-KLU") {
+    smooProto = Teuchos::rcp( new DirectSolver("Klu",Teuchos::ParameterList(),AFact) );
+  } else if(type == "Amesos-UMFPACK") {
+    smooProto = Teuchos::rcp( new DirectSolver("Umfpack",Teuchos::ParameterList(),AFact) );
+  } else if(type == "") {
+    smooProto = Teuchos::rcp( new DirectSolver("",Teuchos::ParameterList(),AFact) );
+  } else {
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown coarsest solver type. '" << type << "' not supported by MueLu.");
+  }
+
+  // create smoother factory
+  TEUCHOS_TEST_FOR_EXCEPTION(smooProto == Teuchos::null, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no smoother prototype. fatal error.");
+  SmooFact = rcp( new SmootherFactory(smooProto) );
+
+  // check if pre- and postsmoothing is set
+  std::string preorpost = "both";
+  if(paramList.isParameter("coarse: pre or post")) preorpost = paramList.get<std::string>("coarse: pre or post");
+
+  if (preorpost == "pre") {
+    SmooFact->SetSmootherPrototypes(smooProto, Teuchos::null);
+  } else if(preorpost == "post") {
+    SmooFact->SetSmootherPrototypes(Teuchos::null, smooProto);
+  }
+
+  return SmooFact;
+}
+
 
 #endif
 
