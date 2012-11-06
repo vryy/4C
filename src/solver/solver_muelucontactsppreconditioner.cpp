@@ -346,44 +346,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     // create Braess-Sarazin smoother
     ///////////////////////////////////////////////////////////////////////
-    /*Scalar omega = 1.5;   // Braess-Sarazin damping/scaling factor
-
-    // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-    Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(MueLu::NoFactory::getRCP(),omega));
-    // create BraessSarazin smoother prototype
-    Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(1,omega)); // append SC smoother information
-    Teuchos::RCP<SmootherFactory> smootherFact = Teuchos::rcp(new SmootherFactory(smootherPrototype));
-
-    // define SchurComplement solver
-    Teuchos::ParameterList SCList;
-    /*SCList.set("relaxation: sweeps", (LO) 10);
-    SCList.set("relaxation: damping factor", (SC) 0.6);
-    SCList.set("relaxation: type", "Gauss-Seidel");
-    Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",SCList,0,SFact));*/
-    //Teuchos::RCP<SmootherPrototype> smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,SFact);
-    /*Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu",Teuchos::ParameterList(),SFact) );
-    Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
-
-    // setup local factory manager for SchurComplementFactory
-    Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
-    MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
-    MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
-    MB->SetIgnoreUserData(true);
-    smootherPrototype->SetFactoryManager(MB);  // add SC smoother information*/
-
-    /////Teuchos::RCP<SmootherFactory> smootherFact = GetBraessSarazinSmootherFactory(mllist_, 0/*level*/, Teuchos::null /* AFact*/);
-
-    ///////////////////////////////////////////////////////////////////////
-    // main factory manager
-    ///////////////////////////////////////////////////////////////////////
-    /*FactoryManager M;
-    M.SetFactory("A", AcFact);
-    M.SetFactory("P", PFact);
-    M.SetFactory("R", RFact);
-    M.SetFactory("Smoother", smootherFact);
-    M.SetFactory("CoarseSolver", smootherFact);*/
-
-
     Teuchos::RCP<SmootherFactory> SmooFactCoarsest = GetCoarsestBraessSarazinSmootherFactory(mllist_, 0, Teuchos::null /* AFact*/);
 
     ///////////////////////////////////////////////////////////////////////
