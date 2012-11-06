@@ -33,10 +33,10 @@ http://www.lnm.mw.tum.de
 </pre>
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -271,7 +271,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
         if (funct) funct_num = (*funct)[truncj];
         {
            if (funct_num>0)
-             functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,
+             functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(truncj,
                                                                      actnode->X(),
                                                                      time,
                                                                      &dis);
@@ -457,7 +457,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
          if (funct) funct_num = (*funct)[truncj];
          {
            if (funct_num>0)
-             functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,
+             functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(truncj,
                                                                               actnode->X(),
                                                                               time,
                                                                               &dis);
@@ -721,13 +721,11 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
     // special option for two-phase flow
     else if(numdf==5) //ExtendedFEM
     {
-      //std::cout<< " numdof=5 ->using right path!"<< std::endl;
-      for (unsigned j=0; j<numdf; ++j) // loop over all dofs (Std + Enr)
+      for (unsigned j=0; j<(numdf-1); ++j) // loop over all dofs (Std), we currently do not set values for dofs (XFEM)
       {
         // variable to set correct DC according to InputFile
         int truncj = 0;
-        if(j<4) truncj=j;
-        else truncj=j-1;
+        truncj=j;
 
         if ((*onoff)[truncj]==0) // if Dirichlet value is turned off in input file (0)
         {
@@ -759,7 +757,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
         if (funct) funct_num = (*funct)[truncj];
         {
           if (funct_num>0)
-            functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,
+            functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(truncj,
                                                                              actnode->X(),
                                                                              time,
                                                                              &dis);
