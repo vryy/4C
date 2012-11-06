@@ -225,8 +225,8 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(
 {
 #ifdef DEBUG
   // check, whether maps are the same
-  if (! fcx->Map().SameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
-  if (! fcx->Map().SameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
 #endif
 
   // get interface velocity at t(n)
@@ -276,8 +276,8 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(
 {
 #ifdef DEBUG
   // check, whether maps are the same
-  if (! fcx->Map().SameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
-  if (! fcx->Map().SameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
 #endif
 
   // get interface velocity at t(n)

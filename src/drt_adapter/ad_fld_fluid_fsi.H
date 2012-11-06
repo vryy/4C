@@ -70,6 +70,7 @@ namespace ADAPTER {
     /// Velocity-displacement conversion at the fsi interface
     virtual double TimeScaling() const;
 
+    /// take current results for converged and save for next time step
     virtual void Update();
 
     /// get the linear solver object used for this field
