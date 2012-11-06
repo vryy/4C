@@ -65,6 +65,7 @@
 #include "MueLu_TrilinosSmoother.hpp"
 #include "MueLu_IfpackSmoother.hpp"
 #include "MueLu_Exceptions.hpp"
+#include "MueLu_Monitor.hpp"
 
 namespace MueLu {
 
@@ -83,6 +84,8 @@ namespace MueLu {
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
   void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Setup(Level &currentLevel) {
     //FactoryMonitor m(*this, "Setup Smoother");
+    Monitor m(*this, "Setup MyTrilinosSmoother");
+
     if (SmootherPrototype::IsSetup() == true) VerboseObject::GetOStream(Warnings0, 0) << "Warning: MueLu::MyTrilinosSmoother::Setup(): Setup() has already been called";
     TEUCHOS_TEST_FOR_EXCEPTION(s_ != Teuchos::null, Exceptions::RuntimeError, "IsSetup() == false but s_ != Teuchos::null. This does not make sense");
 
