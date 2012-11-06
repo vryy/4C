@@ -4150,6 +4150,8 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
     }
     else
     {
+      double bspotinterval = (double)(statmechparams_.get<int>("BSPOTINTERVAL",1));
+
       int sum = 0;
       for(int i=0; i<bspotstatus_->MyLength(); i++)
       {
@@ -4159,7 +4161,7 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
         else if((int)(*filamentnumber_)[i]>0)
           break;
       }
-      coverage << sum << " "<< setprecision(5) <<(double)(sum)/(double)(bspotstatus_->MyLength()) <<endl;
+      coverage << sum << " "<< setprecision(5) <<(double)(sum)/(double)(bspotstatus_->MyLength())*bspotinterval <<endl;
     }
     // print to file and close
     fprintf(fp, coverage.str().c_str());
