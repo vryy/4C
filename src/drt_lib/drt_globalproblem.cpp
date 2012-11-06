@@ -47,7 +47,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_problemtype.H"
 
 #include "../drt_io/io_control.H"
-
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*/
 // the instances
@@ -96,6 +96,9 @@ void DRT::Problem::Done()
     *i = 0;
   }
   instances_.clear();
+
+  // close the parallel output environment to make sure all files are properly closed
+  IO::cout.close();
 }
 
 
@@ -294,7 +297,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
     srand( (unsigned int)rs ); // Set random seed for stdlibrary. This is deprecated, as it does not produce random numbers on some platforms!
     Random()->SetRandSeed( (unsigned int)rs ); // Use this instead.
   }
-}
+ }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

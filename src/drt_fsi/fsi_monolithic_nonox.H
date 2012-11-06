@@ -3,8 +3,6 @@
 #ifndef FSI_MONOLITHIC_NONOX_H
 #define FSI_MONOLITHIC_NONOX_H
 
-#include "../drt_io/io_ostream0.H"
-
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
@@ -191,9 +189,6 @@ namespace FSI
     double normflpresinc_;  //!< norm of fluid pressure residual forces
     double normaleinc_;  //!< norm of ale residual forces
 
-
-    //!< a singular stream to stdout in parallel environment
-    IO::Ostream0 cout0_;
 
     Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
     Teuchos::RCP<Epetra_Vector> rhs_;       //!< rhs of FSI system

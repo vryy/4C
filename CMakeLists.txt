@@ -1169,6 +1169,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/io.cpp
   src/drt_io/io_control.cpp
   src/drt_io/io_hdf.cpp
+  src/drt_io/io_pstream.cpp
   src/drt_lib/drt_elementreader.cpp
   src/drt_lib/drt_inputreader.cpp
   src/drt_lib/drt_linedefinition.cpp

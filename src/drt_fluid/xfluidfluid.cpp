@@ -55,7 +55,6 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
-#include "../drt_io/io_ostream0.H"
 
 #include "../drt_xfem/xfem_edgestab.H"
 #include "../drt_xfem/xfem_neumann.H"

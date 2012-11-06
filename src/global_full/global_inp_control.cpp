@@ -14,6 +14,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_inputreader.H"
+#include "../drt_io/io_pstream.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -100,6 +102,17 @@ void ntainp_ccadiscret(
                            inputfile_name,
                            outputfile_kenner,
                            restartfile_kenner);
+
+  // configure the parallel output environment
+ {
+   const Teuchos::ParameterList& io = problem->IOParams();
+   bool screen   = DRT::INPUT::IntegralValue<int>(io,"WRITE_TO_SCREEN");
+   bool file     = DRT::INPUT::IntegralValue<int>(io,"WRITE_TO_FILE");
+   bool preGrpID = DRT::INPUT::IntegralValue<int>(io,"PREFIX_GROUP_ID");
+   int  oproc    = io.get<int>("LIMIT_OUTP_TO_PROC");
+
+   IO::cout.setup(screen, file, preGrpID, lcomm, oproc, group, outputfile_kenner);
+ }
 
   if (lcomm->MyPID()==0)
     problem->WriteInputParameters();

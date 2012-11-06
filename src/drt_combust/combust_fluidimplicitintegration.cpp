@@ -40,6 +40,7 @@ Maintainer: Florian Henke
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_dofset_independent_pbc.H"
@@ -68,7 +69,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   xparams_(params_->sublist("XFEM")),
   interfacehandle_(Teuchos::null),
   phinp_(Teuchos::null),
-  cout0_(discret_->Comm(), std::cout),
   combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(params_->sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
   veljumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::VelocityJumpType>(params_->sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
   fluxjumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::FluxJumpType>(params_->sublist("COMBUSTION FLUID"),"FLUX_JUMP_TYPE")),
@@ -121,7 +121,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     dta_ = 1.0;
     dtp_ = 1.0;
     theta_ = 1.0;
-    cout0_ << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << endl;
+    IO::cout << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << IO::endl;
   }
 
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
@@ -529,7 +529,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
   case INPAR::FLUID::timeint_stationary:
   {
     // for stationary problems PrepareTimeStep() should only be called for output related reasons
-    cout0_ << "/!\\ warning: 'time' and 'time step' are set to 1.0 and 1.0 for output control file" << endl;
+    IO::cout << "/!\\ warning: 'time' and 'time step' are set to 1.0 and 1.0 for output control file" << IO::endl;
     step_ = 1;
     time_ = 1.0;
     theta_ = 1.0;
@@ -540,8 +540,8 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     // compute initial field from stationary problem
     if ((step_==0) && initstatsol_)
     {
-      cout0_ << "/!\\ warning: initial solution is computed by stationary algorithm" << endl;
-      cout0_ << "/!\\ warning: 'time' and 'time step' are set to 0.0 and 1.0 for output control file" << endl;
+      IO::cout << "/!\\ warning: initial solution is computed by stationary algorithm" << IO::endl;
+      IO::cout << "/!\\ warning: 'time' and 'time step' are set to 0.0 and 1.0 for output control file" << IO::endl;
       timealgo_ = INPAR::FLUID::timeint_stationary;
       time_ =  0.0; // only needed for output
       dta_ =   1.0; // for calculation, we reset this value at the end of NonlinearSolve()
@@ -556,7 +556,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     {
       // get starting 'theta' for first time step
       theta_ = params_->get<double>("start theta");
-      cout0_ << "/!\\ first time step computed with theta =  " << theta_ << endl;
+      IO::cout << "/!\\ first time step computed with theta =  " << theta_ << IO::endl;
     }
     // regular time step
     else if (step_ > 1)
@@ -577,7 +577,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
         if (startsteps_ > stepmax_)
           dserror("more starting steps than total time steps");
 
-        cout0_ << "/!\\ first " << startsteps_ << " steps are computed with Backward-Euler scheme" << endl;
+        IO::cout << "/!\\ first " << startsteps_ << " steps are computed with Backward-Euler scheme" << IO::endl;
         // use backward-Euler-type parameter combination
         alphaM_ = 1.0;
         alphaF_ = 1.0;
@@ -686,19 +686,19 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 
       if(xfemtimeint_ != INPAR::COMBUST::xfemtimeint_donothing) // do something for standard values
       {
-        cout0_ << "---  XFEM time integration: adopt standard values to new interface... " << std::flush;
+        IO::cout << "---  XFEM time integration: adopt standard values to new interface... ";// << std::flush;
         timeIntStd_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
         timeIntStd_->compute(newRowVectorsn,newRowVectorsnp); // call computation
-        cout0_ << "done" << std::endl;
+        IO::cout << "done" << IO::endl;
       }
 
       if ((xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_donothing) and
           (xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_quasistatic)) // do something for enrichment values
       {
-        cout0_ << "---  XFEM time integration: adopt enrichment values to new interface... " << std::flush;
+        IO::cout << "---  XFEM time integration: adopt enrichment values to new interface... ";// << std::flush;
         timeIntEnr_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
         timeIntEnr_->compute(newRowVectorsn,newRowVectorsnp); // call computation
-        cout0_ << "done" << std::endl;
+        IO::cout << "done" << IO::endl;
       }
     }
 
@@ -889,12 +889,12 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     //---------------------------------------------
     // switch state vectors to new dof distribution
     //---------------------------------------------
-    cout0_ << "---  transform state vectors... " << std::flush;
+    IO::cout << "---  transform state vectors... ";// << std::flush;
     // quasi-static enrichment strategy for kink enrichments
     // remark: as soon as the XFEM-time-integration works for kinks, this should be removed
     if (xfemtimeint_enr_==INPAR::COMBUST::xfemtimeintenr_quasistatic)
     {
-      cout0_ << "quasi-static enrichment for two-phase flow problems... " << std::flush;
+      IO::cout << "quasi-static enrichment for two-phase flow problems... ";// << std::flush;
 
       // accelerations at time n+1 and n
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,true);
@@ -926,7 +926,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_,false); // use old velocity as start value
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,false);
     }
-    cout0_ << "done" << endl;
+    IO::cout << "done" << IO::endl;
 
     // all initial values can be set now; including the enrichment values
     if (step_ == 0)
@@ -2477,7 +2477,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // write restart
   if (write_restart_data)
   {
-    cout0_ << "---  write restart... " << std::flush;
+    IO::cout << "---  write restart... ";// << std::flush;
     //std::cout << state_.velnp_->GlobalLength() << std::endl;
     output_->WriteVector("velnp", state_.velnp_);
     //std::cout << state_.veln_->GlobalLength() << std::endl;
@@ -2495,7 +2495,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       //std::cout << state_.accam_->GlobalLength() << std::endl;
       output_->WriteVector("accam" , state_.accam_);
     }
-    cout0_ << "done" << std::endl;
+    IO::cout << "done" << IO::endl;
   }
 
   //if (step_ % 10 == 0 or step_== 1) //write every 5th time step only
@@ -2621,7 +2621,7 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
   //std::cout << state_.veln_->GlobalLength()  << std::endl;
   //std::cout << state_.velnm_->GlobalLength() << std::endl;
 
-  cout0_ << "Read restart" << std::endl;
+  IO::cout << "Read restart" << IO::endl;
 
   reader.ReadVector(state_.velnp_,"velnp");
   //std::cout << state_.velnp_->GlobalLength() << std::endl;
@@ -4689,7 +4689,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     const Epetra_Map dofrowmap)
 {
 #ifdef FLAME_VORTEX
-  cout0_ << "---  set initial enrichment field for flame-vortex interaction example... " << std::flush;
+  IO::cout << "---  set initial enrichment field for flame-vortex interaction example... " << std::flush;
 
   // initial field modification for flame_vortex_interaction
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
@@ -4720,11 +4720,11 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       } // end if jump enrichment
     } // end loop over fieldenr
   } // end loop over element nodes
-  cout0_ << "done" << std::endl;
+  IO::cout << "done" << std::endl;
 #endif
 
 #ifdef DL_INSTAB
-  cout0_ << "---  set initial enrichment field for Darrieus-Landau instability example... " << std::flush;
+  IO::cout << "---  set initial enrichment field for Darrieus-Landau instability example... " << std::flush;
 
   // initial field modification for flame_vortex_interaction
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
@@ -4755,11 +4755,11 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       } // end if jump enrichment
     } // end loop over fieldenr
   } // end loop over element nodes
-  cout0_ << "done" << std::endl;
+  IO::cout << "done" << std::endl;
 #endif
 
 #ifdef COLLAPSE_FLAME
-  cout0_ << "---  set initial enrichment field for collapsing flame example... " << std::flush;
+  IO::cout << "---  set initial enrichment field for collapsing flame example... " << std::flush;
 
   // initial field modification for collapse_flame
   const int nsd = 3;
@@ -4880,11 +4880,11 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       }
     } // end loop over fieldenr
   } // end loop over element nodes
-  cout0_ << "done" << std::endl;
+  IO::cout << "done" << std::endl;
 #endif
 
 #ifdef COMBUST_TWO_FLAME_FRONTS
-  cout0_ << "---  set initial enrichment field for two approaching flame fronts example... " << std::flush;
+  IO::cout << "---  set initial enrichment field for two approaching flame fronts example... " << std::flush;
 
   // initial field modification for 2-flames example
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
@@ -4966,7 +4966,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       }
     } // end loop over fieldenr
   } // end loop over element nodes
-  cout0_ << "done" << std::endl;
+  IO::cout << "done" << std::endl;
 #endif
 
 //#ifdef GMSH_REF_FIELDS

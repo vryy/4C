@@ -796,6 +796,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("FILESTEPS",1000,"",&io);
   IntParameter("STDOUTEVRY",1,"Print to screen every n step",&io);
 
+  BoolParameter("WRITE_TO_SCREEN",  "Yes","Write screen output",                       &io);
+  BoolParameter("WRITE_TO_FILE",    "No", "Write the output into a file",              &io);
+  BoolParameter("PREFIX_GROUP_ID",  "No", "Put a <GroupID>: in front of every line",   &io);
+  IntParameter("LIMIT_OUTP_TO_PROC", -1,  "Only the specified procs will write output",&io);
+
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& design = list->sublist("DESIGN DESCRIPTION",false,"number of nodal clouds");
 

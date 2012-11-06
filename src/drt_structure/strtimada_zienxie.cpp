@@ -25,7 +25,6 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
-#include "../drt_io/io_ostream0.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */

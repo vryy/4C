@@ -23,7 +23,6 @@
 FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
                             const Teuchos::ParameterList& timeparams)
   : MonolithicBase(comm,timeparams),
-    cout0_(StructureField()->Discretization()->Comm(), std::cout),
     zeros_(Teuchos::null)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
@@ -133,15 +132,15 @@ void FSI::MonolithicNoNOX::Newton()
   // test whether max iterations was hit
   if ( (Converged()) and (Comm().MyPID()==0) )
   {
-    cout << endl;
-    cout << endl;
-    cout << BLUE_LIGHT << "  Newton Converged! " <<  END_COLOR<<  endl;
+    cout << std::endl;
+    cout << std::endl;
+    cout << BLUE_LIGHT << "  Newton Converged! " <<  END_COLOR<<  std::endl;
   }
   else if (iter_ >= itermax_)
   {
-    cout << endl;
-    cout << endl;
-    cout << RED_LIGHT << " Newton unconverged in "<< iter_ << " iterations " << END_COLOR<<  endl;
+    cout << std::endl;
+    cout << std::endl;
+    cout << RED_LIGHT << " Newton unconverged in "<< iter_ << " iterations " << END_COLOR<<  std::endl;
   }
 }
 
@@ -269,7 +268,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
    {
      Epetra_Time ts(Comm());
      StructureField()->Evaluate(sx);
-     //cout0_  << "structure time: " << ts.ElapsedTime() << endl;
+     //IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
    }
 
    {
@@ -289,7 +288,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
    {
      Epetra_Time tf(Comm());
      FluidField().Evaluate(fx);
-     //cout0_ << "fluid time : " << tf.ElapsedTime() << endl;
+     //IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
    }
 
 }
@@ -385,7 +384,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIter()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
 {
-  cout << "CONVTOL: " << tolfres_ << endl;
+  cout << "CONVTOL: " << tolfres_ << std::endl;
 
   // open outstringstream
   std::ostringstream oss;
@@ -429,7 +428,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
 
   // add solution time
   oss << std::setw(12)<< "wct    |";
-  cout << "==========================================================================================================================================="<< endl;
+  cout << "==========================================================================================================================================="<< std::endl;
 
   // finish oss
   oss << std::ends;

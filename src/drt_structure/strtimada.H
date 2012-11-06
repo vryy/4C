@@ -33,7 +33,6 @@ Maintainer: Alexander Popp
 #include "nlnml_finelevelnoxinterface.H"
 
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_io/io_ostream0.H"
 
 // forward declarations
 namespace DRT
@@ -269,8 +268,6 @@ namespace STR
     int myrank_;  //!< processor ID
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-    IO::Ostream0 cout0_;  //!< a singular stream to stdout
-                          //!< in parallel environment
     //@}
 
 

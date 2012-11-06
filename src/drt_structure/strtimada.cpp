@@ -23,6 +23,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
@@ -45,7 +46,6 @@ STR::TimAda::TimAda
   myrank_(discret_->Comm().MyPID()),
   solver_(tis->Solver()),
   output_(tis->DiscWriter()),
-  cout0_(discret_->Comm(), std::cout),
   //
   timeinitial_(0.0),
   timefinal_(sdyn.get<double>("MAXTIME")),
@@ -158,11 +158,11 @@ void STR::TimAda::Integrate()
       // adjust step-size
       if (not accepted)
       {
-        cout0_ << "Repeating step with stepsize = " << stpsiznew
-               << std::endl;
-        cout0_ << "- - - - - - - - - - - - - - - - - - - - - - - - -"
+        IO::cout << "Repeating step with stepsize = " << stpsiznew
+               << IO::endl;
+        IO::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
                << " - - - - - - - - - - - - - - -"
-               << std::endl;
+               << IO::endl;
         stepsize_ = stpsiznew;
         outrest_ = outsys_ = outstr_ = outene_ = false;
         sti_->ResetStep();
@@ -175,12 +175,12 @@ void STR::TimAda::Integrate()
     // update or break
     if (accepted)
     {
-      cout0_ << "Step size accepted" << std::endl;
+      IO::cout << "Step size accepted" << IO::endl;
     }
     else if (adaptstep_ >= adaptstepmax_)
     {
-      cout0_ << "Could not find acceptable time step size"
-             << " ... continuing" << std::endl;
+      IO::cout << "Could not find acceptable time step size"
+             << " ... continuing" << IO::endl;
     }
     else
     {

@@ -20,7 +20,6 @@ Maintainer: Florian Henke
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_xfem/physics.H"
 #include "../drt_xfem/xfem_utils.H"
-#include "../drt_io/io_ostream0.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -504,8 +503,6 @@ protected:
   //! connection between master and slave row nodes
   Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
 
-  //!< a singular stream to stdout in parallel environment
-  IO::Ostream0 cout0_;
   //@}
 
   /// switch for type of combustion problem
