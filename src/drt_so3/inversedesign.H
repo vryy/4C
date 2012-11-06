@@ -179,7 +179,6 @@ void so_tet4_nlnstiffmass(
       LINALG::Matrix<12,1>* force,          ///< element internal force vector
       LINALG::Matrix<1,6>* elestress,      ///< stresses at GP
       LINALG::Matrix<1,6>* elestrain,      ///< strains at GP
-      Teuchos::RCP<MAT::Material>  material,       ///< element material data
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain);   ///< strain output option
 

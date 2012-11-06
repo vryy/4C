@@ -423,19 +423,52 @@ protected:
   virtual void InitJacobianMapping();
 
   //! Calculate nonlinear stiffness and mass matrix
-  virtual void so_tet4_nlnstiffmass(
-                                 ParameterList&            params,
-                                 vector<int>&              lm,
-                                 vector<double>&           disp,
-                                 vector<double>&           residual,
-                                    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
-                                    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
-                                    LINALG::Matrix<NUMDOF_SOTET4,1>* force,
-                                    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
-                                    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
-                                    Teuchos::RCP<const MAT::Material> material,
-                                    const INPAR::STR::StressType     iostress,
-                                    const INPAR::STR::StrainType     iostrain);
+  virtual void nlnstiffmass(
+    ParameterList&            params,
+    vector<int>&              lm,
+    vector<double>&           disp,
+    vector<double>&           residual,
+    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
+    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
+    LINALG::Matrix<NUMDOF_SOTET4,1>* force,
+    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
+    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
+    const INPAR::STR::StressType     iostress,
+    const INPAR::STR::StrainType     iostrain
+    );
+
+  //! Calculate nonlinear stiffness and mass matrix
+  virtual void nlnstiffmass(
+    vector<int>&  lm,
+    vector<double>&  disp,
+    vector<double>&  residual,
+    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
+    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
+    LINALG::Matrix<NUMDOF_SOTET4,1>* force,
+    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
+    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
+    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain,
+    ParameterList& params,
+    const INPAR::STR::StressType iostress,
+    const INPAR::STR::StrainType iostrain,
+    const INPAR::STR::StrainType ioplstrain
+    );
+
+  void linstiffmass(
+    vector<int>& lm,  // location matrix
+    vector<double>& disp,  // current displacements
+    vector<double>& residual,  // current residual displacements or displacement increment
+    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
+    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
+    LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
+    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,  // stresses at GP
+    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,  // strains at GP
+    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain, // plastic strains at GP
+    ParameterList& params,  // algorithmic parameters e.g. time
+    const INPAR::STR::StressType iostress,  // stress output option
+    const INPAR::STR::StrainType iostrain,  // strain output option
+    const INPAR::STR::StrainType ioplstrain  // plastic strain output option
+    );
 
   //! lump mass matrix (bborn 07/08)
   void so_tet4_lumpmass(LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* emass);  //!< element mass matrix
@@ -504,5 +537,3 @@ protected:
 } // namespace DRT
 
 #endif  // #ifndef SO_TET4_H_
-
-
