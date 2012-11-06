@@ -122,8 +122,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
     // build a matrix dummy
     if (elemat1.IsInitialized()) matptr = &elemat1;
-    // call the well-known soh8_nlnstiffmass for the normal structure solution
-    soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+    // call the well-known nlnstiffmass for the normal structure solution
+    nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
       INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     // need current temperature state, call the temperature discretization
@@ -188,8 +188,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // lm now contains only u-dofs
     vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm); // lm now contains only u-dofs
-    // call the well-known soh8_nlnstiffmass for the normal structure solution
-    soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
+    // call the well-known nlnstiffmass for the normal structure solution
+    nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
       params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     // need current temperature state,
@@ -252,8 +252,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
 
     // default: geometrically non-linear analysis with Total Lagrangean approach
-      soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
-                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+    nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
   }
   break;
 
@@ -323,8 +323,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
         = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
       INPAR::STR::StrainType ioplstrain
         = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
-      // call the well-known soh8_nlnstiffmass for the normal structure solution
-      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,
+      // call the well-known nlnstiffmass for the normal structure solution
+      nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,
         params,iostress,iostrain,ioplstrain);
 
       // need current temperature state,

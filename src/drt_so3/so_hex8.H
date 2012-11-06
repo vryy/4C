@@ -549,47 +549,45 @@ protected:
   virtual void InitJacobianMapping();
 
   //! Calculate nonlinear stiffness and mass matrix
-  virtual void soh8_nlnstiffmass(
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residual displ
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
-      LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,    ///< plastic strains at GP
-      ParameterList&            params,           ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType   iostress,    ///< stress output option
-      const INPAR::STR::StrainType   iostrain,    ///< strain output option
-      const INPAR::STR::StrainType   ioplstrain); ///< plastic strain output option
+  virtual void nlnstiffmass(
+      vector<int>& lm,  ///< location matrix
+      vector<double>& disp,  ///< current displacements
+      vector<double>& residual,  ///< current residual displ
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,  ///< plastic strains at GP
+      ParameterList& params,  ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType iostress,  ///< stress output option
+      const INPAR::STR::StrainType iostrain,  ///< strain output option
+      const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
   //! Calculate nonlinear stiffness and mass matrix (GEMM)
   virtual void soh8_nlnstiffmass_gemm(
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           dispo,          ///< old displacements
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residual displ
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
-      LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,    ///< plastic strains at GP
-      ParameterList&            params,           ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType   iostress,    ///< stress output option
-      const INPAR::STR::StrainType   iostrain,    ///< strain output option
-      const INPAR::STR::StrainType   ioplstrain); ///< plastic strain output option
+      vector<int>& lm,  ///< location matrix
+      vector<double>& dispo,  ///< old displacements
+      vector<double>& disp,  ///< current displacements
+      vector<double>& residual,  ///< current residual displ
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,  ///< plastic strains at GP
+      ParameterList& params,  ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType iostress,  ///< stress output option
+      const INPAR::STR::StrainType iostrain,  ///< strain output option
+      const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
   //! Lump mass matrix (bborn 07/08)
   void soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* emass);
 
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
-  void soh8_expol
-  (
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses, ///< gp stresses
-      Epetra_MultiVector& expolstresses                  ///< nodal stresseses
-  );
+  void soh8_expol(
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,  ///< gp stresses
+      Epetra_MultiVector& expolstresses);  ///< nodal stresses
 
   //! remodeling for fibers at the end of time step (st 01/10)
   void soh8_remodel(
@@ -655,7 +653,7 @@ protected:
                                  double* psi);
 
   //! Calculate linear stiffness and mass matrix
-  virtual void soh8_linstiffmass(
+  virtual void linstiffmass(
       vector<int>& lm,  ///< location matrix
       vector<double>& disp,  ///< current displacements
       vector<double>& residual,  ///< current residual displ
@@ -669,7 +667,6 @@ protected:
       const INPAR::STR::StressType iostress,  ///< stress output option
       const INPAR::STR::StrainType iostrain, ///< strain output option
       const INPAR::STR::StrainType ioplstrain); ///< plastic strain output option
-
 
   //! @name TSI related stuff
 

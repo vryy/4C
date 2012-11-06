@@ -13,21 +13,15 @@ Maintainer: Caroline Danowski
 
 #include "so_hex8.H"
 
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_serialdensevector.H"
-
+// include the headers of temperature-dependent materials with history only
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/robinson.H"
 #include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/micromaterial.H"
 
-#include "../drt_inpar/inpar_structure.H"
 
 /*----------------------------------------------------------------------*
  | evaluate the element (public)                             dano 05/10 |
@@ -61,10 +55,6 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
   else if (action=="postprocess_stress")        act = So_hex8::postprocess_stress;
   else if (action=="calc_struct_stifftemp")     act = So_hex8::calc_struct_stifftemp;
   else dserror("Unknown type of action for So_hex8: %s",action.c_str());
-
-  // If a visco-plastic Robinson's material is used evaluate the element using
-  // the current temperature
-  Teuchos::RCP<MAT::Material> mat = Material();
 
   // what should the element do
   switch(act)
@@ -123,7 +113,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     }  // has temperature state
 
     // call the purely structural method
-    soh8_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+    linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
       INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
   }
   break;
@@ -185,7 +175,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     // call the purely structural method
-    soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+    linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
       INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
   }
   break;
@@ -254,7 +244,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     // call the purely structural method
-    soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
+    linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
       params,INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -349,7 +339,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       }
 
       // call the purely structural method
-      soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,
+      linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,
         &plstrain,params,iostress,iostrain,ioplstrain);
 
       // total stress
@@ -391,8 +381,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     Teuchos::RCP<MAT::Material> mat = Material();
     if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
-      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-      micro->Update();
+      dserror("check if you wanna be here!!");
     }
     else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
     {
@@ -494,6 +483,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
 
   } // action
 
+  cout << "so_hex8_thermo Ende LinEvaluate\n "  << endl;
+
   return 0;
 
 } // Evaluate
@@ -502,7 +493,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                           dano 05/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
+void DRT::ELEMENTS::So_hex8::linstiffmass(
   vector<int>& lm,  // location matrix
   vector<double>& disp,  // current displacements
   vector<double>& residual,  // current residual displacements or displacement increment
@@ -572,7 +563,7 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     double detJ = detJ_[gp];
 
-    // WATCH OUT: here is the difference to the non-linear method soh8_nlnstiffmass()
+    // WATCH OUT: here is the difference to the non-linear method nlnstiffmass()
     // in geometrically linear analysis the deformation gradient is equal to identity
     // no difference between reference and current state
     for (int i=0; i<3; ++i) defgrd(i,i) = 1.0;
@@ -855,7 +846,7 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
    /* =========================================================================*/
 
   return;
-} // DRT::ELEMENTS::So_hex8::soh8_linstiffmass
+} // DRT::ELEMENTS::So_hex8::linstiffmass
 
 
 /*----------------------------------------------------------------------*
@@ -1006,7 +997,8 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
     //                             2.) stresstemp = C . Delta T
     // do not call the material for Robinson's material
     if ( !(Material()->MaterialType() == INPAR::MAT::m_vp_robinson) )
-      soh8_mat_temp(&stresstemp,&ctemp,&Ntemp,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
+      soh8_mat_temp(&stresstemp,&ctemp,&Ntemp,&cmat,&defgrd,&glstrain,&plglstrain,
+        straininc,scalartemp,&density,gp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

@@ -93,8 +93,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+        nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+                     INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -114,8 +114,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+        nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+                     INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -137,8 +137,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+        nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+                     INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -164,8 +164,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+        nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+                     INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // lump mass
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -203,7 +203,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){
           sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         } else {
-          soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+          nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
         {
           DRT::PackBuffer data;
