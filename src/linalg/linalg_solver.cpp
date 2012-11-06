@@ -1327,6 +1327,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
     case INPAR::SOLVER::azprec_MueLuAMG_contact:
     case INPAR::SOLVER::azprec_MueLuAMG_contact2:
+    case INPAR::SOLVER::azprec_MueLuAMG_contactPen:
       azlist.set("AZ_precond",AZ_user_precond);
       break;
     case INPAR::SOLVER::azprec_MueLuAMG_contactSP:
@@ -1423,6 +1424,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact2 )
     {
       Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact2) Parameters");
+      muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
+    }
+    if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactPen)
+    {
+      Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (PenaltyContact) Parameters");
       muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
     }
     //------------------------------------- set parameters for AMGBS if used

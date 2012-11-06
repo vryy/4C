@@ -19,7 +19,7 @@
 namespace MueLu {
 
 
-#if 1
+#if 0 // use old version with map extractor
 /*!
   @class ContactAFilterFactory class.
   @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying problems

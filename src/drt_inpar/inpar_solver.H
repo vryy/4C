@@ -94,7 +94,8 @@ namespace INPAR
       azprec_MueLuAMG_nonsym,	   ///< MueLu AMG preconditioner (PG-AMG for nonsymmetric problems ~ MLFLUID2)
       azprec_MueLuAMG_contact,   ///< MueLu AMG preconditioner (special handling for condensed contact formulation)
       azprec_MueLuAMG_contact2,  ///< MueLu AMG preconditioner (special enhanced handling for condensed contact formulation)
-      azprec_MueLuAMG_contactSP  ///< MueLu AMG preconditioner for saddlepoint formulation
+      azprec_MueLuAMG_contactSP, ///< MueLu AMG preconditioner for saddlepoint formulation
+      azprec_MueLuAMG_contactPen ///< MueLu AMG preconditioner for penalty formulation
     };
 
     /// Different prolongation smoothing strategies for AMGBS preconditioner
