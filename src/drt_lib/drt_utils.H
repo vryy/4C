@@ -171,6 +171,21 @@ namespace UTILS
 }
 
 
+  /*!
+  \brief extract location vector of the element dofs based on the numdof of the discretization
+
+  Instead of the element function "location vector" here the discretization is
+  used to identify the number of degrees of freedom of each node
+
+  \author henke
+ */
+  void DisBasedLocationVector(
+      const DRT::Discretization & dis,
+      const DRT::Element& ele,
+      vector<int>& lm,
+      const int num);
+
+
 /*!
 \brief handles random numbers through boost
 

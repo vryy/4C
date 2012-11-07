@@ -158,7 +158,7 @@ namespace TOPOPT
     const Epetra_Map* RowMap();
     const Epetra_Map* ColMap();
 
-    const double Iter() const;
+    const int Iter() const;
 
   protected:
 

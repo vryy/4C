@@ -486,6 +486,6 @@ Teuchos::RCP<DRT::ResultTest> TOPOPT::Optimizer::CreateFieldTest()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const double TOPOPT::Optimizer::Iter() const {return optimizer_->Iter();}
+const int TOPOPT::Optimizer::Iter() const {return optimizer_->Iter();}
 
 

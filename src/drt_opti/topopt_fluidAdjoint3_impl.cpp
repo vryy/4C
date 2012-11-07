@@ -1376,15 +1376,11 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
     // get global coordinates of gauss point
     double x = 0.0;
     double y = 0.0;
-    double z = 0.0;
-    {
-      LINALG::Matrix<nsd_,1> coords(true);
-      coords.Multiply(xyze_,funct_);
+    LINALG::Matrix<nsd_,1> coords(true);
+    coords.Multiply(xyze_,funct_);
+    x = coords(0);
+    y = coords(1); // z-component currently not required in tests
 
-      if (nsd_>0) x = coords(0);
-      if (nsd_>1) y = coords(1);
-      if (nsd_>2) z = coords(2);
-    }
 
     switch (fluidAdjoint3Parameter_->TestCase())
     {
@@ -1473,15 +1469,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContForce(
     // get global coordinates of gauss point
     double x = 0.0;
     double y = 0.0;
-    double z = 0.0;
-    {
-      LINALG::Matrix<nsd_,1> coords(true);
-      coords.Multiply(xyze_,funct_);
-
-      if (nsd_>0) x = coords(0);
-      if (nsd_>1) y = coords(1);
-      if (nsd_>2) z = coords(2);
-    }
+    LINALG::Matrix<nsd_,1> coords(true);
+    coords.Multiply(xyze_,funct_);
+    x = coords(0);
+    y = coords(1); // z-component currently not required in tests
 
     switch (fluidAdjoint3Parameter_->TestCase())
     {

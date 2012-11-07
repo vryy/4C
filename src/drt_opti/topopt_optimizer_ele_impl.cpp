@@ -136,7 +136,6 @@ fluidvelxy_(true),
 poroint_(0.0),
 intpoints_( distype ),
 xsi_(true),
-det_(0.0),
 fac_(0.0),
 visc_(0.0),
 reacoeff_(0.0),
@@ -198,11 +197,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
 
   // extract element data of all time steps from fluid solution
   vector<int> fluidlm;
-  {
-    vector<int> lmowner; // dummy for function call
-    vector<int> lmstride; // dummy for function call
-    ele->LocationVector(*fluiddis,fluidlm,lmowner,lmstride);
-  }
+  DRT::UTILS::DisBasedLocationVector(*fluiddis,*ele,fluidlm,nsd_+1);
 
   for (map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
       i!=fluidvels->end();i++)
@@ -296,11 +291,11 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
 
           for (int idim=0;idim<nsd_;idim++)
           {
-            value += poroint_*fluidvelint_.Dot(fluidvelint_);
+            value += timefac*poroint_*fluidvelint_.Dot(fluidvelint_);
 
             for (int jdim=0;jdim<nsd_;jdim++)
             {
-              value += visc_*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+              value += timefac*visc_*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
             }
           }
         }
@@ -549,7 +544,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
 
   // compute integration factor
-  fac_ = iquad.Weight()*det_;
+  fac_ = iquad.Weight()*det;
 
   // compute global derivatives
   derxy_.Multiply(xij,deriv_);
@@ -715,7 +710,6 @@ DRT::ELEMENTS::TopOptBoundaryImpl<distype>::TopOptBoundaryImpl
 ()
 : intpoints_( distype ),
 xsi_(true),
-det_(0.0),
 fac_(0.0),
 visc_(0.0),
 reacoeff_(0.0),

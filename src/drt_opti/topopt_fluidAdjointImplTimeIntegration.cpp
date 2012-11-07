@@ -890,23 +890,12 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
       const int nsd = DRT::Problem::Instance()->NDim();
       double values[3] = {0.0}; // dimension is <= 3 so this is enough
 
+      // get global coordinates of gauss point
       double x = 0.0;
       double y = 0.0;
-      double z = 0.0;
-      // get global coordinates of gauss point
-      if (nsd == 2)
-      {
-        LINALG::Matrix<2,1> coords(node->X());
-        x = coords(0);
-        y = coords(1);
-      }
-      else if (nsd == 3)
-      {
-        LINALG::Matrix<3,1> coords(node->X());
-        x = coords(0);
-        y = coords(1);
-        z = coords(2);
-      }
+      LINALG::Matrix<2,1> coords(node->X());
+      x = coords(0);
+      y = coords(1); // z-component currently not required in tests
 
       switch (testcase)
       {
@@ -1161,7 +1150,5 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
   output_->WriteMesh(0,0.0);
   return;
 }
-
-
 
 

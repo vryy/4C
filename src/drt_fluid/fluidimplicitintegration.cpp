@@ -4687,7 +4687,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
   }
   else
   {
-    dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions and three special initial fields (counter-rotating vortices, Beltrami flow and Bochev test) are available up to now!");
+    dserror("Only initial fields such as a zero field, initial fields by (un-)disturbed functions and three special initial fields (counter-rotating vortices, Beltrami flow and Bochev test) are available up to now!");
   }
 
   return;

@@ -152,6 +152,28 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | extract location vector based on numdof of dis      winklmaier 12/12 |
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::DisBasedLocationVector(
+    const DRT::Discretization & dis,
+    const DRT::Element& ele,
+    vector<int>& lm,
+    const int num)
+{
+  lm.clear();
+  vector<int> giddofs;
+  const int numnodes = ele.NumNode();
+  for (int i=0;i<numnodes;i++)
+  {
+    giddofs.clear();
+    giddofs = dis.Dof(ele.Nodes()[i]);
+    for (int j=0;j<num;j++)
+      lm.push_back(giddofs[j]);
+  }
+}
+
 DRT::UTILS::Random::Random():
       rand_engine_(0),                        //< set random seed
       uni_dist_(-1.0, 1.0),                         //< set range of uniform distributed rnd no

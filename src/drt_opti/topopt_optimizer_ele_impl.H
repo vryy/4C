@@ -272,8 +272,6 @@ private:
   DRT::UTILS::GaussIntegration intpoints_;
   //! coordinates of current integration point in reference coordinates
   LINALG::Matrix<nsd_,1> xsi_;
-  //! Jacobian determinant
-  double det_;
   //! integration factor
   double fac_;
   //@}
@@ -449,8 +447,6 @@ private:
   DRT::UTILS::GaussIntegration intpoints_;
   //! coordinates of current integration point in reference coordinates
   LINALG::Matrix<nsd_,1> xsi_;
-  //! Jacobian determinant
-  double det_;
   //! integration factor
   double fac_;
   //@}

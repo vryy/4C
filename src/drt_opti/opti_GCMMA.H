@@ -108,7 +108,7 @@ namespace OPTI
 
     const Teuchos::RCP<const DRT::Discretization> Discretization() const {return discret_;}
     const Teuchos::RCP<const Epetra_Vector> X() const {return x_;}
-    const double Iter() const {return total_iter_;}
+    const int Iter() const {return total_iter_;}
 
 
   private:
