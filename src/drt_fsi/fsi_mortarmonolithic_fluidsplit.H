@@ -1,4 +1,19 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_mortarmonolithic_fluidsplit.h
 
+\brief Solve FSI problem with non-matching grids using a monolithic scheme
+with condensed fluid interface velocities
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_MORTARMONOLITHICFLUID_H
 #define FSI_MORTARMONOLITHICFLUID_H
@@ -86,6 +101,37 @@ namespace FSI
 
     /// recover Lagrange multiplier at the interface needed for rhs in next time step
     virtual void RecoverLagrangeMultiplier();
+
+    /// Additional safety check of kinematic constraint during a single time step:
+    /*!
+     * Constraint equation:
+     *
+     * \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n}
+     *      - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
+     * with interface time integration factor
+     * \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}
+     *
+     * Do this check only for safety reasons. In principal, the constraint is satisfied due to solving the
+     * condensed nonlinear system of equations. We expect really small violation norms.
+     *
+     * \author mayr.mt
+     * \date 10/2012
+     */
+    virtual void CheckKinematicConstraint();
+
+    /// Additional safety check of dynamic equilibrium during a single time step:
+    /*!
+     * Dynamic equilibrium at the interface:
+     *
+     * \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}
+     *
+     * Do this check only for safety reasons. In principal, the constraint is satisfied due to solving the
+     * condensed nonlinear system of equations. We expect really small violation norms.
+     *
+     * \author mayr.mt
+     * \date 10/2012
+     */
+    virtual void CheckDynamicEquilibrium();
 
   protected:
 
@@ -183,17 +229,17 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of fluid side of the interface
     Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of fluid side of the interface
 
-    /// @name Recovery of Langrange multiplier at the end of each time step
+    /// @name Recovery of Lagrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the fluid)
-    //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{F,n+1}\f$ onto the fluid at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const Epetra_Vector> fgcur_;
 
     //! interface force \f$f_{\Gamma,i}^{F,n+1}\f$ onto the fluid at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const Epetra_Vector> fgpre_;
+    Teuchos::RCP<const Epetra_Vector> fgprev_;
 
     //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddginc_;
@@ -202,19 +248,19 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> duiinc_;
 
     //! interface displacement solution of the structure at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> disgpre_;
+    Teuchos::RCP<const Epetra_Vector> disgprev_;
 
     //! inner velocity solution of fluid at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> velipre_;
+    Teuchos::RCP<const Epetra_Vector> veliprev_;
 
     //! interface velocity solution of the fluid at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> velgpre_;
+    Teuchos::RCP<const Epetra_Vector> velgprev_;
 
     //! inner ALE displacement solution at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> aleipre_;
+    Teuchos::RCP<const Epetra_Vector> aleiprev_;
 
     //! interface ALE displacement solution at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> alegpre_;
+    Teuchos::RCP<const Epetra_Vector> alegprev_;
 
     //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddialeinc_;
@@ -223,25 +269,25 @@ namespace FSI
     Teuchos::RCP<const LINALG::SparseMatrix> fgicur_;
 
     //! block \f$F_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fgipre_;
+    Teuchos::RCP<const LINALG::SparseMatrix> fgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fggcur_;
 
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fggpre_;
+    Teuchos::RCP<const LINALG::SparseMatrix> fggprev_;
 
-    //! block \f$F_{\Gamma I,i+1}^G\f$ of ALE matrix at current NOX iteration \f$i+1\f$
+    //! block \f$F_{\Gamma I,i+1}^G\f$ of fluid shape derivatives matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fmgicur_;
 
-    //! block \f$F_{\Gamma I,i}^G\f$ of ALE matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmgipre_;
+    //! block \f$F_{\Gamma I,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmgiprev_;
 
-    //! block \f$F_{\Gamma\Gamma,i+1}^G\f$ of ALE matrix at current NOX iteration \f$i+1\f$
+    //! block \f$F_{\Gamma\Gamma,i+1}^G\f$ of fluid shape derivatives matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fmggcur_;
 
-    //! block \f$F_{\Gamma\Gamma,i}^G\f$ of ALE matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmggpre_;
+    //! block \f$F_{\Gamma\Gamma,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration \f$i\f$
+    Teuchos::RCP<const LINALG::SparseMatrix> fmggprev_;
 
     //@}
 
