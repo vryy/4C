@@ -147,23 +147,23 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   int verbosityLevel = 10;  // verbosity level
   int maxCoarseSize = 50;
   int nDofsPerNode = 1;         // coalesce and drop parameters
-  double agg_threshold = 0.0;   // aggregation parameters
-  double agg_damping = 4/3;
+  //double agg_threshold = 0.0;   // aggregation parameters
+  //double agg_damping = 4/3;
   int    agg_smoothingsweeps = 1;
   int    minPerAgg = 3;       // optimal for 2d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
-  bool   bEnergyMinimization = false; // PGAMG
+  //bool   bEnergyMinimization = false; // PGAMG
   if(params.isParameter("max levels")) maxLevels = params.get<int>("max levels");
   if(params.isParameter("ML output"))  verbosityLevel = params.get<int>("ML output");
   if(params.isParameter("coarse: max size")) maxCoarseSize = params.get<int>("coarse: max size");
   if(params.isParameter("PDE equations")) nDofsPerNode = params.get<int>("PDE equations");
-  if(params.isParameter("aggregation: threshold"))          agg_threshold       = params.get<double>("aggregation: threshold");
-  if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
+  //if(params.isParameter("aggregation: threshold"))          agg_threshold       = params.get<double>("aggregation: threshold");
+  //if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
   if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
   if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
-  if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
+  //if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
 
   // set DofsPerNode in A operator
   A->SetFixedBlockSize(nDofsPerNode);
@@ -203,11 +203,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   // prepare (filtered) A Factory
   Teuchos::RCP<SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("A", NULL, map_extractor));
 
-  // nullspace factory
-  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory());
-
   // Coalesce and drop factory with constant number of Dofs per freedom
-  Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory(segAFact,nspFact));
+  Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory(segAFact/*,nspFact*/));
   //dropFact->SetFixedBlockSize(nDofsPerNode);
   
   // aggregation factory
@@ -233,14 +230,20 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   /*Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory(UCAggFact,nspFact,segAFact));
   Teuchos::RCP<PFactory> PFact  = Teuchos::rcp( new PgPFactory(PtentFact,segAFact) );
   Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new GenericRFactory(PFact) );*/
-  Teuchos::RCP<PFactory> PFact = Teuchos::rcp(new TentativePFactory(UCAggFact,nspFact,segAFact));
+  Teuchos::RCP<PFactory> PFact = Teuchos::rcp(new TentativePFactory(UCAggFact,Teuchos::null /*amalgFact*/,Teuchos::null /*nspFact*/,segAFact));
   Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new TransPFactory(PFact) );
+
+  // define nullspace factory AFTER tentative PFactory (that generates the nullspace for the coarser levels)
+  // use same nullspace factory for all multigrid levels
+  // therefor we have to create one instance of NullspaceFactory and use it
+  // for all FactoryManager objects (note: here, we have one FactoryManager object per level)
+  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PFact));
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
   Teuchos::RCP<RAPFactory> AcFact = Teuchos:: rcp( new RAPFactory(PFact, RFact) );
 
   // write out aggregates
-  Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),segAFact.get()));
+  Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),NULL /*amalgFact is not segAFact.get()*/));
   AcFact->AddTransferFactory(aggExpFact);
 
   Teuchos::RCP<MueLu::ContactTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cTransFact = Teuchos::rcp(new MueLu::ContactTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(PFact));
@@ -328,8 +331,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
     if(SmooFactFine != Teuchos::null)
         vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
     vecManager[i]->SetFactory("CoarseSolver", coarsestSmooFact);
+    vecManager[i]->SetFactory("Aggregates", UCAggFact);
+    vecManager[i]->SetFactory("Graph", dropFact);
+    vecManager[i]->SetFactory("DofsPerNode", dropFact);
     vecManager[i]->SetFactory("A", AcFact);       // same RAP factory
     vecManager[i]->SetFactory("P", PFact);    // same prolongator and restrictor factories
+    vecManager[i]->SetFactory("Ptent", PFact);    // same prolongator and restrictor factories
     vecManager[i]->SetFactory("R", RFact);    // same prolongator and restrictor factories
     vecManager[i]->SetFactory("Nullspace", nspFact); // use same nullspace factory throughout all multigrid levels
   }
