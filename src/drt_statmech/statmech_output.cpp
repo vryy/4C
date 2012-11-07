@@ -48,7 +48,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
                                        const double& dt,
                                        const Epetra_Vector& dis,
                                        const Epetra_Vector& fint,
-                                       RCP<CONTACT::Beam3cmanager> beamcmanager,
+                                       Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
                                        bool printscreen)
 {
   /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
@@ -400,52 +400,15 @@ void STATMECH::StatMechManager::Output(const int ndim,
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
       if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
       {
-#ifdef DEBUG
-        if (forcesensor_ == null)
-          dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
-#endif  // #ifdef DEBUG
-        double f = 0;//mean value of force
-        double d = 0;//Displacement
+        // name of file into which output is written
+        std::ostringstream filename;
+        filename << "ViscoElOutputProc.dat";
+        ViscoelasticityOutput(time, dis, fint, filename);
 
-        for(int i=0; i<forcesensor_->MyLength(); i++)// forcesensor_ is unique on each Proc (see UpdateForceSensors() !)
-          if((*forcesensor_)[i]>0.9)
-          {
-          	// translate i to DofRowMap LID
-          	int dofgid = discret_->DofColMap()->GID(i);
-          	int rowid = discret_->DofRowMap()->LID(dofgid);
-            f += fint[rowid];
-            d = dis[rowid];
-          }
-
-        //f is the sum of all forces at the top on this processor; compute the sum fglob on all processors all together
-        double fglob = 0;
-        discret_->Comm().SumAll(&f,&fglob,1);
-
-        if(!discret_->Comm().MyPID())
-        {
-          //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
-          FILE* fp = NULL;
-
-          //content to be written into the output file
-          std::stringstream filecontent;
-
-          //name of file into which output is written
-          std::ostringstream outputfilename;
-          outputfilename << "ViscoElOutputProc.dat";
-
-          fp = fopen(outputfilename.str().c_str(), "a");
-
-          /*the output to be written consists of internal forces at exactly those degrees of freedom
-           * marked in *forcesensor_ by a one entry*/
-
-          filecontent << scientific << setprecision(10) << time;//changed
-
-          //Putting time, displacement, meanforce  in Filestream
-          filecontent << "   "<< d << "   " << fglob << "   " << discret_->NumGlobalElements() << endl; //changed
-          //writing filecontent into output file and closing it
-          fprintf(fp,filecontent.str().c_str());
-          fclose(fp);
-        }
+        // additional Density-Density-Correlation Output if required
+        std::ostringstream ddcorrfilename;
+        ddcorrfilename << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        DDCorrOutput(dis, ddcorrfilename, istep, dt);
       }
     }
     break;
@@ -4734,6 +4697,56 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
     fclose(fp);
   }
 }
+
+/*------------------------------------------------------------------------------*                                                 |
+| distribution of spherical coordinates                  (public) mueller 11/12|
+*------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::ViscoelasticityOutput(const double& time, const Epetra_Vector& dis, const Epetra_Vector& fint, std::ostringstream& filename)
+{
+#ifdef DEBUG
+  if (forcesensor_ == null)
+    dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
+#endif  // #ifdef DEBUG
+  double f = 0;//mean value of force
+  double d = 0;//Displacement
+
+  for(int i=0; i<forcesensor_->MyLength(); i++)// forcesensor_ is unique on each Proc (see UpdateForceSensors() !)
+    if((*forcesensor_)[i]>0.9)
+    {
+      // translate i to DofRowMap LID
+      int dofgid = discret_->DofColMap()->GID(i);
+      int rowid = discret_->DofRowMap()->LID(dofgid);
+      f += fint[rowid];
+      d = dis[rowid];
+    }
+
+  //f is the sum of all forces at the top on this processor; compute the sum fglob on all processors all together
+  double fglob = 0;
+  discret_->Comm().SumAll(&f,&fglob,1);
+
+  if(!discret_->Comm().MyPID())
+  {
+    //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
+    FILE* fp = NULL;
+
+    //content to be written into the output file
+    std::stringstream filecontent;
+
+    fp = fopen(filename.str().c_str(), "a");
+
+    /*the output to be written consists of internal forces at exactly those degrees of freedom
+     * marked in *forcesensor_ by a one entry*/
+
+    filecontent << scientific << setprecision(10) << time;//changed
+
+    //Putting time, displacement, meanforce  in Filestream
+    filecontent << "   "<< d << "   " << fglob << "   " << discret_->NumGlobalElements() << endl; //changed
+    //writing filecontent into output file and closing it
+    fprintf(fp,filecontent.str().c_str());
+    fclose(fp);
+  }
+}
+
 
 /*------------------------------------------------------------------------------*                                                 |
 | distribution of spherical coordinates                  (public) mueller 12/10|

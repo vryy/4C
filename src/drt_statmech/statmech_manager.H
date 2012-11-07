@@ -413,6 +413,9 @@ protected:
   //! \brief returns polymer length per unit volume with respect to radial distance to COG of the network
   void ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep);
 
+  //! \brief Viscoelastic output
+  void ViscoelasticityOutput(const double& time, const Epetra_Vector& dis, const Epetra_Vector& fint, std::ostringstream& filename);
+
   //! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
   bool CheckForKinkedVisual(int eleid);
 
