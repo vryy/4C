@@ -30,7 +30,7 @@ DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
 {
   numgpt_ = intpoints_.NumPoints();
   ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
-  kintype_ = so3_thermo_nonlinear;  // TODO 2012-10-26 default is defined here!!
+  kintype_ = so3_thermo_nonlinear;
   return;
 }
 
@@ -171,7 +171,7 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
   // read thermo-materials
   switch (mat->MaterialType())
   {
-  // TODO 2012-10-30 plastic materials are already set in L181: so_hex8_input ReadElement
+  // TODO 2012-10-30 plastic materials are already set in so_hex8_input.cpp(L181): ReadElement
   // materials without history need no separate Setup()
   default :
   break;

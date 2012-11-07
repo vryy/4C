@@ -74,11 +74,11 @@ namespace ELEMENTS
     //! total dofs per element
     static const int numdofperelement_ = numdofpernode_ * nen_;
     //! number of strains/stresses
-    static const int nstr_ = 6;
+    static const int numstr_ = 6;
     //! number of Gauss points per element (value is added in so3_thermo.cpp)
     int numgpt_;
-    // TODO 2012-10-30 include it
-    static const int numgpt_1 = THR::DisTypeToNumGaussPoints<distype>::nquad;
+    // TODO 2012-10-30 general framework is required
+    static const int numgpt_1 = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
 
     //! @name Acess methods
 
@@ -200,8 +200,8 @@ namespace ELEMENTS
     //! configuration
     virtual void InitJacobianMapping();
 
-    //! Lump mass matrix (bborn 07/08)
-    void so3_thermo_lumpmass(
+    //! lump mass matrix (bborn 07/08)
+    void lumpmass(
       LINALG::Matrix<numdofperelement_,numdofperelement_>* emass
       );
 
@@ -269,7 +269,7 @@ namespace ELEMENTS
     //! to fill these matrices or vectors.
     //!
     //! \return 0 if successful, negative otherwise
-    int CouplToThrEvaluate(
+    int EvaluateCouplWithThr(
       ParameterList& params,  //!< ParameterList for communication between control routine and elements
       DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
       DRT::Element::LocationArray& la,  //!< location array for de-assembly
@@ -281,21 +281,19 @@ namespace ELEMENTS
       );
 
     //! Calculate temperature coupling term for the internal force (geometric linear)
-    virtual void so3_thermo_fint_lin(
+    virtual void lin_fint_tsi(
       DRT::Element::LocationArray& la,  //!< location array
       vector<double>& disp,  //!< current displacements
       vector<double>& residual,  //!< current residual displ
       vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
-      LINALG::Matrix<numgpt_1,nstr_>* elestress,  //!< stresses at GP
-      LINALG::Matrix<numgpt_1,nstr_>* elestrain,  //!< strains at GP
+      LINALG::Matrix<numgpt_1,numstr_>* elestress,  //!< stresses at GP
       Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
-      const INPAR::STR::StressType iostress,  //!< stress output option
-      const INPAR::STR::StrainType iostrain  //!< strain output option
+      const INPAR::STR::StressType iostress  //!< stress output option
       );
 
     //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
-    virtual void so3_thermo_kdt_lin(
+    virtual void lin_kdT_tsi(
       DRT::Element::LocationArray& la,
       vector<double>& disp,  //!< (i): current displacement
       LINALG::Matrix<numdofperelement_,nen_>* stiffmatrixcoupl  //!< (o): mechanical thermal stiffness term at current gp
@@ -308,15 +306,15 @@ namespace ELEMENTS
     //! is passed.
     //! Add whatever your material needs, but make sure that exchange is not
     //! overdone performance-wise.
-    void so3_thermo_materialize(
-      LINALG::Matrix<nstr_,1>* stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
-      LINALG::Matrix<nstr_,1>* ctemp,  //!< (o): temperature dependent tangent matrix at current gp
+    void materialize(
+      LINALG::Matrix<numstr_,1>* stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
+      LINALG::Matrix<numstr_,1>* ctemp,  //!< (o): temperature dependent tangent matrix at current gp
       LINALG::Matrix<1,1>* Ntemp,  // temperature of element: (shapefcts . element temperature) at current gp
-      LINALG::Matrix<nstr_,nstr_>* cmat,  //!< (o): material tangent matrix at current gp
+      LINALG::Matrix<numstr_,numstr_>* cmat,  //!< (o): material tangent matrix at current gp
       LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< F at current gp, CAUTION! only for disp-based soh8
-      LINALG::Matrix<nstr_,1>* glstrain,  //!< (o): total strain
-      LINALG::Matrix<nstr_,1>* plglstrain,  //!< (o): plastic strain
-      LINALG::Matrix<nstr_,1>& straininc,  //!< (i): total strain increment
+      LINALG::Matrix<numstr_,1>* glstrain,  //!< (o): total strain
+      LINALG::Matrix<numstr_,1>* plglstrain,  //!< (o): plastic strain
+      LINALG::Matrix<numstr_,1>& straininc,  //!< (i): total strain increment
       const double& scalartemp,  //!< scalar-valued temperature of the element
       double* density,  //!< density of material
       const int gp,  //!< current Gauss point
@@ -325,7 +323,20 @@ namespace ELEMENTS
 
     //! calculate the constant temperature tangent for stresstemp
     void Ctemp(
-      LINALG::Matrix<nstr_,1>* ctemp  //!< temperature dependent material tangent
+      LINALG::Matrix<numstr_,1>* ctemp  //!< temperature dependent material tangent
+      );
+
+    //! build linear B-operator
+    void buildboplin(
+      LINALG::Matrix<numstr_,numdofperelement_>* boplin,
+      LINALG::Matrix<nsd_,nen_>* N_XYZ
+      );
+
+    //! push forward of material stresses to the current, spatial configuration
+    void PK2toCauchy(
+      LINALG::Matrix<numstr_,1>* stress,
+      LINALG::Matrix<nsd_,nsd_>* defgrd,
+      LINALG::Matrix<nsd_,nsd_>* cauchystress
       );
 
   private:
