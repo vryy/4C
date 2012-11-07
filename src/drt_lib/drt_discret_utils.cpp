@@ -96,6 +96,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       !solveparams.isSublist("MueLu Parameters") &&
       !solveparams.isSublist("MueLu (Contact) Parameters") &&
       !solveparams.isSublist("MueLu (Contact2) Parameters") &&
+      !solveparams.isSublist("MueLu (PenaltyContact) Parameters") &&
 	  !solveparams.isSublist("Stratimikos Parameters")) return;
   ParameterList* mllist_ptr = NULL;
   if (solveparams.isSublist("Stratimikos Parameters"))
@@ -114,6 +115,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     mllist_ptr = &(solveparams.sublist("MueLu (Contact) Parameters"));
   else if (solveparams.isSublist("MueLu (Contact2) Parameters"))
     mllist_ptr = &(solveparams.sublist("MueLu (Contact2) Parameters"));
+  else if (solveparams.isSublist("MueLu (PenaltyContact) Parameters"))
+    mllist_ptr = &(solveparams.sublist("MueLu (PenaltyContact) Parameters"));
   else return;
 
   // check whether all procs have at least one row element. ML cannot handle this!

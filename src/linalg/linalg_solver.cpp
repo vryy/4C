@@ -718,6 +718,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   case INPAR::SOLVER::azprec_MueLuAMG_contact: // MueLu operator (contact)
   case INPAR::SOLVER::azprec_MueLuAMG_contact2: // MueLu operator (contact)
   case INPAR::SOLVER::azprec_MueLuAMG_contactSP: // MueLu operator (contact)
+  case INPAR::SOLVER::azprec_MueLuAMG_contactPen: // MueLu operator (contact)
     mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
     break;
   case INPAR::SOLVER::azprec_MueLuAMG_nonsym: // MueLu operator (Petrov-Galerkin)
