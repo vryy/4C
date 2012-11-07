@@ -142,7 +142,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     const Teuchos::RCP<MultiVector> nsp)
 {
 
-  //Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+  Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
 
   // read in common parameters
   int maxLevels = 10;       // multigrid prameters
@@ -191,17 +191,19 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   // build map extractor from different maps
   // note that the ordering (Master, Slave, Inner) is important to be the same overall the whole algorithm
   Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
-  //Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
+  Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
   Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
   Teuchos::RCP<Xpetra::EpetraMap> xActiveDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epActiveDofMap ));
   //Teuchos::RCP<Xpetra::EpetraMap> xInnerDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epInnerDofMap  )); // TODO check me
 
-  /*std::vector<Teuchos::RCP<const Xpetra::Map<LO,GO,Node> > > xmaps;
-  xmaps.push_back(xMasterDofMap);
-  xmaps.push_back(xSlaveDofMap );
-  //xmaps.push_back(xInnerDofMap ); // TODO check me
 
-  Teuchos::RCP<const Xpetra::MapExtractor<Scalar,LO,GO,Node> > map_extractor = Xpetra::MapExtractorFactory<Scalar,LO,GO>::Build(xfullmap,xmaps);*/
+  // print out system matrix on finest level
+  MueLu::Utils<double,int,int>::Write("test.mat", *A);
+  xSlaveDofMap->describe(*out,Teuchos::VERB_EXTREME);
+  xMasterDofMap->describe(*out,Teuchos::VERB_EXTREME);
+  xActiveDofMap->describe(*out,Teuchos::VERB_EXTREME);
+  dserror("Stop");
+
 
   ///////////////////////////////////////////////////////////
 
