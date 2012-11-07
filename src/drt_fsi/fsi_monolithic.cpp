@@ -533,13 +533,13 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   {
     Epetra_Time ts(Comm());
     StructureField()->Evaluate(sx);
-    Utils()->out() << "structure: " << ts.ElapsedTime() << " s\n";
+    Utils()->out() << "structure: " << ts.ElapsedTime() << " sec\n";
   }
 
   {
     Epetra_Time ta(Comm());
     AleField()      .Evaluate(ax);
-    Utils()->out() << "ale      : " << ta.ElapsedTime() << " s\n";
+    Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
@@ -549,7 +549,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   {
     Epetra_Time tf(Comm());
     FluidField().Evaluate(fx);
-    Utils()->out() << "fluid    : " << tf.ElapsedTime() << " s\n";
+    Utils()->out() << "fluid    : " << tf.ElapsedTime() << " sec\n";
   }
 
   Utils()->out() << "\n";

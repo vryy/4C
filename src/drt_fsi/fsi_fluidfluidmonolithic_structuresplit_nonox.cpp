@@ -204,8 +204,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
 
   // get time integration parameters of structure an fluid time integrators
   // to enable consistent time integration among the fields
-  double stiparam = StructureField()->TimIntParam();
-  double ftiparam = FluidField().TimIntParam();
+  const double stiparam = StructureField()->TimIntParam();
+  const double ftiparam = FluidField().TimIntParam();
 
   SetupVector(f,
               StructureField()->RHS(),
@@ -506,13 +506,13 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
   // scaling factors for fluid
-  double scale     = FluidField().ResidualScaling();
-  double timescale = FluidField().TimeScaling();
+  const double scale     = FluidField().ResidualScaling();
+  const double timescale = FluidField().TimeScaling();
 
   // get time integration parameters of structure an fluid time integrators
   // to enable consistent time integration among the fields
-  double stiparam = StructureField()->TimIntParam();
-  double ftiparam = FluidField().TimIntParam();
+  const double stiparam = StructureField()->TimIntParam();
+  const double ftiparam = FluidField().TimIntParam();
 
   // store parts of structural matrix to know them in the next iteration as previous iteration matricesu
   sgicur_ = rcp(new LINALG::SparseMatrix(s->Matrix(1,0)));
@@ -787,8 +787,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
 {
   // get time integration parameters of structure an fluid time integrators
   // to enable consistent time integration among the fields
-  double stiparam = StructureField()->TimIntParam();
-  double ftiparam = FluidField().TimIntParam();
+  const double stiparam = StructureField()->TimIntParam();
+  const double ftiparam = FluidField().TimIntParam();
 
   // structure inner
   Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
@@ -1197,7 +1197,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
 
    // get time integration parameters of structural time integrator
    // to enable consistent time integration among the fields
-   double stiparam = StructureField()->TimIntParam();
+   const double stiparam = StructureField()->TimIntParam();
 
    // compute the product S_{\Gamma I} \Delta d_I
    Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true); // store the prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here
@@ -1213,7 +1213,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
     */
    lambda_->Update(1.0, *fgcur_, -stiparam);
    lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
-   lambda_->Scale(1/(1.0-stiparam)); // entire Lagrange multiplier ist divided by (1.-strtimintparam)
+   lambda_->Scale(1/(1.0-stiparam)); // entire Lagrange multiplier it divided by (1.-stiparam)
 
    return;
 }

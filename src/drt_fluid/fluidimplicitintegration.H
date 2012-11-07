@@ -445,9 +445,9 @@ public:
   double ResidualScaling() const
   {
     if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
-         return 1.0;
+      return 1.0;
     else if (is_genalpha_)
-         return alphaM_/(gamma_*dta_);
+      return alphaM_/(gamma_*dta_);
     else
       return 1.0/(theta_*dta_);
   }
