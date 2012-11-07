@@ -83,6 +83,12 @@ namespace THR
   template<> struct DisTypeToNumGaussPoints<DRT::Element::line2>   { static const int nquad =  2; };
   template<> struct DisTypeToNumGaussPoints<DRT::Element::line3>   { static const int nquad =  3; };
 
+  //! Template Meta Programming version of switch over discretization type
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToSTRNumGaussPoints {};
+  template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::hex8>    { static const int nquad =  8; };
+  template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::tet4>    { static const int nquad =  1; };
+
 } // namespace THR
 
 /*----------------------------------------------------------------------*/
