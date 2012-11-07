@@ -1692,7 +1692,17 @@ include(CTest)
 
 ###------------------------------------------------------------------ Unit Tests
 
-#if(NOT TRILINOS_DEV)
+if(NOT TRILINOS_DEV)
+  if (NOT ACML_FOUND )  ## cut_test not available on kaiser
+    add_executable(cut_test ${OBJS_CUT_TEST})
+    target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES}
+    drt_lib_io
+    ${LIBRARIES}
+    )
+    add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
+  endif(NOT ACML_FOUND)
+else()
+# linker command for Q3/2012 Trilinos or newer
   if (NOT ACML_FOUND )  ## cut_test not available on kaiser
     add_executable(cut_test ${OBJS_CUT_TEST})
     target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchoscore ${LAPACK_LIBRARIES}
@@ -1701,7 +1711,7 @@ include(CTest)
     )
     add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
   endif(NOT ACML_FOUND)
-#endif(NOT TRILINOS_DEV)
+endif(NOT TRILINOS_DEV)
 
 #add_executable(graph_test ${OBJS_GRAPH_TEST})
 #target_link_libraries(graph_test ${Boost_LIBRARIES})
