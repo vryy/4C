@@ -45,7 +45,9 @@ class DiscretizationCreatorBase
 public:
 
   /// constructor
-  explicit DiscretizationCreatorBase(){}
+  explicit DiscretizationCreatorBase():
+  numeleskips_(0)
+  {}
 
   /// destructor
   virtual ~DiscretizationCreatorBase() {}
@@ -83,6 +85,8 @@ protected:
 
   RefCountPtr<Epetra_Map> targetnoderowmap_;
   RefCountPtr<Epetra_Map> targetnodecolmap_;
+  //! local number of skipped elements during cloning
+  int numeleskips_;
 
 private:
 
@@ -97,7 +101,7 @@ class DiscretizationCreator
 public:
 
   /// constructor
-  explicit DiscretizationCreator(){}
+  explicit DiscretizationCreator() {}
   /// destructor
   virtual ~DiscretizationCreator() {}
 
@@ -209,6 +213,8 @@ private:
         copy(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
              inserter(colnodeset, colnodeset.begin()));
       }
+      else
+        numeleskips_++;
     } // loop over my elements
 
     return;

@@ -194,16 +194,22 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
 
   // at the end, we do several checks to ensure that we really have identical
   // distributions of elements and nodes over processors (as expected!)
-  // We should not perform this check if the new discretization is only a subset of the
-  // source discretization. But currently, this option is not used.
-  if (not sourcedis->NodeRowMap()->SameAs(*(targetdis->NodeRowMap())))
-    dserror("NodeRowMaps of source and target discretization are different!");
-  if (not sourcedis->NodeColMap()->SameAs(*(targetdis->NodeColMap())))
-    dserror("NodeColMaps of source and target discretization are different!");
-  if (not sourcedis->ElementRowMap()->SameAs(*(targetdis->ElementRowMap())))
-    dserror("ElementRowMaps of source and target discretization are different!");
-  if (not sourcedis->ElementRowMap()->SameAs(*(targetdis->ElementRowMap())))
-    dserror("ElementRowMaps of source and target discretization are different!");
+  // We do not perform this check if the new discretization is only a subset of the
+  // source discretization.
+  int sumeleskips = 0;
+  sourcedis->Comm().SumAll(&numeleskips_,&sumeleskips,1);
+
+  if(sumeleskips == 0)
+  {
+    if (not sourcedis->NodeRowMap()->SameAs(*(targetdis->NodeRowMap())))
+      dserror("NodeRowMaps of source and target discretization are different!");
+    if (not sourcedis->NodeColMap()->SameAs(*(targetdis->NodeColMap())))
+      dserror("NodeColMaps of source and target discretization are different!");
+    if (not sourcedis->ElementRowMap()->SameAs(*(targetdis->ElementRowMap())))
+      dserror("ElementRowMaps of source and target discretization are different!");
+    if (not sourcedis->ElementRowMap()->SameAs(*(targetdis->ElementRowMap())))
+      dserror("ElementRowMaps of source and target discretization are different!");
+  }
 
   // all done ;-)
   return;
