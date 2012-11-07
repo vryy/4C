@@ -424,21 +424,6 @@ protected:
 
   //! Calculate nonlinear stiffness and mass matrix
   virtual void nlnstiffmass(
-    ParameterList&            params,
-    vector<int>&              lm,
-    vector<double>&           disp,
-    vector<double>&           residual,
-    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
-    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
-    LINALG::Matrix<NUMDOF_SOTET4,1>* force,
-    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
-    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
-    const INPAR::STR::StressType     iostress,
-    const INPAR::STR::StrainType     iostrain
-    );
-
-  //! Calculate nonlinear stiffness and mass matrix
-  virtual void nlnstiffmass(
     vector<int>&  lm,
     vector<double>&  disp,
     vector<double>&  residual,

@@ -128,8 +128,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      nlnstiffmass(params,lm,mydisp,myres, &elemat1, NULL, &elevec1, NULL,NULL,
-                   INPAR::STR::stress_none,INPAR::STR::strain_none);
+      nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
    }
     break;
 
@@ -150,8 +150,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
         invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,
                                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       else
-        nlnstiffmass(params,lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,
-                     INPAR::STR::stress_none,INPAR::STR::strain_none);
+        nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     }
     break;
@@ -170,8 +170,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4> myemat(true); // to zero
-      nlnstiffmass(params,lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,
-                   INPAR::STR::stress_none,INPAR::STR::strain_none);
+      nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -193,8 +193,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
         invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,
                                          INPAR::STR::stress_none,INPAR::STR::strain_none);
       else
-        nlnstiffmass(params,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,
-                     INPAR::STR::stress_none,INPAR::STR::strain_none);
+        nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
       if (act==calc_struct_nlnstifflmass) so_tet4_lumpmass(&elemat2);
     }
@@ -226,7 +226,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
         if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
           invdesign_->so_tet4_nlnstiffmass(params,this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,iostress,iostrain);
         else
-          nlnstiffmass(params,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,iostress,iostrain);
+          nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,NULL,params,
+            iostress,iostrain,INPAR::STR::strain_none);
 
         {
           DRT::PackBuffer data;
@@ -893,21 +894,25 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            vlf 08/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::nlnstiffmass(
-      ParameterList&            params,
-      vector<int>&              lm,             // location matrix
-      vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residual displ
-      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    // element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     // element mass matrix
-      LINALG::Matrix<NUMDOF_SOTET4,1>* force,          // element internal force vector
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,      // stresses at GP
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      // strains at GP
-      const INPAR::STR::StressType                 iostress,         // stress output options
-      const INPAR::STR::StrainType                 iostrain)         // strain output options
+  vector<int>& lm,  // location matrix
+  vector<double>& disp,  // current displacements
+  vector<double>& residual,  // current residual displacements or displacement increment
+  LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
+  LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
+  LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
+  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,  // stresses at GP
+  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,  // strains at GP
+  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain, // plastic strains at GP
+  ParameterList& params,  // algorithmic parameters e.g. time
+  const INPAR::STR::StressType iostress,  // stress output option
+  const INPAR::STR::StrainType iostrain,  // strain output option
+  const INPAR::STR::StrainType ioplstrain  // plastic strain output option
+  )
 {
 /* =============================================================================*
 ** CONST DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
@@ -1264,29 +1269,6 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
   }// end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
   return;
-} // DRT::ELEMENTS::So_tet4::nlnstiffmass
-
-
-/*----------------------------------------------------------------------*
- |  evaluate the element (private)                            vlf 08/07 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::nlnstiffmass(
-  vector<int>& lm,  // location matrix
-  vector<double>& disp,  // current displacements
-  vector<double>& residual,  // current residual displacements or displacement increment
-  LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
-  LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
-  LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,  // stresses at GP
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,  // strains at GP
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain, // plastic strains at GP
-  ParameterList& params,  // algorithmic parameters e.g. time
-  const INPAR::STR::StressType iostress,  // stress output option
-  const INPAR::STR::StrainType iostrain,  // strain output option
-  const INPAR::STR::StrainType ioplstrain  // plastic strain output option
-  )
-{
-  dserror("implementation is still missing. Sequence of parameters corresponds to method of hex8");
 }  // DRT::ELEMENTS::So_tet4::nlnstiffmass
 
 
