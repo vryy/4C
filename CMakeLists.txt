@@ -210,11 +210,9 @@ find_package(LAPACK REQUIRED)
 #
 ### TRILINOS
 SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-if (TRILINOS_DEV)
 find_package(Trilinos REQUIRED)
-else ()
-find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)  # needed for build system on navier??
-endif()
+# old find_package string for Trilinos < Q1/2012
+#find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)  # needed for build system on navier??
 
 # Echo trilinos build info just for fun
 MESSAGE("\nFound Trilinos!  Here are the details: ")
