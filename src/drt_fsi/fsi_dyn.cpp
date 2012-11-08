@@ -974,7 +974,7 @@ void fsi_ale_drt()
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
     // create fsi specific result test
-    Teuchos::RCP<FSI::FSIResultTest> fsitest = rcp(new FSI::FSIResultTest::FSIResultTest(fsi,fsidyn));
+    Teuchos::RCP<FSI::FSIResultTest> fsitest = rcp(new FSI::FSIResultTest(fsi,fsidyn));
     DRT::Problem::Instance()->AddFieldTest(fsitest);
 
     // do the actual testing
