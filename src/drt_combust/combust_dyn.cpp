@@ -122,12 +122,8 @@ void combust_dyn()
   // validate the results
   //------------------------------------------------------------------------------------------------
   // summarize the performance measurements
-#ifdef TRILINOS_DEV
   Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
-#else
-  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
-#endif
 
   // perform the result test
   DRT::Problem::Instance()->AddFieldTest(combust_->FluidField().CreateFieldTest());

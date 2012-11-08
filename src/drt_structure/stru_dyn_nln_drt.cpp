@@ -148,12 +148,8 @@ void dyn_nlnstructural_drt()
   DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
 
   // print monitoring of time consumption
-#ifdef TRILINOS_DEV
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structdis->Comm());
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
-#else
-  Teuchos::TimeMonitor::summarize();
-#endif
 
   // time to go home...
   return;

@@ -286,15 +286,8 @@ void STR::MLMC::Integrate()
         DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
         DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
 
-        // print monitoring of time consumption
-        //Teuchos::TimeMonitor::summarize();
-
-      #ifdef TRILINOS_DEV
-           Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
-           Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
-      #else
-           Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
-      #endif
+        Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+        Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 
         // time to go home...
       }
