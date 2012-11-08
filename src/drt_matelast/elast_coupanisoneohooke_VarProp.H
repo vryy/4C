@@ -50,12 +50,12 @@ namespace ELASTIC
 
       /// fiber params
       double c_;
-      /// initalization modus;
-      int init_;
       /// azimute angle of spherical coordinates
       double gamma_;
       /// polar angle of spherical coordinates
       double theta_;
+      /// initalization modus;
+      int init_;
       /// adapt angle during remodeling
       int adapt_angle_;
 
