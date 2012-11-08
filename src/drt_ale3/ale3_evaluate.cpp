@@ -1792,6 +1792,11 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
     RefCountPtr<MAT::Material>  material,
     ParameterList&              params  )
     {
+  // ******************************************************
+  // this method was copied from the ALE2 element and extended to 3D
+  // ToDo: proper implementation of min_Jac for stiffness heuristics
+  // ******************************************************
+
   const int nd  = 3 * iel;
   // A view to sys_mat_epetra
   LINALG::Matrix<nd,nd> sys_mat(sys_mat_epetra.A(),true);
@@ -1867,11 +1872,12 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
   const GaussRule3D gaussrule = getOptimalGaussrule();
   const IntegrationPoints3D  intpoints(gaussrule);
 
+  // This whole method was copied from the ALE2 element and extended to 3D.
+  // ToDo: proper computation and usage of min_detF. Is there any detailed literature
+  //       on this approach?
 
-  double              min_detF;         /* minimal Jacobian determinant   */
-
-  //gjb   ale2_min_jaco(Shape(),xyze,&min_detF);
-  min_detF=1.0;
+  // double min_detF(0.0);         /* minimal Jacobian determinant   */
+  // ale2_min_jaco(Shape(),xyze,&min_detF);
 
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
@@ -1921,8 +1927,16 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
     deriv_xy.Multiply(xji,deriv);
 
     /*------------------------- diffusivity depends on displacement ---*/
+    //   This is how it is done in the 2d implementation ALE2:
     //   const double k_diff = 1.0/min_detF/min_detF;
+
+    //   This is how we do it here for the time being due to lack of detailed knowledge
+    //   on the underlying concept of min_detF (see comments above). We simply
+    //   use here the Jacobi determinant evaluated at the Gauss points instead of
+    //   min_detF determined at corner node positions.
     const double k_diff = 1.0/(det*det);
+    //   Due to this heuristic, small elements are artificially made stiffer
+    //   and large elements are made softer
     /*------------------------------- sort it into stiffness matrix ---*/
 
     tempmat.MultiplyTN(fac*k_diff,deriv_xy,deriv_xy,1.0);
