@@ -65,7 +65,8 @@ Maintainer: Alexander Popp
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarInterface::MortarInterface(const int id, const Epetra_Comm& comm,
-         const int dim, const Teuchos::ParameterList& icontact, bool redundant) :
+         const int dim, const Teuchos::ParameterList& icontact,
+         INPAR::MORTAR::RedundantStorage redundant) :
 id_(id),
 comm_(comm),
 dim_(dim),
@@ -180,7 +181,7 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index)
     my_m_ghostele  [myrank]=melerowmap_->NumGlobalElements()-my_m_elements[myrank];
 
     // adapt output for redundant slave case
-    if (Redundant())
+    if (Redundant()==INPAR::MORTAR::redundant_all)
     {
       my_s_ghostnodes[myrank]=snoderowmap_->NumGlobalElements()-my_s_nodes[myrank];
       my_s_ghostele  [myrank]=selerowmap_->NumGlobalElements()-my_s_elements[myrank];
@@ -748,10 +749,10 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   // redundancy and can thus use the ELSE branch below.
   //**********************************************************************
 
-  //*****REDUNDANT SLAVE STORAGE*****
-  if (Redundant())
+  //*****REDUNDANT SLAVE AND MASTER STORAGE*****
+  if (Redundant()==INPAR::MORTAR::redundant_all)
   {
-    //std::cout << "REDUNDANT SLAVE InterfaceGhosting" << endl;
+    //std::cout << "REDUNDANT SLAVE AND MASTER InterfaceGhosting" << endl;
 
     // to ease our search algorithms we'll afford the luxury to ghost all nodes
     // on all processors. To do so, we'll take the node row map and export it to
@@ -820,10 +821,10 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
     return;
   }
 
-  //*****NON-REDUNDANT SLAVE STORAGE*****
-  else
+  //*****ONLY REDUNDANT MASTER STORAGE*****
+  else if (Redundant()==INPAR::MORTAR::redundant_master)
   {
-    //std::cout << "NON-REDUNDANT SLAVE InterfaceGhosting" << endl;
+    //std::cout << "ONLY REDUNDANT MASTER InterfaceGhosting" << endl;
 
     // to ease our search algorithms we'll afford the luxury to ghost all master
     // nodes on all processors. To do so, we'll take the master node row map and
@@ -922,6 +923,18 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
     // new node / element column layout (i.e. master = full overlap)
     Discret().ExportColumnNodes(*newnodecolmap);
     Discret().ExportColumnElements(*newelecolmap);
+  }
+
+  //*****NON-REDUNDANT STORAGE*****
+  else if (Redundant()==INPAR::MORTAR::redundant_none)
+  {
+    dserror("ERROR: Non-redundant interface storage not yet implemented.");
+  }
+
+  //*****INVALID CASES*****
+  else
+  {
+    dserror("ERROR: CreateInterfaceGhosting: Invalid redundancy type.");
   }
 
   return;

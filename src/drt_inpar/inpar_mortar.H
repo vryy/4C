@@ -79,6 +79,15 @@ namespace INPAR
       search_binarytree   ///< binary tree element based
     };
 
+    /// Type of redudancy in interface storage
+    /// (this enum represents the input file parameter REDUNDANT_STORAGE)
+    enum RedundantStorage
+    {
+      redundant_all,      ///< redundant storage of master AND slave surfaces
+      redundant_master,   ///< redundant storage of master surface
+      redundant_none      ///< no redundant storage
+    };
+
     /// Type of parallel redistribution algorithm
     /// (this enum represents the input file parameter PARALLEL_REDIST)
     enum ParRedist

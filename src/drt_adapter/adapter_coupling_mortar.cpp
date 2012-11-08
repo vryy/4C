@@ -83,7 +83,10 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // (To be on the safe side we still store all interface nodes and elements
   // fully redundant here in the mortar ADAPTER. This makes applications such
   // as SlidingALE much easier, whereas it would not be needed for others.)
-  bool redundant = true;
+  // FIXME: We should use the input flag (popp, 11/2012)
+  INPAR::MORTAR::RedundantStorage redundant = INPAR::MORTAR::redundant_all;
+  if (redundant != INPAR::MORTAR::redundant_all)
+    dserror("Mortar coupling adapter only works for redundant slave and master storage");
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   // feeding master nodes to the interface including ghosted nodes
@@ -334,7 +337,10 @@ void ADAPTER::CouplingMortar::Setup
   // (To be on the safe side we still store all interface nodes and elements
   // fully redundant here in the mortar ADAPTER. This makes applications such
   // as SlidingALE much easier, whereas it would not be needed for others.)
-  bool redundant = true;
+  // FIXME: We should use the input flag (popp, 11/2012)
+  INPAR::MORTAR::RedundantStorage redundant = INPAR::MORTAR::redundant_all;
+  if (redundant != INPAR::MORTAR::redundant_all)
+    dserror("Mortar coupling adapter only works for redundant slave and master storage");
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, dis.Comm(), dim, input, redundant));
 
   int NodeOffset = dis.NodeRowMap()->MaxAllGID()+1;
@@ -587,7 +593,10 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // (To be on the safe side we still store all interface nodes and elements
   // fully redundant here in the mortar ADAPTER. This makes applications such
   // as SlidingALE much easier, whereas it would not be needed for others.)
-  bool redundant = true;
+  // FIXME: We should use the input flag (popp, 11/2012)
+  INPAR::MORTAR::RedundantStorage redundant = INPAR::MORTAR::redundant_all;
+  if (redundant != INPAR::MORTAR::redundant_all)
+    dserror("Mortar coupling adapter only works for redundant slave and master storage");
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   //  Pressure DoF are also transferred to MortarInterface

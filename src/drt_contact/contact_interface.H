@@ -74,11 +74,12 @@ public:
   \param dim (in): Global problem dimension
   \param icontact (in): Global contact parameter list
   \param selfcontact (in): Flag for self contact status
-  \param redundant (in): if true, the interface is stored fully redundant
+  \param redundant (in): type of redundancy in interface storage
  
   */
   CoInterface(const int id, const Epetra_Comm& comm, const int dim,
-              const Teuchos::ParameterList& icontact, bool selfcontact, bool redundant);
+              const Teuchos::ParameterList& icontact, bool selfcontact,
+              INPAR::MORTAR::RedundantStorage redundant);
     
   /*!
   \brief Destructor

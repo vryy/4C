@@ -207,8 +207,10 @@ discret_(discret)
     }
 
     // create an empty meshtying interface and store it in this Manager
-    // (for structural meshtying we do NOT need redundant storage)
-    bool redundant = false;
+    // (for structural meshtying we currently choose redundant master storage)
+    INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mtparams,"REDUNDANT_STORAGE");
+    if (redundant != INPAR::MORTAR::redundant_master)
+      dserror("ERROR: MtManager: Meshtying requires redundant master storage");
     interfaces.push_back(Teuchos::rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,mtparams,redundant)));
 
     // get it again

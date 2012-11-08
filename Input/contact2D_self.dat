@@ -78,6 +78,7 @@ SEMI_SMOOTH_CN                  1.0
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.5
 PARALLEL_REDIST                 No
+REDUNDANT_STORAGE               All
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

@@ -66,7 +66,7 @@ CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
                                   const int dim,
                                   const Teuchos::ParameterList& icontact,
                                   bool selfcontact,
-                                  bool redundant) :
+                                  INPAR::MORTAR::RedundantStorage redundant) :
 MORTAR::MortarInterface(id,comm,dim,icontact,redundant),
 selfcontact_(selfcontact),
 friction_(false),
@@ -89,9 +89,9 @@ tsi_(false)
   
   // check for redundant slave storage
   // (needed for self contact but not wanted for general contact)
-  if (selfcontact_ && !redundant)
-    dserror("ERROR: We need redundant interface storage for self contact");
-  if (!selfcontact_ && redundant)
+  if (selfcontact_ && redundant != INPAR::MORTAR::redundant_all)
+    dserror("ERROR: We need redundant interface storage (slave+master) for self contact");
+  if (!selfcontact_ && redundant == INPAR::MORTAR::redundant_all)
     dserror("ERROR: We do not want redundant interface storage for contact");
 
   return;

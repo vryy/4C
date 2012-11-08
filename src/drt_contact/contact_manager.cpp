@@ -278,10 +278,13 @@ discret_(discret)
 
     // create an empty interface and store it in this Manager
     // create an empty contact interface and store it in this Manager
-    // (for structural contact we do NOT want redundant storage)
-    // (the only exception is self contact where a redundant slave is needed)
-    bool redundant = false;
-    if (isself[0]) redundant = true;
+    // (for structural contact we currently choose redundant master storage)
+    // (the only exception is self contact where a redundant slave is needed, too)
+    INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(icparams,"REDUNDANT_STORAGE");
+    if (isself[0]==false && redundant != INPAR::MORTAR::redundant_master)
+      dserror("ERROR: CoManager: Contact requires redundant master storage");
+    if (isself[0]==true && redundant != INPAR::MORTAR::redundant_all)
+      dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
     interfaces.push_back(Teuchos::rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,icparams,isself[0],redundant)));
 
     // get it again

@@ -1480,6 +1480,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::MORTAR::errornorms_thicksphere, INPAR::MORTAR::errornorms_thicksphere),
       &scontact);
 
+  setStringToIntegralParameter<int>("REDUNDANT_STORAGE","Master","Type of redundancy in interface storage",
+      tuple<std::string>("All","all",
+                         "Master", "master",
+                         "None", "none"),
+      tuple<int>(
+              INPAR::MORTAR::redundant_all, INPAR::MORTAR::redundant_all,
+              INPAR::MORTAR::redundant_master, INPAR::MORTAR::redundant_master,
+              INPAR::MORTAR::redundant_none, INPAR::MORTAR::redundant_none),
+      &scontact);
+
   setStringToIntegralParameter<int>("PARALLEL_REDIST","Static","Type of redistribution algorithm",
       tuple<std::string>("None","none", "No", "no",
                          "Static", "static",

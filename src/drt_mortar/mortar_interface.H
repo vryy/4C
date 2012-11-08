@@ -94,11 +94,12 @@ public:
   \param comm (in): A communicator object
   \param dim (in): Global problem dimension
   \param icontact (in): Global contact parameter list
-  \param redundant (in): if true, the interface is stored fully redundant
+  \param redundant (in): type of redundancy in interface storage
  
   */
   MortarInterface(const int id, const Epetra_Comm& comm, const int dim,
-                  const Teuchos::ParameterList& icontact, bool redundant);
+                  const Teuchos::ParameterList& icontact,
+                  INPAR::MORTAR::RedundantStorage redundant);
     
   /*!
   \brief Destructor
@@ -178,10 +179,10 @@ public:
   /*!
   \brief Get redundant storage flag
 
-  Returns TRUE if the interface (nodes, elements) is stored fully redundant.
+  Returns status of redundancy in interface storage (nodes, elements).
 
   */
-  virtual const bool& Redundant() { return redundant_; };
+  virtual const INPAR::MORTAR::RedundantStorage& Redundant() { return redundant_; };
 
   /*!
   \brief Get type of search algorithm
@@ -697,7 +698,7 @@ protected:
   Teuchos::ParameterList             icontact_;      // containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn            shapefcn_;      // employed type of shape function set
   bool                               quadslave_;     // flag indicating quadratic 2d/3d slave elements
-  bool                               redundant_;     // flag indicating fully redundant storage of interface
+  INPAR::MORTAR::RedundantStorage    redundant_;     // employed type of redundancy in storage of interface
   
   Teuchos::RCP<Epetra_Map>           oldnodecolmap_; // column map of all interface nodes (overlap=1)
   Teuchos::RCP<Epetra_Map>           oldelecolmap_;  // column map of all interface elements (overlap=1)
