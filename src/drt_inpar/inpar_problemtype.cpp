@@ -52,6 +52,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Structure_Scalar_Interaction"] =              prb_ssi;
     string2prbtype["NP_Supporting_Procs"] =                       prb_np_support;
     string2prbtype["RedAirways_Tissue"] =                         prb_redairways_tissue;
+    string2prbtype["Particle"] =                                  prb_particle;
   }
 
   return string2prbtype;

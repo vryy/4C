@@ -49,7 +49,8 @@ namespace STR
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
       Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+      Teuchos::RCP<IO::DiscretizationWriter> output,  //!< the output
+      bool initmassdampconsistaccel = true  //!< bool whether DetermineMassDampConsistAccel() is called
     );
 
     //! Destructor
@@ -150,9 +151,6 @@ namespace STR
 
 
   protected:
-
-    //! Initialise
-    void Init();
 
     //! @name Global forces at \f$t_{n+1}\f$
     //@{

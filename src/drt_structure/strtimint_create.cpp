@@ -27,6 +27,7 @@ Maintainer: Thomas Klöppel
 #include "strtimint_gemm.H"
 #include "strtimint_expleuler.H"
 #include "strtimint_centrdiff.H"
+#include "../drt_particle/particle_timint_centrdiff.H"
 #include "strtimint_ab2.H"
 #include "strtimint_statmech.H"
 
@@ -195,6 +196,13 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
     case INPAR::STR::dyna_ab2 :
     {
       sti = Teuchos::rcp(new STR::TimIntAB2(ioflags, sdyn, xparams,
+                                            actdis, solver, contactsolver, output));
+      break;
+    }
+    // central differences time integration for particles
+    case INPAR::STR::dyna_particle_centrdiff:
+    {
+      sti = Teuchos::rcp(new PARTICLE::TimIntCentrDiff(ioflags, sdyn, xparams,
                                             actdis, solver, contactsolver, output));
       break;
     }

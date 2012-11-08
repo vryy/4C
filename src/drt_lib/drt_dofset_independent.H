@@ -58,7 +58,13 @@ public:
   \return void
 
   */
-  IndependentDofSet();
+  IndependentDofSet(bool ignoreminnodegid = false);
+
+  /*!
+  \brief Copy constructor
+
+  */
+  IndependentDofSet(const IndependentDofSet& old);
 
   /*!
   \brief Destructor
@@ -76,6 +82,7 @@ public:
   virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
 
 protected:
+  bool ignoreminnodegid_;   //< bool whether minnodegid is taken from the discretization or ignored
 
 private:
 

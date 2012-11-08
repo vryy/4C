@@ -383,6 +383,25 @@ namespace STR
       return;
     }
 
+    //! Replace maps and init to zero
+    //!
+    //! State vectors cleared and rebuild with given map
+    //! take care that underlying discret_ contains the same maps
+    void ReplaceMaps
+    (
+      const Epetra_Map* dofrowmap  //!< new vector layout
+    )
+    {
+      state_.clear();
+      // allocate the vectors themselves
+      for (int index=0; index<steps_; ++index)
+      {
+        state_.push_back(Epetra_Vector(*dofrowmap, true));
+      }
+
+      return;
+    }
+
     //@}
 
     //! @name Actions

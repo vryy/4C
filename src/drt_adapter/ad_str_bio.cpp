@@ -34,7 +34,9 @@ ADAPTER::StructureBio::StructureBio(
 :  AlgorithmBase(comm,prbdyn),
    params_(prbdyn)
 {
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(prbdyn));
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(prbdyn, structdis));
   structure_ = rcp_dynamic_cast<FSIStructureWrapper>(structurebase->StructureFieldrcp());
 
   if(structure_ == Teuchos::null)

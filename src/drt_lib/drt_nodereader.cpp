@@ -151,7 +151,7 @@ void NodeReader::Read()
               break;
             }
         }
-        // this node is a Nurbs control point
+        // this node is a meshfree knot
         else if (tmp=="KNOT")
         {
           double coords[3];
@@ -199,6 +199,28 @@ void NodeReader::Read()
             Teuchos::RCP<DRT::NURBS::ControlPoint> node = rcp(new DRT::NURBS::ControlPoint(cpid,coords,weight,myrank));
             dis->AddNode(node);
           }
+          ++bcount;
+          if (block != nblock-1) // last block takes all the rest
+            if (bcount==bsize)   // block is full
+            {
+              ++filecount;
+              break;
+            }
+        }
+        // this node is a particle
+        else if (tmp=="PARTICLE")
+        {
+          double coords[3];
+          int nodeid;
+          file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
+          nodeid--;
+          if (tmp!="COORD") dserror("failed to read node %d",nodeid);
+          Teuchos::RCP<DRT::Discretization> diss = DRT::Problem::Instance()->GetDis("particle");
+
+          // create particle and add to discretization
+          Teuchos::RCP<DRT::Node> particle = rcp(new DRT::Node(nodeid,coords,myrank));
+          diss->AddNode(particle);
+
           ++bcount;
           if (block != nblock-1) // last block takes all the rest
             if (bcount==bsize)   // block is full

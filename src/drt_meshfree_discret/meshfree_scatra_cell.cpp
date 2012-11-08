@@ -279,7 +279,7 @@ DRT::ELEMENTS::MeshfreeTransport::~MeshfreeTransport()
  *--------------------------------------------------------------------------*/
 void DRT::ELEMENTS::MeshfreeTransport::Print(ostream& os) const
 {
-  os << "MeshfreeTransportCell";
+  os << "MeshfreeTransportCell ";
   Cell::Print(os);
   cout << "DisType "<< DRT::DistypeToString(distype_) << " ";
   cout << "NumDofPerNode " << numdofpernode_ << " ";
@@ -373,8 +373,8 @@ void DRT::ELEMENTS::MeshfreeTransport::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // add base class Element
-  Element::Pack(data);
+  // add base class Cell
+  DRT::MESHFREE::Cell::Pack(data);
   // numdofpernode
   AddtoPack(data,numdofpernode_);
   // distype
@@ -397,10 +397,10 @@ void DRT::ELEMENTS::MeshfreeTransport::Unpack(const vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
-  // extract base class Element
+  // extract base class Cell
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+  DRT::MESHFREE::Cell::Unpack(basedata);
   // numdofpernode
   ExtractfromPack(position,data,numdofpernode_);
   // distype

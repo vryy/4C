@@ -40,8 +40,10 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   SetupDiscretizations(comm);
 
   //3.- Create the two uncoupled subproblems.
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams));
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, structdis));
   structure_ = rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,true,"scatra", problem->SolverParams(linsolvernumber)));
 

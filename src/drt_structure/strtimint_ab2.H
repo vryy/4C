@@ -153,9 +153,6 @@ namespace STR
 
   protected:
 
-    //! Initialise
-    void Init();
-
     //! @name Global forces at \f$t_{n+1}\f$
     //@{
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force

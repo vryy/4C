@@ -373,7 +373,7 @@ namespace ADAPTER {
   public:
 
     /// constructor
-    explicit StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
+    explicit StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~StructureBaseAlgorithm();
@@ -390,10 +390,10 @@ namespace ADAPTER {
   private:
 
     /// setup structure algorithm
-    void SetupStructure(const Teuchos::ParameterList& prbdyn);
+    void SetupStructure(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// setup structure algorithm of STR::TimIntImpl type
-    void SetupTimInt(const Teuchos::ParameterList& prbdyn);
+    void SetupTimInt(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// create linear solver for contact/meshtying problems
     /** \param Teuchos::RCP<DRT::Discretization> the discretization class with the corresponding structural elements

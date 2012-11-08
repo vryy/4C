@@ -53,9 +53,12 @@ ADAPTER::Structure::~Structure()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(
+  const Teuchos::ParameterList& prbdyn,
+  Teuchos::RCP<DRT::Discretization> actdis
+)
 {
-  SetupStructure(prbdyn);
+  SetupStructure(prbdyn, actdis);
 }
 
 
@@ -67,7 +70,10 @@ ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterList& prbdyn)
+void ADAPTER::StructureBaseAlgorithm::SetupStructure(
+  const Teuchos::ParameterList& prbdyn,
+  Teuchos::RCP<DRT::Discretization> actdis
+)
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -80,11 +86,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   case INPAR::STR::dyna_gemm :
   case INPAR::STR::dyna_expleuler:
   case INPAR::STR::dyna_centrdiff :
+  case INPAR::STR::dyna_particle_centrdiff :
   case INPAR::STR::dyna_ab2 :
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
   case INPAR::STR::dyna_statmech :
-    SetupTimInt(prbdyn);  // <-- here is the show
+    SetupTimInt(prbdyn, actdis);  // <-- here is the show
     break;
   default :
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
@@ -95,7 +102,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prbdyn)
+void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
+  const Teuchos::ParameterList& prbdyn,
+  Teuchos::RCP<DRT::Discretization> actdis
+)
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t
@@ -104,10 +114,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
 
   // what's the current problem type?
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-
-  // access the discretization
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->GetDis("structure");
 
   // set degrees of freedom in the discretization
   if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
@@ -153,7 +159,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   sdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  if(probtype == prb_struct_ale || probtype == prb_structure || probtype == prb_redairways_tissue)
+  if(probtype == prb_struct_ale || probtype == prb_structure || probtype == prb_redairways_tissue || probtype == prb_particle)
   {
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
   }
@@ -319,7 +325,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& 
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
-      Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
       if ((actdis->Comm()).MyPID()==0) cout << "Using StructureNOXCorrectionWrapper()..." << endl;
 
       if (tmpstr->HaveConstraint())

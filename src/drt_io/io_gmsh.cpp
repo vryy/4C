@@ -652,7 +652,7 @@ std::string IO::GMSH::GetNewFileNameAndDeleteOldFiles(
   filename    << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep           << pid_stream.str() << ".pos";
   filenamedel << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep-step_diff << pid_stream.str() << ".pos";
   std::remove(filenamedel.str().c_str());
-  if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"...";
+  if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"..."<<std::endl;
   return filename.str();
 }
 
@@ -673,7 +673,7 @@ std::string IO::GMSH::GetFileName(
 
   filename    << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep           << pid_stream.str() << ".pos";
 
-  if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"...";
+  if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"..."<<std::endl;
 
   return filename.str();
 }

@@ -33,7 +33,8 @@ STR::TimIntCentrDiff::TimIntCentrDiff
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<LINALG::Solver> contactsolver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
+  Teuchos::RCP<IO::DiscretizationWriter> output,
+  bool initmassdampconsistaccel
 )
 : TimIntExpl
   (
@@ -59,7 +60,8 @@ STR::TimIntCentrDiff::TimIntCentrDiff
   }
 
   // determine mass, damping and initial accelerations
-  DetermineMassDampConsistAccel();
+  if(initmassdampconsistaccel == true)
+    DetermineMassDampConsistAccel();
 
   // resize of multi-step quantities
   ResizeMStep();

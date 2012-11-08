@@ -89,6 +89,17 @@ namespace GEO
   LINALG::Matrix<3,2> getXAABBofDis(
       const DRT::Discretization& dis
       );
+
+
+  /*!
+  \brief Returns the eXtendedAxisAlignedBoundingBox of the nodes in a
+         discretization, in reference configuration
+  \param dis                  discretization
+  \return  XAxisAlignedBoundingBox
+   */
+  LINALG::Matrix<3,2> getXAABBofNodes(
+      const DRT::Discretization& dis
+      );
   
   
   /*!

@@ -109,12 +109,9 @@ void DRT::MESHFREE::MeshfreeNode::DeleteNodePtr(int gid)
 void DRT::MESHFREE::MeshfreeNode::Print(ostream& os) const
 {
   // Print id and coordinates
-  os << "MeshfreeNode " << setw(12) << Id()
-     << " Owner " << setw(4) << Owner()
-     << " Coords "
-     << setw(12) << X()[0] << " "
-     << setw(12) << X()[1] << " "
-     << setw(12) << X()[2] << " ";
+  os << "Meshfree";
+  DRT::Node::Print(os);
+  return;
 }
 /*----------------------------------------------------------------------*
  |  << operator for meshfree node                     (public) nis Mar12|

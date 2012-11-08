@@ -101,8 +101,10 @@ void caldyn_drt()
  *----------------------------------------------------------------------*/
 void dyn_nlnstructural_drt()
 {
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   // create an adapterbase and adapter
-  ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams());
+  ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams(), structdis);
   ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
 
   // do restart

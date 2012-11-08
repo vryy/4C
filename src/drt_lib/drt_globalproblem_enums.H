@@ -55,14 +55,15 @@ typedef enum _PROBLEM_TYP
                        prb_np_support,    /* supporting procs for nested parallelism */
                        prb_poroscatra,     /*  passive scalar transport in porous media */
                        prb_ssi,         /*  scalar structure interaction  */
-                       prb_redairways_tissue /* coupling of reduced-dimensional
-                                              * airways with 3D tissue model */
+                       prb_redairways_tissue, /* coupling of reduced-dimensional
+                                               * airways with 3D tissue model */
+                       prb_particle      /*  particle simulation  */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","biofilm_fsi","thermo_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","scatra","loma","elch","combustion","art_net","red_airways","poroelast","fluid_topopt","np_support","poroscatra", "ssi","redairways_tissue",NULL }
+#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","biofilm_fsi","thermo_fsi","aero_tfsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","scatra","loma","elch","combustion","art_net","red_airways","poroelast","fluid_topopt","np_support","poroscatra", "ssi","redairways_tissue","particle",NULL }
 
 
 /*----------------------------------------------------------------------*/

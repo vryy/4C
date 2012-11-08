@@ -57,9 +57,11 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
                                           const Teuchos::ParameterList& timeparams) :
       AlgorithmBase(comm, timeparams)
 {
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   // ask base algorithm for the structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams));
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, structdis));
   structure_ = rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
 
   if(structure_ == Teuchos::null)

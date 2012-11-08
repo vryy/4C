@@ -103,13 +103,16 @@ public:
    */
   ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, string sectionname, const std::set<std::string> & elementtypes);
 
+  //! Destructor
+  virtual ~ElementReader(){ ; }
+
   /// give the discretization this reader fills
   Teuchos::RCP<Discretization> MyDis() const { return dis_; }
 
-private:
+protected:
 
   /// read elements, partition node graph
-  void Partition();
+  virtual void Partition();
   
   /// tell whether the given node belongs to us
   /*!
@@ -161,6 +164,38 @@ private:
   std::set<std::string> elementtypes_;
 };
 
+
+
+/*----------------------------------------------------------------------*/
+/*!
+Particle discretizations do not need elements. Hence, the functionality
+of the element reader must be specified for particles separately
+
+\author ghamm
+\date 11/12
+*/
+/*----------------------------------------------------------------------*/
+class ParticleReader : public ElementReader
+{
+public:
+  /// construct particle reader for a given field
+  /*!
+    Create empty discretization and append it to given field.
+
+    \param dis (i) the new discretization
+    \param comm (i) our communicator
+   */
+  ParticleReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader);
+
+  //! Destructor
+  virtual ~ParticleReader(){ ; }
+
+protected:
+
+  /// partition particles
+  virtual void Partition();
+
+};
 
 }
 }

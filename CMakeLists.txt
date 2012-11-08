@@ -959,6 +959,7 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_fem_general/drt_utils_maxent_basisfunctions.cpp
   src/drt_meshfree_discret/drt_meshfree_node.cpp
+  src/drt_meshfree_discret/drt_meshfree_bin.cpp
   src/drt_meshfree_discret/drt_meshfree_cell.cpp
   src/drt_meshfree_discret/drt_meshfree_cell_utils.cpp
   src/drt_meshfree_discret/drt_meshfree_discret.cpp
@@ -1073,6 +1074,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_create.cpp
   src/drt_structure/strtimint_ab2.cpp
   src/drt_structure/strtimint_centrdiff.cpp
+  src/drt_particle/particle_timint_centrdiff.cpp
   src/drt_structure/strtimint_expl.cpp
   src/drt_structure/strtimint_expleuler.cpp
   src/drt_structure/strtimint_gemm.cpp
@@ -1091,6 +1093,10 @@ set(OBJS_DRT_STRUCTURE
 )
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
+)
+set(OBJS_DRT_PARTICLE
+	src/drt_particle/particle_algorithm.cpp
+	src/drt_particle/particle_dyn.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp
@@ -1513,6 +1519,7 @@ add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
+add_library(alg_particle ${OBJS_DRT_PARTICLE})
 
 set(MULTIFIELD_LIBRARIES
   alg_elch
@@ -1524,6 +1531,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fs3i
   alg_topopt
   alg_ssi
+  alg_particle
   )
 
 # the adapter layer

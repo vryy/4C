@@ -321,7 +321,7 @@ STR::TimInt::TimInt
   {
     DRT::Element* actele = discret_->lColElement(i);
     RefCountPtr<MAT::Material> mat = actele->Material();
-    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    if (mat != Teuchos::null && mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       havemicromat_ = true;
       break;

@@ -463,6 +463,112 @@ void ElementReader::Complete()
   DRT::UTILS::PrintParallelDistribution(*dis_);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ParticleReader::ParticleReader(Teuchos::RCP<Discretization> dis,
+                             const DRT::INPUT::DatFileReader& reader)
+  : ElementReader(dis, reader, "--DUMMY ELEMENTS")
+{}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ParticleReader::Partition()
+{
+  const int myrank  = comm_->MyPID();
+  const int numproc = comm_->NumProc();
+
+  // --------------------------------------------------
+  // - read global ids of particles of this discretization
+
+  // vector of all global particle ids
+  vector<int> particleids;
+  int numparticles = 0;
+  string inputfile_name = reader_.MyInputfileName();
+
+  // all reading is done on proc 0
+  if (myrank==0)
+  {
+    if (!reader_.MyOutputFlag())
+    {
+      cout << "Preliminary node maps are created for " << name_ << " discretization ...\n";
+      fflush(stdout);
+    }
+
+    // open input file at the node section
+    ifstream file(inputfile_name.c_str());
+    ifstream::pos_type pos = reader_.ExcludedSectionPosition("--NODE COORDS");
+    if (pos!=ifstream::pos_type(-1))
+    {
+      file.seekg(pos);
+
+      // loop all node lines
+      // Comments in the node section are not supported!
+
+      // Here we construct a preliminary particle row map.
+      string line;
+      for (int i=0; getline(file, line); ++i)
+      {
+        if (line.find("--")==0)
+        {
+          break;
+        }
+        else
+        {
+          istringstream t;
+          t.str(line);
+          int nodeid;
+          string nodetype;
+          t >> nodetype >> nodeid;
+          nodeid -= 1;
+
+          // this node is a particle
+          if (nodetype=="PARTICLE")
+          {
+            particleids.push_back(nodeid);
+          }
+        }
+      }
+      numparticles = static_cast<int>(particleids.size());
+    }
+    else
+    {
+      dserror("--NODE COORDS section is missing in input file");
+    }
+  }
+
+  // Simply allreduce the particle ids
+  comm_->Broadcast(&numparticles,1,0);
+
+  particleids.resize(numparticles);
+  comm_->Broadcast(&particleids[0],numparticles,0);
+
+  // --------------------------------------------------
+  // - determine a preliminary particle distribution
+
+  // number of element junks to split the reading process in
+  // approximate block size (just a guess!)
+  int nblock = numproc;
+  int bsize = static_cast<int>(numparticles)/nblock;
+
+  // create a simple (pseudo linear) map
+  int mysize = bsize;
+  if (myrank==numproc-1)
+    mysize = numparticles-(numproc-1)*bsize;
+
+  // construct the map
+  rownodes_ = Teuchos::rcp(new Epetra_Map(-1,mysize,&particleids[myrank*bsize],0,*comm_));
+
+  // so far there is no information about ghosting available
+  colnodes_ = Teuchos::rcp( new Epetra_Map(*rownodes_));
+
+  // throw away redundant vector of particles
+  particleids.clear();
+
+  return;
+}
+
 }
 }
 

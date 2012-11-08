@@ -49,7 +49,7 @@ Maintainer: Keijo Nissen
  |  ctor                                                 (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::Cell::Cell(int id, int owner)
-  : DRT::Element::Element(id,owner)
+  : DRT::MESHFREE::MeshfreeBin(id,owner)
 {
   return;
 }
@@ -58,7 +58,7 @@ DRT::MESHFREE::Cell::Cell(int id, int owner)
  |  copy-ctor                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::Cell::Cell(const DRT::MESHFREE::Cell& old)
-  : DRT::Element::Element(old),
+  : DRT::MESHFREE::MeshfreeBin(old),
     knotid_(old.knotid_),
     knot_(old.knot_)
 {
@@ -88,7 +88,7 @@ ostream& operator << (ostream& os, const DRT::MESHFREE::Cell& cell)
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::Cell::Print(ostream& os) const
 {
-  Element::Print(os);
+  DRT::Element::Print(os);
   const int nknot = NumKnot();
   const int* knotids = KnotIds();
   if (nknot > 0)
@@ -122,40 +122,21 @@ void DRT::MESHFREE::Cell::SetKnotIds(const std::string& distype, DRT::INPUT::Lin
   knot_.resize(0);
 }
 
-/*--------------------------------------------------------------------------*
- | Delete a single node from the element                 (public) nis Jan12 |
- *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::DeleteNode(int gid)
-{
-  for (unsigned int i = 0; i<nodeid_.size(); i++){
-    if (nodeid_[i]==gid){
-      nodeid_.erase(nodeid_.begin()+i);
-      node_.erase(node_.begin()+i);
-      return;
-    }
-  }
-  dserror("Connectivity issues: No node with secified gid to delete in element. ");
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  Pack data  (public)                                       nis Jan12 |
  *----------------------------------------------------------------------*/
 void DRT::MESHFREE::Cell::Pack(DRT::PackBuffer& data) const
 {
-  //DRT::PackBuffer::SizeMarker sm( data );
-  //sm.Insert();
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
 
   // pack type of this instance of ParObject
-  //int type = UniqueParObjectId();
-  //AddtoPack(data,type);
-  // add id
-  //AddtoPack(data,id_);
-  // add owner
-  //AddtoPack(data,owner_);
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add base class DRT::MESHFREE::MeshfreeBin
+  DRT::MESHFREE::MeshfreeBin::Pack(data);
   // add vector knotid_
   AddtoPack(data,knotid_);
-  DRT::Element::Pack(data);
   return;
 }
 
@@ -167,14 +148,14 @@ void DRT::MESHFREE::Cell::Unpack(const vector<char>& data)
   vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  DRT::Element::ExtractfromPack(position,data,type);
+  ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
-  // extract base class element
+  // extract base class DRT::MESHFREE::MeshfreeBin
   vector<char> basedata(0);
-  DRT::Element::ExtractfromPack(position,data,basedata);
-  DRT::Element::Unpack(basedata);
+  ExtractfromPack(position,data,basedata);
+  DRT::MESHFREE::MeshfreeBin::Unpack(basedata);
   // extract knotid_
-  DRT::Element::ExtractfromPack(position,data,knotid_);
+  ExtractfromPack(position,data,knotid_);
   // knot_ is NOT communicated
   knot_.resize(0);
   return;

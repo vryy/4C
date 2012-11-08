@@ -40,7 +40,7 @@ Maintainer: Keijo Nissen
 #ifndef DRT_MESHFREE_CELL_H
 #define DRT_MESHFREE_CELL_H
 
-#include "../drt_lib/drt_element.H"
+#include "../drt_meshfree_discret/drt_meshfree_bin.H"
 #include "../drt_lib/drt_node.H"
 
 /*==========================================================================*/
@@ -70,7 +70,7 @@ class MeshfreeNode;
  * \date January, 2012
  */
 /*--------------------------------------------------------------------------*/
-class Cell : public DRT::Element
+class Cell : public DRT::MESHFREE::MeshfreeBin
 {
 public:
 
@@ -351,67 +351,6 @@ public:
   void SetKnotIds(const std::string& distype,         //!< discretisation type of dat-file defined cell type
                   DRT::INPUT::LineDefinition* linedef //!< line definition of respective cell type
     );
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Add a node to the meshfree cell
-   *
-   * \warning It is your own responsibility to make sure that there will not
-   *          be any double entries! (This would be disastrous!)
-   *
-   * Adds entry at the end of nodeid_ and node_ pointers
-   *///                                                   (public) nis Jan12
-  /*------------------------------------------------------------------------*/
-  virtual void AddNode(
-    DRT::Node*& nodeptr //!< (in): pointer to node to be added
-  )
-  {
-    nodeid_.push_back(nodeptr->Id());
-    node_.push_back(nodeptr);
-    return;
-  }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Add a node to the meshfree cell
-   *
-   * \warning It is your own responsibility to make sure that there will not
-   *          be any double entries! (This would be disastrous!)
-   *
-   * Adds entry at the end of nodeid_ and node_ pointers
-   *///                                                   (public) nis Jan12
-  /*------------------------------------------------------------------------*/
-  virtual void AddNode(
-    const int& gid,     //!< (in): global id of node to be added
-    DRT::Node*& nodeptr //!< (in): pointer to node to be added
-  )
-  {
-    nodeid_.push_back(gid);
-    node_.push_back(nodeptr);
-    return;
-  }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Delete a node from the meshfree cell
-   *
-   * Searches for position of node with specified gid and deletes entry in
-   * vectors node_ and nodeid_
-   *///                                                   (public) nis Jan12
-  /*------------------------------------------------------------------------*/
-  virtual void DeleteNode(int gid //!< (in): global id of node to be deleted
-    );
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Delete all nodes from the meshfree cell
-   *///                                                   (public) nis Apr12
-  /*------------------------------------------------------------------------*/
-  virtual inline void DeleteNodes()
-  {
-    nodeid_.clear();
-    node_.clear();
-  }
 
   /*------------------------------------------------------------------------*/
   /*!

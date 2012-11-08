@@ -32,8 +32,11 @@ Maintainer: Ulrich Kuettler
 FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->FSIDynamicParams())
 {
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()));
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(), structdis));
   structure_ = rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
 
   if(structure_ == Teuchos::null)

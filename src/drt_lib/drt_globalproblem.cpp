@@ -728,6 +728,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   RCP<DRT::Discretization> arterydis       = null; //_1D_ARTERY_
   RCP<DRT::Discretization> airwaydis       = null;
   RCP<DRT::Discretization> optidis         = null;
+  RCP<DRT::Discretization> particledis     = null;
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -1204,6 +1205,25 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("scatra", scatradis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
+    break;
+  }
+  case prb_particle:
+  {
+    if(distype == "Meshfree")
+    {
+      particledis = rcp(new DRT::Discretization("particle",reader.Comm()));
+    }
+    else
+    {
+      dserror("particle simulations must be distype=Meshfree");
+    }
+
+    AddDis("particle", particledis);
+
+    // there are no elements available for particle simulations
+    // section with --DUMMY ELEMENTS in dat file must not be filled
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
 
     break;
   }

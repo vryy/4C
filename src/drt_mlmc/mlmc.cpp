@@ -267,8 +267,10 @@ void STR::MLMC::Integrate()
       {
         // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have acces to the results
         // What follows is basicaly a copy of whats usually in dyn_nlnstructural_drt();
+        // access the structural discretization
+        Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         // create an adapterbase and adapter
-        ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams());
+        ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams(), structdis);
         ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
 
         // do restart

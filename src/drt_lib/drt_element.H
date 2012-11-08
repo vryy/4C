@@ -66,7 +66,7 @@ class LineDefinition;
 
 namespace MESHFREE
 {
-class Cell;
+class MeshfreeBin;
 }
 
 
@@ -92,7 +92,7 @@ public:
 
   //! @name Enums and Friends
 
-  friend class MESHFREE::Cell;
+  friend class MESHFREE::MeshfreeBin;
 
   /*!
    \brief Element shape type

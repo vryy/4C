@@ -30,6 +30,7 @@ Maintainer: Michael Gee
 #include "../drt_stru_ale/stru_ale_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
 #include "../drt_ssi/ssi_dyn.H"
+#include "../drt_particle/particle_dyn.H"
 #include "../drt_stru_multi/microstatic_npsupport.H"
 
 
@@ -137,6 +138,10 @@ void ntacal()
     case prb_redairways_tissue:
       redairway_tissue_dyn();
       break;
+    case prb_particle:
+      particle_drt();
+      break;
+
     case prb_np_support:
       STRUMULTI::np_support_drt();
       break;

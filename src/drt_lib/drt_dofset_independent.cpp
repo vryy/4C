@@ -14,8 +14,20 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
-DRT::IndependentDofSet::IndependentDofSet()
-  : DRT::DofSet()
+DRT::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid/*=false*/)
+  : DRT::DofSet(),
+    ignoreminnodegid_(ignoreminnodegid)
+{
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  cctor (public)                                                      |
+ *----------------------------------------------------------------------*/
+DRT::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old)
+  : DRT::DofSet(old),
+    ignoreminnodegid_(old.ignoreminnodegid_)
 {
   return;
 }
@@ -90,6 +102,8 @@ int DRT::IndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
   }
 
   int minnodegid = dis.NodeRowMap()->MinAllGID();
+  if(ignoreminnodegid_ == true)
+    minnodegid = 0;
   int maxnodenumdf = numdfrownodes.MaxValue();
 
   std::map<int,std::vector<int> > nodedofset;

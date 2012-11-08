@@ -680,6 +680,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("NEWTON_TOL",1e-6,"Tolerance at which Newton is considered to be converged.",&meshfree);
   DoubleParameter("NEWTON_MAX",100,"Maximum number of Newton steps.",&meshfree);
   DoubleParameter("T_RANGE_TOL",1,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
+  DoubleParameter("CUTOFF_RADIUS",1e30,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
+  setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e121e12",
+                            "Bounding box for binning strategy in particle simulations.",
+                            &meshfree);
   setStringToIntegralParameter<int>("T_PRIOR","Gauss","Defines the prior type of the basis solution function.",
                                     tuple<std::string>("Gauss"),
                                     tuple<int>(INPAR::MESHFREE::p_gauss),
@@ -828,6 +832,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "GEMM",
                                  "ExplicitEuler",
                                  "CentrDiff",
+                                 "ParticleCentrDiff",
                                  "AdamsBashforth2",
                                  "EulerMaruyama",
                                  "EulerImpStoch",
@@ -839,6 +844,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::dyna_gemm,
                                  INPAR::STR::dyna_expleuler,
                                  INPAR::STR::dyna_centrdiff,
+                                 INPAR::STR::dyna_particle_centrdiff,
                                  INPAR::STR::dyna_ab2,
                                  INPAR::STR::dyna_euma,
                                  INPAR::STR::dyna_euimsto,

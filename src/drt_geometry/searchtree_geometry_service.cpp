@@ -190,6 +190,43 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
 
 
 /*----------------------------------------------------------------------*
+ | delivers a axis-aligned bounding box for the nodes in     ghamm 09/12|
+ | a given discretization in reference configuration                    |
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<3,2> GEO::getXAABBofNodes(
+    const DRT::Discretization&    dis)
+{
+  LINALG::Matrix<3,2> XAABB(true);
+  if (dis.NumMyRowNodes() == 0)
+    dserror("no row node found on this proc"); //return XAABB;
+
+  {
+    // initialize XAABB as rectangle around the first node of dis
+    const DRT::Node* node = dis.lRowNode(0);
+    for(int dim=0; dim<3; ++dim)
+    {
+      XAABB(dim, 0) = node->X()[dim] - GEO::TOL7;
+      XAABB(dim, 1) = node->X()[dim] + GEO::TOL7;
+    }
+  }
+
+  // loop over remaining nodes and merge XAABB with their eXtendedAxisAlignedBoundingBox
+  for (int lid = 1; lid < dis.NumMyRowNodes(); ++lid)
+  {
+    const DRT::Node* node = dis.lRowNode(lid);
+
+    for(int dim=0; dim < 3; dim++)
+    {
+      XAABB(dim, 0) = std::min( XAABB(dim, 0), node->X()[dim] - TOL7);
+      XAABB(dim, 1) = std::max( XAABB(dim, 1), node->X()[dim] + TOL7);
+    }
+  }
+  return XAABB;
+}
+
+
+
+/*----------------------------------------------------------------------*
  | compute AABB s for all labeled strutcures in the          u.may 08/08|
  | element list                                                         |
  *----------------------------------------------------------------------*/

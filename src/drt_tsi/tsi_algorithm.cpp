@@ -39,7 +39,10 @@ Maintainer: Caroline Danowski
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams())
 {
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()));
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(), structdis));
   structure_ = structure->StructureFieldrcp();
 
   Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()));

@@ -247,6 +247,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
   // info for the nested parallelism user
   if(lcomm->MyPID() == 0 && ngroup > 1)
     printf("Nested parallelism layout: Group %d has %d processors.\n ",color,lcomm->NumProc());
+  fflush(stdout);
 
   // for sync of output
   gcomm->Barrier();
