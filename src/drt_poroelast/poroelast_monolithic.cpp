@@ -659,7 +659,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
           solvertype != INPAR::SOLVER::stratimikos_belos)
         dserror("Teko expects a STRATIMIKOS solver object in thermal solver %3d",flinsolvernumber);
 #else
-      dserror("Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
+      dserror("Teko preconditioners only available with HAVE_TEKO flag (Trilinos >Q1/2011)");
 #endif
     }
     break;

@@ -191,7 +191,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
 #ifdef HAVE_TEKO
       preconditioner_ = Teuchos::rcp( new TekoPreconditioner( outfile_, Params() ));
 #else
-      dserror("You need the HAVE_TEKO define flag set. Works only for TRILINOS_DEV Q4/2011 or newer.");
+      dserror("You need the HAVE_TEKO define flag set. Works only for Trilinos Q1/2012 or newer.");
 #endif
     }
     else if ( Params().isSublist("MueLu (Contact) Parameters") )
