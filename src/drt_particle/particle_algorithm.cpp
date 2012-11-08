@@ -221,7 +221,7 @@ void PARTICLE::Algorithm::CreateBins()
   for (int dim = 0; dim < 3; dim++)
   {
     // cast to integer leads to bins that are at least of size cutoff_radius
-    bin_per_dir_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_;
+    bin_per_dir_[dim] = std::floor( (XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_ );
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
   }
 
@@ -361,7 +361,7 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node, const
   int ijk[3] = {0,0,0};
   for(int dim=0; dim < 3; dim++)
   {
-    ijk[dim] = (currpos[dim]-XAABB_(dim,0)) / bin_size_[dim];
+    ijk[dim] = std::floor( (currpos[dim]-XAABB_(dim,0)) / bin_size_[dim] );
   }
 
   int binId = ConvertijkToGid(&ijk[0]);
@@ -559,7 +559,7 @@ void PARTICLE::Algorithm::TransferParticles()
       int lid = particles_->ExtractDispnp()->Map().LID(gid);
       for(int dim=0; dim < 3; dim++)
       {
-        ijk[dim] = ((*disnp)[lid+dim]-XAABB_(dim,0)) / bin_size_[dim];
+        ijk[dim] = std::floor(((*disnp)[lid+dim]-XAABB_(dim,0)) / bin_size_[dim]);
       }
 
       int gidofbin = ConvertijkToGid(&ijk[0]);
