@@ -192,11 +192,11 @@ public:
 
 
   /*!
-  \brief calculate error between a analytical solution and the
-         numerical solution of a test problems
-
+  \brief Summing all the values in an Element ColMap
+         We use this to find the total lung volume by summing up
+         the acinar volumes
   */
-  //void EvaluateErrorComparedToAnalyticalSol();
+  bool SumAllColElemVal(Teuchos::RCP<Epetra_Vector> vec, double & sum);
 
 
   /*!

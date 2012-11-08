@@ -185,33 +185,25 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   discret_->SetState("qanp",qanp_);
 
   // loop all elements on this proc (including ghosted ones)
-  int localNode;                                                
 
-  for (int nele=0;nele<discret_->NumMyColElements();++nele)
+  //  for (int nele=0;nele<discret_->NumMyColElements();++nele)
   {
     // get the element
-    DRT::Element* ele = discret_->lColElement(nele);
+    //    DRT::Element* ele = discret_->lColElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmstride;
-    //vector<int> lmowner;
-    RCP<vector<int> > lmowner = rcp(new vector<int>);
-    ele->LocationVector(*discret_,lm,*lmowner,lmstride);
+    //    vector<int> lm;
+    //    vector<int> lmstride;
+    //    vector<int> lmowner;
+    //        RCP<vector<int> > lmowner = rcp(new vector<int>);
+    //    ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors
     eleparams.set("qa0",qanp_);
-    eleparams.set("lmowner",lmowner);
+    //eleparams.set("lmowner",lmowner);
     eleparams.set("action","get_initail_artery_state");
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-    //initialize the characteristic wave maps
-    if(nele == discret_->NumMyColElements()-1)
-    {
-      localNode = 1;
-    }
-    else
-      localNode = 0;
   }
 
 
@@ -819,9 +811,9 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<endl;
   discret_->SetState("qanp",qanp_);
   //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<endl;
-  discret_->SetState("Wfnp",Wfnp_);
+  //  discret_->SetState("Wfnp",Wfnp_);
   //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<endl;
-  discret_->SetState("Wbnp",Wbnp_);
+  //  discret_->SetState("Wbnp",Wbnp_);
 
   eleparams.set("time step size",dta_);
   eleparams.set("total time",time_);

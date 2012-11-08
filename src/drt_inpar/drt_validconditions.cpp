@@ -2737,8 +2737,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Point));
 
   raw_in_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond", "flow",
-    Teuchos::tuple<std::string>("flow","pressure"),
-    Teuchos::tuple<std::string>("flow","pressure"),
+    Teuchos::tuple<std::string>("flow","pressure", "ExponentialPleuralPressure"),
+    Teuchos::tuple<std::string>("flow","pressure", "ExponentialPleuralPressure"),
     true)));
 
   std::vector<Teuchos::RCP<ConditionComponent> > redairwayinletcomponents;

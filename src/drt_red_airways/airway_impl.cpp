@@ -1686,7 +1686,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
       // Read in the material information
       //----------------------------------------------------------------
       const double VolPerArea = (ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))->GetDouble("VolumePerArea");
-      const double VolAcinus  = (ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))->GetDouble("Acinus_Volume");
+      //    const double VolAcinus  = (ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))->GetDouble("Acinus_Volume");
       double vo =  VolPerArea*A;
       double avs_np = (acinus_volume - vo)/vo;
       a_volume_strain_np -> ReplaceGlobalValues(1,&avs_np,&gid);

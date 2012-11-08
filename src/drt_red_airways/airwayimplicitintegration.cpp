@@ -476,14 +476,18 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
   double error_norm1 = 1.e7;
   double error_norm2 = 1.e7;
 
-  double s_lung_volume_np = 0.0;
-  acini_e_volumenp_->MeanValue(&s_lung_volume_np);
-
+  //--------------------------------------------------------------------
+  // Evaluate Lung volume
+  //--------------------------------------------------------------------
   double lung_volume_np = 0.0;
-  discret_->Comm().SumAll(&s_lung_volume_np,&lung_volume_np,1);
+  bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+  if(err)
+  {
+    dserror("Error by summing all acinar volumes");
+  }
 
-  lung_volume_np *= double(acini_e_volumenp_->GlobalLength());
 
+  // print out the total lung volume
   if(!myrank_)
   {
     cout<<"time: "<<time_-dta_<<" LungVolume: "<<lung_volume_np<<endl;
@@ -599,25 +603,29 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qout_n" ,qout_n_ );
     eleparams.set("qout_nm",qout_nm_ );
 
-    // get lung volume
-    double s_lung_volume_np = 0.0;
-    double s_lung_volume_n  = 0.0;
-    double s_lung_volume_nm = 0.0;
+    //------------------------------------------------------------------
+    // Evaluate Lung volumes
+    //------------------------------------------------------------------
     double lung_volume_np = 0.0;
-    double lung_volume_n  = 0.0;
-    double lung_volume_nm = 0.0;
+    bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
 
-    acini_e_volumenp_->MeanValue(&lung_volume_np);
-    acini_e_volumen_->MeanValue(&lung_volume_n);
-    acini_e_volumenm_->MeanValue(&lung_volume_nm);
-    
-    discret_->Comm().SumAll(&s_lung_volume_np,&lung_volume_np,1);
-    discret_->Comm().SumAll(&s_lung_volume_n ,&lung_volume_n ,1);
-    discret_->Comm().SumAll(&s_lung_volume_nm,&lung_volume_nm,1);
-    
-    lung_volume_np *= double(acini_e_volumenp_->GlobalLength());
-    lung_volume_n  *= double(acini_e_volumenp_->GlobalLength());
-    lung_volume_nm *= double(acini_e_volumenp_->GlobalLength());
+    double lung_volume_n  = 0.0;
+    err = this->SumAllColElemVal(acini_e_volumen_,lung_volume_n);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
+
+    double lung_volume_nm = 0.0;
+    err = this->SumAllColElemVal(acini_e_volumenm_,lung_volume_nm);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
 
     eleparams.set("lungVolume_np",lung_volume_np);
     eleparams.set("lungVolume_n" ,lung_volume_n);
@@ -724,6 +732,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("total time",time_);
     eleparams.set("bcval",bcval_);
     eleparams.set("dbctog",dbctog_);
+
+    // get lung volume
+    double lung_volume_np = 0.0;
+    bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
+    eleparams.set("lungVolume_np",lung_volume_np);
 
     //    eleparams.set("abc",abc_);
     //    eleparams.set("rhs",rhs_);
@@ -1010,7 +1027,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     //    output_.WriteVector("qcnp",qcnp_);
 
     // write domain decomposition for visualization
-    output_.WriteElementData();
+    //    output_.WriteElementData();
 
     // write the flow values
     LINALG::Export(*qin_nm_,*qexp_);
@@ -1080,6 +1097,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       output_.WriteVector("generations",qexp_);
       LINALG::Export(*acini_bc_,*qexp_);
       output_.WriteVector("acin_bc",qexp_);
+      output_.WriteElementData();
     }
 
     // write mesh in each restart step --- the elements are required since
@@ -1271,23 +1289,27 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
 
     // get lung volume
     double lung_volume_np = 0.0;
+    bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
+
     double lung_volume_n  = 0.0;
+    err = this->SumAllColElemVal(acini_e_volumen_,lung_volume_n);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
+
     double lung_volume_nm = 0.0;
-    double s_lung_volume_np = 0.0;
-    double s_lung_volume_n  = 0.0;
-    double s_lung_volume_nm = 0.0;
+    err = this->SumAllColElemVal(acini_e_volumenm_,lung_volume_nm);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
 
-    acini_e_volumenp_->MeanValue(&lung_volume_np);
-    acini_e_volumen_->MeanValue(&lung_volume_n);
-    acini_e_volumenm_->MeanValue(&lung_volume_nm);
 
-    discret_->Comm().SumAll(&s_lung_volume_np,&lung_volume_np,1);
-    discret_->Comm().SumAll(&s_lung_volume_n ,&lung_volume_n ,1);
-    discret_->Comm().SumAll(&s_lung_volume_nm,&lung_volume_nm,1);
-
-    lung_volume_np *= double(acini_e_volumenp_->GlobalLength());
-    lung_volume_n  *= double(acini_e_volumenp_->GlobalLength());
-    lung_volume_nm *= double(acini_e_volumenp_->GlobalLength());
 
     eleparams.set("lungVolume_np",lung_volume_np);
     eleparams.set("lungVolume_n" ,lung_volume_n);
@@ -1371,6 +1393,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
+
+    // get lung volume
+    double lung_volume_np = 0.0;
+    bool err = this->SumAllColElemVal(acini_e_volumenp_,lung_volume_np);
+    if(err)
+    {
+      dserror("Error by summing all acinar volumes");
+    }
+    eleparams.set("lungVolume_np",lung_volume_np);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -1469,4 +1500,51 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
   }
 }
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Sum all ColElement values                                            |
+ |                                                          ismail 11/12|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(Teuchos::RCP<Epetra_Vector> vec, double & sum)
+{
+
+  // Check if the vector is a ColElement vector
+  const Epetra_Map* elementcolmap  = discret_->ElementColMap();
+  if (!vec->Map().SameAs(*elementcolmap))
+  {
+    return true;
+  }
+
+  // define the volume of acini on the current processor
+  double local_sum = 0.0;
+
+  // Since the acinar_volume vector is a ColMap, we first need to export
+  // it to a RowMap and eliminate the ghosted values
+  {
+    // define epetra exporter
+    Epetra_Export exporter(vec->Map(),qexp_->Map());
+    // export from ColMap to RowMap
+    int err = qexp_->Export(*vec,exporter,Zero);
+    if (err) dserror("Export using exporter returned err=%d",err);
+  }
+  // Get the mean acinar volume on the current processor
+  qexp_->MeanValue(&local_sum); 
+
+  // Multiply the mean by the size of the vector to get the total
+  // acinar volume on the current processor
+  local_sum *= double(qexp_->MyLength());
+
+  // Get the total volume of Acini on all processors
+  sum = 0.0;
+  discret_->Comm().SumAll(&local_sum,&sum,1);
+
+  // return all is fine
+  return false;
+}
 

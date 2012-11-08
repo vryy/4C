@@ -197,7 +197,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
          time,
          dt);
 
-  for (int i=0;i<lm.size();i++)
+  for (unsigned int i=0;i<lm.size();i++)
   {
     int    gid = lm[i];
     double val = elemat1_epetra(i,i);
@@ -342,6 +342,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     exit(1);
   }
 
+#if 0
   // set element data
   const int numnode = iel;
   // get node coordinates and number of elements per node
@@ -356,27 +357,25 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     xyze(2,inode) = x[2];
   }
 
-  rhs.Scale(0.0);
-  sysmat.Scale(0.0);
-
-#if 0
-  if (ele->Owner() != myrank)
-  {
-    return;
-  }
-#endif
-  // check here, if we really have an acinus !!
-
   // Calculate the length of acinus element
   const double L=sqrt(
             pow(xyze(0,0) - xyze(0,1),2)
           + pow(xyze(1,0) - xyze(1,1),2)
           + pow(xyze(2,0) - xyze(2,1),2));
+#endif
+
+
+  // check here, if we really have an acinus !!
+
+
+  rhs.Scale(0.0);
+  sysmat.Scale(0.0);
+
 
   double q_out    = params.get<double>("qout_n");
-  double qout_np  = params.get<double>("qout_np");
+  //  double qout_np  = params.get<double>("qout_np");
 
-  double q_in    = params.get<double>("qin_n");
+  //  double q_in    = params.get<double>("qin_n");
   //  double qin_np  = params.get<double>("qin_np");
 
   // get the generation number
@@ -873,7 +872,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
 
         }
 
-        if (Bc == "pressure")
+        if (Bc == "pressure" || Bc == "ExponentialPleuralPressure")
         {
           RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
@@ -882,8 +881,25 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
-          }        
+          }
           
+          if (Bc == "ExponentialPleuralPressure")
+          {
+            const double ap =  -977.203;
+            const double bp = -3338.290;
+            const double cp =    -7.686;
+            const double dp =  2034.470;
+            const double VFR   = 1240000.0;
+            const double TLC   = 4760000.0 - VFR;
+            
+            const double lungVolumenp = params.get<double>("lungVolume_np") - VFR;
+
+            const double TLCnp= lungVolumenp/TLC;
+
+            double Pp_np = ap + bp*exp(cp*TLCnp) + dp*TLCnp;
+            
+            BCin += Pp_np;
+          }          
           
           // set pressure at node i
           int    gid; 
@@ -896,6 +912,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           gid = lm[i];
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
+
         }
         else if (Bc == "flow")
         {

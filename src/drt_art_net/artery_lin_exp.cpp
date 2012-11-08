@@ -163,32 +163,34 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Initial(
 {
 
   RCP<Epetra_Vector> qa0   = params.get<RCP<Epetra_Vector> >("qa0");
-  vector<int>        lmown = *(params.get<RCP<vector<int> > >("lmowner"));
+
+  DRT::Node** nodes = ele->Nodes();
+
   int myrank  = discretization.Comm().MyPID();
   if( material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
     const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
     vector<int>::iterator it = lm.begin();
 
-    if(myrank == lmown[0])
+    if(myrank == nodes[0]->Owner())
     {
       int gid = lm[0];
       double val = M_PI*pow(actmat->Diam()/2,2);
       qa0->ReplaceGlobalValues(1,&val,&gid);
     }
-    if(myrank == lmown[1])
+    if(myrank == nodes[0]->Owner())
     {
       int gid = lm[1];
       double val = 0.0;
       qa0->ReplaceGlobalValues(1,&val,&gid);
     }
-    if(myrank == lmown[2])
+    if(myrank == nodes[1]->Owner())
     {
       int gid = lm[2];
       double val = M_PI*pow(actmat->Diam()/2,2);
       qa0->ReplaceGlobalValues(1,&val,&gid);
     }
-    if(myrank == lmown[3])
+    if(myrank == nodes[1]->Owner())
     {
       int gid = lm[3];
       double val = 0.0;

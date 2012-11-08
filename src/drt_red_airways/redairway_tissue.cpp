@@ -115,6 +115,15 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
 
   // check certain parameters
+
+  cout<<"(1) "<<sdyn.get<double>("TIMESTEP")<<" : "<< timeparams.get<double>("TIMESTEP")<<endl;
+  cout<<"(2) "<<sdyn.get<int>("NUMSTEP")<<" : "<<timeparams.get<int>("NUMSTEP")<<endl;
+  cout<<"(3) "<<sdyn.get<double>("MAXTIME")<<" : "<<timeparams.get<double>("MAXTIME") <<endl;
+  cout<<"(4) "<<rawdyn.get<double>("TIMESTEP")<<" : "<<timeparams.get<double>("TIMESTEP") <<endl;
+  cout<<"(5) "<<rawdyn.get<int>("NUMSTEP")<<" : "<<timeparams.get<int>("NUMSTEP")<<endl;
+
+
+
   if (sdyn.get<double>("TIMESTEP") != timeparams.get<double>("TIMESTEP") or
       sdyn.get<int>("NUMSTEP") != timeparams.get<int>("NUMSTEP") or
       sdyn.get<double>("MAXTIME") != timeparams.get<double>("MAXTIME") or

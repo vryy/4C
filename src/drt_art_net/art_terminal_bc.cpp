@@ -736,7 +736,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // Read in the wind kessel parameters
       // ---------------------------------------------------------------
       // define the 2 element windkessel parameters
-      double Pout = 0.0;
+      //      double Pout = 0.0;
       double R    = 0.0;
       double C    = 0.0;
 
@@ -744,11 +744,11 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       if ((*curve)[0]>=0)
       {
         curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-        Pout = (*vals)[0]*curvefac;
+        //        Pout = (*vals)[0]*curvefac;
       }
       else
       {
-        Pout = (*vals)[0];
+        //        Pout = (*vals)[0];
       }
       // read in the resistance value
       if ((*curve)[1]>=0)
@@ -788,7 +788,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
 
       // define the 3 element windkessel parameters
-      double Pout   = 0.0;
+      //      double Pout   = 0.0;
       double R1     = 0.0;
       double C      = 0.0;
       double R2     = 0.0;
@@ -798,12 +798,12 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       if ((*curve)[0]>=0)
       {
         curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-        Pout = (*vals)[0]*curvefac;
+        //        Pout = (*vals)[0]*curvefac;
         curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time-dt);
       }
       else
       {
-        Pout = (*vals)[2];
+        //        Pout = (*vals)[2];
       }
       // Read in Pout at time step n-1
       if ((*curve)[0]>=0)
@@ -911,7 +911,7 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
 
       // define the 4 element windkessel parameters
-      double Pout = 0.0;
+      //      double Pout = 0.0;
       double R1   = 0.0;
       double C    = 0.0;
       double R2   = 0.0;
@@ -921,11 +921,11 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       if ((*curve)[0]>=0)
       {
         curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-        Pout = (*vals)[0]*curvefac;
+        //        Pout = (*vals)[0]*curvefac;
       }
       else
       {
-        Pout = (*vals)[2];
+        //        Pout = (*vals)[2];
       }
       // read in the source resistance value
       if ((*curve)[1]>=0)
