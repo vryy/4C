@@ -46,6 +46,9 @@ namespace FSI
    */
   class MonolithicStructureSplit : public BlockMonolithic
   {
+
+    friend class FSI::FSIResultTest;
+
   public:
     explicit MonolithicStructureSplit(const Epetra_Comm& comm,
                                       const Teuchos::ParameterList& timeparams);

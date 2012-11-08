@@ -105,8 +105,8 @@ void DRT::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 {
   FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
-  int nerr = 0;
-  int test_count = 0;
+  int nerr = 0;       // number of tests with errors
+  int test_count = 0; // number of tests performed
 
   if (comm.MyPID()==0)
     cout << "\nChecking results ...\n";
@@ -266,6 +266,16 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddNamedDouble("TOLERANCE")
     ;
 
+  DRT::INPUT::LineDefinition fsi;
+  fsi
+    .AddTag("FSI")
+    .AddNamedInt("NODE")
+    .AddNamedString("POSITION")
+    .AddNamedString("NAME")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    ;
+
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
   lines->Add(fluid);
@@ -276,6 +286,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(art_net);
   lines->Add(fld_adj);
   lines->Add(opti);
+  lines->Add(fsi);
   return lines;
 }
 

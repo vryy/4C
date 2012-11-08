@@ -51,6 +51,9 @@ namespace NOX
 
 namespace FSI
 {
+
+  class FSIResultTest;
+
 namespace UTILS
 {
   class DebugWriter;
@@ -117,7 +120,6 @@ namespace UTILS
     ALE::Ale& AleField() { return *ale_; }
 
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
-
 
     //@}
 
@@ -191,7 +193,9 @@ namespace UTILS
                      public NOX::Epetra::Interface::Preconditioner,
                      public NOX::Direction::UserDefinedFactory
   {
+
     friend class FSI::UTILS::MonolithicDebugWriter;
+
   public:
     explicit Monolithic(const Epetra_Comm& comm,
                         const Teuchos::ParameterList& timeparams);

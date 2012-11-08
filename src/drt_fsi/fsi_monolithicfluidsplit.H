@@ -72,6 +72,9 @@ namespace FSI
    */
   class MonolithicFluidSplit : public BlockMonolithic
   {
+
+    friend class FSI::FSIResultTest;
+
   public:
     explicit MonolithicFluidSplit(const Epetra_Comm& comm,
                                   const Teuchos::ParameterList& timeparams);

@@ -25,6 +25,7 @@
 #include "fsi_fluid_ale.H"
 #include "fsi_fluid_xfem.H"
 #include "fsi_utils.H"
+#include "fsi_resulttest.H"
 
 #include "fs_monolithic.H"
 
@@ -967,14 +968,23 @@ void fsi_ale_drt()
     // here we go...
     fsi->Timeloop(fsi);
 
+    // create result tests for single fields
+    DRT::Problem::Instance()->AddFieldTest(fsi->AleField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+    // create fsi specific result test
+    Teuchos::RCP<FSI::FSIResultTest> fsitest = rcp(new FSI::FSIResultTest::FSIResultTest(fsi,fsidyn));
+    DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+    // do the actual testing
     DRT::Problem::Instance()->TestAll(comm);
+
     break;
   }
   default:
   {
-    // Any partitioned algorithm. Stable of working horses.
+    // Any partitioned algorithm.
 
     Teuchos::RCP<FSI::Partitioned> fsi;
 
@@ -996,8 +1006,12 @@ void fsi_ale_drt()
     }
 
     fsi->Timeloop(fsi);
+
+    // create result tests for single fields
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+    // do the actual testing
     DRT::Problem::Instance()->TestAll(comm);
   }
   }

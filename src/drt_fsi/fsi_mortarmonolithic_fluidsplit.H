@@ -54,6 +54,9 @@ namespace FSI
    */
   class MortarMonolithicFluidSplit : public BlockMonolithic
   {
+
+    friend class FSI::FSIResultTest;
+
   public:
     explicit MortarMonolithicFluidSplit(const Epetra_Comm& comm,
                                         const Teuchos::ParameterList& timeparams);
