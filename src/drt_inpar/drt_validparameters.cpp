@@ -2049,14 +2049,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Coupling strategy for (monolithic) porous media solvers
   setStringToIntegralParameter<int>(
-                              "COUPALGO","poroelast_monolithic",
+                              "COUPALGO","poro_monolithic",
                               "Coupling strategies for poroelasticity solvers",
                               tuple<std::string>(
-                                 "poroelast_monolithic",
-                                 "poroelast_monolithicstructuresplit",
-                                 "poroelast_monolithicfluidsplit"
+                                 "poro_partitioned",
+                                 "poro_monolithic",
+                                 "poro_monolithicstructuresplit",
+                                 "poro_monolithicfluidsplit"
                                 ),
                               tuple<int>(
+                                INPAR::POROELAST::Partitioned,
                                 INPAR::POROELAST::Monolithic,
                                 INPAR::POROELAST::Monolithic_structuresplit,
                                 INPAR::POROELAST::Monolithic_fluidsplit

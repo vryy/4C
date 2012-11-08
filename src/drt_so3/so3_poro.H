@@ -15,7 +15,6 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "so3_poro_eletypes.H"
 
 
@@ -41,6 +40,7 @@ class So3_Poro : public so3_ele
   //! @name Friends
   friend class So_tet4PoroType;
   friend class So_hex8PoroType;
+  friend class So_hex27PoroType;
 
 public:
 
@@ -113,10 +113,14 @@ public:
     {
     case DRT::Element::tet4:
       return So_tet4PoroType::Instance().UniqueParObjectId();
+      break;
     case DRT::Element::hex8:
       return So_hex8PoroType::Instance().UniqueParObjectId();
+      break;
     default: dserror("unknown element type!");
+      break;
     }
+    return -1;
   };
 
   /*!
@@ -148,7 +152,7 @@ public:
   {
     if (nds==1)
     {
-      // in case of Poroelasticity: nds=1 (second discretization) fluid: 4Dof/Node
+      // in case of porous media: nds=1 (second discretization) fluid: 4Dof/Node
       return 4;
     }
     // structure, 3D: 3 Dofs per node
@@ -174,7 +178,9 @@ public:
     case DRT::Element::hex8:
       return So_hex8PoroType::Instance();
     default: dserror("unknown element type!");
+      break;
     }
+    return So_hex8PoroType::Instance();
   };
 
   bool ReadElement(const std::string& eletype,
@@ -318,6 +324,7 @@ protected:
   bool ishigherorder_;
 
 private:
+
   DRT::Node** Nodes();
 
   RCP<MAT::Material> Material() const;

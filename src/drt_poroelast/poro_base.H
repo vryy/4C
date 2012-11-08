@@ -21,7 +21,8 @@
 #include <Epetra_Vector.h>
 
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "../linalg/linalg_mapextractor.H"
+
+#include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -33,12 +34,7 @@ namespace DRT
 
 namespace LINALG
 {
-  class SparseMatrix;
-  class SparseOperator;
   class MapExtractor;
-
-  class BlockSparseMatrixBase;
-  class Solver;
 }
 
 namespace ADAPTER
@@ -50,8 +46,7 @@ namespace ADAPTER
 
 namespace POROELAST
 {
-  /// monolithic Poroelasticity algorithm base
-
+  /// poro algorithm base
   class PoroBase: public ADAPTER::AlgorithmBase
   {
     public:
@@ -65,11 +60,23 @@ namespace POROELAST
       /// read restart data
       virtual void ReadRestart(int restart);
 
-      //! outer level time loop (to be implemented by deriving classes)
-      virtual void TimeLoop() = 0;
+      //! outer level time loop
+      virtual void TimeLoop();
 
       /// initialise system
       virtual void SetupSystem() = 0;
+
+      //! perform result tests
+      virtual void TestResults(const Epetra_Comm& comm);
+
+      //! access to structural field
+      const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
+
+      //! access to fluid field
+      ::ADAPTER::Fluid& FluidField(){return *fluid_;}
+
+      //! solve time step (depending on algorithm)
+      virtual void Solve() = 0;
 
       //! @name Time loop building blocks
 
@@ -82,16 +89,85 @@ namespace POROELAST
       //! calculate stresses, strains, energies
       virtual void PrepareOutput();
 
-      //! perform result tests
-      virtual void TestResults(const Epetra_Comm& comm);
+      //! output
+      virtual void Output();
 
-      //! access to structural field
-      const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
+      //@}
 
-      //! access to fluid field
-      ::ADAPTER::Fluid& FluidField(){return *fluid_;}
+      //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+      //virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
+      //    ){dserror("Evaluate not implemented in deriving class");};
+
+      //! SetupSystemMatrix
+      //virtual void SetupSystemMatrix() {dserror("SetupSystemMatrix not implemented in deriving class");};
 
     protected:
+
+      //! @name Transfer helpers
+
+      //! field transform
+      Teuchos::RCP<Epetra_Vector> StructureToFluidField(Teuchos::RCP<
+          const Epetra_Vector> iv) const;
+
+      //! field transform
+      Teuchos::RCP<Epetra_Vector> FluidToStructureField(Teuchos::RCP<
+          const Epetra_Vector> iv) const;
+
+      //@}
+
+      //! @name Transfer methods
+
+      //! set fluid solution on structure
+      void SetFluidSolution();
+
+      //! set structure solution on fluid
+      void SetStructSolution();
+
+      //@}
+
+      //! build map containing dofs with no penetration condition (fluid)
+      void BuidNoPenetrationMap();
+
+      //! return coupling object
+      ADAPTER::Coupling& FluidStructureCoupling() { return *coupfs_; }
+
+      //! Extractor used for constraint structure
+      Teuchos::RCP< LINALG::MapExtractor > consplitter_;
+
+      //! map of gids of fluid  DOFs and respective structure DOFs
+      Teuchos::RCP<std::map<int, int> > nopenetrationmap_;
+
+      //! Extractor used for no penetration condition
+      Teuchos::RCP< LINALG::MapExtractor > nopenetration_;
+
+      //! Extractor used for no penetration condition
+      Teuchos::RCP< LINALG::MapExtractor > psiextractor_;
+
+      //! vector containing no penetration - conditions
+      std::vector<DRT::Condition*> nopencond_;
+
+      //! vector containing global IDs of dofs with no penetration condition
+      Teuchos::RCP<std::set<int> >condIDs_;
+
+      //Teuchos::RCP<Epetra_Vector> fluidveln_; //!< global fluid velocities and pressures
+
+     // Teuchos::RCP<Epetra_Vector> veln_; //!< global structure velocities
+      //!< \f${V}_{n+1}\f$
+      //!< at \f$t_{n+1}\f$
+      //Teuchos::RCP<Epetra_Vector> dispn_; //!< global structure displacements
+      //!< \f${d}_{n+1}\f$
+      //!< at \f$t_{n+1}\f$
+
+    private:
+      //! check for submeshes and build of subnode and subelement map if necessary
+      bool BuildSubMaps();
+
+      //! coupling of fluid and structure (whole field)
+      Teuchos::RCP<ADAPTER::Coupling> coupfs_;
+
+      Teuchos::RCP<Epetra_Map> subnodemap_;
+
+      Teuchos::RCP<Epetra_Map> subelemap_;
 
       //! @name Underlying fields
 
@@ -103,49 +179,8 @@ namespace POROELAST
 
       //@}
 
-      //! @name Transfer helpers
-
-      //! field transform
-      virtual Teuchos::RCP<Epetra_Vector> StructureToFluidField(Teuchos::RCP<
-          const Epetra_Vector> iv) const;
-
-      //! field transform
-      virtual Teuchos::RCP<Epetra_Vector> FluidToStructureField(Teuchos::RCP<
-          const Epetra_Vector> iv) const;
-
-      virtual Teuchos::RCP<Epetra_Vector> StructureToFluidAtInterface(Teuchos::RCP<
-          const Epetra_Vector> iv) const;
-
-      virtual Teuchos::RCP<Epetra_Vector> FluidToStructureAtInterface(Teuchos::RCP<
-          const Epetra_Vector> iv) const;
-
-      void BuidNoPenetrationMap();
-
-      ADAPTER::Coupling& FluidStructureCoupling() { return *coupfs_; }
-
-      //! Extractor used for constraint structure
-      LINALG::MapExtractor consplitter_;
-
-      //! map of gids of fluid  DOFs and respective structure DOFs
-      Teuchos::RCP<std::map<int, int> > nopenetrationmap_;
-
-      //! Extractor used for no penetration condition
-      LINALG::MapExtractor nopenetration_;
-
-      //! vector containing no penetration - conditions
-      std::vector<DRT::Condition*> nopencond_;
-
-      //! vector containing globla IDs of dofs with no penetration condition
-      Teuchos::RCP<std::set<int> >condIDs_;
-
-      /// coupling of fluid and structure (interface only)
-      Teuchos::RCP<ADAPTER::Coupling> icoupfs_;
-
-    private:
-      //! coupling of fluid and structure (whole field)
-      Teuchos::RCP<ADAPTER::Coupling> coupfs_;
-
-      //@}
+      //!flag indicating not fully overlapping fluid and structure discretization
+      bool submeshes_;
 
   }; // MonolithicBase
 }

@@ -1211,6 +1211,15 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       {
         discret_->SetState("dispnp", dispnp_);
         discret_->SetState("gridv", gridv_);
+
+        if (poroelast_)
+        {
+          //just for porous media
+          discret_->SetState("dispn", dispn_);
+          discret_->SetState("veln", veln_);
+          discret_->SetState("accnp", accnp_);
+          discret_->SetState("accn", accn_);
+        }
       }
 
       // set scheme-specific element parameters and vector values
@@ -4874,6 +4883,12 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractVelocityPart
    return VelPresSplitter().ExtractOtherVector(velpres);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres)
+{
+   return VelPresSplitter().ExtractCondVector(velpres);
+}
 
 /*----------------------------------------------------------------------*
  | sent density field for topology optimization         winklmaier 12/11|

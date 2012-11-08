@@ -19,6 +19,7 @@
 
 
 #include "poro_scatra.H"
+#include "poro_base.H"
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
@@ -41,8 +42,29 @@ PORO_SCATRA::PartPORO_SCATRA::PartPORO_SCATRA(const Epetra_Comm& comm,
 
   const Teuchos::ParameterList& scatradyn  = problem->ScalarTransportDynamicParams();
 
-  // get the solver number used for ScalarTransport solver
-  const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+  //do some checks
+  {
+    INPAR::SCATRA::TimeIntegrationScheme timealgo
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
+    if ( timealgo != INPAR::SCATRA::timeint_one_step_theta )
+      dserror("scalar transport in porous media is limited in functionality (only one-step-theta scheme possible)");
+
+    INPAR::SCATRA::ConvForm convform
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradyn,"CONVFORM");
+    if ( convform != INPAR::SCATRA::convform_convective )
+      dserror("The balance of mass is included in the formulation for scalart transport in porous media. "
+          "Set 'CONVFORM' to 'convective' in the SCALAR TRANSPORT DYNAMIC section! ");
+
+    INPAR::SCATRA::VelocityField velfield
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
+    if ( velfield != INPAR::SCATRA::velocity_Navier_Stokes )
+      dserror("scalar transport is coupled with the porous medium. Set 'VELOCITYFIELD' to 'Navier_Stokes' in the SCALAR TRANSPORT DYNAMIC section! ");
+
+    INPAR::SCATRA::ScaTraType scatratype
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(scatradyn,"SCATRATYPE");
+    if ( scatratype != INPAR::SCATRA::scatratype_poro )
+      dserror("Set 'SCATRATYPE' to 'Poroscatra' in the SCALAR TRANSPORT DYNAMIC section! ");
+  }
 
   //1.- Set time and step.
   dt_ = timeparams.get<double> ("TIMESTEP");
@@ -56,7 +78,9 @@ PORO_SCATRA::PartPORO_SCATRA::PartPORO_SCATRA(const Epetra_Comm& comm,
   SetupDiscretizations(comm);
 
   //3.- Create the two uncoupled subproblems.
-  poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, timeparams));
+  poroelast_subproblem_ = POROELAST::UTILS::CreatePoroAlgorithm(timeparams, comm);
+  // get the solver number used for ScalarTransport solver
+  const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   scatra_subproblem_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,true,"scatra",problem->SolverParams(linsolvernumber)));
 }
 
@@ -69,7 +93,7 @@ void PORO_SCATRA::PartPORO_SCATRA::Timeloop()
   scatra_subproblem_->ScaTraField().Output();
 
   // 2.- Actual time loop
-  while (NotFinished()) // Actual time loop
+  while (NotFinished())
   {
     IncrementTimeAndStep(); // This is just for control, not needed at all (not the time variables that the "Do"functions take).
     DoPoroStep(); // It has its own time and timestep variables, and it increments them by itself.
@@ -83,16 +107,13 @@ void PORO_SCATRA::PartPORO_SCATRA::Timeloop()
 /*----------------------------------------------------------------------*/
 void PORO_SCATRA::PartPORO_SCATRA::DoPoroStep()
 {
-  // solve the step problem. Methods obtained from poroelast->TimeLoop(sdynparams); --> sdynparams
-  poroelast_subproblem_-> PrepareTimeStep(); //			CUIDADO, aqui vuelve a avanzar el paso de tiempo. Hay que corregir eso.
-  // Newton-Raphson iteration
-  poroelast_subproblem_-> NewtonFull();
-  // calculate stresses, strains, energies
-  poroelast_subproblem_-> PrepareOutput();
-  // update all single field solvers
-  poroelast_subproblem_-> Update();
-  // write output to screen and files
-  poroelast_subproblem_-> Output();
+  //1)  solve the step problem. Methods obtained from poroelast->TimeLoop(sdynparams); --> sdynparams
+  //			CUIDADO, aqui vuelve a avanzar el paso de tiempo. Hay que corregir eso.
+  //2)  Newton-Raphson iteration
+  //3)  calculate stresses, strains, energies
+  //4)  update all single field solvers
+  //5)  write output to screen and files
+  poroelast_subproblem_-> Solve();
 }
 
 void PORO_SCATRA::PartPORO_SCATRA::DoScatraStep()

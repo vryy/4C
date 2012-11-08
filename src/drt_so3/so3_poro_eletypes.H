@@ -14,6 +14,7 @@
 
 #include "so_hex8.H"
 #include "so_tet4.H"
+#include "so_hex27.H"
 
 namespace DRT
 {
@@ -81,7 +82,35 @@ private:
 };
 
 
-}
-}
+/*----------------------------------------------------------------------*
+ |  HEX 27 Element                                       |
+ *----------------------------------------------------------------------*/
+class So_hex27PoroType : public So_hex27Type
+{
+public:
 
+  std::string Name() const { return "So_hes27PoroType"; }
+
+  static So_hex27PoroType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_hex27PoroType instance_;
+};
+
+}//ELEMENTS
+}//DRT
 #endif /* SO3_PORO_ELETYPES_H_ */

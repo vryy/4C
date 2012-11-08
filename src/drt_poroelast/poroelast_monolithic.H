@@ -22,29 +22,18 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "poro_base.H"
 
+#include "../linalg/linalg_mapextractor.H"
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-namespace DRT
-{
-  class Condition;
-}
-
 namespace LINALG
 {
   class SparseMatrix;
   class SparseOperator;
-  class MapExtractor;
 
   class BlockSparseMatrixBase;
   class Solver;
-}
-
-namespace ADAPTER
-{
-  class Fluid;
-  class Coupling;
-  class FSIStructureWrapper;
 }
 
 namespace POROELAST
@@ -58,6 +47,8 @@ namespace POROELAST
       explicit Monolithic(const Epetra_Comm& comm,
           const Teuchos::ParameterList& timeparams
           );
+
+      virtual ~Monolithic(){};
 
       /*! do the setup for the monolithic system
 
@@ -78,7 +69,7 @@ namespace POROELAST
       virtual void SetupSystem();
 
       /// outer level Poroelasticity time loop
-      void TimeLoop();
+      //void TimeLoop();
 
       //! setup composed right hand side from field solvers
       virtual void SetupRHS(bool firstcall=false) ;
@@ -98,7 +89,7 @@ namespace POROELAST
         return systemmatrix_;
       }
 
-      //! solve linear Poroelasticity system
+      //! solve linear system
       void LinearSolve();
 
       //! create linear solver (setup of parameter lists, etc...)
@@ -129,8 +120,11 @@ namespace POROELAST
       //! \author lw  \date 12/07
       bool Converged();
 
-      //! outer iteration loop
+      //! newton iteration
       void NewtonFull();
+
+      //! solve one time step
+      void Solve();
 
       //! @name Output
 
@@ -151,13 +145,10 @@ namespace POROELAST
       //! print statistics of converged Newton-Raphson iteration
       void PrintNewtonConv();
 
-      //! write output
-      void Output();
-
       //@}
 
       //!finite difference check of stiffness matrix
-      void PoroFDCheck();
+      //void PoroFDCheck();
 
       /// Evaluate no penetration condition
       void EvaluateCondition(Teuchos::RCP<LINALG::SparseOperator> Sysmat,
@@ -228,19 +219,19 @@ namespace POROELAST
       //! @name General purpose algorithm members
       //@{
 
-      bool solveradapttol_; //!< adapt solver tolerance
-      double solveradaptolbetter_; //!< tolerance to which is adpated ????
-      Teuchos::RCP<LINALG::Solver> solver_; //!< linear algebraic solver
+      bool solveradapttol_;                   //!< adapt solver tolerance
+      double solveradaptolbetter_;            //!< tolerance to which is adpated ????
+      Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
 
       //@}
 
       //! @name Printing and output
       //@{
 
-      int printscreen_; //!< print infos to standard out every printscreen_ steps
-      bool printiter_; //!< print intermediate iterations during solution
-      bool printerrfile_; //!< print infos to error file #errfile_
-      FILE* errfile_; //!< error file handle
+      int printscreen_;     //!< print infos to standard out every printscreen_ steps
+      bool printiter_;      //!< print intermediate iterations during solution
+      bool printerrfile_;   //!< print infos to error file #errfile_
+      FILE* errfile_;       //!< error file handle
 
       //@}
 
@@ -248,7 +239,7 @@ namespace POROELAST
       Teuchos::RCP<Epetra_Vector> zeros_; //!< a zero vector of full length
       //@}
 
-      enum INPAR::STR::DynamicType strmethodname_; //!< enum for STR time integartion
+      enum INPAR::STR::DynamicType strmethodname_; //!< enum for STR time integration
 
       //! block systemmatrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
@@ -269,16 +260,12 @@ namespace POROELAST
 
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> FluidStructCouplingBlockMatrix();
 
-      virtual Teuchos::RCP<Epetra_Map> FSIDBCMap();
 
       //void UseBlockCoulpingMatrix();
 
       //coupling matrixes
       Teuchos::RCP<LINALG::SparseOperator> k_sf_;
       Teuchos::RCP<LINALG::SparseOperator> k_fs_;
-
-      //! Extractor used for fsi boundary with dirichlet bc
-      LINALG::MapExtractor fsibcsplitter_;
 
     private:
 
@@ -290,46 +277,41 @@ namespace POROELAST
 
       //! @name Iterative solution technique
 
-      enum INPAR::POROELAST::ConvNorm normtypeinc_; //!< convergence check for residual temperatures
-      enum INPAR::POROELAST::ConvNorm normtypefres_; //!< convergence check for residual forces
-      enum INPAR::POROELAST::BinaryOp combincfres_; //!< binary operator to combine temperatures and forces
+      enum INPAR::POROELAST::ConvNorm normtypeinc_;   //!< convergence check for residual temperatures
+      enum INPAR::POROELAST::ConvNorm normtypefres_;  //!< convergence check for residual forces
+      enum INPAR::POROELAST::BinaryOp combincfres_;   //!< binary operator to combine temperatures and forces
 
-      double tolinc_; //!< tolerance residual increment
-      double tolfres_; //!< tolerance force residual
+      double tolinc_;     //!< tolerance residual increment
+      double tolfres_;    //!< tolerance force residual
 
-      int itermax_; //!< maximally permitted iterations
-      int itermin_; //!< minimally requested iteration
-      double normrhs_; //!< norm of residual forces
-      double norminc_; //!< norm of residual unknowns
+      int itermax_;     //!< maximally permitted iterations
+      int itermin_;     //!< minimally requested iteration
+      double normrhs_;  //!< norm of residual forces
+      double norminc_;  //!< norm of residual unknowns
 
-      double normrhsfluid_; //!< norm of residual forces (fluid)
-      double normincfluid_; //!< norm of residual unknowns (fluid)
+      double normrhsfluidvel_;  //!< norm of residual forces (fluid velocity)
+      double normincfluidvel_;  //!< norm of residual unknowns (fluid velocity)
+      double normrhsfluidpres_; //!< norm of residual forces (fluid velocity)
+      double normincfluidpres_; //!< norm of residual unknowns (fluid velocity)
+      double normrhsfluid_;     //!< norm of residual forces (fluid )
+      double normincfluid_;     //!< norm of residual unknowns (fluid )
 
-      double normrhsstruct_; //!< norm of residual forces (structure)
-      double normincstruct_; //!< norm of residual unknowns (structure)
+      double normrhsstruct_;    //!< norm of residual forces (structure)
+      double normincstruct_;    //!< norm of residual unknowns (structure)
 
-      Epetra_Time timer_; //!<timer for solution technique
+      Epetra_Time timer_;       //!<timer for solution technique
 
-      int iter_; //!< iteration step
+      int iter_;                //!< iteration step
 
       //@}
 
       //! @name Various global forces
 
+      Teuchos::RCP<Epetra_Vector> cond_rhs_;  //!< additional rhs-Terms for no penetration condition
 
-      // Teuchos::RCP<Epetra_Vector> rhs_fs_;//!< rhs of fluid-structure coupling
-      // Teuchos::RCP<Epetra_Vector> rhs_sf_;//!< rhs of structure-fluid coupling
-      Teuchos::RCP<Epetra_Vector> cond_rhs_; //!< additional rhs-Terms for no penetration condition
-
-      Teuchos::RCP<Epetra_Vector> freact_; //!< reaction force
-      Teuchos::RCP<Epetra_Vector> iterinc_; //!< increment between Newton steps k and k+1
+      Teuchos::RCP<Epetra_Vector> freact_;    //!< reaction force
+      Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
       //!< \f$\Delta{x}^{<k>}_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> veln_; //!< global structure velocities
-      //!< \f${V}_{n+1}\f$
-      //!< at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> dispn_; //!< global structure displacements
-      //!< \f${d}_{n+1}\f$
-      //!< at \f$t_{n+1}\f$
 
       //@}
 

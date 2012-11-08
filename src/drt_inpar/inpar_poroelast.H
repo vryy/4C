@@ -32,6 +32,7 @@ namespace POROELAST
 //    OneWay,
  //   SequStagg,
  //   IterStagg,
+    Partitioned,
     Monolithic,
     Monolithic_structuresplit,
     Monolithic_fluidsplit

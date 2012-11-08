@@ -16,10 +16,8 @@
  |  headers                                                             |
  *----------------------------------------------------------------------*/
 #include "poro_dyn.H"
+#include "poro_base.H"
 #include "poro_scatra.H"
-#include "poroelast_monolithic.H"
-#include "poro_monolithicstructuresplit.H"
-#include "poro_monolithicfluidsplit.H"
 #include "poroelast_utils.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -35,12 +33,7 @@ void poroelast_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // create a communicator
-#ifdef PARALLEL
-  const Epetra_Comm& comm =
-      problem->GetDis("structure")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
+  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   // setup of the discretizations, including clone strategy
   POROELAST::UTILS::SetupPoro(comm);
@@ -48,61 +41,25 @@ void poroelast_drt()
   // access the problem-specific parameter list
   const Teuchos::ParameterList& poroelastdyn =
       problem->PoroelastDynamicParams();
-  // access the problem-specific parameter list
-  const Teuchos::ParameterList& sdynparams =
-      problem->StructuralDynamicParams();
-  const INPAR::POROELAST::SolutionSchemeOverFields coupling =
-      DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
-          poroelastdyn, "COUPALGO");
 
-  std::string damping = sdynparams.get<std::string>("DAMPING");
-  if(damping != "Material")
-    dserror("Material damping has to be used for poroelasticity! Set DAMPING to Material in the STRUCTURAL DYNAMIC section.");
-
-  // create an empty Poroelast::Algorithm instance
-  Teuchos::RCP<POROELAST::PoroBase> poroelast = Teuchos::null;
-
-  // choose algorithm depending on solution type (only monolithic type implemented)
-  switch (coupling)
-  {
-    case INPAR::POROELAST::Monolithic:
-    {
-      // create an POROELAST::Monolithic instance
-      poroelast = Teuchos::rcp(new POROELAST::Monolithic(comm, poroelastdyn));
-      break;
-    } // monolithic case
-
-    case INPAR::POROELAST::Monolithic_structuresplit:
-    {
-      // create an POROELAST::MonolithicStructureSplit instance
-      poroelast = Teuchos::rcp(new POROELAST::MonolithicStructureSplit(comm, poroelastdyn));
-      break;
-    }
-    case INPAR::POROELAST::Monolithic_fluidsplit:
-    {
-      // create an POROELAST::MonolithicFluidSplit instance
-      poroelast = Teuchos::rcp(new POROELAST::MonolithicFluidSplit(comm, poroelastdyn));
-      break;
-    }
-    default:
-      dserror("Unknown solutiontype for poroelasticity: %d",coupling);
-    } // end switch
+  // choose algorithm depending on solution type
+  Teuchos::RCP<POROELAST::PoroBase> poroalgo = POROELAST::UTILS::CreatePoroAlgorithm(poroelastdyn, comm);
 
   // read the restart information, set vectors and variables
   const int restart = problem->Restart();
-  poroelast->ReadRestart(restart);
+  poroalgo->ReadRestart(restart);
 
   // now do the coupling setup and create the combined dofmap
-  poroelast->SetupSystem();
+  poroalgo->SetupSystem();
 
   // solve the whole problem
-  poroelast->TimeLoop();
+  poroalgo->TimeLoop();
 
   // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  poroelast->TestResults(comm);
+  poroalgo->TestResults(comm);
 
   return;
 }//poroelast_drt()
@@ -141,3 +98,4 @@ void poro_scatra_drt()
   poro_scatra->TestResults(comm);
 
 }
+

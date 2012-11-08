@@ -44,7 +44,8 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
                                                const DRT::Discretization& slavedis,
                                                Teuchos::RCP<const Epetra_Map> slavecondmap,
                                                const std::string& condname,
-                                               const int numdof)
+                                               const int numdof,
+                                               bool matchall)
 {
   std::vector<int> masternodes;
   DRT::UTILS::FindConditionedNodes(masterdis,condname,masternodes);
@@ -63,7 +64,7 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
     dserror("got %d master nodes but %d slave nodes for coupling",
             mastercount,slavecount);
 
-  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof);
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof, matchall);
 
   // test for completeness
   if (static_cast<int>(masternodes.size())*numdof != masterdofmap_->NumMyElements())
@@ -104,7 +105,8 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
                                                           Teuchos::RCP<const Epetra_Map> slavecondmap,
                                                           const std::string& condname1,
                                                           const std::string& condname2,
-                                                          const int numdof)
+                                                          const int numdof,
+                                                          bool matchall)
 {
   std::vector<int> masternodes1;
   DRT::UTILS::FindConditionedNodes(masterdis,condname1,masternodes1);
@@ -142,11 +144,11 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
   masterdis.Comm().SumAll(&localmastercount,&mastercount,1);
   slavedis.Comm().SumAll(&localslavecount,&slavecount,1);
 
-  if (mastercount != slavecount)
+  if (mastercount != slavecount and matchall)
     dserror("got %d master nodes but %d slave nodes for coupling",
             mastercount,slavecount);
 
-  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof);
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof, matchall);
 
   // test for completeness
   if (static_cast<int>(masternodes.size())*numdof != masterdofmap_->NumMyElements())
@@ -182,11 +184,12 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                       const DRT::Discretization& slavedis,
                                       const std::vector<int>& masternodes,
                                       const std::vector<int>& slavenodes,
-                                      const int numdof)
+                                      const int numdof,
+                                      bool matchall)
 {
   std::vector<int> patchedmasternodes(masternodes);
   std::vector<int> permslavenodes;
-  MatchNodes(masterdis, slavedis, patchedmasternodes, permslavenodes, slavenodes);
+  MatchNodes(masterdis, slavedis, patchedmasternodes, permslavenodes, slavenodes, matchall);
 
   // Epetra maps in original distribution
 
@@ -209,9 +212,10 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                       const DRT::Discretization& slavedis,
                                       const Epetra_Map& masternodes,
                                       const Epetra_Map& slavenodes,
-                                      const int numdof)
+                                      const int numdof,
+                                      bool matchall)
 {
-  if (masternodes.NumGlobalElements()!=slavenodes.NumGlobalElements())
+  if (masternodes.NumGlobalElements()!=slavenodes.NumGlobalElements() and matchall)
     dserror("got %d master nodes but %d slave nodes for coupling",
             masternodes.NumGlobalElements(),
             slavenodes.NumGlobalElements());
@@ -222,7 +226,7 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                         slavenodes.MyGlobalElements() + slavenodes.NumMyElements());
   vector<int> permslavenodes;
 
-  MatchNodes(masterdis, slavedis, mastervect, permslavenodes, slavevect);
+  MatchNodes(masterdis, slavedis, mastervect, permslavenodes, slavevect, matchall);
 
   // Epetra maps in original distribution
 
@@ -245,7 +249,8 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
                                    const DRT::Discretization& slavedis,
                                    std::vector<int>& masternodes,
                                    std::vector<int>& permslavenodes,
-                                   const std::vector<int>& slavenodes)
+                                   const std::vector<int>& slavenodes,
+                                   bool matchall)
 {
   // match master and slave nodes using Peter's octtree
 
@@ -258,7 +263,7 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   tree.FindMatch(slavedis, slavenodes, coupling);
 
 #if 1
-  if (masternodes.size() != coupling.size())
+  if (masternodes.size() != coupling.size() and matchall)
     dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d (%s), coupling.size()=%d (%s)",
             masternodes.size(),masterdis.Name().c_str(), coupling.size(),slavedis.Name().c_str());
 #endif

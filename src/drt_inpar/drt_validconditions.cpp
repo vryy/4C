@@ -3064,7 +3064,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   //embeddingtissuecond->Print(cout, NULL, "");
 
   /*--------------------------------------------------------------------*/
-  // Poroelasticity (no penetration)
+  // no penetration for darcy flow in porous media
 
   Teuchos::RCP<ConditionDefinition> nopenetration =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE NORMAL NO PENETRATION CONDITION",
@@ -3075,6 +3075,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   condlist.push_back(nopenetration);
+
+  /*--------------------------------------------------------------------*/
+  // condition for evaluation of coupling terms in porous media
+
+  Teuchos::RCP<ConditionDefinition> porocoupling =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOLUME POROCOUPLING CONDITION",
+                                         "PoroCoupling",
+                                         "Poro Coupling",
+                                         DRT::Condition::PoroCoupling,
+                                         true,
+                                         DRT::Condition::Volume));
+
+  condlist.push_back(porocoupling);
 
   /*--------------------------------------------------------------------*/
   return vc;

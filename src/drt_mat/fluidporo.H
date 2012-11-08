@@ -47,8 +47,6 @@ namespace MAT
         const double density_;
         /// permeability
         const double permeability_;
-        // bulk modulus
-        //   const double bulkmodulus_;
         /// problem type: Darcy or Darcy-Brinkman
         const string* type_;
 

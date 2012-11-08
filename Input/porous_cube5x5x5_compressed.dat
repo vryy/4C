@@ -70,10 +70,10 @@ CSTAB                           no_cstab
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            no_pspg
+PSPG                            yes_pspg //yes_pspg no_pspg
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           no_rstab
-STABTYPE                        no_stabilization
+RSTAB                           rstab_gls //rstab_gls no_rstab
+STABTYPE                        residual_based //residual_based no_stabilization
 SUPG                            no_supg
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -98,17 +98,17 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO poroelast_monolithic //poroelast_monolithicstructuresplit poroelast_monolithic
-INCTOL                          1e-03
+COUPALGO                        poro_monolithic //poro_monolithicstructuresplit poro_monolithic
+INCTOL                          1e-08
 ITEMAX                          20
 ITEMIN                          1
-MAXTIME                         0.1
+MAXTIME                         1.0
 NORMCOMBI_RESFINC               And
 NORM_INC                        Abs
 NORM_RESF                       Abs
 NUMSTEP                         10
 RESTARTEVRY                     100
-RESTOL                          1e-04
+RESTOL                          1e-06
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
@@ -278,11 +278,11 @@ STC_LAYER                       1
 STC_SCALING                     no
 TIMEADAPT                       0
 TIMESTEP                        0.05
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-08
+TOLCONSTR                       1e-06
+TOLDISP                         1e-6
+TOLINCO                         1e-06
+TOLPRE                          1e-06
+TOLRES                          1e-06
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -335,17 +335,17 @@ CURVE2 on EXPR FUNC -4.0*0.5*pi/1.0*(sin((t*pi/1.0))) t1 0.0 t2 2.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 124 POSITION velx NAME velx VALUE 1.77189263207445866e-02 TOLERANCE 1e-8
-FLUID DIS 1 NODE 124 POSITION pressure NAME pressure VALUE 2.03495687140052306e+00 TOLERANCE 1e-4
+FLUID DIS 1 NODE 124 POSITION velx NAME velx VALUE 1.77225036821763680e-02 TOLERANCE 1e-8
+FLUID DIS 1 NODE 124 POSITION pressure NAME pressure VALUE 2.05005637246905836e+00 TOLERANCE 1e-4
 STRUCTURE DIS 1 NODE 62 POSITION dispx NAME ux VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS 1 NODE 71 POSITION dispy NAME uy VALUE 0 TOLERANCE 1e-14
-STRUCTURE DIS 1 NODE 212 POSITION dispx NAME ux VALUE -2.27338575552431428e-03 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 124 POSITION dispx NAME ux VALUE -1.36225832031200552e-03 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 212 POSITION dispx NAME ux VALUE -2.27329441320219677e-03 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 124 POSITION dispx NAME ux VALUE -1.36219019602917130e-03 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          12
 NDSURF                          6
-NDVOL                           0
+NDVOL                           1
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -501,6 +501,9 @@ DSURF                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           0
 //E 6 - 1 fluid conforming fsi_real
+------------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
+DVOL                            1
+E 1 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 212 DNODE 1
 NODE 62 DNODE 2
@@ -805,6 +808,222 @@ NODE 214 DSURFACE 6
 NODE 215 DSURFACE 6
 NODE 216 DSURFACE 6
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE    1 DVOL 1
+NODE    2 DVOL 1
+NODE    3 DVOL 1
+NODE    4 DVOL 1
+NODE    5 DVOL 1
+NODE    6 DVOL 1
+NODE    7 DVOL 1
+NODE    8 DVOL 1
+NODE    9 DVOL 1
+NODE    10 DVOL 1
+NODE    11 DVOL 1
+NODE    12 DVOL 1
+NODE    13 DVOL 1
+NODE    14 DVOL 1
+NODE    15 DVOL 1
+NODE    16 DVOL 1
+NODE    17 DVOL 1
+NODE    18 DVOL 1
+NODE    19 DVOL 1
+NODE    20 DVOL 1
+NODE    21 DVOL 1
+NODE    22 DVOL 1
+NODE    23 DVOL 1
+NODE    24 DVOL 1
+NODE    25 DVOL 1
+NODE    26 DVOL 1
+NODE    27 DVOL 1
+NODE    28 DVOL 1
+NODE    29 DVOL 1
+NODE    30 DVOL 1
+NODE    31 DVOL 1
+NODE    32 DVOL 1
+NODE    33 DVOL 1
+NODE    34 DVOL 1
+NODE    35 DVOL 1
+NODE    36 DVOL 1
+NODE    37 DVOL 1
+NODE    38 DVOL 1
+NODE    39 DVOL 1
+NODE    40 DVOL 1
+NODE    41 DVOL 1
+NODE    42 DVOL 1
+NODE    43 DVOL 1
+NODE    44 DVOL 1
+NODE    45 DVOL 1
+NODE    46 DVOL 1
+NODE    47 DVOL 1
+NODE    48 DVOL 1
+NODE    49 DVOL 1
+NODE    50 DVOL 1
+NODE    51 DVOL 1
+NODE    52 DVOL 1
+NODE    53 DVOL 1
+NODE    54 DVOL 1
+NODE    55 DVOL 1
+NODE    56 DVOL 1
+NODE    57 DVOL 1
+NODE    58 DVOL 1
+NODE    59 DVOL 1
+NODE    60 DVOL 1
+NODE    61 DVOL 1
+NODE    62 DVOL 1
+NODE    63 DVOL 1
+NODE    64 DVOL 1
+NODE    65 DVOL 1
+NODE    66 DVOL 1
+NODE    67 DVOL 1
+NODE    68 DVOL 1
+NODE    69 DVOL 1
+NODE    70 DVOL 1
+NODE    71 DVOL 1
+NODE    72 DVOL 1
+NODE    73 DVOL 1
+NODE    74 DVOL 1
+NODE    75 DVOL 1
+NODE    76 DVOL 1
+NODE    77 DVOL 1
+NODE    78 DVOL 1
+NODE    79 DVOL 1
+NODE    80 DVOL 1
+NODE    81 DVOL 1
+NODE    82 DVOL 1
+NODE    83 DVOL 1
+NODE    84 DVOL 1
+NODE    85 DVOL 1
+NODE    86 DVOL 1
+NODE    87 DVOL 1
+NODE    88 DVOL 1
+NODE    89 DVOL 1
+NODE    90 DVOL 1
+NODE    91 DVOL 1
+NODE    92 DVOL 1
+NODE    93 DVOL 1
+NODE    94 DVOL 1
+NODE    95 DVOL 1
+NODE    96 DVOL 1
+NODE    97 DVOL 1
+NODE    98 DVOL 1
+NODE    99 DVOL 1
+NODE    100 DVOL 1
+NODE    101 DVOL 1
+NODE    102 DVOL 1
+NODE    103 DVOL 1
+NODE    104 DVOL 1
+NODE    105 DVOL 1
+NODE    106 DVOL 1
+NODE    107 DVOL 1
+NODE    108 DVOL 1
+NODE    109 DVOL 1
+NODE    110 DVOL 1
+NODE    111 DVOL 1
+NODE    112 DVOL 1
+NODE    113 DVOL 1
+NODE    114 DVOL 1
+NODE    115 DVOL 1
+NODE    116 DVOL 1
+NODE    117 DVOL 1
+NODE    118 DVOL 1
+NODE    119 DVOL 1
+NODE    120 DVOL 1
+NODE    121 DVOL 1
+NODE    122 DVOL 1
+NODE    123 DVOL 1
+NODE    124 DVOL 1
+NODE    125 DVOL 1
+NODE    126 DVOL 1
+NODE    127 DVOL 1
+NODE    128 DVOL 1
+NODE    129 DVOL 1
+NODE    130 DVOL 1
+NODE    131 DVOL 1
+NODE    132 DVOL 1
+NODE    133 DVOL 1
+NODE    134 DVOL 1
+NODE    135 DVOL 1
+NODE    136 DVOL 1
+NODE    137 DVOL 1
+NODE    138 DVOL 1
+NODE    139 DVOL 1
+NODE    140 DVOL 1
+NODE    141 DVOL 1
+NODE    142 DVOL 1
+NODE    143 DVOL 1
+NODE    144 DVOL 1
+NODE    145 DVOL 1
+NODE    146 DVOL 1
+NODE    147 DVOL 1
+NODE    148 DVOL 1
+NODE    149 DVOL 1
+NODE    150 DVOL 1
+NODE    151 DVOL 1
+NODE    152 DVOL 1
+NODE    153 DVOL 1
+NODE    154 DVOL 1
+NODE    155 DVOL 1
+NODE    156 DVOL 1
+NODE    157 DVOL 1
+NODE    158 DVOL 1
+NODE    159 DVOL 1
+NODE    160 DVOL 1
+NODE    161 DVOL 1
+NODE    162 DVOL 1
+NODE    163 DVOL 1
+NODE    164 DVOL 1
+NODE    165 DVOL 1
+NODE    166 DVOL 1
+NODE    167 DVOL 1
+NODE    168 DVOL 1
+NODE    169 DVOL 1
+NODE    170 DVOL 1
+NODE    171 DVOL 1
+NODE    172 DVOL 1
+NODE    173 DVOL 1
+NODE    174 DVOL 1
+NODE    175 DVOL 1
+NODE    176 DVOL 1
+NODE    177 DVOL 1
+NODE    178 DVOL 1
+NODE    179 DVOL 1
+NODE    180 DVOL 1
+NODE    181 DVOL 1
+NODE    182 DVOL 1
+NODE    183 DVOL 1
+NODE    184 DVOL 1
+NODE    185 DVOL 1
+NODE    186 DVOL 1
+NODE    187 DVOL 1
+NODE    188 DVOL 1
+NODE    189 DVOL 1
+NODE    190 DVOL 1
+NODE    191 DVOL 1
+NODE    192 DVOL 1
+NODE    193 DVOL 1
+NODE    194 DVOL 1
+NODE    195 DVOL 1
+NODE    196 DVOL 1
+NODE    197 DVOL 1
+NODE    198 DVOL 1
+NODE    199 DVOL 1
+NODE    200 DVOL 1
+NODE    201 DVOL 1
+NODE    202 DVOL 1
+NODE    203 DVOL 1
+NODE    204 DVOL 1
+NODE    205 DVOL 1
+NODE    206 DVOL 1
+NODE    207 DVOL 1
+NODE    208 DVOL 1
+NODE    209 DVOL 1
+NODE    210 DVOL 1
+NODE    211 DVOL 1
+NODE    212 DVOL 1
+NODE    213 DVOL 1
+NODE    214 DVOL 1
+NODE    215 DVOL 1
+NODE    216 DVOL 1
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 5.0000000000000000e+00
 NODE 2 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 3.0000000000000000e+00

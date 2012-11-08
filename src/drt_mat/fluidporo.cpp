@@ -100,9 +100,9 @@ void MAT::FluidPoro::Unpack(const vector<char>& data)
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
     MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
     if (mat->Type() == MaterialType())
-    params_ = static_cast<MAT::PAR::FluidPoro*>(mat);
+      params_ = static_cast<MAT::PAR::FluidPoro*>(mat);
     else
-    dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
   }
 
   if (position != data.size())
@@ -131,10 +131,10 @@ double MAT::FluidPoro::ComputeReactionCoeff() const
 double MAT::FluidPoro::EffectiveViscosity() const
 {
   // set zero viscosity and only modify it for Darcy-Stokes problems
-  double viscosity = 0.0;
-  if(Type() == "Darcy") ;
+  double viscosity = -1.0;
+  if(Type() == "Darcy")  viscosity = 0.0;
   else if (Type() == "Darcy-Brinkman") viscosity = Viscosity();
-  else dserror("Unknown problem type for porous flow");
+  else dserror("Unknown flow type for porous flow");
 
   return viscosity;
 }

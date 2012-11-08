@@ -152,3 +152,71 @@ int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
+/*----------------------------------------------------------------------*
+ |  HEX 27 Element                                       |
+ *----------------------------------------------------------------------*/
+
+
+DRT::ELEMENTS::So_hex27PoroType DRT::ELEMENTS::So_hex27PoroType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_hex27PoroType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* object =
+        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDH27PORO" )
+  {
+    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>
+                                                                    (id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>
+                                                                   (id,owner));
+  return ele;
+}
+
+void DRT::ELEMENTS::So_hex27PoroType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_hex27;
+  So_hex27Type::SetupElementDefinition(definitions_hex27);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 =
+      definitions_hex27["SOLIDH27"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["SOLIDH27PORO"];
+
+  defs["HEX27"]=defs_hex27["HEX27"];
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27> * >(dis.lColElement(i));
+    if (!actele) dserror("cast to So_hex27_poro* failed");
+    actele->So_hex27::InitJacobianMapping();
+    actele->So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>::InitJacobianMapping();
+  }
+  return 0;
+}

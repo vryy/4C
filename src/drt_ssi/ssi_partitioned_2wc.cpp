@@ -219,7 +219,7 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(
     cout<<"    OUTER ITERATION STEP    \n";
     cout<<"***********************************************************************************\n";
     printf("+--------------+------------------------+--------------------+--------------------+\n");
-    printf("|-  step/max  -|-  tol      [norm]     -|--  temp-inc      --|--  disp-inc      --|\n");
+    printf("|-  step/max  -|-  tol      [norm]     -|--  scalar-inc      --|--  disp-inc      --|\n");
     printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
          itnum,itmax_,ittol_,scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2);
     printf("\n");

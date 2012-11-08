@@ -306,6 +306,33 @@ namespace LINALG
     return det;
 }
 
+  template<typename T>
+  T Inverse3x3(LINALG::TMatrix<T,3,3>& A)
+  {
+    T b00 = A(0,0);
+    T b01 = A(0,1);
+    T b02 = A(0,2);
+    T b10 = A(1,0);
+    T b11 = A(1,1);
+    T b12 = A(1,2);
+    T b20 = A(2,0);
+    T b21 = A(2,1);
+    T b22 = A(2,2);
+    A(0,0) =   b11*b22 - b21*b12;
+    A(1,0) = - b10*b22 + b20*b12;
+    A(2,0) =   b10*b21 - b20*b11;
+    A(0,1) = - b01*b22 + b21*b02;
+    A(1,1) =   b00*b22 - b20*b02;
+    A(2,1) = - b00*b21 + b20*b01;
+    A(0,2) =   b01*b12 - b11*b02;
+    A(1,2) = - b00*b12 + b10*b02;
+    A(2,2) =   b00*b11 - b10*b01;
+    T det = b00*A(0,0)+b01*A(1,0)+b02*A(2,0);
+    if (det==0.0) dserror("Determinant of 3x3 matrix is exactly zero");
+    A.Scale(1./det);
+    return det;
+  }
+
 
   /*!
   \brief Invert a symmetric dim*dim square matrix

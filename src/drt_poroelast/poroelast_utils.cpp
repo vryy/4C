@@ -2,7 +2,7 @@
 /*!
  \file tsi_utils.cpp
 
- \brief utility functions for poroelasticity problems
+ \brief utility functions for porous media problems
 
  <pre>
    Maintainer: Anh-Tu Vuong
@@ -16,14 +16,22 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "poroelast_utils.H"
+#include "poro_base.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_mat/matpar_parameter.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_condition_utils.H"
+
 #include <Epetra_Time.h>
+#include <Epetra_MpiComm.h>
+
+#include "poro_partitioned.H"
+#include "poroelast_monolithic.H"
+#include "poro_monolithicstructuresplit.H"
+#include "poro_monolithicfluidsplit.H"
+
+#include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_so3/so3_poro.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -44,6 +52,8 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::Con
 
   conditions_to_copy.insert(pair<std::string, std::string> ("NoPenetration",
       "NoPenetration"));
+  conditions_to_copy.insert(pair<std::string, std::string> ("PoroCoupling",
+      "PoroCoupling"));
   conditions_to_copy.insert(pair<std::string, std::string> ("FSICoupling",
       "FSICoupling"));
 
@@ -76,7 +86,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(Teuchos::RCP<
   const int matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(
       INPAR::MAT::m_fluidporo);
   if (matnr == -1)
-    dserror("Only fluid-poro material type allowed for poroelasticity. Cannot generate fluid mesh.");
+    dserror("Only fluid-poro material type allowed for deformable porous media. Cannot generate fluid mesh.");
 
     // We need to set material and possibly other things to complete element setup.
     // This is again really ugly as we have to extract the actual
@@ -106,14 +116,47 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(Teuchos::RCP<
 bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
     DRT::Element* actele, const bool ismyele, vector<string>& eletype)
 {
-  // we only support fluid elements here
-  eletype.push_back("FLUID3");
+  //clone the element only if it is a poro element (we support submeshes here)
+  if (CheckPoro(actele))
+  {
+    // we only support fluid elements here
+    eletype.push_back("FLUID3");
+    return true;
+  }
 
-  return true; // yes, we copy EVERY element (no submeshes)
+  return false;
 }
 
 /*----------------------------------------------------------------------*
- | setup Poroelasticity                                                            |
+ *----------------------------------------------------------------------*/
+bool POROELAST::UTILS::PoroelastCloneStrategy::CheckPoro(
+    DRT::Element* actele)
+{
+  //all poro elements need to be listed here
+
+  //check for hex8
+  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* poroelehex8 =
+      dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(actele);
+  if (poroelehex8!=NULL)
+    return true;
+
+  //check for tet4
+  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* poroeletet4 =
+      dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(actele);
+  if (poroeletet4!=NULL)
+    return true;
+
+  //check for hex27
+  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* poroelehex27 =
+      dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(actele);
+  if (poroelehex27!=NULL)
+    return true;
+
+  return false;
+}
+
+/*----------------------------------------------------------------------*
+ | setup Poro discretization                                            |
  *----------------------------------------------------------------------*/
 void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
 {
@@ -137,12 +180,72 @@ void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
     dserror("Structure discretization is empty!");
 
   // create fluid elements if the fluid discretization is empty
+  // create fluid elements if the fluid discretization is empty
   if (fluiddis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
   }
   else
     dserror("Structure AND Fluid discretization present. This is not supported.");
-  }
+}
 
-  /*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | setup Poro algorithm                                            |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
+    const Teuchos::ParameterList& timeparams,
+    const Epetra_Comm& comm)
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  // access the problem-specific parameter list
+  const Teuchos::ParameterList& sdynparams =
+      problem->StructuralDynamicParams();
+
+  std::string damping = sdynparams.get<std::string>("DAMPING");
+  if(damping != "Material")
+    dserror("Material damping has to be used for porous media! Set DAMPING to Material in the STRUCTURAL DYNAMIC section.");
+
+  const Teuchos::ParameterList& poroelastdyn  = problem->PoroelastDynamicParams();
+
+  const INPAR::POROELAST::SolutionSchemeOverFields coupling =
+      DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
+          poroelastdyn, "COUPALGO");
+
+  // create an empty Poroelast::Algorithm instance
+  Teuchos::RCP<POROELAST::PoroBase> poroalgo = Teuchos::null;
+
+  switch (coupling)
+  {
+    case INPAR::POROELAST::Monolithic:
+    {
+      // create an POROELAST::Monolithic instance
+      poroalgo = Teuchos::rcp(new POROELAST::Monolithic(comm, timeparams));
+      break;
+    } // monolithic case
+    case INPAR::POROELAST::Monolithic_structuresplit:
+    {
+      // create an POROELAST::MonolithicStructureSplit instance
+      poroalgo = Teuchos::rcp(new POROELAST::MonolithicStructureSplit(comm, timeparams));
+      break;
+    }
+    case INPAR::POROELAST::Monolithic_fluidsplit:
+    {
+      // create an POROELAST::MonolithicFluidSplit instance
+      poroalgo = Teuchos::rcp(new POROELAST::MonolithicFluidSplit(comm, timeparams));
+      break;
+    }
+    case INPAR::POROELAST::Partitioned:
+    {
+      // create an POROELAST::Monolithic instance
+      poroalgo = Teuchos::rcp(new POROELAST::Partitioned(comm, timeparams));
+      break;
+    } // monolithic case
+    default:
+      dserror("Unknown solutiontype for poroelasticity: %d",coupling);
+      break;
+  } // end switch
+
+  return poroalgo;
+}

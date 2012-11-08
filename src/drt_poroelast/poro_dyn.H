@@ -15,10 +15,14 @@
 #ifndef POROELAST_H
 #define POROELAST_H
 
+  //! global control routine for standard porous media problem
+  void poroelast_drt();
 
-  void poroelast_drt();  // global control routine for standard porous media problem
+  //! global control routine for Poro + ScaTra problem.
+  void poro_scatra_drt();
 
-  void poro_scatra_drt(); // global control routine for Poro + ScaTra problem.
+  //! global control routine for poro structure interaction problem.
+  void psi_drt();
 
 
 /*----------------------------------------------------------------------*/

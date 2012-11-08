@@ -209,6 +209,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==RedAirwayVentilatorCond)       os << "Reduced d airway prescribed ventilator condition";
   else if (Type()==RedAirwayTissue)               os << "tissue RedAirway coupling surface condition";
   else if (Type()==RedAirwayNodeTissue)           os << "tissue RedAirway coupling node condition";
+  else if (Type()==PoroCoupling)                  os << "porous media coupling condition";
   else dserror("no output string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

@@ -483,6 +483,12 @@ public:
   virtual Teuchos::RCP<DofSet> GetDofSetProxy();
 
   /*!
+  \brief Get proxy to main dof set for special case of partial dof sets.
+  */
+  virtual Teuchos::RCP<DofSet> GetDofSetProxy(Teuchos::RCP<const Epetra_Map> subcolnodes,
+                                              Teuchos::RCP<const Epetra_Map> subcoleles );
+
+  /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
 
   Return ptr to degree of freedom row distribution map of this discretization.

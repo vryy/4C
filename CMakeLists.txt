@@ -333,6 +333,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_dofset.cpp
   src/drt_lib/drt_dofset_base.cpp
   src/drt_lib/drt_dofset_proxy.cpp
+  src/drt_lib/drt_dofset_subproxy.cpp
   src/drt_lib/drt_dofset_transparent.cpp
   src/drt_lib/drt_dofset_transparent_independent.cpp
   src/drt_lib/drt_dofset_pbc.cpp
@@ -1392,6 +1393,8 @@ set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_base.cpp
   src/drt_poroelast/poroelast_monolithic.cpp
   src/drt_poroelast/poroelast_utils.cpp
+  src/drt_poroelast/poro_partitioned.cpp
+  src/drt_poroelast/poro_monolithicsplit.cpp
   src/drt_poroelast/poro_monolithicstructuresplit.cpp
   src/drt_poroelast/poro_monolithicfluidsplit.cpp
   src/drt_poroelast/poro_scatra.cpp

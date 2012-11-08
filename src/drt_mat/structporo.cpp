@@ -213,18 +213,18 @@ void MAT::StructPoro::ComputePorosity(double press, double J,
     d = sign * d;
   }
 
-  double phi = 1 / (2 * a) * (-b + d);
+  const double phi = 1 / (2 * a) * (-b + d);
 
   if (phi >= 1.0 or phi < 0.0)
   {
     dserror("invalid porosity!");
   }
 
-  double d_p = J * (-b+2*penalty)/d;
-  double d_p_p = ( d * J + d_p * (b - 2*penalty) ) / (d * d) * J;
-  double d_J = a/J * ( -b + 2*penalty ) / d;
-  double d_J_p = (d_p / J + ( 1-d_p*d_p/(J*J) ) / d *a);
-  double d_J_J = ( a*a/(J*J)-d_J*d_J )/ d;
+  const double d_p = J * (-b+2*penalty)/d;
+  const double d_p_p = ( d * J + d_p * (b - 2*penalty) ) / (d * d) * J;
+  const double d_J = a/J * ( -b + 2*penalty ) / d;
+  const double d_J_p = (d_p / J + ( 1-d_p*d_p/(J*J) ) / d *a);
+  const double d_J_J = ( a*a/(J*J)-d_J*d_J )/ d;
 
   //d(porosity) / d(p)
   double tmp1= - J * phi/a + (J+d_p)/(2*a);

@@ -19,7 +19,7 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 
-#include "poroelast_monolithic.H"
+#include "poro_monolithicsplit.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -39,7 +39,8 @@ namespace FSI
 
 namespace POROELAST
 {
-  class MonolithicStructureSplit: public Monolithic
+  /// monolithic structure split for condensing DOFs, when using the brinkman-equation
+  class MonolithicStructureSplit: public MonolithicSplit
   {
 
     public:
@@ -61,7 +62,7 @@ namespace POROELAST
        directly in the constructor. This is necessary since during restart (if
        ReadMesh is called), the dofmaps for the blocks might get invalid.
        */
-      // Setup the monolithic Poroelasticity system
+      /// Setup the monolithic system
       virtual void SetupSystem();
 
       /// setup composed right hand side from field solvers
@@ -71,36 +72,29 @@ namespace POROELAST
       virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
           );
 
-      //! start a new time step
-      virtual void PrepareTimeStep();
-
     private:
       /// build block vector from field vectors
       void SetupVector(Epetra_Vector &f,
-                       Teuchos::RCP<const Epetra_Vector> sv,
-                       Teuchos::RCP<const Epetra_Vector> fv,
-                       double fluidscale);
+                               Teuchos::RCP<const Epetra_Vector> sv,
+                               Teuchos::RCP<const Epetra_Vector> fv,
+                               double fluidscale);
 
       //! extract the field vectors from a given composed vector
       /*!
-       x is the sum of all increments up to this point.
        \param x  (i) composed vector that contains all field vectors
        \param sx (o) structural vector (e.g. displacements)
        \param fx (o) fluid vector (e.g. velocities and pressure)
        */
-      virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+      void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                        Teuchos::RCP<const Epetra_Vector>& sx,
                                        Teuchos::RCP<const Epetra_Vector>& fx,
                                        bool firstcall=false);
-
-      //! combined DBC map
-      //! unique map of all dofs that should be constrained with DBC
-      virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
       /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
       /// (i.e. condensed forces onto the structure) needed for rhs in next time step
       virtual void RecoverLagrangeMultiplier();
 
+      /// @name matrix transformation
       Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> sggtransform_;
       Teuchos::RCP<FSI::UTILS::MatrixRowTransform> sgitransform_;
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> sigtransform_;
@@ -109,47 +103,9 @@ namespace POROELAST
       Teuchos::RCP<FSI::UTILS::MatrixRowTransform> csgitransform_;
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> cfigtransform_;
 
-      //! flag indicating whether there are no slip conditions to be evaluated at the interface
-      bool evaluateinterface_;
-
-      //! map containing DOFs with fsi- and DBC conditions
-      Teuchos::RCP<Epetra_Map> fsibcmap_;
+      //@}
 
       /// @name Some quantities to recover the Langrange multiplier at the end of each time step
-
-      //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
-      //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> lambda_;
-
-      //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current iteration \f$i+1\f$
-      Teuchos::RCP<const Epetra_Vector> fgcur_;
-
-      //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous iteration \f$i\f$
-      //Teuchos::RCP<const Epetra_Vector> fgpre_;
-
-      //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current iteration \f$i+1\f$
-      Teuchos::RCP<Epetra_Vector> ddiinc_;
-
-      //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current iteration \f$i+1\f$
-      Teuchos::RCP<Epetra_Vector> duiinc_;
-
-      //! inner displacement solution of the structure at previous iteration
-      Teuchos::RCP<const Epetra_Vector> solipre_;
-
-      //! inner velocity/pressure solution of the fluid at previous iteration
-      Teuchos::RCP<const Epetra_Vector> solivelpre_;
-
-      //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current iteration \f$i+1\f$
-      Teuchos::RCP<Epetra_Vector> ddginc_;
-
-      //! fluid interface velocity increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current iteration \f$i+1\f$
-      Teuchos::RCP<Epetra_Vector> duginc_;
-
-      //! interface displacement solution of the structure at previous iteration
-      Teuchos::RCP<const Epetra_Vector> solgpre_;
-
-      //! interface displacement solution of the fluid at previous iteration
-      Teuchos::RCP<const Epetra_Vector> solgvelpre_;
 
       //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
       Teuchos::RCP<const LINALG::SparseOperator> sgicur_;

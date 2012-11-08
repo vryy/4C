@@ -100,7 +100,8 @@ namespace ADAPTER
                                 const DRT::Discretization& slavedis,
                                 Teuchos::RCP<const Epetra_Map> slavecondmap,
                                 const std::string& condname,
-                                const int numdof);
+                                const int numdof,
+                                bool matchall=true);
 
     /// setup coupling of nodes marked with condition1 not belonging
     /// also to condition2
@@ -115,7 +116,8 @@ namespace ADAPTER
                                            Teuchos::RCP<const Epetra_Map> slavecondmap,
                                            const std::string& condname1,
                                            const std::string& condname2,
-                                           const int numdof);
+                                           const int numdof,
+                                           bool matchall=true);
 
     /// setup coupling of given nodes
     /*!
@@ -132,12 +134,14 @@ namespace ADAPTER
       \param masternodes (i) gids of nodes on master side to be coupled
       \param slavenodes  (i) gids of nodes on slave side to be coupled
       \param numdof      (i) number of dofs per node to be coupled
+      \param matchall    (i) flag indicating matching slave and master nodes
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
                        const DRT::Discretization& slavedis,
                        const std::vector<int>& masternodes,
                        const std::vector<int>& slavenodes,
-                       const int numdof);
+                       const int numdof,
+                       bool matchall=true);
 
     /// setup coupling of given nodes
     /*!
@@ -154,12 +158,14 @@ namespace ADAPTER
       \param masternodes (i) gids of nodes on master side to be coupled
       \param slavenodes  (i) gids of nodes on slave side to be coupled
       \param numdof      (i) number of dofs per node to be coupled
+      \param matchall    (i) flag indicating matching slave and master nodes
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
                        const DRT::Discretization& slavedis,
                        const Epetra_Map& masternodes,
                        const Epetra_Map& slavenodes,
-                       const int numdof);
+                       const int numdof,
+                       bool matchall=true);
 
     //@}
 
@@ -264,12 +270,14 @@ namespace ADAPTER
       \param masternodes (i/o) all master node gids. on output those that have a match
       \param permslavenodes (o) slave node gids permutated to match master node gids
       \param slavenodes (i) slave node gids
+      \param matchall (i) bool indicating match of all slave and master nodes
      */
     void MatchNodes(const DRT::Discretization& masterdis,
                     const DRT::Discretization& slavedis,
                     std::vector<int>& masternodes,
                     std::vector<int>& permslavenodes,
-                    const std::vector<int>& slavenodes);
+                    const std::vector<int>& slavenodes,
+                    bool matchall=true);
 
     /// build slave to master permutation and dof all maps
     void FinishCoupling(const DRT::Discretization& masterdis,

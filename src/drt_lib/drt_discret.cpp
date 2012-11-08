@@ -49,6 +49,7 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "../linalg/linalg_utils.H"
 #include "drt_dofset_proxy.H"
+#include "drt_dofset_subproxy.H"
 
 
 /*----------------------------------------------------------------------*
@@ -556,6 +557,14 @@ int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSet> newdofset)
 Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy()
 {
   return Teuchos::rcp(new DofSetProxy(&*dofsets_[0]));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy(Teuchos::RCP<const Epetra_Map> subcolnodes,
+                                                              Teuchos::RCP<const Epetra_Map> subcoleles )
+{
+  return Teuchos::rcp(new DofSetSubProxy(&*dofsets_[0],subcolnodes,subcoleles));
 }
 
 

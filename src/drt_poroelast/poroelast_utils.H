@@ -20,6 +20,7 @@
  *----------------------------------------------------------------------*/
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
+#include "../drt_inpar/inpar_poroelast.H"
 
 namespace DRT
 {
@@ -31,6 +32,8 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace POROELAST
 {
+  class PoroBase;
+
   /// POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
   namespace UTILS
   {
@@ -60,11 +63,19 @@ namespace POROELAST
       void CheckMaterialType(const int matid);
 
     private:
+      ///check if element is a poro-element
+      bool CheckPoro(DRT::Element* actele);
 
     }; // class PoroelastCloneStrategy
 
-    /// setup Poroelasticity, clone the structural discretization
+    /// setup poro discretization,i.e. clone the structural discretization
     void SetupPoro(const Epetra_Comm& comm);
+
+    /// setup poro discretization,i.e. clone the structural discretization
+    Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(
+                             const Teuchos::ParameterList& timeparams, //!< coupling scheme (i)
+                             const Epetra_Comm& comm //!< communicator(i)
+                             );
 
   } // namespace UTILS
 

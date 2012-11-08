@@ -6422,11 +6422,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
     dserror("invalid structure material for poroelasticity");
 
   const double           porosity   = structmat->GetPorosityAtGP(iquad);
-  const double           dporodt    = structmat ->GetDPoroDtAtGP(iquad);
-  LINALG::Matrix<3,1>  gradporosity = structmat->GetGradPorosityAtGP(iquad);
+  //const double           dporodt    = structmat ->GetDPoroDtAtGP(iquad);
+ // LINALG::Matrix<3,1>  gradporosity = structmat->GetGradPorosityAtGP(iquad);
 
-  const double timefacfac = timefac * fac;
-
+  //const double timefacfac = timefac * fac;
+  
   //----------------------------------------------------------------
   // 1) Modification of emat due to the homogenized equation employed for
   //    the poro-scatra problem.The standard equation is multiplied by the
@@ -6435,6 +6435,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
 
   emat.Scale(porosity);
 
+  /*
   for (int vi=0; vi<nen_; ++vi)
   {
     const double v = timefacfac*funct_(vi);
@@ -6454,6 +6455,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
       emat(fvi,fui) += tmp;
     }
   }
+  */
 
   //----------------------------------------------------------------
   // 2) Modification of the residual due to the homogenized equation employed for
@@ -6463,6 +6465,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
 
   erhs.Scale(porosity);
 
+  /*
   // compute scalar at integration point
   const double phi = funct_.Dot(ephinp_[k]);
 
@@ -6476,6 +6479,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
     const int fvi = vi*numdofpernode_+k;
     erhs[fvi] -= funct_(vi)* timefacfac*( phi*dporodt + tmp);
   }
+  */
 
   return;
 } //ScaTraImpl::CalMatAndRHS_Poroscatra
