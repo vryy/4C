@@ -807,6 +807,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_overlapprec_fsiamg_smoothers.cpp
   src/drt_fsi/fsi_overlapprec_fsiamg_vcycles.cpp
   src/drt_fsi/fsi_partitioned.cpp
+  src/drt_fsi/fsi_resulttest.cpp
   src/drt_fsi/fsi_statustest.cpp
   src/drt_fsi/fsi_structureale.cpp
   src/drt_fsi/fsi_utils.cpp
