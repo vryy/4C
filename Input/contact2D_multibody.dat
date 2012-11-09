@@ -77,6 +77,7 @@ SYSTEM                          spcoupled
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 No
+REDUNDANT_STORAGE               All
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
