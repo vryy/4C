@@ -470,6 +470,6 @@ NODE 123 COORD 1.00000000e+00 5.00000007e-02 0.00000000e+00
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 81 POSITION dispy NAME dispy VALUE 1.0e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 81 QUANTITY dispy VALUE 1.0e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

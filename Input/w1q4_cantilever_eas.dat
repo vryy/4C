@@ -895,7 +895,7 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 4000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 201 POSITION dispx NAME dispx VALUE -4.936890533869179309e-01 TOLERANCE 1e-9
-STRUCTURE DIS 1 NODE 201 POSITION dispy NAME dispy VALUE -2.765370158207820950e+00 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 201 QUANTITY dispx VALUE -4.936890533869179309e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 201 QUANTITY dispy VALUE -2.765370158207820950e+00 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

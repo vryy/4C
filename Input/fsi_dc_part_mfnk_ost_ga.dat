@@ -7073,8 +7073,8 @@ CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 2155 POSITION vely NAME vely VALUE -1.63637690985615526e-05 TOLERANCE 1e-8
-FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE 2.90424531669872146e-04 TOLERANCE 1e-8
-//STRUCTURE DIS 1 NODE 1782 POSITION sol(1,2) NAME dy VALUE -0.0000026252202840 TOLERANCE 1e-8
+FLUID DIS fluid NODE 2155 QUANTITY vely VALUE -1.63637690985615526e-05 TOLERANCE 1e-8
+FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE 2.90424531669872146e-04 TOLERANCE 1e-8
+//STRUCTURE DIS structure NODE 1782 POSITION sol(1,2) NAME dy VALUE -0.0000026252202840 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

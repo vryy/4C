@@ -2075,7 +2075,7 @@ NODE 988 COORD 5.00000000e-01 3.00000012e-01 -3.00000012e-01
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy VALUE 0.0 TOLERANCE 1e-15
-STRUCTURE DIS 1 NODE 2 POSITION dispy NAME dispy VALUE 0.0 TOLERANCE 1e-15
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-15
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-15
 -------------------------------------------------------------------------END
 //                              END

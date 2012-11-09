@@ -157,11 +157,11 @@ FUNCT2 EXPR 0 0 0 FUNCTION 0.3
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 200 POSITION dispx NAME dispx VALUE 1.201374819e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 1.201374819e-02 TOLERANCE 1e-6
 // -4.086867584e-04 TOLERANCE 1e-6 NUMSTEP 10
-STRUCTURE DIS 1 NODE 200 POSITION dispy NAME dispy VALUE -6.791416473e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE -6.791416473e-02 TOLERANCE 1e-6
 //1.046015783e-02 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 200 POSITION dispz NAME dispz VALUE 0.0 TOLERANCE 1e-14
+STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          11

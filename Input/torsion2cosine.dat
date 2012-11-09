@@ -173,7 +173,7 @@ MAT 2 MAT_Struct_Spring STIFFNESS 1.2454e-2 DENS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 6 POSITION dispx NAME ux VALUE -6.250340256e+00 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 6 POSITION dispy NAME uy VALUE 1.678724592e+01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -6.250340256e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE 1.678724592e+01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

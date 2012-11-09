@@ -334,9 +334,9 @@ FUNCT2 EXPR 0 0 0 FUNCTION -0.00005*(150-x)*x
 ----------------------------------------------------------------------FUNCT4
 
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE -6.921450433e-04 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy VALUE -2.764611251e-04 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE 0.0 TOLERANCE 1e-14
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -6.921450433e-04 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -2.764611251e-04 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-14
 
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         28

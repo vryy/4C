@@ -10,7 +10,7 @@
 General Data File CCARAT
 ==================================================================
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1800 POSITION dispx NAME ux VALUE 2.9505540693210697e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 1800 QUANTITY dispx VALUE 2.9505540693210697e-01 TOLERANCE 1e-5
 -----------------------------------------------------------------------TITLE
 cylinder with aneurysm material and ilt according to Gasser
 ----------------------------------------------------------------PROBLEM SIZE

@@ -162,8 +162,8 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 100.0 FACTOR 1. 1.
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 212 POSITION dispx NAME dispx VALUE 2.054644805e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 212 POSITION dispz NAME dispz VALUE 2.054644805e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 2.054644805e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 2.054644805e-01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8

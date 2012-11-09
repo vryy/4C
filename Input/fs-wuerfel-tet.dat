@@ -3037,9 +3037,9 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 369 POSITION velx NAME velx VALUE -1.149236971e-03 TOLERANCE 1e-6
-FLUID DIS 1 NODE 369 POSITION vely NAME vely VALUE 1.604052531e-03 TOLERANCE 1e-6
-FLUID DIS 1 NODE 369 POSITION velz NAME velz VALUE 7.789961136e-04 TOLERANCE 1e-6
-FLUID DIS 1 NODE 369 POSITION pressure NAME pressure VALUE -3.659542968e+02 TOLERANCE 1e-2
+FLUID DIS fluid NODE 369 QUANTITY velx VALUE -1.149236971e-03 TOLERANCE 1e-6
+FLUID DIS fluid NODE 369 QUANTITY vely VALUE 1.604052531e-03 TOLERANCE 1e-6
+FLUID DIS fluid NODE 369 QUANTITY velz VALUE 7.789961136e-04 TOLERANCE 1e-6
+FLUID DIS fluid NODE 369 QUANTITY pressure VALUE -3.659542968e+02 TOLERANCE 1e-2
 -------------------------------------------------------------------------END
 //                              END

@@ -285,8 +285,8 @@ CURVE1 on EXPR FUNC 0 t1 4.0 t2 20.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-THERMAL DIS 1 NODE 30 POSITION temp NAME Temp VALUE 2.3811814000635798e+02 TOLERANCE 1.0e-8
-STRUCTURE DIS 1 NODE 30 POSITION dispz NAME dispz VALUE -4.1902219768776360e-02 TOLERANCE 1e-8
+THERMAL DIS thermo NODE 30 QUANTITY temp VALUE 2.3811814000635798e+02 TOLERANCE 1.0e-8
+STRUCTURE DIS structure NODE 30 QUANTITY dispz VALUE -4.1902219768776360e-02 TOLERANCE 1e-8
 
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

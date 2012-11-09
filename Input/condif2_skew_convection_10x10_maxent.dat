@@ -89,7 +89,7 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 3 POSITION phi NAME phi VALUE 1.00805543207588872e+01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 3 QUANTITY phi VALUE 1.00805543207588872e+01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

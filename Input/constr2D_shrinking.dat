@@ -711,7 +711,7 @@ NODE 192 COORD 3.0318622589111e+00 -1.5655069351196e+00 0.0000000000000e+00
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy VALUE -1.268806280504325701e-01 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 6 POSITION dispx NAME dispx VALUE 6.799231973408127738e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -1.268806280504325701e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 6.799231973408127738e-02 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

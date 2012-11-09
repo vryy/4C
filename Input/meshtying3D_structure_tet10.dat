@@ -95,12 +95,12 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.2 FACTOR 0.2 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 64 POSITION dispx NAME ux VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 64 POSITION dispy NAME uy VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 64 POSITION dispz NAME uz VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 1443 POSITION dispx NAME ux VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 1443 POSITION dispy NAME uy VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 1443 POSITION dispz NAME uz VALUE 0.0 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 64 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 64 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 64 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1443 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1443 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1443 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          4

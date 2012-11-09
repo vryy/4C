@@ -224,9 +224,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 0.0 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 6 POSITION dispx NAME dispx VALUE 4.0064067650607399e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 6 POSITION dispy NAME dispy VALUE 1.2008602448338010e+00 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 6 POSITION velx NAME velx VALUE 5.8193663981506660e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 6 POSITION vely NAME vely VALUE 7.7568686378263596e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 4.0064067650607399e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE 1.2008602448338010e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 6 QUANTITY velx VALUE 5.8193663981506660e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 6 QUANTITY vely VALUE 7.7568686378263596e-01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

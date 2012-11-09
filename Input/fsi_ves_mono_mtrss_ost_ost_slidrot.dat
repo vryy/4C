@@ -6075,10 +6075,10 @@ NODE 2393 COORD 1.2437880660728e-07 2.9000000000000e+00 0.0000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 1521 POSITION velx NAME velx VALUE 3.32406e-05 TOLERANCE 1e-9
-FLUID DIS 1 NODE 960 POSITION velx NAME velx VALUE -3.32406e-05 TOLERANCE 1e-9
-STRUCTURE DIS 1 NODE 2271 POSITION dispx NAME dispx VALUE 1.25844e-05 TOLERANCE 1e-9
-STRUCTURE DIS 1 NODE 2031 POSITION dispx NAME dispx VALUE -1.25844e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.32406e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.32406e-05 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 1.25844e-05 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -1.25844e-05 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
 //                              END

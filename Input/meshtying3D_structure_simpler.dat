@@ -171,12 +171,12 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 2.0 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 180 POSITION dispx NAME ux VALUE 0.0 TOLERANCE 1e-7
-STRUCTURE DIS 1 NODE 180 POSITION dispy NAME uy VALUE 0.0 TOLERANCE 1e-7
-STRUCTURE DIS 1 NODE 180 POSITION dispz NAME uz VALUE 0.0 TOLERANCE 1e-7
-STRUCTURE DIS 1 NODE 200 POSITION dispx NAME ux VALUE 0.0 TOLERANCE 1e-7
-STRUCTURE DIS 1 NODE 200 POSITION dispy NAME uy VALUE 0.0 TOLERANCE 1e-7
-STRUCTURE DIS 1 NODE 200 POSITION dispz NAME uz VALUE 0.0 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 180 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          4

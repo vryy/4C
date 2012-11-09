@@ -556,6 +556,6 @@ NODE 243 COORD 5.0000000000000e-01 5.0000000000000e-01 -5.0000000745058e-02
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE -1.0e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -1.0e-02 TOLERANCE 1e-5
 -------------------------------------------------------------------------END
 //                              END

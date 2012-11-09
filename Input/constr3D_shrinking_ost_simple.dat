@@ -3670,8 +3670,8 @@ NODE 938 COORD 7.2120881080627e-01 1.9495381414890e-01 3.6240367889404e+00
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 385 POSITION dispy NAME dispy VALUE -7.094020056e-03 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 51 POSITION dispx NAME dispx VALUE 2.824916000e-03 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 920 POSITION dispz NAME dispz VALUE 2.825015348e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 385 QUANTITY dispy VALUE -7.094020056e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE 2.824916000e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 920 QUANTITY dispz VALUE 2.825015348e-03 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

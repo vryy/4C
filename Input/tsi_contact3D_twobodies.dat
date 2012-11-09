@@ -280,8 +280,8 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.5 FACTOR 0.0 1
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-THERMAL DIS 1 NODE 13 POSITION temp NAME Temp VALUE 2.7936507949105160e+01 TOLERANCE 1.0e-6
-STRUCTURE DIS 1 NODE 13 POSITION dispz NAME dispz VALUE -1.2500001194999244e-01 TOLERANCE 1e-7
+THERMAL DIS thermo NODE 13 QUANTITY temp VALUE 2.7936507949105160e+01 TOLERANCE 1.0e-6
+STRUCTURE DIS structure NODE 13 QUANTITY dispz VALUE -1.2500001194999244e-01 TOLERANCE 1e-7 
 
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

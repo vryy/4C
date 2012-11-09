@@ -130,10 +130,10 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION (5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 222 POSITION phi NAME phi VALUE 3.750658381e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 230 POSITION phi NAME phi VALUE 3.712613405e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 246 POSITION phi NAME phi VALUE 3.603774510e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 261 POSITION phi NAME phi VALUE 3.434321063e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 222 QUANTITY phi VALUE 3.750658381e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 230 QUANTITY phi VALUE 3.712613405e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 246 QUANTITY phi VALUE 3.603774510e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 261 QUANTITY phi VALUE 3.434321063e-01 TOLERANCE 1e-9
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

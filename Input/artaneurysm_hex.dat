@@ -10,7 +10,7 @@
 General Data File CCARAT
 ==================================================================
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1800 POSITION dispx NAME ux VALUE 2.6963851807271555e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 1800 QUANTITY dispx VALUE 2.6963851807271555e-01 TOLERANCE 1e-5
 -----------------------------------------------------------------------TITLE
 Default_title
 ----------------------------------------------------------------PROBLEM SIZE

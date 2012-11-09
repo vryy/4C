@@ -456,8 +456,8 @@ NODE 99 COORD 10.0 10.0 -50.0
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 5 POSITION dispx NAME dispx VALUE -7.6226655299e-02 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 20 POSITION dispx NAME dispx VALUE -5.9142292419e-02 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 40 POSITION dispx NAME dispx VALUE -4.1277016841e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -7.6226655299e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE -5.9142292419e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 40 QUANTITY dispx VALUE -4.1277016841e-02 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

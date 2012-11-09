@@ -1797,9 +1797,9 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.00000001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.499
 ----------------------------------------------------------RESULT DESCRIPTION
 //                              original:
-//STRUCTURE DIS 1 NODE 176 POSITION dispz NAME uz VALUE -1.127548907040278214e+00 TOLERANCE 1e-8
+//STRUCTURE DIS structure NODE 176 QUANTITY dispz VALUE -1.127548907040278214e+00 TOLERANCE 1e-8
 // adapted value:
-STRUCTURE DIS 1 NODE 176 POSITION dispz NAME uz VALUE -3.4088077893243146e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 176 QUANTITY dispz VALUE -3.4088077893243146e-01 TOLERANCE 1e-8
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 5000.0
 ----------------------------------------------------------------------CURVE2

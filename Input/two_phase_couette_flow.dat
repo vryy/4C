@@ -1452,8 +1452,8 @@ NODE 252 COORD 4.00000000e+00 1.00000000e+00 2.00000003e-01
 ----------------------------------------------------------RESULT DESCRIPTION
 //node 129: plane x=0, second node from the top
 //node 123: plane x=0, second node from the bottom
-FLUID DIS 1 NODE 129 POSITION velx NAME velx VALUE 4.6666666e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 123 POSITION velx NAME velx VALUE 1.6666666e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 123 POSITION pressure NAME pressure VALUE 0.0000000e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 129 QUANTITY velx VALUE 4.6666666e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 123 QUANTITY velx VALUE 1.6666666e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 123 QUANTITY pressure VALUE 0.0000000e+00 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

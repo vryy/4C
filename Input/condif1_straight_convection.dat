@@ -290,7 +290,7 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 10 POSITION phi NAME phi VALUE 9.803921569e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 9 POSITION phi NAME phi VALUE 9.996155325e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 9.803921569e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 9 QUANTITY phi VALUE 9.996155325e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

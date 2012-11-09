@@ -103,9 +103,9 @@ MAT 1 MAT_HOLZAPFELCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1 1.0 K2 1.0 GAMMA 35.
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 114 POSITION dispx NAME dispx VALUE -8.9946411755475297e-02 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 114 POSITION dispy NAME dispy VALUE 1.6040758734010971e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 114 POSITION dispz NAME dispz VALUE -5.7739217087733963e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 114 QUANTITY dispx VALUE -8.9946411755475297e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 114 QUANTITY dispy VALUE 1.6040758734010971e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 114 QUANTITY dispz VALUE -5.7739217087733963e-03 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

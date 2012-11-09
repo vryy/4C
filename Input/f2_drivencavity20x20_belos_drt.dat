@@ -1557,8 +1557,8 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 173 POSITION velx NAME velx VALUE -1.150564621e-02 TOLERANCE 1e-9
-FLUID DIS 1 NODE 173 POSITION vely NAME vely VALUE 1.060120711e-04 TOLERANCE 1e-9
-FLUID DIS 1 NODE 173 POSITION pressure NAME pressure VALUE 1.855088771e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY velx VALUE -1.150564621e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY vely VALUE 1.060120711e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY pressure VALUE 1.855088771e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

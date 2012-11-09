@@ -1342,10 +1342,10 @@ NODE 312 COORD 0.0000000000000e+00 4.6000000100000e-02 -2.2727273400000e-01
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy VALUE -2.980091677e-03 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 81 POSITION dispx NAME dispx VALUE -4.226662410e-04 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 81 POSITION dispy NAME dispy VALUE 1.566728133e-03 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 81 POSITION dispz NAME dispz VALUE -5.074810879e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -2.980091677e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 81 QUANTITY dispx VALUE -4.226662410e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 81 QUANTITY dispy VALUE 1.566728133e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 81 QUANTITY dispz VALUE -5.074810879e-04 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
 //                              END

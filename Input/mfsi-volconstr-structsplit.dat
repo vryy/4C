@@ -155,9 +155,9 @@ FUNCT1 EXPR 0 0 0 FUNCTION (x*x*y*y-4*x*x-4*y*y+16)/16
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 237 POSITION dispx NAME dispx VALUE 9.004108385e-04 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 237 POSITION dispy NAME dispy VALUE 1.438538726e-03 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 237 POSITION dispz NAME dispz VALUE -6.858572604e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 237 QUANTITY dispx VALUE 9.004108385e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 237 QUANTITY dispy VALUE 1.438538726e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 237 QUANTITY dispz VALUE -6.858572604e-04 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2

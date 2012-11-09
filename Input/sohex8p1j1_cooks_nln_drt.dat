@@ -135,7 +135,7 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 162 POSITION dispy NAME dispy VALUE 6.6185499759189623e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 6.6185499759189623e+00 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          1

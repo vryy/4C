@@ -1443,8 +1443,8 @@ FUNCT1 EXPR 0 0 0 FUNCTION 1-4*(y-1/2)^2
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 173 POSITION velx NAME velx VALUE 1.243484161e-01 TOLERANCE 1e-9
-FLUID DIS 1 NODE 173 POSITION vely NAME vely VALUE 2.940824538e-17 TOLERANCE 1e-9
-FLUID DIS 1 NODE 173 POSITION pressure NAME pressure VALUE 6.521707621e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY velx VALUE 1.243484161e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY vely VALUE 2.940824538e-17 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY pressure VALUE 6.521707621e-02 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

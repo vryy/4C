@@ -3845,7 +3845,7 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.60 FACTOR 0.0 16132
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 33 POSITION dispx NAME ux VALUE 1.7048654191077441e-04 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 109 POSITION dispz NAME uz VALUE -3.0041160140851386e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 1.7048654191077441e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 109 QUANTITY dispz VALUE -3.0041160140851386e-04 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

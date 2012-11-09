@@ -1186,9 +1186,9 @@ NODE 294 COORD 1.00000000e+00 3.00000012e-01 5.00000007e-02
 // node 147: just to the right of the interface on the center plane; analytical solution: 6.5
 // node 110: just to the left of the interface one element away from the top; analytical solution: -25.0/6.0
 // node 171: just to the right of the interface one element away from the bottom; analytical solution: -9.0
-FLUID DIS 1 NODE 134 POSITION velx NAME velx VALUE 4.500000016e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 147 POSITION velx NAME velx VALUE 6.500000005e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 110 POSITION pressure NAME pressure VALUE 5.166546525e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 171 POSITION pressure NAME pressure VALUE -9.000062333e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 134 QUANTITY velx VALUE 4.500000016e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 147 QUANTITY velx VALUE 6.500000005e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 110 QUANTITY pressure VALUE 5.166546525e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 171 QUANTITY pressure VALUE -9.000062333e+00 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

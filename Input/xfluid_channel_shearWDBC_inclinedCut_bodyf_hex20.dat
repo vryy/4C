@@ -818,9 +818,9 @@ NODE 101 COORD 1.7546036836062822e+00 5.2227318024001401e-01 -1.8418170595345917
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3 POSITION velx NAME velx VALUE 5.0e00 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3 POSITION vely NAME vely VALUE 0.0e00 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3 POSITION velz NAME velz VALUE 0.0e00 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3 POSITION pressure NAME pressure VALUE 3.0e00 TOLERANCE 1e-7
+FLUID DIS fluid NODE 3 QUANTITY velx VALUE 5.0e00 TOLERANCE 1e-7
+FLUID DIS fluid NODE 3 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-7
+FLUID DIS fluid NODE 3 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-7
+FLUID DIS fluid NODE 3 QUANTITY pressure VALUE 3.0e00 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

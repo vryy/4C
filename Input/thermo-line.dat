@@ -162,9 +162,9 @@ FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 300.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-THERMAL DIS 1 NODE 1 POSITION temp NAME temp VALUE 1.0 TOLERANCE 1e-9
-THERMAL DIS 1 NODE 9 POSITION temp NAME temp VALUE 0.2 TOLERANCE 1e-9
-THERMAL DIS 1 NODE 10 POSITION temp NAME temp VALUE 0.1 TOLERANCE 1e-9
-THERMAL DIS 1 NODE 11 POSITION temp NAME temp VALUE 0.0 TOLERANCE 1e-9
+THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 1.0 TOLERANCE 1e-9
+THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 0.2 TOLERANCE 1e-9
+THERMAL DIS thermo NODE 10 QUANTITY temp VALUE 0.1 TOLERANCE 1e-9
+THERMAL DIS thermo NODE 11 QUANTITY temp VALUE 0.0 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //  END

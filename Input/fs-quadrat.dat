@@ -10363,8 +10363,8 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3251 POSITION velx NAME velx VALUE 8.628250116e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 3251 POSITION vely NAME vely VALUE -5.563920869e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 3251 POSITION pressure NAME pressure VALUE 3.014243468e+01 TOLERANCE 1e-2
+FLUID DIS fluid NODE 3251 QUANTITY velx VALUE 8.628250116e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 3251 QUANTITY vely VALUE -5.563920869e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 3251 QUANTITY pressure VALUE 3.014243468e+01 TOLERANCE 1e-2
 -------------------------------------------------------------------------END
 //                              END

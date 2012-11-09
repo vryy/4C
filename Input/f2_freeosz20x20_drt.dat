@@ -2891,8 +2891,8 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 583 POSITION velx NAME velx VALUE 4.603775848e-02 TOLERANCE 1e-6
-FLUID DIS 1 NODE 583 POSITION vely NAME vely VALUE 4.274998256e-02 TOLERANCE 1e-6
-FLUID DIS 1 NODE 583 POSITION pressure NAME pressure VALUE 4.417223373e+02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 583 QUANTITY velx VALUE 4.603775848e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 583 QUANTITY vely VALUE 4.274998256e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 583 QUANTITY pressure VALUE 4.417223373e+02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

@@ -143,10 +143,10 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1.0 10000.0 FACTOR 11598.8
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 0.0 TOLERANCE 1e-2
-STRUCTURE DIS 1 NODE 117 POSITION dispx NAME dispx VALUE 0.0 TOLERANCE 1e-2
-STRUCTURE DIS 1 NODE 117 POSITION dispy NAME dispy VALUE 0.0 TOLERANCE 1e-2
-STRUCTURE DIS 1 NODE 208 POSITION dispy NAME dispy VALUE 0.0 TOLERANCE 1.2e-2
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-2
+STRUCTURE DIS structure NODE 117 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-2
+STRUCTURE DIS structure NODE 117 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-2
+STRUCTURE DIS structure NODE 208 QUANTITY dispy VALUE 0.0 TOLERANCE 1.2e-2
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          4

@@ -389,9 +389,9 @@ FUNCT1 EXPR 0 0.0 0 FUNCTION 4.0/10*x+3.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 12 POSITION phi NAME phi VALUE 1.83446493201828487e+00 TOLERANCE 1e-8
-SCATRA DIS 1 NODE 21 POSITION phi NAME phi VALUE 1.42080667615731393e+00 TOLERANCE 1e-8
-SCATRA DIS 1 NODE 42 POSITION phi NAME phi VALUE 1.83446490954144292e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.83446646571928396e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 21 QUANTITY phi VALUE 1.42080696055529820e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 42 QUANTITY phi VALUE 1.83446588759011076e+00 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          12
