@@ -257,7 +257,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   // REMOVED_FOR_UPGRADE  RCP<Epetra_Vector> a_volume      = params.get<RCP<Epetra_Vector> >("acini_volume");
   RCP<Epetra_Vector> a_e_volume    = params.get<RCP<Epetra_Vector> >("acini_e_volume");
 
-  vector<int>::iterator it = lm.begin();
+  //vector<int>::iterator it = lm.begin();
 
   //vector<int> lmowner;
   vector<int> lmstride;
@@ -599,7 +599,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 #endif
 
     // get element information from the previous time step
-    double qcn, qln;
+    double qcn =0.0;
+    double qln =0.0;
     //  ele->getVars("capacitor_flow",qcn);
     //  ele->getVars("inductor_flow",qln);
     qcn = q_in - q_out;
@@ -1633,8 +1634,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     //    const double I = dens*L/A;
 
     // get element information from the previous time step
-    double qcn,qln;
-    qcn = eqin_n - eqout_n;
+    //    double qcn=0.0;
+    double qln=0.0;
+    //  qcn = eqin_n - eqout_n;
 
     // -----------------------------------------------------------
     // calculate the inductance flow at time step n and n+1

@@ -242,7 +242,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   //  RCP<Epetra_Vector> a_volume      = params.get<RCP<Epetra_Vector> >("acini_volume");
   RCP<Epetra_Vector> a_e_volume    = params.get<RCP<Epetra_Vector> >("acini_e_volume");
 
-  vector<int>::iterator it = lm.begin();
+  //  vector<int>::iterator it = lm.begin();
 
   //vector<int> lmowner;
   vector<int> lmstride;
@@ -1133,8 +1133,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
     epnm(i)   = mypnm[i];
   }
 
-  double e_acin_vnp;
-  double e_acin_vn;
+  double e_acin_vnp = 0.0;
+  double e_acin_vn = 0.0;
 
   for (int i=0;i<elemVecdim;++i)
   {

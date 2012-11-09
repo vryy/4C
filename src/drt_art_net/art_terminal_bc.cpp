@@ -213,7 +213,8 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
   // the BC will be applied
   // -------------------------------------------------------------------
 
-  double Wfnp, Wbnp;
+  double Wfnp = 0.0;
+  double Wbnp = 0.0;
   // IO = -1 if terminal is an inlet
   // IO =  1 if terminal is an outlet
   const int    IO    =  params.get<int>("in out flag");

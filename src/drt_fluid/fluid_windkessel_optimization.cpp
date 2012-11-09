@@ -513,19 +513,19 @@ void FLD::UTILS::FluidWkOptimizationWrapper::CalcObjFunction(
   // Find Pmax and Pmin
   double Pmax = (*pressures)[0];
   double Pmin = (*pressures)[0];
-  int index_max = 0;
-  int index_min = 0;
+  //  int index_max = 0;
+  //  int index_min = 0;
   for (unsigned int i = 0; i< pressures->size(); i++)
   {
     if (Pmax<(*pressures)[i])
     {
       Pmax = (*pressures)[i];
-      index_max = i;
+      //      index_max = i;
     }
     if (Pmin>(*pressures)[i])
     {
       Pmin = (*pressures)[i];
-      index_min = i;
+      //      index_min = i;
     }
   }
 
@@ -574,7 +574,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
   ParameterList         params,
   double                dt)
 {
-  int    VarDim = 0;
+  //  int    VarDim = 0;
   // Get type of design variables
   string DesignVars = *(cond->Get<string>("DesignVariables"));
 
@@ -585,7 +585,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
   if (DesignVars == "R_C")
   {
     const double alfa = cond->GetDouble("R1R2_ratio");
-    VarDim = 2;
+    //    VarDim = 2;
     
     // -----------------------------------------------------------------
     //   (*xn_)[index] = R1 + R2 = R
@@ -639,7 +639,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
   }
   else if (DesignVars == "R1_R2_C")
   {
-    VarDim = 3;
+    //    VarDim = 3;
   }
   else
   {
@@ -668,7 +668,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
   ParameterList         params,
   double                dt)
 {
-  int    VarDim = 0;
+  //  int    VarDim = 0;
   // Get type of design variables
   string DesignVars = *(cond->Get<string>("DesignVariables"));
 
@@ -679,7 +679,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
   if (DesignVars == "R_C")
   {
     const double alfa = cond->GetDouble("R1R2_ratio");
-    VarDim = 2;
+    //    VarDim = 2;
     
     // -----------------------------------------------------------------
     //   (*xn_)[index] = R1 + R2 = R
@@ -756,7 +756,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
   }
   else if (DesignVars == "R1_R2_C")
   {
-    VarDim = 3;
+    //    VarDim = 3;
   }
   else
   {
@@ -784,7 +784,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
   double                dt)
 {
 
-  int    ObjDim = 0;
+  //  int    ObjDim = 0;
   // Get name of objective function
   string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
 
@@ -793,7 +793,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
   // -------------------------------------------------------------------
   if (ObjFunType == "Psys_Pdia")
   {
-    ObjDim = 2;
+    //    ObjDim = 2;
 
     const double Psys = cond->GetDouble("Psystolic");
     const double Pdia = cond->GetDouble("Pdiastolic");
@@ -875,7 +875,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
   }
   else if (ObjFunType == "Psys_Pdia_Pavg")
   {
-    ObjDim = 3;
+    //    ObjDim = 3;
   }
   else
   {
@@ -909,8 +909,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
   // Get type of design variables
   string DesignVars = *(cond->Get<string>("DesignVariables"));
 
-  int ObjDim = 0;
-  int VarDim = 0;
+  //  int ObjDim = 0;
+  //  int VarDim = 0;
 
   // -------------------------------------------------------------------
   // Get the dimension of the objective function
@@ -919,7 +919,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
   {
     if (DesignVars == "R_C")
     {
-      VarDim = 2;
+      //      VarDim = 2;
       
       //      int k = (constrain_num)*(pressures->size());
       //      for (unsigned int i = k; i<k+pressures->size(); i++)
@@ -935,14 +935,14 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
       dserror("[%s]: No such design variables defined for [] objective function. Check windkessel optimization BC [%d]",DesignVars.c_str(), ObjFunType.c_str(),cond->GetInt("ConditionID"));
       exit(1);
     }
-    ObjDim = 2;
+    //    ObjDim = 2;
   }
   else if (ObjFunType == "Psys_Pdia_Pavg")
   {
-    ObjDim = 3;
+    //    ObjDim = 3;
     if (DesignVars == "R1_R2_C")
     {
-      VarDim = 2;
+      //      VarDim = 2;
     }
     else
     {
@@ -1074,7 +1074,7 @@ bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
   // if this stage is obtained then all of the windkessel conditions 
   // reached to a steady state periodicity
   // -------------------------------------------------------------------
-  return true;
+  return converged;
 }// FluidWkOptimizationWrapper::SteadyStateIsObtained
 
 

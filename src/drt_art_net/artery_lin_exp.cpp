@@ -170,7 +170,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Initial(
   if( material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
     const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
-    vector<int>::iterator it = lm.begin();
+    //    vector<int>::iterator it = lm.begin();
 
     if(myrank == nodes[0]->Owner())
     {
@@ -1294,8 +1294,8 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   double Ao1 = 0.0;
   double Ao2 = 0.0;
   // Define blood material variables
-  double visc=0.0;
-  double dens=0.0;
+  //  double visc=0.0;
+  //  double dens=0.0;
   // Define artery's material variables
   double t1 = 0.0;
   double t2 = 0.0;
@@ -1314,9 +1314,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
     // Read in initial cross-sectional area at node 2
     Ao2    = Ao1;
     // Read in blood density
-    dens   = actmat->Density();
+    //    dens   = actmat->Density();
     // Read in blood viscosity
-    visc   = actmat->Viscosity();
+    //    visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
     t1     = actmat->Th();
     // Read in artery's thickness at node 2
@@ -1434,7 +1434,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   double Ao2 = 0.0;
   // Define blood material variables
   double visc=0.0;
-  double dens=0.0;
+  //  double dens=0.0;
   // Define artery's material variables
   double t1 = 0.0;
   double t2 = 0.0;
@@ -1453,7 +1453,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
     // Read in initial cross-sectional area at node 2
     Ao2    = Ao1;
     // Read in blood density
-    dens   = actmat->Density();
+    //    dens   = actmat->Density();
     // Read in blood viscosity
     visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
