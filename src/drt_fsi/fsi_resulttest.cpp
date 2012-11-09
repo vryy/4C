@@ -113,7 +113,7 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
     //cout << "TESTING STRUCTURE RESULTS with FSIResultTest::TestNode(..)" << endl;
 
     string position;
-    res.ExtractString("POSITION",position);
+    res.ExtractString("QUANTITY",position);
     bool unknownpos = true; // make sure the result value string can be handled
     double result = 0.0;    // will hold the actual result of run
 
@@ -139,7 +139,7 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
     }
     // catch position strings, which are not handled by fsi result test
     if (unknownpos)
-      dserror("position '%s' not supported in fsi testing", position.c_str());
+      dserror("Quantity '%s' not supported in fsi testing", position.c_str());
 
     // compare values
     const int err = CompareValues(result, res);

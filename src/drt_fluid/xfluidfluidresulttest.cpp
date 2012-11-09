@@ -37,15 +37,28 @@ FLD::XFluidFluidResultTest::XFluidFluidResultTest(XFluidFluid& fluid)
 /*----------------------------------------------------------------------*/
 void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-   int dis;
-   res.ExtractInt("DIS",dis);
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS",dis);
+  if ((dis != bgfluiddis_->Name()) and (dis != embfluiddis_->Name()))
+    return;
 
    int node;
    res.ExtractInt("NODE",node);
    //node -= 1;
+   //ToDo  activate the line above
 
-   if (dis == 1)
+   if (dis == bgfluiddis_->Name())
    {
+     int havenode(bgfluiddis_->HaveGlobalNode(node));
+     int isnodeofanybody(0);
+     bgfluiddis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+     if (isnodeofanybody==0)
+     {
+       dserror("Node %d does not belong to discretization %s",node+1,bgfluiddis_->Name().c_str());
+     }
+
      if (bgfluiddis_->HaveGlobalNode(node))
      {
          const DRT::Node* actnode = bgfluiddis_->gNode(node);
@@ -61,7 +74,7 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
          const int numdim = DRT::Problem::Instance()->NDim();
 
      std::string position;
-     res.ExtractString("POSITION",position);
+     res.ExtractString("QUANTITY",position);
          if (position=="velx")
          {
              result = (*bgfluidsol_)[velnpmap.LID(bgfluiddis_->Dof(actnode,0))];
@@ -103,15 +116,24 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
 //          }
          else
          {
-             dserror("position '%s' not supported in fluid testing", position.c_str());
+             dserror("Quantity '%s' not supported in fluid testing", position.c_str());
          }
 
          nerr += CompareValues(result, res);
          test_count++;
      }
    }
-   else if(dis == 2)
+   else if(dis == embfluiddis_->Name())
    {
+     int havenode(embfluiddis_->HaveGlobalNode(node));
+     int isnodeofanybody(0);
+     embfluiddis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+     if (isnodeofanybody==0)
+     {
+       dserror("Node %d does not belong to discretization %s",node+1,embfluiddis_->Name().c_str());
+     }
+
      if (embfluiddis_->HaveGlobalNode(node))
      {
        const DRT::Node* actnode = embfluiddis_->gNode(node);
@@ -127,7 +149,7 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
        const int numdim = DRT::Problem::Instance()->NDim();
 
        std::string position;
-       res.ExtractString("POSITION",position);
+       res.ExtractString("QUANTITY",position);
        if (position=="velx")
        {
          result = (*embfluidsol_)[velnpmap.LID(embfluiddis_->Dof(actnode,0))];
@@ -169,7 +191,7 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
 //          }
          else
          {
-             dserror("position '%s' not supported in fluid testing", position.c_str());
+             dserror("Quantity '%s' not supported in fluid testing", position.c_str());
          }
 
          nerr += CompareValues(result, res);

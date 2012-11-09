@@ -54,7 +54,7 @@ void AIRWAY::RedAirwayResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
     double result = 0.;
     const Epetra_BlockMap& pnpmap = mysol_->Map();
     std::string position;
-    res.ExtractString("POSITION",position);
+    res.ExtractString("QUANTITY",position);
 
     // test result value of single scalar field
     if (position=="pressure")
@@ -62,7 +62,7 @@ void AIRWAY::RedAirwayResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
     // test result values for a system of scalars
     else 
     {
-      dserror("position '%s' not supported in result-test of red_airway transport problems", position.c_str());
+      dserror("Quantity '%s' not supported in result-test of red_airway transport problems", position.c_str());
     }
 
     nerr += CompareValues(result, res);

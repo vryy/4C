@@ -64,27 +64,37 @@ void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, in
 int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition& res)
 {
   FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
-  int ret = 0;
-  std::string name;
-  double givenresult;
-  double tolerance;
-  res.ExtractDouble("VALUE",givenresult);
-  res.ExtractDouble("TOLERANCE",tolerance);
-  res.ExtractString("NAME",name);
 
+  std::string quantity;
+  res.ExtractString("QUANTITY",quantity);
+  double givenresult;
+  res.ExtractDouble("VALUE",givenresult);
+  double tolerance;
+  res.ExtractDouble("TOLERANCE",tolerance);
+  // name is an optional input argument!
+  std::string name = "";
+  if (res.HaveNamed("NAME"))
+    res.ExtractString("NAME",name);
+
+  int ret = 0;
   fprintf(err,"actual = %.17e, given = %.17e, diff = %.17e\n",
           actresult, givenresult, actresult-givenresult);
   if (!(fabs(fabs(actresult-givenresult)-fabs(actresult-givenresult)) < tolerance) )
   {
-    printf("RESULTCHECK: %s is NAN!\n", name.c_str());
+    printf("RESULTCHECK: %s is NAN!\n", quantity.c_str());
     ret = 1;
   }
   else if (fabs(actresult-givenresult) > tolerance)
   {
     printf("RESULTCHECK: %s not correct. actresult=%.17e, givenresult=%.17e\n",
-           name.c_str(), actresult, givenresult);
+           quantity.c_str(), actresult, givenresult);
     ret = 1;
   }
+/*
+  cout<<"TEST passed: "<<quantity;
+  if (name != "")
+    cout<<"("<<name<<")"<<endl;
+*/
   return ret;
 }
 
@@ -107,9 +117,10 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
   FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
   int nerr = 0;       // number of tests with errors
   int test_count = 0; // number of tests performed
+  int size = results_.size();
 
   if (comm.MyPID()==0)
-    cout << "\nChecking results ...\n";
+    cout << "\nChecking results of "<<size<<" tests...\n";
 
   for (unsigned i=0; i<results_.size(); ++i)
   {
@@ -129,10 +140,9 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
     }
   }
 
+  // determine the total number of errors
   int numerr;
   comm.SumAll(&nerr,&numerr,1);
-
-  int size = results_.size();
 
   if (numerr > 0)
   {
@@ -170,110 +180,110 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   DRT::INPUT::LineDefinition structure;
   structure
     .AddTag("STRUCTURE")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition fluid;
   fluid
     .AddTag("FLUID")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition ale;
   ale
     .AddTag("ALE")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition thermal;
   thermal
     .AddTag("THERMAL")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition scatra;
   scatra
     .AddTag("SCATRA")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition red_airway;
   red_airway
     .AddTag("RED_AIRWAY")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition art_net;
   art_net
     .AddTag("ARTNET")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition fld_adj;
   fld_adj
     .AddTag("ADJOINT")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition opti;
   opti
     .AddTag("OPTI")
-    .AddNamedInt("DIS")
+    .AddNamedString("DIS")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   DRT::INPUT::LineDefinition fsi;
   fsi
     .AddTag("FSI")
     .AddNamedInt("NODE")
-    .AddNamedString("POSITION")
-    .AddNamedString("NAME")
+    .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
     ;
 
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));

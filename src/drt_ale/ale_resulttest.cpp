@@ -20,61 +20,71 @@ Maintainer: Ulrich Kuettler
 #include "ale.H"
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
 : aledis_(ale.Discretization()),
     dispnp_(ale.Disp())
 {
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  int dis;
-  res.ExtractInt("DIS",dis);
-  if (dis != 1)
-    dserror("fix me: only one ale discretization supported for testing");
-
   int node;
   res.ExtractInt("NODE",node);
   node -= 1;
 
-  if (aledis_->HaveGlobalNode(node))
+  int havenode(aledis_->HaveGlobalNode(node));
+  int isnodeofanybody(0);
+  aledis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+  if (isnodeofanybody==0)
   {
-    DRT::Node* actnode = aledis_->gNode(node);
-
-    // Strange! It seems we might actually have a global node around
-    // even if it does not belong to us. But here we are just
-    // interested in our nodes!
-    if (actnode->Owner() != aledis_->Comm().MyPID())
-      return;
-
-    double result = 0.;
-
-    const Epetra_BlockMap& dispnpmap = dispnp_->Map();
-
-    std::string position;
-    res.ExtractString("POSITION",position);
-    if (position=="dispx")
+    dserror("Node %d does not belong to discretization %s",node+1,aledis_->Name().c_str());
+  }
+  else
+  {
+    if (aledis_->HaveGlobalNode(node))
     {
-      result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,0))];
-    }
-    else if (position=="dispy")
-    {
-      result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,1))];
-    }
-    else if (position=="dispz")
-    {
-      result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,2))];
-    }
-    else
-    {
-      dserror("position '%s' not supported in ale testing", position.c_str());
-    }
+      DRT::Node* actnode = aledis_->gNode(node);
 
-    nerr += CompareValues(result, res);
-    test_count++;
+      // Here we are just interested in the nodes that we own (i.e. a row node)!
+      if (actnode->Owner() != aledis_->Comm().MyPID())
+        return;
+
+      double result = 0.;
+
+      const Epetra_BlockMap& dispnpmap = dispnp_->Map();
+
+      std::string position;
+      res.ExtractString("QUANTITY",position);
+      if (position=="dispx")
+      {
+        result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,0))];
+      }
+      else if (position=="dispy")
+      {
+        result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,1))];
+      }
+      else if (position=="dispz")
+      {
+        result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,2))];
+      }
+      else
+      {
+        dserror("Quantity '%s' not supported in ALE testing", position.c_str());
+      }
+
+      nerr += CompareValues(result, res);
+      test_count++;
+    }
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool ALE::AleResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
   return res.HaveNamed("ALE");

@@ -43,73 +43,80 @@ void THR::ResultTest::TestNode(
   int& test_count
   )
 {
-  int dis;
-  res.ExtractInt("DIS",dis);
-  if (dis != 1)
-    dserror("fix me: only one thermal discretization supported for testing, but we have %g", dis);
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS",dis);
+  if (dis != thrdisc_->Name())
+    return;
 
   int node;
   res.ExtractInt("NODE",node);
   node -= 1;
 
-  // this implementation does not allow testing of heatfluxes
-  if (thrdisc_->HaveGlobalNode(node))
+  int havenode(thrdisc_->HaveGlobalNode(node));
+  int isnodeofanybody(0);
+  thrdisc_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+  if (isnodeofanybody==0)
   {
-    const DRT::Node* actnode = thrdisc_->gNode(node);
-
-    // Strange! It seems we might actually have a global node around
-    // even if it does not belong to us. But here we are just
-    // interested in our nodes!
-    if (actnode->Owner() != thrdisc_->Comm().MyPID())
-      return;
-
-    // verbose output
-    //cout << "TESTING THERMAL RESULTS with THR::ResultTest::TestNode(..)" << endl;
-
-    std::string position;
-    res.ExtractString("POSITION",position);
-    bool unknownpos = true;  // make sure the result value string can be handled
-    double result = 0.0;  // will hold the actual result of run
-
-    // test temperature
-    if (temp_ != Teuchos::null)
+    dserror("Node %d does not belong to discretization %s",node+1,thrdisc_->Name().c_str());
+  }
+  else
+  {
+    // this implementation does not allow testing of heatfluxes
+    if (thrdisc_->HaveGlobalNode(node))
     {
-      const Epetra_BlockMap& tempmap = temp_->Map();
+      const DRT::Node* actnode = thrdisc_->gNode(node);
 
-      if (position == "temp")
+      // Here we are just interested in the nodes that we own (i.e. a row node)!
+      if (actnode->Owner() != thrdisc_->Comm().MyPID())
+        return;
+
+      std::string position;
+      res.ExtractString("QUANTITY",position);
+      bool unknownpos = true;  // make sure the result value string can be handled
+      double result = 0.0;  // will hold the actual result of run
+
+      // test temperature
+      if (temp_ != Teuchos::null)
       {
-        unknownpos = false;
-        result = (*temp_)[tempmap.LID(thrdisc_->Dof(0,actnode,0))];
+        const Epetra_BlockMap& tempmap = temp_->Map();
+
+        if (position == "temp")
+        {
+          unknownpos = false;
+          result = (*temp_)[tempmap.LID(thrdisc_->Dof(0,actnode,0))];
+        }
       }
-    }
 
-    // test temperature rates
-    if (rate_ != Teuchos::null)
-    {
-      const Epetra_BlockMap& ratemap = rate_->Map();
-
-      if (position == "rate")
+      // test temperature rates
+      if (rate_ != Teuchos::null)
       {
-        unknownpos = false;
-        result = (*rate_)[ratemap.LID(thrdisc_->Dof(0,actnode,0))];
+        const Epetra_BlockMap& ratemap = rate_->Map();
+
+        if (position == "rate")
+        {
+          unknownpos = false;
+          result = (*rate_)[ratemap.LID(thrdisc_->Dof(0,actnode,0))];
+        }
       }
+
+      // catch position strings, which are not handled by thermo result test
+      if (unknownpos)
+        dserror("Quantity '%s' not supported in thermo testing", position.c_str());
+
+      // compare values
+      const int err = CompareValues(result, res);
+      nerr += err;
+      test_count++;
+
+      // verbose output
+      cout.precision(16);
+      cout << "RESULT "  << test_count
+          << " IS " << std::scientific << result
+          << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
+          << endl;
     }
-
-    // catch position strings, which are not handled by thermo result test
-    if (unknownpos)
-      dserror("position '%s' not supported in thermo testing", position.c_str());
-
-    // compare values
-    const int err = CompareValues(result, res);
-    nerr += err;
-    test_count++;
-
-    // verbose output
-    cout.precision(16);
-    cout << "RESULT "  << test_count
-         << " IS " << std::scientific << result
-         << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
-         << endl;
   }
 } // TestNode
 

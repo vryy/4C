@@ -60,11 +60,11 @@ void OPTI::OptiResultTest::TestNode(
     const Epetra_BlockMap& optimap = sol_->Map();
 
     std::string position;
-    res.ExtractString("POSITION",position);
+    res.ExtractString("QUANTITY",position);
     if (position=="x")
       result = (*sol_)[optimap.LID(optidis_->Dof(0,node,0))];
     else
-      dserror("position '%s' not supported in fluid testing", position.c_str());
+      dserror("Quantity '%s' not supported in fluid testing", position.c_str());
 
     nerr += CompareValues(result, res);
     test_count++;

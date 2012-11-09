@@ -30,11 +30,11 @@ ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
 /*----------------------------------------------------------------------*/
 void ART::ArteryResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-
-  int dis;
-  res.ExtractInt("DIS",dis);
-  if (dis != 1)
-    dserror("fix me: only one red_airway discretization supported for testing");
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS",dis);
+  if (dis != dis_->Name())
+    return;
 
   int node;
   res.ExtractInt("NODE",node);
@@ -53,7 +53,7 @@ void ART::ArteryResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
     double result = 0.;
     const Epetra_BlockMap& pnpmap = mysol_->Map();
     std::string position;
-    res.ExtractString("POSITION",position);
+    res.ExtractString("QUANTITY",position);
 
     // test result value of single scalar field
     if (position=="area")
@@ -63,7 +63,7 @@ void ART::ArteryResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
     // test result values for a system of scalars
     else 
     {
-      dserror("position '%s' not supported in result-test of red_airway transport problems", position.c_str());
+      dserror("Quantity '%s' not supported in result-test of red_airway transport problems", position.c_str());
     }
 
     nerr += CompareValues(result, res);

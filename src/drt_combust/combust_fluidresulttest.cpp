@@ -48,10 +48,11 @@ FLD::CombustFluidResultTest::CombustFluidResultTest(CombustFluidImplicitTimeInt&
 /*----------------------------------------------------------------------*/
 void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  int dis;
-  res.ExtractInt("DIS",dis);
-  if (dis != 1)
-    dserror("fix me: only one fluid discretization supported for testing");
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS",dis);
+  if (dis != fluiddis_->Name())
+    return;
 
   int node;
   res.ExtractInt("NODE",node);
@@ -73,7 +74,7 @@ void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
     const int numdim = DRT::Problem::Instance()->NDim();
 
     std::string position;
-    res.ExtractString("POSITION",position);
+    res.ExtractString("QUANTITY",position);
     if (position=="velx")
     {
       result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,0))];
@@ -105,7 +106,7 @@ void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
     }
     else
     {
-      dserror("position '%s' not supported in fluid testing", position.c_str());
+      dserror("Quantity '%s' not supported in fluid testing", position.c_str());
     }
 
     nerr += CompareValues(result, res);

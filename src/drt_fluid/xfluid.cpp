@@ -5207,10 +5207,11 @@ FLD::XFluidResultTest2::XFluidResultTest2( XFluid * xfluid )
 
 void FLD::XFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  int dis;
-  res.ExtractInt("DIS",dis);
-  if (dis != 1)
-    dserror("fix me: only one ale discretization supported for testing");
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS",dis);
+  if (dis != discret_.Name())
+    return;
 
   int node;
   res.ExtractInt("NODE",node);
@@ -5228,7 +5229,7 @@ void FLD::XFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr
     const Epetra_BlockMap& velnpmap = velnp_->Map();
 
     std::string position;
-    res.ExtractString("POSITION",position);
+    res.ExtractString("QUANTITY",position);
     if (position=="velx")
     {
       result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,0))];
@@ -5247,7 +5248,7 @@ void FLD::XFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr
     }
     else
     {
-      dserror("position '%s' not supported in ale testing", position.c_str());
+      dserror("Quantity '%s' not supported in ale testing", position.c_str());
     }
 
     nerr += CompareValues(result, res);
