@@ -142,7 +142,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralNoxParams()));
 
   // show default parameters
-  if ((actdis->Comm()).MyPID()==0)
+  if ((actdis->Comm()).MyPID()==0 && perform_mlmc!=true)
     DRT::INPUT::PrintDefaultParameters(std::cout, *sdyn);
 
   // add extra parameters (a kind of work-around)
@@ -151,7 +151,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = *snox;
-  // Parameter to determinen wether MLMC is on/off
+  // Parameter to determine if MLMC is on/off
   // Needed to for reduced restart output
   xparams->set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
 
