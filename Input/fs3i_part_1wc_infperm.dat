@@ -2865,8 +2865,8 @@ NODE 924 COORD 5.0000000000000000e+01 2.5000000000000000e+00 1.0000000000000000e
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 206 QUANTITY phi VALUE 7.82925309102700195e-01 TOLERANCE 1e-6
-SCATRA DIS scatra NODE 910 QUANTITY phi VALUE 4.60280621009057034e-01 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 206 QUANTITY phi VALUE 7.82925309102700195e-01 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 910 QUANTITY phi VALUE 4.60280621009057034e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 910 QUANTITY velx VALUE 9.79855719770674899e-02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
