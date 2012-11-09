@@ -402,7 +402,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
       {
         // name of file into which output is written
         std::ostringstream filename;
-        filename << "ViscoElOutputProc.dat";
+        filename << "./ViscoElOutputProc.dat";
         ViscoelasticityOutput(time, dis, fint, filename);
 
         // additional Density-Density-Correlation Output if required

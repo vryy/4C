@@ -515,15 +515,18 @@ void STATMECH::StatMechManager::Update(const int& istep,
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt, double& timeconverged)
 {
-  // update time step
-  double dtnew = timestepsizes_->at(timeintervalstep_);
-  // update step size
-  double nexttimethreshold = actiontime_->at(timeintervalstep_);
-  double eps = 1.0e-10;
-  if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
+  if(timeintervalstep_<(int)timestepsizes_->size())
   {
-    dt = dtnew;
-    timeintervalstep_++;
+    // update time step
+    double dtnew = timestepsizes_->at(timeintervalstep_);
+    // update step size
+    double nexttimethreshold = actiontime_->at(timeintervalstep_);
+    double eps = 1.0e-10;
+    if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
+    {
+      dt = dtnew;
+      timeintervalstep_++;
+    }
   }
   return;
 }
