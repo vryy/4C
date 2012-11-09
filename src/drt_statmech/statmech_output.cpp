@@ -4020,11 +4020,14 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
         double dist2nodes = 0.0;
 
         // pre-evaluation of maximal number of nonequal nearest neighbors (max 3)
+        int maxnumevalneighbors = 4;
+
         if((int)evalnodepositions.size()>2)
         {
           int maxnearneighbors = (int)(ceil((double(evalnodepositions.size())/2.0)))-1;
-          if(maxnearneighbors>3)
-            maxnearneighbors = 3;
+          if(maxnearneighbors>maxnumevalneighbors)
+            maxnearneighbors = maxnumevalneighbors;
+
           // calculate nearest neighbor to 3rd nearest neighbor distances
           for(int i=0; i<(int)evalnodepositions.size(); i++)
           {
@@ -4037,22 +4040,24 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
               if(j>=(int)evalnodepositions.size())
               {
                 periodicshift = true;
-                jindex -= evalnodepositions.size();
+                jindex -= (int)evalnodepositions.size();
               }
 
               map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs.at(i));
               map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodeIDs.at(jindex));
               LINALG::Matrix<3,1> diff = (pos1->second);
               diff -= (pos0->second);
+              // evaluate global x-distance
+              double xdist = fabs(diff(0));
               // distance of node pairs separated by periodic boundaries
               if(periodicshift)
-                dist2nodes = periodlength-diff.Norm2();
+                dist2nodes = periodlength-xdist;
               else // std
-                dist2nodes = diff.Norm2();
+                dist2nodes = xdist;
               distances<<std::scientific<<std::setprecision(15)<<dist2nodes<<" ";
             }
-            if(maxnearneighbors<3) // note: hard coded "3" because of hard coded maximal maxneighbors = 3
-              for(int j=0; j<3-maxnearneighbors; j++)
+            if(maxnearneighbors<maxnumevalneighbors)
+              for(int j=0; j<maxnumevalneighbors-maxnearneighbors; j++)
                 distances<<-99<<" ";
             distances<<endl;
           }
@@ -4061,7 +4066,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
         {
           LINALG::Matrix<3,1> diff = evalnodepositions[1];
           diff -= evalnodepositions[0];
-          dist2nodes = diff.Norm2();
+          dist2nodes = fabs(diff(0));
           if(dist2nodes>periodlength-dist2nodes)
             dist2nodes = periodlength-dist2nodes;
           distances<<dist2nodes<<endl;
