@@ -14,7 +14,7 @@ Maintainer: Ulrich Kuettler
 
 
 #include "io_control.H"
-
+#include "io_pstream.H"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <strings.h>
@@ -349,7 +349,7 @@ void IO::OutputControl::NewResultFile(string name_appendix, int numb_run)
 
   controlfile_.close();
   bool b = controlfile_.fail();
-  cout << b << endl;
+  IO::cout << b << IO::endl;
   controlfile_.open(name.str().c_str(),std::ios_base::out);
   if (not controlfile_)
     dserror("could not open control file '%s' for writing", name.str().c_str());
