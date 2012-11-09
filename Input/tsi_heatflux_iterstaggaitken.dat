@@ -111,6 +111,8 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       No
 DYNAMICTYP                      Statics  // OneStepTheta
+INITFUNCNO                      -1  // use FUNCT 1
+INITIALFIELD                    zero_field  // zero_field,field_by_function,field_by_condition
 ITERNORM                        L2
 LINEAR_SOLVER                   1
 MAXITER                         50
@@ -194,7 +196,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          Aztec_MSR  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNG 21000 NUE 0.3 DENS 1.0 THEXPANS 1.2e-05 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 300.0
+MAT 1 MAT_Struct_ThrStVenantK YOUNG 21000 NUE 0.3 DENS 1.0 THEXPANS 1.2e-05 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 0.0
 // CAPA = C_V* rho = 420* = 420
 MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52
 --------------------------------------------------------CLONING MATERIAL MAP
@@ -291,7 +293,7 @@ NODE 16 COORD 0.00000000e+00 0.00000000e+00 -5.00000000e-01
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS 1 NODE 1 POSITION temp NAME Temp(x=0) VALUE 3827.1368889786850 TOLERANCE 1.0e-6
 THERMAL DIS 1 NODE 16 POSITION temp NAME Temp(x=10) VALUE 0.0 TOLERANCE 1.0e-9
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME ux(x=0) VALUE 3.5920911875503775e-01 TOLERANCE 1e-9  
+STRUCTURE DIS 1 NODE 1 POSITION dispx NAME ux(x=0) VALUE 4.2606626158166383e-01 TOLERANCE 1e-9  
 STRUCTURE DIS 1 NODE 16 POSITION dispx NAME ux(x=10) VALUE 0.0 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //  END
