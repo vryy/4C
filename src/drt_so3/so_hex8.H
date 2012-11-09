@@ -654,37 +654,35 @@ protected:
 
   //! Calculate linear stiffness and mass matrix
   virtual void linstiffmass(
-      vector<int>& lm,  ///< location matrix
-      vector<double>& disp,  ///< current displacements
-      vector<double>& residual,  ///< current residual displ
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
-      LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain, ///< strains at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain, // plastic strains at GP
-      ParameterList& params,  ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType iostress,  ///< stress output option
-      const INPAR::STR::StrainType iostrain, ///< strain output option
-      const INPAR::STR::StrainType ioplstrain); ///< plastic strain output option
+    vector<int>& lm,  ///< location matrix
+    vector<double>& disp,  ///< current displacements
+    vector<double>& residual,  ///< current residual displ
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+    LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain, ///< strains at GP
+    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain, // plastic strains at GP
+    ParameterList& params,  ///< algorithmic parameters e.g. time
+    const INPAR::STR::StressType iostress,  ///< stress output option
+    const INPAR::STR::StrainType iostrain, ///< strain output option
+    const INPAR::STR::StrainType ioplstrain); ///< plastic strain output option
+
+  //! push forward of material stresses to the current, spatial configuration
+  void PK2toCauchy(
+    LINALG::Matrix<NUMSTR_SOH8,1>* stress,
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* defgrd,
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* cauchystress
+    );
+
+  //! push forward of Green-Lagrange strain to Euler-Almansi strains
+  void GLtoEA(
+    LINALG::Matrix<NUMSTR_SOH8,1>* glstrain,
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* defgrd,
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* euler_almansi
+    );
 
   //! @name TSI related stuff
-
-  // for so_hex8_thermo_evaluate.cpp
-  //! Calculate nonlinear stiffness and mass matrix with temperature fraction
-  virtual void soh8_nlnstifftemp(
-    DRT::Element::LocationArray& la,  //!< location array
-    vector<double>& disp,  //!< current displacements
-    vector<double>& residual,  //!< current residual displ
-    vector<double>& temp, //!< current temperature
-    LINALG::Matrix<NUMDOF_SOH8,1>* tempstiffmatrix, //!< coupling stiffness matrix
-    LINALG::Matrix<NUMDOF_SOH8,1>* force,  //!< element internal force vector
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  //!< stresses at GP
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  //!< strains at GP
-    Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  //!< stress output option
-    const INPAR::STR::StrainType iostrain  //!< strain output option
-    );
 
   //! Calculate temperature coupling term for the internal force (geometric linear)
   virtual void soh8_finttemp(
@@ -701,7 +699,6 @@ protected:
     );
 
   //! \brief Calculate mechanical thermal stiffness term needed for monolithic TSI
-  //!
   virtual void soh8_stifftemp(
     DRT::Element::LocationArray& la,
     vector<double>& disp,  //!< (i): current displacement
