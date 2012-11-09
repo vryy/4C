@@ -83,7 +83,7 @@ THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.001
 UPRES                           1
-GMSH_OUTPUT                     yes
+GMSH_OUTPUT                     no
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
@@ -138,7 +138,7 @@ EVALUATION_TAU                  element_center
 STABTYPE                        SUPG
 SUGRVEL                         no
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  yes
+GMSH_DEBUG_OUT                  no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR

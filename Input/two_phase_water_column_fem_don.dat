@@ -81,9 +81,9 @@ THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.001
 UPRES                           1
-GMSH_OUTPUT                     yes
+GMSH_OUTPUT                     no
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  yes
+GMSH_DEBUG_OUT                  no
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
@@ -120,7 +120,7 @@ UPRES                           1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       No
 WRITEFLUX_IDS                   -1
-OUTPUT_GMSH                     yes
+OUTPUT_GMSH                     no
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-5
 ADAPTCONV                       yes
