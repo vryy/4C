@@ -703,7 +703,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
     if ((iterstn != stdnoden_.end() and iterstnp != stdnodenp_.end()) or
         (iterstn != stdnoden_.end() and iterenp != enrichednodenp_.end()))
     {
-      int numsets = bgdis->NumDof(bgnode)/4;
+      //int numsets = bgdis->NumDof(bgnode)/4;
       vector<int> gdofsn = iterstn->second;
 
       //TODO!! die richtige dofs von bgstatevn rauspicke, wenn mehrere
@@ -743,7 +743,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
       LINALG::Matrix<4,1>    interpolatedvec(true);
       interpolated_vecs.push_back(interpolatedvec);
 
-      int numsets = bgdis->NumDof(bgnode)/4;
+      //int numsets = bgdis->NumDof(bgnode)/4;
 
 //      if( numsets > 1 )
 //        cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
