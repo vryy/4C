@@ -41,13 +41,13 @@ Maintainer: Jonas Biehler
 class GenRandomField {
 
 private:
-  // do we want/need to perform spectral matching
+  //! \brief do we want/need to perform spectral matching
   bool perform_spectral_matching_;
 
-  // which proc am I on
+  //! \brief which proc am I on
   int myrank_;
 
-  // dimension of stochastic field
+  //! \brief dimension of stochastic field
   int dim_;
 
   enum PROBABILITY_DISTRIBUTIONS
@@ -56,7 +56,7 @@ private:
     lognormal,
     beta,
   };
-  // target marginal pdf of random field
+  //! \brief target marginal pdf of random field
   PROBABILITY_DISTRIBUTIONS marginal_pdf_;
 
   enum correlation_structure_
@@ -66,16 +66,16 @@ private:
     whatever,
   };
 
-  //correlation length
+  //! \brief correlation length
   double d_;
 
-  //distribution params of target marginal distribution
-   vector<double> distribution_params_;
+  //! \briefdistribution params of target marginal distribution
+  vector<double> distribution_params_;
 
-  // sigma as calculated from pdf parameters
+   //! \brief sigma as calculated from pdf parameters
   double sigma_0_;
 
-  // sigma of underlying gauss process ( changes during spectral matching)
+  //! \brief sigma of underlying gauss process ( changes during spectral matching)
   double sigma_ul_g_cur_it_;
 
   double mean_;
@@ -83,48 +83,51 @@ private:
   // holds the discrete power spectral density of the random field
   vector<double> discrete_PSD_;
 
-  // Simulation parameters
-  // length of random field
+  //! \brief Simulation parameters
+  //! \brief length of random field
   double periodicity_ ;
 
-  // Number of COS terms or size of discrete_PSD
+  //! \brief Number of COS terms or size of discrete_PSD
   int N_;
 
-  // length of the FFT's
+  //! \brief length of the FFT's
   int M_;
 
-  // smallest frequency
+  //! \brief smallest frequency
   double dkappa_;
 
-  // cutoff frequency
+  //! \brief cutoff frequency
   double kappa_u_;
 
   double dx_;
 
-  // vectors to store the random phase angles
+  //! \brief vectors to store the random phase angles
   vector<double>  Phi_0_ ;
   vector<double>  Phi_1_ ;
   vector<double>  Phi_2_ ;
   vector<double>  Phi_3_ ;
 
-  // seed for random number generator
+  //! \brief/ seed for random number generator
   unsigned int  seed_;
 
-  // parameters for evaluation i.e corners of the bounding box of the discretization
-  // min bounding box
+  //! \brief parameters for evaluation i.e corners of the bounding box of the discretization
+  //! \brief min bounding box
   vector<double> bb_min_;
 
-  // max bounding box
+  //! \brief max bounding box
   vector<double> bb_max_;
 
-  // we need Pi
+  //! \brief we need Pi
   double pi_;
 
-  // this is where we store the random field in
+  //! \brief  this is where we store the random field in
   double* values_;
 
-  // define calculation method whether we use FFT or COS
+  //! \brief define calculation method whether we use FFT or COS
   int UseFFT_;
+
+  //! \brief Do not print to stdout
+  bool reduced_output_;
 
 public:
   //! \brief Standard constructor

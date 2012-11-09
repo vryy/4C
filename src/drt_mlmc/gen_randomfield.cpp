@@ -17,25 +17,25 @@ Maintainer: Jonas Biehler
 #include "mlmc.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_io/io_pstream.H"
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
 #include <complex>
 #include <cmath>
-// For coloer couts
+// For colored couts
 #include "../drt_lib/drt_colors.H"
-
-
 #include <boost/random.hpp>
+
 // include fftw++ stuff for multidimensional FFT
 #include"fftw3.h"
-//using namespace DRT;
+
 #include <fstream>
 
 
 #include <boost/math/distributions/beta.hpp> // for beta_distribution.
 #include <boost/math/distributions/normal.hpp> // for normal_distribution.
-#include <boost/math/distributions/lognormal.hpp>
+#include <boost/math/distributions/lognormal.hpp> // for lognormal _distribution.
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
@@ -43,7 +43,7 @@ Maintainer: Jonas Biehler
 
 
 #include "../drt_inpar/inpar_mlmc.H"
-//include <boost/math/distributions.hpp>
+
 using boost::math::beta_distribution;
 using boost::math::lognormal_distribution;
 using boost::math::normal_distribution;
@@ -56,19 +56,21 @@ using  boost::accumulators::stats;
 GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretization> discret)
 {
    myrank_ = discret->Comm().MyPID();
-  // Init the necessesary stuff
+  // get input parameters
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
-  // Dimension
+
+  // spatial dimension of random field  only 2 adn 3 supported
   dim_ = mlmcp.get<int>("RANDOM_FIELD_DIMENSION");
-  perform_spectral_matching_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"SPECTRAL_MATCHING");
   if(dim_!=3&&dim_!=2)
       dserror("Dimension of random field must be 2 or 3, fix your input file");
+
+  // do we want to perform spectral matching with PSd
+  perform_spectral_matching_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"SPECTRAL_MATCHING");
   N_= mlmcp.get<int>("NUM_COS_TERMS");
   kappa_u_=mlmcp.get<double>("KAPPA_U");
   seed_ = seed;
   d_ = mlmcp.get<double>("CORRLENGTH");
   sigma_0_= mlmcp.get<double>("SIGMA");
-  // Sigma of target nongaussian pdf
   sigma_ul_g_cur_it_ = 0.0;
   pi_=M_PI;
   M_=mlmcp.get<int>("SIZE_PER_DIM");
@@ -76,25 +78,33 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
   periodicity_=2.*pi_/dkappa_;
   dx_=periodicity_/M_;
 
-  // distribution parameters of non gauss pdf
+  // for large simulations we do not want to print to stdout
+  reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
+
+  // distribution parameters of non gaussian pdf
   distribution_params_.push_back(mlmcp.get<double>("NONGAUSSPARAM1"));
   distribution_params_.push_back(mlmcp.get<double>("NONGAUSSPARAM2"));
-  // Get correlation structure
+
+  // Get correlation structure so far we can only use gaussian
   INPAR::MLMC::CorrStruct cstruct = DRT::INPUT::IntegralValue<INPAR::MLMC::CorrStruct>(mlmcp,"CORRSTRUCT");
   switch(cstruct){
     case INPAR::MLMC::corr_gaussian:
-      //blabla
+      // nothing to do here
       break;
     default:
       dserror("Unknown Correlation structure");
   }
+
+  //
   double upper_bound;
+
+  // compute parameters for non gaussian pdf
   INPAR::MLMC::MarginalPdf mpdf = DRT::INPUT::IntegralValue<INPAR::MLMC::MarginalPdf>(mlmcp,"MARGINALPDF");
   switch(mpdf){
     case INPAR::MLMC::pdf_gaussian:
       marginal_pdf_=normal;
       // Hack
-      cout << "remove a line here" << endl;
+      IO::cout<< "remove a line here" << IO::endl;
       sigma_0_ =sqrt((exp(pow(distribution_params_[1],2))-1)*exp(2*distribution_params_[0]+pow(distribution_params_[1],2)));
       break;
     case INPAR::MLMC::pdf_beta:
@@ -107,7 +117,7 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
       upper_bound =(-1.0*sqrt(distribution_params_[1]*(distribution_params_[0]+distribution_params_[1]+1)/distribution_params_[0]));
       // I need abs(lB)+abs(uB) hence
       distribution_params_.push_back(abs(upper_bound)+abs(distribution_params_[2]));
-      cout << "Distribution parameter of beta distribution " << distribution_params_[0] << " "  << distribution_params_[1] << " " << distribution_params_[2] << " " << distribution_params_[3] << endl;
+      IO::cout<< "Distribution parameter of beta distribution " << distribution_params_[0] << " "  << distribution_params_[1] << " " << distribution_params_[2] << " " << distribution_params_[3] << IO::endl;
       break;
     case INPAR::MLMC::pdf_lognormal:
       marginal_pdf_=lognormal;
@@ -116,15 +126,18 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
       // also calc variance and sigma
       //(exp(s^2 )-1) * exp(2m + s^2)
       sigma_0_ =sqrt((exp(pow(distribution_params_[1],2))-1)*exp(2*distribution_params_[0]+pow(distribution_params_[1],2)));
-      cout << "sigma_0 "<< sigma_0_ << endl;
-      if (myrank_ == 0)
-        cout << "Distribution parameter of lognormal distribution " << distribution_params_[0] << " "  << distribution_params_[1] << " " << distribution_params_[2] << endl;
-      break;
+
+      if (myrank_ == 0 )
+      {
+        IO::cout << "sigma_0 "<< sigma_0_ << IO::endl;
+        IO::cout << "Distribution parameter of lognormal distribution " << distribution_params_[0] << " "  << distribution_params_[1] << " " << distribution_params_[2] << IO::endl;
+      }
+       break;
     default:
       dserror("Unknown Marginal pdf");
   }
 
-  // Get calculatoin method
+  // Get calculation method
 
   INPAR::MLMC::CalcMethod calcm = DRT::INPUT::IntegralValue<INPAR::MLMC::CalcMethod>(mlmcp,"CALC_METHOD");
   switch(calcm)
@@ -145,22 +158,21 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
   // transform needed because pow does not like to get two ints
   int size_of_field= int(pow(M_,mydim));
   values_ = new double[size_of_field];
-  // The StoPro will have a period of 2*pi / Deltakappa == 2*pi*N*d / 6.
+  // The random field will have a period of 2*pi / Deltakappa == 2*pi*N*d / 6.
 
 
   if (myrank_ == 0)
   {
-    cout << "Random Field Parameters "<< endl;
-    cout << "Periodicity L: " << periodicity_ << endl;
-    cout << "M: " << M_ << endl;
-    cout << "N: " << N_ << endl;
-    cout << "kappa_u: " << kappa_u_ << endl;
-    cout << "dkappa: " << dkappa_ << endl;
-    cout << "dx " << dx_ << endl;
+    IO::cout<< "Random Field Parameters "<< IO::endl;
+    IO::cout<< "Periodicity L: " << periodicity_ << IO::endl;
+    IO::cout<< "M: " << M_ << IO::endl;
+    IO::cout<< "N: " << N_ << IO::endl;
+    IO::cout<< "kappa_u: " << kappa_u_ << IO::endl;
+    IO::cout<< "dkappa: " << dkappa_ << IO::endl;
+    IO::cout<< "dx " << dx_ << IO::endl;
   }
-  //dserror("stop herer");
-  //dkappa_ = 2*pi_/N_;
 
+  // reserve some space to store the random phase angles in
   switch(dim_){
   case 3:
     Phi_0_.reserve( N_ * N_ * N_ );
@@ -273,7 +285,7 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
 void GenRandomField::CalcDiscretePSD()
 {
   // just compute PSD
-  cout << "sigma_0_" << sigma_0_ << endl;
+  //IO::cout<< "sigma_0_" << sigma_0_ << IO::endl;
   for (int j=0;j<N_;j++)
   {
     for (int k=0;k<N_;k++)
@@ -312,20 +324,20 @@ void GenRandomField::CalcDiscretePSD()
      }
      else
      {
-       cout << RED_LIGHT " WARNING NO SPECTRAL MATCHING BUT PDF NONGAUSS " END_COLOR << endl;
+       IO::cout<< RED_LIGHT " WARNING NO SPECTRAL MATCHING BUT PDF NONGAUSS " END_COLOR << IO::endl;
        sigma_ul_g_cur_it_=sigma_0_;
      }// compute underlying gaussian distribution based on shields2011
   }
   else
   {
     if (myrank_ == 0)
-      cout << " Nothing to do marginal pdf gaussian " << endl;
+      IO::cout<< " Nothing to do marginal pdf gaussian " << IO::endl;
   }
 }
 
 void GenRandomField::CalcDiscretePSD3D()
 {
-   cout << "sigma_0_" << sigma_0_ << endl;
+   //IO::cout<< "sigma_0_" << sigma_0_ << IO::endl;
   // just compute PSD
   for (int j=0;j<N_;j++)
   {
@@ -361,7 +373,7 @@ void GenRandomField::CalcDiscretePSD3D()
   if(marginal_pdf_!=normal)
   {
     // compute underlying gaussian distribution based on shields2011
-   // cout << "NO SPECTRAL MATHCING"<< endl;
+   // IO::cout<< "NO SPECTRAL MATHCING"<< IO::endl;
     if(perform_spectral_matching_)
     {
       SpectralMatching3D();
@@ -369,7 +381,7 @@ void GenRandomField::CalcDiscretePSD3D()
     }
     else
     {
-      cout << RED_LIGHT " WARNING NO SPECTRAL MATCHING BUT PDF NONGAUSS " END_COLOR << endl;
+      IO::cout<< RED_LIGHT " WARNING NO SPECTRAL MATCHING BUT PDF NONGAUSS " END_COLOR << IO::endl;
       sigma_ul_g_cur_it_=sigma_0_;
     }
 
@@ -377,7 +389,7 @@ void GenRandomField::CalcDiscretePSD3D()
   else
   {
     if (myrank_ == 0)
-      cout << " Nothing to do marginal pdf gaussian " << endl;
+      IO::cout<< " Nothing to do marginal pdf gaussian " << IO::endl;
   }
 }
 
@@ -407,10 +419,10 @@ void GenRandomField::SimGaussRandomFieldFFT()
       else
       {
         A=sqrt(2*(discrete_PSD_[k+j*N_]*(pow(dkappa_,2))));
-        real((*b1)[k+M_*j])=A*sqrt(2)*cos(Phi_0_[k+N_*j]);
-        imag((*b1)[k+M_*j])= A*sqrt(2)*sin(Phi_0_[k+N_*j]);
-        real((*b2)[k+M_*j])= A*sqrt(2)*cos(Phi_1_[k+N_*j]);
-        imag((*b2)[k+M_*j])= A*sqrt(2)*sin(Phi_1_[k+N_*j]);
+        ((*b1)[k+M_*j]).real(A*sqrt(2)*cos(Phi_0_[k+N_*j]));
+        ((*b1)[k+M_*j]).imag(A*sqrt(2)*sin(Phi_0_[k+N_*j]));
+        ((*b2)[k+M_*j]).real(A*sqrt(2)*cos(Phi_1_[k+N_*j]));
+        ((*b2)[k+M_*j]).imag(A*sqrt(2)*sin(Phi_1_[k+N_*j]));
       }
     }
   }
@@ -475,7 +487,7 @@ void GenRandomField::SimGaussRandomFieldFFT()
 
   for(int i=0;i<M_*M_;i++)
   {
-    values_[i]=real((*d2)[i]);
+    values_[i]=((*d2)[i]).real();
   }
   // free memory
   fftw_destroy_plan(ifft_of_rows);
@@ -516,14 +528,14 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
         else
         {
           A=sqrt(2*(discrete_PSD_[l+N_*(k+N_*j)]*(pow(dkappa_,3))));
-          real((*b1)[l+M_*(k+M_*j)])= A*sqrt(2)*cos(Phi_0_[l+N_*(k+N_*j)]);
-          imag((*b1)[l+M_*(k+M_*j)])= A*sqrt(2)*sin(Phi_0_[l+N_*(k+N_*j)]);
-          real((*b2)[l+M_*(k+M_*j)])= A*sqrt(2)*cos(Phi_1_[l+N_*(k+N_*j)]);
-          imag((*b2)[l+M_*(k+M_*j)])= A*sqrt(2)*sin(Phi_1_[l+N_*(k+N_*j)]);
-          real((*b3)[l+M_*(k+M_*j)])= A*sqrt(2)*cos(Phi_2_[l+N_*(k+N_*j)]);
-          imag((*b3)[l+M_*(k+M_*j)])= A*sqrt(2)*sin(Phi_2_[l+N_*(k+N_*j)]);
-          real((*b4)[l+M_*(k+M_*j)])= A*sqrt(2)*cos(Phi_3_[l+N_*(k+N_*j)]);
-          imag((*b4)[l+M_*(k+M_*j)])= A*sqrt(2)*sin(Phi_3_[l+N_*(k+N_*j)]);
+          ((*b1)[l+M_*(k+M_*j)]).real(A*sqrt(2)*cos(Phi_0_[l+N_*(k+N_*j)]));
+          ((*b1)[l+M_*(k+M_*j)]).imag(A*sqrt(2)*sin(Phi_0_[l+N_*(k+N_*j)]));
+          ((*b2)[l+M_*(k+M_*j)]).real(A*sqrt(2)*cos(Phi_1_[l+N_*(k+N_*j)]));
+          ((*b2)[l+M_*(k+M_*j)]).imag(A*sqrt(2)*sin(Phi_1_[l+N_*(k+N_*j)]));
+          ((*b3)[l+M_*(k+M_*j)]).real(A*sqrt(2)*cos(Phi_2_[l+N_*(k+N_*j)]));
+          ((*b3)[l+M_*(k+M_*j)]).imag(A*sqrt(2)*sin(Phi_2_[l+N_*(k+N_*j)]));
+          ((*b4)[l+M_*(k+M_*j)]).real(A*sqrt(2)*cos(Phi_3_[l+N_*(k+N_*j)]));
+          ((*b4)[l+M_*(k+M_*j)]).imag(A*sqrt(2)*sin(Phi_3_[l+N_*(k+N_*j)]));
         }
       }
     }
@@ -627,10 +639,10 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
       {
         for (int l=0;l<M_;l++)
         {
-          real((*d1)[l+(M_)*(k+(M_)*j)])=real((*d2)[k+(M_)*(l+(M_)*j)]);
-          imag((*d1)[l+(M_)*(k+(M_)*j)])=imag((*d2)[k+(M_)*(l+(M_)*j)]);
-          real((*d3)[l+(M_)*(k+(M_)*j)])=real((*d4)[k+(M_)*(l+(M_)*j)]);
-          imag((*d3)[l+(M_)*(k+(M_)*j)])=imag((*d4)[k+(M_)*(l+(M_)*j)]);
+          ((*d1)[l+(M_)*(k+(M_)*j)]).real(((*d2)[k+(M_)*(l+(M_)*j)]).real());
+          ((*d1)[l+(M_)*(k+(M_)*j)]).imag(((*d2)[k+(M_)*(l+(M_)*j)]).imag());
+          ((*d3)[l+(M_)*(k+(M_)*j)]).real(((*d4)[k+(M_)*(l+(M_)*j)]).real());
+          ((*d3)[l+(M_)*(k+(M_)*j)]).imag(((*d4)[k+(M_)*(l+(M_)*j)]).imag());
         }
       }
     }
@@ -642,10 +654,10 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
      {
        for (int l=0;l<M_;l++)
        {
-         real((*d1)[l+(M_)*(k+(M_)*j)])=real((*d5)[k+(M_)*(l+(M_)*j)]);
-         imag((*d1)[l+(M_)*(k+(M_)*j)])=imag((*d5)[k+(M_)*(l+(M_)*j)]);
-         real((*d3)[l+(M_)*(k+(M_)*j)])=real((*d6)[k+(M_)*(l+(M_)*j)]);
-         imag((*d3)[l+(M_)*(k+(M_)*j)])=imag((*d6)[k+(M_)*(l+(M_)*j)]);
+         ((*d1)[l+(M_)*(k+(M_)*j)]).real(((*d5)[k+(M_)*(l+(M_)*j)]).real());
+         ((*d1)[l+(M_)*(k+(M_)*j)]).imag(((*d5)[k+(M_)*(l+(M_)*j)]).imag());
+         ((*d3)[l+(M_)*(k+(M_)*j)]).real(((*d6)[k+(M_)*(l+(M_)*j)]).real());
+         ((*d3)[l+(M_)*(k+(M_)*j)]).imag(((*d6)[k+(M_)*(l+(M_)*j)]).imag());
        }
      }
    }
@@ -659,7 +671,7 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
    fftw_execute(ifft_of_rank);
    for(int i=0;i<M_*M_*M_;i++)
      {
-       values_[i]=real((*d7)[i]);
+       values_[i]=((*d7)[i]).real();
      }
    fftw_destroy_plan(ifft_of_rows1);
    fftw_destroy_plan(ifft_of_rows2);
@@ -742,8 +754,8 @@ void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discre
 
   if (myrank_ == 0)
   {
-    cout << "min " << bb_min_[0] << " "<< bb_min_[1]  << " "<< bb_min_[2] << endl;
-    cout << "max " << bb_max_[0] << " "<< bb_max_[1]  << " "<< bb_max_[2] << endl;
+    IO::cout<< "min " << bb_min_[0] << " "<< bb_min_[1]  << " "<< bb_min_[2] << IO::endl;
+    IO::cout<< "max " << bb_max_[0] << " "<< bb_max_[1]  << " "<< bb_max_[2] << IO::endl;
   }
 
 }
@@ -761,9 +773,9 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
     index_x=int(floor((location[0]-bb_min_[0])/dx_));
     index_y=int(floor((location[1]-bb_min_[1])/dx_));
     // HACK for 2D art_aorta_case SET z to y
-     if (myrank_ == 0&& output && dim_==2)
+     if (myrank_ == 0&& output && dim_==2 )
      {
-       cout << "hack in use" << endl;
+       IO::cout<< "hack in use" << IO::endl;
      }
      if (dim_==2)
        index_y=int(floor((location[2]-bb_min_[2])/dx_));
@@ -821,7 +833,7 @@ void GenRandomField::TranslateToNonGaussian()
   switch(marginal_pdf_)
   {
     case normal:
-      //cout << RED_LIGHT << "WARNING: Target marginal PDF is gaussian so nothing to do here"<< END_COLOR << endl;
+      //IO::cout<< RED_LIGHT << "WARNING: Target marginal PDF is gaussian so nothing to do here"<< END_COLOR << endl;
     break;
 
     case beta:
@@ -829,7 +841,7 @@ void GenRandomField::TranslateToNonGaussian()
       dserror("Beta distribution not supported yet");
 //      for(int i=0;i<(pow(M_,dim));i++)
 //      {
-//        values_[i]=quantile(my_beta,cdf(my_norm, values_[i]))*distribution_params_[3]+distribution_params_[2];;
+//        values_[i]=boost::math::quantile(my_beta,boost::math::cdf(my_norm, values_[i]))*distribution_params_[3]+distribution_params_[2];;
 //      }
     }
     break;
@@ -846,15 +858,18 @@ void GenRandomField::TranslateToNonGaussian()
       // End of FFT
 
       //normal_distribution<>  my_norm2(0,sigma_ul_g_cur_it_);
-      cout << "translating with sigma_ul_g_cur_it_= " << sigma_ul_g_cur_it_<< endl;
-      normal_distribution<>  my_norm2(0,sigma_ul_g_cur_it_);
-      lognormal_distribution<>  my_lognorm(distribution_params_[0],distribution_params_[1]);
-      cout << "distribution_params_[0]" << distribution_params_[0] << endl;
-      cout << "distribution_params_[1]" << distribution_params_[1] << endl;
+      boost::math::normal_distribution<double>   my_norm2(0,sigma_ul_g_cur_it_);
+      boost::math::lognormal_distribution<double>   my_lognorm(distribution_params_[0],distribution_params_[1]);
+
+
+      IO::cout<< "translating with sigma_ul_g_cur_it_= " << sigma_ul_g_cur_it_<< IO::endl;
+      IO::cout<< "distribution_params_[0]" << distribution_params_[0] << IO::endl;
+      IO::cout<< "distribution_params_[1]" << distribution_params_[1] << IO::endl;
+
       //actual translation see Grigoriu1995 for details
       for(int i=0;i<(pow(M_,dim));i++)
       {
-        values_[i]=quantile(my_lognorm,cdf(my_norm2, values_[i]));
+        values_[i]=boost::math::quantile(my_lognorm,boost::math::cdf(my_norm2, values_[i]));
       }
     }
     break;
@@ -869,7 +884,7 @@ void GenRandomField::TranslateToNonGaussian( double *value)
   switch(marginal_pdf_)
   {
     case normal:
-      //cout << RED_LIGHT << "WARNING: Target marginal PDF is gaussian so nothing to do here"<< END_COLOR << endl;
+      //IO::cout<< RED_LIGHT << "WARNING: Target marginal PDF is gaussian so nothing to do here"<< END_COLOR << IO::endl;
     break;
     case beta:
     {
@@ -880,11 +895,11 @@ void GenRandomField::TranslateToNonGaussian( double *value)
     case lognormal:
     {
       // estimate variance from PSD
-      normal_distribution<>  my_norm2(0,sigma_ul_g_cur_it_);
-      lognormal_distribution<>  my_lognorm(distribution_params_[0],distribution_params_[1]);
-      //cout << "distribution_params_[0]" << distribution_params_[0] << endl;
-     // cout << "distribution_params_[1]" << distribution_params_[1] << endl;
-        *value=quantile(my_lognorm,cdf(my_norm2, *value ));
+      boost::math::normal_distribution<double>   my_norm2(0,sigma_ul_g_cur_it_);
+      boost::math::lognormal_distribution<double>   my_lognorm(distribution_params_[0],distribution_params_[1]);
+      //IO::cout<< "distribution_params_[0]" << distribution_params_[0] << IO::endl;
+     // IO::cout<< "distribution_params_[1]" << distribution_params_[1] << IO::endl;
+        *value=boost::math::quantile(my_lognorm,boost::math::cdf(my_norm2, *value ));
     }
     break;
     default:
@@ -924,24 +939,24 @@ void GenRandomField::SpectralMatching()
       // sort entries ro w major style
       if(j>(N_-1)||k>(N_-1))
       {
-        real((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
-        imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
+        ((*PSD_ul_g_complex)[k+N_*2*j]).real(0.0);
+        ((*PSD_ul_g_complex)[k+N_*2*j]).imag(0.0);
       }
       else
       {
-        real((*PSD_ul_g_complex)[k+N_*2*j])=discrete_PSD_[k+j*N_];
-        imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
+        ((*PSD_ul_g_complex)[k+N_*2*j]).real(discrete_PSD_[k+j*N_]);
+        ((*PSD_ul_g_complex)[k+N_*2*j]).imag(0.0);
         if(k==0||j==0)
         {
           // we have 0.5 already in computation of discrete psd
-          //r//eal((*PSD_ul_g_complex)[k+N_*2*j])=real((*PSD_ul_g_complex)[k+N_*2*j])*0.5;
-          //imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
+          //r//eal((*PSD_ul_g_complex)[k+N_*2*j])=std::real((*PSD_ul_g_complex)[k+N_*2*j])*0.5;
+          //std::imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
         }
         else if (k==0&&j==0)
         {
-          //real((*PSD_ul_g_complex)[k+N_*2*j])=0;
-          //real((*PSD_ul_g_complex)[k+N_*2*j])=real((*PSD_ul_g_complex)[k+N_*2*j])*0.25;
-          //imag((*PSD_ul_g_complex)[k+N_*2*j])=0;
+          //std::real((*PSD_ul_g_complex)[k+N_*2*j])=0;
+          //std::real((*PSD_ul_g_complex)[k+N_*2*j])=std::real((*PSD_ul_g_complex)[k+N_*2*j])*0.25;
+          //std::imag((*PSD_ul_g_complex)[k+N_*2*j])=0;
         }
       }
     }
@@ -1012,17 +1027,17 @@ void GenRandomField::SpectralMatching()
         {
           if(j>(N_-1)||k>(N_-1))
           {
-            real((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
-            imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
+            ((*PSD_ul_g_complex)[k+N_*2*j]).real(0.0);
+            ((*PSD_ul_g_complex)[k+N_*2*j]).imag(0.0);
           }
           else
           {
-            real((*PSD_ul_g_complex)[k+N_*2*j])=PSD_ul_g[k+j*N_];
-            imag((*PSD_ul_g_complex)[k+N_*2*j])=0.0;
+            ((*PSD_ul_g_complex)[k+N_*2*j]).real(PSD_ul_g[k+j*N_]);
+            ((*PSD_ul_g_complex)[k+N_*2*j]).imag(0.0);
             if(k==0||j==0)
             {
               // was working when commented out
-              //real((*PSD_ul_g_complex)[k+N_*2*j])=real((*PSD_ul_g_complex)[k+N_*2*j])*0.5;
+              //std::real((*PSD_ul_g_complex)[k+N_*2*j])=std::real((*PSD_ul_g_complex)[k+N_*2*j])*0.5;
               // factor 0.5 taken care of by updating formular
             }
           }
@@ -1031,11 +1046,11 @@ void GenRandomField::SpectralMatching()
       double sigma_ul_g_cur_it_helper_=0;
       for (int g=0; g<4*N_*N_;g++)
       {
-        sigma_ul_g_cur_it_helper_+=real((*PSD_ul_g_complex)[g])*pow(dkappa_,2);
+        sigma_ul_g_cur_it_helper_+=((*PSD_ul_g_complex)[g]).real()*pow(dkappa_,2);
       }
-      sigma_ul_g_cur_it_helper_=sigma_ul_g_cur_it_helper_-real((*PSD_ul_g_complex)[0])*pow(dkappa_,2)*1.0;
+      sigma_ul_g_cur_it_helper_=sigma_ul_g_cur_it_helper_-((*PSD_ul_g_complex)[0]).real()*pow(dkappa_,2)*1.0;
       sigma_ul_g_cur_it_=sqrt(4*sigma_ul_g_cur_it_helper_);
-      cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << endl;
+      IO::cout<< "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << IO::endl;
     }
     fftw_execute(ifft_of_rows_of_psd);
     fftw_execute(ifft_of_columns_of_psd);
@@ -1044,9 +1059,9 @@ void GenRandomField::SpectralMatching()
     // loop over vectorlength
     for(int k=0;k<2*N_*2*N_;k++)
     {
-      rho[k] = real((*autocorr)[k])*2*pow((scaling_fac),2)/(2*N_*2*N_*(pow(sigma_0_,2)));
+      rho[k] = ((*autocorr)[k]).real()*2*pow((scaling_fac),2)/(2*N_*2*N_*(pow(sigma_0_,2)));
         //lets go for +_ 3 * sigma here
-      real((*autocorr_ng)[k])=Integrate(-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,rho[k]);
+      ((*autocorr_ng)[k]).real(Integrate(-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,rho[k]));
     }
     fftw_execute(ifft_of_rows_of_autocorr_ng);
     fftw_execute(ifft_of_columns_of_autocorr_ng);
@@ -1064,8 +1079,8 @@ void GenRandomField::SpectralMatching()
        // PSD_ng[k+j*N_]=0.0;
        else
        {
-         PSD_ng[k+j*N_]=real((*PSD_ng_complex)[k+j*2*N_])/(pow(scaling_fac,2));
-         PSD_ul_g[k+j*N_]=real((*PSD_ul_g_complex)[k+j*2*N_]);
+         PSD_ng[k+j*N_]=((*PSD_ng_complex)[k+j*2*N_]).real()/(pow(scaling_fac,2));
+         PSD_ul_g[k+j*N_]=((*PSD_ul_g_complex)[k+j*2*N_]).real();
         }
       }
     }
@@ -1090,7 +1105,7 @@ void GenRandomField::SpectralMatching()
     }
     psd_error=100*sqrt(error_numerator/error_denominator);
     if (myrank_ == 0)
-      cout<< "Error to target PSD: " << psd_error << endl;
+      IO::cout<< "Error to target PSD: " << psd_error << IO::endl;
     // increase counter
     i++;
   }
@@ -1118,7 +1133,7 @@ void GenRandomField::SpectralMatching()
       discrete_PSD_[h]=0.0;
   }
   // Write to file
-   if (myrank_ == 0)
+   if (myrank_ == 0 && !reduced_output_)
      {
        ofstream File;
        File.open("DiscretePSDTranslated.txt",ios::out);
@@ -1136,7 +1151,7 @@ void GenRandomField::SpectralMatching()
          }
          File2.close();
      }
-  cout<< "Spectral Matching done "<< endl;
+   IO::cout<< "Spectral Matching done "<< IO::endl;
 }
 // Transform PSD of underlying gauusian process
 void GenRandomField::SpectralMatching3D()
@@ -1176,13 +1191,13 @@ void GenRandomField::SpectralMatching3D()
         // sort entries ro w major style
         if(j>(N_-1)||k>(N_-1)||l>(N_-1))
         {
-          real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
-          imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
+          ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(0.0);
+          ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(0.0);
         }
         else
         {
-          real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=discrete_PSD_[l+(N_)*(k+(N_)*j)];
-          imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
+          ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(discrete_PSD_[l+(N_)*(k+(N_)*j)]);
+          ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(0.0);
         }
       }
     }
@@ -1284,13 +1299,13 @@ void GenRandomField::SpectralMatching3D()
           {
             if(j>(N_-1)||k>(N_-1)||l>(N_-1))
             {
-              real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
-              imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
+              ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(0.0);
+              ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(0.0);
             }
             else
             {
-              real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=PSD_ul_g[l+(N_)*(k+(N_)*j)];
-              imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
+              ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(PSD_ul_g[l+(N_)*(k+(N_)*j)]);
+              ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(0.0);
             }
           }
         }
@@ -1298,12 +1313,12 @@ void GenRandomField::SpectralMatching3D()
       double sigma_ul_g_cur_it_helper_=0;
          for (int g=0; g<8*N_*N_*N_;g++)
          {
-           sigma_ul_g_cur_it_helper_+=real((*PSD_ul_g_complex)[g])*pow(dkappa_,3);
+           sigma_ul_g_cur_it_helper_+=((*PSD_ul_g_complex)[g]).real()*pow(dkappa_,3);
          }
          sigma_ul_g_cur_it_=sqrt(8*sigma_ul_g_cur_it_helper_);
-         cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << endl;
+         IO::cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << IO::endl;
     }
-    cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << endl;
+    IO::cout<< "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << IO::endl;
 
     fftw_execute(ifft_of_rows_of_psd);
 
@@ -1313,8 +1328,8 @@ void GenRandomField::SpectralMatching3D()
       {
         for (int l=0;l<N_*2;l++)
         {
-          real((*temp)[l+(2*N_)*(k+(2*N_)*j)])=real((*autocorr)[k+(2*N_)*(l+(2*N_)*j)]);
-          imag((*temp)[l+(2*N_)*(k+(2*N_)*j)])=imag((*autocorr)[k+(2*N_)*(l+(2*N_)*j)]);
+          ((*temp)[l+(2*N_)*(k+(2*N_)*j)]).real(((*autocorr)[k+(2*N_)*(l+(2*N_)*j)]).real());
+          ((*temp)[l+(2*N_)*(k+(2*N_)*j)]).imag(((*autocorr)[k+(2*N_)*(l+(2*N_)*j)]).imag());
         }
       }
     }
@@ -1327,9 +1342,9 @@ void GenRandomField::SpectralMatching3D()
       {
         for (int l=0;l<N_*2;l++)
         {
-          real((*almost_autocorr)[l+(2*N_)*(k+(2*N_)*j)])=real((*almost_autocorr2)[k+(2*N_)*(l+(2*N_)*j)]);
-          // if you forget the imaginary part it will mess with your scaling
-          imag((*almost_autocorr)[l+(2*N_)*(k+(2*N_)*j)])=imag((*almost_autocorr2)[k+(2*N_)*(l+(2*N_)*j)]);
+          ((*almost_autocorr)[l+(2*N_)*(k+(2*N_)*j)]).real(((*almost_autocorr2)[k+(2*N_)*(l+(2*N_)*j)]).real());
+          // if you forget the std::imaginary part it will mess with your scaling
+          ((*almost_autocorr)[l+(2*N_)*(k+(2*N_)*j)]).imag(((*almost_autocorr2)[k+(2*N_)*(l+(2*N_)*j)]).imag());
         }
       }
     }
@@ -1342,12 +1357,12 @@ void GenRandomField::SpectralMatching3D()
     {
       //scaling with sigma to get autocorrelation function
       // Factor 2 to here at the back is essential (altough not quite sure were it comes from)
-      rho[k] = real((*autocorr)[k])*2*pow((scaling_fac),3)/(2*N_*2*N_*2*N_*(pow(sigma_0_,2)));
+      rho[k] = ((*autocorr)[k]).real()*2*pow((scaling_fac),3)/(2*N_*2*N_*2*N_*(pow(sigma_0_,2)));
 
-      real((*autocorr_ng)[k])=Integrate(-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,rho[k]);
-      imag((*autocorr_ng)[k])=0.0;
+      ((*autocorr_ng)[k]).real(Integrate(-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,rho[k]));
+      ((*autocorr_ng)[k]).imag(0.0);
       // The followign lines are good for testing if the FFT works correctly
-      //rho[k] = real((*autocorr)[k])*pow((scaling_fac),3)/(2*N_*2*N_*2*N_);
+      //rho[k] = std::real((*autocorr)[k])*pow((scaling_fac),3)/(2*N_*2*N_*2*N_);
     }
     fftw_execute(ifft_of_rows_of_autocorr_ng);
    // transpose
@@ -1357,8 +1372,8 @@ void GenRandomField::SpectralMatching3D()
       {
         for (int l=0;l<N_*2;l++)
         {
-          real((*autocorr_ng)[l+(2*N_)*(k+(2*N_)*j)])=real((*PSD_ng_complex)[k+(2*N_)*(l+(2*N_)*j)]);
-          imag((*autocorr_ng)[l+(2*N_)*(k+(2*N_)*j)])=imag((*PSD_ng_complex)[k+(2*N_)*(l+(2*N_)*j)]);
+          ((*autocorr_ng)[l+(2*N_)*(k+(2*N_)*j)]).real(((*PSD_ng_complex)[k+(2*N_)*(l+(2*N_)*j)]).real());
+          ((*autocorr_ng)[l+(2*N_)*(k+(2*N_)*j)]).imag(((*PSD_ng_complex)[k+(2*N_)*(l+(2*N_)*j)]).imag());
         }
       }
      }
@@ -1370,16 +1385,16 @@ void GenRandomField::SpectralMatching3D()
       {
         for (int l=0;l<N_*2;l++)
         {
-          real((*almost_PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)])=real((*almost_PSD_ng_complex2)[k+(2*N_)*(l+(2*N_)*j)]);
-          imag((*almost_PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)])=imag((*almost_PSD_ng_complex2)[k+(2*N_)*(l+(2*N_)*j)]);
+          ((*almost_PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(((*almost_PSD_ng_complex2)[k+(2*N_)*(l+(2*N_)*j)]).real());
+          ((*almost_PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(((*almost_PSD_ng_complex2)[k+(2*N_)*(l+(2*N_)*j)]).imag());
         }
       }
     }
 
 
     fftw_execute(ifft_of_rank_of_autocorr_ng);
-    // cout << "PSD after fft ( 10 10 10) "<< real((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*2<< "imag "<< imag((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8.  << endl;
-    // cout << "PSD after fft ( 16644) "<< real((*PSD_ng_complex)[16644])/pow((scaling_fac),3)*2 << endl;
+    // IO::cout<< "PSD after fft ( 10 10 10) "<< std::real((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*2<< "std::imag "<< std::imag((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8.  << IO::endl;
+    // IO::cout<< "PSD after fft ( 16644) "<< std::real((*PSD_ng_complex)[16644])/pow((scaling_fac),3)*2 << IO::endl;
     for (int j=0;j<N_*2;j++)
     {
       for (int k=0;k<N_*2;k++)
@@ -1390,8 +1405,8 @@ void GenRandomField::SpectralMatching3D()
           {}
           else
           {
-            PSD_ng[l+(N_)*(k+(N_)*j)]=real((*PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)])/(pow(scaling_fac,3));
-            PSD_ul_g[l+(N_)*(k+(N_)*j)]=real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]);
+            PSD_ng[l+(N_)*(k+(N_)*j)]=((*PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)]).real()/(pow(scaling_fac,3));
+            PSD_ul_g[l+(N_)*(k+(N_)*j)]=((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real();
           }
         }
       }
@@ -1421,7 +1436,7 @@ void GenRandomField::SpectralMatching3D()
     }
     psd_error=100*sqrt(error_numerator/error_denominator);
     if (myrank_ == 0)
-      cout<< "Error to target PSD: " << psd_error << endl;
+      IO::cout<< "Error to target PSD: " << psd_error << IO::endl;
     i++;
   }
   // set error threshold for spectral matching to 0.5 %
@@ -1479,13 +1494,13 @@ void GenRandomField::SpectralMatching3D3D()
         if(j>(N_-1)||k>(N_-1)||l>(N_-1))
         {
           //l+M_*(k+M_*j)
-          real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
-          imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
+          ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(0.0);
+          ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(0.0);
         }
         else
         {
-          real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=discrete_PSD_[l+(N_)*(k+(N_)*j)];
-          imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
+          ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(discrete_PSD_[l+(N_)*(k+(N_)*j)]);
+          ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(0.0);
         }
       }
     }
@@ -1515,13 +1530,13 @@ void GenRandomField::SpectralMatching3D3D()
           {
             if(j>(N_-1)||k>(N_-1)||l>(N_-1))
             {
-              real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
-              imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
+              ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(0.0);
+              ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(0.0);
             }
             else
             {
-              real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=PSD_ul_g[l+(N_)*(k+(N_)*j)];
-              imag((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)])=0.0;
+              ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real(PSD_ul_g[l+(N_)*(k+(N_)*j)]);
+              ((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).imag(0.0);
             }
           }
         }
@@ -1529,11 +1544,11 @@ void GenRandomField::SpectralMatching3D3D()
       double sigma_ul_g_cur_it_helper_=0;
       for (int g=0; g<8*N_*N_*N_;g++)
       {
-        sigma_ul_g_cur_it_helper_+=real((*PSD_ul_g_complex)[g])*pow(dkappa_,3);
+        sigma_ul_g_cur_it_helper_+=((*PSD_ul_g_complex)[g]).real()*pow(dkappa_,3);
       }
-      sigma_ul_g_cur_it_helper_=sigma_ul_g_cur_it_helper_-real((*PSD_ul_g_complex)[0])*pow(dkappa_,2)*0.0;
+      sigma_ul_g_cur_it_helper_=sigma_ul_g_cur_it_helper_-((*PSD_ul_g_complex)[0]).real()*pow(dkappa_,2)*0.0;
       sigma_ul_g_cur_it_=sqrt(8*sigma_ul_g_cur_it_helper_);
-      cout << "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << endl;
+      IO::cout<< "Sigma of PSD_UL_G" << sigma_ul_g_cur_it_ << IO::endl;
     }
 
     fftw_execute(fft_of_psd);
@@ -1542,15 +1557,15 @@ void GenRandomField::SpectralMatching3D3D()
     for(int k=0;k<2*N_*2*N_*2*N_;k++)
     {
       // Factor 2 to here at the back is essential (altough not quite sure were it comes from)
-      rho[k] = real((*autocorr)[k])*2*pow((scaling_fac),3)/(2*N_*2*N_*2*N_*(pow(sigma_0_,2)));
-      real((*autocorr_ng)[k])=Integrate(-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,rho[k]);
+      rho[k] = ((*autocorr)[k]).real()*2*pow((scaling_fac),3)/(2*N_*2*N_*2*N_*(pow(sigma_0_,2)));
+      ((*autocorr_ng)[k]).real(Integrate(-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,-3*sigma_ul_g_cur_it_,3*sigma_ul_g_cur_it_,rho[k]));
       // The followign lines are good for testing if the FFT works correctly
-      //rho[k] = real((*autocorr)[k])*pow((scaling_fac),3)/(2*N_*2*N_*2*N_);
-      //rho[k] = real((*autocorr)[k])*2*pow((scaling_fac),3)/(2*N_*2*N_*2*N_*(pow(sigma_0_,2)));
+      //rho[k] = std::real((*autocorr)[k])*pow((scaling_fac),3)/(2*N_*2*N_*2*N_);
+      //rho[k] = std::real((*autocorr)[k])*2*pow((scaling_fac),3)/(2*N_*2*N_*2*N_*(pow(sigma_0_,2)));
     }
     fftw_execute(fft_of_autocorr_ng);
-    // cout << "PSD after fft ( 10 10 10) "<< real((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8. << "imag "<< imag((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8.  << endl;
-    //cout << "PSD after fft ( 16644) "<< real((*PSD_ng_complex)[16644])/pow((scaling_fac),3)*8 << endl;
+    // IO::cout<< "PSD after fft ( 10 10 10) "<< std::real((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8. << "std::imag "<< std::imag((*PSD_ng_complex)[10+(2*N_)*(10+(2*N_)*2)])/pow((scaling_fac),3)*8.  << IO::endl;
+    //IO::cout<< "PSD after fft ( 16644) "<< std::real((*PSD_ng_complex)[16644])/pow((scaling_fac),3)*8 << IO::endl;
 
     for (int j=0;j<N_*2;j++)
     {
@@ -1562,8 +1577,8 @@ void GenRandomField::SpectralMatching3D3D()
           {}
           else
           {
-            PSD_ng[l+(N_)*(k+(N_)*j)]=real((*PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)])/(pow(scaling_fac,3));
-            PSD_ul_g[l+(N_)*(k+(N_)*j)]=real((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]);
+            PSD_ng[l+(N_)*(k+(N_)*j)]=((*PSD_ng_complex)[l+(2*N_)*(k+(2*N_)*j)]).real()/(pow(scaling_fac,3));
+            PSD_ul_g[l+(N_)*(k+(N_)*j)]=((*PSD_ul_g_complex)[l+(2*N_)*(k+(2*N_)*j)]).real();
           }
         }
       }
@@ -1591,7 +1606,7 @@ void GenRandomField::SpectralMatching3D3D()
     }
     psd_error=100*sqrt(error_numerator/error_denominator);
     if (myrank_ == 0)
-      cout<< "Error to target PSD: " << psd_error << endl;
+      IO::cout<< "Error to target PSD: " << psd_error << IO::endl;
     // increase counter
     i++;
   }
@@ -1630,14 +1645,14 @@ double GenRandomField::Integrate(double xmin, double xmax, double ymin, double y
 double GenRandomField::Testfunction(double argument_x ,double argument_y, double rho)
 {
   double result = 0.0;
-  normal_distribution<> my_normal(0,sigma_ul_g_cur_it_);
+  boost::math::normal_distribution<double> my_normal(0,sigma_ul_g_cur_it_);
   switch(marginal_pdf_)
   {
     case lognormal:
     {
-      lognormal_distribution<>  my_lognorm(distribution_params_[0],distribution_params_[1]);
+      boost::math::lognormal_distribution<double>  my_lognorm(distribution_params_[0],distribution_params_[1]);
 
-      result=quantile(my_lognorm,(cdf(my_normal,(argument_x))))*quantile(my_lognorm,(cdf(my_normal,argument_y)))*
+      result=boost::math::quantile(my_lognorm,(boost::math::cdf(my_normal,(argument_x))))*boost::math::quantile(my_lognorm,(boost::math::cdf(my_normal,argument_y)))*
       (1/(2*pi_*pow(sigma_ul_g_cur_it_,2)*sqrt(1-pow(rho,2))))*exp(-(pow((argument_x),2)+pow((argument_y),2)-2*rho*(argument_x)*(argument_y))
       /(2*pow(sigma_ul_g_cur_it_,2)*(1-pow(rho,2))));
 
@@ -1646,8 +1661,8 @@ double GenRandomField::Testfunction(double argument_x ,double argument_y, double
     case beta:
     {
       dserror("fix this function");
-      beta_distribution<>  my_beta(distribution_params_[0],distribution_params_[1]);
-      result=(quantile(my_beta,(cdf(my_normal,(argument_x))))*distribution_params_[3]+distribution_params_[2])*(quantile(my_beta,(cdf(my_normal,argument_y)))*distribution_params_[3]+distribution_params_[2])*
+      boost::math::beta_distribution<double>   my_beta(distribution_params_[0],distribution_params_[1]);
+      result=(boost::math::quantile(my_beta,(boost::math::cdf(my_normal,(argument_x))))*distribution_params_[3]+distribution_params_[2])*(boost::math::quantile(my_beta,(boost::math::cdf(my_normal,argument_y)))*distribution_params_[3]+distribution_params_[2])*
        (1/(2*pi_*pow(sigma_0_,2)*sqrt(1-pow(rho,2))))*exp(-(pow((argument_x),2)+pow((argument_y),2)-2*rho*(argument_x)*(argument_y))
        /(2*pow(sigma_0_,2)*(1-pow(rho,2))));
     }
@@ -1689,8 +1704,8 @@ void GenRandomField::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sam
 
   for (int j=0;j<M_*M_;j++)
   {
-    real((*b1)[j])= values_[j];
-    imag((*b1)[j])= 0.0;
+    ((*b1)[j]).real(values_[j]);
+    ((*b1)[j]).imag(0.0);
   }
   // allocate output arrays
   Teuchos::RCP<Teuchos::Array <complex<double> > > d1=
@@ -1756,8 +1771,8 @@ void GenRandomField::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > s
 
   for (int j=0;j<M_*M_*M_;j++)
   {
-    real((*b1)[j])= values_[j];
-    imag((*b1)[j])= 0.0;
+    ((*b1)[j]).real(values_[j]);
+    ((*b1)[j]).imag(0.0);
   }
   fftw_plan fft_of_rf;
   //sign, can be either FFTW_FORWARD (-1) or FFTW_BACKWARD (+1),
