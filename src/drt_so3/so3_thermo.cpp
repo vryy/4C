@@ -1,5 +1,6 @@
-/*!----------------------------------------------------------------------
-\file so_hex8_thermo.cpp
+/*----------------------------------------------------------------------*/
+/*!
+\file so3_thermo.cpp
 \brief
 
 <pre>
@@ -8,17 +9,20 @@
                http://www.lnm.mw.tum.de
                089 - 289-15253
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
-
-#include "so3_thermo.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
- | ctor (public)                                              dano 08/12|
+ | headers                                                   dano 11/12 |
+ *----------------------------------------------------------------------*/
+#include "so3_thermo.H"
+
+#include "../drt_lib/drt_linedefinition.H"
+#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+
+
+/*----------------------------------------------------------------------*
+ | ctor (public)                                             dano 08/12 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(

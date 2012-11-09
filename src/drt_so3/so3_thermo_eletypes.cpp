@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file So3_thermo_eletypes.cpp
+\file so3_thermo_eletypes.cpp
 
 <pre>
    Maintainer: Caroline Danowski

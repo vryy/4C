@@ -1,5 +1,6 @@
-/*!----------------------------------------------------------------------
-\file so3_poro.H
+/*----------------------------------------------------------------------*/
+/*!
+\file so3_thermo.H
 
 <pre>
    Maintainer: Caroline Danowski
@@ -7,22 +8,28 @@
                http://www.lnm.mw.tum.de
                089 - 289-15253
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | definitions                                               dano 11/12 |
+ *----------------------------------------------------------------------*/
 #ifndef SO3_THERMO_H
 #define SO3_THERMO_H
 
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+/*----------------------------------------------------------------------*
+ | headers                                                   dano 11/12 |
+ *----------------------------------------------------------------------*/
 #include "so3_thermo_eletypes.H"
+
 // include thermal header because number of Gauss points are determined
 // dependent on distype
 #include "../drt_thermo/thermo_ele_impl_utils.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
 
-
+/*----------------------------------------------------------------------*
+ |                                                           dano 11/12 |
+ *----------------------------------------------------------------------*/
 namespace DRT
 {
 // forward declarations
@@ -200,11 +207,6 @@ namespace ELEMENTS
     //! configuration
     virtual void InitJacobianMapping();
 
-    //! lump mass matrix (bborn 07/08)
-    void lumpmass(
-      LINALG::Matrix<numdofperelement_,numdofperelement_>* emass
-      );
-
     //@}
 
   protected:
@@ -296,8 +298,29 @@ namespace ELEMENTS
     virtual void lin_kdT_tsi(
       DRT::Element::LocationArray& la,
       vector<double>& disp,  //!< (i): current displacement
-      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrixcoupl  //!< (o): mechanical thermal stiffness term at current gp
+      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  //!< (o): mechanical thermal stiffness term at current gp
       );
+
+    //! Calculate nonlinear stiffness and mass matrix with temperature fraction
+    virtual void nln_stifffint_tsi(
+      DRT::Element::LocationArray& la,  //!< location array
+      vector<double>& disp,  //!< current displacements
+      vector<double>& residual,  //!< current residual displ
+      vector<double>& temp, //!< current temperature
+      LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+      LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
+      LINALG::Matrix<numgpt_1,numstr_>* elestress,  //!< stresses at GP
+      Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
+      const INPAR::STR::StressType iostress  //!< stress output option
+      );
+
+    //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
+    virtual void nln_kdT_tsi(
+      DRT::Element::LocationArray& la,
+      vector<double>& disp,  //!< (i): current displacement
+      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  //!< (o): mechanical thermal stiffness term at current gp
+      );
+
 
     //! \brief Interface to the temperature dependent material law working with soh8.
     //!
@@ -327,6 +350,13 @@ namespace ELEMENTS
       );
 
     //! build linear B-operator
+    void buildbop(
+      LINALG::Matrix<numstr_,numdofperelement_>* bop,
+      LINALG::Matrix<nsd_,nsd_>* defgrd,
+      LINALG::Matrix<nsd_,nen_>* N_XYZ
+      );
+
+    //! build linear B-operator
     void buildboplin(
       LINALG::Matrix<numstr_,numdofperelement_>* boplin,
       LINALG::Matrix<nsd_,nen_>* N_XYZ
@@ -337,6 +367,13 @@ namespace ELEMENTS
       LINALG::Matrix<numstr_,1>* stress,
       LINALG::Matrix<nsd_,nsd_>* defgrd,
       LINALG::Matrix<nsd_,nsd_>* cauchystress
+      );
+
+    //! push forward of Green-Lagrange strain to Euler-Almansi strains
+    void GLtoEA(
+      LINALG::Matrix<numstr_,1>* glstrain,
+      LINALG::Matrix<nsd_,nsd_>* defgrd,
+      LINALG::Matrix<nsd_,nsd_>* euler_almansi
       );
 
   private:
