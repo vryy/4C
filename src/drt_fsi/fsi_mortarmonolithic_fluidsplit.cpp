@@ -308,7 +308,6 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     // some scaling factors for fluid
     const double timescale = FluidField().TimeScaling();
     const double scale     = FluidField().ResidualScaling();
-    const double dt        = FluidField().Dt();
 
     // get fluid matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
@@ -365,7 +364,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
           stcmat->Multiply(true,*rhs,*rhs);
         }
 
-        rhs->Scale(dt*timescale*(1.-stiparam)/(1.-ftiparam));
+        rhs->Scale(Dt()*timescale*(1.-stiparam)/(1.-ftiparam));
         Extractor().AddVector(*rhs,0,f);
 
         rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
@@ -379,7 +378,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
         zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
         LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
-        rhs->Scale(-timescale*dt);
+        rhs->Scale(-timescale*Dt());
 
         Extractor().AddVector(*rhs,1,f);
 
@@ -1346,7 +1345,6 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   // some scaling factors for fluid
   const double timescale  = FluidField().TimeScaling();
   const double scale      = FluidField().ResidualScaling();
-  const double dt         = FluidField().Dt();
 
   // get the Mortar projection matrix P = D^{-1} * M
   const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
@@ -1486,7 +1484,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   {
     auxvec = rcp(new Epetra_Vector(fggprev_->RangeMap(),true));
     fggprev_->Apply(*FluidField().ExtractInterfaceVeln(),*auxvec);
-    tmpvec->Update(dt*timescale,*auxvec,1.0);
+    tmpvec->Update(Dt()*timescale,*auxvec,1.0);
   }
   // ---------End of term (8)
 
@@ -1512,7 +1510,6 @@ void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
 {
   // some scaling factors for fluid
   const double timescale  = FluidField().TimeScaling();
-  const double dt         = FluidField().Dt();
 
   // get the Mortar matrices D and M
   const Teuchos::RCP<LINALG::SparseMatrix> mortard = coupsfm_->GetDMatrix();
@@ -1547,7 +1544,7 @@ void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
   Teuchos::RCP<Epetra_Vector> violation = rcp(new Epetra_Vector(*disnpproj));
   violation->Update(-1.0, *disnproj, 1.0);
   violation->Update(-1.0/timescale,*velnpproj,1.0/timescale,*velnproj,1.0);
-  violation->Update(-dt,*velnproj,1.0);
+  violation->Update(-Dt(),*velnproj,1.0);
 
   // calculate some norms
   double violationl2 = 0.0;

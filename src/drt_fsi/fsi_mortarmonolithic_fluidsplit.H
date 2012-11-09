@@ -45,8 +45,15 @@ namespace FSI
 /// monolithic FSI algorithm with overlapping non-matching interface equations
 /*!
 
-  Here the fluid matrix is split whereas the structure matrix is taken as
-  it is.
+  In the sense of mortar coupling, fluid split means that
+  the fluid field is chosen as slave field.
+  Hence, the fluid velocity interface degrees of freedom are condensed
+  from the system along with the condensation of the Lagrange multiplier
+  field, that is used to enforce the coupling conditions.
+
+  The fluid interface velocities are computed based on the structural
+  interface displacements. The conversion is done by
+  ADAPTER::FluidFSI::DisplacementToVelocity().
 
   \sa MortarMonolithicFluidSplit
   \author tk
