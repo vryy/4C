@@ -41,67 +41,79 @@ void TOPOPT::ADJOINT::FluidAdjointResultTest::TestNode(
     int& test_count
 )
 {
-  int dis;
-  res.ExtractInt("DIS",dis);
-  if (dis != 1)
-    dserror("fix me: only one fluid discretization supported for testing");
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS",dis);
+  if (dis != fluiddis_->Name())
+    return;
 
   int nodeGid;
   res.ExtractInt("NODE",nodeGid);
   nodeGid -= 1;
 
-  if (fluiddis_->HaveGlobalNode(nodeGid))
+  int havenode(fluiddis_->HaveGlobalNode(nodeGid));
+  int isnodeofanybody(0);
+  fluiddis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+  if (isnodeofanybody==0)
   {
-    const DRT::Node* node = fluiddis_->gNode(nodeGid);
-
-    // Test only, if actnode is a row node
-    if (node->Owner() != fluiddis_->Comm().MyPID())
-      return;
-
-    double result = 0.;
-
-    const Epetra_BlockMap& velnpmap = mysol_->Map();
-
-    const int numdim = DRT::Problem::Instance()->NDim();
-
-    std::string position;
-    res.ExtractString("QUANTITY",position);
-    if (position=="velx")
+    dserror("Node %d does not belong to discretization %s",nodeGid+1,fluiddis_->Name().c_str());
+  }
+  else
+  {
+    if (fluiddis_->HaveGlobalNode(nodeGid))
     {
-      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,0))];
-    }
-    else if (position=="vely")
-    {
-      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,1))];
-    }
-    else if (position=="velz")
-    {
-      if (numdim==2)
-        dserror("Cannot test result for velz in 2D case.");
-      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,2))];
-    }
-    else if (position=="pressure")
-    {
-      if (numdim==2)
+      const DRT::Node* node = fluiddis_->gNode(nodeGid);
+
+      // Test only, if actnode is a row node
+      if (node->Owner() != fluiddis_->Comm().MyPID())
+        return;
+
+      double result = 0.;
+
+      const Epetra_BlockMap& velnpmap = mysol_->Map();
+
+      const int numdim = DRT::Problem::Instance()->NDim();
+
+      std::string position;
+      res.ExtractString("QUANTITY",position);
+      if (position=="velx")
       {
-        if (fluiddis_->NumDof(0,node)<3)
-          dserror("too few dofs at node %d for pressure testing",node->Id());
+        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,0))];
+      }
+      else if (position=="vely")
+      {
+        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,1))];
+      }
+      else if (position=="velz")
+      {
+        if (numdim==2)
+          dserror("Cannot test result for velz in 2D case.");
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,2))];
+      }
+      else if (position=="pressure")
+      {
+        if (numdim==2)
+        {
+          if (fluiddis_->NumDof(0,node)<3)
+            dserror("too few dofs at node %d for pressure testing",node->Id());
+          result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,2))];
+        }
+        else
+        {
+          if (fluiddis_->NumDof(0,node)<4)
+            dserror("too few dofs at node %d for pressure testing",node->Id());
+          result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,3))];
+        }
       }
       else
       {
-        if (fluiddis_->NumDof(0,node)<4)
-          dserror("too few dofs at node %d for pressure testing",node->Id());
-        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,3))];
+        dserror("Quantity '%s' not supported in fluid testing", position.c_str());
       }
-    }
-    else
-    {
-      dserror("Quantity '%s' not supported in fluid testing", position.c_str());
-    }
 
-    nerr += CompareValues(result, res);
-    test_count++;
+      nerr += CompareValues(result, res);
+      test_count++;
+    }
   }
 }
 

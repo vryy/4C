@@ -38,36 +38,48 @@ void OPTI::OptiResultTest::TestNode(
     int& test_count
 )
 {
-  int dis;
-  res.ExtractInt("DIS",dis);
-  if (dis != 1)
-    dserror("fix me: only one optimization discretization supported for testing");
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS",dis);
+  if (dis != optidis_->Name())
+    return;
 
   int nodeGid;
   res.ExtractInt("NODE",nodeGid);
   nodeGid -= 1;
 
-  if (optidis_->HaveGlobalNode(nodeGid))
+  int havenode(optidis_->HaveGlobalNode(nodeGid));
+  int isnodeofanybody(0);
+  optidis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+  if (isnodeofanybody==0)
   {
-    const DRT::Node* node = optidis_->gNode(nodeGid);
+    dserror("Node %d does not belong to discretization %s",nodeGid+1,optidis_->Name().c_str());
+  }
+  else
+  {
+    if (optidis_->HaveGlobalNode(nodeGid))
+    {
+      const DRT::Node* node = optidis_->gNode(nodeGid);
 
-    // Test only, if actnode is a row node
-    if (node->Owner() != optidis_->Comm().MyPID())
-      return;
+      // Test only, if actnode is a row node
+      if (node->Owner() != optidis_->Comm().MyPID())
+        return;
 
-    double result = 0.;
+      double result = 0.;
 
-    const Epetra_BlockMap& optimap = sol_->Map();
+      const Epetra_BlockMap& optimap = sol_->Map();
 
-    std::string position;
-    res.ExtractString("QUANTITY",position);
-    if (position=="x")
-      result = (*sol_)[optimap.LID(optidis_->Dof(0,node,0))];
-    else
-      dserror("Quantity '%s' not supported in fluid testing", position.c_str());
+      std::string position;
+      res.ExtractString("QUANTITY",position);
+      if (position=="x")
+        result = (*sol_)[optimap.LID(optidis_->Dof(0,node,0))];
+      else
+        dserror("Quantity '%s' not supported in fluid testing", position.c_str());
 
-    nerr += CompareValues(result, res);
-    test_count++;
+      nerr += CompareValues(result, res);
+      test_count++;
+    }
   }
 }
 

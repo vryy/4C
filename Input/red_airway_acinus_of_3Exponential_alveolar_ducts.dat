@@ -82,7 +82,7 @@ NODE 2 DNODE 2
 DPOINT                          1
 E 2 - Exponential Acinus_Volume 0.0372 VolumePerArea 0.1116 Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023 FromCurve 0.0 1 0
 ----------------------------------------------------------RESULT DESCRIPTION
-RED_AIRWAY DIS 1 NODE 1 QUANTITY pressure VALUE -3.37489810215513387e+02 TOLERANCE 1e-6
-RED_AIRWAY DIS 1 NODE 2 QUANTITY pressure VALUE -3.37489810215513330e+02 TOLERANCE 1e-6
+RED_AIRWAY DIS red_airway NODE 1 QUANTITY pressure VALUE -3.37489810215513387e+02 TOLERANCE 1e-6
+RED_AIRWAY DIS red_airway NODE 2 QUANTITY pressure VALUE -3.37489810215513330e+02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
