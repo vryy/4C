@@ -13,8 +13,6 @@ Maintainer: Kei Müller
 
 #include <Teuchos_Time.hpp>
 #include "Teuchos_RCP.hpp"
-#include <iostream>
-#include <iomanip>
 
 #include "strtimint_statmech.H"
 
@@ -70,8 +68,7 @@ isconverged_(false)
   //suppress all output printed to screen in case of single filament studies in order not to generate too much output on the cluster
   SuppressOutput();
 
-  // Initial Statistical Mechanics Output
-  //getting number of dimensions for diffusion coefficient calculation
+  // Initialize Statistical Mechanics Output
   statmechman_->InitOutput(DRT::Problem::Instance()->NDim(),(*dt_)[0]);
 
   // set up inverted dirichlet toggle vector (old dbc way)
@@ -1653,7 +1650,7 @@ void STR::TimIntStatMech::StatMechPrepareStep()
       if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"GMSHOUTPUT"))
       {
         std::ostringstream filename;
-          filename << "./GmshOutput/network000000.pos";
+        filename << statmechman_->StatMechRootPath()<<"/GmshOutput/network000000.pos";
         statmechman_->GmshOutput(*((*dis_)(0)),filename,step_);
       }
     }

@@ -34,11 +34,6 @@ Maintainer: Kei Müller
 #include "../drt_truss3/truss3.H"
 #include "../drt_torsion3/torsion3.H"
 
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <math.h>
-
 //MEASURETIME activates measurement of computation time for certain parts of the code
 //#define MEASURETIME
 
@@ -3612,8 +3607,24 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     //Gmsh output
     if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))
     {
+      // create file name and check existence of the required output folder
+      std::string rootpath = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      size_t pos = rootpath.rfind('/');
+      rootpath = rootpath.substr(0,pos);
+      // replace last folder by new pattern
+      string::iterator it = rootpath.end();
+      while(it!=rootpath.begin())
+      {
+        if(*it=='/')
+          break;
+        it--;
+      }
+      if(it==rootpath.begin())
+        rootpath.replace(it,rootpath.end(),".");
+
+      // Check for existence of the folder StatMechOutput
       std::ostringstream filename;
-      filename << "./GmshOutput/InitLinks.pos";
+        filename << outputrootpath_ <<"/GmshOutput/InitLinks.pos";
       Epetra_Vector disrow(*discret_->DofRowMap(), true);
       GmshOutput(disrow,filename,0);
     }

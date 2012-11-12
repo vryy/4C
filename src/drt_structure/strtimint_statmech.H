@@ -16,6 +16,9 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_ost.H"
+#include <iostream>
+#include <iomanip>
+#include <sys/stat.h>
 
 /*----------------------------------------------------------------------*/
 /*forward declarations*/

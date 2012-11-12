@@ -28,6 +28,12 @@ Maintainer: Kei Müller
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#include <iostream>
+#include <iomanip>
+#include <cstdio>
+#include <sys/stat.h>
+#include <math.h>
+
 /*!
 \brief management and auxiliary functions for statistical mechanics
 \author cyron (cyron@lnm.mw.tum.de)
@@ -97,6 +103,9 @@ public:
               const Epetra_Vector&                 fint,
               Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null,
               bool                                 printscreen=true);
+
+  // Return Gmsh and StatMech Output root path
+  const std::string& StatMechRootPath() const{return outputrootpath_;}
 
   //! \brief saving all necessary class variables for restart
   void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output, double& dt);
@@ -560,6 +569,9 @@ protected:
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
+
+  //! \brief output root path for Gmsh and StatMech output
+  std::string outputrootpath_;
 
   //! \brief how often a time step had to be restarted with new random numbers due to unconverged solution of nonlinear system of equations since simulation start
   int unconvergedsteps_;
