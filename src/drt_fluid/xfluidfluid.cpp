@@ -251,6 +251,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   // set general vector values of boundarydis needed by elements
   LINALG::Export(*(xfluid_.alevelnp_),*(xfluid_.ivelnp_));
+
   cutdiscret.SetState("ivelnp",xfluid_.ivelnp_);
 
   // set interface dispnp needed for the elements
@@ -295,7 +296,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
 
   //----------------------------------------------------------------------
-
 
   DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
   DRT::AssembleStrategy alestrategy(0, 0, xfluid_.alesysmat_,xfluid_.shapederivatives_, xfluid_.aleresidual_,Teuchos::null,Teuchos::null);
@@ -373,7 +373,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(discret,nds,la,false);
 
-
         // get dimension of element matrices and vectors
         // Reshapelement matrices and vectors and init to zero
         strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
@@ -399,7 +398,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
         }
 
         // do cut interface condition
-
         // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
         std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
         std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
@@ -425,7 +423,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           // new Benedikt's transformation
           e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #endif
-
           // set of all side Ids of involved sides
           std::set<int> begids;
           for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
@@ -1179,7 +1176,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     }
   }
 
-  gmshfilecontent_vel << "};\n";
+  // comment out to have sepperate views of embedded and background fluid
+/*  gmshfilecontent_vel << "};\n";
   gmshfilecontent_press << "};\n";
 
   if(countiter > -1) // for residual output
@@ -1192,6 +1190,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     gmshfilecontent_vel   << "View \"" << "SOL " << "embedded " << "_" << step << "\" {\n";
     gmshfilecontent_press << "View \"" << "SOL " << "embedded " << "_" << step << "\" {\n";
   }
+  */
 
   const int numalerowele = alefluiddis.NumMyRowElements();
   for (int i=0; i<numalerowele; ++i)
@@ -2052,7 +2051,10 @@ FLD::XFluidFluid::XFluidFluid(
 
   // prepare embedded dis for Nitsche-Coupling-Type Ale-Sided
   if ( coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring )
-    CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
+  {
+    PrepareEmbeddedDistribution();
+    CreateBoundaryEmbeddedMap();
+  }
 
 
   // store a dofset with the complete fluid unknowns
@@ -2203,10 +2205,11 @@ FLD::XFluidFluid::XFluidFluid(
 
 }
 
-// -------------------------------------------------------------------
+// ------------------------------------------------------------------------
 // prepare embedded discretization for Ale-sided-coupling
-// -------------------------------------------------------------------
-void FLD::XFluidFluid::CreateEmbeddedGhostingAndBoundaryEmbeddedMap()
+// Ghost the outer elements of the embedded discretization on all processors
+// -----------------------------------------------------------------------
+void FLD::XFluidFluid::PrepareEmbeddedDistribution()
 {
 #ifdef PARALLEL
 
@@ -2279,7 +2282,13 @@ void FLD::XFluidFluid::CreateEmbeddedGhostingAndBoundaryEmbeddedMap()
   embdis_->FillComplete();
 
 #endif
+}//FLD::XFluidFluid::PrepareEmbeddedDistribution()
 
+// -------------------------------------------------------------------
+// create boundary-embedded Map for Ale-sided-coupling
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
+{
   // fill boundary_embedded_mapdmap between boundary element id and its corresponding embedded element id
   for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
   {
@@ -2333,7 +2342,7 @@ void FLD::XFluidFluid::CreateEmbeddedGhostingAndBoundaryEmbeddedMap()
     if(bele_found == false) dserror("corresponding embele for boundary element with boundary id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!", bele->Id(), myrank_);
   }
 
-}//FLD::XFluidFluid::CreateEmbeddedGhostingAndBoundaryEmbeddedMap()
+}//FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
 
 // -------------------------------------------------------------------
 //
@@ -2439,12 +2448,12 @@ void FLD::XFluidFluid::TimeLoop()
     // -----------------------------------------------------------------
     NonlinearSolve();
 
-
     // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
     TimeUpdate();
+
 
     // -------------------------------------------------------------------
     //  lift'n'drag forces, statistics time sample and output of solution
@@ -2521,10 +2530,13 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
     // -------------------------------------------------------------------
     EvaluateErrorComparedToAnalyticalSol();
 
+
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
     Output();
+
+
   }
 }// FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
 
@@ -2638,7 +2650,6 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
     dserror("Unknowm type in PrepareNonlinearSolve! ");
 
   SetHistoryValues();
-
   SetDirichletNeumannBC();
 
 }//FLD::XFluidFluid::PrepareNonlinearSolve()
@@ -2766,7 +2777,6 @@ void FLD::XFluidFluid::NonlinearSolve()
       dtele_=Teuchos::Time::wallTime()-tcpu;
 
     }
-
 
 
     // scaling to get true residual vector
@@ -3157,7 +3167,7 @@ void FLD::XFluidFluid::Evaluate(
 
 //   if(monotype_ == "fully_newton")
 //     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_inter", gmsh_count_, step_, state_->velnp_, alevelnp_,
-//                          aledispnp_);
+//                           aledispnp_);
 //   else
 //     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_fixedfsi", -1, step_, state_->velnp_, alevelnp_,
 //                        aledispnp_);
@@ -3509,7 +3519,6 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
 
       //-------------------------
       // Enforce incompressibility
-      //  if(0)
       if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
       {
         // find the incompressibility patch
@@ -3625,7 +3634,9 @@ void FLD::XFluidFluid::SetDirichletNeumannBC()
 
     embdis_->ClearState();
     embdis_->SetState("velaf",alevelnp_);
-    embdis_->EvaluateDirichlet(eleparams,alevelnp_,null,null,null,aledbcmaps_);
+    //don't call this with the mapextractor. Otherwise the Mapextractor will
+    //be built again.
+    embdis_->EvaluateDirichlet(eleparams,alevelnp_,null,null,null);
     embdis_->ClearState();
 
     // set thermodynamic pressure
@@ -3721,7 +3732,7 @@ void FLD::XFluidFluid::Output()
 {
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
-  
+
   if( !write_visualization_data && !write_restart_data )
   	return;
 
@@ -3791,6 +3802,7 @@ void FLD::XFluidFluid::Output()
 
   if (write_visualization_data)
   {
+    cout << "hier " << endl;
     //Velnp()->Print(cout);
     /*vector<int> lm;
     lm.push_back(17041);
@@ -3910,6 +3922,7 @@ void FLD::XFluidFluid::Output()
 
   }
 
+
   // write restart
   if (write_restart_data)
   {
@@ -3960,8 +3973,8 @@ void FLD::XFluidFluid::Output()
       emboutput_->WriteVector("dispnm_emb",aledispnm_);
     }
 
-    //if(poroelast_)
-    emboutput_->WriteVector("gridv_emb", gridv_);
+    if(alefluid_)
+      emboutput_->WriteVector("gridv_emb", gridv_);
 
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
     emboutput_->WriteVector("accnp_emb",aleaccnp_);
@@ -3969,6 +3982,7 @@ void FLD::XFluidFluid::Output()
     emboutput_->WriteVector("veln_emb", aleveln_);
     emboutput_->WriteVector("velnm_emb", alevelnm_);
     // emboutput_->WriteVector("neumann_loads",aleneumann_loads_);
+
   }
 
    return;
@@ -4258,8 +4272,8 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
   // how is the analytical solution available (implemented of via function?)
   INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
 
-  //CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
 
+  //CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
 
   if(calcerr != INPAR::FLUID::no_error_calculation)
   {
@@ -4346,7 +4360,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
     const int numrowele = bgdis_->NumMyRowElements();
     for (int i=0; i<numrowele; ++i)
     {
-
       // local element-wise squared error norms
       Epetra_SerialDenseVector ele_dom_norms_bg(num_dom_norms);
       Epetra_SerialDenseVector ele_interf_norms(num_interf_norms);
@@ -4479,7 +4492,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
                   std::vector<Epetra_SerialDenseMatrix> & couplingmatrices = side_coupling[sid];
                   if ( couplingmatrices.size()!=0 )
                     dserror("zero sized vector expected");
-
                   couplingmatrices.resize(3);
 
                   // no coupling for pressure in stress based method, but the coupling matrices include entries for pressure coupling
@@ -4580,7 +4592,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
     //-----------------------------------------------
     // Embedded discretization
     //---------------------------------------------
-
     // set vector values needed by elements
     embdis_->ClearState();
     embdis_->SetState("u and p at time n+1 (converged)", alevelnp_);
@@ -4622,7 +4633,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
       cpu_dom_norms_emb += ele_dom_norms_emb;
 
     } // end loop over embedded fluid elements
-
 
     //--------------------------------------------------------
     // reduce and sum over all procs
@@ -5111,4 +5121,23 @@ Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluid::CreateFieldTest()
 Teuchos::RCP<LINALG::SparseMatrix> FLD::XFluidFluid::SystemMatrix()
 {
   return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_);
+}
+
+// -------------------------------------------------------------------
+// extrapolate from time mid-point to end-point         (mayr 12/2011)
+// -------------------------------------------------------------------
+Teuchos::RCP<Epetra_Vector> FLD::XFluidFluid::ExtrapolateEndPoint
+(
+  Teuchos::RCP<Epetra_Vector> vecn,
+  Teuchos::RCP<Epetra_Vector> vecm
+)
+{
+  Teuchos::RCP<Epetra_Vector> vecnp = rcp(new Epetra_Vector(*vecm));
+
+//   // For gen-alpha extrapolate mid-point quantities to end-point.
+//   // Otherwise, equilibrium time level is already end-point.
+//   if (is_genalpha_)
+//     vecnp->Update((alphaF_-1.0)/alphaF_,*vecn,1.0/alphaF_);
+
+  return vecnp;
 }

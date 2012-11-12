@@ -153,6 +153,7 @@ bool FSI::MonolithicNoNOX::Converged()
   bool convinc = false;
   bool convfres = false;
 
+
   // residual increments
   switch (normtypeinc_)
   {
@@ -164,8 +165,8 @@ bool FSI::MonolithicNoNOX::Converged()
                 ((normflpresinc_/nfp_)<tolinc_) and ((normaleinc_/na_)<tolinc_));
       break;
     case INPAR::FSI::convnorm_mix:
-      convinc = ((normstrinc_<tolinc_) and ((norminterfacerhs_/ni_)<tolinc_) and ((normflvelinc_/nfv_)<tolinc_) and
-                 (normflpresinc_/nfp_<tolinc_) and (normaleinc_/na_<tolinc_));
+      convinc = ((normstrinc_<tolinc_) and (norminterfacerhs_<tolinc_) and (normflvelinc_<tolinc_) and
+                 (normflpresinc_<tolinc_) and (normaleinc_<tolinc_));
       break;
   default:
       dserror("Cannot check for convergence of residual values!");
@@ -212,20 +213,29 @@ void FSI::MonolithicNoNOX::LinearSolve()
   else
     iterinc_->PutScalar(0.0);
 
-//   LINALG::ApplyDirichlettoSystem(
-//     sparse,
-//     iterinc_,
-//     rhs_,
-//     Teuchos::null,
-//     zeros_,
-//     *CombinedDBCMap()
-//     );
+
+   LINALG::ApplyDirichlettoSystem(
+     sparse,
+     iterinc_,
+     rhs_,
+     Teuchos::null,
+     zeros_,
+     *CombinedDBCMap()
+     );
 
   // get UMFPACK...
 
   Teuchos::ParameterList solverparams = DRT::Problem::Instance()->UMFPACKSolverParams();
-
   solver_ = rcp(new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+#ifdef moresolvers
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
+  solver_ = rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver),
+                                   Comm(),
+                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
+#endif
+
 
   // standard solver call
   solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_==1);

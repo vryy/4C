@@ -81,6 +81,8 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
     // mark all interface velocities as dirichlet values
     xfluidfluid_->AddDirichCond(interface_->FSICondMap());
   }
+
+  interfaceforcen_ = rcp(new Epetra_Vector(*(interface_->FSICondMap())));
 }
 
 
@@ -94,6 +96,16 @@ double ADAPTER::FluidFluidFSI::TimeScaling() const
     return 1./xfluidfluid_->Dt();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::Update()
+{
+  Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_->ExtractFSICondVector(xfluidfluid_->TrueResidual());
+
+  interfaceforcen_ = xfluidfluid_->ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
+
+  xfluidfluid_->TimeUpdate();
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -107,7 +119,10 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::InnerVelocityRowMap()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFluidFSI::ExtractInterfaceForces()
 {
-  return interface_->ExtractFSICondVector(xfluidfluid_->TrueResidual());
+//  return interface_->ExtractFSICondVector(xfluidfluid_->TrueResidual());
+  Teuchos::RCP<Epetra_Vector> interfaceforcem = interface_->ExtractFSICondVector(xfluidfluid_->TrueResidual());
+
+  return xfluidfluid_->ExtrapolateEndPoint(interfaceforcen_,interfaceforcem);
 }
 
 
@@ -153,6 +168,35 @@ void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vec
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFluidFSI::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
+{
+  dserror("ADAPTER::FluidFluidFSI::RelaxationSolve");
+//   const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
+//   Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
+//   interface_->InsertFSICondVector(ivel,relax);
+//   fluidimpl_->LinearRelaxationSolve(relax);
+//   return ExtractInterfaceForces();
+  return  Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+{
+  // apply the interface velocities
+  interface_->InsertFSICondVector(ivel,xfluidfluid_->ViewofVelnp());
+
+//   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+//   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DIVPROJECTION"))
+//   {
+//     // project the velocity field into a divergence free subspace
+//     // (might enhance the linear solver, but we are still not sure.)
+//     ProjVelToDivZero();
+//   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
 {
   meshmap_->Setup(*embfluiddis_->DofRowMap(),mm,LINALG::SplitMap(*embfluiddis_->DofRowMap(),*mm));
@@ -164,7 +208,6 @@ void ADAPTER::FluidFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
 {
-  cout << "ApplyMeshVelocity " << endl;
   meshmap_->InsertCondVector(gridvel,xfluidfluid_->ViewOfGridVel());
   return;
 }
@@ -174,7 +217,6 @@ void ADAPTER::FluidFluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector>
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
-  cout << " DisplacementToVelocity " << endl;
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
   /// We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.

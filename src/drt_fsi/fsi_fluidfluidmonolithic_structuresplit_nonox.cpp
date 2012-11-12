@@ -12,6 +12,7 @@
 
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
@@ -19,6 +20,8 @@
 #include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
+#include "../drt_constraint/constraint_manager.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -39,7 +42,8 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
     StructureField()->RemoveDirichCond(intersectionmap);
 
     // give a warning to the user that Dirichlet boundary conditions might not be correct
-    if (comm.MyPID() == 0)
+
+   if (comm.MyPID() == 0)
     {
       cout << "  +---------------------------------------------------------------------------------------------+" << endl;
       cout << "  |                                        PLEASE NOTE:                                         |" << endl;
@@ -483,7 +487,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupSystemMatrix");
-
 
   // extract Jacobian matrices and put them into composite system
   // matrix W
@@ -968,6 +971,53 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FSI::FluidFluidMonolithicStructureSplitNoNOX::Output()
+{
+  StructureField()->Output();
+
+  // output Lagrange multiplier
+  {
+    Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
+
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    const int uprestart = fsidyn.get<int>("RESTARTEVRY");
+    if(uprestart != 0 && FluidField().Step() % uprestart == 0)
+      StructureField()->DiscWriter()->WriteVector("lambda", lambdafull);
+  }
+
+  FluidField().    Output();
+  AleField().      Output();
+  FluidField().LiftDrag();
+
+  if (StructureField()->GetConstraintManager()->HaveMonitor())
+  {
+    StructureField()->GetConstraintManager()->ComputeMonitorValues(StructureField()->Dispnp());
+    if(Comm().MyPID() == 0)
+      StructureField()->GetConstraintManager()->PrintMonitorValues();
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidFluidMonolithicStructureSplitNoNOX::ReadRestart(int step)
+{
+  // read Lagrange multiplier
+  {
+    Teuchos::RCP<Epetra_Vector> lambdafull = rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
+    IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
+    reader.ReadVector(lambdafull, "lambda");
+    lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
+  }
+
+  StructureField()->ReadRestart(step);
+  FluidField().ReadRestart(step);
+  AleField().ReadRestart(step);
+
+  SetTimeStep(FluidField().Time(),FluidField().Step());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupNewSystem()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupNewSystem()");
@@ -1120,12 +1170,13 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
 {
+
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::BuildCovergenceNorms()");
   //----------------------------
   // build residual norms
   rhs_->Norm2(&normrhs_);
 
-  // structural Dofs
+  // structural Dofs (inner dofs)
   StructureField()->Interface()->ExtractOtherVector(StructureField()->RHS())->Norm2(&normstrrhs_);
 
   // interface
@@ -1160,7 +1211,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
   // build increment norm
   iterinc_->Norm2(&norminc_);
 
-  // structural Dofs
+  // structural Dofs (inner dofs)
   Extractor().ExtractVector(iterinc_,0)->Norm2(&normstrinc_);
 
   // interface

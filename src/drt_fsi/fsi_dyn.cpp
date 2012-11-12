@@ -734,12 +734,14 @@ void fluid_fluid_fsi_drt()
     else
       dserror("unsupported partitioned FSI scheme");
 
-    //   const int restart = DRT::Problem::Instance()->Restart();
-    //     if (restart)
-//     {
-//       // read the restart information, set vectors and variables
-//       fsi->ReadRestart(restart);
-//     }
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(restart);
+    }
+
+
     fsi->Timeloop(fsi);
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());

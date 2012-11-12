@@ -242,7 +242,10 @@ namespace FLD
       );
 
     ///  prepare embedded discretization for Nitsche-Coupling-Type Ale-Sided
-    void CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
+    void PrepareEmbeddedDistribution();
+
+    ///  prepare embedded discretization for Nitsche-Coupling-Type Ale-Sided
+    void CreateBoundaryEmbeddedMap();
 
     /// start time loop for startingalgo, normal problems and restarts
     /// of Fluid-Fluid problems
@@ -346,6 +349,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { return aletrueresidual_; }
     Teuchos::RCP<const Epetra_Vector> Velnp() { return alevelnp_; }
+    Teuchos::RCP<      Epetra_Vector> ViewofVelnp() { return alevelnp_; }
     Teuchos::RCP<const Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
     Teuchos::RCP<const Epetra_Vector> Veln() { return aleveln_; } //return state_->fluidfluidveln_ ;}/
     Teuchos::RCP<const Epetra_Vector> GridVel() {return gridv_; }
@@ -417,6 +421,14 @@ namespace FLD
     double TimIntParam() const;
 
     void LiftDrag() const;
+
+    //! @name methods for fsi
+    /// Extrapolation of vectors from mid-point to end-point t_{n+1}
+    Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
+      Teuchos::RCP<Epetra_Vector> vecn, ///< vector at time level t_n
+      Teuchos::RCP<Epetra_Vector> vecm ///< vector at time level of equilibrium
+      );
+    //@}
 
     /// create field test
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();

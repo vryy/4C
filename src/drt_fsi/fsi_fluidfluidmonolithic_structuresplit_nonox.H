@@ -100,6 +100,10 @@ namespace FSI
 
     virtual void Update();
 
+    virtual void ReadRestart(int step);
+
+    virtual void Output();
+
     virtual void PrepareTimeStep();
 
     virtual void RecoverLagrangeMultiplier();
@@ -164,6 +168,7 @@ namespace FSI
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
     //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    // lambda lives at the slave side (here at stucture)
     Teuchos::RCP<Epetra_Vector> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current NOX iteration \f$i+1\f$

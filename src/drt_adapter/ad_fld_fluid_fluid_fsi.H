@@ -69,6 +69,8 @@ namespace ADAPTER {
 
     virtual double TimeScaling() const;
 
+    virtual void Update();
+
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
@@ -85,7 +87,11 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor();
 
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
+
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+
+    virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
 
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
@@ -121,6 +127,9 @@ namespace ADAPTER {
 
     /// the interface map setup for fsi interface, free surface, interior translation
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
+
+    /// interface force at old time level t_n
+    Teuchos::RCP<Epetra_Vector>            interfaceforcen_;
 
     /// ALE dof map
     Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
