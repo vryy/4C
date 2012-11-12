@@ -19,7 +19,9 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include <iostream>
+#include "../drt_io/io_pstream.H" // has to go before io.H
 #include "../drt_io/io.H"
+
 
 using namespace std;
 
@@ -32,9 +34,9 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
 {
   if (!dis->Comm().MyPID())
   {
-    cout << "------------------------------------------------------------\n";
-    cout << "Entering patient specific structural preprocessing (PATSPEC)\n";
-    cout << "\n";
+    IO::cout << "------------------------------------------------------------\n";
+    IO::cout << "Entering patient specific structural preprocessing (PATSPEC)\n";
+    IO::cout << "\n";
   }
 
   //------------- test discretization for presence of the Gasser ILT material
@@ -70,8 +72,8 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
   params->set("max hu lumen", maxhulumen);
   if (!dis->Comm().MyPID())
   {
-    if (maxhulumen == 0) cout << "max HU in lumen not set \n";
-    else printf("max HU in lumen %4i \n", maxhulumen);
+    if (maxhulumen == 0) IO::cout << "max HU in lumen not set "<< IO::endl;
+    else IO::cout << "max HU in lumen " <<  maxhulumen << IO::endl;
   }
 
   int calc_strength  = DRT::INPUT::IntegralValue<int>(pslist,"CALCSTRENGTH");
@@ -79,7 +81,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
   if (gfoundit or calc_strength)
   {
     if (!dis->Comm().MyPID())
-      cout << "Computing distance functions...\n";
+      IO::cout << "Computing distance functions...\n";
     PATSPEC::ComputeEleNormalizedLumenDistance(dis, params);
     PATSPEC::ComputeEleLocalRadius(dis);
 
@@ -88,7 +90,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
   if (calc_strength)
   {
     if (!dis->Comm().MyPID())
-      cout << "Computing strength model...\n";
+      IO::cout << "Computing strength model...\n";
     PATSPEC::ComputeEleStrength(dis, params);
   }
   //-------------------------------------------------------------------------
@@ -103,7 +105,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
   if ((int)embedcond.size())
   {
 	params->set("haveembedtissue", true); // so the condition is evaluated in STR::ApplyForceStiffEmbedTissue
-    if (!dis->Comm().MyPID()) cout << "Computing area for embedding tissue...\n";
+    if (!dis->Comm().MyPID()) IO::cout << "Computing area for embedding tissue...\n";
 
     // loop all embedding tissue conditions
     for (int cond=0; cond<(int)embedcond.size(); ++cond)
@@ -111,7 +113,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
       // a vector for all row nodes to hold element area contributions
       Epetra_Vector nodalarea(*dis->NodeRowMap(),true);
 
-      //cout << *embedcond[cond];
+      //IO::cout << *embedcond[cond];
       map<int,RCP<DRT::Element> >& geom = embedcond[cond]->Geometry();
       map<int,RCP<DRT::Element> >::iterator ele;
       for (ele=geom.begin(); ele != geom.end(); ++ele)
@@ -135,7 +137,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
         Epetra_SerialDenseVector dumvec(0);
         element->Evaluate(eparams,actdis,lm,dummat,dummat,dumvec,dumvec,dumvec);
         double a = eparams.get("area",-1.0);
-        //printf("Ele %d a %10.5e\n",element->Id(),a);
+        //IO::cout << "Ele " << element->Id() << "a " << a << IO::endl;
 
         // loop over all nodes of the element an share the area
         // do only contribute to my own row nodes
@@ -160,7 +162,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
       }
       // set this vector to the condition
       (*embedcond[cond]).Add("areapernode",apern);
-      //cout << *embedcond[cond];
+      //IO::cout << *embedcond[cond];
 
 
     } // for (int cond=0; cond<(int)embedcond.size(); ++cond)
@@ -172,9 +174,9 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
 
   if (!dis->Comm().MyPID())
   {
-    cout << "\n";
-    cout << "Leaving patient specific structural preprocessing (PATSPEC)\n";
-    cout << "-----------------------------------------------------------\n";
+    IO::cout << "\n";
+    IO::cout << "Leaving patient specific structural preprocessing (PATSPEC)\n";
+    IO::cout << "-----------------------------------------------------------\n";
   }
 
 
@@ -200,14 +202,14 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
 
   if (!dis->Comm().MyPID())
   {
-    if (subrendia == 22.01) cout << "Subrenal diameter not specified, taking default value (22mm).\n";
-    else printf("Subrenal diameter %4.2f mm \n", subrendia);
+    if (subrendia == 22.01) IO::cout << "Subrenal diameter not specified, taking default value (22mm).\n";
+    else IO::cout << "Subrenal diameter " << subrendia << " mm" << IO::endl;
 
-    if (is_male) printf("Male patient.\n");
-    else printf("Female patient.\n");
+    if (is_male) IO::cout << "Male patient "<< IO::endl;
+    else IO::cout << "Female patient." <<IO::endl;
 
-    if (!has_familyhist) printf("No AAA familiy history.\n");
-    else printf("Patient has AAA family history!!!\n");
+    if (!has_familyhist) IO::cout << "No AAA familiy history." << IO::endl;
+    else IO::cout << "Patient has AAA family history!!" << IO::endl;
   }
 
 
@@ -269,7 +271,7 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
   if (filled && !dis->Filled()) dis->FillComplete();
 
   if (!dis->Comm().MyPID())
-    printf("Strength calculation completed.\n");
+    IO::cout << "Strength calculation completed." << IO::endl;
 
   return;
 }
@@ -367,7 +369,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   maxiltthick -= 1.0; // subtract an approximate arterial wall thickness
   iltthick->Scale(1.0/maxiltthick);
   if (!dis->Comm().MyPID())
-    printf("Max ILT thickness %10.5e\n",maxiltthick);
+    IO::cout << "Max ILT thickness " << maxiltthick << IO::endl;
   params->set("max ilt thick",maxiltthick);
 
   // export nodal distances to column map
@@ -403,7 +405,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   if (filled && !dis->Filled()) dis->FillComplete();
 
   if (!dis->Comm().MyPID())
-    printf("Normalized ILT thickness computed in %10.5e sec\n",timer.ElapsedTime());
+    IO::cout << "Normalized ILT thickness computed in " << timer.ElapsedTime() << " sec" <<  IO::endl;
 
 
   return;
@@ -422,7 +424,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
   if (filename=="name.txt")
   {
     if (!dis->Comm().MyPID())
-      cout << "No centerline file provided" << endl;
+      IO::cout << "No centerline file provided" << IO::endl;
     // set element-wise mean distance to zero
     RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
     RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
@@ -440,7 +442,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
     if (filled && !dis->Filled()) dis->FillComplete();
 
     if (!dis->Comm().MyPID())
-      printf("No local radii computed\n");
+      IO::cout << "No local radii computed" << IO::endl;
 
     return;
   }
@@ -472,7 +474,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
   double maxlocalrad;
   localrad->MaxValue(&maxlocalrad);
   if (!dis->Comm().MyPID())
-    printf("Max local radius %10.5e\n",maxlocalrad);
+    IO::cout << "Max local radius:  " << maxlocalrad << IO::endl ;
 
   // export nodal distances to column map
   RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
@@ -507,7 +509,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
   if (filled && !dis->Filled()) dis->FillComplete();
 
   if (!dis->Comm().MyPID())
-    printf("Local radii computed.\n");
+    IO::cout << "Local radii computed. "<< IO::endl;
 
   return;
 }
@@ -675,7 +677,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
                                    Teuchos::RCP<Epetra_Vector> disp)
 {
   //RCP<const Epetra_Vector> disp = discret->GetState("displacement");
-  //cout << *(disp) << endl;
+  //IO::cout << *(disp) << IO::endl;
   if (disp==Teuchos::null) dserror("Cannot find displacement state in discretization");
 
   vector<DRT::Condition*> embedcond;
@@ -696,7 +698,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
 
     //for (int i=0; i<areapernode->size(); i++)
     //{
-    //  cout << (*areapernode)[i] << endl;
+    //  IO::cout << (*areapernode)[i] << IO::endl;
     //}
     //exit(0);
 
@@ -708,7 +710,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
       {
 	int gid = nds[j];
 	double nodalarea = (*areapernode)[j];
-	//cout << nodalarea << endl;
+	//IO::cout << nodalarea << IO::endl;
         DRT::Node* node = discret->gNode(gid);
 
 

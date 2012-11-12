@@ -16,6 +16,7 @@ Maintainer: Sebastian Kehl
 #include "strtimint_prestress.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_pstream.H"
 
 /*======================================================================*/
 /* constructor */
@@ -60,7 +61,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   {
     if ( (*time_)[0] <= pstime)
     {
-      if (!discret_->Comm().MyPID()) cout << "====== Entering MULF update\n"; fflush(stdout);
+      if (!discret_->Comm().MyPID()) IO::cout << "====== Entering MULF update" << IO::endl;
       // action for elements
       p.set("action", "calc_struct_prestress_update");
       discret_->ClearState();
@@ -79,7 +80,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   {
     if ( (*time_)[0] <= pstime)
     {
-      if (!discret_->Comm().MyPID()) cout << "====== Entering INVERSEDESIGN update\n"; fflush(stdout);
+      if (!discret_->Comm().MyPID()) IO::cout << "====== Entering INVERSEDESIGN update" << IO::endl;
       // action for elements
       p.set("action","calc_struct_inversedesign_update");
     }
@@ -106,7 +107,7 @@ void STR::TimIntPrestress::UpdateStepElement()
     dis_->UpdateSteps(*zeros_); 
     vel_->UpdateSteps(*zeros_);  // this simply copies zero vectors
     acc_->UpdateSteps(*zeros_);  // this simply copies zero vectors
-    if (!discret_->Comm().MyPID()) cout << "XXXXXX Entering INVERSEDESIGN SWITCH\n"; fflush(stdout);
+    if (!discret_->Comm().MyPID()) IO::cout << "XXXXXX Entering INVERSEDESIGN SWITCH" << IO::endl;
     // action for elements
     p.set("action","calc_struct_inversedesign_switch");
     p.set("total time",timen_ );
