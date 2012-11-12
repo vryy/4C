@@ -111,6 +111,7 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
   }
   default:
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+    break;
   }
   return NULL;
 }
@@ -417,7 +418,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
             pot0,
             frt,
             iselch,
-            timefac);}
+            timefac);
+      }
     }
     break;
   }
@@ -867,6 +869,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   default:
   {
     dserror("Not acting on this boundary action. Forgot implementation?");
+    break;
   }
   }
 
@@ -1985,6 +1988,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         break;
       default:
         dserror("Kinetic model not implemented");
+        break;
     }
     }
     else // secondary current distribution
@@ -2108,6 +2112,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       }
       default:
         dserror("How did you come here? All kinetic models have been already addressed!");
+        break;
       }
         //dserror("Kinetic model not implemented: %s",kinetics.c_str());
     } // if iselch
@@ -2575,11 +2580,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
         // -> concentration = 1.0
         double conctermc = 1.0;
         double concterma = 1.0;
-        double conctermc_der = 1.0;
-        double concterma_der = 1.0;
-        //species id of the anodic and cathodic reactant
-        int anodic = 0;
-        int cathodic = 0;
 
         // concentration terms for anodic and cathodic reaction
         // only one reactant and product are supported by the basic model
@@ -2587,17 +2587,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
         for(int kk=0; kk<numscal_;kk++)
         {
           if(stoich[kk]==1)
-          {
             concterma = conint[kk]/c_a0;
-            concterma_der = 1.0/c_a0;
-            anodic = kk;
-          }
           else if(stoich[kk]==-1)
-          {
             conctermc = conint[kk]/c_c0;
-            conctermc_der = 1.0/c_c0;
-            cathodic = kk;
-          }
         }
 
         // equilibrium potential (equpot):
@@ -2669,6 +2661,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       }
       default:
         dserror("Kinetic model not implemented");
+        break;
       }
     }  // loop over integration points
     //stop loop over ionic species after one evaluation
@@ -2729,6 +2722,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
   break;
   default:
     dserror("Illegal number of space dimensions: %d",nsd_);
+    break;
   } // switch(nsd)
   }
   else // NURBS case
