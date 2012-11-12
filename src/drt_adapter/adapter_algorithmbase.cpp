@@ -17,7 +17,7 @@ ADAPTER::AlgorithmBase::AlgorithmBase(const Epetra_Comm& comm,
     printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
 {
   if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, timeparams);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, timeparams);
 
   step_ = 0;
   time_ = 0.;

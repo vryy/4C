@@ -36,13 +36,7 @@ public:
   virtual ~TimIntOneStepTheta();
 
   /// Print information about current time step to screen (reimplementation for OST)
-  virtual void PrintTimeStepInfo()
-  {
-    if (myrank_==0)
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s (theta = %3.2f)  STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,MethodTitle().c_str(),theta_,step_,stepmax_);
-    return;
-  }
+  virtual void PrintTimeStepInfo();
 
   /// predict thermodynamic pressure and time derivative for low-Mach-number flow
   void PredictThermPressure();

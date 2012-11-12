@@ -464,7 +464,7 @@ discret_(discret)
   if (Comm().MyPID()==0)
   {
     cout << endl;
-    DRT::INPUT::PrintDefaultParameters(std::cout,GetStrategy().Params());
+    DRT::INPUT::PrintDefaultParameters(IO::cout,GetStrategy().Params());
   }
 
   return;

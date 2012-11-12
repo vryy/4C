@@ -90,7 +90,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, rawdyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, rawdyn);
 
   // -------------------------------------------------------------------
   // create a solver

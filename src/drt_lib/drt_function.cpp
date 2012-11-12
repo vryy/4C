@@ -3486,13 +3486,3 @@ double DRT::UTILS::LevelSetCutTestFunction::Evaluate(int index, const double* xp
    dserror("this node does not exist");
   return phi;
 }
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::Function& funct)
-{
-  out << "  Function:\n";
-  return out;
-}
-
-

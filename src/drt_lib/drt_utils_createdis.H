@@ -23,6 +23,7 @@ Maintainer: Georg Bauer
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_parameter.H"
+#include "../drt_io/io_pstream.H"
 
 // required for utility function CloneDiscretization()
 #include "drt_globalproblem.H"
@@ -357,8 +358,11 @@ private:
      clonewizard->CreateMatchingDiscretization(sourcedis,targetdis,matmap);
    }
    if (comm.MyPID()==0)
-     cout<<"Created discretization "<<targetdis->Name()<<" as a clone of discretization "<<sourcedis->Name()<<" in...."
-     <<time.ElapsedTime() << " secs\n\n";
+   {
+     IO::cout << "Created discretization " << (targetdis->Name())
+              << " as a clone of discretization " << sourcedis->Name()
+              << " in...." << time.ElapsedTime() << " secs\n\n";
+   }
 
    return;
  }

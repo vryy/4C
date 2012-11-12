@@ -72,13 +72,13 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // print out default parameters of scalar transport parameter lists
   if (actdis->Comm().MyPID()==0)
   {
-    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn);
-    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("STABILIZATION"));
-    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("NONLINEAR"));
+    DRT::INPUT::PrintDefaultParameters(IO::cout, scatradyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, scatradyn.sublist("STABILIZATION"));
+    DRT::INPUT::PrintDefaultParameters(IO::cout, scatradyn.sublist("NONLINEAR"));
     /*
     const Teuchos::ParameterList& solverparams =
         DRT::Problem::Instance()->ScalarTransportFluidSolverParams();
-    DRT::INPUT::PrintDefaultParameters(std::cout, solverparams);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, solverparams);
     */
   }
 
@@ -198,7 +198,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       {
         const Teuchos::ParameterList& solverparams2
         = DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler);
-        DRT::INPUT::PrintDefaultParameters(std::cout, solverparams2);
+        DRT::INPUT::PrintDefaultParameters(IO::cout, solverparams2);
       }
       */
     }

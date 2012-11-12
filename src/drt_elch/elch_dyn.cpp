@@ -64,7 +64,7 @@ void elch_dyn(int restart)
 
   // print default parameters to screen
   if (comm.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, elchcontrol);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, elchcontrol);
 
   // access the scalar transport parameter list
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();

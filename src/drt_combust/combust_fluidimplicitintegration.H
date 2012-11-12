@@ -18,6 +18,7 @@ Maintainer: Florian Henke
 #include "../drt_fluid/fluid_timint.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_xfem/physics.H"
 #include "../drt_xfem/xfem_utils.H"
 
@@ -118,13 +119,23 @@ public:
   {
     if (myrank_==0)
     {
-      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta){
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s (theta = %3f) STEP = %4d/%4d \n",
-            time_,maxtime_,dta_,TimIntTitle().c_str(), theta_, step_,stepmax_);
+      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta)
+      {
+        IO::cout << "TIME: "
+                 << std::setw(11) << std::setprecision(4) << std::scientific << time_ << "/"
+                 << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_ << "  DT = "
+                 << std::setw(11) << std::setprecision(4) << std::scientific << dta_ << "  "
+                 << TimIntTitle() << " (theta = "
+                 << std::setw(3) << theta_ << ") STEP = "
+                 << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_ << IO::endl;
       }
       else{
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
-            time_,maxtime_,dta_,TimIntTitle().c_str(),step_,stepmax_);
+        IO::cout << "TIME: "
+                 << std::setw(11) << std::setprecision(4) << std::scientific << time_ << "/"
+                 << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_ << "  DT = "
+                 << std::setw(11) << std::setprecision(4) << std::scientific << dta_ << "  "
+                 << TimIntTitle() << "  STEP = "
+                 << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_ << IO::endl;
       }
     }
   }

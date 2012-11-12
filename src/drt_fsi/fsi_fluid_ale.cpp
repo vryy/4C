@@ -16,7 +16,7 @@ FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, fsidyn);
 
   step_ = 0;
   time_ = 0.;

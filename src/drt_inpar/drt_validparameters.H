@@ -18,6 +18,8 @@ Maintainer: Ulrich Kuettler
 #ifndef DRT_VALIDPARAMETERS_H
 #define DRT_VALIDPARAMETERS_H
 
+#include "../drt_io/io_pstream.H"
+
 #include <string>
 #include <iostream>
 
@@ -79,7 +81,7 @@ namespace INPUT {
   void SetValidNoxParameters(Teuchos::ParameterList& list);
 
   /// print all parameters that have a default value
-  void PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list);
+  void PrintDefaultParameters(IO::Pstream& stream, const Teuchos::ParameterList& list);
 
   /// print flag sections of dat file with given list
   void PrintDatHeader(std::ostream& stream,

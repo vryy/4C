@@ -31,6 +31,7 @@ Maintainer: Georg Bauer
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_pstream.H"
 //access to the material data (ELCH)
 #include "../drt_mat/material.H"
 #include "../drt_mat/ion.H"
@@ -697,8 +698,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
   double initialtime = Time();
   if (myrank_ == 0)
   {
-    std::cout<<"SCATRA: calculating initial time derivative of phi (step "
-    << Step() <<","<<" time "<<initialtime<<")"<<endl;
+    IO::cout<<"SCATRA: calculating initial time derivative of phi (step "
+    << Step() <<","<<" time "<<initialtime<<")"<< IO::endl;
   }
 
 //  // are we really at step 0?

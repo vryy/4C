@@ -157,7 +157,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver
@@ -729,7 +729,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   if (discret->Comm().MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver

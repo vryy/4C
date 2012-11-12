@@ -11,9 +11,11 @@ Maintainer: Florian Henke
 </pre>
 *----------------------------------------------------------------------*/
 
-#include <iostream>
-
 #include "combust_utils.H"
+
+#include "../drt_io/io_pstream.H"
+
+#include <iostream>
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -21,18 +23,18 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::printCombustLogo()
 {
-    std::cout<<"     ___            ___    "<<std::endl;
-    std::cout<<"    /   \\          /   \\ "<<std::endl;
-    std::cout<<"    \\_   \\        /  __/ "<<std::endl;
-    std::cout<<"     _\\   \\      /  /__  "<<" Das ist               "<<std::endl;
-    std::cout<<"     \\___  \\____/   __/  "<<" das Verbrennungsmodul "<<std::endl;
-    std::cout<<"         \\_       _/      "<<" in BACI               "<<std::endl;
-    std::cout<<"           | @ @  \\_      "<<"                       "<<std::endl;
-    std::cout<<"           |               "<<" Der Elch wird bald    "<<std::endl;
-    std::cout<<"         _/     /\\        "<<" ein feuerspeiender    "<<std::endl;
-    std::cout<<"        /o)  (o/\\ \\_     "<<" Drache sein!          "<<std::endl;
-    std::cout<<"        \\_____/ /         "<<std::endl;
-    std::cout<<"          \\____/          "<<std::endl;
-    std::cout<<"                           "<<std::endl;
+    IO::cout << "     ___            ___    \n"
+             << "    /   \\          /   \\ \n"
+             << "    \\_   \\        /  __/ \n"
+             << "     _\\   \\      /  /__  " << " Das ist               \n"
+             << "     \\___  \\____/   __/  " << " das Verbrennungsmodul \n"
+             << "         \\_       _/      " << " in BACI               \n"
+             << "           | @ @  \\_      " << "                       \n"
+             << "           |               " << " Der Elch wird bald    \n"
+             << "         _/     /\\        " << " ein feuerspeiender    \n"
+             << "        /o)  (o/\\ \\_     " << " Drache sein!          \n"
+             << "        \\_____/ /         \n"
+             << "          \\____/          \n"
+             << "                           " << IO::endl;
 }
 

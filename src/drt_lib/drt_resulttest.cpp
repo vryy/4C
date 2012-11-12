@@ -18,6 +18,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 #include "drt_linedefinition.H"
 #include "drt_inputreader.H"
 
@@ -120,7 +121,7 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
   int size = results_.size();
 
   if (comm.MyPID()==0)
-    cout << "\nChecking results of "<<size<<" tests...\n";
+    IO::cout << "\nChecking results of "<<size<<" tests...\n";
 
   for (unsigned i=0; i<results_.size(); ++i)
   {
@@ -169,7 +170,7 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
   }
 
   if (comm.MyPID()==0)
-    cout << "\n" GREEN_LIGHT "OK (" << count << ")" END_COLOR "\n";
+    IO::cout << "\n" GREEN_LIGHT "OK (" << count << ")" END_COLOR "\n";
 }
 
 

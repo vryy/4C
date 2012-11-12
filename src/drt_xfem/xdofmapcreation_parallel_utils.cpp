@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_combust/combust_interface.H"
 #include "dofkey.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../drt_io/io_pstream.H"
 
 
 /*----------------------------------------------------------------------*
@@ -105,7 +106,6 @@ void XFEM::unpackDofKeys(
 }
 
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::syncNodalDofs(
@@ -148,7 +148,7 @@ void XFEM::syncNodalDofs(
   swap( dataSend, data() );
 
 #ifdef DEBUG
-  cout << "proc " << myrank << ": sending "<< original_dofkeyset.size() << " dofkeys to proc " << dest << endl;
+  IO::cout << "proc " << myrank << ": sending "<< original_dofkeyset.size() << " dofkeys to proc " << dest << IO::endl;
 #endif
 
   // send data in a circle
@@ -158,7 +158,7 @@ void XFEM::syncNodalDofs(
     lengthSend[0] = dataSend.size();
 
 #ifdef DEBUG
-    cout << "proc " << myrank << ": sending "<< lengthSend[0] << " bytes to proc " << dest << endl;
+    IO::cout << "proc " << myrank << ": sending "<< lengthSend[0] << " bytes to proc " << dest << IO::endl;
 #endif
 
     // send length of the data to be received ...
@@ -187,8 +187,8 @@ void XFEM::syncNodalDofs(
     set<XFEM::DofKey >       dofkeyset;
     XFEM::unpackDofKeys(dataRecv, dofkeyset);
 #ifdef DEBUG
-    cout << "proc " << myrank << ": receiving "<< lengthRecv[0] << " bytes from proc " << source << endl;
-    cout << "proc " << myrank << ": receiving "<< dofkeyset.size() << " dofkeys from proc " << source << endl;
+    IO::cout << "proc " << myrank << ": receiving "<< lengthRecv[0] << " bytes from proc " << source << IO::endl;
+    IO::cout << "proc " << myrank << ": receiving "<< dofkeyset.size() << " dofkeys from proc " << source << IO::endl;
 #endif
     // get all dofkeys whose nodegid is on this proc in the coloumnmap
     for (set<XFEM::DofKey >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
@@ -210,13 +210,9 @@ void XFEM::syncNodalDofs(
   }   // loop over procs
 
 #ifdef DEBUG
-  cout << "sync nodal dofs on proc " << myrank << ": before/after -> " << original_dofkeyset.size()<< "/" << new_dofkeyset.size() << endl;
+  IO::cout << "sync nodal dofs on proc " << myrank << ": before/after -> " << original_dofkeyset.size()<< "/" << new_dofkeyset.size() << IO::endl;
 #endif
 
   XFEM::updateNodalDofMap(ih, nodalDofSet, new_dofkeyset);
 
 }
-
-#endif
-
-

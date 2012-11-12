@@ -96,7 +96,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   const Teuchos::ParameterList& artdyn   = DRT::Problem::Instance()->ArterialDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, artdyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, artdyn);
 
   // -------------------------------------------------------------------
   // create a solver

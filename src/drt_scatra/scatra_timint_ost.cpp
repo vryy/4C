@@ -19,6 +19,7 @@ Maintainer: Georg Bauer
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_fluid/dyn_smag.H"
@@ -82,6 +83,25 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
 *-----------------------------------------------------------------------*/
 SCATRA::TimIntOneStepTheta::~TimIntOneStepTheta()
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| Print information about current time step to screen                   |
+*-----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
+{
+  if (myrank_==0)
+  {
+    IO::cout << "TIME: "
+             << std::setw(11) << std::setprecision(4) << std::scientific << time_ << "/"
+             << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_ << "  DT = "
+             << std::setw(11) << std::setprecision(4) << std::scientific << dta_ << "  "
+             << MethodTitle() << " (theta = "
+             << std::setw(3)  << std::setprecision(2) << theta_ << ") STEP = "
+             << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_ << IO::endl;
+  }
   return;
 }
 

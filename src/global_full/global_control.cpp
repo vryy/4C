@@ -5,6 +5,7 @@
 #include "global_init_control.H"
 #include "global_inp_control.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_comm/comm_utils.H"
 
 
@@ -50,7 +51,7 @@ void ntam(
   ti=cputime()-t0;
   if (gcomm->MyPID()==0)
   {
-    printf("\nTotal CPU Time for INPUT:       %10.3E sec \n\n",ti);
+    IO::cout << "\nTotal CPU Time for INPUT:       " << std::setw(10) << std::setprecision(3) << std::scientific << ti << " sec \n\n";
   }
 
   /*--------------------------------------------------calculation phase */
@@ -61,7 +62,7 @@ void ntam(
   tc=cputime()-t0;
   if (gcomm->MyPID()==0)
   {
-    printf("\nTotal CPU Time for CALCULATION: %10.3E sec \n\n",tc);
+    IO::cout << "\nTotal CPU Time for CALCULATION: " << std::setw(10) << std::setprecision(3) << std::scientific << tc << " sec \n\n";
   }
 }
 

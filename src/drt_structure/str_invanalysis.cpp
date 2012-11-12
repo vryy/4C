@@ -78,7 +78,7 @@ void STR::invanalysis()
 
   // show default parameters
   if (actdis->Comm().MyPID() == 0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, sdyn);
 
   // create a solver
   // get the solver number used for structural solver

@@ -15,7 +15,7 @@ FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fluiddyn   = DRT::Problem::Instance()->FluidDynamicParams();
 
   if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fluiddyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, fluiddyn);
 
   step_ = 0;
   time_ = 0.;

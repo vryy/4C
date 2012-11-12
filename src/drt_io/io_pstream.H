@@ -68,6 +68,9 @@ namespace IO
     /// This is currently called by the destructor of the global problem singleton.
     void close();
 
+    /// writes the buffer to screen
+    void flush();
+
     /// This handles the actual printing to screen/writing to a file.
     template <typename CharT>
     Pstream& stream(CharT s)  ///< text to be added
@@ -78,13 +81,14 @@ namespace IO
       // are we on a proc that is allowed to output
       if (OnPid())
       {
-        // use stringstream to convert whatever to a std::string
-        std::string str;
-        {
-          std::stringstream tmp;
-          tmp << s;
-          str = tmp.str();
-        }
+        // store formatting in this semi persistent buffer
+        fmt_tmp_ << s;
+        if (fmt_tmp_.str().size() <= 0)
+          return *this;
+
+        // actual content goes into the string str
+        std::string str = fmt_tmp_.str();
+        fmt_tmp_.str(std::string());
 
         // write to file
         if (writetofile_)
@@ -129,6 +133,11 @@ namespace IO
       return *this;
     }
 
+    std::stringstream& cout_replacement()
+    {
+      return fmt_tmp_;
+    }
+
   private :
     /// Return whether this is a target processor for output
     bool OnPid();
@@ -163,10 +172,16 @@ namespace IO
     /// buffer the output in a stringstream
     std::stringstream buffer_;
 
+    /// format containing temporary buffer
+    std::stringstream fmt_tmp_;
+
   };  // class Pstream
 
   /// Imitate the std::endl behavior w/out the flush
   Pstream& endl(Pstream& out);
+
+  /// Imitate the std::flush behavior
+  Pstream& flush(Pstream& out);
 
   /// this is the IO::cout that everyone can refer to
   extern Pstream cout;

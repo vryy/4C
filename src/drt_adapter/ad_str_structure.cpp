@@ -142,8 +142,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralNoxParams()));
 
   // show default parameters
-  if ((actdis->Comm()).MyPID()==0 && perform_mlmc!=true)
-    DRT::INPUT::PrintDefaultParameters(std::cout, *sdyn);
+  if ((actdis->Comm()).MyPID()==0)
+    DRT::INPUT::PrintDefaultParameters(IO::cout, *sdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams

@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include "xdofmapcreation_combust.H"
 #include "../drt_combust/combust_interface.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 
@@ -173,13 +174,13 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
 
 #ifdef DEBUG
   // screen output
-  std::cout << " Enrichments available:";// << endl;
+  IO::cout << " Enrichments available:";
   for (std::set<XFEM::Enrichment>::const_iterator enr =
       unique_enrichments.begin(); enr != unique_enrichments.end(); ++enr)
   {
-    std::cout << " " << enr->toString();// << endl;
+    IO::cout << " " << enr->toString();
   }
-  std::cout << endl;
+  IO::cout << IO::endl;
 #endif
 }
 

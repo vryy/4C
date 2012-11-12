@@ -21,6 +21,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_utils.H"
 #include "../drt_geometry/tetrahedradecomposition.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_geometry/element_coordtrafo.H"
@@ -166,7 +167,7 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
    */
 
   if (fluiddis_->Comm().MyPID()==0)
-    std::cout << "---  capturing flame front... " << std::flush;
+    IO::cout << "---  capturing flame front... " << IO::flush;
 
   const Teuchos::RCP<Epetra_Vector> phicol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   if (phicol->MyLength() != phi->MyLength())
@@ -196,8 +197,8 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
     // refinement strategy is turned on
     if (refinement_)
     {
-      //std::cout << "starting refinement ..." << std::endl;
-      //std::cout << "maximal refinement level " << maxRefinementLevel_ << std::endl;
+      //IO::cout << "starting refinement ..." << IO::endl;
+      //IO::cout << "maximal refinement level " << maxRefinementLevel_ << IO::endl;
       if (maxRefinementLevel_ < 0)
         dserror("maximal refinement level not defined");
 
@@ -233,7 +234,7 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
       elementcutstatus);
 
   if (fluiddis_->Comm().MyPID()==0)
-    std::cout << "done" << std::endl;
+    IO::cout << "done" << IO::endl;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -375,7 +376,7 @@ void COMBUST::FlameFront::StorePhiVectors(
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustdyn, bool ReinitModifyPhi)
 {
-  //std::cout << "---  Modify the fluid phi-vector (G-function) at nodes with small values ... " << std::endl << std::flush ;
+  //IO::cout << "---  Modify the fluid phi-vector (G-function) at nodes with small values ... " << IO::endl << IO::flush ;
 
   if (ReinitModifyPhi==true)
   {
@@ -386,7 +387,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
     // get relative tolerance for which we modify G-function values in the fluid part
     const double ModifyTOL = 1e-012;
 
-    cout << "\n \t -> ModifyTOL for G-func values is set to " << ModifyTOL << " (relative to element diameter) to handle problems with tetgen!" << endl;
+    IO::cout << "\n \t -> ModifyTOL for G-func values is set to " << ModifyTOL << " (relative to element diameter) to handle problems with tetgen!" << IO::endl;
 
     // count modified phi node values
     int modified_counter = 0;
@@ -476,21 +477,21 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
       // reset small phi values to zero
       if (fabs(phinp_current - 0.0) < TOL)
       {
-        cout << "\t !!!warning (ModifyPhiVector)!!! we modify a small phi-value to 0.0" << std::endl;
+        IO::cout << "\t !!!warning (ModifyPhiVector)!!! we modify a small phi-value to 0.0" << IO::endl;
         (*phinpTmp)[lid] = 0.0;
         modified_counter++;
       }
       if (fabs(phin_current - 0.0) < TOL)
       {
         (*phinTmp)[lid] = 0.0;
-        // no additional cout-comment here because this value has been
-        // modified in the timestep before and cout was created there
+        // no additional IO::cout-comment here because this value has been
+        // modified in the timestep before and IO::cout was created there
       }
 
     } // end loop over nodes
 
     if(modified_counter > 0)
-      std::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done" << std::flush;;
+      IO::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done" << IO::flush;;
 
     LINALG::Export(*phinTmp,*phin_);
     LINALG::Export(*phinpTmp,*phinp_);
@@ -518,11 +519,11 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
     // usually we choose SearchTOL = 0.1
     //========================================================================================
     const double SearchTOL = 0.1;
-    //cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << endl;
+    //cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << IO::endl;
 
     // tolerance for which we interpret a value as zero-> these phi-values are set to zero!
     const double TOL_zero = 1e-14;
-    //cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << endl;
+    //cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << IO::endl;
 
     // number space dimensions for 3d combustion element
     const size_t nsd = 3;
@@ -594,12 +595,12 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         static LINALG::Matrix<nsd,numnode> xyze_adj;
         GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
 
-        //cout << xyze_adj << endl;
+        //cout << xyze_adj << IO::endl;
 
         // calculate element diameter
         const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
 
-        //cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << endl;
+        //cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << IO::endl;
 
         //-------------------------------------------------------------
         // update maxEleDiam
@@ -617,7 +618,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
       if ( (fabs(phinp_current - 0.0) < SearchTOL * maxEleDiam) and (phinp_current != 0.0) )
       {
         modify_phinp_pot = true;
-        //cout << "\t --- node "<< nodeID << ": nodal phinp value get potentially modified" << std::endl<< std::flush;
+        //cout << "\t --- node "<< nodeID << ": nodal phinp value get potentially modified" << IO::endl;
       }
 
       if ( (fabs(phin_current - 0.0) < SearchTOL * maxEleDiam)  and (phin_current  != 0.0) )
@@ -636,7 +637,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         if((fabs(phinp_current - 0.0) < TOL_zero) && (phinp_current!= 0.0))
         {
           inode_modified_np = true;
-          cout << "\t\t -> a numerical zero is set to 0.0" << std::endl<< std::flush;
+          IO::cout << "\t\t -> a numerical zero is set to 0.0" << IO::endl;
         }
         if((fabs(phin_current - 0.0) < TOL_zero) && (phin_current!= 0.0))  inode_modified_n = true;
         //==========================================================================
@@ -819,9 +820,9 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
             minimal_crit_val_n = min(minimal_crit_val_n, fabs(ele_critical_inode_n(ele) - 0.0 ));
           }
           if(inode_modified_np == true)
-            cout << "\t \t    minimal_crit_val_np was: " << minimal_crit_val_np << std::endl<< std::flush;
+            IO::cout << "\t \t    minimal_crit_val_np was: " << minimal_crit_val_np << IO::endl;
           if(inode_modified_n == true)
-            cout << "\t \t    minimal_crit_val_n was: " << minimal_crit_val_n << std::endl<< std::flush;
+            IO::cout << "\t \t    minimal_crit_val_n was: " << minimal_crit_val_n << IO::endl;
         } // end set inode_modifed_np status
         //==========================================================================
 
@@ -831,7 +832,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         // reset small phi values to zero
         if (inode_modified_np == true)
         {
-          cout << "\t \t -> modified: a critical phi-value was modified to 0.0" << std::endl<< std::flush;
+          IO::cout << "\t \t -> modified: a critical phi-value was modified to 0.0" << IO::endl;
           (*phinpTmp)[lid] = 0.0;
           modified_counter++;
         }
@@ -839,8 +840,8 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         if (inode_modified_n == true)
         {
           (*phinTmp)[lid] = 0.0;
-          // no additional cout-comment here because this value has been
-          // modified in the timestep before and cout was created there
+          // no additional IO::cout-comment here because this value has been
+          // modified in the timestep before and IO::cout was created there
         }
       } // end if SearchTOL
 
@@ -849,7 +850,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
 
 
     if(modified_counter > 0)
-      std::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done\n" << std::flush;
+      IO::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done\n" << IO::flush;
 
     LINALG::Export(*phinTmp,*phin_);
     LINALG::Export(*phinpTmp,*phinp_);
@@ -909,9 +910,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     //GEO::DomainIntCells IntCells = myelementintcells_[actele_GID];
     // get vector of all boundary integration cells of this element -> also touched elements need reconstruction
     //GEO::BoundaryIntCells BoundIntCells = myboundaryintcells_[actele_GID];
-    //    cout << "actele->ID()" << actele->Id() << endl;
-    //    cout << actele->Id() << "\t" << IntCells.size() << endl;
-    //    cout << actele->Id() << "\t" <<BoundIntCells.size() << endl;
+    //    IO::cout << "actele->ID()" << actele->Id() << IO::endl;
+    //    IO::cout << actele->Id() << "\t" << IntCells.size() << IO::endl;
+    //    IO::cout << actele->Id() << "\t" <<BoundIntCells.size() << IO::endl;
 
 
     // TODO check if this can be put back in
@@ -920,7 +921,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     //         integration cells for those elements
     //if (IntCells.size() > 1 || BoundIntCells.size() > 0) // element is intersected or touched
     //{
-    //  cout << "element with ID: " << actele->Id() << "is reconstructed "<< endl;
+    //  IO::cout << "element with ID: " << actele->Id() << "is reconstructed "<< IO::endl;
     //-> assemble all adjacent nodes, these node values must be reconstructed
 
     // get number of nodes of this element (number of vertices)
@@ -1063,8 +1064,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       //         enough adjacent elements to reconstruct the nodal phi gradient minimal number of
       //         adjacent elements for least_squares reconstruction is 3 for 3D and 2 for 2D,
       //         so nsd_real mean value method is the same for 2D and 3D
-//      cout << "/!\\" << "\t\tnode\t" << (it_node->second)->Id() << "\tis a boundary node with "
-//           << numberOfElements << " elements and is reconstructed with average (mean value) method" << endl;
+//      IO::cout << "/!\\" << "\t\tnode\t" << (it_node->second)->Id() << "\tis a boundary node with "
+//           << numberOfElements << " elements and is reconstructed with average (mean value) method" << IO::endl;
     }
     else // type of reconstruction as chosen in input file
       CurrTypeOfNodeReconst = SmoothGradPhi;
@@ -1189,7 +1190,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         PHI_SMOOTHED_3D(1,0) = 1.0;
         PHI_SMOOTHED_3D(2,0) = 0.0;
 
-        cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
+        IO::cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
       }
 #endif
 
@@ -1205,12 +1206,12 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         PHI_SMOOTHED_3D(1,0) = 2.0;
         PHI_SMOOTHED_3D(2,0) = 0.0;
 
-        cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
+        IO::cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
       }
 #endif
 
 #ifdef COMBUST_2D
-      //std::cout << "/!\\ third component or normal vector set to 0 to keep 2D-character!" << std::endl;
+      //IO::cout << "/!\\ third component or normal vector set to 0 to keep 2D-character!" << IO::endl;
       PHI_SMOOTHED_3D(2,0) = 0.0;
 #endif
 
@@ -1367,8 +1368,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       solver.SetVectors(PHI_SMOOTHED,RHS);
       solver.Solve();
 
-      //      cout << " node:" << (it_node->second)->Id() << endl;
-      //      cout << "PHI_SMOOTHED" << PHI_SMOOTHED << endl;
+      //      IO::cout << " node:" << (it_node->second)->Id() << IO::endl;
+      //      IO::cout << "PHI_SMOOTHED" << PHI_SMOOTHED << IO::endl;
       // set full 3D vector especially important for 2D leastsquares reconstruction
       if(CurrTypeOfNodeReconst == INPAR::COMBUST::smooth_grad_phi_leastsquares_3D)
       {
@@ -1434,7 +1435,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //    // get local processor id of current node and pointer to current node
   //    //int lid_node = it_node->first;
   //    const DRT::Node* ptToNode = it_node->second;
-  ////    cout << "node:" << (it_node->second)->Id();
+  ////    IO::cout << "node:" << (it_node->second)->Id();
   //
   //    int numberOfElements = ptToNode->NumElement();
   //
@@ -1495,11 +1496,11 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //
   //        // get node xyze-coordinates
   //        LINALG::Matrix<nsd,1> xyz_node(ptToNode->X());
-  ////        cout << "xyz_node" << xyz_node << endl;
+  ////        IO::cout << "xyz_node" << xyz_node << IO::endl;
   //
   //
   //    	const int numberOfTwoRingElements = elesinTwoRing.size();
-  ////    	cout << "numberOfTwoRingElements" << numberOfTwoRingElements << endl;
+  ////    	cout << "numberOfTwoRingElements" << numberOfTwoRingElements << IO::endl;
   //      Epetra_SerialDenseMatrix RHS_LS(numberOfTwoRingElements,1);
   //      Epetra_SerialDenseMatrix MAT_LS(numberOfTwoRingElements, 9);
   //
@@ -1509,7 +1510,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //      int element_counter = 0;
   //
   //
-  ////      cout << "=====================iterate over elements in two-ring==============" << endl;
+  ////      IO::cout << "=====================iterate over elements in two-ring==============" << IO::endl;
   //      for(TwoRing_iterator it_ele = elesinTwoRing.begin(); it_ele!= elesinTwoRing.end(); it_ele++)
   //      {
   //
@@ -1524,12 +1525,12 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //          // create vector "ephinp" holding scalar phi values for this element
   //          Epetra_SerialDenseVector ephinp(numnode); //local vector phi-values of adjacent element
   //
-  ////          cout << "these are all global node Ids of element" << ele_Two_Ring->Id() << endl;
+  ////          IO::cout << "these are all global node Ids of element" << ele_Two_Ring->Id() << IO::endl;
   //          // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
   //          vector<int> nodeID_adj(numnode);
   //          for (size_t inode=0; inode < numnode; inode++){
   //            nodeID_adj[inode] = ptToNodeIds_adj[inode];
-  ////            cout << nodeID_adj[inode] << endl;
+  ////            IO::cout << nodeID_adj[inode] << IO::endl;
   //          }
   //
   //          // extract the phi-values of adjacent element with local ids from global vector *phinp
@@ -1573,14 +1574,14 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //          direction(1) = centerOfGravXYZ(1) - xyz_node(1);
   //          direction(2) = centerOfGravXYZ(2) - xyz_node(2);
   //
-  ////          cout << "direction" << direction << endl;
+  ////          IO::cout << "direction" << direction << IO::endl;
   //
   //          // calculate ephi at point of gravity via interpolation
   //          static LINALG::Matrix<1,1> phi_adj;
   //          phi_adj.Clear();
   //          phi_adj.MultiplyTN(ephi_adj,funct);
   //
-  ////          cout << "phi_adj" << phi_adj << endl;
+  ////          IO::cout << "phi_adj" << phi_adj << IO::endl;
   //
   ////          // cancel out the 2D direction
   ////          if(xyz_2D_dim != -1) direction(xyz_2D_dim) = 0.0;
@@ -1593,7 +1594,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //          if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),GID);
   //
   //          double phi_node_value = (*phinp_)[lid];
-  ////          cout << "phi_node_value " << phi_node_value << endl;
+  ////          IO::cout << "phi_node_value " << phi_node_value << IO::endl;
   //
   //          // set RHS and MAT for least squares method
   //
@@ -1627,16 +1628,16 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //            element_counter++;
   //      } // end loop over two-ring-elements
   //
-  ////      cout << "MATLS" << endl;
+  ////      IO::cout << "MATLS" << IO::endl;
   ////      for(int row = 0; row < element_counter; row++)
   ////      {
   ////    	  for(int col = 0; col < 10; col++)
   ////    	  {
-  ////    		  cout << MAT_LS(row, col) << "\t";
+  ////    		  IO::cout << MAT_LS(row, col) << "\t";
   ////    	  }
-  ////    	  cout << endl;
+  ////    	  IO::cout << IO::endl;
   ////      }
-  ////      cout << endl;
+  ////      IO::cout << IO::endl;
   //
   //      // the system MAT_LS * phi_smoothed = RHS_LS is only solvable in a least squares manner
   //      // MAT_LS is not square
@@ -1653,8 +1654,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //      LINALG::Matrix<9,9> MAT(MAT_tmp);
   //      LINALG::Matrix<9,1> RHS(RHS_tmp);
   //
-  ////      cout << "MAT" << MAT << endl;
-  ////      cout << "RHS" << RHS << endl;
+  ////      IO::cout << "MAT" << MAT << IO::endl;
+  ////      IO::cout << "RHS" << RHS << IO::endl;
   //      //=================solve A^T*A* phi_smoothed = A^T*RHS (LEAST SQUARES)================
   //
   //      // solve the system for current node
@@ -1663,8 +1664,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //      solver.SetVectors(PHI_SMOOTHED,RHS);
   //      solver.Solve();
   //
-  ////      cout << " node:" << (it_node->second)->Id() << endl;
-  ////      cout << "============PHI_SMOOTHED==========" << PHI_SMOOTHED << endl;
+  ////      IO::cout << " node:" << (it_node->second)->Id() << IO::endl;
+  ////      IO::cout << "============PHI_SMOOTHED==========" << PHI_SMOOTHED << IO::endl;
   //      // set full 3D vector especially important for 2D leastsquares reconstruction
   ////        PHI_SMOOTHED_3D(0,0) = PHI_SMOOTHED(1,0);
   ////        PHI_SMOOTHED_3D(1,0) = PHI_SMOOTHED(2,0);
@@ -1721,7 +1722,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //  // export NodeRowMap to NodeColMap gradphi_
   //  LINALG::Export(*gradphirow,*gradphi_);
   //
-  //  std::cout << "done" << std::endl;
+  //  IO::cout << "done" << IO::endl;
   //
   //
 
@@ -1738,7 +1739,7 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
 {
   TEUCHOS_FUNC_TIME_MONITOR("SMOOTHING OF GRAD_PHI");
   if (gfuncdis_->Comm().MyPID()==0)
-    std::cout << "---  compute smoothed gradient of phi... " << std::flush;
+    IO::cout << "---  compute smoothed gradient of phi... " << IO::flush;
 
   // get type of reconstruction
   const INPAR::COMBUST::SmoothGradPhi SmoothGradPhi = DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>
@@ -1752,28 +1753,28 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
       SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy ||
       SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz ) nsd_real = 2;
 
-  // cout reconstruction type
+  // IO::cout reconstruction type
   if (fluiddis_->Comm().MyPID() == 0)
   {
     switch (SmoothGradPhi)
     {
     case INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx:
-      std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dx... " << std::flush;
+      IO::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dx... " << IO::flush;
       break;
     case INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy:
-      std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dy... " << std::flush;
+      IO::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dy... " << IO::flush;
       break;
     case INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz:
-      std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dz... " << std::flush;
+      IO::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dz... " << IO::flush;
       break;
     case INPAR::COMBUST::smooth_grad_phi_leastsquares_3D:
-      std::cout << "\n---  \t reconstruction with:\t LeastSquares_3D... " << std::flush;
+      IO::cout << "\n---  \t reconstruction with:\t LeastSquares_3D... " << IO::flush;
       break;
     default:
       break;
     }
     //if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_meanvalue)
-    //  std::cout << "\n---  \t reconstruction with:\t MeanValue... " << std::flush;
+    //  IO::cout << "\n---  \t reconstruction with:\t MeanValue... " << IO::flush;
   }
 
   // switch: real dimension of reconstruction, is real dimension 2D or 3D?
@@ -1791,7 +1792,7 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
   }
 
   if (gfuncdis_->Comm().MyPID()==0)
-    std::cout << "done" << std::endl;
+    IO::cout << "done" << IO::endl;
 
   return;
 }
@@ -1873,7 +1874,7 @@ void COMBUST::FlameFront::ComputeCurvatureForCombustion(const Teuchos::Parameter
         else
           curvature = 5.0/elesize;
 
-        cout << "curvature cut off at value " << 5.0/elesize << " in element " << adjele->Id() << endl;
+        IO::cout << "curvature cut off at value " << 5.0/elesize << " in element " << adjele->Id() << IO::endl;
       }
 
       avcurv += curvature;
@@ -2104,7 +2105,7 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
       if (fabs(avcurv)<1.0E-9) // spurious velocities for almost planar surfaces observed
       {                        // -> set curvature to zero
         avcurv=0.0;
-        cout << "small curvature value < 1.0e-9 set to zero" << endl;
+        IO::cout << "small curvature value < 1.0e-9 set to zero" << IO::endl;
       }
 
       const int nodelid = rowcurv.Map().LID(gid);
@@ -2160,7 +2161,7 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::Refinemen
     if (cell->Bisected()) // cell is bisected ....
     {
       cell->RefineCell(); // ... and will be refined
-      //        std::cout << "RefineCell done" << std::endl;
+      //        IO::cout << "RefineCell done" << IO::endl;
       // loop over all new refinement cells and call of RefineFlameFront
       for (int icell = 0; icell < cell->NumOfChildren(); icell++)
         RefineFlameFront(cell->GetRefinementCell(icell),phi);
@@ -2227,9 +2228,9 @@ void COMBUST::FlameFront::FindFlameFront(
       //TEST
       //if (ele->Id()==0)
       //{
-      //  std::cout<< "Gfunc " << ele->Id() << std::endl;
+      //  IO::cout<< "Gfunc " << ele->Id() << IO::endl;
       //  for(std::size_t ig=0; ig<mygfuncvalues.size(); ig++)
-      //    std::cout << mygfuncvalues[ig] << std::endl;
+      //    IO::cout << mygfuncvalues[ig] << IO::endl;
       //}
 
 #ifdef DEBUG
@@ -2354,12 +2355,12 @@ void COMBUST::FlameFront::FindFlameFront(
       //Ausgabe
       //      for (int l=0;l<8;l++)
       //      {
-      //         std::cout << phis[l] << std::endl;
+      //         IO::cout << phis[l] << IO::endl;
       //      }
 
-      //      std::cout << "G-Funktionswerte in Zelle verpackt für Element: " << cell->Ele()->Id() << " - geschnitten?: " << cell->Bisected() << endl;
+      //      IO::cout << "G-Funktionswerte in Zelle verpackt für Element: " << cell->Ele()->Id() << " - geschnitten?: " << cell->Bisected() << IO::endl;
       //      for (unsigned i=0; i < mygfuncvalues.size(); i++)
-      //        std::cout << "Wert am Knoten " << i << ": " << mygfuncvalues[i] << endl;
+      //        IO::cout << "Wert am Knoten " << i << ": " << mygfuncvalues[i] << IO::endl;
     }
     //----------------------------------------------------------------------------------------------
     // higher level of refinement
@@ -2386,9 +2387,9 @@ void COMBUST::FlameFront::FindFlameFront(
         dserror("return NULL");
       const std::vector<double> gfuncelement = cell->ReturnRootCell()->GetGfuncValues();
       //TEST
-      //std::cout<< "G-Funct of rootcell "<< std::endl;
+      //IO::cout<< "G-Funct of rootcell "<< IO::endl;
       //for (std::size_t i=0; i<gfuncelement.size(); i++)
-      //  std::cout<< gfuncelement[i] << std::endl;
+      //  IO::cout<< gfuncelement[i] << IO::endl;
 
       const size_t numnode = cell->Ele()->NumNode();
 #ifdef DEBUG
@@ -2552,12 +2553,12 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
             //{
             //  if(fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-4)
             //  {
-            //    cout << "coordinates shifted to vertex 1: " << coordinates[dim] << endl;
+            //    IO::cout << "coordinates shifted to vertex 1: " << coordinates[dim] << IO::endl;
             //    coordinates[dim] = vertexcoord[lines[iline][0]][dim];
             //  }
             //  else if(fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-4)
             //  {
-            //    cout << "coordinates shifted to vertex 2: " << coordinates[dim] << endl;
+            //    IO::cout << "coordinates shifted to vertex 2: " << coordinates[dim] << IO::endl;
             //    coordinates[dim] = vertexcoord[lines[iline][1]][dim];
             //  }
             //  else
@@ -2632,11 +2633,11 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
     {
       // get G-function value of the three nodes
       double gfuncval1 = gfuncvalues[lines[iline][0]]; // left node
-      //std::cout << "1: " << gfuncval1 << std::endl;
+      //IO::cout << "1: " << gfuncval1 << IO::endl;
       double gfuncval2 = gfuncvalues[lines[iline][1]]; // right node
-      //std::cout << "2: " << gfuncval2 << std::endl;
+      //IO::cout << "2: " << gfuncval2 << IO::endl;
       double gfuncval3 = gfuncvalues[lines[iline][2]]; // node in the middle
-      //std::cout << "3: " << gfuncval3 << std::endl;
+      //IO::cout << "3: " << gfuncval3 << IO::endl;
 
       std::vector<double> coordinates1 (3);
       std::vector<double> coordinates2 (3);
@@ -2653,7 +2654,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
       if (a != 0)
       {
         double determinant = b*b -4*a*c;
-        //std::cout << "Determinante betraegt: " <<determinant<<" \n" ;
+        //IO::cout << "Determinante betraegt: " <<determinant<<" \n" ;
 
         // exclude complex solutions
         if (determinant >= 0.0)
@@ -2662,8 +2663,8 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
           double xi_1 = (-b + sqrt(determinant))/(2*a);
           double xi_2 = (-b - sqrt(determinant))/(2*a);
           //Test: Ausgabe der Schnittpunkte
-          std::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
-          std::cout << "Schnittpunkt2: " <<xi_2<<" \n" ;
+          IO::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
+          IO::cout << "Schnittpunkt2: " <<xi_2<<" \n" ;
 
           // check weather intersection points are inside the element, i.e. they have to be in the interval ]-1.0;1.0[
           if ((fabs(xi_1) < 1.0) or (fabs(xi_2) < 1.0))
@@ -2689,22 +2690,22 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
             // i.e. it based on the assumption that each edge is intersected only once
             if (fabs(xi_1)<1.0 and fabs(xi_2)<1.0 and (xi_2 != xi_1))
             {
-              std::cout << "<!> WARNING: FindIntersectionPoints() has detected double intersected line of hex20-element" << std::endl;
-              std::cout << "G-Function-Values of element:" << std::endl;
+              IO::cout << "<!> WARNING: FindIntersectionPoints() has detected double intersected line of hex20-element" << IO::endl;
+              IO::cout << "G-Function-Values of element:" << IO::endl;
               for (std::size_t k=0;k<gfuncvalues.size();k++)
-                std::cout << "Node " << k << ":   " << gfuncvalues[k] << std::endl;
-              std::cout << "Adapt BuildFlameFrontSegements()!" << std::endl;
-              std::cout << "The xi-values are: " << std::endl;
-              std::cout << "xi1: " << xi_1 << std::endl;
-              std::cout << "xi2: " << xi_2 << std::endl;
-              std::cout << "The coordinates are: " << std::endl;
-              std::cout << "coordinate1: " << std::endl;
+                IO::cout << "Node " << k << ":   " << gfuncvalues[k] << IO::endl;
+              IO::cout << "Adapt BuildFlameFrontSegements()!" << IO::endl;
+              IO::cout << "The xi-values are: " << IO::endl;
+              IO::cout << "xi1: " << xi_1 << IO::endl;
+              IO::cout << "xi2: " << xi_2 << IO::endl;
+              IO::cout << "The coordinates are: " << IO::endl;
+              IO::cout << "coordinate1: " << IO::endl;
               for (int i = 0; i < 3; i++) {
-                std::cout << coordinates1[i] << std::endl;
+                IO::cout << coordinates1[i] << IO::endl;
               }
-              std::cout << "coordinate2: " << std::endl;
+              IO::cout << "coordinate2: " << IO::endl;
               for (int i = 0; i < 3; i++) {
-                std::cout << coordinates2[i] << std::endl;
+                IO::cout << coordinates2[i] << IO::endl;
               }
               intersectionpoints.insert(pair<int, std::vector<double> > (iline, coordinates1));
               intersectionpoints.insert(pair<int, std::vector<double> > (iline, coordinates2));
@@ -2725,7 +2726,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
         {
           // compute intersectionpoint
           double xi_1 = -c/b;
-          std::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
+          IO::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
           // store intersectionpoint if it is located in the interval ]-1.0;1.0[
           if (fabs(xi_1) < 1.0)
           {
@@ -2758,11 +2759,11 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
   //TEST Ausgabe
   //for (std::map<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
   //{
-  //  std::cout<< iter->first << std::endl;
+  //  IO::cout<< iter->first << IO::endl;
   //  std::vector<double> coord = iter->second;
   //  for (std::size_t isd=0; isd<3; isd++)
   //  {
-  //    std::cout<< coord[isd] << std::endl;
+  //    IO::cout<< coord[isd] << IO::endl;
   //  }
   //}
 
@@ -2957,7 +2958,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
           // remark: this is unusual, since the
           if (numvolcells==1)
           {
-            //cout << "element " << rootcell->Ele()->Id() << " is really touched" << endl;
+            //cout << "element " << rootcell->Ele()->Id() << " is really touched" << IO::endl;
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
             // store boundary integration cells
@@ -2966,12 +2967,12 @@ void COMBUST::FlameFront::CaptureFlameFront(
             if (numstoredvol==1 and numstoredbound==0)
             {
               cutstat = COMBUST::InterfaceHandleCombust::uncut;
-              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
             }
             else if (numstoredvol==1 and numstoredbound==1)
             {
               cutstat = COMBUST::InterfaceHandleCombust::touched;
-              //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
             }
             else
               dserror("there should be a volume cell for a touched element");
@@ -2981,33 +2982,33 @@ void COMBUST::FlameFront::CaptureFlameFront(
           //-----------------
           else if (numvolcells==2)
           {
-            //cout << "element " << rootcell->Ele()->Id() << " is really bisected" << endl;
+            //cout << "element " << rootcell->Ele()->Id() << " is really bisected" << IO::endl;
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
             // store boundary integration cells
             const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
 
-            //cout << "storedvol " << numstoredvol << endl;
-            //cout << "storedbound " << numstoredbound << endl;
+            //cout << "storedvol " << numstoredvol << IO::endl;
+            //cout << "storedbound " << numstoredbound << IO::endl;
 
             // all volume cells and boundary cells have been stored
             if (numstoredvol==2 and numstoredbound==1)
             {
               cutstat = COMBUST::InterfaceHandleCombust::bisected;
-              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
             }
             // a volume cell has been deleted, because is was too small
             else if (numstoredvol==1 and numstoredbound==1)
             {
               cutstat = COMBUST::InterfaceHandleCombust::touched;
-              //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
               //FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             }
             // a volume cell and all boundary cells have been deleted, because they were too small
             else if (numstoredvol==1 and numstoredbound==0)
             {
               cutstat = COMBUST::InterfaceHandleCombust::uncut;
-              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
             }
             // something went wrong
             else
@@ -3026,14 +3027,14 @@ void COMBUST::FlameFront::CaptureFlameFront(
             // there are three volume cells:
             // - an inner (middle) volume cell (belongs to one domain (e.g. plus))
             // - two outer volume cells separated by the inner cell (belong to the other domain (e.g. minus))
-            //cout << "element " << rootcell->Ele()->Id() << " is really trisected and consists of " << numvolcells << " volume cells" << endl;
+            //cout << "element " << rootcell->Ele()->Id() << " is really trisected and consists of " << numvolcells << " volume cells" << IO::endl;
 
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
-            //cout << "number of stored volumes " << numstoredvol << endl;
+            //cout << "number of stored volumes " << numstoredvol << IO::endl;
             // store boundary integration cells
             const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
-            //cout << "number of stored boundaries " << numstoredbound << endl;
+            //cout << "number of stored boundaries " << numstoredbound << IO::endl;
 
             // regular cases: one volume more than boundaries
             if ( (numstoredvol==3 and numstoredbound==2) or // trisected in 2D
@@ -3043,7 +3044,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
               // update cut status of root cell (element)
               //cutstat = COMBUST::InterfaceHandleCombust::trisected;
               cutstat = COMBUST::InterfaceHandleCombust::bisected;
-              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
             }
 
             // one outer volume cell is large enough, the other outer volume cell is too small
@@ -3067,7 +3068,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             {
               // update cut status of root cell (element)
               cutstat = COMBUST::InterfaceHandleCombust::bisected;
-              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
             }
             // both outer volume cells are too small, but the boundary cells are not small
             // -> element is touched or double touched; stored boundary
@@ -3084,7 +3085,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             {
               // update cut status of root cell (element)
               cutstat = COMBUST::InterfaceHandleCombust::touched;
-              //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
             }
             // both outer volume cells are too small
             // -> stored the middle volume cell
@@ -3092,7 +3093,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             {
               // update cut status of root cell (element)
               cutstat = COMBUST::InterfaceHandleCombust::uncut;
-              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
             }
             else
             {
@@ -3106,9 +3107,9 @@ void COMBUST::FlameFront::CaptureFlameFront(
           {
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
             const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
-            cout << "element Id " << rootcell->Ele()->Id() << endl;
-            cout << "number of stored volumes " << numstoredvol << endl;
-            cout << "number of stored boundaries " << numstoredbound << endl;
+            IO::cout << "element Id " << rootcell->Ele()->Id() << IO::endl;
+            IO::cout << "number of stored volumes " << numstoredvol << IO::endl;
+            IO::cout << "number of stored boundaries " << numstoredbound << IO::endl;
             FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             dserror("cut status could not be determined");
           }
@@ -3226,8 +3227,8 @@ void COMBUST::FlameFront::CaptureFlameFront(
       // element is uncut or touched
       if (vol_minus == 0.0 or vol_plus == 0.0)
       {
-        //std::cout << "integration cells only on one side of interface" << std::endl;
-        //std::cout << "number of integration cells:  " << listDomainIntCellsperEle.size() << std::endl;
+        //IO::cout << "integration cells only on one side of interface" << IO::endl;
+        //IO::cout << "number of integration cells:  " << listDomainIntCellsperEle.size() << IO::endl;
         // delete integration cells
         listDomainIntCellsperEle.clear();
         // and store hex8 domain integration cell instead
@@ -3503,7 +3504,7 @@ bool projectMidpoint(
 
     // check convergence
     conv = sqrt(f(0)*f(0)+f(1)*f(1)+f(2)*f(2)+f(3)*f(3));
-    //cout << "iteration " << iter << ": -> |f|=" << conv << endl;
+    //cout << "iteration " << iter << ": -> |f|=" << conv << IO::endl;
 
     if (conv <= 1.0E-15) break;
     //----------------------------------------------------
@@ -3531,7 +3532,7 @@ bool projectMidpoint(
   // Newton iteration unconverged
   if (conv > 1.0E-15)
   {
-    cout << "Newton-Raphson algorithm for projection of midpoint did not converge" << endl;
+    IO::cout << "Newton-Raphson algorithm for projection of midpoint did not converge" << IO::endl;
   }
   else
   {
@@ -3540,7 +3541,7 @@ bool projectMidpoint(
     //diff(0) = midpoint[0]-projpoint(0);
     //diff(1) = midpoint[1]-projpoint(1);
     //diff(2) = midpoint[2]-projpoint(2);
-    //cout << diff << endl;
+    //cout << diff << IO::endl;
   }
   return converged;
 }
@@ -3584,11 +3585,11 @@ void COMBUST::FlameFront::projectMidpoint2D(
   //TEST
   //for (std::size_t iter=0; iter<pointlist.size(); ++iter)
   //{
-  //  std::cout<< iter << std::endl;
+  //  IO::cout<< iter << IO::endl;
   //  std::vector<double> coord = pointlist[iter];
   //  for (std::size_t isd=0; isd<3; isd++)
   //  {
-  //    std::cout<< coord[isd] << std::endl;
+  //    IO::cout<< coord[isd] << IO::endl;
   //  }
   //}
 
@@ -3652,12 +3653,12 @@ void COMBUST::FlameFront::projectMidpoint2D(
   trianglelist.push_back(trianglepoints);
 
   //TEST
-  //std::cout<<"triangles"<< std::endl;
+  //IO::cout<<"triangles"<< IO::endl;
   //for (std::size_t itriangle=0; itriangle<trianglelist.size(); itriangle++)
   //{
-  //  std::cout<< "dreieck " << itriangle<< std::endl;
+  //  IO::cout<< "dreieck " << itriangle<< IO::endl;
   //  for (int i=0; i<3; i++)
-  //    std::cout<< trianglelist[itriangle][i]<<std::endl;
+  //    IO::cout<< trianglelist[itriangle][i]<<IO::endl;
   //}
 
   // replace segment on back side by two segments connected to midpointback
@@ -3770,9 +3771,9 @@ void COMBUST::FlameFront::TriangulateFlameFront(
     // IdentifyPolygonOrientation(actsegmentpoints, actkey, intersectionpointsids, gfuncvalues);
     std::vector<int> actsegmentpoints = segmentiter->second;
     //TEST
-    // std::cout << "Startsegment " << segmentiter->first << std::endl;
-    // std::cout << actsegmentpoints[0] << std::endl;
-    // std::cout << actsegmentpoints[1] << std::endl;
+    // IO::cout << "Startsegment " << segmentiter->first << IO::endl;
+    // IO::cout << actsegmentpoints[0] << IO::endl;
+    // IO::cout << actsegmentpoints[1] << IO::endl;
 
     //contains the vertices of the polygon
     std::vector<int> polypoints;
@@ -3818,10 +3819,10 @@ void COMBUST::FlameFront::TriangulateFlameFront(
     polygonpoints[j] = polypoints;
     j++;
     //TEST
-    //      std::cout<<"polygonvertices"<< std::endl;
+    //      IO::cout<<"polygonvertices"<< IO::endl;
     //      for (std::size_t ipoly=0; ipoly<polypoints.size(); ipoly++)
     //      {
-    //        std::cout<< polypoints[ipoly] << std::endl;
+    //        IO::cout<< polypoints[ipoly] << IO::endl;
     //      }
 
     // special case: both segments of the double intersected surface belong to the same polygon
@@ -3829,13 +3830,13 @@ void COMBUST::FlameFront::TriangulateFlameFront(
     {
       if (polypoints.size()>(segmentlist.size()-3))
       {
-        //std::cout<< "G-function values" << std::endl;
+        //IO::cout<< "G-function values" << IO::endl;
         //for (std::size_t i=0; i<gfuncvalues.size(); i++)
         //{
-        //  std::cout<< gfuncvalues[i] << std::endl;
+        //  IO::cout<< gfuncvalues[i] << IO::endl;
         //}
         //dserror("Unexpected intersection");
-        cout << "/!\\ warning: special case of polygon occured" << endl;
+        IO::cout << "/!\\ warning: special case of polygon occured" << IO::endl;
         break;
       }
     }
@@ -3894,8 +3895,8 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         if (midpoint[dim]==1 or midpoint[dim]==-1) // midpoint lies on surface of the cell
         {
           for (unsigned idim=0;idim<gfuncvalues.size();idim++)
-            cout << "G-function value " << idim << " for this cell: " << gfuncvalues[idim] << endl;
-          cout << "/!\\ warning === coodinate of midpoint moved to interior " << midpoint[dim] << endl;
+            IO::cout << "G-function value " << idim << " for this cell: " << gfuncvalues[idim] << IO::endl;
+          IO::cout << "/!\\ warning === coodinate of midpoint moved to interior " << midpoint[dim] << IO::endl;
           // TODO: this should not be an absolute factor, but a relative factor (related to the cell size))
           midpoint[dim] = midpoint[dim] * 0.98;  // -> move midpoint into the cell
         }
@@ -3976,7 +3977,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
 //#ifndef COMBUST_2D
       // add midpoint to list of points defining piecewise linear complex (interface surface)
       std::size_t midpoint_id = pointlist.size();//ids start at 0
-      //std::cout<< "pointlistsize " << pointlist.size() << "midpointid " << midpoint_id<<std::endl;
+      //IO::cout<< "pointlistsize " << pointlist.size() << "midpointid " << midpoint_id<<IO::endl;
       pointlist.push_back(midpoint);
 
       //build triangles
@@ -3995,12 +3996,12 @@ void COMBUST::FlameFront::TriangulateFlameFront(
   }
 
   //TEST
-  //std::cout<<"triangles"<< std::endl;
+  //IO::cout<<"triangles"<< IO::endl;
   //for (std::size_t itriangle=0; itriangle<trianglelist.size(); itriangle++)
   //{
-  //  std::cout<< "dreieck " << itriangle<< std::endl;
+  //  IO::cout<< "dreieck " << itriangle<< IO::endl;
   //  for (int i=0; i<3; i++)
-  //    std::cout<< trianglelist[itriangle][i]<<std::endl;
+  //    IO::cout<< trianglelist[itriangle][i]<<IO::endl;
   //}
 
   return;
@@ -4119,7 +4120,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       }
     }
 
-    //std::cout << "segmentpoints size" << segmentpoints.size() << std::endl;
+    //IO::cout << "segmentpoints size" << segmentpoints.size() << IO::endl;
 
     switch (segmentpoints.size())
     {
@@ -4134,7 +4135,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
         if (gfuncvalues[surfacepointlist[i][k]]==0)
           zeropoints.push_back(surfacepointlist[i][k]);
       }
-      //std::cout << "zeropoints size" << zeropoints.size() << std::endl;
+      //IO::cout << "zeropoints size" << zeropoints.size() << IO::endl;
       switch (zeropoints.size())
       {
       case 0: //surface not intersected
@@ -4270,7 +4271,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
     }
     case 1:
     {
-      //std::cout << "one intersection point" << std::endl;
+      //IO::cout << "one intersection point" << IO::endl;
       //find zeropoint to build segment
       std::vector<int> zeropoints;
       std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex8);
@@ -4281,10 +4282,10 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       }
       if (zeropoints.size()!=1)
       {
-        std::cout << "Surface " << i << endl;
+        IO::cout << "Surface " << i << IO::endl;
         for (size_t l=0; l < gfuncvalues.size(); l++)
         {
-          std::cout << "Node " << l << " " << gfuncvalues[l] << std::endl;
+          IO::cout << "Node " << l << " " << gfuncvalues[l] << IO::endl;
         }
         dserror("can't build intersection segment, one intersection point, but not one vertex that has G=0");
       }
@@ -4309,7 +4310,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
     }
     case 4:
     {
-      //std::cout << "4 intersection points " << std::endl;
+      //IO::cout << "4 intersection points " << IO::endl;
       // 2 segments per surface are possible for hex8 -> 4 intersection points
       // idea to assign the intersection points to the segments:
       //       look for maximal distance
@@ -4339,7 +4340,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       }
 
       //build segment
-      //std::cout << "Maxdist" << maxdistcounter << std::endl;
+      //IO::cout << "Maxdist" << maxdistcounter << IO::endl;
       if (maxdistcounter==0 or maxdistcounter==2)
       {
         std::vector<int> segment1 (2);
@@ -4390,7 +4391,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
 
   for (int surfaceNo = 0; surfaceNo < 6; surfaceNo++)//loop over all surfaces
   {
-    cout << "Surface No.: " << surfaceNo << endl;
+    IO::cout << "Surface No.: " << surfaceNo << IO::endl;
     std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex20);
 
     // gets end points of the segment
@@ -4416,7 +4417,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
       {
         //get id of the intersectionpoint and store it in segmentpoints vector
         segmentpoints.push_back(it_intersectionpoint->second);
-        //cout << "Intersectionpoint found on line: " << surface[surfaceNo][lineNo] << " with ID: " << it_intersectionpoint->second << endl;
+        //cout << "Intersectionpoint found on line: " << surface[surfaceNo][lineNo] << " with ID: " << it_intersectionpoint->second << IO::endl;
 
         if(oldline != lineNo)
         {
@@ -4443,7 +4444,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
       {
         Coords(dim) = pointlist[segmentpoints[i]][dim];
       }
-      cout << "The Coordinate are: " << Coords << endl;
+      IO::cout << "The Coordinate are: " << Coords << IO::endl;
       SegmentationCoordinates.push_back(Coords);
     }
 
@@ -4581,7 +4582,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
       {
         for (size_t l=0; l < gfuncvalues.size(); l++)
         {
-          std::cout << gfuncvalues[l] << std::endl;
+          IO::cout << gfuncvalues[l] << IO::endl;
         }
         dserror("can't build intersection segment, one intersection point, but no vertex with G=0");
         break;
@@ -4688,7 +4689,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
     }
 
     //testing-output
-    std::cout << segsize << " intersectionpoints and " << zersize << " corner-zero-nodes" << std::endl;
+    IO::cout << segsize << " intersectionpoints and " << zersize << " corner-zero-nodes" << IO::endl;
   }
 
   return;
@@ -4761,12 +4762,12 @@ void COMBUST::FlameFront::StoreDomainIntegrationCell(
   bool inGplus = GetIntCellDomain(cellcoord,gfuncvalues,cell->Shape());
 
   //TEST
-  //std::cout << "globalcellcoord " << globalcellcoord(0,3) << globalcellcoord(1,3) << std::endl;
+  //IO::cout << "globalcellcoord " << globalcellcoord(0,3) << globalcellcoord(1,3) << IO::endl;
   //if(inGplus) {
-  //  std::cout << "In G plus" << std::endl;
+  //  IO::cout << "In G plus" << IO::endl;
   //}
   //else {
-  //  std::cout << "In G minus" << std::endl;
+  //  IO::cout << "In G minus" << IO::endl;
   //}
   //------------------------
   // create integration cell
@@ -4823,11 +4824,11 @@ void COMBUST::FlameFront::buildPLC(
   const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
 
   //TEST
-  //std::cout << cell->Ele()->Id() << std::endl;
-  //std::cout<< "G-Werte" << std::endl;
+  //IO::cout << cell->Ele()->Id() << IO::endl;
+  //IO::cout<< "G-Werte" << IO::endl;
   //for (std::size_t i=0; i<gfuncvalues.size(); i++)
   //{
-  //  std::cout<< gfuncvalues[i] << std::endl;
+  //  IO::cout<< gfuncvalues[i] << IO::endl;
   //}
 
   //---------------------------------------------
@@ -4863,14 +4864,14 @@ void COMBUST::FlameFront::buildPLC(
   }
 
   //TEST
-  //std::cout << "number of intersection points " << intersectionpoints.size() << endl;
+  //IO::cout << "number of intersection points " << intersectionpoints.size() << IO::endl;
   //for (std::size_t iter=0; iter<pointlist.size(); ++iter)
   //{
-  //  std::cout<< iter << std::endl;
+  //  IO::cout<< iter << IO::endl;
   //  std::vector<double> coord = pointlist[iter];
   //  for (std::size_t isd=0; isd<3; isd++)
   //  {
-  //    std::cout<< coord[isd] << std::endl;
+  //    IO::cout<< coord[isd] << IO::endl;
   //  }
   //}
 
@@ -4895,14 +4896,14 @@ void COMBUST::FlameFront::buildPLC(
   //  }
 
   //TEST
-  //std::cout<<"Segments"<< std::endl;
+  //IO::cout<<"Segments"<< IO::endl;
   //for (std::map<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
   //{
-  //  std::cout<<"Segment "<< iter->first << std::endl;
+  //  IO::cout<<"Segment "<< iter->first << IO::endl;
   //  std::vector<int> point = iter->second;
   //  for (std::size_t isd=0; isd<2; isd++)
   //  {
-  //    std::cout<< point[isd] << std::endl;
+  //    IO::cout<< point[isd] << IO::endl;
   //  }
   //}
 
@@ -5283,7 +5284,7 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
   for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
     GEO::CUT::VolumeCell * volcell = *ivolcell;
-    //cout << "volumen " << setw(24)<< std::setprecision(20) << volcell->Volume() << endl;
+    //cout << "volumen " << setw(24)<< std::setprecision(20) << volcell->Volume() << IO::endl;
 
     if (volcell->Volume()/refvol >= voltol) // volume cell is large enough
     {
@@ -5320,21 +5321,21 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
         if (distype != DRT::Element::hex8 and
             distype != DRT::Element::tet4)
         {
-          cout << "distype " << distype << endl;
+          IO::cout << "distype " << distype << IO::endl;
           dserror("unexpected type of domain integration cell");
         }
         if (ic->Volume()/refvol > 1.0E-8)
         {
           double physvolume = GEO::DomainIntCell( distype, coord, physCoord, inGplus ).VolumeInPhysicalDomain();
           if (physvolume < 0.0)
-            cout << "negative volume detected for domain integration cell!" << endl;
+            IO::cout << "negative volume detected for domain integration cell!" << IO::endl;
           domainintcelllist.push_back( GEO::DomainIntCell( distype, coord, physCoord, inGplus ) );
           domcellcount += 1;
         }
         else
         {
-          //cout << "small domain cell not stored" << endl;
-          //cout << "volume" << ic->Volume() << endl;
+          //cout << "small domain cell not stored" << IO::endl;
+          //cout << "volume" << ic->Volume() << IO::endl;
         }
       }
 
@@ -5450,8 +5451,8 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
         GEO::CUT::BoundaryCell * bcell = *ibcell;
         boundarea += bcell->Area();
       }
-      //cout << "refarea " << refarea << endl;
-      //cout << "boundarea " << boundarea << endl;
+      //cout << "refarea " << refarea << IO::endl;
+      //cout << "boundarea " << boundarea << IO::endl;
       // check if there is a small boundary integration cell for a small volume
       // remark: if there is a large boundary integration cell for a small volume, we want to keep it
       bool smallvolbound = false;
@@ -5468,7 +5469,7 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
         if (distype != DRT::Element::tri3 and
             distype != DRT::Element::quad4)
         {
-          cout << "distype " << distype << endl;
+          IO::cout << "distype " << distype << IO::endl;
           dserror("unexpected type of boundary integration cell");
         }
 
@@ -5476,9 +5477,9 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
         {
           // do not store boundary cells for small volumes, but do store large boundary cells for
           // small volumes -> this will be a touched element, we have to keep its boundary cell
-          //cout << "small boundary cell not stored" << endl;
-          //cout << "volumen "  << setw(24)<< std::setprecision(20) << volume << endl;
-          //cout << "flaeche "  << setw(24)<< std::setprecision(20) << bcell->Area() << endl;
+          //cout << "small boundary cell not stored" << IO::endl;
+          //cout << "volumen "  << setw(24)<< std::setprecision(20) << volume << IO::endl;
+          //cout << "flaeche "  << setw(24)<< std::setprecision(20) << bcell->Area() << IO::endl;
         }
         else if (bcell->Area()/refarea < 1.0E-8)
         {
@@ -5815,26 +5816,26 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
     source = numproc-1;
 
   //#ifdef DEBUG
-  //  cout << "number of cell groups (cut column elements) on proc " << myrank << " " << myflamefront.size() << endl;
+  //  IO::cout << "number of cell groups (cut column elements) on proc " << myrank << " " << myflamefront.size() << IO::endl;
   //  for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=myflamefront.begin(); cellgroup != myflamefront.end(); ++cellgroup)
   //    {
   //      // put ID of cut element here
   //      if (cellgroup->first == 1274)
   //      {
-  //        cout << "output for element 1274 packing" << endl;
+  //        IO::cout << "output for element 1274 packing" << IO::endl;
   //        const size_t numcells = (cellgroup->second).size();
-  //        cout << "proc " << myrank << " number of integration cells: " << numcells << endl;
+  //        IO::cout << "proc " << myrank << " number of integration cells: " << numcells << IO::endl;
   //        for (size_t icell=0; icell<numcells; ++icell)
   //        {
   //          GEO::BoundaryIntCell cell = cellgroup->second[icell];
-  //          cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
+  //          IO::cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
   //        }
   //      }
   //    }
   //#endif
 
 #ifdef DEBUG
-  std::cout << "proc " << myrank << " flame front pieces for " << myflamefront.size() << " elements available before export" << std::endl;
+  IO::cout << "proc " << myrank << " flame front pieces for " << myflamefront.size() << " elements available before export" << IO::endl;
 #endif
 
   DRT::PackBuffer data;
@@ -5858,7 +5859,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
     lengthSend[0] = dataSend.size();
 
 #ifdef DEBUG
-    cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank << " to proc " << dest << endl;
+    IO::cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank << " to proc " << dest << IO::endl;
 #endif
 
     // send length of the data to be received ...
@@ -5880,7 +5881,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
     exporter.Wait(req_data);
 
 #ifdef DEBUG
-    cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank << " from proc " << source << endl;
+    IO::cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank << " from proc " << source << IO::endl;
 #endif
 
     //-----------------------------------------------
@@ -5891,21 +5892,21 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
     COMBUST::FlameFront::unpackBoundaryIntCells(dataRecv, flamefront_recv);
 
     //#ifdef DEBUG
-    //    cout << "proc " << myrank << " receiving "<< lengthRecv[0] << " bytes from proc " << source << endl;
-    //    cout << "proc " << myrank << " receiving "<< flamefront_recv.size() << " flame front pieces from proc " << source << endl;
+    //    IO::cout << "proc " << myrank << " receiving "<< lengthRecv[0] << " bytes from proc " << source << IO::endl;
+    //    IO::cout << "proc " << myrank << " receiving "<< flamefront_recv.size() << " flame front pieces from proc " << source << IO::endl;
     //
     //    for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=flamefront_recv.begin(); cellgroup != flamefront_recv.end(); ++cellgroup)
     //    {
     //      // put ID of cut element here
     //      if (cellgroup->first == 1274)
     //      {
-    //        cout << "output for element 1274 unpacking" << endl;
+    //        IO::cout << "output for element 1274 unpacking" << IO::endl;
     //        const size_t numcells = (cellgroup->second).size();
-    //        cout << "proc " << myrank << " number of integration cells: " << numcells << endl;
+    //        IO::cout << "proc " << myrank << " number of integration cells: " << numcells << IO::endl;
     //        for (size_t icell=0; icell<numcells; ++icell)
     //        {
     //          GEO::BoundaryIntCell cell = cellgroup->second[icell];
-    //          cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
+    //          IO::cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
     //        }
     //      }
     //    }
@@ -5925,7 +5926,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
     comm.Barrier();
   }
 #ifdef DEBUG
-  std::cout << "proc " << myrank << " flame front pieces for " << myflamefront.size() << " elements available after export" << std::endl;
+  IO::cout << "proc " << myrank << " flame front pieces for " << myflamefront.size() << " elements available after export" << IO::endl;
 #endif
 }
 #endif
@@ -6069,7 +6070,7 @@ void COMBUST::FlameFront::FlameFrontToGmsh(
       GEO::BoundaryIntCell cell = boundaryintcelllist[icell];
       const LINALG::SerialDenseMatrix& cellpos = cell.CellNodalPosXiDomain();//cell.CellNodalPosXYZ();
       const double color = 5;
-      gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << endl;
+      gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << std::endl;
     }
     gmshfilecontent << "};\n";
   }
@@ -6084,7 +6085,7 @@ void COMBUST::FlameFront::FlameFrontToGmsh(
       if (cell.getDomainPlus())
         domain_id = 1;
       const double color = domain_id;
-      gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << endl;
+      gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << std::endl;
     }
     gmshfilecontent << "};\n";
   }
@@ -6183,7 +6184,7 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
       if (cell.getDomainPlus())
         domain_id = 1;
       const double color = domain_id;
-      gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << endl;
+      gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << std::endl;
     }
     gmshfilecontent << "};\n";
   }

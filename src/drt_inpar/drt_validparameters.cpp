@@ -255,7 +255,7 @@ void PrintDefaultDatHeader()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list)
+void DRT::INPUT::PrintDefaultParameters(IO::Pstream& stream, const Teuchos::ParameterList& list)
 {
   bool hasDefault = false;
   for (Teuchos::ParameterList::ConstIterator i = list.begin();

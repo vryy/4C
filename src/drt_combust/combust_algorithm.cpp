@@ -26,6 +26,7 @@ Maintainer: Florian Henke
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 //#include "../drt_lib/standardtypes_cpp.H" // required to use mathematical constants such as PI
@@ -81,16 +82,16 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     switch(combusttype_)
     {
     case INPAR::COMBUST::combusttype_premixedcombustion:
-      std::cout << "COMBUST::Algorithm: this is a premixed combustion problem" << std::endl;
+      IO::cout << "COMBUST::Algorithm: this is a premixed combustion problem" << IO::endl;
       break;
     case INPAR::COMBUST::combusttype_twophaseflow:
-      std::cout << "COMBUST::Algorithm: this is a two-phase flow problem" << std::endl;
+      IO::cout << "COMBUST::Algorithm: this is a two-phase flow problem" << IO::endl;
       break;
     case INPAR::COMBUST::combusttype_twophaseflow_surf:
-      std::cout << "COMBUST::Algorithm: this is a two-phase flow problem with kinks in vel and jumps in pres" << std::endl;
+      IO::cout << "COMBUST::Algorithm: this is a two-phase flow problem with kinks in vel and jumps in pres" << IO::endl;
       break;
     case INPAR::COMBUST::combusttype_twophaseflowjump:
-      std::cout << "COMBUST::Algorithm: this is a two-phase flow problem with jumps in vel and pres" << std::endl;
+      IO::cout << "COMBUST::Algorithm: this is a two-phase flow problem with jumps in vel and pres" << IO::endl;
       break;
     default: dserror("unknown type of combustion problem");
     }
@@ -105,7 +106,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
       dserror("fluid time integration scheme does not match");
     if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
-      cout << "WARNING: combustion and scatra time integration scheme do not match" << endl;
+      IO::cout << "WARNING: combustion and scatra time integration scheme do not match" << IO::endl;
     break;
   }
   case INPAR::FLUID::timeint_one_step_theta:
@@ -113,7 +114,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
       dserror("fluid time integration scheme does not match");
     if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_one_step_theta)
-      cout << "WARNING: combustion and scatra time integration scheme do not match" << endl;
+      IO::cout << "WARNING: combustion and scatra time integration scheme do not match" << IO::endl;
     break;
   }
   case INPAR::FLUID::timeint_afgenalpha:
@@ -121,7 +122,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
       dserror("fluid time integration scheme does not match");
     if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_gen_alpha)
-      cout << "WARNING: combustion and scatra time integration scheme do not match" << endl;
+      IO::cout << "WARNING: combustion and scatra time integration scheme do not match" << IO::endl;
     break;
   }
   default:
@@ -164,7 +165,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     //--------------------------------------------------------------
     if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
     {
-      //cou t<< "reinitialization at timestep 0 switched off!" << endl;
+      //cou t<< "reinitialization at timestep 0 switched off!" << IO::endl;
 
     // get my flame front (boundary integration cells)
     std::map<int, GEO::BoundaryIntCells> myflamefront = flamefront_->InterfaceHandle()->BoundaryIntCells();
@@ -308,9 +309,9 @@ void COMBUST::Algorithm::TimeLoop()
       PrepareFGIteration();
 
       // solve linear G-function equation
-      //cout << "---------------------" << endl;
-      //cout << "Level set deactivated!" << endl;
-      //cout << "---------------------" << endl;
+      //cout << "---------------------" << IO::endl;
+      //cout << "Level set deactivated!" << IO::endl;
+      //cout << "---------------------" << IO::endl;
       DoGfuncField();
 
       //(after Scatra transport but before reinitialization)
@@ -380,7 +381,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   DoFluidField();
 
   // solve (non)linear G-function equation
-  std::cout << "/!\\ warning === G-function field not solved for stationary problems" << std::endl;
+  IO::cout << "/!\\ warning === G-function field not solved for stationary problems" << IO::endl;
   //DoGfuncField();
 
   //reinitialize G-function
@@ -439,12 +440,12 @@ void COMBUST::Algorithm::DoReinitialization()
     }
     case INPAR::COMBUST::reinitaction_signeddistancefunction:
     case INPAR::COMBUST::reinitaction_fastsigneddistancefunction:
-      if(Comm().MyPID()==0) std::cout << "COMBUST::Algorithm: reinitialization via calculating signed distance functions" << std::endl;
+      if(Comm().MyPID()==0) IO::cout << "COMBUST::Algorithm: reinitialization via calculating signed distance functions" << IO::endl;
       ReinitializeGfuncSignedDistance();
       reinitialization_accepted_ = true;
       break;
     case INPAR::COMBUST::reinitaction_none:
-      if(Comm().MyPID()==0) std::cout << "No reinitialization chosen" << std::flush;
+      if(Comm().MyPID()==0) IO::cout << "No reinitialization chosen" << IO::endl;
       reinitialization_accepted_=false;
       break;
     default: dserror("unknown type of reinitialization technique");
@@ -454,8 +455,8 @@ void COMBUST::Algorithm::DoReinitialization()
 
   if(Comm().MyPID()==0)
   {
-    if(reinitialization_accepted_) cout << "...reinitialization was accepted." << std::endl;
-    else                           cout << "...reinitialization was not accepted." << std::endl;
+    if(reinitialization_accepted_) IO::cout << "...reinitialization was accepted." << IO::endl;
+    else                           IO::cout << "...reinitialization was not accepted." << IO::endl;
   }
 
 
@@ -466,7 +467,7 @@ void COMBUST::Algorithm::DoReinitialization()
     // reinitilization is done every fgi -> this is neither good nor cheap,
     // but we didn't find a better solution...
     if (fgitermax_>1)
-      cout << "WARNING: reinitialization done every FLI" << endl;
+      IO::cout << "WARNING: reinitialization done every FLI" << IO::endl;
 
     // update flame front according to reinitialized G-function field
     flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
@@ -535,20 +536,20 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   //  std::ofstream gmshfilecontent1(filename1.c_str());
   //  {
   //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent1 << "View \" " << "Phinp \" {" << endl;
+  //    gmshfilecontent1 << "View \" " << "Phinp \" {" << std::endl;
   //    // draw scalar field 'Phinp' for every element
   //    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phinp(),gmshfilecontent1);
-  //    gmshfilecontent1 << "};" << endl;
+  //    gmshfilecontent1 << "};" << std::endl;
   //  }
   //  {
   //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent1 << "View \" " << "Convective Velocity \" {" << endl;
+  //    gmshfilecontent1 << "View \" " << "Convective Velocity \" {" << std::endl;
   //    // draw vector field 'Convective Velocity' for every element
   //    IO::GMSH::VectorFieldNodeBasedToGmsh(ScaTraField().Discretization(),ScaTraField().ConVel(),gmshfilecontent1);
-  //    gmshfilecontent1 << "};" << endl;
+  //    gmshfilecontent1 << "};" << std::endl;
   //  }
   //  gmshfilecontent1.close();
-  //  if (screen_out) std::cout << " done" << endl;
+  //  if (screen_out) IO::cout << " done" << IO::endl;
 
   // reinitialize what will later be 'phinp'
   if (stepreinit_)
@@ -610,20 +611,20 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   //  std::ofstream gmshfilecontent2(filename2.c_str());
   //  {
   //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent2 << "View \" " << "Phinp \" {" << endl;
+  //    gmshfilecontent2 << "View \" " << "Phinp \" {" << std::endl;
   //    // draw scalar field 'Phinp' for every element
   //    IO::GMSH::ScalarFieldToGmsh(ScaTraField().Discretization(),ScaTraField().Phinp(),gmshfilecontent2);
-  //    gmshfilecontent2 << "};" << endl;
+  //    gmshfilecontent2 << "};" << std::endl;
   //  }
   //  {
   //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent2 << "View \" " << "Convective Velocity \" {" << endl;
+  //    gmshfilecontent2 << "View \" " << "Convective Velocity \" {" << std::endl;
   //    // draw vector field 'Convective Velocity' for every element
   //    IO::GMSH::VectorFieldNodeBasedToGmsh(ScaTraField().Discretization(),ScaTraField().ConVel(),gmshfilecontent2);
-  //    gmshfilecontent2 << "};" << endl;
+  //    gmshfilecontent2 << "};" << std::endl;
   //  }
   //  gmshfilecontent2.close();
-  //  if (screen_out) std::cout << " done" << endl;
+  //  if (screen_out) IO::cout << " done" << IO::endl;
 
   return;
 }
@@ -639,7 +640,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
   // Navier-Stokes solution velocity field is overwritten
   //----------------------------------------------------------------
   if (Comm().MyPID()==0)
-    std::cout << "\n--- overwriting Navier-Stokes solution with field defined by FUNCT1... " << std::flush;
+    IO::cout << "\n--- overwriting Navier-Stokes solution with field defined by FUNCT1... " << IO::endl;
 
   if(transport_vel_no_ == -1) dserror("please set a function number for interface transport velocity!");
 
@@ -672,7 +673,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
       double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(icomp,lnode->X(),FluidField().Time(),NULL);
 
       // scaling for stretching fluid example // schott
-      //cout <<"Scaling with time-curve!!!!" << endl;
+      //cout <<"Scaling with time-curve!!!!" << IO::endl;
       //value *= cos(PI*FluidField().Time()/500.0);
       //value = 0.0;
 
@@ -683,7 +684,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
   }
 
   if (Comm().MyPID()==0)
-    std::cout << "done" << std::endl;
+    IO::cout << "done" << IO::endl;
 
   return convel;
 }
@@ -777,7 +778,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
         // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
         // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
         //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
-        std::cout << "/!\\ reinit velocity at node " << gid << " is set to zero" << std::endl;
+        IO::cout << "/!\\ reinit velocity at node " << gid << " is set to zero" << IO::endl;
         nvec.Clear();
       }
       else
@@ -839,7 +840,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
       //      }
 
 
-      //      cout << "WARNING: the velocity vector is set to zero at the moment" << endl;
+      //      IO::cout << "WARNING: the velocity vector is set to zero at the moment" << IO::endl;
       //      nvec.Clear();
 
       //-----------------------------------------------
@@ -870,7 +871,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
     gmshfilecontent << "};\n";
   }
   gmshfilecontent.close();
-  if (true) std::cout << " done" << endl;
+  if (true) IO::cout << " done" << IO::endl;
 #endif
 
   return reinitvel_tmp;
@@ -889,7 +890,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
   {
     if((DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false) and
        (DRT::INPUT::IntegralValue<INPAR::COMBUST::InitialField>(combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD") == INPAR::COMBUST::initfield_zero_field))
-      cout << "/!\\ Compute an initial stationary fluid solution to avoid a non-zero initial flame velocity" << endl;
+      IO::cout << "/!\\ Compute an initial stationary fluid solution to avoid a non-zero initial flame velocity" << IO::endl;
   }
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
@@ -980,7 +981,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
         // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
         // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
         //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
-        std::cout << "\n/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << std::endl;
+        IO::cout << "\n/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << IO::endl;
         nvec.PutScalar(0.0);
       }
       else
@@ -1115,13 +1116,13 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
       //for (int icomp=0; icomp<3; ++icomp)
       //{
       //  const int gid = dofids[icomp];
-      //  cout << gid << endl;
+      //  IO::cout << gid << IO::endl;
       //  if(dbcmap->MyGID(gid))
       //  {
-      //    cout << "DBC overwritten" << endl;
-      //    cout << nodecoord(0,0) << endl;
-      //    cout << nodecoord(1,0) << endl;
-      //    cout << nodecoord(2,0) << endl;
+      //    IO::cout << "DBC overwritten" << IO::endl;
+      //    IO::cout << nodecoord(0,0) << IO::endl;
+      //    IO::cout << nodecoord(1,0) << IO::endl;
+      //    IO::cout << nodecoord(2,0) << IO::endl;
       //    flvelrel(icomp) = 0.0;
       //  }
       //}
@@ -1161,7 +1162,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
     gmshfilecontent << "};\n";
   }
   gmshfilecontent.close();
-  if (true) std::cout << " done" << endl;
+  if (true) IO::cout << " done" << IO::endl;
 #endif
 
   return conveltmp;
@@ -1265,9 +1266,12 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
 
   if (Comm().MyPID()==0)
   {
-    //cout<<"---------------------------------------  time step  ------------------------------------------\n";
-    printf("----------------------Combustion-------  time step %2d ----------------------------------------\n",Step());
-    printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",Time(),MaxTime(),Dt(),Step(),NStep());
+    IO::cout << "----------------------Combustion-------  time step "
+             << std::setw(2) << Step() << " ----------------------------------------\nTIME: "
+             << std::setw(11) << std::setprecision(4) << std::scientific << Time() << "/"
+             << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime() << "  DT = "
+             << std::setw(11) << std::setprecision(4) << std::scientific << Dt() << " STEP = "
+             << std::setw(4) << Step() << "/" << std::setw(4) << NStep() << IO::endl;
   }
 
   FluidField().PrepareTimeStep();
@@ -1378,9 +1382,12 @@ void COMBUST::Algorithm::PrepareTimeStep()
 
   if (Comm().MyPID()==0)
   {
-    //cout<<"---------------------------------------  time step  ------------------------------------------\n";
-    printf("----------------------Combustion-------  time step %2d ----------------------------------------\n",Step());
-    printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",Time(),MaxTime(),Dt(),Step(),NStep());
+    IO::cout << "----------------------Combustion-------  time step "
+             << std::setw(2) << Step() << " ----------------------------------------\nTIME: "
+             << std::setw(11) << std::setprecision(4) << std::scientific << Time() << "/"
+             << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime() << "  DT = "
+             << std::setw(11) << std::setprecision(4) << std::scientific << Dt() << " STEP = "
+             << std::setw(4) << Step() << "/" << std::setw(4) << NStep() << IO::endl;
   }
 
   FluidField().PrepareTimeStep();
@@ -1419,7 +1426,7 @@ void COMBUST::Algorithm::DoFluidField()
 {
   if (Comm().MyPID()==0)
   {
-    std:: cout<<"\n---------------------------------------  FLUID SOLVER  ---------------------------------------" << std::endl;
+    IO::cout<<"\n---------------------------------------  FLUID SOLVER  ---------------------------------------" << IO::endl;
   }
 
   // update fluid interface with flamefront
@@ -1442,7 +1449,7 @@ void COMBUST::Algorithm::DoGfuncField()
 {
   if (Comm().MyPID()==0)
   {
-    cout<<"\n---------------------------------------  G-FUNCTION SOLVER  ----------------------------------\n";
+    IO::cout<<"\n---------------------------------------  G-FUNCTION SOLVER  ----------------------------------\n";
   }
 
   // get the convel at the correct time
@@ -1494,7 +1501,7 @@ void COMBUST::Algorithm::DoGfuncField()
     // for combustion, the velocity field is discontinuous; the relative flame velocity is added
 
 #if 0
-    //std::cout << "convective velocity is transferred to ScaTra" << std::endl;
+    //IO::cout << "convective velocity is transferred to ScaTra" << IO::endl;
     Epetra_Vector convelcopy = *convel;
     //    *copyconvel = *convel;
 
@@ -1511,7 +1518,7 @@ void COMBUST::Algorithm::DoGfuncField()
         counter++;
     }
     // number of identical dofs in convection velocity and flame velocity vector
-    cout << "number of identical velocity components: " << counter << endl;
+    IO::cout << "number of identical velocity components: " << counter << IO::endl;
 #endif
 
     if(transport_vel_ == INPAR::COMBUST::transport_vel_flamevel)
@@ -1589,7 +1596,7 @@ void COMBUST::Algorithm::UpdateTimeStep()
   else
   {
     //if(Comm().MyPID()==0)
-    //  cout << "Update" << endl;
+    //  IO::cout << "Update" << IO::endl;
     ScaTraField().Update();
   }
 
@@ -1641,16 +1648,16 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
       if (std::isnan(massloss))
         dserror("NaN detected in mass conservation check");
 
-      std::cout << "---------------------------------------" << endl;
-      std::cout << "           mass conservation"            << endl;
-      std::cout << " initial mass: " << volume_start << endl;
-      std::cout << " final mass:   " << volume_end   << endl;
-      std::cout << " mass loss:    " << massloss << "%" << endl;
-      std::cout << "---------------------------------------" << endl;
+      IO::cout << "---------------------------------------" << IO::endl;
+      IO::cout << "           mass conservation"            << IO::endl;
+      IO::cout << " initial mass: " << volume_start << IO::endl;
+      IO::cout << " final mass:   " << volume_end   << IO::endl;
+      IO::cout << " mass loss:    " << massloss << "%" << IO::endl;
+      IO::cout << "---------------------------------------" << IO::endl;
     }
     else
     {
-      cout << " there is no 'minus domain'! -> division by zero checking mass conservation" << endl;
+      IO::cout << " there is no 'minus domain'! -> division by zero checking mass conservation" << IO::endl;
     }
   }
 
@@ -1685,7 +1692,7 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
   const double voldelta = targetvol - currentvol;
 
   if (Comm().MyPID() == 0)
-    std::cout << "Correcting volume of minus(-) domain by " << voldelta << " ... " << std::flush;
+    IO::cout << "Correcting volume of minus(-) domain by " << voldelta << " ... " << IO::endl;
 
   // compute negative volume of discretization on this processor
   double myarea = flamefront_->InterfaceHandle()->ComputeSurface();
@@ -1725,7 +1732,7 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
   if (Comm().MyPID() == 0)
-    std::cout << "done" << std::endl;
+    IO::cout << "done" << IO::endl;
 
   return;
 }
@@ -2164,13 +2171,13 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
 {
   if (Comm().MyPID()==0)
   {
-    std::cout << "---------------------------------------------" << std::endl;
-    std::cout << "| restart of combustion problem             |" << std::endl;
+    IO::cout << "---------------------------------------------" << IO::endl;
+    IO::cout << "| restart of combustion problem             |" << IO::endl;
     if (restartscatrainput)
-      std::cout << "| restart with scalar field from input file |" << endl;
+      IO::cout << "| restart with scalar field from input file |" << IO::endl;
     if (restartfromfluid)
-      std::cout << "| restart from standard fluid problem       |" << endl;
-    std::cout << "---------------------------------------------" << std::endl;
+      IO::cout << "| restart from standard fluid problem       |" << IO::endl;
+    IO::cout << "---------------------------------------------" << IO::endl;
   }
   if (restartfromfluid and !restartscatrainput)
     dserror("scalar field must be read from input file for restart from standard fluid");
@@ -2214,7 +2221,7 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   if (restartscatrainput)
   {
     if (Comm().MyPID()==0)
-      std::cout << "---  overwriting scalar field with field from input file... " << std::flush;
+      IO::cout << "---  overwriting scalar field with field from input file... " << IO::endl;
     // now overwrite restart phis w/ the old phis
     ScaTraField().Phinp()->Update(1.0, *(oldphinp), 0.0);
     ScaTraField().Phin() ->Update(1.0, *(oldphin),  0.0);
@@ -2231,7 +2238,7 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
       ScaTraField().Phinm() ->Update(1.0,*(ScaTraField().Phin()),   0.0);
     }
     if (Comm().MyPID()==0)
-      std::cout << "done" << std::endl;
+      IO::cout << "done" << IO::endl;
 
     //-------------------------------------------------------------
     // fill flamefront conforming to restart state
@@ -2253,43 +2260,43 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
       std::ofstream gmshfilecontent(filename.c_str());
       {
         // add 'View' to Gmsh postprocessing file
-        gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+        gmshfilecontent << "View \" " << "Phinp \" {" << std::endl;
         // draw scalar field 'Phinp' for every element
         IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
-        gmshfilecontent << "};" << endl;
+        gmshfilecontent << "};" << std::endl;
       }
       {
         // add 'View' to Gmsh postprocessing file
-        gmshfilecontent << "View \" " << "Phin \" {" << endl;
+        gmshfilecontent << "View \" " << "Phin \" {" << std::endl;
         // draw scalar field 'Phin' for every element
         IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
-        gmshfilecontent << "};" << endl;
+        gmshfilecontent << "};" << std::endl;
       }
       if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
       {
         // add 'View' to Gmsh postprocessing file
-        gmshfilecontent << "View \" " << "Phidtn \" {" << endl;
+        gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
         // draw scalar field 'Phidtn' for every element
         IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phidtn(),gmshfilecontent);
-        gmshfilecontent << "};" << endl;
+        gmshfilecontent << "};" << std::endl;
       }
       else
       {
         // add 'View' to Gmsh postprocessing file
-        gmshfilecontent << "View \" " << "Phinm \" {" << endl;
+        gmshfilecontent << "View \" " << "Phinm \" {" << std::endl;
         // draw scalar field 'Phinm' for every element
         IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
-        gmshfilecontent << "};" << endl;
+        gmshfilecontent << "};" << std::endl;
       }
       {
         //    // add 'View' to Gmsh postprocessing file
-        //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
+        //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << std::endl;
         //    // draw vector field 'Convective Velocity' for every element
         //    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
-        //    gmshfilecontent << "};" << endl;
+        //    gmshfilecontent << "};" << std::endl;
       }
       gmshfilecontent.close();
-      std::cout << " done" << endl;
+      IO::cout << " done" << IO::endl;
     }
 
     if (!restartfromfluid) // default: restart from an XFEM problem, not from a standard fluid problem
@@ -2329,43 +2336,43 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     std::ofstream gmshfilecontent(filename.c_str());
     {
       // add 'View' to Gmsh postprocessing file
-      gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+      gmshfilecontent << "View \" " << "Phinp \" {" << std::endl;
       // draw scalar field 'Phinp' for every element
       IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};" << std::endl;
     }
     {
       // add 'View' to Gmsh postprocessing file
-      gmshfilecontent << "View \" " << "Phin \" {" << endl;
+      gmshfilecontent << "View \" " << "Phin \" {" << std::endl;
       // draw scalar field 'Phin' for every element
       IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};" << std::endl;
     }
     if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
     {
       // add 'View' to Gmsh postprocessing file
-      gmshfilecontent << "View \" " << "Phidtn \" {" << endl;
+      gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
       // draw scalar field 'Phidtn' for every element
       IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phidtn(),gmshfilecontent);
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};" << std::endl;
     }
     else
     {
       // add 'View' to Gmsh postprocessing file
-      gmshfilecontent << "View \" " << "Phinm \" {" << endl;
+      gmshfilecontent << "View \" " << "Phinm \" {" << std::endl;
       // draw scalar field 'Phinm' for every element
       IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};" << std::endl;
     }
     {
       //    // add 'View' to Gmsh postprocessing file
-      //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
+      //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << std::endl;
       //    // draw vector field 'Convective Velocity' for every element
       //    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
-      //    gmshfilecontent << "};" << endl;
+      //    gmshfilecontent << "};" << std::endl;
     }
     gmshfilecontent.close();
-    std::cout << " done" << endl;
+    IO::cout << " done" << IO::endl;
   }
 
   //FluidField().Output();
@@ -2416,19 +2423,19 @@ void COMBUST::Algorithm::Redistribute()
     if (minprocevaltime <= 0.0)
     {
       if (Comm().MyPID() == 0)
-        cout << "The max / min ratio could not be determined --> Not redistributing" << endl;
+        IO::cout << "The max / min ratio could not be determined --> Not redistributing" << IO::endl;
     }
     else if (maxprocevaltime / minprocevaltime < ratiolimitfac * evaltimeratio_)
     {
       if (Comm().MyPID() == 0)
-        cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " < " << ratiolimitfac * evaltimeratio_ << " --> Not redistributing" << endl;
+        IO::cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " < " << ratiolimitfac * evaltimeratio_ << " --> Not redistributing" << IO::endl;
     }
     else
     {
       if (Comm().MyPID() == 0)
       {
-        cout << "-------------------------------Redistributing-------------------------------" << endl;
-        cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " > " << ratiolimitfac * evaltimeratio_ << " --> Redistributing" << endl;
+        IO::cout << "-------------------------------Redistributing-------------------------------" << IO::endl;
+        IO::cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " > " << ratiolimitfac * evaltimeratio_ << " --> Redistributing" << IO::endl;
       }
       //--------------------------------------------------------------------------------------
       // Building graph for later use by parmetis
@@ -2852,7 +2859,7 @@ void COMBUST::Algorithm::Redistribute()
         // The number of vertices in the graph.
         int nummyele = tmap.NumMyElements();
 
-        cout << "proc " <<  myrank << " repartition graph using metis" << endl;
+        IO::cout << "proc " <<  myrank << " repartition graph using metis" << IO::endl;
 
         if (numproc<8) // better for smaller no. of partitions
         {
@@ -2868,7 +2875,7 @@ void COMBUST::Algorithm::Redistribute()
                                    &edgecut,
                                    &part[0]);
 
-          cout << "METIS_PartGraphRecursive produced edgecut of " << edgecut << endl;
+          IO::cout << "METIS_PartGraphRecursive produced edgecut of " << edgecut << IO::endl;
         }
         else
         {
@@ -2883,7 +2890,7 @@ void COMBUST::Algorithm::Redistribute()
                               options,
                               &edgecut,
                               &part[0]);
-          cout << "METIS_PartGraphKway produced edgecut of " << edgecut << endl;
+          IO::cout << "METIS_PartGraphKway produced edgecut of " << edgecut << IO::endl;
         }
       } // if (myrank==workrank)
 
@@ -2946,8 +2953,8 @@ void COMBUST::Algorithm::Redistribute()
         if (minrowele <= 0)
         {
           if (Comm().MyPID() == 0)
-            std::cout << "A processor would be left without row elements --> Redistribution aborted\n"
-                      << "----------------------------------------------------------------------------" << std::endl;
+            IO::cout << "A processor would be left without row elements --> Redistribution aborted\n"
+                      << "----------------------------------------------------------------------------" << IO::endl;
           return;
         }
       }
@@ -2958,36 +2965,36 @@ void COMBUST::Algorithm::Redistribute()
       // redistribution themselves
       //--------------------------------------------------------------------------------------
       if(Comm().MyPID()==0)
-        cout << "Redistributing ScaTra Discretization                                ... " << flush;
+        IO::cout << "Redistributing ScaTra Discretization                                ... " << IO::endl;
 
       ScaTraField().Redistribute(newnodegraph);
 
       if (reinitaction_ == INPAR::COMBUST::reinitaction_sussman)
       {
         if(Comm().MyPID()==0)
-          cout << "done\nRedistributing ScaTra Reinit Discretization                         ... " << flush;
+          IO::cout << "done\nRedistributing ScaTra Reinit Discretization                         ... " << IO::endl;
         dserror("Implement a reinit_pde_->Redistribute() method for pde_reinitialization class if necessary");
       }
 
       if(Comm().MyPID()==0)
-        cout << "Redistributing Fluid Discretization                                 ... " << flush;
+        IO::cout << "Redistributing Fluid Discretization                                 ... " << IO::endl;
 
       FluidField().Redistribute(newnodegraph);
 
       if(Comm().MyPID()==0)
-        cout << "done\nUpdating interface                                                  ... " << flush;
+        IO::cout << "done\nUpdating interface                                                  ... " << IO::endl;
 
       // update flame front according to evolved G-function field
       // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
       flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
 
       if(Comm().MyPID()==0)
-        cout << "Transfering state vectors to new distribution                       ... " << flush;
+        IO::cout << "Transfering state vectors to new distribution                       ... " << IO::endl;
 
       FluidField().TransferVectorsToNewDistribution(flamefront_);
 
       if(Comm().MyPID()==0)
-        cout << "done" << endl;
+        IO::cout << "done" << IO::endl;
 
       //--------------------------------------------------------------------------------------
       // with the scatra- and fluid-field updated it is time to do the same with the algorithm
@@ -3015,14 +3022,14 @@ void COMBUST::Algorithm::Redistribute()
       if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
       {
 //        if(Comm().MyPID()==0)
-//          cout << "Updating pointer to ScaTra vector                                               ... " << flush;
+//          IO::cout << "Updating pointer to ScaTra vector                                               ... " << IO::endl;
 
         // update the statistics manager to the new ScaTra discretization
 //        FluidField().TurbulenceStatisticManager()
 //            ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
 
         if(Comm().MyPID()==0)
-          cout << "Redistributing General Mean Statistics Manager                      ... " << flush;
+          IO::cout << "Redistributing General Mean Statistics Manager                      ... " << IO::endl;
 
 //        // redistribute with redistributed standard fluid dofset
         if ( FluidField().TurbulenceStatisticManager()->GetTurbulenceStatisticsGeneralMean()!=Teuchos::null)
@@ -3030,11 +3037,11 @@ void COMBUST::Algorithm::Redistribute()
               ->Redistribute(FluidField().DofSet(), FluidField().Discretization());
 
         if(Comm().MyPID()==0)
-          cout << "done" << endl;
+          IO::cout << "done" << IO::endl;
       }
 
       if (Comm().MyPID() == 0)
-        cout << "----------------------------------------------------------------------------" << endl;
+        IO::cout << "----------------------------------------------------------------------------" << IO::endl;
 
       // make sure the redistribution ratio will be reset
       evaltimeratio_ = 1e12;

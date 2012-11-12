@@ -41,6 +41,7 @@ Maintainer: Georg Bauer
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_fluid/dyn_smag.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_SerialDenseVector.h>
@@ -406,15 +407,15 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
     if ((writeflux_!=INPAR::SCATRA::flux_no) and (myrank_ == 0))
     {
-      cout<<"Flux output is performed for scalars: ";
+      IO::cout << "Flux output is performed for scalars: ";
       for (unsigned int i=0; i < writefluxids_.size();i++)
       {
         const int id = writefluxids_[i];
-        cout<<writefluxids_[i]<<" ";
+        IO::cout << writefluxids_[i] << " ";
         if ((id<1) or (id > numscal_)) // check validity of these numbers as well !
           dserror("Received illegal scalar id for flux output: %d",id);
       }
-      cout<<endl;
+      IO::cout << IO::endl;
     }
   }
 
@@ -2502,8 +2503,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   if (myrank_ == 0)
   {
-    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- con-res ---|-- pot-res ---|-- con-inc ---|-- pot-inc ---|\n");
+    IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+\n"
+             << "|- step/max -|- tol      [norm] -|-- con-res ---|-- pot-res ---|-- con-inc ---|-- pot-inc ---|" << IO::endl;
   }
 
   // ---------------------------------------------- nonlinear iteration
@@ -2739,10 +2740,11 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   {
     if (myrank_ == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-          itnum,itemax,ittol,conresnorm,potresnorm);
-      printf(" (      --     ,te=%10.3E",dtele_);
-      printf(")\n");
+      IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      |      --      | (      --     ,te="
+               << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << IO::endl;
     }
     // abort iteration, when there's nothing more to do
     if ((conresnorm < abstolres) && (potresnorm < abstolres))
@@ -2750,7 +2752,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       // print 'finish line'
       if (myrank_ == 0)
       {
-        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl;
       }
       return true;
     }
@@ -2763,10 +2765,14 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     // print the screen info
     if (myrank_ == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-          itnum,itemax,ittol,conresnorm,potresnorm,
-          incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
-      printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
+      IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << incconnorm_L2/connorm_L2 << "   | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | (ts="
+               << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
+               << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << IO::endl;
     }
 
     // this is the convergence check
@@ -2778,7 +2784,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       if (myrank_ == 0)
       {
         // print 'finish line'
-        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl;
         // write info to error file
         if (errfile_!=NULL)
         {
@@ -2797,7 +2803,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       // print 'finish line'
       if (myrank_ == 0)
       {
-        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl;
       }
       return true;
     }

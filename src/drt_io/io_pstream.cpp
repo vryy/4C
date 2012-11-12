@@ -122,6 +122,25 @@ void IO::Pstream::close()
 
 
 /*----------------------------------------------------------------------*
+ * writes the buffer to screen                                wic 11/12 *
+ *----------------------------------------------------------------------*/
+void IO::Pstream::flush()
+{
+  if (not is_initialized_)
+    dserror("Setup the output before you use it!");
+
+  if (OnPid() and writetoscreen_ and buffer_.str().size() > 0)
+  {
+    std::cout << buffer_.str();
+    std::flush(std::cout);
+    buffer_.str(std::string());
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  * return whether this is a target processor                  wic 11/12 *
  *----------------------------------------------------------------------*/
 bool IO::Pstream::OnPid()
@@ -138,6 +157,16 @@ bool IO::Pstream::OnPid()
 IO::Pstream& IO::endl(IO::Pstream& out)
 {
   out << "\n";
+  return out;
+}
+
+
+/*----------------------------------------------------------------------*
+ * Imitate the std::flush behavior                            wic 11/12 *
+ *----------------------------------------------------------------------*/
+IO::Pstream& IO::flush(IO::Pstream& out)
+{
+  out.flush();
   return out;
 }
 

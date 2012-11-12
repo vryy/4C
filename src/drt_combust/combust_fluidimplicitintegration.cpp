@@ -40,7 +40,6 @@ Maintainer: Florian Henke
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_dofset_independent_pbc.H"
@@ -171,11 +170,11 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     {
       if (myrank_ == 0)
       {
-        std::cout << "-> location-dependent surface tension coefficient:" << std::endl;
-        std::cout << "only coefficient linear in x available for the time being" << std::endl;
+        IO::cout << "-> location-dependent surface tension coefficient:" << IO::endl;
+        IO::cout << "only coefficient linear in x available for the time being" << IO::endl;
         if (surftensapprox_ == INPAR::COMBUST::surface_tension_approx_laplacebeltrami or
             surftensapprox_ == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed)
-           std::cout << "currently only connected interface possible for laplace-beltrami" << std::endl;
+           IO::cout << "currently only connected interface possible for laplace-beltrami" << IO::endl;
       }
     }
   }
@@ -185,12 +184,12 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     if (veljumptype_ != INPAR::COMBUST::vel_jump_none)
     {
       veljumptype_ = INPAR::COMBUST::vel_jump_none;
-      std::cout << "Velocity jump is set to NONE for two-phase flow with jumps!" << std::endl;
+      IO::cout << "Velocity jump is set to NONE for two-phase flow with jumps!" << IO::endl;
     }
     if (fluxjumptype_ != INPAR::COMBUST::flux_jump_surface_tension)
     {
       fluxjumptype_ = INPAR::COMBUST::flux_jump_surface_tension;
-      std::cout << "Flux jump is set to SURFACE TENSION for two-phase flow with jumps!" << std::endl;
+      IO::cout << "Flux jump is set to SURFACE TENSION for two-phase flow with jumps!" << IO::endl;
     }
   }
 
@@ -367,7 +366,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
     tmpfilename << filebase << "." << "flame_area" << ".txt";
-    std::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+    IO::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
 
     const std::string filename = tmpfilename.str();
     std::ofstream gmshfilecontent(filename.c_str());
@@ -386,7 +385,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
     tmpfilename << filebase << "." << "amplitude" << ".txt";
-    std::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+    IO::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
 
     const std::string filename = tmpfilename.str();
     std::ofstream gmshfilecontent(filename.c_str());
@@ -476,7 +475,7 @@ bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
     totalitnumFRS_++;
     curritnumFRS_++;
     if (myrank_==0 and itemaxFRS_!=1)
-      printf("FLUID REFERENCE SOLUTION ITERATION %3d/%3d\n",curritnumFRS_,itemaxFRS_);
+      IO::cout << "FLUID REFERENCE SOLUTION ITERATION " << curritnumFRS_ << "/" << itemaxFRS_ << IO::endl;
   }
   else
     curritnumFRS_=0; // for new fgi or time step
@@ -686,7 +685,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 
       if(xfemtimeint_ != INPAR::COMBUST::xfemtimeint_donothing) // do something for standard values
       {
-        IO::cout << "---  XFEM time integration: adopt standard values to new interface... ";// << std::flush;
+        IO::cout << "---  XFEM time integration: adopt standard values to new interface... ";// << IO::flush;
         timeIntStd_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
         timeIntStd_->compute(newRowVectorsn,newRowVectorsnp); // call computation
         IO::cout << "done" << IO::endl;
@@ -695,7 +694,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
       if ((xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_donothing) and
           (xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_quasistatic)) // do something for enrichment values
       {
-        IO::cout << "---  XFEM time integration: adopt enrichment values to new interface... ";// << std::flush;
+        IO::cout << "---  XFEM time integration: adopt enrichment values to new interface... ";// << IO::flush;
         timeIntEnr_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
         timeIntEnr_->compute(newRowVectorsn,newRowVectorsnp); // call computation
         IO::cout << "done" << IO::endl;
@@ -889,12 +888,12 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     //---------------------------------------------
     // switch state vectors to new dof distribution
     //---------------------------------------------
-    IO::cout << "---  transform state vectors... ";// << std::flush;
+    IO::cout << "---  transform state vectors... ";// << IO::flush;
     // quasi-static enrichment strategy for kink enrichments
     // remark: as soon as the XFEM-time-integration works for kinks, this should be removed
     if (xfemtimeint_enr_==INPAR::COMBUST::xfemtimeintenr_quasistatic)
     {
-      IO::cout << "quasi-static enrichment for two-phase flow problems... ";// << std::flush;
+      IO::cout << "quasi-static enrichment for two-phase flow problems... ";// << IO::flush;
 
       // accelerations at time n+1 and n
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,true);
@@ -1355,8 +1354,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
     if (myrank_ == 0)
     {
-      printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-      printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
+      IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl
+               << "|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|" << IO::endl;
     }
 
     // TODO add comment
@@ -1370,7 +1369,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       itnum++;
 
 #ifdef SUGRVEL_OUTPUT
-      std::cout << "writing gmsh output" << std::endl;
+      IO::cout << "writing gmsh output" << IO::endl;
       const bool screen_out = false;
 
       const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SubgridVelocityFluid", step_, 350, screen_out, 0);
@@ -1718,11 +1717,12 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-               itnum,itemax_,ittol,vresnorm,presnorm);
-//        printf(" (      --     ,te=%10.3E",dtele);
-//        printf(")\n");
-        printf(" (      --     ,te_min=%10.3E,te_max=%10.3E)\n", min, max);
+        IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax_ << "   | "
+                 << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+                 << std::setw(10) << std::setprecision(3) << std::scientific << vresnorm << "   | "
+                 << std::setw(10) << std::setprecision(3) << std::scientific << presnorm << "   |      --      |      --      | (      --     ,te_min="
+                 << std::setw(10) << std::setprecision(3) << std::scientific << min << ",te_max="
+                 << std::setw(10) << std::setprecision(3) << std::scientific << max << ")" << IO::endl;
       }
     }
     /* ordinary case later iteration steps:
@@ -1747,13 +1747,16 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax_,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-//          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-//          printf(")\n");
-          printf(" (ts=%10.3E,te_min=%10.3E,te_max=%10.3E)\n", dtsolve, min, max);
-          printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+          IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax_ << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << vresnorm << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << presnorm << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << incvelnorm_L2/velnorm_L2 << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << incprenorm_L2/prenorm_L2 << "   | (ts="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve << ",te_min="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << min << ",te_max="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << max << ")\n"
+                   << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl;
 
           FILE* errfile = params_->get<FILE*>("err file");
           if (errfile!=NULL)
@@ -1794,8 +1797,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
               if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
               {
-                cout << *frontnode << endl;
-                cout << *backnode << endl;
+                IO::cout << *frontnode << IO::endl;
+                IO::cout << *backnode << IO::endl;
                 dserror("wrong order of nodes as thought here!");
               }
 
@@ -1857,12 +1860,15 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax_,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-//          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-//          printf(")\n");
-          printf(" (ts=%10.3E,te_min=%10.3E,te_max=%10.3E)\n", dtsolve, min, max);
+          IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax_ << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << vresnorm << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << presnorm << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << incvelnorm_L2/velnorm_L2 << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << incprenorm_L2/prenorm_L2 << "   | (ts="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve << ",te_min="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << min << ",te_max="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << max << ")\n" << IO::endl;
         }
       }
     }
@@ -1876,9 +1882,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       stopnonliniter=true;
       if (myrank_ == 0)
       {
-        printf("+---------------------------------------------------------------+\n");
-        printf("|            >>>>>> not converged in itemax steps!              |\n");
-        printf("+---------------------------------------------------------------+\n");
+        IO::cout << "+---------------------------------------------------------------+\n"
+                 << "|            >>>>>> not converged in itemax steps!              |\n"
+                 << "+---------------------------------------------------------------+" << IO::endl;
 
         FILE* errfile = params_->get<FILE*>("err file");
         if (errfile!=NULL)
@@ -1920,8 +1926,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
             if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
             {
-              cout << *frontnode << endl;
-              cout << *backnode << endl;
+              IO::cout << *frontnode << IO::endl;
+              IO::cout << *backnode << IO::endl;
               dserror("wrong order of nodes as thought here!");
             }
 
@@ -2015,13 +2021,13 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
 //      // print matrix in matlab format
 //      // matrix printing options (DEBUGGING!)
-//      cout << "print matrix in matlab format to sparsematrix.mtl" << endl;
+//      IO::cout << "print matrix in matlab format to sparsematrix.mtl" << IO::endl;
 //      //cast sysmat to SparseMatrix
 //      Teuchos::RCP<LINALG::SparseMatrix> A = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
 //      if (A != Teuchos::null)
 //      {
 //        const std::string fname = "sparsematrix.mtl";
-//        cout << "Col:     MinGID " << A->ColMap().MinAllGID() << " MaxGID "   <<   A->ColMap().MaxAllGID()       <<    "   Row:    MinGID    " <<   A->RowMap().MinAllGID() << " MaxGID " << A->RowMap().MaxAllGID()<< endl;
+//        IO::cout << "Col:     MinGID " << A->ColMap().MinAllGID() << " MaxGID "   <<   A->ColMap().MaxAllGID()       <<    "   Row:    MinGID    " <<   A->RowMap().MinAllGID() << " MaxGID " << A->RowMap().MaxAllGID()<< IO::endl;
 //        // print to  le in matlab format + const std::string fname = "sparsematrix.mtl";
 //        LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
 //        // print to screen
@@ -2031,11 +2037,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 //      }
 //      else
 //      {
-//        cout << "failure" << endl;
+//        IO::cout << "failure" << IO::endl;
 //        //   Teuchos::RCP<LINALG::BlockSparseMatrixBase>            A  =   +//  state_->BlockSystemMatrix();
 //        // LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
 //      }
-//      cout << " ...done" << endl;
+//      IO::cout << " ...done" << IO::endl;
 //      dserror("Fertig");
 
       solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1,w_,c_,project_); // defaults: weighted_basis_mean_w = null, kernel_c = null, project = false
@@ -2312,26 +2318,26 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
       const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
       std::vector<int> lids(3);
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
       if (lnode->Id()==163) //or
           //lnode->Id()==498 or
           //lnode->Id()==726 or
           //lnode->Id()==242)
       {
-        cout << "node " << lnode->Id() << " ";
+        IO::cout << "node " << lnode->Id() << " ";
         // extract velocity values (no pressure!) from global velocity vector
         for (int icomp=0; icomp<3; ++icomp)
         {
           lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
           vel(icomp) = (*velnp_out)[lids[icomp]];
-          std::cout << std::setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
+          IO::cout << std::setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
         }
-        cout << "coordinates ";
+        IO::cout << "coordinates ";
         for (int icomp=0; icomp<3; ++icomp)
         {
-          std::cout << nodecoord(icomp) << " ";
+          IO::cout << nodecoord(icomp) << " ";
         }
-        cout << endl;
+        IO::cout << IO::endl;
       }
     }
         for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
@@ -2349,24 +2355,24 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
       const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
       std::vector<int> lids(3);
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
       if (lnode->Id()==149)
 
       {
-        cout << "node " << lnode->Id() << " ";
+        IO::cout << "node " << lnode->Id() << " ";
         // extract velocity values (no pressure!) from global velocity vector
         for (int icomp=0; icomp<3; ++icomp)
         {
           lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
           vel(icomp) = (*velnp_out)[lids[icomp]];
-          std::cout << setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
+          IO::cout << setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
         }
-        cout << "coordinates ";
+        IO::cout << "coordinates ";
         for (int icomp=0; icomp<3; ++icomp)
         {
-          std::cout << nodecoord(icomp) << " ";
+          IO::cout << nodecoord(icomp) << " ";
         }
-        cout << endl;
+        IO::cout << IO::endl;
       }
     }
             for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
@@ -2384,23 +2390,23 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
       const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
       std::vector<int> lids(3);
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
       if (lnode->Id()==227)
       {
-        cout << "node " << lnode->Id() << " ";
+        IO::cout << "node " << lnode->Id() << " ";
         // extract velocity values (no pressure!) from global velocity vector
         for (int icomp=0; icomp<3; ++icomp)
         {
           lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
           vel(icomp) = (*velnp_out)[lids[icomp]];
-          std::cout << setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
+          IO::cout << setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
         }
-        cout << "coordinates ";
+        IO::cout << "coordinates ";
         for (int icomp=0; icomp<3; ++icomp)
         {
-          std::cout << nodecoord(icomp) << " ";
+          IO::cout << nodecoord(icomp) << " ";
         }
-        cout << endl;
+        IO::cout << IO::endl;
       }
     }
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
@@ -2418,23 +2424,23 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
       const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
       std::vector<int> lids(3);
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
       if (lnode->Id()==59)
       {
-        cout << "node " << lnode->Id() << " ";
+        IO::cout << "node " << lnode->Id() << " ";
         // extract velocity values (no pressure!) from global velocity vector
         for (int icomp=0; icomp<3; ++icomp)
         {
           lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
           vel(icomp) = (*velnp_out)[lids[icomp]];
-          std::cout << setw(18)<<  std::setprecision(12) <<vel(icomp) << " ";
+          IO::cout << setw(18)<<  std::setprecision(12) <<vel(icomp) << " ";
         }
-        cout << "coordinates ";
+        IO::cout << "coordinates ";
         for (int icomp=0; icomp<3; ++icomp)
         {
-          std::cout << nodecoord(icomp) << " ";
+          IO::cout << nodecoord(icomp) << " ";
         }
-        cout << endl;
+        IO::cout << IO::endl;
       }
     }
 
@@ -2453,21 +2459,21 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 //      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
 //      const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
 //      std::vector<int> lids(3);
-//      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+//      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
 //      if (lnode->Id()==517 or
 //          lnode->Id()==725 or
 //          lnode->Id()==451 or
 //          lnode->Id()==243)
 //      {
-//        cout << "node " << lnode->Id() << " ";
+//        IO::cout << "node " << lnode->Id() << " ";
 //        // extract velocity values (no pressure!) from global velocity vector
 //        for (int icomp=0; icomp<3; ++icomp)
 //        {
 //          lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
 //          vel(icomp) = (*velnp_out)[lids[icomp]];
-//          std::cout << std::setprecision(12) <<vel(icomp) << " ";
+//          IO::cout << std::setprecision(12) <<vel(icomp) << " ";
 //        }
-//        cout << endl;
+//        IO::cout << IO::endl;
 //      }
 //    }
 #endif
@@ -2477,22 +2483,22 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // write restart
   if (write_restart_data)
   {
-    IO::cout << "---  write restart... ";// << std::flush;
-    //std::cout << state_.velnp_->GlobalLength() << std::endl;
+    IO::cout << "---  write restart... ";// << IO::flush;
+    //IO::cout << state_.velnp_->GlobalLength() << IO::endl;
     output_->WriteVector("velnp", state_.velnp_);
-    //std::cout << state_.veln_->GlobalLength() << std::endl;
+    //IO::cout << state_.veln_->GlobalLength() << IO::endl;
     output_->WriteVector("veln" , state_.veln_);
-    //std::cout << state_.velnm_->GlobalLength() << std::endl;
+    //IO::cout << state_.velnm_->GlobalLength() << IO::endl;
     output_->WriteVector("velnm", state_.velnm_);
-    //std::cout << state_.accnp_->GlobalLength() << std::endl;
+    //IO::cout << state_.accnp_->GlobalLength() << IO::endl;
     output_->WriteVector("accnp", state_.accnp_);
-    //std::cout << state_.accn_->GlobalLength() << std::endl;
+    //IO::cout << state_.accn_->GlobalLength() << IO::endl;
     output_->WriteVector("accn" , state_.accn_);
     if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
     {
-      //std::cout << state_.velaf_->GlobalLength() << std::endl;
+      //IO::cout << state_.velaf_->GlobalLength() << IO::endl;
       output_->WriteVector("velaf" , state_.velaf_);
-      //std::cout << state_.accam_->GlobalLength() << std::endl;
+      //IO::cout << state_.accam_->GlobalLength() << IO::endl;
       output_->WriteVector("accam" , state_.accam_);
     }
     IO::cout << "done" << IO::endl;
@@ -2540,12 +2546,12 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 //    Teuchos::RCP<Epetra_Vector> velnp_out = Teuchos::null;
 //    if (step_ == 0)
 //    {
-//      std::cout << "output standard velocity vector for time step 0" << std::endl;
+//      IO::cout << "output standard velocity vector for time step 0" << IO::endl;
 //      velnp_out = state_.velnp_;
 //    }
 //    else
 //    {
-//      std::cout << "output transformed velocity vector for time step 0" << std::endl;
+//      IO::cout << "output transformed velocity vector for time step 0" << IO::endl;
 //      velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
 //          *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, fields_out);
 //    }
@@ -2617,28 +2623,28 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  //std::cout << state_.velnp_->GlobalLength() << std::endl;
-  //std::cout << state_.veln_->GlobalLength()  << std::endl;
-  //std::cout << state_.velnm_->GlobalLength() << std::endl;
+  //IO::cout << state_.velnp_->GlobalLength() << IO::endl;
+  //IO::cout << state_.veln_->GlobalLength()  << IO::endl;
+  //IO::cout << state_.velnm_->GlobalLength() << IO::endl;
 
   IO::cout << "Read restart" << IO::endl;
 
   reader.ReadVector(state_.velnp_,"velnp");
-  //std::cout << state_.velnp_->GlobalLength() << std::endl;
+  //IO::cout << state_.velnp_->GlobalLength() << IO::endl;
   reader.ReadVector(state_.veln_, "veln");
-  //std::cout << state_.veln_->GlobalLength() << std::endl;
+  //IO::cout << state_.veln_->GlobalLength() << IO::endl;
   reader.ReadVector(state_.velnm_,"velnm");
-  //std::cout << state_.velnm_->GlobalLength() << std::endl;
+  //IO::cout << state_.velnm_->GlobalLength() << IO::endl;
   reader.ReadVector(state_.accnp_ ,"accnp");
-  //std::cout << state_.accnp_->GlobalLength() << std::endl;
+  //IO::cout << state_.accnp_->GlobalLength() << IO::endl;
   reader.ReadVector(state_.accn_ ,"accn");
-  //std::cout << state_.accn_->GlobalLength() << std::endl;
+  //IO::cout << state_.accn_->GlobalLength() << IO::endl;
   if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
   {
     reader.ReadVector(state_.velaf_ ,"velaf");
-    //std::cout << state_.velaf_->GlobalLength() << std::endl;
+    //IO::cout << state_.velaf_->GlobalLength() << IO::endl;
     reader.ReadVector(state_.accam_ ,"accam");
-    //std::cout << state_.accam_->GlobalLength() << std::endl;
+    //IO::cout << state_.accam_->GlobalLength() << IO::endl;
   }
 }
 
@@ -2961,7 +2967,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
                   const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
                   const double fac = intpoints.qwgt[iquad]*deform_factor;
-                  //cout << "fac " << fac << endl;
+                  //cout << "fac " << fac << IO::endl;
                   presjumpnorm += fac*presjump*presjump;
                 }
 #endif // computation average pressure
@@ -2970,7 +2976,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           }
         }
 #ifdef COLLAPSE_FLAME
-        cout << endl;
+        IO::cout << IO::endl;
         // get the processor local node
         DRT::Node* lnode = discret_->lRowNode(0);
 
@@ -2982,18 +2988,18 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
         const double zcoord = nodecoord(2);
         const double deltaz = 2.*abs(zcoord);
-        cout << "Netz " << 1./deltaz << endl;
+        IO::cout << "Netz " << 1./deltaz << IO::endl;
         const double pi = atan(1.)*4.;
         const double area = pi*2.*0.25*deltaz;
         const double avpresjump = sqrt(presjumpnorm/area);
-        cout << "avpresjump " << avpresjump << endl;
+        IO::cout << "avpresjump " << avpresjump << IO::endl;
 #endif
         gmshfilecontent << "};\n";
       }
 #endif
     }
     gmshfilecontent.close();
-    if (screen_out) std::cout << " done" << endl;
+    if (screen_out) IO::cout << " done" << IO::endl;
   }
 #if 0
   //---------------------------
@@ -3094,7 +3100,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
-    if (screen_out) std::cout << " done" << endl;
+    if (screen_out) IO::cout << " done" << IO::endl;
   }
 #endif
 
@@ -3107,7 +3113,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     filename    << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step   << ".pos";
     filenamedel << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
-    if (screen_out) std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
+    if (screen_out) IO::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream gmshfilecontent(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
@@ -3156,7 +3162,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
-    if (screen_out) std::cout << " done" << endl;
+    if (screen_out) IO::cout << " done" << IO::endl;
   }
 #endif
 
@@ -3164,17 +3170,17 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   if (gmshoutput_)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigma_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    IO::cout << IO::endl;
     const std::string filenamexx = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxx_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    IO::cout << IO::endl;
     const std::string filenameyy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayy_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    IO::cout << IO::endl;
     const std::string filenamezz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmazz_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    IO::cout << IO::endl;
     const std::string filenamexy = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxy_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    IO::cout << IO::endl;
     const std::string filenamexz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmaxz_disc", step, 5, screen_out, discret_->Comm().MyPID());
-    cout << endl;
+    IO::cout << IO::endl;
     const std::string filenameyz = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigmayz_disc", step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(  filename.c_str());
     std::ofstream gmshfilecontentxx(filenamexx.c_str());
@@ -3187,7 +3193,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Sigmaxx;
 
     {
-      gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {" << endl;
+      gmshfilecontent   << "View \" " << "Discontinous Stress Solution (Physical) \" {" << IO::endl;
       gmshfilecontentxx << "View \" " << "Discontinous Stress (xx) Solution (Physical) \" {\n";
       gmshfilecontentyy << "View \" " << "Discontinous Stress (yy) Solution (Physical) \" {\n";
       gmshfilecontentzz << "View \" " << "Discontinous Stress (zz) Solution (Physical) \" {\n";
@@ -3293,7 +3299,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       gmshfilecontentxz << "};\n";
       gmshfilecontentyz << "};\n";
     }
-    if (screen_out) std::cout << " done" << endl;
+    if (screen_out) IO::cout << " done" << IO::endl;
   }
 #endif
 
@@ -3424,7 +3430,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
                 const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
                 const double fac = intpoints.qwgt[iquad]*deform_factor;
-                //cout << "fac " << fac << endl;
+                //cout << "fac " << fac << IO::endl;
                 locflamearea += fac; // *1.0
               }
             }
@@ -3499,7 +3505,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
                 const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
                 const double fac = intpoints.qwgt[iquad]*deform_factor;
-                //cout << "fac " << fac << endl;
+                //cout << "fac " << fac << IO::endl;
                 locflamearea += fac; // *1.0
               }
             }
@@ -3522,7 +3528,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
       const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
       tmpfilename << filebase << "." << "flame_area" << ".txt";
-      std::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+      IO::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
 
       const std::string filename = tmpfilename.str();
 
@@ -3533,7 +3539,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
       (*log) << &endl;
       log->flush();
 
-      std::cout << " done" << endl;
+      IO::cout << " done" << IO::endl;
     }
   }
 }
@@ -3686,7 +3692,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputInstabAmplitude(
       const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
       tmpfilename << filebase << "." << "amplitude" << ".txt";
-      std::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+      IO::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
 
       const std::string filename = tmpfilename.str();
 
@@ -3700,7 +3706,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputInstabAmplitude(
       (*log) << &endl;
       log->flush();
 
-      std::cout << " done" << endl;
+      IO::cout << " done" << IO::endl;
     }
   }
 }
@@ -4145,7 +4151,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         }
 #ifdef COLLAPSE_FLAME
 #ifdef GMSH_AVERAGE_JUMP
-        cout << endl;
+        IO::cout << IO::endl;
         // get the processor local node
         DRT::Node* lnode = discret_->lRowNode(0);
 
@@ -4157,11 +4163,11 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         const double zcoord = nodecoord(2);
         const double deltaz = 2.*abs(zcoord);
-        cout << "Netz " << 1./deltaz << endl;
+        IO::cout << "Netz " << 1./deltaz << IO::endl;
         const double pi = atan(1.)*4.;
         const double area = pi*2.*0.25*deltaz;
         const double avveljump = sqrt(veljumpnormsquare/area);
-        cout << "avveljump " << avveljump << endl;
+        IO::cout << "avveljump " << avveljump << IO::endl;
 #endif
 #endif
         gmshfilecontent << "};\n";
@@ -4169,7 +4175,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 #endif
     }
     gmshfilecontent.close();
-    if (screen_out) std::cout << " done" << endl;
+    if (screen_out) IO::cout << " done" << IO::endl;
   }
 }
 
@@ -4305,8 +4311,8 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       // out to screen
       if (myrank_==0)
       {
-        cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
-        cout << "\n\n";
+        IO::cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
+        IO::cout << "\n\n";
       }
 
       double bmvel=0;
@@ -4453,9 +4459,9 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
     //const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-//cout << *dofrowmap << endl;
-//cout << *(standarddofset_->DofRowMap()) << endl;
-//cout << (state_.velnp_->Map()) << endl;
+//cout << *dofrowmap << IO::endl;
+//cout << *(standarddofset_->DofRowMap()) << IO::endl;
+//cout << (state_.velnp_->Map()) << IO::endl;
 
     //--------------------------------
     // loop all nodes on the processor
@@ -4512,7 +4518,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       //const vector<int> nodedofs = discret_->Dof(lnode);
       //for (int i=0;i<standardnodedofset.size();i++)
       //{
-      //  cout << "component " << i << " standarddofset dofid " << stdnodedofset[i] << endl;
+      //  IO::cout << "component " << i << " standarddofset dofid " << stdnodedofset[i] << IO::endl;
       //}
 
       //-----------------------------------------
@@ -4600,9 +4606,9 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
     //const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-//cout << *dofrowmap << endl;
-//cout << *(standarddofset_->DofRowMap()) << endl;
-//cout << (state_.velnp_->Map()) << endl;
+//cout << *dofrowmap << IO::endl;
+//cout << *(standarddofset_->DofRowMap()) << IO::endl;
+//cout << (state_.velnp_->Map()) << IO::endl;
 
     //--------------------------------
     // loop all nodes on the processor
@@ -4648,7 +4654,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       //const vector<int> nodedofs = discret_->Dof(lnode);
       //for (int i=0;i<standardnodedofset.size();i++)
       //{
-      //  cout << "component " << i << " standarddofset dofid " << stdnodedofset[i] << endl;
+      //  IO::cout << "component " << i << " standarddofset dofid " << stdnodedofset[i] << IO::endl;
       //}
 
       //-----------------------------------------
@@ -4689,7 +4695,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     const Epetra_Map dofrowmap)
 {
 #ifdef FLAME_VORTEX
-  IO::cout << "---  set initial enrichment field for flame-vortex interaction example... " << std::flush;
+  IO::cout << "---  set initial enrichment field for flame-vortex interaction example... " << IO::flush;
 
   // initial field modification for flame_vortex_interaction
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
@@ -4720,11 +4726,11 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       } // end if jump enrichment
     } // end loop over fieldenr
   } // end loop over element nodes
-  IO::cout << "done" << std::endl;
+  IO::cout << "done" << IO::endl;
 #endif
 
 #ifdef DL_INSTAB
-  IO::cout << "---  set initial enrichment field for Darrieus-Landau instability example... " << std::flush;
+  IO::cout << "---  set initial enrichment field for Darrieus-Landau instability example... " << IO::flush;
 
   // initial field modification for flame_vortex_interaction
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
@@ -4755,11 +4761,11 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       } // end if jump enrichment
     } // end loop over fieldenr
   } // end loop over element nodes
-  IO::cout << "done" << std::endl;
+  IO::cout << "done" << IO::endl;
 #endif
 
 #ifdef COLLAPSE_FLAME
-  IO::cout << "---  set initial enrichment field for collapsing flame example... " << std::flush;
+  IO::cout << "---  set initial enrichment field for collapsing flame example... " << IO::flush;
 
   // initial field modification for collapse_flame
   const int nsd = 3;
@@ -4880,11 +4886,11 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       }
     } // end loop over fieldenr
   } // end loop over element nodes
-  IO::cout << "done" << std::endl;
+  IO::cout << "done" << IO::endl;
 #endif
 
 #ifdef COMBUST_TWO_FLAME_FRONTS
-  IO::cout << "---  set initial enrichment field for two approaching flame fronts example... " << std::flush;
+  IO::cout << "---  set initial enrichment field for two approaching flame fronts example... " << IO::flush;
 
   // initial field modification for 2-flames example
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
@@ -4966,7 +4972,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       }
     } // end loop over fieldenr
   } // end loop over element nodes
-  IO::cout << "done" << std::endl;
+  IO::cout << "done" << IO::endl;
 #endif
 
 //#ifdef GMSH_REF_FIELDS
