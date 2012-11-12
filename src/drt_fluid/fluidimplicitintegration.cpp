@@ -165,15 +165,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   if (params_->get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
-  // account for poroelasticity
-  // -------------------------------------------------------------------
-  poroelast_ = false;
-  if (params_->get<bool>("poroelast",false))
-  {
-    poroelast_ = true;
-  }
-
-  // -------------------------------------------------------------------
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
 
@@ -1212,7 +1203,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("dispnp", dispnp_);
         discret_->SetState("gridv", gridv_);
 
-        if (poroelast_)
+        if (physicaltype_ == INPAR::FLUID::poro)
         {
           //just for porous media
           discret_->SetState("dispn", dispn_);
@@ -3248,7 +3239,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     discret_->SetState("dispnp", dispnp_);
     discret_->SetState("gridv", gridv_);
 
-    if (poroelast_)
+    if (physicaltype_ == INPAR::FLUID::poro)
     {
       //just for poroelasticity
       discret_->SetState("dispn", dispn_);
@@ -3422,7 +3413,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> onlyvelnp = Teuchos::null;
 
-    if (not poroelast_) //standard case
+    if (not physicaltype_ == INPAR::FLUID::poro) //standard case
     {
       onlyaccn = velpressplitter_.ExtractOtherVector(accn_);
       onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
@@ -3737,7 +3728,7 @@ void FLD::FluidImplicitTimeInt::Output()
         output_->WriteVector("dispnm",dispnm_);
       }
 
-      if(poroelast_)
+      if(physicaltype_ == INPAR::FLUID::poro)
         output_->WriteVector("gridv", gridv_);
 
       // also write impedance bc information if required
@@ -3767,7 +3758,7 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("dispnm",dispnm_);
     }
 
-    if(poroelast_)
+    if(physicaltype_ == INPAR::FLUID::poro)
       output_->WriteVector("gridv", gridv_);
 
     //only perform stress calculation when output is needed
@@ -3978,7 +3969,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     reader.ReadVector(dispn_ , "dispn");
     reader.ReadVector(dispnm_,"dispnm");
 
-    if(poroelast_)
+    if(physicaltype_ == INPAR::FLUID::poro)
       reader.ReadVector(gridv_,"gridv");
   }
   // also read impedance bc information if required
@@ -6253,7 +6244,7 @@ void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
 
     *velnp_ = *aux;
 
-    if (poroelast_)
+    if (physicaltype_ == INPAR::FLUID::poro)
     {
       //only one step theta
       // new end-point accelerations

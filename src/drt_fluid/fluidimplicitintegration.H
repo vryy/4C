@@ -906,9 +906,6 @@ protected:
 
   //@}
 
-  // flag for poroelasticity
-  double poroelast_;
-
   // possible inf-norm scaling of linear system / fluid matrix
   RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
 
