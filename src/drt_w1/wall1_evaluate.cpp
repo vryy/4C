@@ -31,7 +31,7 @@ Maintainer: Markus Gitterle
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mortar/mortar_analytical.H"
+#include "../drt_contact/contact_analytical.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_potential/drt_potential_manager.H"
 
@@ -430,7 +430,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       //   however analytical solutions are extremely rare in the nonlinear realm
       // - only implemented for SVK material (relevant for energy norm only, L2 and
       //   H1 norms are of course valid for arbitrary materials)
-      // - analytical solutions are currently stored in a repository in the MORTAR
+      // - analytical solutions are currently stored in a repository in the CONTACT
       //   namespace, however they could (should?) be moved to a more general location
 
       // check length of elevec1
@@ -557,7 +557,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
           LINALG::Matrix<4,1> strainanalyt(true);
           LINALG::Matrix<2,2> derivanalyt(true);
 
-          MORTAR::AnalyticalSolutions2D(xgp,uanalyt,strainanalyt,derivanalyt);
+          CONTACT::AnalyticalSolutions2D(xgp,uanalyt,strainanalyt,derivanalyt);
           //**************************************************************
 
           //--------------------------------------------------------------

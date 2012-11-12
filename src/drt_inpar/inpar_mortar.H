@@ -96,18 +96,6 @@ namespace INPAR
       parredist_static,    ///< static redistribution (at t=0 and after restart)
       parredist_dynamic    ///< dynamic redistribution
     };
-
-    /// Type of analytical solution for error norm computation
-    /// (this enum represents the input file parameter ERROR_NORMS)
-    /// (more details on analytical solutions, see drt_mortar/mortar_analytical.cpp)
-    enum ErrorNorms
-    {
-      errornorms_none,       ///< no error norm computation
-      errornorms_zero,       ///< error norms for zero analytical solution
-      errornorms_bending,    ///< error norms for beam bending problem
-      errornorms_sphere,     ///< error norms for pressurized sphere problem
-      errornorms_thicksphere ///< error norms for thick pressurized sphere problem
-    };
   }  // namespace MORTAR
 
 }  // namespace INPAR

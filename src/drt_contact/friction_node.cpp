@@ -512,7 +512,7 @@ void CONTACT::FriNode::InitializeDataContainer()
   
   // initialize data container for wear and tsi problems 
   if (DRT::Problem::Instance()->ProblemType()==prb_tsi or
-     (DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+     (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
   {
      if (fridataplus_==Teuchos::null)
       fridataplus_=Teuchos::rcp(new CONTACT::FriNodeDataContainerPlus());

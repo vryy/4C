@@ -196,7 +196,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       }
 
       Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
-      if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+      if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
       {
         wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
       }
@@ -216,7 +216,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // and matrix A and B
       if (DRT::Problem::Instance()->ProblemType()==prb_tsi)
       {  
-        const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+        const Teuchos::ParameterList& input = DRT::Problem::Instance()->ContactDynamicParams();
         if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
         {        
           integrator.AssembleMechDissSlave(Comm(),SlaveElement(),*mdisssegs);
@@ -231,7 +231,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       }
       
       // assemble wear
-      if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+      if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
       {  
         integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
         

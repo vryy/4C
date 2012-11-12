@@ -319,7 +319,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
   // contact with wear
   bool wear = false;  
-  if(DRT::Problem::Instance()->MeshtyingAndContactParams().get<double>("WEARCOEFF")!= 0.0)
+  if(DRT::Problem::Instance()->ContactDynamicParams().get<double>("WEARCOEFF")!= 0.0)
     wear = true;
   
   // number of nodes (slave, master)
@@ -2268,7 +2268,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
   if(tsi)
   {
-    const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+    const Teuchos::ParameterList& input = DRT::Problem::Instance()->ContactDynamicParams();
 
     if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
       friction = true;
@@ -2278,7 +2278,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   
   // contact with wear
   bool wear = false;  
-  if(DRT::Problem::Instance()->MeshtyingAndContactParams().get<double>("WEARCOEFF")!= 0.0)
+  if(DRT::Problem::Instance()->ContactDynamicParams().get<double>("WEARCOEFF")!= 0.0)
     wear = true;
 
   // number of nodes (slave, master)

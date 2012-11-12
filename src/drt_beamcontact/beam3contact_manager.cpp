@@ -152,7 +152,7 @@ alphaf_(alphaf)
   dofoffset_ = cdmin - pdmin;
 
   // read parameter list from DRT::Problem
-  scontact_ = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  scontact_ = DRT::Problem::Instance()->ContactDynamicParams();
   
   // check input parameters
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact_,"APPLICATION") != INPAR::CONTACT::app_beamcontact)
@@ -316,7 +316,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   //}
 
   // decide wether the tangent field should be smoothed or not
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
   {
     //cout << "Test BEAMS_SMOOTHING 2" << INPAR::CONTACT::bsm_none << endl;

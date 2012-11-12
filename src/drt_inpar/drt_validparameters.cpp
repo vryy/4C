@@ -1327,14 +1327,82 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("DETVALUE",4.61,"Use this value for all elements",&mlmcp);
 
   /*----------------------------------------------------------------------*/
-  /* parameters for meshtying and contact */
-  Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
+  /* parameters for mortar coupling */
+  Teuchos::ParameterList& mortar = list->sublist("MORTAR COUPLING",false,"");
 
-  // linear solver id used for contact/meshtying problems (both for fluid and structure meshtying as well as structural contact)
+  setStringToIntegralParameter<int>("SHAPEFCN","Dual","Type of employed set of shape functions",
+        tuple<std::string>("Dual", "dual",
+                           "Standard", "standard", "std",
+                           "PetrovGalerkin", "petrovgalerkin", "pg"),
+        tuple<int>(
+                INPAR::MORTAR::shape_dual, INPAR::MORTAR::shape_dual,
+                INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard,
+                INPAR::MORTAR::shape_petrovgalerkin,INPAR::MORTAR::shape_petrovgalerkin,INPAR::MORTAR::shape_petrovgalerkin),
+        &mortar);
+
+  setStringToIntegralParameter<int>("SEARCH_ALGORITHM","Binarytree","Type of contact search",
+       tuple<std::string>("BruteForce","bruteforce",
+                          "BruteForceEleBased","bruteforceelebased",
+                          "BinaryTree","Binarytree","binarytree"),
+       tuple<int>(INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
+                  INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
+                  INPAR::MORTAR::search_binarytree,INPAR::MORTAR::search_binarytree,
+                  INPAR::MORTAR::search_binarytree),
+       &mortar);
+
+  DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&mortar);
+
+  setStringToIntegralParameter<int>("COUPLING_AUXPLANE","Yes","If chosen auxiliary planes are used for 3D coupling",
+                               yesnotuple,yesnovalue,&mortar);
+
+  setStringToIntegralParameter<int>("LAGMULT_QUAD","undefined","Type of LM interpolation/weighting function",
+       tuple<std::string>("undefined",
+                          "quad_quad", "quadratic_quadratic",
+                          "quad_pwlin", "quadratic_piecewiselinear",
+                          "quad_lin", "quadratic_linear",
+                          "pwlin_pwlin", "piecewiselinear_piecewiselinear",
+                          "lin_lin","linear_linear"),
+       tuple<int>(
+                  INPAR::MORTAR::lagmult_undefined,
+                  INPAR::MORTAR::lagmult_quad_quad, INPAR::MORTAR::lagmult_quad_quad,
+                  INPAR::MORTAR::lagmult_quad_pwlin, INPAR::MORTAR::lagmult_quad_pwlin,
+                  INPAR::MORTAR::lagmult_quad_lin, INPAR::MORTAR::lagmult_quad_lin,
+                  INPAR::MORTAR::lagmult_pwlin_pwlin, INPAR::MORTAR::lagmult_pwlin_pwlin,
+                  INPAR::MORTAR::lagmult_lin_lin, INPAR::MORTAR::lagmult_lin_lin),
+       &mortar);
+
+  setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
+                               yesnotuple,yesnovalue,&mortar);
+
+  setStringToIntegralParameter<int>("REDUNDANT_STORAGE","Master","Type of redundancy in interface storage",
+      tuple<std::string>("All","all",
+                         "Master", "master",
+                         "None", "none"),
+      tuple<int>(
+              INPAR::MORTAR::redundant_all, INPAR::MORTAR::redundant_all,
+              INPAR::MORTAR::redundant_master, INPAR::MORTAR::redundant_master,
+              INPAR::MORTAR::redundant_none, INPAR::MORTAR::redundant_none),
+      &mortar);
+
+  setStringToIntegralParameter<int>("PARALLEL_REDIST","Static","Type of redistribution algorithm",
+      tuple<std::string>("None","none", "No", "no",
+                         "Static", "static",
+                         "Dynamic", "dynamic"),
+      tuple<int>(
+              INPAR::MORTAR::parredist_none, INPAR::MORTAR::parredist_none,
+              INPAR::MORTAR::parredist_none, INPAR::MORTAR::parredist_none,
+              INPAR::MORTAR::parredist_static, INPAR::MORTAR::parredist_static,
+              INPAR::MORTAR::parredist_dynamic, INPAR::MORTAR::parredist_dynamic),
+      &mortar);
+
+  DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&mortar);
+  IntParameter("MIN_ELEPROC",0,"Minimum no. of elements per processor for parallel redistribution",&mortar);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for structural meshtying and contact */
+  Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC",false,"");
+
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for meshtying and contact",&scontact);
-
-  // linear solver id used for contact/meshtying problems in saddlepoint formulation used for solving LAGRANGE multipliers,
-  // used as SIMPLER preconditioner in FLUID DYNAMICS
   IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for meshtying and contact in saddlepoint formulation",&scontact);
 
   setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
@@ -1384,16 +1452,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag, INPAR::CONTACT::solution_auglag),
         &scontact);
 
-  setStringToIntegralParameter<int>("SHAPEFCN","Dual","Type of employed set of shape functions",
-        tuple<std::string>("Dual", "dual",
-                           "Standard", "standard", "std",
-                           "PetrovGalerkin", "petrovgalerkin", "pg"),
-        tuple<int>(
-                INPAR::MORTAR::shape_dual, INPAR::MORTAR::shape_dual,
-                INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard, INPAR::MORTAR::shape_standard,
-                INPAR::MORTAR::shape_petrovgalerkin,INPAR::MORTAR::shape_petrovgalerkin,INPAR::MORTAR::shape_petrovgalerkin),
-        &scontact);
-
   setStringToIntegralParameter<int>("SYSTEM","Condensed","Type of linear system setup / solution",
         tuple<std::string>("Condensed","condensed", "cond",
                            "SaddlePointCoupled","saddlepointcoupled", "spcoupled",
@@ -1414,40 +1472,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("SEMI_SMOOTH_CN",1.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",1.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
-
-  setStringToIntegralParameter<int>("SEARCH_ALGORITHM","Binarytree","Type of contact search",
-       tuple<std::string>("BruteForce","bruteforce",
-                          "BruteForceEleBased","bruteforceelebased",
-                          "BinaryTree","Binarytree","binarytree"),
-       tuple<int>(INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
-                  INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
-                  INPAR::MORTAR::search_binarytree,INPAR::MORTAR::search_binarytree,
-                  INPAR::MORTAR::search_binarytree),
-       &scontact);
-
-  DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&scontact);
-
-  setStringToIntegralParameter<int>("COUPLING_AUXPLANE","Yes","If chosen auxiliary planes are used for 3D coupling",
-                               yesnotuple,yesnovalue,&scontact);
-
-  setStringToIntegralParameter<int>("LAGMULT_QUAD","undefined","Type of LM interpolation/weighting function",
-       tuple<std::string>("undefined",
-                          "quad_quad", "quadratic_quadratic",
-                          "quad_pwlin", "quadratic_piecewiselinear",
-                          "quad_lin", "quadratic_linear",
-                          "pwlin_pwlin", "piecewiselinear_piecewiselinear",
-                          "lin_lin","linear_linear"),
-       tuple<int>(
-                  INPAR::MORTAR::lagmult_undefined,
-                  INPAR::MORTAR::lagmult_quad_quad, INPAR::MORTAR::lagmult_quad_quad,
-                  INPAR::MORTAR::lagmult_quad_pwlin, INPAR::MORTAR::lagmult_quad_pwlin,
-                  INPAR::MORTAR::lagmult_quad_lin, INPAR::MORTAR::lagmult_quad_lin,
-                  INPAR::MORTAR::lagmult_pwlin_pwlin, INPAR::MORTAR::lagmult_pwlin_pwlin,
-                  INPAR::MORTAR::lagmult_lin_lin, INPAR::MORTAR::lagmult_lin_lin),
-       &scontact);
-
-  setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
-                               yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<int>("VELOCITY_UPDATE","No","If chosen, velocity update method is applied",
                                yesnotuple,yesnovalue,&scontact);
@@ -1472,37 +1496,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                          "Sphere", "sphere",
                          "Thick", "thick"),
       tuple<int>(
-              INPAR::MORTAR::errornorms_none, INPAR::MORTAR::errornorms_none,
-              INPAR::MORTAR::errornorms_none, INPAR::MORTAR::errornorms_none,
-              INPAR::MORTAR::errornorms_zero, INPAR::MORTAR::errornorms_zero,
-              INPAR::MORTAR::errornorms_bending, INPAR::MORTAR::errornorms_bending,
-              INPAR::MORTAR::errornorms_sphere, INPAR::MORTAR::errornorms_sphere,
-              INPAR::MORTAR::errornorms_thicksphere, INPAR::MORTAR::errornorms_thicksphere),
+              INPAR::CONTACT::errornorms_none, INPAR::CONTACT::errornorms_none,
+              INPAR::CONTACT::errornorms_none, INPAR::CONTACT::errornorms_none,
+              INPAR::CONTACT::errornorms_zero, INPAR::CONTACT::errornorms_zero,
+              INPAR::CONTACT::errornorms_bending, INPAR::CONTACT::errornorms_bending,
+              INPAR::CONTACT::errornorms_sphere, INPAR::CONTACT::errornorms_sphere,
+              INPAR::CONTACT::errornorms_thicksphere, INPAR::CONTACT::errornorms_thicksphere),
       &scontact);
-
-  setStringToIntegralParameter<int>("REDUNDANT_STORAGE","Master","Type of redundancy in interface storage",
-      tuple<std::string>("All","all",
-                         "Master", "master",
-                         "None", "none"),
-      tuple<int>(
-              INPAR::MORTAR::redundant_all, INPAR::MORTAR::redundant_all,
-              INPAR::MORTAR::redundant_master, INPAR::MORTAR::redundant_master,
-              INPAR::MORTAR::redundant_none, INPAR::MORTAR::redundant_none),
-      &scontact);
-
-  setStringToIntegralParameter<int>("PARALLEL_REDIST","Static","Type of redistribution algorithm",
-      tuple<std::string>("None","none", "No", "no",
-                         "Static", "static",
-                         "Dynamic", "dynamic"),
-      tuple<int>(
-              INPAR::MORTAR::parredist_none, INPAR::MORTAR::parredist_none,
-              INPAR::MORTAR::parredist_none, INPAR::MORTAR::parredist_none,
-              INPAR::MORTAR::parredist_static, INPAR::MORTAR::parredist_static,
-              INPAR::MORTAR::parredist_dynamic, INPAR::MORTAR::parredist_dynamic),
-      &scontact);
-
-  DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&scontact);
-  IntParameter("MIN_ELEPROC",0,"Minimum no. of elements per processor for parallel redistribution",&scontact);
 
   DoubleParameter("HEATTRANSSLAVE",0.0,"Heat transfer parameter for slave side in thermal contact",&scontact);
   DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&scontact);

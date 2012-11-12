@@ -215,9 +215,9 @@ void STR::TimIntStatMech::InitializeBeamContact()
   if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
   {
     //check wheter appropriate parameters are set in the parameter list "CONTACT & MESHTYING"
-    const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+    const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
     if (!DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
-      dserror("beam contact switched on in parameter list STATISTICAL MECHANICS, but not in in parameter list MESHTYING AND CONTACT!!!");
+      dserror("beam contact switched on in parameter list STATISTICAL MECHANICS, but not in in parameter list CONTACT DYNAMIC!!!");
     else
     {
       // initialize beam contact solution strategy
@@ -226,7 +226,7 @@ void STR::TimIntStatMech::InitializeBeamContact()
 //      double alphaf = 1.0-theta_; // = 0.0 in statmech case
 //      beamcman_ = rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
       // decide wether the tangent field should be smoothed or not
-      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->MeshtyingAndContactParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->ContactDynamicParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
       {
         //cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
       }

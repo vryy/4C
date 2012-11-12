@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
-\file mortar_analytical.cpp
-\brief A set of analytical solutions for convergence analysis of mortar methods
+\file contact_analytical.cpp
+\brief A set of analytical solutions for convergence analysis of contact / meshtying methods
 
 <pre>
 -------------------------------------------------------------------------
@@ -38,22 +38,22 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 
 #include <math.h>
-#include "mortar_analytical.H"
-#include "../drt_inpar/inpar_mortar.H"
+#include "contact_analytical.H"
+#include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
  |  Analytical solutions for 2D problems                      popp 06/11|
  *----------------------------------------------------------------------*/
-void MORTAR::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
-                                   LINALG::Matrix<2,1>& uanalyt,
-                                   LINALG::Matrix<4,1>& epsanalyt,
-                                   LINALG::Matrix<2,2>& derivanalyt)
+void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
+                                    LINALG::Matrix<2,1>& uanalyt,
+                                    LINALG::Matrix<4,1>& epsanalyt,
+                                    LINALG::Matrix<2,2>& derivanalyt)
 {
   // get corresponding input parameter
-  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  INPAR::MORTAR::ErrorNorms entype = DRT::INPUT::IntegralValue<INPAR::MORTAR::ErrorNorms>(listcmt,"ERROR_NORMS");
+  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
+  INPAR::CONTACT::ErrorNorms entype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt,"ERROR_NORMS");
 
   //------------------------------------------------------------------------
   // available analytical solutions (enum ErrorNorms)
@@ -68,7 +68,7 @@ void MORTAR::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
   //----------------------------------------------------------------------
   // no error norm computation
   //----------------------------------------------------------------------
-  if (entype==INPAR::MORTAR::errornorms_none)
+  if (entype==INPAR::CONTACT::errornorms_none)
   {
     dserror("ERROR: Error norm computation switched off. You should not be here.");
   }
@@ -76,7 +76,7 @@ void MORTAR::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
   //----------------------------------------------------------------------
   // 2D default (=zero) solution
   //----------------------------------------------------------------------
-  else if (entype==INPAR::MORTAR::errornorms_zero)
+  else if (entype==INPAR::CONTACT::errornorms_zero)
   {
     // displacements
     uanalyt(0,0) = 0.0;
@@ -99,7 +99,7 @@ void MORTAR::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
   // 2D beam bending solution (plane stress)
   // (see Timoshenko and Goodier, Theory of Elasticity, 1970, p. 284)
   //----------------------------------------------------------------------
-  else if (entype==INPAR::MORTAR::errornorms_bending)
+  else if (entype==INPAR::CONTACT::errornorms_bending)
   {
     // model parameters
     double h= 2.0;
@@ -138,14 +138,14 @@ void MORTAR::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
 /*----------------------------------------------------------------------*
  |  Analytical solutions for 3D problems                      popp 06/11|
  *----------------------------------------------------------------------*/
-void MORTAR::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
+void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
                                    LINALG::Matrix<3,1>& uanalyt,
                                    LINALG::Matrix<6,1>& epsanalyt,
                                    LINALG::Matrix<3,3>& derivanalyt)
 {
   // get corresponding input parameter
-  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  INPAR::MORTAR::ErrorNorms entype = DRT::INPUT::IntegralValue<INPAR::MORTAR::ErrorNorms>(listcmt,"ERROR_NORMS");
+  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
+  INPAR::CONTACT::ErrorNorms entype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt,"ERROR_NORMS");
 
   //------------------------------------------------------------------------
   // available analytical solutions (enum ErrorNorms)
@@ -160,7 +160,7 @@ void MORTAR::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
   //----------------------------------------------------------------------
   // no error norm computation
   //----------------------------------------------------------------------
-  if (entype==INPAR::MORTAR::errornorms_none)
+  if (entype==INPAR::CONTACT::errornorms_none)
   {
     dserror("ERROR: Error norm computation switched off. You should not be here.");
   }
@@ -168,7 +168,7 @@ void MORTAR::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
   //----------------------------------------------------------------------
   // 3D default (=zero) solution
   //----------------------------------------------------------------------
-  if (entype==INPAR::MORTAR::errornorms_zero)
+  if (entype==INPAR::CONTACT::errornorms_zero)
   {
     // displacements
     uanalyt(0,0) = 0.0;
@@ -199,7 +199,7 @@ void MORTAR::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
   // 3D beam bending solution
   // (see Timoshenko and Goodier, Theory of Elasticity, 1970, p. 284)
   //----------------------------------------------------------------------
-  else if (entype==INPAR::MORTAR::errornorms_bending)
+  else if (entype==INPAR::CONTACT::errornorms_bending)
   {
     // model parameters
     double h= 2.0;
@@ -236,7 +236,7 @@ void MORTAR::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
   // 3D pressurized sphere solution
   // (see Bower, Applied Mechanics of Solids, 2009, p. 197)
   //----------------------------------------------------------------------
-  else if (entype==INPAR::MORTAR::errornorms_sphere || entype==INPAR::MORTAR::errornorms_thicksphere)
+  else if (entype==INPAR::CONTACT::errornorms_sphere || entype==INPAR::CONTACT::errornorms_thicksphere)
   {
     // model parameters
     double a = 0.9;
@@ -246,7 +246,7 @@ void MORTAR::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
     double E = 1.0;
 
     // change geometry for thick version
-    if (entype==INPAR::MORTAR::errornorms_thicksphere)
+    if (entype==INPAR::CONTACT::errornorms_thicksphere)
     {
       a = 0.5;
       b = 2.0;

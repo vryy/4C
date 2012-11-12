@@ -35,7 +35,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/micromaterial.H"
-#include "../drt_mortar/mortar_analytical.H"
+#include "../drt_contact/contact_analytical.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -798,7 +798,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // - only implemented for purely displacement-based version, not yet for EAS
       // - only works for materials, which implement a hyperelastic strain energy
       //   function (currently this is the case for St.-Venant-Kirchhoff and NeoHooke)
-      // - analytical solutions are currently stored in a repository in the MORTAR
+      // - analytical solutions are currently stored in a repository in the CONTACT
       //   namespace, however they could (should?) be moved to a more general location
 
       // check length of elevec1
@@ -861,7 +861,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         LINALG::Matrix<NUMSTR_SOH8,1> strainanalyt(true);
         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> derivanalyt(true);
 
-        MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+        CONTACT::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
         //**************************************************************
 
         //--------------------------------------------------------------

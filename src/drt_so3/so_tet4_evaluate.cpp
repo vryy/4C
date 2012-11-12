@@ -29,7 +29,7 @@ written by : Alexander Volf
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/micromaterial.H"
-#include "../drt_mortar/mortar_analytical.H"
+#include "../drt_contact/contact_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -509,7 +509,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       // - 4 Gauss point rule is used for integration of error norms
       // - only implemented for SVK material (relevant for energy norm only, L2 and
       //   H1 norms are of course valid for arbitrary materials)
-      // - analytical solutions are currently stored in a repository in the MORTAR
+      // - analytical solutions are currently stored in a repository in the CONTACT
       //   namespace, however they could (should?) be moved to a more general location
 
       // check length of elevec1
@@ -579,7 +579,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
           LINALG::Matrix<NUMSTR_SOTET4,1> strainanalyt(true);
           LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> derivanalyt(true);
 
-          MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+          CONTACT::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
           //**************************************************************
 
           //--------------------------------------------------------------

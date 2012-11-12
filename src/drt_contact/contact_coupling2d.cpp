@@ -143,7 +143,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
     Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
-    if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+    if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
       wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
     integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,lmtype,dseg,mseg,gseg,wseg);
@@ -156,7 +156,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     integrator.AssembleG(Comm(),SlaveElement(),*gseg);
 
     // assemble wear
-    if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+    if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
       integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
   }
 

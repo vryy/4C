@@ -173,7 +173,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
 
   // create contact/meshtying solver only if contact/meshtying problem.
   Teuchos::RCP<LINALG::Solver> contactsolver = Teuchos::null;
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
   INPAR::CONTACT::ApplicationType bContact = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
   switch (bContact)
   {
@@ -414,7 +414,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 {
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
-  const Teuchos::ParameterList& mcparams     = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  const Teuchos::ParameterList& mcparams     = DRT::Problem::Instance()->ContactDynamicParams();
 //  INPAR::CONTACT::ApplicationType apptype    = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
   switch(DRT::INPUT::IntegralValue<int>(mcparams,"SYSTEM"))
   {
@@ -425,7 +425,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
       // check if the meshtying/contact solver has a valid solver number
       if (linsolvernumber == (-1))
-        dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+        dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // plausibility check
       INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
@@ -463,7 +463,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
         const int simplersolvernumber = mcparams.get<int>("SIMPLER_SOLVER");
         // check if the SIMPLER solver has a valid solver number
         if (simplersolvernumber == (-1))
-          dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in MESHTYING AND CONTACT to a valid number!");
+          dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in CONTACT DYNAMIC to a valid number!");
 
         solver->PutSolverParamsToSubParams("Inverse1", DRT::Problem::Instance()->SolverParams(linsolvernumber));
         solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(simplersolvernumber));
@@ -481,7 +481,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
        const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
        // check if the meshtying/contact solver has a valid solver number
        if (linsolvernumber == (-1))
-         dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+         dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // build meshtying solver
       solver =

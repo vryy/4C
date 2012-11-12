@@ -95,7 +95,7 @@ discret_(discret)
   }
 
   std::vector<DRT::Condition*> contactconditions(0);
-  Discret().GetCondition("Contact",contactconditions);
+  Discret().GetCondition("Mortar",contactconditions);
 
   // there must be more than one meshtying condition
   if ((int)contactconditions.size()<2)
@@ -337,93 +337,95 @@ discret_(discret)
  *----------------------------------------------------------------------*/
 bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 {
-  // read parameter list from DRT::Problem
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  // read parameter lists from DRT::Problem
+  const Teuchos::ParameterList& mortar    = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& meshtying = DRT::Problem::Instance()->ContactDynamicParams();
   int dim = DRT::Problem::Instance()->NDim();
 
   // *********************************************************************
   // this is mortar meshtying
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") != INPAR::CONTACT::app_mortarmeshtying)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") != INPAR::CONTACT::app_mortarmeshtying)
     dserror("You should not be here...");
 
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
-                                                 input.get<double>("PENALTYPARAM") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
+                                                 meshtying.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-                                                 input.get<double>("PENALTYPARAM") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                                 meshtying.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-                                                   input.get<int>("UZAWAMAXSTEPS") <  2)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                                   meshtying.get<int>("UZAWAMAXSTEPS") <  2)
     dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-                                               input.get<double>("UZAWACONSTRTOL") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                               meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
     dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") == INPAR::CONTACT::app_mortarmeshtying &&
-            DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(meshtying,"APPLICATION") == INPAR::CONTACT::app_mortarmeshtying &&
+            DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(meshtying,"FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for mortar meshtying");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying,"SYSTEM") == INPAR::CONTACT::system_condensed)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic)
     dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
   
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
-                                                   input.get<int>("MIN_ELEPROC") <  0)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+                                                   mortar.get<int>("MIN_ELEPROC") <  0)
     dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
 
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
+  if (DRT::INPUT::IntegralValue<int>(mortar,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
-  if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin)
+  if (DRT::INPUT::IntegralValue<int>(mortar,"CROSSPOINTS") == true &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin)
     dserror("ERROR: Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
-  if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+  if (DRT::INPUT::IntegralValue<int>(mortar,"CROSSPOINTS") == true &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin)
     dserror("Petrov-Galerkin approach makes no sense for meshtying");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin)
     dserror("No Petrov-Galerkin approach (for LM) implemented for quadratic meshtying");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("No pwlin/pwlin approach (for LM) implemented for quadratic meshtying with DUAL shape fct.");
 
 #ifndef MORTARTRAFO
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("Lin/lin approach (for LM) for quadratic meshtying with DUAL shape fct. requires MORTARTRAFO");
 #endif // #ifndef MORTARTRAFO
     
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (input.get<double>("SEARCH_PARAM") == 0.0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << endl;
 
-  // store ParameterList in local parameter list
-  mtparams = input;
+  // store content of BOTH ParameterLists in local parameter list
+  mtparams.setParameters(mortar);
+  mtparams.setParameters(meshtying);
   
   // no parallel redistribution in the serial case
   if (Comm().NumProc()==1) mtparams.set<std::string>("PARALLEL_REDIST","None");

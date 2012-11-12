@@ -21,7 +21,7 @@ Maintainer: Axel Gerstenberger
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../drt_mortar/mortar_analytical.H"
+#include "../drt_contact/contact_analytical.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
@@ -170,7 +170,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
 			//   however analytical solutions are extremely rare in the nonlinear realm
 			// - only implemented for SVK material (relevant for energy norm only, L2 and
 			//   H1 norms are of course valid for arbitrary materials)
-			// - analytical solutions are currently stored in a repository in the MORTAR
+			// - analytical solutions are currently stored in a repository in the CONTACT
 			//   namespace, however they could (should?) be moved to a more general location
 
 			// check length of elevec1
@@ -253,7 +253,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
 					LINALG::Matrix<NUMSTR_DISP,1> strainanalyt(true);
 					LINALG::Matrix<NUMDIM_DISP,NUMDIM_DISP> derivanalyt(true);
 
-					MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+					CONTACT::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
 					//**************************************************************
 
 					//--------------------------------------------------------------

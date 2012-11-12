@@ -371,12 +371,12 @@ void UTILS::ConstraintSolver::SolveSimple
   
   //make solver CheapSIMPLE-ready
   // meshtying/contact for structure
-  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
   // get the solver number used for meshtying/contact problems
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   // check if the meshtying/contact solver has a valid solver number
   if (linsolvernumber == (-1))
-   dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+   dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
   Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter list
   solver_->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
@@ -397,7 +397,7 @@ void UTILS::ConstraintSolver::SolveSimple
   const int simplersolvernumber = mcparams.get<int>("SIMPLER_SOLVER");
   // check if the SIMPLER solver has a valid solver number
   if (simplersolvernumber == (-1))
-    dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in MESHTYING AND CONTACT to a valid number!");
+    dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in CONTACT DYNAMIC to a valid number!");
   solver_->PutSolverParamsToSubParams("Inverse2",
       DRT::Problem::Instance()->SolverParams(simplersolvernumber));
 

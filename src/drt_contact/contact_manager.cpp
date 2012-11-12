@@ -96,7 +96,7 @@ discret_(discret)
   }
 
   std::vector<DRT::Condition*> contactconditions(0);
-  Discret().GetCondition("Contact",contactconditions);
+  Discret().GetCondition("Mortar",contactconditions);
 
   // there must be more than one contact condition
   // unless we have a self contact problem!
@@ -476,89 +476,90 @@ discret_(discret)
  *----------------------------------------------------------------------*/
 bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
-  // read parameter list and problemtype from DRT::Problem
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  // read parameter lists and problemtype from DRT::Problem
+  const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
   int dim = DRT::Problem::Instance()->NDim();
 
   // *********************************************************************
   // this is mortar contact
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") != INPAR::CONTACT::app_mortarcontact)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(contact,"APPLICATION") != INPAR::CONTACT::app_mortarcontact)
     dserror("You should not be here...");
 
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") != INPAR::CONTACT::solution_lagmult &&
-              DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult &&
+              DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin)
     dserror("Petrov-Galerkin approach for LM only with Lagrange multiplier strategy");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
-                                                 input.get<double>("PENALTYPARAM") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
+                                                 contact.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
-         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
-                                              input.get<double>("PENALTYPARAMTAN") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
+         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none &&
+                                              contact.get<double>("PENALTYPARAMTAN") <= 0.0)
     dserror("Tangential penalty parameter eps = 0, must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-                                                 input.get<double>("PENALTYPARAM") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                                 contact.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
-                                              input.get<double>("PENALTYPARAMTAN") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none &&
+                                              contact.get<double>("PENALTYPARAMTAN") <= 0.0)
     dserror("Tangential penalty parameter eps = 0, must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-                                                   input.get<int>("UZAWAMAXSTEPS") < 2)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                                   contact.get<int>("UZAWAMAXSTEPS") < 2)
     dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-                                               input.get<double>("UZAWACONSTRTOL") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+                                               contact.get<double>("UZAWACONSTRTOL") <= 0.0)
     dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
-                                            input.get<double>("SEMI_SMOOTH_CT") == 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none &&
+                                            contact.get<double>("SEMI_SMOOTH_CT") == 0.0)
     dserror("Parameter ct = 0, must be greater than 0 for frictional contact");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") == INPAR::CONTACT::system_condensed)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
-                                                     input.get<int>("MIN_ELEPROC") <  0)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+                                                     mortar.get<int>("MIN_ELEPROC") <  0)
     dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
   
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic &&
-                                                     input.get<double>("MAX_BALANCE") <  1.0)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic &&
+                                                     mortar.get<double>("MAX_BALANCE") <  1.0)
     dserror("Maximum allowed value of load balance for dynamic parallel redistribution must be >= 1.0");
   
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca &&
                                                                             dim == 3)
     dserror("3D frictional contact with Tresca's law not yet implemented");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
-                     DRT::INPUT::IntegralValue<int>(input,"SEMI_SMOOTH_NEWTON") != 1 &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none &&
+                     DRT::INPUT::IntegralValue<int>(contact,"SEMI_SMOOTH_NEWTON") != 1 &&
                                                                             dim == 3)
     dserror("3D frictional contact only implemented with Semi-smooth Newton");
 
-  if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
+  if (DRT::INPUT::IntegralValue<int>(mortar,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
-  if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin)
+  if (DRT::INPUT::IntegralValue<int>(mortar,"CROSSPOINTS") == true &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin)
     dserror("ERROR: Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
   // check for self contact
   std::vector<DRT::Condition*> coco(0);
-  Discret().GetCondition("Contact",coco);
+  Discret().GetCondition("Mortar",coco);
   bool self = false;
 
   for (int k=0;k<(int)coco.size();++k)
@@ -568,11 +569,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   }
 
   if (self == true &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Self contact and parallel redistribution not yet compatible");
   
-  if(DRT::INPUT::IntegralValue<int>(input,"INITCONTACTBYGAP")==true && 
-     input.get<double>("INITCONTACTGAPVALUE") == 0.0)
+  if(DRT::INPUT::IntegralValue<int>(contact,"INITCONTACTBYGAP")==true &&
+     contact.get<double>("INITCONTACTGAPVALUE") == 0.0)
     dserror("ERROR: For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed."); 
 
   // *********************************************************************
@@ -580,49 +581,49 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   
   if (problemtype==prb_tsi &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
-      DRT::INPUT::IntegralValue<int>(input,"THERMOLAGMULT")==false)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
+      DRT::INPUT::IntegralValue<int>(contact,"THERMOLAGMULT")==false)
     dserror("Thermal contact without Lagrange Multipliers only for standard shape functions");
 
   if (problemtype==prb_tsi &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
-      DRT::INPUT::IntegralValue<int>(input,"THERMOLAGMULT")==true)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
+      DRT::INPUT::IntegralValue<int>(contact,"THERMOLAGMULT")==true)
     dserror("Thermal contact with Lagrange Multipliers only for dual shape functions");
   
   // no parallel redistribution in for thermal-structure-interaction
   if (problemtype==prb_tsi &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");  
 
   // *********************************************************************
   // contact with wear
   // *********************************************************************
   
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") == INPAR::CONTACT::wear_none &&
-      input.get<double>("WEARCOEFF") != 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") == INPAR::CONTACT::wear_none &&
+      contact.get<double>("WEARCOEFF") != 0.0)
     dserror("ERROR: Wear coefficient only necessary in the context of wear.");
   
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_none &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none)
     dserror("ERROR: Wear models only applicable to frictional contact.");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none &&
-      input.get<double>("WEARCOEFF") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none &&
+      contact.get<double>("WEARCOEFF") <= 0.0)
     dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
     dserror("Only quad/quad, lin/lin, pwlin/pwlin (for LM) implemented for quadratic contact with STANDARD shape fct.");
 
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin ||
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin ||
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("Only quadratic/quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
 
 #ifdef MORTARTRAFO
@@ -632,11 +633,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (input.get<double>("SEARCH_PARAM") == 0.0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << endl;
 
-  // store ParameterList in local parameter list
-  cparams = input;
+  // store contents of BOTH ParameterLists in local parameter list
+  cparams.setParameters(mortar);
+  cparams.setParameters(contact);
 
   // no parallel redistribution in the serial case
   if (Comm().NumProc()==1) cparams.set<std::string>("PARALLEL_REDIST","None");

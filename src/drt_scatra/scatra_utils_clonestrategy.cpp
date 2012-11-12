@@ -54,8 +54,8 @@ std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
   // for moving boundary problems
   conditions_to_copy.insert(pair<string,string>("FSICoupling","FSICoupling"));
 
-  // meshtying
-  conditions_to_copy.insert(pair<string,string>("Contact","Contact"));
+  // mortar meshtying
+  conditions_to_copy.insert(pair<string,string>("Mortar","Mortar"));
 
   // for coupled scalar transport fields
   conditions_to_copy.insert(pair<string,string>("ScaTraCoupling","ScaTraCoupling"));

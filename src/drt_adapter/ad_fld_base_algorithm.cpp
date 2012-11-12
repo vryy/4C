@@ -171,12 +171,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // meshtying fluid (formulation as saddle point problem)
 
-      const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->MeshtyingAndContactParams();
-      const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");             // meshtying solver (with block preconditioner, e.g. BGS 2x2)
+      const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
+      const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");        // meshtying solver (with block preconditioner, e.g. BGS 2x2)
       const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver
       const int fluidpressuresolver = fdyn.get<int>("SIMPLER_SOLVER");  // fluid pressure solver
       if (mshsolver == (-1))
-        dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+        dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
       if (fluidsolver == (-1))
         dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number! This solver is used within block preconditioner (e.g. BGS2x2) as \"Inverse 1\".");
       if (fluidpressuresolver == (-1))
@@ -242,10 +242,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case INPAR::FLUID::sps_coupled:
     case INPAR::FLUID::coupling_iontransport_laplace:
     { // meshtying (no saddle point problem)
-      const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->MeshtyingAndContactParams();
+      const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
       const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");             // meshtying solver (with block preconditioner, e.g. BGS 2x2)
       if (mshsolver == (-1))
-        dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in MESHTYING AND CONTACT to a valid number!");
+        dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       solver =
         rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),

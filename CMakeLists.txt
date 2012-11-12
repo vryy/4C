@@ -482,6 +482,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_thermo.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
+  src/drt_contact/contact_analytical.cpp
   src/drt_contact/contact_element.cpp
   src/drt_contact/contact_node.cpp
   src/drt_contact/friction_node.cpp
@@ -1061,7 +1062,6 @@ set(OBJS_DRT_MORTAR
   src/drt_mortar/mortar_strategy_base.cpp
 )
 set(OBJS_DRT_MORTAR_LIB
-  src/drt_mortar/mortar_analytical.cpp
   src/drt_mortar/mortar_element.cpp
   src/drt_mortar/mortar_element_integrator.cpp
   src/drt_mortar/mortar_element_shapefct.cpp

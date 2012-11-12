@@ -62,8 +62,8 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   DRT::UTILS::FindConditionObjects(slavedis, slavenodes, slavegnodes, slaveelements,
       "FSICoupling");
 
-  // get structural dynamics parameter
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  // get mortar coupling parameters
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
 
   // check for invalid parameter values
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
@@ -316,8 +316,8 @@ void ADAPTER::CouplingMortar::Setup
   DRT::UTILS::FindConditionObjects(dis, slavenodes, slavegnodes, slaveelements,
       "FSICoupling");
 
-  // get structural dynamics parameter
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  // get mortar coupling parameters
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
 
   // check for invalid parameter values
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
@@ -533,7 +533,7 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   vector<DRT::Condition*> conds;
   vector<DRT::Condition*> conds_master(0);
   vector<DRT::Condition*> conds_slave(0);
-  const string& condname = "Contact";
+  const string& condname = "Mortar";
   dis.GetCondition(condname, conds);
 
   for (unsigned i=0; i<conds.size(); i++)
@@ -553,8 +553,8 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // Fill maps based on condition for slave side
   DRT::UTILS::FindConditionObjects(dis, slavenodes, slavegnodes, slaveelements,conds_slave);
 
-  // get structural dynamics parameter
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  // get mortar coupling parameters
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
 
   // check for invalid parameter values
   if(meshtyingoption != INPAR::FLUID::sps_coupled and meshtyingoption != INPAR::FLUID::sps_pc)
@@ -1262,10 +1262,9 @@ void ADAPTER::CouplingMortar::Evaluate()
 {
   // check for parallel redistribution
   bool parredist = false;
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     parredist = true;
-
 
   // in the following two steps MORTAR does all the work for new interface displacements
   interface_->Initialize();

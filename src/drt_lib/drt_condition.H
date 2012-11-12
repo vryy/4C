@@ -125,7 +125,7 @@ public:
     LineInitfield,
     SurfaceInitfield,
     VolumeInitfield,
-    Contact,
+    Mortar,
     AleWear,
     PointLocsys,
     LineLocsys,

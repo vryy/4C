@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file mortar_analytical.H
+\file contact_analytical.H
 
-\brief A set of analytical solutions for convergence analysis of mortar methods
+\brief A set of analytical solutions for convergence analysis of contact/meshtying methods
 
 <pre>
 -------------------------------------------------------------------------
@@ -37,15 +37,15 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef MORTAR_ANALYTICAL_H
-#define MORTAR_ANALYTICAL_H
+#ifndef CONTACT_ANALYTICAL_H
+#define CONTACT_ANALYTICAL_H
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
 /*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
+\brief CONTACT: namespace of the BACI contact and meshtying algorithms
 */
-namespace MORTAR
+namespace CONTACT
 {
   /*!
   \brief Analytical solutions for 2D elasticity problems
@@ -71,6 +71,6 @@ namespace MORTAR
                              LINALG::Matrix<6,1>& epsanalyt,
                              LINALG::Matrix<3,3>& derivanalyt);
 
-} // namespace MORTAR
+} // namespace CONTACT
 
-#endif  // #ifndef MORTAR_ANALYTICAL_H
+#endif  // #ifndef CONTACT_ANALYTICAL_H

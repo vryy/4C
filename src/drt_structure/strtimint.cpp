@@ -36,9 +36,9 @@ Maintainer: Thomas Klöppel
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_analytical.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
+#include "../drt_contact/contact_analytical.H"
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
@@ -384,7 +384,7 @@ void STR::TimInt::SetInitialFields()
 void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 {
   // some parameters
-  const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->ContactDynamicParams();
   INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
 
   // only continue if beam contact unmistakably chosen in input file
@@ -415,21 +415,22 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams)
 {
   // some parameters
-  const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  const Teuchos::ParameterList&   smortar  = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->ContactDynamicParams();
   INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
-  INPAR::MORTAR::ShapeFcn         shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(scontact,"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn         shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar,"SHAPEFCN");
   INPAR::CONTACT::SolvingStrategy soltype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
   bool semismooth = DRT::INPUT::IntegralValue<int>(scontact,"SEMI_SMOOTH_NEWTON");
 
-  // check contact conditions
-  vector<DRT::Condition*> contactconditions(0);
-  discret_->GetCondition("Contact",contactconditions);
+  // check mortar contact or meshtying conditions
+  vector<DRT::Condition*> mortarconditions(0);
+  discret_->GetCondition("Mortar",mortarconditions);
 
   // only continue if mortar contact / meshtying unmistakably chosen in input file
   if (apptype == INPAR::CONTACT::app_mortarcontact || apptype == INPAR::CONTACT::app_mortarmeshtying)
   {
     // double-check for contact conditions
-    if ((int)contactconditions.size()==0)
+    if ((int)mortarconditions.size()==0)
       dserror("ERROR: No contact conditions provided, check your input file!");
 
     // store integration parameter alphaf into cmtman_ as well
@@ -1602,9 +1603,9 @@ void STR::TimInt::OutputContact()
 void STR::TimInt::OutputErrorNorms()
 {
   // get out of here if no output wanted
-  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  INPAR::MORTAR::ErrorNorms entype = DRT::INPUT::IntegralValue<INPAR::MORTAR::ErrorNorms>(listcmt,"ERROR_NORMS");
-  if (entype==INPAR::MORTAR::errornorms_none) return;
+  const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
+  INPAR::CONTACT::ErrorNorms entype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ErrorNorms>(listcmt,"ERROR_NORMS");
+  if (entype==INPAR::CONTACT::errornorms_none) return;
 
   // initialize variables
   RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
