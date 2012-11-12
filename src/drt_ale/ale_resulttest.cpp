@@ -32,6 +32,12 @@ ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
  *----------------------------------------------------------------------*/
 void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
+  // care for the case of multiple discretizations of the same field type
+  std::string dis;
+  res.ExtractString("DIS",dis);
+  if (dis != aledis_->Name())
+    return;
+
   int node;
   res.ExtractInt("NODE",node);
   node -= 1;

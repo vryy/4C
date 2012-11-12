@@ -58,59 +58,70 @@ void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
   res.ExtractInt("NODE",node);
   node -= 1;
 
-  if (fluiddis_->HaveGlobalNode(node))
+  int havenode(fluiddis_->HaveGlobalNode(node));
+  int isnodeofanybody(0);
+  fluiddis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+  if (isnodeofanybody==0)
   {
-    const DRT::Node* actnode = fluiddis_->gNode(node);
-
-    // Test only, if actnode is a row node
-    if (actnode->Owner() != fluiddis_->Comm().MyPID())
-      return;
-
-    double result = 0.;
-
-    // get map of the standard fluid dofset (no XFEM dofs)
-    const Epetra_Map& velnpmap = *fluidstddofset_->DofRowMap();
-
-    const int numdim = DRT::Problem::Instance()->NDim();
-
-    std::string position;
-    res.ExtractString("QUANTITY",position);
-    if (position=="velx")
+    dserror("Node %d does not belong to discretization %s",node+1,fluiddis_->Name().c_str());
+  }
+  else
+  {
+    if (fluiddis_->HaveGlobalNode(node))
     {
-      result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,0))];
-    }
-    else if (position=="vely")
-    {
-      result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,1))];
-    }
-    else if (position=="velz")
-    {
-      if (numdim==2)
-        dserror("Cannot test result for velz in 2D case.");
-      result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,2))];
-    }
-    else if (position=="pressure")
-    {
-      if (numdim==2)
+      const DRT::Node* actnode = fluiddis_->gNode(node);
+
+      // Test only, if actnode is a row node
+      if (actnode->Owner() != fluiddis_->Comm().MyPID())
+        return;
+
+      double result = 0.;
+
+      // get map of the standard fluid dofset (no XFEM dofs)
+      const Epetra_Map& velnpmap = *fluidstddofset_->DofRowMap();
+
+      const int numdim = DRT::Problem::Instance()->NDim();
+
+      std::string position;
+      res.ExtractString("QUANTITY",position);
+      if (position=="velx")
       {
-        if (fluiddis_->NumDof(actnode)<3)
-          dserror("too few dofs at node %d for pressure testing",actnode->Id());
+        result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,0))];
+      }
+      else if (position=="vely")
+      {
+        result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,1))];
+      }
+      else if (position=="velz")
+      {
+        if (numdim==2)
+          dserror("Cannot test result for velz in 2D case.");
         result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,2))];
+      }
+      else if (position=="pressure")
+      {
+        if (numdim==2)
+        {
+          if (fluiddis_->NumDof(actnode)<3)
+            dserror("too few dofs at node %d for pressure testing",actnode->Id());
+          result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,2))];
+        }
+        else
+        {
+          if (fluiddis_->NumDof(actnode)<4)
+            dserror("too few dofs at node %d for pressure testing",actnode->Id());
+          result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,3))];
+        }
       }
       else
       {
-        if (fluiddis_->NumDof(actnode)<4)
-          dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*mysol_)[velnpmap.LID(fluidstddofset_->Dof(actnode,3))];
+        dserror("Quantity '%s' not supported in fluid testing", position.c_str());
       }
-    }
-    else
-    {
-      dserror("Quantity '%s' not supported in fluid testing", position.c_str());
-    }
 
-    nerr += CompareValues(result, res);
-    test_count++;
+      nerr += CompareValues(result, res);
+      test_count++;
+    }
   }
 }
 

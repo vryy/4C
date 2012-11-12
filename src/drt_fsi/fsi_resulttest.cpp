@@ -99,59 +99,71 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
   int node;
   res.ExtractInt("NODE",node);
   node -= 1;
-  if (slavedisc_->HaveGlobalNode(node))
+
+  int havenode(slavedisc_->HaveGlobalNode(node));
+  int isnodeofanybody(0);
+  slavedisc_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+  if (isnodeofanybody==0)
   {
-    const DRT::Node* actnode = slavedisc_->gNode(node);
-
-    // Strange! It seems we might actually have a global node around
-    // even if it does not belong to us. But here we are just
-    // interested in our nodes!
-    if (actnode->Owner() != slavedisc_->Comm().MyPID())
-      return;
-
-    // verbose output
-    //cout << "TESTING STRUCTURE RESULTS with FSIResultTest::TestNode(..)" << endl;
-
-    string position;
-    res.ExtractString("QUANTITY",position);
-    bool unknownpos = true; // make sure the result value string can be handled
-    double result = 0.0;    // will hold the actual result of run
-
-    // test Lagrange multipliers
-    if (fsilambda_ != null)
+    dserror("Node %d does not belong to discretization %s",node+1,slavedisc_->Name().c_str());
+  }
+  else
+  {
+    if (slavedisc_->HaveGlobalNode(node))
     {
-      const Epetra_BlockMap& fsilambdamap = fsilambda_->Map();
-      if (position=="lambdax")
+      const DRT::Node* actnode = slavedisc_->gNode(node);
+
+      // Strange! It seems we might actually have a global node around
+      // even if it does not belong to us. But here we are just
+      // interested in our nodes!
+      if (actnode->Owner() != slavedisc_->Comm().MyPID())
+        return;
+
+      // verbose output
+      //cout << "TESTING STRUCTURE RESULTS with FSIResultTest::TestNode(..)" << endl;
+
+      string position;
+      res.ExtractString("QUANTITY",position);
+      bool unknownpos = true; // make sure the result value string can be handled
+      double result = 0.0;    // will hold the actual result of run
+
+      // test Lagrange multipliers
+      if (fsilambda_ != null)
       {
-        unknownpos = false;
-        result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,0))];
+        const Epetra_BlockMap& fsilambdamap = fsilambda_->Map();
+        if (position=="lambdax")
+        {
+          unknownpos = false;
+          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,0))];
+        }
+        else if (position=="lambday")
+        {
+          unknownpos = false;
+          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,1))];
+        }
+        else if (position=="lambdaz")
+        {
+          unknownpos = false;
+          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,2))];
+        }
       }
-      else if (position=="lambday")
-      {
-        unknownpos = false;
-        result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,1))];
-      }
-      else if (position=="lambdaz")
-      {
-        unknownpos = false;
-        result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,2))];
-      }
+      // catch position strings, which are not handled by fsi result test
+      if (unknownpos)
+        dserror("Quantity '%s' not supported in fsi testing", position.c_str());
+
+      // compare values
+      const int err = CompareValues(result, res);
+      nerr += err;
+      test_count++;
+
+      // verbose output
+      cout.precision(16);
+      cout << "FSI RESULT "  << test_count
+          << " IS " << std::scientific << position << " = " << result
+          << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
+          << endl;
     }
-    // catch position strings, which are not handled by fsi result test
-    if (unknownpos)
-      dserror("Quantity '%s' not supported in fsi testing", position.c_str());
-
-    // compare values
-    const int err = CompareValues(result, res);
-    nerr += err;
-    test_count++;
-
-    // verbose output
-    cout.precision(16);
-    cout << "FSI RESULT "  << test_count
-         << " IS " << std::scientific << position << " = " << result
-         << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
-         << endl;
   }
 }
 

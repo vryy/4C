@@ -40,34 +40,45 @@ void ART::ArteryResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
   res.ExtractInt("NODE",node);
   node -= 1;
 
-  if (dis_->HaveGlobalNode(node))
+  int havenode(dis_->HaveGlobalNode(node));
+  int isnodeofanybody(0);
+  dis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+  if (isnodeofanybody==0)
   {
-    DRT::Node* actnode = dis_->gNode(node);
-
-    // Strange! It seems we might actually have a global node around
-    // even if it does not belong to us. But here we are just
-    // interested in our nodes!
-    if (actnode->Owner() != dis_->Comm().MyPID())
-      return;
-
-    double result = 0.;
-    const Epetra_BlockMap& pnpmap = mysol_->Map();
-    std::string position;
-    res.ExtractString("QUANTITY",position);
-
-    // test result value of single scalar field
-    if (position=="area")
-    result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,0))];
-    else if (position=="flowrate")
-    result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,1))];
-    // test result values for a system of scalars
-    else 
+    dserror("Node %d does not belong to discretization %s",node+1,dis_->Name().c_str());
+  }
+  else
+  {
+    if (dis_->HaveGlobalNode(node))
     {
-      dserror("Quantity '%s' not supported in result-test of red_airway transport problems", position.c_str());
-    }
+      DRT::Node* actnode = dis_->gNode(node);
 
-    nerr += CompareValues(result, res);
-    test_count++;
+      // Strange! It seems we might actually have a global node around
+      // even if it does not belong to us. But here we are just
+      // interested in our nodes!
+      if (actnode->Owner() != dis_->Comm().MyPID())
+        return;
+
+      double result = 0.;
+      const Epetra_BlockMap& pnpmap = mysol_->Map();
+      std::string position;
+      res.ExtractString("QUANTITY",position);
+
+      // test result value of single scalar field
+      if (position=="area")
+        result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,0))];
+      else if (position=="flowrate")
+        result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode,1))];
+      // test result values for a system of scalars
+      else
+      {
+        dserror("Quantity '%s' not supported in result-test of red_airway transport problems", position.c_str());
+      }
+
+      nerr += CompareValues(result, res);
+      test_count++;
+    }
   }
 }
 

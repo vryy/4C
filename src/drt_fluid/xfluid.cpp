@@ -5217,42 +5217,53 @@ void FLD::XFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr
   res.ExtractInt("NODE",node);
   node -= 1;
 
-  if (discret_.HaveGlobalNode(node))
+  int havenode(discret_.HaveGlobalNode(node));
+  int isnodeofanybody(0);
+  discret_.Comm().SumAll(&havenode,&isnodeofanybody,1);
+
+  if (isnodeofanybody==0)
   {
-    DRT::Node* actnode = discret_.gNode(node);
-
-    if (actnode->Owner() != discret_.Comm().MyPID())
-      return;
-
-    double result = 0.;
-
-    const Epetra_BlockMap& velnpmap = velnp_->Map();
-
-    std::string position;
-    res.ExtractString("QUANTITY",position);
-    if (position=="velx")
+    dserror("Node %d does not belong to discretization %s",node+1,discret_.Name().c_str());
+  }
+  else
+  {
+    if (discret_.HaveGlobalNode(node))
     {
-      result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,0))];
-    }
-    else if (position=="vely")
-    {
-      result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,1))];
-    }
-    else if (position=="velz")
-    {
-      result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,2))];
-    }
-    else if (position=="pressure")
-    {
-      result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,3))];
-    }
-    else
-    {
-      dserror("Quantity '%s' not supported in ale testing", position.c_str());
-    }
+      DRT::Node* actnode = discret_.gNode(node);
 
-    nerr += CompareValues(result, res);
-    test_count++;
+      if (actnode->Owner() != discret_.Comm().MyPID())
+        return;
+
+      double result = 0.;
+
+      const Epetra_BlockMap& velnpmap = velnp_->Map();
+
+      std::string position;
+      res.ExtractString("QUANTITY",position);
+      if (position=="velx")
+      {
+        result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,0))];
+      }
+      else if (position=="vely")
+      {
+        result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,1))];
+      }
+      else if (position=="velz")
+      {
+        result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,2))];
+      }
+      else if (position=="pressure")
+      {
+        result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,3))];
+      }
+      else
+      {
+        dserror("Quantity '%s' not supported in ale testing", position.c_str());
+      }
+
+      nerr += CompareValues(result, res);
+      test_count++;
+    }
   }
 }
 
