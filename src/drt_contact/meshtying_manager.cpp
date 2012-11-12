@@ -119,8 +119,8 @@ discret_(discret)
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
-    const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int> >("contact id");
-    if (!group1v) dserror("Contact Conditions does not have value 'contact id'");
+    const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int> >("Interface ID");
+    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
@@ -128,8 +128,8 @@ discret_(discret)
     {
       if (j==i) continue; // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      const std::vector<int>* group2v = tempcond->Get<std::vector<int> >("contact id");
-      if (!group2v) dserror("Contact Conditions does not have value 'contact id'");
+      const std::vector<int>* group2v = tempcond->Get<std::vector<int> >("Interface ID");
+      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
       int groupid2 = (*group2v)[0];
       if (groupid1 != groupid2) continue; // not in the group
       foundit = true; // found a group entry
