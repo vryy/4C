@@ -43,7 +43,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
@@ -299,9 +299,9 @@ DLINE                           0
 //E 2 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0

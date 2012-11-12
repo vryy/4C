@@ -63,11 +63,10 @@ BETA                            0.25
 GAMMA                           0.5
 ALPHA_M                         0.0
 ALPHA_F                         0.0
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Augmented
-SHAPEFCN                        Standard
 PENALTYPARAM                    1000000
 PENALTYPARAMTAN                 1000000
 UZAWAMAXSTEPS                   10
@@ -76,6 +75,8 @@ FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 SEMI_SMOOTH_CT                  1.0
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    2.0
 COUPLING_AUXPLANE               Yes
@@ -163,9 +164,9 @@ DPOINT                          0
 DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              master
 E 4 - 1 Master Inactive FrCoeffOrBound 0.1

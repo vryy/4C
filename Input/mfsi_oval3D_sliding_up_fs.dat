@@ -122,6 +122,7 @@ TIMESTEP                        10.0
 TOLENCHECK                      1e-07
 UPRES                           1
 SLIDEALEPROJ                    Curr
+-------------------------------------------------------------MORTAR COUPLING
 ------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
 ALE_DISP                        No
@@ -149,7 +150,6 @@ SHAPEFCT                        Polynomial
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 -------------------------------------------------------STATISTICAL MECHANICS
--------------------------------------------------------MESHTYING AND CONTACT
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
@@ -373,9 +373,9 @@ DPOINT                          0
 DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0

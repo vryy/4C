@@ -72,15 +72,16 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.0
 ALPHA_F                         0.0
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Dual
 FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  10
 SEMI_SMOOTH_CT                  10
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 No
@@ -233,7 +234,7 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 E 1 - 1 Slave Active FrCoeffOrBound 0.1
 E 7 - 1 Master Inactive FrCoeffOrBound 0.1

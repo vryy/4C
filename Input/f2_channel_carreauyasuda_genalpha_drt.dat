@@ -114,7 +114,7 @@ THERM_TEMPERATURE               No
 NUMFIELD                        1
 PROBLEMTYP                      Fluid
 RESTART                         0
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -287,9 +287,9 @@ DPOINT                          0
 DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
 DLINE                           0

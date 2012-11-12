@@ -138,7 +138,7 @@ E 1 - pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha
 E 2 - pot 25.0 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dlcap 0.0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary
 E 5 - 1 Master

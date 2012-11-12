@@ -81,7 +81,7 @@ UZAWAPARAM                      1.0
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 -----------------------------------------------------STRUCTURAL DYNAMIC/GEMM
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 -------------------------------------------------------STATISTICAL MECHANICS
 ---------------------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
@@ -205,9 +205,9 @@ DSURF                           0
 DLINE                           0
 ---------------------------------------------------------------FORCE SENSORS
 DPOINT                          0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0

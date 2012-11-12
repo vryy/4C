@@ -58,19 +58,20 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 FRICTION                        coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  200
 SEMI_SMOOTH_CT                  200
+WEAR                            Archard
+WEARCOEFF                       1e-3
+-------------------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.2
 COUPLING_AUXPLANE               Yes
 PARALLEL_REDIST                 Static
-WEAR                            Archard
-WEARCOEFF                       1e-3
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
@@ -215,9 +216,9 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              slave
 E 2 - 1 Slave Active FrCoeffOrBound 0.2

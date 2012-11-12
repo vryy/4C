@@ -57,19 +57,20 @@ TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 MAXITER                         50
 LINEAR_SOLVER                   1
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Dual
 FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1000000
 SEMI_SMOOTH_CT                  1000000
-SEARCH_ALGORITHM                BinaryTree
-SEARCH_PARAM                    0.2
 WEAR                            Archard
 WEARCOEFF                       0.0001
 LINEAR_SOLVER                   2
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Dual
+SEARCH_ALGORITHM                BinaryTree
+SEARCH_PARAM                    0.2
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
@@ -179,13 +180,13 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 //                              obenunten
 E 2 - 1 Slave Active FrCoeffOrBound 0.1
 //                              untenoben
 E 3 - 1 Master Inactive FrCoeffOrBound 0.1
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0

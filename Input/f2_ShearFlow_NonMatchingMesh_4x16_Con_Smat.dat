@@ -76,16 +76,12 @@ SUPG                            yes_supg
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
-APPLICATION                     None
-CROSSPOINTS Yes //Remove multipliers from crosspoints
-LAGMULT_QUAD undefined //lin_lin, quad_quad
-SEARCH_ALGORITHM Binarytree //...
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Dual
+SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
-SHAPEFCN Dual //Standard, Dual
-STRATEGY LagrangianMultipliers //Penalty,..
-SYSTEM SaddlePointCoupled //SaddlePointCoupled, SaddlePointSimpler
 --------------------------------------------------------------------SOLVER 1
 NAME                            Meshtying_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -221,7 +217,7 @@ DVOL                            0
 DLINE                           2
 E 3 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 E 4 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary
 E 5 - 1 Master

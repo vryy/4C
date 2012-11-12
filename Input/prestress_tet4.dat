@@ -73,7 +73,7 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
 MAXITER                         50
 UZAWAPARAM                      1.0
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
@@ -233,9 +233,9 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0

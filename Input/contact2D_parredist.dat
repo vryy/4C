@@ -62,14 +62,15 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Dual
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0e3
 SEMI_SMOOTH_CT                  1.0
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Dual
 // exemplarily test dynamic redistribution with minimum
 // number of elements per proc = 0 and time limit = 1.5 here
 PARALLEL_REDIST                 Dynamic
@@ -154,11 +155,11 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 E 4 - 1 Slave
 E 6 - 1 Master
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0

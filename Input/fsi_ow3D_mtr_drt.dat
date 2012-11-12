@@ -163,7 +163,7 @@ ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-06
 EXPLPREDICT                     yes
 ITEMAX                          10
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
@@ -522,9 +522,9 @@ DPOINT                          0
 DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0

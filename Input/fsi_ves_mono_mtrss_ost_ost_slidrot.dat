@@ -39,7 +39,7 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 PARALLEL_REDIST                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
@@ -350,9 +350,9 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0

@@ -68,12 +68,13 @@ BETA                            0.25
 GAMMA                           0.5
 ALPHA_M                         0.5
 ALPHA_F                         0.5
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Standard
 SYSTEM                          spcoupled
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 No
@@ -174,11 +175,11 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           1
 //                              selfonctact
 E 2 - 1 Selfcontact
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0

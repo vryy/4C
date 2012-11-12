@@ -66,16 +66,17 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         1
 DIVERCONT                       Yes
 LINEAR_SOLVER                   1
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
-SHAPEFCN                        Standard
 SYSTEM                          SaddlePointCoupled
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              No
+LINEAR_SOLVER                   2
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Standard
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
-LINEAR_SOLVER                   2
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
@@ -154,7 +155,7 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           8
 E 14 - 1 Slave Active
 E 15 - 1 Slave Active
@@ -172,7 +173,7 @@ E 28 - 1 Master
 //E 24 - 1 Master
 //E 25 - 1 Master
 //E 28 - 1 Slave Active
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0

@@ -66,7 +66,7 @@ ALPHA_F                         0.459
 ALPHA_M                         0.378
 BETA                            0.291
 GAMMA                           0.581
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
@@ -206,9 +206,9 @@ DSURF                           0
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0

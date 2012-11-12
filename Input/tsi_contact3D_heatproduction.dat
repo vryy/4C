@@ -45,18 +45,19 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Initial                         // None, Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Initial                         // None, Current
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
 APPLICATION                     MortarContact
 FRICTION                        coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  2000
 SEMI_SMOOTH_CT                  2000
+HEATTRANSSLAVE                  1000
+HEATTRANSMASTER                 100
+-------------------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 COUPLING_AUXPLANE               Yes
-HEATTRANSSLAVE                  1000
-HEATTRANSMASTER                 100
 PARALLEL_REDIST                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
@@ -356,9 +357,9 @@ E 1 - NUMDOF 1 ONOFF 1 VAL 20.0 CURVE none FUNCT 0
 E 2 - NUMDOF 1 ONOFF 1 VAL 20.0 CURVE none FUNCT 0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              slavesurface
 E 4 - 1 Slave Active FrCoeffOrBound 0.35

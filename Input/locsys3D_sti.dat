@@ -58,7 +58,7 @@ NORMCOMBI_RESFDISP              Or
 TOLRES                          1.0E-08
 TOLDISP                         1.0E-08
 MAXITER                         50
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
@@ -177,9 +177,9 @@ DLINE                           0
 DSURF                           0
 ------------------------------------------------------------FILAMENT NUMBERS
 DLINE                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0

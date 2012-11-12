@@ -61,14 +61,15 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarMeshtying
 STRATEGY                        Augmented
-SHAPEFCN                        Standard
 PENALTYPARAM                    1.0e6
 UZAWAMAXSTEPS                   10
 UZAWACONSTRTOL                  1.0e-8
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Standard
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
@@ -145,9 +146,9 @@ DPOINT                          0
 DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              slave
 E 3 - 1 Master Inactive

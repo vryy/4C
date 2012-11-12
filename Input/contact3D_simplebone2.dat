@@ -64,26 +64,27 @@ MAXITER                         50
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 SIMPLER_SOLVER                  3
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Dual                            // Dual Standard
 PENALTYPARAM                    20000
 PENALTYPARAMTAN                 20000
-FRICTION                        Coulomb                         // Coulomb
+FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              yes
 SEMI_SMOOTH_CN                  1000.0
 SEMI_SMOOTH_CT                  1000.0
+SYSTEM                          SaddlePointSimpler
+INITCONTACTBYGAP                Yes
+INITCONTACTGAPVALUE             0.001
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.6
-SYSTEM                          SaddlePointSimpler
 PARALLEL_REDIST                 Static
 MAX_BALANCE                     1.5
 COUPLING_AUXPLANE               Yes
-INITCONTACTBYGAP                Yes
-INITCONTACTGAPVALUE             0.001
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -198,7 +199,7 @@ NDPOINT                         0
 NDLINE                          0
 NDSURF                          4
 NDVOL                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 E 2 - 1 Master Inactive FrCoeffOrBound 0.3
 E 3 - 1 Slave Inactive FrCoeffOrBound 0.3
@@ -273,7 +274,7 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0

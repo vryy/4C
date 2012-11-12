@@ -62,13 +62,14 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         1
 DIVERCONT                       Yes
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
+ERROR_NORMS                     bending
+-------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Dual
 LAGMULT_QUAD                    quad_quad
-ERROR_NORMS                     bending
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -212,9 +213,9 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              upperinterface
 E 1 - 1 Slave Active

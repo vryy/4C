@@ -62,9 +62,10 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarMeshtying
+-------------------------------------------------------------MORTAR COUPLING
 CROSSPOINTS                     Yes
 PARALLEL_REDIST                 No
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -155,7 +156,7 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           12
 //                              slave1
 E 3 - 1 Slave Active
@@ -181,7 +182,7 @@ E 12 - 5 Master Inactive
 E 13 - 6 Slave Active
 //                              master6
 E 14 - 6 Master Inactive
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0

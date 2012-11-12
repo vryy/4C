@@ -69,20 +69,16 @@ MAXITER                         50
 UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-KIND                            None                            // None ZienkiewiczXie AdamsBashforth2
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Dual
 FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  100
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 Dynamic
@@ -225,7 +221,7 @@ DSURF                           0
 DLINE                           0
 ---------------------------------------------------------------FORCE SENSORS
 DPOINT                          0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 E 4 - 1 Slave Inactive FrCoeffOrBound 0.9
 E 6 - 1 Master Inactive FrCoeffOrBound 0.9

@@ -42,7 +42,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
@@ -368,9 +368,9 @@ DSURF                           2
 E 9 - pot 1.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
 //                              cathode
 E 10 - pot 0.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 ------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
 DLINE                           0

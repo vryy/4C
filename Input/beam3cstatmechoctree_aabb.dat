@@ -72,7 +72,7 @@ MAXITER                         25
 //GAMMA                         1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     BeamContact
 STRATEGY                        Augmented

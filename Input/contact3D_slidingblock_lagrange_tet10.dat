@@ -63,22 +63,23 @@ BETA                            0.25
 GAMMA                           0.5
 ALPHA_M                         0.0
 ALPHA_F                         0.0
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 FRICTION                        coulomb
 STRATEGY                        lagrange
-SHAPEFCN                        dual
-COUPLING_AUXPLANE               Yes
-LAGMULT_QUAD                    quad_quad
 SEMI_SMOOTH_NEWTON              Yes
 PENALTYPARAM                    1000
 PENALTYPARAMTAN                 1000
 SEMI_SMOOTH_CN                  1000000.0
 SEMI_SMOOTH_CT                  1000.0
+SYSTEM                          spcoupled
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        dual
+COUPLING_AUXPLANE               Yes
+LAGMULT_QUAD                    quad_quad
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    2.0
-SYSTEM                          spcoupled
 PARALLEL_REDIST                 Dynamic
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
@@ -162,9 +163,9 @@ DPOINT                          0
 DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              master
 E 4 - 1 Master Inactive FrCoeffOrBound 0.1

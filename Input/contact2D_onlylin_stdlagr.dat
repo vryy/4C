@@ -62,17 +62,18 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Standard
 PENALTYPARAM                    1.0e2
 SYSTEM                          spcoupled
-LAGMULT_QUAD                    lin_lin
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0e3
 SEMI_SMOOTH_CT                  1.0
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Standard
+LAGMULT_QUAD                    lin_lin
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
@@ -152,11 +153,11 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 E 4 - 1 Slave
 E 6 - 1 Master
--------------------------------------------DESIGN SURF CONTACT CONDITIONS 3D
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0

@@ -59,15 +59,16 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------------MESHTYING AND CONTACT
+-------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SHAPEFCN                        Dual
 FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  100
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
 PARALLEL_REDIST                 Dynamic
@@ -201,7 +202,7 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
--------------------------------------------DESIGN LINE CONTACT CONDITIONS 2D
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 E 4 - 1 Slave Inactive FrCoeffOrBound 0.2
 E 6 - 1 Master Inactive FrCoeffOrBound 0.2
