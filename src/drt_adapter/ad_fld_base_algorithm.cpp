@@ -171,6 +171,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // meshtying fluid (formulation as saddle point problem)
 
+      // FIXME: The solver should not be taken from the contact dynamic section here,
+      // but must be specified in the fluid dynamic section instead (popp 11/2012)
+
       const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
       const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");        // meshtying solver (with block preconditioner, e.g. BGS 2x2)
       const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver

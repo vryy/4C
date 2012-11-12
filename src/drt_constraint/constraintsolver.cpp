@@ -369,6 +369,9 @@ void UTILS::ConstraintSolver::SolveSimple
   RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
   RCP<Epetra_Vector> rhscopy=rcp(new Epetra_Vector(*rhsstand));
   
+  // FIXME: The solver should not be taken from the contact dynamic section here,
+  // but must be specified somewhere else instead (popp 11/2012)
+
   //make solver CheapSIMPLE-ready
   // meshtying/contact for structure
   const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
