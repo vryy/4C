@@ -29,7 +29,6 @@ Maintainer: Ulrich Kuettler
 #include "drt_resulttest.H"
 #include "drt_utils.H"
 
-using namespace std;
 using Teuchos::RCP;
 using Teuchos::ParameterList;
 
