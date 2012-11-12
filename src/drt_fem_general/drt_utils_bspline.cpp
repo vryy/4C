@@ -13,8 +13,6 @@ Maintainer: Peter Gamnitzer
 #include "drt_utils_bspline.H"
 #include "../drt_lib/drt_dserror.H"
 
-using namespace std;
-
 //--------------------------------------------------
 // Constructor
 //--------------------------------------------------
@@ -138,7 +136,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBspline (
 #endif
 
   // define the vector of values at x of all initial polynomials
-  vector<double> bspline(degree_+1);
+  std::vector<double> bspline(degree_+1);
 
   // The nonzero initial bspline polynomial and the intervals
   // that define the compact support of the bspline number lid
@@ -372,7 +370,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineAndDeriv(
 #endif
 
   // define the vector of values at x of all initial polynomials
-  vector<double> bspline(degree_+1);
+  std::vector<double> bspline(degree_+1);
 
   // The nonzero initial bspline polynomial and the intervals
   // that define the compact support of the bspline number lid

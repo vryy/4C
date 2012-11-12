@@ -27,8 +27,6 @@ Maintainer: Peter Gamnitzer
 #include <Teuchos_RCP.hpp>
 
 
-using namespace std;
-
 
 /*!
 \brief DRT: namespace of the ccarat discretization module

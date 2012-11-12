@@ -13,5 +13,4 @@ Maintainer: Peter Gamnitzer
 
 #include "drt_utils_nurbs_shapefunctions.H"
 
-using namespace std;
 

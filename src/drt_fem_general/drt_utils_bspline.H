@@ -14,10 +14,10 @@ Maintainer: Peter Gamnitzer
 #ifndef BSPLINE_H
 #define BSPLINE_H
 
-#include<string>
-#include<vector>
-#include<iostream>
-#include<fstream>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <fstream>
 
 #include "../linalg/linalg_serialdensevector.H"
 
