@@ -14,7 +14,7 @@ General Data File CCARAT
 // - first-order interpolation (quad4 elements)
 // - semi-smooth Newton solution scheme
 // - dual Lagrange multiplier interpolation
-// - generalized alpha time integration
+// - generalized alpha time integration scheme
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        63
 NODES                           92
