@@ -15,6 +15,8 @@ Maintainer: Michael Gee
 #define GLOBAL_INP_CONTROL_H
 
 #include <string>
+#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
 
 //> general input routine for baci
 void ntainp_ccadiscret(
@@ -23,6 +25,11 @@ void ntainp_ccadiscret(
     std::string& restartfile_kenner   //!< restart file kenner
   );
 
+//> setup of parallel output as early as possible
+void SetupParallelOutput(
+    std::string& outputfile_kenner,
+    Teuchos::RCP<Epetra_Comm> lcomm,
+    int group);
 
 #endif  // #ifndef GLOBAL_INP_CONTROL2_H
 

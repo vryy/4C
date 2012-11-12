@@ -17,6 +17,10 @@ Maintainer: Michael Gee
 #include "../drt_io/io_pstream.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
+void SetupParallelOutput(
+    std::string& outputfile_kenner,
+    Teuchos::RCP<Epetra_Comm> lcomm,
+    int group);
 
 /*----------------------------------------------------------------------*
   | general input of the problem to be solved              m.gee 10/06  |
@@ -42,6 +46,8 @@ void ntainp_ccadiscret(
                                    lcomm);
 
   problem->ReadParameter(reader);
+
+  SetupParallelOutput(outputfile_kenner, lcomm, group);
 
   // input of materials
   problem->ReadMaterials(reader);
@@ -103,17 +109,6 @@ void ntainp_ccadiscret(
                            outputfile_kenner,
                            restartfile_kenner);
 
-  // configure the parallel output environment
- {
-   const Teuchos::ParameterList& io = problem->IOParams();
-   bool screen   = DRT::INPUT::IntegralValue<int>(io,"WRITE_TO_SCREEN");
-   bool file     = DRT::INPUT::IntegralValue<int>(io,"WRITE_TO_FILE");
-   bool preGrpID = DRT::INPUT::IntegralValue<int>(io,"PREFIX_GROUP_ID");
-   int  oproc    = io.get<int>("LIMIT_OUTP_TO_PROC");
-
-   IO::cout.setup(screen, file, preGrpID, lcomm, oproc, group, outputfile_kenner);
- }
-
   if (lcomm->MyPID()==0)
     problem->WriteInputParameters();
 
@@ -128,4 +123,24 @@ void ntainp_ccadiscret(
   return;
 } // end of ntainp_ccadiscret()
 
+
+/*----------------------------------------------------------------------*
+  | setup parallel output                                  ghamm 11/12  |
+ *----------------------------------------------------------------------*/
+void SetupParallelOutput(
+    std::string& outputfile_kenner,
+    Teuchos::RCP<Epetra_Comm> lcomm,
+    int group)
+{
+  // configure the parallel output environment
+  const Teuchos::ParameterList& io = DRT::Problem::Instance()->IOParams();
+  bool screen   = DRT::INPUT::IntegralValue<int>(io,"WRITE_TO_SCREEN");
+  bool file     = DRT::INPUT::IntegralValue<int>(io,"WRITE_TO_FILE");
+  bool preGrpID = DRT::INPUT::IntegralValue<int>(io,"PREFIX_GROUP_ID");
+  int  oproc    = io.get<int>("LIMIT_OUTP_TO_PROC");
+
+  IO::cout.setup(screen, file, preGrpID, lcomm, oproc, group, outputfile_kenner);
+
+  return;
+}
 
