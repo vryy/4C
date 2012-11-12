@@ -2465,6 +2465,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& redtisdyn = list->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC",false,"");
+  DoubleParameter("CONVTOL",1E-6,"Coupled red_airway and tissue iteration convergence",&redtisdyn);
+  IntParameter("MAXITER",5,"Maximum coupling iterations",&redtisdyn);
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redtisdyn);
   IntParameter("NUMSTEP",1,"Number of Time Steps",&redtisdyn);
   DoubleParameter("MAXTIME",4.0,"",&redtisdyn);
