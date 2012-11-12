@@ -2173,6 +2173,9 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         cout << "|| nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u             << endl;
         cout << "|| nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p             << endl;
         cout << "---------------------------------------------------------"       << endl;
+        cout << "-------------- Error on Functionals from solution  ------------"       << endl;
+        cout << " | sin(x) ( u,x - u,x exact ) |                  = " << (*glob_dom_norms)[6]             <<endl;
+        cout << "---------------------------------------------------------"       << endl;
       }
 
       // append error of the last time step to the error file
@@ -2196,6 +2199,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           << " | || nu^(+1/2) (u - u*) ||_H1/2(Gamma)"
           << " | || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)"
           << " | || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)"
+          << " |  | sin(x) ( u,x - u,x exact ) | "
           << " |\n";
         f << step_ << " "
           << time_ << " "
@@ -2208,6 +2212,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           << interf_err_Honehalf << " "
           << interf_err_Hmonehalf_u << " "
           << interf_err_Hmonehalf_p << " "
+          << (*glob_dom_norms)[6] << " "
           <<"\n";
         f.flush();
         f.close();
@@ -2729,6 +2734,7 @@ void FLD::XFluid::PrepareNonlinearSolve()
   if(INPAR::XFEM::XFluidStationaryBoundary != xfluid_mov_bound)
     CutAndSetStateVectors();
 
+ // ComputeInterfaceVelocities();
 
   // -------------------------------------------------------------------
   //                 set old part of righthandside

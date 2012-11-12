@@ -3721,6 +3721,9 @@ void FLD::XFluidFluid::Output()
 {
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
+  
+  if( !write_visualization_data && !write_restart_data )
+  	return;
 
   //  ART_exp_timeInt_->Output();
   // output of solution
@@ -4255,7 +4258,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
   // how is the analytical solution available (implemented of via function?)
   INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
 
-  CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
+  //CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
 
 
   if(calcerr != INPAR::FLUID::no_error_calculation)
@@ -4312,7 +4315,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
     //-------------------------------------------------------------------------------------------------------------------
 
     // number of norms that have to be calculated
-    int num_dom_norms    = 6;
+    int num_dom_norms    = 7;
     int num_interf_norms = 12;
     int num_stab_norms   = 3;
 
@@ -4581,6 +4584,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
     // set vector values needed by elements
     embdis_->ClearState();
     embdis_->SetState("u and p at time n+1 (converged)", alevelnp_);
+    //embdis_->SetState("velaf", alevelnp_);
 
     // evaluate domain error norms and interface/boundary error norms at XFEM-interface
     // loop row elements
@@ -4705,6 +4709,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         cout << "|| nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u             << endl;
         cout << "|| nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p             << endl;
         cout << "---------------------------------------------------------"       << endl;
+        cout << "-------------- Error on Functionals from solution  ------------"       << endl;
+        cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << (*glob_dom_norms_bg)[6]             <<endl;
+        cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << (*glob_dom_norms_emb)[6]            <<endl;
       }
 
       // append error of the last time step to the error file
@@ -4734,6 +4741,8 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           << " | || nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)"
           << " | || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)"
           << " | || nu^(-1/2) (p_b - p_e)*n |_H-1/2(Gamma)"
+          << " |  | sin(x) ( u,x - u,x exact ) | (background)"
+          << " |  | sin(x) ( u,x - u,x exact ) | (embedded)"
           << " |\n";
         f << step_ << " "
           << time_ << " "
@@ -4752,6 +4761,8 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           << interf_err_Honehalf << " "
           << interf_err_Hmonehalf_u << " "
           << interf_err_Hmonehalf_p << " "
+          << (*glob_dom_norms_bg)[6] << " "
+          << (*glob_dom_norms_emb)[6] << " "
           <<"\n";
         f.flush();
         f.close();
@@ -4782,6 +4793,8 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           << " | || nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)"
           << " | || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)"
           << " | || nu^(-1/2) (p_b - p_e)*n |_H-1/2(Gamma)"
+          << " |  | sin(x) ( u,x - u,x exact ) | (background)"
+          << " |  | sin(x) ( u,x - u,x exact ) | (embedded)"
           << " |\n";
         f << step_ << " "
           << time_ << " "
@@ -4800,6 +4813,8 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           << interf_err_Honehalf << " "
           << interf_err_Hmonehalf_u << " "
           << interf_err_Hmonehalf_p << " "
+          << (*glob_dom_norms_bg)[6] << " "
+          << (*glob_dom_norms_emb)[6] << " "
           <<"\n";
 
         f.flush();

@@ -185,7 +185,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   // degree 5
-  const DRT::UTILS::GaussIntegration intpoints(distype, 5);
+  const DRT::UTILS::GaussIntegration intpoints(distype, 8);
   return ComputeError( ele, params, mat,
                        discretization, lm,
                        ele_dom_norms, intpoints);
@@ -304,6 +304,9 @@ int FluidEleCalcXFEM<distype>::ComputeError(
     u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
     grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
 
+    // error on pre-defined functional
+    // here G=sin(x)( u,x - u,x exact )
+    double funcerr = ( sin(xyzint(0,0)) * ( grad_u_analyt(0,0)-my::vderxy_(0,0) ) )*my::fac_;
 
     // standard domain errors
     // 1.   || u - u_h ||_L2(Omega)              =   standard L2-norm for velocity
@@ -345,6 +348,9 @@ int FluidEleCalcXFEM<distype>::ComputeError(
     // viscosity-scaled domain errors
     ele_dom_norms[4] += my::visc_ * grad_u_err_squared;
     ele_dom_norms[5] += 1.0/my::visc_ * p_err_squared;
+
+    // error for predefined functional
+    ele_dom_norms[6] += funcerr;
 
 
   } // loop gaussian points
@@ -426,37 +432,50 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
       grad_u(2,2) = function_grad->Evaluate(8,position,t,NULL); // w,z
     }
     else dserror("case 'beltrami_stat' is a 3D specific case");
-
   }
   break;
+
   case INPAR::FLUID::beltrami_flow:
   {
     if (my::nsd_ == 3)
     {
-
       const double a      = M_PI/4.0;
       const double d      = M_PI/2.0;
 
-      // compute analytical pressure
-      p = -a*a/2.0 *
-          ( exp(2.0*a*xyzint(0))
-              + exp(2.0*a*xyzint(1))
-              + exp(2.0*a*xyzint(2))
-              + 2.0 * sin(a*xyzint(0) + d*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) * exp(a*(xyzint(1)+xyzint(2)))
-              + 2.0 * sin(a*xyzint(1) + d*xyzint(2)) * cos(a*xyzint(0) + d*xyzint(1)) * exp(a*(xyzint(2)+xyzint(0)))
-              + 2.0 * sin(a*xyzint(2) + d*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) * exp(a*(xyzint(0)+xyzint(1)))
-          )* exp(-2.0*my::visc_*d*d*t);
+      double x = xyzint(0);
+      double y = xyzint(1);
+      double z = xyzint(2);
 
-      // compute analytical velocities
-      u(0) = -a * ( exp(a*xyzint(0)) * sin(a*xyzint(1) + d*xyzint(2)) +
-          exp(a*xyzint(2)) * cos(a*xyzint(0) + d*xyzint(1)) ) * exp(-my::visc_*d*d*t);
-      u(1) = -a * ( exp(a*xyzint(1)) * sin(a*xyzint(2) + d*xyzint(0)) +
-          exp(a*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) ) * exp(-my::visc_*d*d*t);
-      u(2) = -a * ( exp(a*xyzint(2)) * sin(a*xyzint(0) + d*xyzint(1)) +
-          exp(a*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) ) * exp(-my::visc_*d*d*t);
+      double visc = my::visc_;
+
+      // calculation of velocities and pressure
+      u(0) = -a * ( exp(a*x) * sin(a*y + d*z) + exp(a*z) * cos(a*x + d*y) ) * exp(-visc*d*d*t);
+      u(1) = -a * ( exp(a*y) * sin(a*z + d*x) + exp(a*x) * cos(a*y + d*z) ) * exp(-visc*d*d*t);
+      u(2) = -a * ( exp(a*z) * sin(a*x + d*y) + exp(a*y) * cos(a*z + d*x) ) * exp(-visc*d*d*t);
+      p    = -a*a/2.0 *
+              ( exp(2.0*a*x) + exp(2.0*a*y) + exp(2.0*a*z)
+                + 2.0 * sin(a*x + d*y) * cos(a*z + d*x) * exp(a*(y+z))
+                + 2.0 * sin(a*y + d*z) * cos(a*x + d*y) * exp(a*(z+x))
+                + 2.0 * sin(a*z + d*x) * cos(a*y + d*z) * exp(a*(x+y))
+              )* exp(-2.0*visc*d*d*t);
+
+      // velocity gradients
+      grad_u(0,0) = -a * ( a * exp(a*x) * sin(a*y + d*z) - a * exp(a*z) * sin(a*x + d*y) ) * exp(-visc*d*d*t); //u,x
+      grad_u(0,1) = -a * ( a * exp(a*x) * cos(a*y + d*z) - d * exp(a*z) * sin(a*x + d*y) ) * exp(-visc*d*d*t); //u,y
+      grad_u(0,2) = -a * ( d * exp(a*x) * cos(a*y + d*z) + a * exp(a*z) * cos(a*x + d*y) ) * exp(-visc*d*d*t); //u,z
+
+      grad_u(1,0) = -a * ( d * exp(a*y) * cos(a*z + d*x) + a * exp(a*x) * cos(a*y + d*z) ) * exp(-visc*d*d*t); //v,x
+      grad_u(1,1) = -a * ( a * exp(a*y) * sin(a*z + d*x) - a * exp(a*x) * sin(a*y + d*z) ) * exp(-visc*d*d*t); //v,y
+      grad_u(1,2) = -a * ( a * exp(a*y) * cos(a*z + d*x) - d * exp(a*x) * sin(a*y + d*z) ) * exp(-visc*d*d*t); //v,z
+
+      grad_u(2,0) = -a * ( a * exp(a*z) * cos(a*x + d*y) - d * exp(a*y) * sin(a*z + d*x) ) * exp(-visc*d*d*t); //w,x
+      grad_u(2,1) = -a * ( d * exp(a*z) * cos(a*x + d*y) + a * exp(a*y) * cos(a*z + d*x) ) * exp(-visc*d*d*t); //w,y
+      grad_u(2,2) = -a * ( a * exp(a*z) * sin(a*x + d*y) - a * exp(a*y) * sin(a*z + d*x) ) * exp(-visc*d*d*t); //w,z
     }
     else dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
   }
+  break;
+
   case INPAR::FLUID::kimmoin_stat_stokes:
   case INPAR::FLUID::kimmoin_stat_navier_stokes:
   {
@@ -518,10 +537,9 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
       grad_u(2,2) = function_grad->Evaluate(8,position,t,NULL); // w,z
     }
     else dserror("case 'kimmoin_stat' is a 3D specific case");
-
   }
   break;
-  break;
+
   case INPAR::FLUID::shear_flow:
   {
     const double maxvel = 1.0;
@@ -541,8 +559,10 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
       u(1) = 0.0;
       u(2) = 0.0;
     }
+
   }
   break;
+
   case INPAR::FLUID::gravitation:
   {
     const double gravity = 10.0;
@@ -566,6 +586,7 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     }
   }
   break;
+
   case INPAR::FLUID::channel2D:
   {
     const double maxvel=1.25;
@@ -586,6 +607,7 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
       dserror("3D analytical solution is not implemented yet");
   }
   break;
+
   case INPAR::FLUID::jeffery_hamel_flow:
   {
     //LINALG::Matrix<3,1> physpos(true);
@@ -604,9 +626,9 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
       u(0) = u_exact_x;
       u(1) = u_exact_y;
     }
-
   }
   break;
+
   case INPAR::FLUID::byfunct1:
   {
     const int func_no = 1;
@@ -664,9 +686,9 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
 
     }
     else dserror("invalid dimension");
-
   }
   break;
+
   default:
     dserror("analytical solution is not defined");
   }
