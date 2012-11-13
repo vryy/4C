@@ -86,6 +86,9 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   // additional forces due to lung fsi (volume constraint)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
 
+  // Lagrange multiplier at the interface in monolithic fsi
+  EnsightWriter::WriteResult("fsilambda", "fsilambda", dofbased, field->problem()->num_dim());
+
   EnsightWriter::WriteElementResults(field); //To comment
   if (stresstype_!="none")
   {
@@ -142,6 +145,9 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   // additional fields due to adjoint equations
   EnsightWriter::WriteResult("adjoint_velnp", "adjoint_velocity", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("adjoint_pressure", "adjoint_pressure", dofbased, 1);
+
+  // Lagrange multiplier at the interface in monolithic fsi
+  EnsightWriter::WriteResult("fsilambda", "fsilambda", dofbased, field->problem()->num_dim());
 
   WriteElementResults(field);
 }
