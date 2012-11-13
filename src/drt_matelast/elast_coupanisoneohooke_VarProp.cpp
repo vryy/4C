@@ -101,13 +101,25 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(DRT::INPUT::LineDefinition* 
     // The call of SetFiberVec() will leed to the following fiber direction
     // a = cos(gamma_)*locsys(:,2) + sin(gamma_)*locsys(:,1)
     //         cos(gamma_)*sin(theta_)               0                          cos(gamma_)*sin(theta_)
-    //   = [             0              ] + [  sin(gamma_)*sin(theta_)  ] = [   sin(gamma_)*sin(tehta_) ] =: sperical coordinates
+    //   = [             0              ] + [  sin(gamma_)*sin(theta_)  ] = [   sin(gamma_)*sin(theta_) ] =: sperical coordinates
     //         cos(gamma)^2*cos(theta_)        sin(gamma_)^2*cos(theta_)               cos(theta_)
     //
-    locsys(1,1) = sin(params_->theta_);
-    locsys(2,1) = sin(params_->gamma_)*cos(params_->theta_);
-    locsys(0,2) = sin(params_->theta_);
-    locsys(2,2) = cos(params_->gamma_)*cos(params_->theta_);
+    {
+    	// Local initialization of spherical angles
+      double theta = (params_->theta_);
+      double gamma = (params_->gamma_);
+      if ( gamma < 0.0 || gamma > 180.0 || abs(theta) > 180.0 )
+	    {
+      		dserror("Wrong choice of sherical coodinates. Correct domain is gamma in [0,180], theta in [-180, 180]");
+	    }
+      // conversion to radian measure
+      theta = (theta*PI)/180.0;
+      gamma = (gamma*PI)/180.0;
+      locsys(1,1) = sin(theta);
+      locsys(2,1) = sin(gamma)*cos(theta);
+      locsys(0,2) = sin(theta);
+      locsys(2,2) = cos(gamma)*cos(theta);
+    }
     SetFiberVecs(-1.0,locsys,Id);
   }
   else if (params_->init_ == 1)
