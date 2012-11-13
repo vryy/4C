@@ -405,6 +405,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(const Teucho
   break;
   default:
     dserror("Unsupported type of solver");
+  break;
   }
 
   //------------------------------------- set type of preconditioner
@@ -739,6 +740,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     mllist.set<bool>("LINALG::AMGPreconditioner",true);
     break;
   default: dserror("Unknown type of ml preconditioner");
+    break;
   }
   mllist.set("ML output"                       ,inparams.get<int>("ML_PRINT"));
   if (inparams.get<int>("ML_PRINT")==10)

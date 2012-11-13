@@ -1816,16 +1816,13 @@ void LINALG::PrintMapInMatlabFormat(std::string fname,
       {
         for(int ii=0; ii< map.ElementSize(i); ii++)
         {
-          int iii;
           if(MaxElementSize1==1)
           {
             os << std::setw(10)<< MyGlobalElements1[i]+1 ;
-            iii = i;
           }
           else
           {
             os << std::setw(10) << MyGlobalElements1[i]+1<< "/" << std::setw(10) << ii;
-            iii = FirstPointInElementList1[i]+ii;
           }
           os << endl;
         }
