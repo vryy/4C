@@ -24,24 +24,11 @@ MAXTIME                         4
 NUMSTEP                         41
 RESULTSEVRY                     1
 TIMESTEP                        0.1
-----------------------------------------------------------COMBUSTION CONTROL
------------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
-LAMINAR_FLAMESPEED              1
-MARKSTEIN_LENGTH                0
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
-----------------------------------------------------------------ELCH CONTROL
-ITEMAX                          10
-MAXTIME                         1000
-NUMSTEP                         24
-RESTARTEVRY                     1
-TEMPERATURE                     298
-TIMESTEP                        0.1
-UPRES                           1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 ADAPTCONV                       yes
@@ -81,15 +68,6 @@ SUPG                            yes_supg
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-CANONICAL_FLOW                  no
-CHAN_AMPL_INIT_DIST             0.1
-DUMPING_PERIOD                  1
-HOMDIR                          not_specified
-PHYSICAL_MODEL                  no_model
-SAMPLING_START                  1
-SAMPLING_STOP                   1
-TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 -----------------------------------------------------------------FSI DYNAMIC
 ADAPTIVEDIST                    0
 BASETOL                         1E-7
@@ -99,8 +77,8 @@ COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
 ENERGYCHECK                     No
-FLUIDPCITER 1 1 1
-FLUIDPCOMEGA 1.0 1.0 1.0
+FLUIDPCITER                     1 1 1
+FLUIDPCOMEGA                    1.0 1.0 1.0
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
@@ -114,16 +92,17 @@ RELAX                           1
 RESTARTEVRY                     1
 SECONDORDER                     No
 SHAPEDERIVATIVES                No
-STRUCTPCITER 1 1 1
-STRUCTPCOMEGA 1.0 1.0 1.0
-PCITER 1 1 1
-PCOMEGA 1.0 1.0 1.0
+STRUCTPCITER                    1 1 1
+STRUCTPCOMEGA                   1.0 1.0 1.0
+PCITER                          1 1 1
+PCOMEGA                         1.0 1.0 1.0
 TIMESTEP                        10.0
 TOLENCHECK                      1e-07
 UPRES                           1
 SLIDEALEPROJ                    Curr
 -------------------------------------------------------------MORTAR COUPLING
-------------------------------------------------------------INVERSE ANALYSIS
+PARALLEL_REDIST                 Static
+SHAPEFCN                        Dual
 --------------------------------------------------------------------------IO
 ALE_DISP                        No
 FILESTEPS                       1000
@@ -140,16 +119,11 @@ STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
-----------------------------------------------------------------LOMA CONTROL
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
--------------------------------------------------------STATISTICAL MECHANICS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
@@ -183,121 +157,20 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          ImrLike
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-----------------------------------------------------------------XFEM GENERAL
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.8E-5 DENSITY 1.0E-6
@@ -321,22 +194,6 @@ NDPOINT                         0
 NDLINE                          2
 NDSURF                          8
 NDVOL                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 // struct center
@@ -349,10 +206,6 @@ E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 E 6 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //                              Inflow_surface
 E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.5 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE                           1
 // outer curves
@@ -365,121 +218,12 @@ E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // bottom top
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
---------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF                           0
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF                           0
------------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF                           0
-----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
-------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
 // coupling struct
 E 4 - 0 structure
 // coupling fluid
 E 5 - 0 fluid
------------------------------DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS
-DLINE                           0
------------------------------DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS
-DSURF                           1
-E 4 -
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
---------------------------------------------------SURFACE TENSION CONDITIONS
-DSURF                           0
--------------------------------------------------------SURFACTANT CONDITIONS
-DSURF                           0
------------------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
-DSURF                           0
------------------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE                           0
---------------------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
-DSURF                           0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
----------------------------------------------------------------FORCE SENSORS
-DPOINT                          0
--------------------------------------------------------MICROSCALE CONDITIONS
-DSURF                           0
-------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
---------------------------------------------DESIGN SURF IMPEDANCE CONDITIONS
-DSURF                           0
----------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF                           0
------------------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
-DSURF                           0
-------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE                           0
-------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
-DLINE                           0
-------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF                           0
---------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN IMPULS RATE SURF CONDITIONS
-DSURF                           0
---------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
-DSURF                           0
----------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1851 DLINE 1
