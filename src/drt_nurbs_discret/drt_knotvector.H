@@ -46,7 +46,7 @@ public:
 
   static KnotvectorObjectType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -165,7 +165,7 @@ public:
   void ConvertEleGidToKnotIds(
     const int      gid        ,
     int         &  npatch     ,
-    vector<int> &  loc_cart_id);
+    std::vector<int> &  loc_cart_id);
 
 
 /*!
@@ -208,7 +208,7 @@ public:
 */
   int ConvertEleKnotIdsToGid(
     const int         &  npatch     ,
-    const vector<int> &  loc_cart_id);
+    const std::vector<int> &  loc_cart_id);
 
 
   /*!
@@ -267,7 +267,7 @@ public:
 
   */
   bool GetEleKnots(
-    vector<Epetra_SerialDenseVector> & eleknots,
+    std::vector<Epetra_SerialDenseVector> & eleknots,
     int                                gid
     );
 
@@ -333,7 +333,7 @@ public:
     const int                     & degree          ,
     const int                     & numknots        ,
     const std::string             & knotvectortype   ,
-    Teuchos::RCP<vector<double> >   directions_knots);
+    Teuchos::RCP<std::vector<double> >   directions_knots);
 
   //@}
 
@@ -383,7 +383,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   //@}
 
@@ -396,7 +396,7 @@ public:
              The number of the patch
 
   */
-  virtual vector<int> ReturnDegree(const int npatch)
+  virtual std::vector<int> ReturnDegree(const int npatch)
     {
       if(!filled_)
       {
@@ -412,7 +412,7 @@ public:
              The number of the patch
 
   */
-  virtual vector<int> Return_n_x_m_x_l(const int npatch)
+  virtual std::vector<int> Return_n_x_m_x_l(const int npatch)
     {
       if(!filled_)
       {
@@ -429,7 +429,7 @@ public:
          \return vector number of zero sized elements in knotspan of
                  this patch
   */
-  virtual vector<int> Return_n_zerosize_ele(const int npatch);
+  virtual std::vector<int> Return_n_zerosize_ele(const int npatch);
 
 
   /*!
@@ -453,7 +453,7 @@ public:
              The number of the patch
 
   */
-  virtual vector<int> Return_nele_x_mele_x_lele(const int npatch)
+  virtual std::vector<int> Return_nele_x_mele_x_lele(const int npatch)
     {
       if(!filled_)
       {
@@ -469,7 +469,7 @@ public:
   \return offsets array
 
   */
-  virtual vector<int> ReturnOffsets()
+  virtual std::vector<int> ReturnOffsets()
     {
       if(!filled_)
       {
@@ -543,22 +543,22 @@ private:
   bool                                   filled_;
 
   //! degree of bspline-polynomials defined on this knotvector
-  vector<vector<int> >                   degree_;
+  std::vector<std::vector<int> >                   degree_;
 
   //! number of knots in each direction
-  vector<vector<int> >                   n_x_m_x_l_;
+  std::vector<std::vector<int> >                   n_x_m_x_l_;
 
   //! number of elements in each direction
-  vector<vector<int> >                   nele_x_mele_x_lele_ ;
+  std::vector<std::vector<int> >                   nele_x_mele_x_lele_ ;
 
   //! are the component closed or open knotvectors?
-  vector<vector<KnotvectorType> >        interpolation_;
+  std::vector<std::vector<KnotvectorType> >        interpolation_;
 
   //! number of elements in each direction
-  vector<int>                            offsets_;
+  std::vector<int>                            offsets_;
 
   //! the actual values
-  vector<vector<Teuchos::RCP<vector<double> > > >
+  std::vector<std::vector<Teuchos::RCP<std::vector<double> > > >
                                          knot_values_;
 
 };

@@ -47,7 +47,6 @@ Maintainer: Michael Gee
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 
-using namespace std;
 using Teuchos::RCP;
 using Teuchos::ParameterList;
 
@@ -69,7 +68,7 @@ public:
 
   static ContainerType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -141,7 +140,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   //@}
 
@@ -186,7 +185,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const vector<int>& data)
+  void Add(const std::string& name, const std::vector<int>& data)
   { Add(name,&data[0],data.size()); return;}
 
   /*!
@@ -197,7 +196,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, RefCountPtr<vector<int> > data);
+  void Add(const std::string& name, RefCountPtr<std::vector<int> > data);
 
   /*!
   \brief Add a double to the container
@@ -207,7 +206,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const double& data)
+  void Add(const std::string& name, const double& data)
   { Add(name,&data,1); return; }
 
   /*!
@@ -219,7 +218,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const double* data, const int num);
+  void Add(const std::string& name, const double* data, const int num);
 
   /*!
   \brief Add vector of double to the container
@@ -229,7 +228,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const vector<double>& data)
+  void Add(const std::string& name, const std::vector<double>& data)
   { Add(name,&data[0],data.size()); return;}
 
    /*!
@@ -240,7 +239,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, RefCountPtr<vector<double> > data);
+  void Add(const std::string& name, RefCountPtr<std::vector<double> > data);
 
   /*!
   \brief Add a string to the container
@@ -250,7 +249,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const string& data);
+  void Add(const std::string& name, const std::string& data);
 
   /*!
   \brief Add a string to the container
@@ -260,8 +259,8 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const char data[])
-  { Add(name,(string)data); return; }
+  void Add(const std::string& name, const char data[])
+  { Add(name,(std::string)data); return; }
 
   /*!
   \brief Add a Epetra_SerialDenseMatrix to the container
@@ -271,7 +270,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const Epetra_SerialDenseMatrix& matrix);
+  void Add(const std::string& name, const Epetra_SerialDenseMatrix& matrix);
 
    /*!
   \brief Add rcp to Epetra_SerialDenseMatrix to the container
@@ -281,7 +280,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, RefCountPtr<Epetra_SerialDenseMatrix> data);
+  void Add(const std::string& name, RefCountPtr<Epetra_SerialDenseMatrix> data);
 
    /*!
   \brief Add rcp to Epetra_MultiVector to the container
@@ -516,19 +515,19 @@ private:  // these methods are for PURE internal use
 protected:
 
   //! a map to store integer data in
-  map<string,RCP<vector<int> > >             intdata_;
+  std::map<string,RCP<std::vector<int> > >             intdata_;
 
   //! a map to store double data in
-  map<string,RCP<vector<double> > >          doubledata_;
+  std::map<string,RCP<std::vector<double> > >          doubledata_;
 
   //! a map to store string data in
-  map<string,string>                         stringdata_;
+  std::map<string,string>                         stringdata_;
 
   //! a map to store matrices in
-  map<string,RCP<Epetra_SerialDenseMatrix> > matdata_;
+  std::map<string,RCP<Epetra_SerialDenseMatrix> > matdata_;
 
   //! a map to store epetra vectors in
-  map<string,RCP<Epetra_MultiVector> >       evecdata_;
+  std::map<string,RCP<Epetra_MultiVector> >       evecdata_;
 
 }; // class Container
 } // namespace DRT

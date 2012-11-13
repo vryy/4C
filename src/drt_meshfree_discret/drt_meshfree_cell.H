@@ -254,7 +254,7 @@ public:
    *
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   // return CellType instance
   //virtual DRT::MESHFREE::CellType & CellType() const = 0;

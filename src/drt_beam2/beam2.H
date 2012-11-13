@@ -39,7 +39,7 @@ public:
 
   static Beam2Type & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
                                              const std::string eledistype,

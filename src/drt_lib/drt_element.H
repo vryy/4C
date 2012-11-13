@@ -257,7 +257,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /// return ElementType instance
   virtual DRT::ElementType & ElementType() const = 0;

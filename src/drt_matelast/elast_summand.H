@@ -76,7 +76,7 @@ namespace MAT
 
       virtual void Pack(DRT::PackBuffer& data) const;
 
-      virtual void Unpack(const vector<char>& data);
+      virtual void Unpack(const std::vector<char>& data);
 
       virtual void PackSummand(DRT::PackBuffer& data) const { return; };
 

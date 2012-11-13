@@ -140,7 +140,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple

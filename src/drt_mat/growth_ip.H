@@ -87,7 +87,7 @@ namespace MAT
 
     static GrowthType & Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const vector<char> & data );
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   private:
 
@@ -142,7 +142,7 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -176,10 +176,10 @@ namespace MAT
     virtual double Density() const {return params_->density_;}
 
     /// Return theta
-    Teuchos::RCP<vector<double> > Gettheta() const {return theta_;}
+    Teuchos::RCP<std::vector<double> > Gettheta() const {return theta_;}
 
     /// Return mandel stress
-    Teuchos::RCP<vector<double> > Getmandel() const {return mandel_;}
+    Teuchos::RCP<std::vector<double> > Getmandel() const {return mandel_;}
 
     /// Return elastic material
     Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
@@ -193,11 +193,11 @@ namespace MAT
     MAT::PAR::Growth* params_;
 
     /// growth stretch
-    Teuchos::RCP<vector<double> > theta_;
+    Teuchos::RCP<std::vector<double> > theta_;
     /// growth stretch old time step
-    Teuchos::RCP<vector<double> > thetaold_;
+    Teuchos::RCP<std::vector<double> > thetaold_;
     /// mandel stress
-    Teuchos::RCP<vector<double> > mandel_;
+    Teuchos::RCP<std::vector<double> > mandel_;
     /// elastic material
     Teuchos::RCP<MAT::Material> matelastic_;
     /// indicates if material is initialized

@@ -87,7 +87,7 @@ public:
 
   static PlasticNeoHookeType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -134,7 +134,7 @@ private:
     //!
     //!  \param data (in) : vector storing all data to be unpacked into this
     //!  instance.
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -182,25 +182,25 @@ private:
 
     /// plastic history deformation
     // current plastic strain (right cauchy-green tensor)
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histplasticrcgcurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histplasticrcgcurr_;
     // last converged state of plastic right cauchy-green tensor
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histplasticrcglast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histplasticrcglast_;
     // current equivalent plastic strain
-    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeplasticscurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histeplasticscurr_;
     // last converged state of equivalent plastic strain
-    Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeplasticslast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histeplasticslast_;
     // current backward stress /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > histplasticbstresscurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > histplasticbstresscurr_;
     // backward stress of last converged state  /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > histplasticbstresslast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > histplasticbstresslast_;
     // current eigenvalues /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > lamdacurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > lamdacurr_;
     // eigenvalues of the last converged state  /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > lamdalast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > lamdalast_;
     // matrix of the current three eigenvectors in 3D /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,3> > > nsetcurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > nsetcurr_;
     // matrix of the three eigenvectors in 3D of last converged state /*added*/
-    Teuchos::RCP<vector<LINALG::Matrix<3,3> > > nsetlast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > nsetlast_;
 
     /// indicator if #Initialize routine has been called
     bool isinit_;

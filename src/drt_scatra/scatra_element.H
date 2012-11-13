@@ -41,7 +41,7 @@ public:
 
   static TransportType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
                                              const string eledistype,
@@ -178,7 +178,7 @@ public:
 
   \ref Pack and \ref Unpack are used to communicate this element
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /*!
   \brief Destructor
@@ -560,7 +560,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /*!
   \brief Destructor

@@ -81,7 +81,7 @@ namespace MAT
       }
       ;
 
-      virtual DRT::ParObject* Create(const vector<char> & data);
+      virtual DRT::ParObject* Create(const std::vector<char> & data);
 
     private:
 
@@ -139,7 +139,7 @@ namespace MAT
        \param data (in) : vector storing all data to be unpacked into this
        instance.
        */
-      virtual void Unpack(const vector<char>& data);
+      virtual void Unpack(const std::vector<char>& data);
 
       //@}
 
@@ -162,7 +162,7 @@ namespace MAT
       }
 
       /// return porosity at gausspoints
-      Teuchos::RCP< vector<double> > Porosity() const
+      Teuchos::RCP<std::vector<double> > Porosity() const
       {
         return porosity_;
       }
@@ -243,13 +243,13 @@ namespace MAT
       Teuchos::RCP<MAT::Material> mat_;
 
       /// porosity at gauss points
-      Teuchos::RCP<vector<double> > porosity_;
+      Teuchos::RCP<std::vector<double> > porosity_;
 
       /// porosity time derivative at gauss points
-      Teuchos::RCP<vector<double> > dporodt_;
+      Teuchos::RCP<std::vector<double> > dporodt_;
 
       /// porosity gradient at gauss points
-      Teuchos::RCP<vector<LINALG::Matrix<3,1> > > gradporosity_;
+      Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > gradporosity_;
 
   };
 

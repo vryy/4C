@@ -107,7 +107,7 @@ public:
 
   static ViscoGenMaxType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -183,7 +183,7 @@ private:
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -232,22 +232,22 @@ private:
     MAT::PAR::ViscoGenMax* viscoparams_;
 
     /// visco history stresses
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisoprinccurr_; ///< current stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisoprinclast_; ///< stress of last converged state
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisoprinccurr_;  ///< current artificial stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisoprinclast_;  ///< artificial stress in last converged state
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisomodisocurr_; ///< current stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisomodisolast_; ///< stress of last converged state
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisomodisocurr_;  ///< current artificial stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisomodisolast_;  ///< artificial stress in last converged state
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisomodvolcurr_; ///< current stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisomodvollast_; ///< stress of last converged state
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisomodvolcurr_;  ///< current artificial stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisomodvollast_;  ///< artificial stress in last converged state
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressanisoprinccurr_; ///< current stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressanisoprinclast_; ///< stress of last converged state
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressanisoprinccurr_;  ///< current artificial stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressanisoprinclast_;  ///< artificial stress in last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisoprinccurr_; ///< current stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisoprinclast_; ///< stress of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisoprinccurr_;  ///< current artificial stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisoprinclast_;  ///< artificial stress in last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisomodisocurr_; ///< current stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisomodisolast_; ///< stress of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisomodisocurr_;  ///< current artificial stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisomodisolast_;  ///< artificial stress in last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisomodvolcurr_; ///< current stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressisomodvollast_; ///< stress of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisomodvolcurr_;  ///< current artificial stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressisomodvollast_;  ///< artificial stress in last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressanisoprinccurr_; ///< current stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstressanisoprinclast_; ///< stress of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressanisoprinccurr_;  ///< current artificial stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstressanisoprinclast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if #Initialized routine has been called
 

@@ -50,7 +50,6 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "drt_pack_buffer.H"
 
-using namespace std;
 
 namespace DRT
 {
@@ -214,7 +213,7 @@ public:
   \param data (in) : vector storing all data to be unpacked into this
                      instance.
   */
-  virtual void Unpack(const vector<char>& data) = 0;
+  virtual void Unpack(const std::vector<char>& data) = 0;
 
 
   //@}
@@ -261,7 +260,7 @@ public:
   \param stuff (in)    : vector<int> that get's added to stuff
 
   */
-  static void AddtoPack(PackBuffer& data, const vector<int>& stuff);
+  static void AddtoPack(PackBuffer& data, const std::vector<int>& stuff);
 
   /*!
   \brief Add stuff to the end of a char vector data
@@ -271,7 +270,7 @@ public:
   \param stuff (in)    : vector<double> that get's added to stuff
 
   */
-  static void AddtoPack(PackBuffer& data, const vector<double>& stuff);
+  static void AddtoPack(PackBuffer& data, const std::vector<double>& stuff);
 
   /*!
   \brief Add stuff to the end of a char vector data
@@ -281,7 +280,7 @@ public:
   \param stuff (in)    : vector<char> that get's added to stuff
 
   */
-  static void AddtoPack(PackBuffer& data, const vector<char>& stuff);
+  static void AddtoPack(PackBuffer& data, const std::vector<char>& stuff);
 
   /*!
   \brief Add stuff to the end of a char vector data
@@ -291,7 +290,7 @@ public:
   \param stuff (in)    : map<int,int> that get's added to stuff
 
   */
-  static void AddtoPack(PackBuffer& data, const map<int,int> & stuff);
+  static void AddtoPack(PackBuffer& data, const std::map<int,int> & stuff);
 
   /*!
   \brief Add stuff to the end of a char vector data
@@ -301,7 +300,7 @@ public:
   \param stuff (in)    : map<int,double> that get's added to stuff
 
   */
-  static void AddtoPack(PackBuffer& data, const map<int,double> & stuff);
+  static void AddtoPack(PackBuffer& data, const std::map<int,double> & stuff);
 
   //																														nagler 07/2012
   /*!																													
@@ -312,7 +311,7 @@ public:
   \param stuff (in)    : map<std::string, int> that get's added to stuff
 
   */
-  static void AddtoPack(PackBuffer& data, const map<std::string,int> & stuff);
+  static void AddtoPack(PackBuffer& data, const std::map<std::string,int> & stuff);
   
   /*!
   \brief Add stuff to the end of a char vector data
@@ -322,7 +321,7 @@ public:
   \param stuff (in)    : set<int> that get's added to stuff
 
   */
-  static void AddtoPack(PackBuffer& data, const set<int> & stuff);
+  static void AddtoPack(PackBuffer& data, const std::set<int> & stuff);
 
   /*!
   \brief Add stuff to the end of a char vector data
@@ -379,7 +378,7 @@ public:
 
   */
   template<unsigned i, unsigned j>
-  static void AddtoPack(PackBuffer & data, const vector<LINALG::Matrix<i,j> >& stuff)
+  static void AddtoPack(PackBuffer & data, const std::vector<LINALG::Matrix<i,j> >& stuff)
   {
     //add length of vector to be packed so that later the vector can be restored with correct length when unpacked
     int vectorlength = stuff.size();
@@ -429,42 +428,42 @@ public:
   \param stuff (out)       : basic data type (float int double char ...) to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, int& stuff)
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, int& stuff)
   {
     int size = sizeof(int);
     memcpy(&stuff,&data[position],size);
     position += size;
   }
 
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, unsigned& stuff)
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, unsigned& stuff)
   {
     int size = sizeof(unsigned);
     memcpy(&stuff,&data[position],size);
     position += size;
   }
 
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, double& stuff)
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, double& stuff)
   {
     int size = sizeof(double);
     memcpy(&stuff,&data[position],size);
     position += size;
   }
 
-  static int ExtractInt(std::vector<char>::size_type& position, const vector<char>& data)
+  static int ExtractInt(std::vector<char>::size_type& position, const std::vector<char>& data)
   {
     int i;
     ExtractfromPack( position, data, i );
     return i;
   }
 
-  static unsigned ExtractUnsigned(std::vector<char>::size_type& position, const vector<char>& data)
+  static unsigned ExtractUnsigned(std::vector<char>::size_type& position, const std::vector<char>& data)
   {
     unsigned i;
     ExtractfromPack( position, data, i );
     return i;
   }
 
-  static double ExtractDouble(std::vector<char>::size_type& position, const vector<char>& data)
+  static double ExtractDouble(std::vector<char>::size_type& position, const std::vector<char>& data)
   {
     double f;
     ExtractfromPack( position, data, f );
@@ -481,7 +480,7 @@ public:
   \param stuff (out)       : vector<int> to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, vector<int>& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<int>& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -493,7 +492,7 @@ public:
   \param stuff (out)       : vector<double> to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, vector<double>& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<double>& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -505,7 +504,7 @@ public:
   \param stuff (out)       : vector<char> to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, vector<char>& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<char>& stuff);
 
   /*!
   \brief Extract stuff from a map
@@ -517,7 +516,7 @@ public:
   \param stuff (out)       : map<int,int> to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, map<int,int>& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,int>& stuff);
 
   /*!
   \brief Extract stuff from a map
@@ -529,7 +528,7 @@ public:
   \param stuff (out)       : map<int,double> to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, map<int,double>& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,double>& stuff);
 
   /*!
   \brief Extract stuff from a map
@@ -541,7 +540,7 @@ public:
   \param stuff (out)       : map<int,double> to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, map<std::string,int>& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<std::string,int>& stuff);
 
   /*!
   \brief Extract stuff from a set
@@ -553,7 +552,7 @@ public:
   \param stuff (out)       : set<int> to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, set<int>& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::set<int>& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -565,7 +564,7 @@ public:
   \param stuff (out)       : Epetra_SerialDenseMatrix to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, Epetra_SerialDenseMatrix& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, Epetra_SerialDenseMatrix& stuff);
 
 
   /*!
@@ -578,7 +577,7 @@ public:
   \param stuff (out)       : Epetra_SerialDenseVector to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, Epetra_SerialDenseVector& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, Epetra_SerialDenseVector& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -600,10 +599,10 @@ public:
   \param stuff (out)       : LINALG::SerialDenseMatrix to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, LINALG::SerialDenseMatrix& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, LINALG::SerialDenseMatrix& stuff);
 
   template <unsigned int i, unsigned int j>
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, LINALG::Matrix<i,j>& stuff)
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, LINALG::Matrix<i,j>& stuff)
   {
     int m = 0;
     ExtractfromPack(position,data,m);
@@ -627,7 +626,7 @@ public:
 
   */
   template <unsigned int i, unsigned int j>
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, vector<LINALG::Matrix<i,j> > & stuff)
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<LINALG::Matrix<i,j> > & stuff)
   {
     //get length of vector to be extracted and allocate according amount of memory for all extracted data
     int vectorlength;
@@ -657,7 +656,7 @@ public:
   \param stuff (out)       : string to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, string& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, string& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position
@@ -668,7 +667,7 @@ public:
   \param stuff (out)       : array of total length stuffsize (in byte)
   \param stuffsize (in)    : length of stuff in byte
   */
-  template<typename kind> static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, kind* stuff, const int stuffsize)
+  template<typename kind> static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, kind* stuff, const int stuffsize)
   {
     memcpy(stuff,&data[position],stuffsize);
     position += stuffsize;

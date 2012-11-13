@@ -91,7 +91,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   // M could be a FixedSize<3,3> or a FixedSize<4,3>, for tet4.
   /// put a matrix to storage
@@ -122,7 +122,7 @@ public:
   inline Epetra_SerialDenseMatrix& JHistory() const { return *invJhist_; }
 
   /// get history of determinant of J in reference configuration
-  inline vector<double>& DetJHistory() { return detJ_; }
+  inline std::vector<double>& DetJHistory() { return detJ_; }
 
   /// access the init flag
   inline bool& IsInit() { return isinit_; }
@@ -130,9 +130,9 @@ public:
   /// id problem for hex8 element
   void soh8_nlnstiffmass(
       DRT::ELEMENTS::So_hex8*   ele,            ///< this element
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residuum
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residuum
       LINALG::Matrix<24,24>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<24,24>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<24,1>* force,          ///< element internal force vector
@@ -144,15 +144,15 @@ public:
 
   /// store material config for hex8 element
   void soh8_StoreMaterialConfiguration(DRT::ELEMENTS::So_hex8* ele,
-                                       const vector<double>& disp);
+                                       const std::vector<double>& disp);
 
 
   /// id problem for wedge6 element
 void sow6_nlnstiffmass(
       DRT::ELEMENTS::So_weg6*   ele,            ///< this element
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residuum
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residuum
       LINALG::Matrix<18,18>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<18,18>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<18,1>* force,          ///< element internal force vector
@@ -164,16 +164,16 @@ void sow6_nlnstiffmass(
 
   /// store material config for wedge6 element
   void sow6_StoreMaterialConfiguration(DRT::ELEMENTS::So_weg6* ele,
-                                       const vector<double>& disp);
+                                       const std::vector<double>& disp);
 
 
   /// id problem for tet4 element
 void so_tet4_nlnstiffmass(
-      Teuchos::ParameterList&           params,
+      Teuchos::ParameterList&   params,
       DRT::ELEMENTS::So_tet4*   ele,            ///< this element
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residuum
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residuum
       LINALG::Matrix<12,12>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<12,12>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<12,1>* force,          ///< element internal force vector
@@ -184,7 +184,7 @@ void so_tet4_nlnstiffmass(
 
   /// store material config for wedge6 element
   void sot4_StoreMaterialConfiguration(DRT::ELEMENTS::So_tet4* ele,
-                                       const vector<double>& disp);
+                                       const std::vector<double>& disp);
 
 private:
 
@@ -193,7 +193,7 @@ private:
   bool                                    isinit_;
   Teuchos::RCP<Epetra_SerialDenseMatrix>  Fhist_;
   Teuchos::RCP<Epetra_SerialDenseMatrix>  invJhist_;
-  vector<double>                          detJ_;
+  std::vector<double>                     detJ_;
 
   /// get number of gaussian points considered
   inline int NGP() { return Fhist_->M(); }

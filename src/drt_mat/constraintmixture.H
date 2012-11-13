@@ -120,7 +120,7 @@ namespace MAT
 
     static ConstraintMixtureHistoryType & Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const vector<char> & data );
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   private:
 
@@ -141,7 +141,7 @@ namespace MAT
     //! @name Packing and Unpacking
     virtual int UniqueParObjectId() const { return ConstraintMixtureHistoryType::Instance().UniqueParObjectId(); }
     virtual void Pack(DRT::PackBuffer& data) const;
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
     //@}
 
     /// Setup
@@ -174,21 +174,21 @@ namespace MAT
     /// number of gausspoints
     int numgp_;
     /// stretch of first collagen fiber family
-    Teuchos::RCP<vector<double> > collagenstretch1_;
+    Teuchos::RCP<std::vector<double> > collagenstretch1_;
     /// stretch of second collagen fiber family
-    Teuchos::RCP<vector<double> > collagenstretch2_;
+    Teuchos::RCP<std::vector<double> > collagenstretch2_;
     /// stretch of third collagen fiber family
-    Teuchos::RCP<vector<double> > collagenstretch3_;
+    Teuchos::RCP<std::vector<double> > collagenstretch3_;
     /// stretch of fourth collagen fiber family
-    Teuchos::RCP<vector<double> > collagenstretch4_;
+    Teuchos::RCP<std::vector<double> > collagenstretch4_;
     /// mass production rate of first fiber family
-    Teuchos::RCP<vector<double> > massprod1_;
+    Teuchos::RCP<std::vector<double> > massprod1_;
     /// mass production rate of second fiber family
-    Teuchos::RCP<vector<double> > massprod2_;
+    Teuchos::RCP<std::vector<double> > massprod2_;
     /// mass production rate of third fiber family
-    Teuchos::RCP<vector<double> > massprod3_;
+    Teuchos::RCP<std::vector<double> > massprod3_;
     /// mass production rate of fourth fiber family
-    Teuchos::RCP<vector<double> > massprod4_;
+    Teuchos::RCP<std::vector<double> > massprod4_;
   };
 
   class ConstraintMixtureType : public DRT::ParObjectType
@@ -199,7 +199,7 @@ namespace MAT
 
     static ConstraintMixtureType & Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const vector<char> & data );
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   private:
 
@@ -254,7 +254,7 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -305,9 +305,9 @@ namespace MAT
     /// Return actual mass density in reference configuration
     LINALG::Matrix<3,1> GetMassDensityCollagen(int gp) const {return visrefmassdens_->at(gp);}
     /// Return circumferential fiber direction
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta1() const {return a1_;}
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > Geta1() const {return a1_;}
     /// Return axial fiber direction
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta2() const {return a2_;}
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > Geta2() const {return a2_;}
 
     /// evaluate fiber directions from locsys, pull back
     void EvaluateFiberVecs
@@ -319,26 +319,26 @@ namespace MAT
     MAT::PAR::ConstraintMixture* params_;
 
     /// temporary for visualization
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > vismassstress_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > vismassstress_;
     /// actual mass density in reference configuration
-    Teuchos::RCP<vector<double> > refmassdens_;
+    Teuchos::RCP<std::vector<double> > refmassdens_;
     /// actual mass density in reference configuration for collagen fibers
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > visrefmassdens_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > visrefmassdens_;
     /// basal rate of mass production
     double massprodbasal_;
 
     /// first fiber vector per gp (reference), circumferential
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a1_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > a1_;
     /// second fiber vector per gp (reference), axial
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a2_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > a2_;
     /// third fiber vector per gp (reference), diagonal
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a3_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > a3_;
     /// fourth fiber vector per gp (reference), diagonal
-    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a4_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > a4_;
     /// indicates if material is initialized
     bool isinit_;
 
-    Teuchos::RCP<vector<ConstraintMixtureHistory> > history_;
+    Teuchos::RCP<std::vector<ConstraintMixtureHistory> > history_;
 
     /// compute stress and cmat
     void EvaluateStress

@@ -70,7 +70,7 @@ public:
 
   static ViscoAnisotropicType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -125,7 +125,7 @@ private:
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -146,7 +146,7 @@ private:
      void Setup
      (
        const int numgp,  ///< number of Gauss points
-       const vector<double> fibervec  ///< direction fibers should be oriented in
+       const std::vector<double> fibervec  ///< direction fibers should be oriented in
      );
 
     /// Update internal stress variables
@@ -188,10 +188,10 @@ private:
       { return isinit_&&(histstresscurr_!=Teuchos::null);}
 
     /// return a1s
-    RCP<vector<vector<double> > > Geta1() const {return ca1_;}
+    RCP<std::vector<std::vector<double> > > Geta1() const {return ca1_;}
 
     /// return a2s
-    RCP<vector<vector<double> > > Geta2() const {return ca2_;}
+    RCP<std::vector<std::vector<double> > > Geta2() const {return ca2_;}
 
 
     /// Return quick accessible material parameter data
@@ -203,16 +203,16 @@ private:
     MAT::PAR::ViscoAnisotropic* params_;
 
     // internal variables for fibers
-    RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp (reference)
-    RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp (reference)
-    RCP<vector<vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
-    RCP<vector<vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
+    RCP<std::vector<std::vector<double> > > a1_; ///< first fiber vector per gp (reference)
+    RCP<std::vector<std::vector<double> > > a2_; ///< second fiber vector per gp (reference)
+    RCP<std::vector<std::vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
+    RCP<std::vector<std::vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
 
     // visco history stresses for every gausspoint and every stress type
-    RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
-    RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
-    RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
-    RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
+    RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
+    RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
+    RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
+    RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if material is initialized
 

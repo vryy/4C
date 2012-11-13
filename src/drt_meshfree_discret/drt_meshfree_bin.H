@@ -174,7 +174,7 @@ public:
    *
    *///                                                  (public) ghamm 11/12
   /*------------------------------------------------------------------------*/
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   // return meshfree bin type instance
   virtual DRT::ElementType & ElementType() const { return MeshfreeBinType::Instance(); }

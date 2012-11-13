@@ -78,7 +78,7 @@ public:
 
   static AAAraghavanvorp_damageType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -134,7 +134,7 @@ private:
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -202,11 +202,11 @@ private:
     /// my material parameters
     MAT::PAR::AAAraghavanvorp_damage* params_;
    // damage history parameter g
-   Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histgcurr_; ///< current damage parameter
-   Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histglast_; ///< damage of last converged state
+   Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histgcurr_; ///< current damage parameter
+   Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histglast_; ///< damage of last converged state
 
-   Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeqstrmaxcurr_; ///< current damage parameter
-   Teuchos::RCP<vector<LINALG::Matrix<1,1> > > histeqstrmaxlast_; ///< damage of last converged state
+   Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histeqstrmaxcurr_; ///< current damage parameter
+   Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histeqstrmaxlast_; ///< damage of last converged state
    Teuchos::RCP<double > elstrength_; ///< strength of the element
 
    bool isinit_;  ///< indicates if material is initialized by calling the #Initialized routine

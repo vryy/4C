@@ -41,7 +41,7 @@ public:
 
   static Bele3Type & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
                                              const string eledistype,
@@ -111,7 +111,7 @@ public:
   virtual vector<RCP<DRT::Element> > Surfaces();
   virtual int UniqueParObjectId() const { return Bele3Type::Instance().UniqueParObjectId(); }
   virtual void Pack(DRT::PackBuffer& data) const;
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /*!
   \brief Destructor
@@ -267,7 +267,7 @@ public:
   virtual DiscretizationType Shape() const;
   virtual int UniqueParObjectId() const { return Bele3LineType::Instance().UniqueParObjectId(); }
   virtual void Pack(DRT::PackBuffer& data) const;
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /*!
   \brief Destructor

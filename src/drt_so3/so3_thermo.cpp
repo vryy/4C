@@ -194,6 +194,7 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
     dserror("Reading of SO3_THERMO element failed! KINEM unknown");
 
   return true;
+
 }  // ReadElement()
 
 

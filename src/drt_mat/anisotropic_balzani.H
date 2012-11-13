@@ -72,7 +72,7 @@ public:
 
   static AnisotropicBalzaniType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -125,7 +125,7 @@ private:
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -156,8 +156,8 @@ private:
     void Setup(DRT::INPUT::LineDefinition* linedef);
 
     /// return fiber directions
-    vector<double> ReturnGlobalFiberDirection() {
-      vector<double> aglob(3);
+    std::vector<double> ReturnGlobalFiberDirection() {
+      std::vector<double> aglob(3);
       aglob[0] = params_->a1_[0];
       aglob[1] = params_->a1_[1];
       aglob[2] = params_->a1_[2];
@@ -171,10 +171,10 @@ private:
     };
 
     /// return a1
-    vector<double> Geta1() const {return a1_;}
+    std::vector<double> Geta1() const {return a1_;}
 
     /// return a2
-    vector<double> Geta2() const {return a2_;}
+    std::vector<double> Geta2() const {return a2_;}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -185,9 +185,9 @@ private:
     MAT::PAR::AnisotropicBalzani* params_;
 
     /// first fiber vector
-    vector<double> a1_;
+    std::vector<double> a1_;
     /// second fiber vector
-    vector<double> a2_;
+    std::vector<double> a2_;
   };
 }
 

@@ -65,7 +65,7 @@ public:
 
   static ViscoNeoHookeType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -120,7 +120,7 @@ private:
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -171,10 +171,10 @@ private:
     MAT::PAR::ViscoNeoHooke* params_;
 
     /// visco history stresses
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
-    Teuchos::RCP<vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if #Initialized routine has been called
 

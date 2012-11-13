@@ -100,7 +100,7 @@ namespace MAT
 
 	static MyocardType & Instance() { return instance_; };
 
-	virtual DRT::ParObject* Create( const vector<char> & data );
+	virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 	private:
 

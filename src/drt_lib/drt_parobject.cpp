@@ -82,7 +82,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const ParObject* obj)
  |      a vector<int> specialization                           (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::AddtoPack(PackBuffer& data, const vector<int>& stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::vector<int>& stuff)
 {
   int numele = stuff.size();
   AddtoPack(data,numele);
@@ -93,7 +93,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const vector<int>& stuff)
  |      a vector<double> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::AddtoPack(PackBuffer& data, const vector<double>& stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::vector<double>& stuff)
 {
   int numele = stuff.size();
   AddtoPack(data,numele);
@@ -104,7 +104,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const vector<double>& stuff)
  |        a vector<char> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::AddtoPack(PackBuffer& data, const vector<char>& stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::vector<char>& stuff)
 {
   int numele = stuff.size();
   AddtoPack(data,numele);
@@ -116,14 +116,14 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const vector<char>& stuff)
  |        a map <int,double> specialization                    (public) |
  |                                                           mgit 09/10 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::AddtoPack(PackBuffer& data, const map<int,double> & stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::map<int,double> & stuff)
 {
 
   int numentries = (int) stuff.size();
   AddtoPack(data,numentries);
 
   // iterator
-  map<int,double>::const_iterator colcurr;
+  std::map<int,double>::const_iterator colcurr;
 
   int i=0;
   for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
@@ -143,14 +143,14 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const map<int,double> & stuff)
  |        a map <int,int>    specialization                    (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::AddtoPack(PackBuffer& data, const map<int,int> & stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::map<int,int> & stuff)
 {
 
   int numentries = (int) stuff.size();
   AddtoPack(data,numentries);
 
   // iterator
-  map<int,int>::const_iterator colcurr;
+  std::map<int,int>::const_iterator colcurr;
 
   int i=0;
   for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
@@ -170,14 +170,14 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const map<int,int> & stuff)
  |        a map <string,int>    specialization                 (public) |
  |                                                       nagler 07/2012 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::AddtoPack(PackBuffer& data, const map<std::string,int> & stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::map<std::string,int> & stuff)
 {
 
   int numentries = (int) stuff.size();
   AddtoPack(data,numentries);
 
   // iterator
-  map<std::string,int>::const_iterator colcurr;
+  std::map<std::string,int>::const_iterator colcurr;
 
   int i=0;
   for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
@@ -197,14 +197,14 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const map<std::string,int> & st
  |        a set<int> specialization                            (public) |
  |                                                           mgit 09/10 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::AddtoPack(PackBuffer& data, const set<int> & stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::set<int> & stuff)
 {
 
   int numentries = (int) stuff.size();
   AddtoPack(data,numentries);
 
   // iterator
-  set<int>::const_iterator colcurr;
+  std::set<int>::const_iterator colcurr;
 
   int i=0;
   for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
@@ -274,7 +274,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const string& stuff)
  | a int vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<int>& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<int>& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);
@@ -287,7 +287,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a double vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<double>& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<double>& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);
@@ -300,7 +300,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a char vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<char>& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::vector<char>& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);
@@ -314,7 +314,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a map specialization                                        (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, map<int,int>& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,int>& stuff)
 {
 
   int numentries = 0;
@@ -330,7 +330,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
     ExtractfromPack(position,data,value);
 
     //add to map
-    stuff.insert (pair<int,int>(dof,value));
+    stuff.insert (std::pair<int,int>(dof,value));
 
   }
 
@@ -341,7 +341,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a map specialization                                        (public) |
  |                                                           mgit 09/10 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, map<int,double>& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,double>& stuff)
 {
 
   int numentries = 0;
@@ -357,7 +357,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
     ExtractfromPack(position,data,value);
 
     //add to map
-    stuff.insert (pair<int,double>(dof,value));
+    stuff.insert (std::pair<int,double>(dof,value));
 
   }
 
@@ -368,7 +368,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a map specialization                                        (public) |
  |                                                         nagler 07/12 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, map<std::string,int>& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<std::string,int>& stuff)
 {
 
   int numentries = 0;
@@ -384,7 +384,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
     ExtractfromPack(position,data,values);
 
     //add to map
-    stuff.insert(pair<std::string,int>(keys,values));
+    stuff.insert(std::pair<std::string,int>(keys,values));
 
   }
 
@@ -395,7 +395,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a set specialization                                        (public) |
  |                                                           mgit 09/10 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, set<int>& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::set<int>& stuff)
 {
 
   int numentries = 0;
@@ -419,7 +419,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a Epetra_SerialDenseMatrix specialization                   (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data,
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data,
                                      Epetra_SerialDenseMatrix& stuff)
 {
   int m = 0;
@@ -436,7 +436,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a Epetra_SerialDenseVector specialization                   (public) |
  |                                                     TK & MAF  05/08  |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data,
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data,
                                      Epetra_SerialDenseVector& stuff)
 {
   int m = 0;
@@ -452,7 +452,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a LINALG::SerialDenseMatrix specialization                  (public) |
  |                                                          henke 12/09 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data,
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data,
                                      LINALG::SerialDenseMatrix& stuff)
 {
   int m = 0;
@@ -470,7 +470,7 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, string& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, string& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);

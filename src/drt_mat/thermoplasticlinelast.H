@@ -101,7 +101,7 @@ public:
 
   static ThermoPlasticLinElastType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -151,7 +151,7 @@ private:
     //!  parobject id defined at the top of this file and delivered by
     //!  UniqueParObjectId().
     virtual void Unpack(
-      const vector<char>& data  //!< (i) : vector storing all data to be unpacked into this instance.
+      const std::vector<char>& data  //!< (i) : vector storing all data to be unpacked into this instance.
       );
 
     //@}
@@ -353,17 +353,17 @@ private:
 
     /// plastic history vector
     // old plastic strain at t_n
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current plastic strain at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     // old accumulated plastic strain at t_n
-    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current accumulated plastic strain at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     // old back stress at t_n
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\beta}_{n}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\beta}_{n}\f$
     // current back stress at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
 
     /// @name specific methods for the combination TSI and plastic material
     //@{
@@ -372,13 +372,13 @@ private:
     LINALG::Matrix<NUM_STRESS_3D,1> stresstemp_;
 
     //! mechanical plastic power at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > plasticpower_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > plasticpower_;
     //! temperature dependent plastic power at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > plastictemppower_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > plastictemppower_;
     //! save current strain rates
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplincr_;
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplrate_;
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainelrate_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplincr_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplrate_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainelrate_;
     //! save current relative stress eta
     LINALG::Matrix<NUM_STRESS_3D,1> eta_;
 

@@ -44,7 +44,7 @@ public:
 
   static ControlPointType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -144,7 +144,7 @@ public:
   \param data (in): a char vector to unpack the data from
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   //@}
 

@@ -132,7 +132,7 @@ DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector & old)
     (knot_values_[np]).resize(dim_);
     for(int rr=0;rr<dim_;++rr)
     {
-      ((knot_values_[np])[rr]) = Teuchos::rcp(new vector<double>);
+      ((knot_values_[np])[rr]) = Teuchos::rcp(new std::vector<double>);
       *((knot_values_[np])[rr])= *((old.knot_values_[np])[rr]);
     }
   }
@@ -147,7 +147,7 @@ DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector & old)
 void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
   const int      gid        ,
   int         &  npatch     ,
-  vector<int> &  loc_cart_id)
+  std::vector<int> &  loc_cart_id)
 {
 
   if((int)loc_cart_id.size()!= dim_)
@@ -208,8 +208,8 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
  | get element knot vectors to a given element id   (public) gammi 05/08|
  *----------------------------------------------------------------------*/
 bool DRT::NURBS::Knotvector::GetEleKnots(
-  vector<Epetra_SerialDenseVector> & eleknots,
-  int                                gid
+  std::vector<Epetra_SerialDenseVector> & eleknots,
+  int                                     gid
   )
 {
   //------------------------------------------------
@@ -238,7 +238,7 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
   eleknots.resize(dim_);
 
   // get base indices and patch number from element gid
-  vector<int> cartids(dim_);
+  std::vector<int> cartids(dim_);
   int         npatch;
 
   ConvertEleGidToKnotIds(gid,npatch,cartids);
@@ -570,7 +570,7 @@ void DRT::NURBS::Knotvector::SetKnots(
   const int                     & degree          ,
   const int                     & numknots        ,
   const std::string             & knotvectortype  ,
-  Teuchos::RCP<vector<double> >   directions_knots)
+  Teuchos::RCP<std::vector<double> >   directions_knots)
 {
 
   // filled is false now since new add new knots
@@ -847,9 +847,9 @@ void DRT::NURBS::Knotvector::Pack(DRT::PackBuffer& data) const
  |  Unpack Knotvectors data                                    (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
+void DRT::NURBS::Knotvector::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
 
   filled_=false;
 
@@ -918,7 +918,7 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
     {
       (knot_values_[np])[rr]
 	=
-	Teuchos::rcp(new vector<double>((n_x_m_x_l_[np])[rr]));
+	Teuchos::rcp(new  std::vector<double>((n_x_m_x_l_[np])[rr]));
 
       ExtractfromPack(position,data,(*((knot_values_[np])[rr])));
     }
@@ -932,14 +932,14 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
  |  Return number of zero sized elements in knotspan of this patch      |
  |  (public)                                                gammi 05/08 |
  *----------------------------------------------------------------------*/
-vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
+std::vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
 {
   if(!filled_)
   {
     dserror("can't access data. knotvector not completed\n");
   }
 
-  vector<int> num_zero_sized(dim_);
+  std::vector<int> num_zero_sized(dim_);
 
   switch(dim_)
   {
@@ -1032,14 +1032,14 @@ vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
 int DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid(
   const int zero_ele_gid)
 {
-  vector<int> zero_ele_cart_id(dim_);
-  vector<int> nonzero_ele_cart_id(dim_);
+  std::vector<int> zero_ele_cart_id(dim_);
+  std::vector<int> nonzero_ele_cart_id(dim_);
 
   int npatch=-1;
 
   ConvertEleGidToKnotIds(zero_ele_gid,npatch,zero_ele_cart_id);
 
-  vector<int> count(dim_,-1);
+  std::vector<int> count(dim_,-1);
 
   for(int dir=0;dir<dim_;++dir)
   {
@@ -1070,7 +1070,7 @@ int DRT::NURBS::Knotvector::Return_next_nonzero_ele_gid(
  *----------------------------------------------------------------------*/
 int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
   const int         &  npatch     ,
-  const vector<int> &  loc_cart_id)
+  const std::vector<int> &  loc_cart_id)
 {
   if(!filled_)
   {

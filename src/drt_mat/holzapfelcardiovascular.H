@@ -76,7 +76,7 @@ public:
 
   static HolzapfelCardioType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -131,7 +131,7 @@ private:
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -171,10 +171,10 @@ private:
     double ShearMod() const {return params_->mue_;};
 
     /// return a1s
-    Teuchos::RCP<vector<vector<double> > > Geta1() const {return a1_;};
+    Teuchos::RCP<std::vector<std::vector<double> > > Geta1() const {return a1_;};
 
     /// return a2s
-    Teuchos::RCP<vector<vector<double> > > Geta2() const {return a2_;};
+    Teuchos::RCP<std::vector<std::vector<double> > > Geta2() const {return a2_;};
 
     /// evaluate fiber directions from locsys and alignment angle, pull back
     void EvaluateFiberVecs
@@ -189,10 +189,10 @@ private:
     MAT::PAR::HolzapfelCardio* params_;
 
     // internal variables for fibers
-    Teuchos::RCP<vector<vector<double> > > a1_; ///< first fiber vector per gp (reference)
-    Teuchos::RCP<vector<vector<double> > > a2_; ///< second fiber vector per gp (reference)
-    Teuchos::RCP<vector<vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
-    Teuchos::RCP<vector<vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
+    Teuchos::RCP<std::vector<std::vector<double> > > a1_; ///< first fiber vector per gp (reference)
+    Teuchos::RCP<std::vector<std::vector<double> > > a2_; ///< second fiber vector per gp (reference)
+    Teuchos::RCP<std::vector<std::vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
+    Teuchos::RCP<std::vector<std::vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
 
     bool isinit_;  ///< indicates if material is initialized
 

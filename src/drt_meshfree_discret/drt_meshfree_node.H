@@ -54,7 +54,7 @@ public:
   static MeshfreeNodeType & Instance() { return instance_; };
 
   //!< create parallel object of this parallel object type
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 

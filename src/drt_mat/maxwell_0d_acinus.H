@@ -65,7 +65,7 @@ namespace MAT
     
     static Maxwell_0d_acinusType & Instance() { return instance_; };
     
-    virtual DRT::ParObject* Create( const vector<char> & data );
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
     
   private:
     
@@ -120,7 +120,7 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
     
     //@}
     

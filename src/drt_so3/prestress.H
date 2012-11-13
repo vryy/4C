@@ -80,7 +80,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
 
   */
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   /// get history of deformation gradient
   inline Epetra_SerialDenseMatrix& FHistory() const { return *Fhist_; }

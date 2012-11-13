@@ -36,7 +36,7 @@ public:
 
   static PecType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -96,7 +96,7 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const;
 
   //! unpacks the potential element container from a vector<char>
-  virtual void Unpack(const vector<char>& data);
+  virtual void Unpack(const std::vector<char>& data);
 
   //! unpacks the potential element container from a vector<char>
   void Unpack(const vector<char>& data, vector<char>::size_type& position);

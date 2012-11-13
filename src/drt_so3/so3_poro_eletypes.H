@@ -34,7 +34,7 @@ public:
 
   static So_hex8PoroType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
                                              const string eledistype,
@@ -63,7 +63,7 @@ public:
 
   static So_tet4PoroType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
                                              const string eledistype,
@@ -93,7 +93,7 @@ public:
 
   static So_hex27PoroType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
                                              const string eledistype,

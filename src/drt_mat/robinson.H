@@ -68,7 +68,7 @@ namespace MAT
       const string* kind_;
       //! Young's modulus (temperature dependent --> polynomial expression)
       // 'E' [N/m^2]
-      const vector<double> youngs_;
+      const std::vector<double> youngs_;
       //! Possion's ratio \f$ \nu \f$ [-]
       const double poissonratio_;
       //! mass density \f$ \rho [kg/m^3] \f$
@@ -83,7 +83,7 @@ namespace MAT
       const double hrdn_expo_;
       //! Bingam-Prager shear stress threshold \f$ \kappa^2 \f$
       //! 'K^2=K^2(K_0)' [N^2 / m^4]
-      const vector<double> shrthrshld_;
+      const std::vector<double> shrthrshld_;
       //! recovery factor 'R_0' [N/(s . m^2)]
       const double rcvry_;
       //! activation energy 'Q_0' for Arya_NARloy-Z [1/s]
@@ -97,7 +97,7 @@ namespace MAT
       const double m_;
       //! '\f$\beta\f$' [-] (temperature independent)
       //! Arya_NarloyZ: \f$\beta = 0.533e-6 T^2 + 0.8\f$
-      const vector<double> beta_;
+      const std::vector<double> beta_;
       //! H
       //! Arya_NarloyZ: \f$H = 1.67e4 . (6.895)^(beta - 1) / (3 . K_0^2)\f$ [N^3/m^6]
       //! Arya_CrMoSteel: [N/m^2]
@@ -121,7 +121,7 @@ public:
 
   static RobinsonType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
@@ -170,7 +170,7 @@ private:
     //!  UniqueParObjectId().
     //!
     virtual void Unpack(
-      const vector<char>& data  //!< (i) vector storing all data to be unpacked into this instance
+      const std::vector<char>& data  //!< (i) vector storing all data to be unpacked into this instance
       );
 
     //@}
@@ -383,7 +383,7 @@ private:
 
     //! calculate temperature dependent material parameter and return value
     double GetMatParameterAtTempnp(
-      const vector<double>* paramvector,  //!< (i) given parameter is a vector
+      const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
       const double& tempnp  //!< (i) current temperature
       );
 
@@ -428,30 +428,30 @@ private:
     //!    Ev^{gp,T} = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^{gp} */
     //!< \f${\varepsilon}^p_{n}\f$
     // CCARAT: ARRAY vicstn;
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;
     //! current visco-plastic strain vector Ev^{gp} at t_{n+1} for every Gauss point gp
     //!    Ev^{gp,T} = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^{gp} */
     // CCARAT: ARRAY vicstnn;
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old back stress vector Alpha^{gp} at t_n for every Gauss point gp
     //!    Alpha^{gp,T} = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^{gp}
     // CCARAT: ARRAY bacsts;
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\alpha}_{n}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\alpha}_{n}\f$
     //! current back stress vector Alpha^{gp} at t_{n+1} for every Gauss point gp
     //!< \f${\alpha}_{n+1}\f$
     //!    Alpha^{gp,T} = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^{gp} */
     // CCARAT: ARRAY bacstsn;
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\alpha}_{n+1}\f$
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\alpha}_{n+1}\f$
     //! update vector for MIV iterative increments
     //!          [ kvv  kva ]^{-1}   [ res^v  ]
     //! kvarva = [          ]      . [        ]
     //!          [ kav  kaa ]      . [ res^al ]
-    Teuchos::RCP< vector< LINALG::Matrix<(2*NUM_STRESS_3D),1> > > kvarva_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<(2*NUM_STRESS_3D),1> > > kvarva_;
     //! update matrix for MIV iterative increments
     //!              [ kvv  kva ]^{-1}   [ kve ]
     //!    kvakvae = [          ]      . [     ]
     //!              [ kav  kaa ]      . [ kae ]
-    Teuchos::RCP< vector< LINALG::Matrix<(2*NUM_STRESS_3D),NUM_STRESS_3D> > > kvakvae_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<(2*NUM_STRESS_3D),NUM_STRESS_3D> > > kvakvae_;
 
   };  // class Robinson : public Material
 }  // namespace MAT

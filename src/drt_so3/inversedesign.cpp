@@ -95,9 +95,9 @@ void DRT::ELEMENTS::InvDesign::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 08/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::InvDesign::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::InvDesign::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
