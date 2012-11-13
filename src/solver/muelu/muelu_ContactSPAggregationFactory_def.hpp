@@ -160,14 +160,14 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
       Teuchos::ArrayView<const Scalar> lagr_vals;
       A01->getLocalRowView(Alrid, lagr_indices, lagr_vals);
 
-      for(size_t i = 0; i<lagr_indices.size(); i++) {
+      for(size_t i = 0; i<Teuchos::as<size_t>(lagr_indices.size()); i++) {
         GlobalOrdinal lagr_gcid = A01->getColMap()->getGlobalElement(lagr_indices[i]);
         GlobalOrdinal lagr_nodeId = AmalgamationFactory::DOFGid2NodeId(
             lagr_gcid, Teuchos::null /* parameter not used */,
             lagr_blockdim,
             lagr_offset);
 
-        TEUCHOS_TEST_FOR_EXCEPTION(local_lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId. error.");
+        TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<GlobalOrdinal>(local_lagrNodeId2dispNodeId.size())<lagr_nodeId-gMinLagrNodeId,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId. error.");
         if(lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] == -1)
           local_lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] = disp_nodeId;
         //else std::cout << "PROC: " << myRank << " lagr_nodeId " << lagr_nodeId << " is already connected to lagrange nodeId " <<  lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] << ". Ignore new dispNodeId: " << disp_nodeId << std::endl;

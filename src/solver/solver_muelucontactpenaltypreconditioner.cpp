@@ -149,7 +149,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   int nDofsPerNode = 1;         // coalesce and drop parameters
   //double agg_threshold = 0.0;   // aggregation parameters
   //double agg_damping = 4/3;
-  int    agg_smoothingsweeps = 1;
+  //int    agg_smoothingsweeps = 1;
   int    minPerAgg = 3;       // optimal for 2d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
@@ -160,7 +160,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   if(params.isParameter("PDE equations")) nDofsPerNode = params.get<int>("PDE equations");
   //if(params.isParameter("aggregation: threshold"))          agg_threshold       = params.get<double>("aggregation: threshold");
   //if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
-  if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
+  //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
   if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
   //if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
@@ -423,7 +423,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     if(ifpackType == "ILU") {
       ifpackList.set<int>("fact: level-of-fill", (int)smolevelsublist.get<double>("smoother: ifpack level-of-fill"));
       ifpackList.set("partitioner: overlap", smolevelsublist.get<int>("smoother: ifpack overlap"));
-      int overlap = smolevelsublist.get<int>("smoother: ifpack overlap");
+      //int overlap = smolevelsublist.get<int>("smoother: ifpack overlap");
       smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList,smolevelsublist.get<int>("smoother: ifpack overlap"),AFact);
       //smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, overlap, AFact) );
     }
