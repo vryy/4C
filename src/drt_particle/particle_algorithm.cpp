@@ -210,11 +210,17 @@ void PARTICLE::Algorithm::CreateBins()
     double locmin[3] = {XAABB_(0,0), XAABB_(1,0), XAABB_(2,0)};
     double locmax[3] = {XAABB_(0,1), XAABB_(1,1), XAABB_(2,1)};
     // global bounding box
-    double globmax[3] = {-GEO::LARGENUMBER, -GEO::LARGENUMBER, -GEO::LARGENUMBER};
-    double globmin[3] = {GEO::LARGENUMBER, GEO::LARGENUMBER, GEO::LARGENUMBER};
+    double globmin[3];
+    double globmax[3];
     // do the necessary communication
     Comm().MinAll(&locmin[0], &globmin[0], 3);
     Comm().MaxAll(&locmax[0], &globmax[0], 3);
+
+    for(int dim=0; dim<3; dim++)
+    {
+      XAABB_(dim,0) = globmin[dim];
+      XAABB_(dim,1) = globmax[dim];
+    }
   }
 
   // divide global bounding box into bins
@@ -450,7 +456,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> elerowmap)
   std::set<int> elements;
   for (int lid=0;lid<elerowmap->NumMyElements();++lid)
   {
-    int elegid = particledis_->gElement(elerowmap->GID(lid))->Id();
+    int elegid = elerowmap->GID(lid);
     int ijk[3] = {-1,-1,-1};
     ConvertGidToijk(elegid, ijk);
 
@@ -515,7 +521,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> elerowmap)
       int ijk[3] = {-1,-1,-1};
       for(int dim=0; dim < 3; dim++)
       {
-        ijk[dim] = (nodes[inode]->X()[dim]-XAABB_(dim,0)) / bin_size_[dim];
+        ijk[dim] = (int)std::floor((nodes[inode]->X()[dim]-XAABB_(dim,0)) / bin_size_[dim]);
       }
 
       int gidofbin = ConvertijkToGid(&ijk[0]);
