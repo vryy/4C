@@ -982,7 +982,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Output()
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     if(uprestart != 0 && FluidField().Step() % uprestart == 0)
-      StructureField()->DiscWriter()->WriteVector("lambda", lambdafull);
+      StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
 
   FluidField().    Output();
@@ -1005,7 +1005,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ReadRestart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdafull = rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
-    reader.ReadVector(lambdafull, "lambda");
+    reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
   }
 
