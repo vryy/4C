@@ -75,7 +75,7 @@ PENALTYPARAM                    20000
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
--------------------------------------------------------------CONTACT DYNAMIC
+-------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3

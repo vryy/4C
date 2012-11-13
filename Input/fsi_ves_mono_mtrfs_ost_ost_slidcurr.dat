@@ -39,7 +39,7 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
--------------------------------------------------------------CONTACT DYNAMIC
+-------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2

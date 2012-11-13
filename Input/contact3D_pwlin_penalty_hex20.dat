@@ -72,7 +72,7 @@ LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Penalty
 PENALTYPARAM                    20000
--------------------------------------------------------------CONTACT DYNAMIC
+-------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard
 COUPLING_AUXPLANE               Yes
 LAGMULT_QUAD                    pwlin_pwlin
