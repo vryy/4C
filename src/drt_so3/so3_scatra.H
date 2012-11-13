@@ -123,7 +123,10 @@ public:
     case DRT::Element::wedge6:
       return So_weg6ScatraType::Instance().UniqueParObjectId();
     default: dserror("unknown element type!");
+      break;
     }
+    // Intel compiler needs a return so
+    return -1;
   };
 
   /*!
@@ -182,9 +185,12 @@ public:
       return So_hex8ScatraType::Instance();
     case DRT::Element::wedge6:
       return So_weg6ScatraType::Instance();
-    default: dserror("unknown element type!");
-
+    default:
+      dserror("unknown element type!");
+      break;
     }
+    // Intel compiler needs a return so
+    return So_weg6ScatraType::Instance();
   };
 
 

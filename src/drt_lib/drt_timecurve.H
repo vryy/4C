@@ -100,14 +100,17 @@ namespace UTILS {
     /// add a new time slice at the and of this curve
     void AddSlice(Teuchos::RCP<TimeSlice> slice);
 
+    void Print(std::ostream& out) const;
+
+
   private:
 
     /// all our time slices ordered by time
     std::vector<Teuchos::RCP<TimeSlice> > slices_;
 
-    /// output operator
-    friend std::ostream& operator<<(std::ostream& out, const TimeCurve& curve);
+
   };
+
 
 
   /// class that manages all defined time curves
@@ -141,7 +144,9 @@ namespace UTILS {
 }  // end namespace UTILS
 }  // end namespace DRT
 
-void PrintTimeCurveDatHeader();
 
+void PrintTimeCurveDatHeader();
+/// output operator
+std::ostream& operator<<(std::ostream& out, const DRT::UTILS::TimeCurve& curve);
 
 #endif

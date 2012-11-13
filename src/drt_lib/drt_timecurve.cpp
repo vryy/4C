@@ -119,7 +119,7 @@ namespace UTILS {
     friend std::ostream& operator<<(std::ostream& out, const TimeSlice& slice);
   };
 
-
+  std::ostream& operator<<(std::ostream& out, const TimeSlice& slice);
   /*--------------------------------------------------------------------*/
   /// time slice defined by polygonal (with jumps!)
   class PolygonalTimeSlice : public TimeSlice
@@ -1316,6 +1316,17 @@ void DRT::UTILS::TimeCurve::AddSlice(Teuchos::RefCountPtr<TimeSlice> slice)
   slices_.push_back(slice);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::TimeCurve::Print(std::ostream& out) const
+{
+  out << "  Time Curve:\n";
+  for (unsigned i=0; i<slices_.size(); ++i)
+  {
+    out << *slices_[i];
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1393,13 +1404,9 @@ std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::TimeSl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::TimeCurve& curve)
+std::ostream& operator<<(std::ostream& out, const DRT::UTILS::TimeCurve& curve)
 {
-  out << "  Time Curve:\n";
-  for (unsigned i=0; i<curve.slices_.size(); ++i)
-  {
-    out << *curve.slices_[i];
-  }
+  curve.Print(out);
   return out;
 }
 

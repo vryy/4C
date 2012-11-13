@@ -110,7 +110,10 @@ namespace ELEMENTS
         return So_hex8ThermoType::Instance().UniqueParObjectId();
       default:
         dserror("unknown element type!");
+        break;
       }
+      // Intel compiler needs a return so
+      return -1;
     };
 
     //! Pack this class so it can be communicated
@@ -162,7 +165,10 @@ namespace ELEMENTS
 
       default:
         dserror("unknown element type!");
+        break;
       }
+      // Intel compiler needs a return so
+      return So_hex8ThermoType::Instance();
     };
 
     bool ReadElement(
