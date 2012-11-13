@@ -167,10 +167,24 @@ namespace MAT
         return porosity_;
       }
 
-      //void SetPorosityAtGP(std::vector<double> porosity_gp);
+      /// return porosity at gausspoints of surface element
+      std::vector<double> SurfPorosity(int surfnum) const
+      {
+        return (*surfporosity_)[surfnum];
+      }
 
       /// return porosity average
       double PorosityAv() const;
+
+
+      /// return porosity gradient average
+      void PorosityGradientAv( LINALG::Matrix<3,1>& porosityav) const;
+      void PorosityGradientAv( LINALG::Matrix<2,1>& porosityav) const;
+
+      LINALG::Matrix<1,3> JGradientAv() const;
+
+      /// return porosity time derivative average
+      double DPorosityDtAv() const;
 
       /// return bulk modulus
       double Bulkmodulus() const
@@ -190,9 +204,30 @@ namespace MAT
         return params_->initporosity_;
       }
 
-      /// compute current porosity (not used)
-      void ComputePorosity(double press, double J,int gp,
-          double& porosity,double& dphi_dp,double& dphi_dJ,double& dphi_dJdp,double& dphi_dJJ,double& dphi_dpp) const;
+      /// compute current porosity and save it
+      void ComputePorosity(  double press,       ///< (i) pressure at gauss point
+                             double J,           ///< (i) determinant of jacobian at gauss point
+                             int gp,             ///< (i) number of current gauss point
+                             double& porosity,   ///< (o) porosity at gauss point
+                             double& dphi_dp,    ///< (o) first derivative of porosity w.r.t. pressure at gauss point
+                             double& dphi_dJ,    ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+                             double& dphi_dJdp,  ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+                             double& dphi_dJJ,   ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
+                             double& dphi_dpp    ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+                             ) const;
+
+      /// compute current surface porosity and save it
+      void ComputeSurfPorosity( double press,       ///< (i) pressure at gauss point
+                                double J,           ///< (i) determinant of jacobian at gauss point
+                                const int surfnum,  ///< (i) number of surface
+                                int gp,             ///< (i) number of current gauss point
+                                double& porosity,   ///< (o) porosity at gauss point
+                                double& dphi_dp,    ///< (o) first derivative of porosity w.r.t. pressure at gauss point
+                                double& dphi_dJ,    ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+                                double& dphi_dJdp,  ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+                                double& dphi_dJJ,   ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
+                                double& dphi_dpp    ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+                                ) const;
 
       /// return copy of this material object
       virtual Teuchos::RCP<Material> Clone() const
@@ -228,11 +263,22 @@ namespace MAT
 
       void   SetGradPorosityAtGP(std::vector< LINALG::Matrix<3,1> > gradporosity_gp);
 
+      void   SetGradPorosityAtGP(std::vector< LINALG::Matrix<2,1> > gradporosity_gp);
+
+      void   SetGradJAtGP(std::vector< LINALG::Matrix<1,3> > gradporosity_gp);
+
+      void   SetGradJAtGP(std::vector< LINALG::Matrix<1,2> > gradporosity_gp){dserror("no implemented");};
+
       /// Return porosity gradient evaluated at some gauss point.  %urrecha 04/12
-      LINALG::Matrix<3,1> GetGradPorosityAtGP(int gp) const
+      void GetGradPorosityAtGP(LINALG::Matrix<3,1>& gradporosity, int gp) const;
+      void GetGradPorosityAtGP(LINALG::Matrix<2,1>& gradporosity, int gp) const;
+
+      /// Return porosity gradient evaluated at some gauss point.  %urrecha 04/12
+      LINALG::Matrix<1,3> GetGradJAtGP(int gp) const
       {
-        return gradporosity_->at(gp);
+        return gradJ_->at(gp);
       }
+
 
     private:
 
@@ -245,11 +291,16 @@ namespace MAT
       /// porosity at gauss points
       Teuchos::RCP<std::vector<double> > porosity_;
 
+      /// porosity at gauss points of surface element
+      Teuchos::RCP<std::map<int, std::vector< double > > > surfporosity_;
+
       /// porosity time derivative at gauss points
       Teuchos::RCP<std::vector<double> > dporodt_;
 
       /// porosity gradient at gauss points
       Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > gradporosity_;
+
+      Teuchos::RCP<std::vector<LINALG::Matrix<1,3> > > gradJ_;
 
   };
 

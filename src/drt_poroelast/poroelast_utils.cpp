@@ -52,6 +52,8 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::Con
 
   conditions_to_copy.insert(pair<std::string, std::string> ("NoPenetration",
       "NoPenetration"));
+  conditions_to_copy.insert(pair<std::string, std::string> ("PoroPartInt",
+      "PoroPartInt"));
   conditions_to_copy.insert(pair<std::string, std::string> ("PoroCoupling",
       "PoroCoupling"));
   conditions_to_copy.insert(pair<std::string, std::string> ("FSICoupling",

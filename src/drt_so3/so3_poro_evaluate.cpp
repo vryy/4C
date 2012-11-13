@@ -1540,6 +1540,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
 
   //write porosity gradient at GP into material (for scatra coupling only)
   structmat->SetGradPorosityAtGP(gradporosity_gp);
+  structmat->SetGradJAtGP(gradJ_gp);
 
   return;
 }  // nlnstiff_poroelast()

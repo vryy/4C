@@ -1006,7 +1006,6 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(
   );
 
   // evaluate the mechancial-fluid system matrix on the structural element
-  //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy );
   StructureField()->Discretization()->EvaluateCondition( sparams, structuralstrategy,"PoroCoupling" );
   StructureField()->Discretization()->ClearState();
 
@@ -1098,8 +1097,21 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
   );
 
   // evaluate the fluid-mechancial system matrix on the fluid element
-  //FluidField().Discretization()->Evaluate(fparams,fluidstrategy);
   FluidField().Discretization()->EvaluateCondition( fparams, fluidstrategy,"PoroCoupling" );
+
+  //evaluate coupling terms from partial integration of continuity equation
+  vector<DRT::Condition*> poroPartInt;
+  FluidField().Discretization()->GetCondition("PoroPartInt",poroPartInt);
+  if(poroPartInt.size())
+  {
+    // create the parameters for the discretization
+    Teuchos::ParameterList params;
+    // action for elements
+    params.set<int>("action", FLD::poro_boundary);
+
+    FluidField().Discretization()->EvaluateCondition( params, fluidstrategy,"PoroPartInt" );
+  }
+
   FluidField().Discretization()->ClearState();
 
   //apply normal flux condition on coupling part
@@ -1376,13 +1388,11 @@ void POROELAST::Monolithic::EvaluateCondition(Teuchos::RCP<LINALG::SparseOperato
                         StructureField()->Discretization()->DofRowMap()->NumGlobalElements(),
                         true, true));
 
-  ADAPTER::FluidPoro& fluidfield = dynamic_cast<ADAPTER::FluidPoro&>(FluidField());
-
   condIDs_ = rcp(new std::set<int>());
   condIDs_->clear();
 
   //evaluate condition on elements and assemble matrixes
-  fluidfield.EvaluateNoPenetrationCond( Cond_RHS,
+  FluidField().EvaluateNoPenetrationCond( Cond_RHS,
                                         ConstraintMatrix,
                                         StructVelConstraintMatrix,
                                         condIDs_,

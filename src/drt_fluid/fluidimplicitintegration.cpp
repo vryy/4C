@@ -651,6 +651,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   SetElementTurbulenceParameter();
   if (physicaltype_ == INPAR::FLUID::loma)
     SetElementLomaParameter();
+  if (physicaltype_ == INPAR::FLUID::poro)
+    SetElementPoroParameter();
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -3282,6 +3284,25 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     discret_->ClearState();
   }
   //---------------------------end of surface tension update
+
+  //---------------------------
+  if (physicaltype_ == INPAR::FLUID::poro)
+  {
+    std::string condname = "PoroPartInt";
+
+    ParameterList eleparams;
+
+    // set action for elements
+    eleparams.set<int>("action",FLD::poro_boundary);
+
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState("gridv", gridv_);
+    discret_->SetState("velnp",velnp_);
+    discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+    discret_->ClearState();
+  }
+  //---------------------------
 
   // finalize the system matrix
   sysmat_->Complete();
@@ -6109,6 +6130,22 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
   eleparams.sublist("LOMA") = params_->sublist("LOMA");
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
+// -------------------------------------------------------------------
+// set poro parameters                               vuong  11/2012
+// -------------------------------------------------------------------
+void FLD::FluidImplicitTimeInt::SetElementPoroParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set<int>("action",FLD::set_poro_parameter);
+
+  eleparams.set<bool>("conti partial integration",params_->get<bool>("conti partial integration"));
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);

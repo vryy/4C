@@ -1680,3 +1680,72 @@ DRT::Element::DiscretizationType DRT::UTILS::getShapeOfBoundaryElement(
   return DRT::Element::dis_none;
 }
 
+/*----------------------------------------------------------------------*
+ |  Returns the local coordinates of a point in               vuong 11/12|
+ |  coordinate system of the parent element calculated from              |
+ |  the coordinates in coordinate system of a boundary element           |
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::getLocalCoordinatesOfParentElement(
+    double&                                        p1,
+    double&                                        p2,
+    double&                                        p3,
+    double                                         e1,
+    double                                         e2,
+    const int                                      surfnumber,
+    const DRT::Element::DiscretizationType      parentshape
+    )
+{
+  if (parentshape == DRT::Element::hex8 or
+      parentshape == DRT::Element::hex27)
+  {
+    switch(surfnumber)
+    {
+    case 0:
+    {
+      p1 = e2;
+      p2 = e1;
+      p3 = -1;
+    }
+    break;
+    case 1:
+    {
+      p1 = e1;
+      p2 = -1.0;
+      p3 = e2;
+    }
+    break;
+    case 2:
+    {
+      p1 = 1.0;
+      p2 = e1;
+      p3 = e2;
+    }
+    break;
+    case 3:
+    {
+      p1 = -1.0*e1;
+      p2 = 1.0;
+      p3 = e2;
+    }
+    break;
+    case 4:
+    {
+      p1 = -1.0;
+      p2 = e2;
+      p3 = e1;
+    }
+    break;
+    case 5:
+    {
+      p1 = e1;
+      p2 = e2;
+      p3 = 1;
+    }
+    break;
+    }
+  }
+  else
+    dserror("discretization type %s not yet implemented", (DRT::DistypeToString(parentshape)).c_str());
+
+  return;
+}

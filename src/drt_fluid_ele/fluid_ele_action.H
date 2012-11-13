@@ -45,6 +45,7 @@ enum Action {
     set_time_parameter,
     set_turbulence_parameter,
     set_loma_parameter,
+    set_poro_parameter,
     calc_adjoint_systemmat_and_residual,
 //    calc_adjoint_neumann,
     set_general_adjoint_parameter,
@@ -73,6 +74,7 @@ enum BoundaryAction {
     traction_velocity_component,
     traction_Uv_integral_component,
     no_penetration,
+    poro_boundary,
     ba_calc_adjoint_neumann
 }; // enum BoundaryAction
 

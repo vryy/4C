@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_mat/structporo.H"
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;
@@ -1354,6 +1355,167 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   }
   return 0;
   }
+
+/*----------------------------------------------------------------------*
+ * Evaluate method for StructuralSurface-Elements               tk 10/07*
+ * ---------------------------------------------------------------------*/
+int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
+                                               DRT::Discretization&      discretization,
+                                               LocationArray&            la,
+                                               Epetra_SerialDenseMatrix& elematrix1,
+                                               Epetra_SerialDenseMatrix& elematrix2,
+                                               Epetra_SerialDenseVector& elevector1,
+                                               Epetra_SerialDenseVector& elevector2,
+                                               Epetra_SerialDenseVector& elevector3)
+{
+  if (la.Size()==1)
+  {
+    return Evaluate(
+      params,
+      discretization,
+      la[0].lm_, // location vector is build by the first column of la
+      elematrix1,
+      elematrix2,
+      elevector1,
+      elevector2,
+      elevector3
+      );
+  }
+
+  // start with "none"
+  DRT::ELEMENTS::StructuralSurface::ActionType act = StructuralSurface::none;
+
+  // get the required action
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action=="calc_struct_area_poro")        act = StructuralSurface::calc_struct_area_poro;
+  else
+  {
+    cout << action << endl;
+    dserror("Unknown type of action for StructuralSurface");
+  }
+
+  // what the element has to do
+  switch(act)
+  {
+  case calc_struct_area_poro:
+  {
+    // get the parent element
+    DRT::Element* parentele = ParentElement();
+    const int nenparent = parentele->NumNode();
+    // get element location vector and ownerships
+    vector<int> lmpar;
+    vector<int> lmowner;
+    vector<int> lmstride;
+    parentele->LocationVector(discretization,lmpar,lmowner,lmstride);
+
+    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+    const int ngp = intpoints.nquad;
+    Teuchos::RCP<Epetra_SerialDenseVector> poro = rcp(new Epetra_SerialDenseVector(ngp));
+    const int numdim = 3;
+    const int numnode = NumNode();
+    const int noddof = NumDofPerNode(*(Nodes()[0]));
+
+    // element geometry update
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==null) dserror("Cannot get state vector 'displacement'");
+    vector<double> mydisp(lmpar.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lmpar);
+
+    // update element geometry
+    Epetra_SerialDenseMatrix xrefe(numdim,nenparent); // material coord. of element
+    Epetra_SerialDenseMatrix xcurr(numdim,nenparent); // current  coord. of element
+    //Epetra_SerialDenseMatrix xdisp(nenparent,numdim);
+
+    DRT::Node** nodes = parentele->Nodes();
+    //DRT::Node** nodes = Nodes();
+    for (int i=0; i<nenparent; ++i)
+    {
+      const double* x = nodes[i]->X();
+      xrefe(0,i) = x[0];
+      xrefe(1,i) = x[1];
+      xrefe(2,i) = x[2];
+
+      xcurr(0,i) = xrefe(0,i) + mydisp[i*noddof+0];
+      xcurr(1,i) = xrefe(1,i) + mydisp[i*noddof+1];
+      xcurr(2,i) = xrefe(2,i) + mydisp[i*noddof+2];
+    }
+
+    const int numdofpernode = 4;
+
+    Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState(1,"fluidvel");
+    if (velnp==null) dserror("Cannot get state vector 'fluidvel'");
+    // extract local values of the global vectors
+    std::vector<double> myvelpres(la[1].lm_.size());
+    DRT::UTILS::ExtractMyValues(*velnp,myvelpres,la[1].lm_);
+
+    Epetra_SerialDenseVector mypres(numnode);
+    for (int inode=0; inode<numnode; ++inode) // number of nodes
+    {
+      (mypres)(inode,0) = myvelpres[numdim+(inode*numdofpernode)];
+    }
+
+    for (int gp=0; gp<ngp; ++gp)
+    {
+      double e0 = 0.;
+      double e1 = 0.;
+      double e2 = 0.;
+
+      DRT::UTILS::getLocalCoordinatesOfParentElement(e0,e1,e2,
+                                         intpoints.qxg[gp][0],intpoints.qxg[gp][1],LSurfNumber(),parentele->Shape());
+
+      // get shape functions and derivatives in the plane of the element
+      LINALG::SerialDenseVector  funct(nenparent);
+      LINALG::SerialDenseMatrix  deriv(3,nenparent);
+      DRT::UTILS::shape_function_3D(funct,e0,e1,e2,parentele->Shape());
+      DRT::UTILS::shape_function_3D_deriv1(deriv,e0,e1,e2,parentele->Shape());
+
+      LINALG::SerialDenseVector  funct2D(numnode);
+      DRT::UTILS::shape_function_2D(funct2D,intpoints.qxg[gp][0],intpoints.qxg[gp][1],Shape());
+
+      // pressure at integration point
+      double press = funct2D.Dot(mypres);
+
+      double dphi_dp=0.0;
+      double dphi_dJ=0.0;
+      double dphi_dJdp=0.0;
+      double dphi_dJJ=0.0;
+      double dphi_dpp=0.0;
+      double porosity=0.0;
+
+      // get Jacobian matrix and determinant w.r.t. spatial configuration
+      //! transposed jacobian "dx/ds"
+      LINALG::SerialDenseMatrix xjm(numdim,numdim);
+      xjm.Multiply('N','T',1.0,deriv,xcurr,0.0);
+      LINALG::SerialDenseMatrix Jmat(numdim,numdim);
+      Jmat.Multiply('N','T',1.0,deriv,xrefe,0.0);
+
+      double det = 0.0;
+      double detJ = 0.0;
+
+      if (numdim == 3)
+      {
+        det = xjm(0,0)*(xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2)) + xjm(0,1)*(- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2)) + xjm(0,2)*(xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1));
+        detJ = Jmat(0,0)*(Jmat(1,1)*Jmat(2,2) - Jmat(2,1)*Jmat(1,2)) + Jmat(0,1)*(- Jmat(1,0)*Jmat(2,2) + Jmat(2,0)*Jmat(1,2)) + Jmat(0,2)*(Jmat(1,0)*Jmat(2,1) - Jmat(2,0)*Jmat(1,1));
+      }
+      else dserror("not implemented");
+
+      const double J = det/detJ;
+
+      //get structure material
+      MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((parentele->Material()).get());
+      if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+        dserror("invalid structure material for poroelasticity");
+      structmat->ComputeSurfPorosity(press, J,LSurfNumber(),gp,porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
+    }
+  }
+  break;
+  default:
+    dserror("Unimplemented type of action for StructuralSurface");
+    break;
+  }
+  return 0;
+}
 
 /*----------------------------------------------------------------------*
  * Compute Volume enclosed by surface.                          tk 10/07*

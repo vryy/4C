@@ -3090,6 +3090,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(porocoupling);
 
   /*--------------------------------------------------------------------*/
+  // condition for evaluation of boundary terms in porous media problems
+
+  Teuchos::RCP<ConditionDefinition> poropartint =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SUFACE PORO PARTIAL INTEGRATION",
+                                         "PoroPartInt",
+                                         "Poro Partial Integration",
+                                         DRT::Condition::PoroCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(poropartint);
+
+  /*--------------------------------------------------------------------*/
   return vc;
 
 }

@@ -301,6 +301,17 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
+  case FLD::poro_boundary:
+  {
+    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PoroBoundary(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+    break;
+  }
   case FLD::ba_calc_adjoint_neumann:
   {
     DRT::ELEMENTS::FluidAdjoint3BoundaryImplInterface::Impl(this)->EvaluateNeumann(

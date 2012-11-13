@@ -859,6 +859,21 @@ namespace UTILS
       const DRT::Element::DiscretizationType parentshape ///< shape of parent element
   );
 
+  /*!
+  \brief    Returns the local coordinates of a point in coordinate system of the parent element
+            calculated from the coordinates in coordinate system of a boundary element
+
+  */
+  void getLocalCoordinatesOfParentElement(
+    double&                                        p1,          ///< (o) first coordinate in COS of parent element
+    double&                                        p2,          ///< (o) second coordinate in COS of parent element
+    double&                                        p3,          ///< (o) third coordinate in COS of parent element
+    double                                         e1,          ///< (i) first coordinate in COS of boundary element
+    double                                         e2,          ///< (i) second coordinate in COS of boundary element
+    const int                                      surfnumber,  ///< (i) number of boundary element
+    const DRT::Element::DiscretizationType      parentshape     ///< (i) shape of parent element
+    );
+
 } // namespace UTILS
 } // namespace DRT
 

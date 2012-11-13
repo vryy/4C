@@ -2120,6 +2120,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Second order coupling at the interface.",
                                yesnotuple,yesnovalue,&poroelastdyn);
 
+  setStringToIntegralParameter<int>("CONTIPARTINT","No",
+                               "Partial integration of porosity gradient in continuity equation",
+                               yesnotuple,yesnovalue,&poroelastdyn);
+
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poroelastdyn);
 

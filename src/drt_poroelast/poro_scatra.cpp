@@ -29,6 +29,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_poro.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_RefCountPtr.hpp>

@@ -38,6 +38,8 @@
 // include this header for coupling stiffness terms
 #include "../drt_lib/drt_assemblestrategy.H"
 
+#include "../drt_lib/drt_utils.H"
+
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -72,18 +74,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,true));
-  fluid_ = fluid->FluidFieldrcp();
-
-  // velocities V_{n+1} at t_{n+1}
-  //veln_ = LINALG::CreateVector(*(StructureField()->DofRowMap()), true);
-  //veln_->PutScalar(0.0);
-
-  // displacements V_{n+1} at t_{n+1}
-  //dispn_ = LINALG::CreateVector(*(StructureField()->DofRowMap()), true);
-  //dispn_->PutScalar(0.0);
-
-  //fluidveln_ = LINALG::CreateVector(*(FluidField().DofRowMap()), true);
-  //fluidveln_->PutScalar(0.0);
+  fluid_ = rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidFieldrcp());
 
   // access the problem-specific parameter lists
   const Teuchos::ParameterList& sdyn
@@ -164,6 +155,14 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
       StructureField()->DofRowMap(0)));
 
   FluidField().Discretization()->GetCondition("NoPenetration", nopencond_);
+
+  //do some checks
+  {
+    std::vector<DRT::Condition*> porocoupl;
+    FluidField().Discretization()->GetCondition("PoroCoupling", porocoupl);
+    if ( porocoupl.size() == 0 )
+      dserror("no Poro Coupling Condition defined for porous media problem. Fix your input file!");
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -313,6 +312,8 @@ void POROELAST::PoroBase::SetStructSolution()
   // transfer the current structure velocity to the fluid field
   Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(veln);
   FluidField().ApplyMeshVelocity(structvel);
+
+  CalculateSurfPoro("PoroPartInt");
 }
 
 /*----------------------------------------------------------------------*/
@@ -389,4 +390,89 @@ bool POROELAST::PoroBase::BuildSubMaps()
   }
   else
     return false;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
+{
+  //-------------------------------
+  // create the parameters for the discretization
+  ParameterList p;
+  // action for elements
+  p.set("action", "calc_struct_area_poro");
+  // other parameters that might be needed by the elements
+  p.set("total time", Time());
+  p.set("delta time", Dt());
+
+  const int numdim = DRT::Problem::Instance()->NDim();
+
+  Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+
+  // set vector values needed by elements
+  structdis->ClearState();
+  // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  structdis->SetState(0,"displacement", StructureField()->Dispnp());
+
+  structdis->SetState(1,"fluidvel",FluidField().Velnp());
+
+  // velocities (always three velocity components per node)
+  // (get noderowmap of discretization for creating this multivector)
+  const Epetra_Map* noderowmap = structdis->NodeRowMap();
+  Teuchos::RCP<Epetra_MultiVector> convel = rcp(new Epetra_MultiVector(*noderowmap,numdim+1,true));
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<structdis->NumMyRowNodes();lnodeid++)
+  {
+    // get the processor local node
+    DRT::Node* lnode = structdis->lRowNode(lnodeid);
+
+    vector<int> nodedofs = fluiddis->Dof(0,lnode);
+    for(int index=0;index<numdim+1;++index)
+    {
+      // get global and local ID
+      const int gid = nodedofs[index];
+      // const int lid = dofrowmap->LID(gid);
+      const int lid = FluidField().Velnp()->Map().LID(gid);
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+
+      double convelocity = (*(FluidField().Velnp()))[lid];
+
+      // insert velocity value into node-based vector
+      int err = convel->ReplaceMyValue(lnodeid,index,convelocity);
+      if (err != 0) dserror("Error while inserting value into vector convel_!");
+    }
+  }
+
+ AddMultiVectorToParameterList(p,"convective velocity field",convel,fluiddis);
+
+  StructureField()->Discretization()->EvaluateCondition(p,null,null,null,null,null,condstring);
+  StructureField()->Discretization()->ClearState();
+}
+
+/*----------------------------------------------------------------------*
+ | export multivector to column map & add it to parameter list  vuong 11/12|
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroBase::AddMultiVectorToParameterList
+(Teuchos::ParameterList& p,
+ const std::string name,
+ Teuchos::RCP<Epetra_MultiVector> vec,
+ Teuchos::RCP<DRT::Discretization> discret
+)
+{
+  if (vec != Teuchos::null)
+  {
+    //provide data in node-based multi-vector for usage on element level
+    // -> export to column map is necessary for parallel evaluation
+    //SetState cannot be used since this multi-vector is nodebased and not dofbased!
+    const Epetra_Map* nodecolmap = discret->NodeColMap();
+    int numcol = vec->NumVectors();
+    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    LINALG::Export(*vec,*tmp);
+    p.set(name,tmp);
+  }
+  else
+    p.set(name,Teuchos::null);
+
+  return;
 }

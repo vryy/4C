@@ -954,7 +954,17 @@ private:
 
   */
   void SetElementLomaParameter();
-  
+
+  //! @name Set general parameter in class f3Parameter for porous media problems
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetElementPoroParameter();
+
   //! @name Special method for turbulent variable-density flow at low Mach number with multifractal subgrid-scale modeling
   /*!
 

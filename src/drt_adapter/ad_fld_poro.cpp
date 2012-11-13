@@ -74,10 +74,40 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
   else
     dserror("unknown coupling type for no penetration BC");
 
-  //ADAPTER::FluidFSI& fluidfield = dynamic_cast<ADAPTER::FluidFSI&>(fluid_);
   params.set("timescale",TimeScaling());
-  //std::set<int> condIDs;
+
   condIDs->clear();
+
+  /*
+  params.set<Teuchos::RCP< std::set<int> > >("mycondIDs",condIDs);
+
+  // build specific assemble strategy for the fluid-mechanical system matrix
+  // from the point of view of FluidField:
+  // fluiddofset = 0, structdofset = 1
+  DRT::AssembleStrategy couplstrategy(
+      0,              // fluiddofset for row
+      1,              // structdofset for column
+      StructVelConstraintMatrix,           // fluid-mechanical matrix
+      Teuchos::null,  // no other matrix or vectors
+      Teuchos::null ,
+      Teuchos::null,
+      Teuchos::null
+  );
+  DRT::AssembleStrategy fluidstrategy(
+      0,              // fluiddofset for row
+      0,              // fluiddofset for column
+      ConstraintMatrix,           // fluid-mechanical matrix
+      Teuchos::null,  // no other matrix or vectors
+      Teuchos::null ,
+      Teuchos::null,
+      Teuchos::null
+  );
+
+  // evaluate the fluid-mechancial system matrix on the fluid element
+  Discretization()->EvaluateCondition( params, couplstrategy,"NoPenetration" );
+  Discretization()->EvaluateCondition( params, fluidstrategy,"NoPenetration" );
+  Discretization()->ClearState();
+  */
 
   //---------------------------------------------------------------------
   // loop through conditions and evaluate them
@@ -156,6 +186,15 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     }
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidPoro::EvaluateContiBoundaryCond(
+                                              Teuchos::RCP<LINALG::SparseMatrix> FluidFluidMatrix,
+                                              Teuchos::RCP<LINALG::SparseMatrix> FluidStructMatrix)
+{
   return;
 }
 

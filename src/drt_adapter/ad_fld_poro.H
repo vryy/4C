@@ -56,6 +56,15 @@ namespace ADAPTER {
                            Teuchos::RCP<std::set<int> > condIDs,
                            int coupltype=0);
 
+    //! Evaluate no penetration constraint
+    /*!
+     \param FluidFluidMatrix          (o) fluid-fluid coupling matrix associated with boundary integral
+     \param FluidStructMatrix         (o) fluid-structure coupling matrix associated with boundary integral
+    */
+    void EvaluateContiBoundaryCond(
+                           Teuchos::RCP<LINALG::SparseMatrix> FluidFluidMatrix,
+                           Teuchos::RCP<LINALG::SparseMatrix> FluidStructMatrix);
+
     virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
   private:

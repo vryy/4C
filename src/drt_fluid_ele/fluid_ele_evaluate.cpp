@@ -85,6 +85,11 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
     Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
     fldpara->SetElementLomaParameter(p);
   }
+  else if (action == FLD::set_poro_parameter)
+  {
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    fldpara->SetElementPoroParameter(p);
+  }
   else if (action == FLD::set_general_adjoint_parameter)
   {
     Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldpara = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
@@ -890,6 +895,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::set_time_parameter:
     case FLD::set_turbulence_parameter:
     case FLD::set_loma_parameter:
+    case FLD::set_poro_parameter:
     case FLD::set_general_adjoint_parameter:
     case FLD::set_adjoint_time_parameter:
 //    case FLD::calc_adjoint_neumann: // this is done by the surface elements

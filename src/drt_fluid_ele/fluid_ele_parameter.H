@@ -56,6 +56,10 @@ public:
   void SetElementLomaParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
+  //! poro parameters are set
+  void SetElementPoroParameter(Teuchos::ParameterList& params    //> parameter list
+      );
+
   //! print parameter to screen
   void PrintFluidParameter();
 
@@ -180,6 +184,10 @@ public:
   //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
   bool MultiFracLomaConti(){return multifrac_loma_conti_;};
 
+  //! some loma specific parameters
+  //! partial integration of porosity gradient in continuity equation
+  bool PoroContiPartInt(){return poro_conti_partint_;};
+
 private:
 
   //! Flag SetGeneralParameter was called
@@ -300,6 +308,9 @@ private:
   //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
   bool multifrac_loma_conti_;
 
+  //! some poro specific parameters
+  //! partial integration of porosity gradient in continuity equation
+  bool poro_conti_partint_;
 
   // private constructor
   FluidEleParameter();

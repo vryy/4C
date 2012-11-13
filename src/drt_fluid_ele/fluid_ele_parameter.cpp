@@ -104,7 +104,8 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   conti_supg_(INPAR::FLUID::convective_stab_none),
   conti_cross_(INPAR::FLUID::cross_stress_stab_none),
   conti_reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
-  multifrac_loma_conti_(false)
+  multifrac_loma_conti_(false),
+  poro_conti_partint_(false)
 
 {
 }
@@ -616,6 +617,17 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter( Teuchos::Paramet
 
   if (turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
    multifrac_loma_conti_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"LOMA_CONTI");
+
+  return;
+}
+
+
+//----------------------------------------------------------------------*
+//  set poro parameters                                  voung 11/12|
+//---------------------------------------------------------------------*/
+void DRT::ELEMENTS::FluidEleParameter::SetElementPoroParameter( Teuchos::ParameterList& params )
+{
+  poro_conti_partint_ = params.get<bool>("conti partial integration",false);
 
   return;
 }

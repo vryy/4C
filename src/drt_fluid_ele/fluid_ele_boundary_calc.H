@@ -205,6 +205,15 @@ public:
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
+  virtual void PoroBoundary(
+      DRT::ELEMENTS::FluidBoundary*  ele1,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
     /// Internal implementation class for FluidBoundary elements
   static FluidBoundaryImplInterface* Impl(const DRT::Element* ele);
 
@@ -545,8 +554,13 @@ public:
     \param lm (in)            : location vector of this element
     \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
                                 the controling method does not epxect the element to fill
-                                this matrix.                          and elements
+                                this matrix.
+    \param elemat2 (out)      : matrix to be filled by element. If NULL on input,
+                                the controling method does not epxect the element to fill
+                                this matrix.
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                                the controling method does not epxect the element to fill
+                                this matrix.
 
     */
   void NoPenetration(
@@ -557,6 +571,31 @@ public:
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseMatrix&  elemat2,
       Epetra_SerialDenseVector&  elevec1);
+
+  /*!
+  \brief apply boundary integral for porous media problems
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  \param elemat2 (out)      : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+
+  */
+void PoroBoundary(
+    DRT::ELEMENTS::FluidBoundary*  ele,
+    ParameterList&             params,
+    DRT::Discretization&       discretization,
+    vector<int>&               lm,
+    Epetra_SerialDenseMatrix&  elemat1,
+    Epetra_SerialDenseVector&  elevec1);
 
 private:
 

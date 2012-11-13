@@ -41,6 +41,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/fluidporo.H"
+#include "../drt_mat/structporo.H"
 
 
 using namespace DRT::UTILS;
@@ -4041,6 +4042,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
 
   Teuchos::RCP<std::vector<int> >mycondIDs;
   mycondIDs = rcp(new  vector<int>);
+  //Teuchos::RCP<std::set<int> >mycondIDs = params.get<Teuchos::RCP< std::set<int> > >("mycondIDs",Teuchos::null);
 
   if (ele->ParentElement()->IsAle())
   {
@@ -4122,27 +4124,20 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
 
     // extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    Teuchos::RCP<const Epetra_Vector> dispn = discretization.GetState("dispn");
     Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
     if (velnp==null)
       dserror("Cannot get state vector 'velnp'");
-    if (dispn==null)
-      dserror("Cannot get state vector 'dispn'");
     if (gridvel==null)
       dserror("Cannot get state vector 'gridv'");
 
     std::vector<double> myvelnp(lm.size());
     DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-    std::vector<double> mydispn(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispn,mydispn,lm);
     std::vector<double> mygridvel(lm.size());
     DRT::UTILS::ExtractMyValues(*gridvel,mygridvel,lm);
 
     // allocate velocity vectors
     LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
-    LINALG::Matrix<nsd_,bdrynen_> edispn(true);
-    LINALG::Matrix<nsd_,bdrynen_> edispnp(true);
     LINALG::Matrix<nsd_,bdrynen_> egridvel(true);
 
     // split velocity and pressure, insert into element arrays
@@ -4151,10 +4146,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
       for (int idim=0; idim< nsd_; idim++)
       {
         evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
-        edispn(idim,inode) = mydispn[idim+(inode*numdofpernode_)];
-        edispnp(idim,inode) = mydispnp[idim+(inode*numdofpernode_)];
         egridvel(idim,inode) = mygridvel[idim+(inode*numdofpernode_)];
-        //egridvel(idim,inode) = timescale*(edispnp(idim,inode)-edispn(idim,inode));
       }
     }
 
@@ -4234,6 +4226,192 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
 
   //save the vector containing the constraint dofs in the parameter list
   params.set<Teuchos::RCP<std::vector<int> > >("mycondIDs", mycondIDs);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
+                                                 DRT::ELEMENTS::FluidBoundary*   ele,
+                                                 ParameterList&                   params,
+                                                 DRT::Discretization&             discretization,
+                                                 vector<int>&                     lm,
+                                                 Epetra_SerialDenseMatrix&        elemat1,
+                                                 Epetra_SerialDenseVector&        elevec1)
+{
+
+  // This function is only implemented for 3D
+  if(bdrynsd_!=2)
+    dserror("PoroBoundary is only implemented for 3D!");
+
+  LINALG::Matrix<bdrynen_,1> elevec1_linalg(elevec1.A(),true);
+  const bool offdiag(not elevec1_linalg.IsInitialized());
+
+  // get integration rule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
+  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
+
+  // displacements
+  Teuchos::RCP<const Epetra_Vector>      dispnp;
+  std::vector<double>                mydispnp;
+
+  if (ele->ParentElement()->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"no displacement values for boudary element");
+
+    // Add the deformation of the ALE mesh to the nodes coordinates
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+
+  // extract local values from the global vectors
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
+
+  if (velnp==null)
+    dserror("Cannot get state vector 'velnp'");
+  if (gridvel==null)
+    dserror("Cannot get state vector 'gridv'");
+
+  std::vector<double> myvelnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+  std::vector<double> mygridvel(lm.size());
+  DRT::UTILS::ExtractMyValues(*gridvel,mygridvel,lm);
+
+  // allocate velocity vectors
+  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
+  LINALG::Matrix<nsd_,bdrynen_> edispnp(true);
+  LINALG::Matrix<nsd_,bdrynen_> egridvel(true);
+
+  // split velocity and pressure, insert into element arrays
+  for (int inode=0;inode<bdrynen_;inode++)
+  {
+    for (int idim=0; idim< nsd_; idim++)
+    {
+      evelnp(idim,inode)   = myvelnp[idim+(inode*numdofpernode_)];
+      edispnp(idim,inode)  = mydispnp[idim+(inode*numdofpernode_)];
+      egridvel(idim,inode) = mygridvel[idim+(inode*numdofpernode_)];
+    }
+  }
+
+  const double timescale = params.get<double>("timescale",0.0);
+
+  // get the parent element
+  DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
+
+  const int peleid = pele->Id();
+  //access structure discretization
+  RCP<DRT::Discretization> structdis = null;
+  structdis = DRT::Problem::Instance()->GetDis("structure");
+  //get corresponding structure element (it has the same global ID as the scatra element)
+  DRT::Element* structele = structdis->gElement(peleid);
+  if (structele == NULL)
+    dserror("Structure element %i not on local processor", peleid);
+
+  const Teuchos::RCP<const MAT::StructPoro>& structmat
+            = Teuchos::rcp_dynamic_cast<const MAT::StructPoro>(structele->Material());
+  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+    dserror("invalid structure material for poroelasticity");
+  vector<double>   porosity   = structmat->SurfPorosity(ele->SurfaceNumber());
+  if( (int) porosity.size() != intpoints.IP().nquad)
+    dserror("porosity evaluation not correct!");
+
+  //structure velocity at gausspoint
+  LINALG::Matrix<nsd_,1> gridvelint;
+
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+
+    const double timefacpre = fldpara_->TimeFacPre() ;
+    const double timefacfacpre = fldpara_->TimeFacPre() * fac_;
+    const double rhsfac        = fldpara_->TimeFacRhs() * fac_;
+
+    velint_.Multiply(evelnp,funct_);
+    gridvelint.Multiply(egridvel,funct_);
+
+    double porosity_gp = porosity[gpid];
+
+    // The integration factor is not multiplied with drs
+    // since it is the same as the scaling factor for the unit normal derivatives
+    // Therefore it cancels out!!
+    const double fac = intpoints.IP().qwgt[gpid];
+
+    //  derivatives of surface normals wrt mesh displacements
+    LINALG::Matrix<3,bdrynen_*3> normalderiv(true);
+
+    // dxyzdrs vector -> normal which is not normalized
+    LINALG::Matrix<bdrynsd_,nsd_> dxyzdrs(0.0);
+    dxyzdrs.MultiplyNT(deriv_,xyze_);
+
+    for (int node=0;node<bdrynen_;++node)
+    {
+      normalderiv(0,3*node)   += 0.;
+      normalderiv(0,3*node+1) += (deriv_(0,node)*dxyzdrs(1,2)-deriv_(1,node)*dxyzdrs(0,2));
+      normalderiv(0,3*node+2) += (deriv_(1,node)*dxyzdrs(0,1)-deriv_(0,node)*dxyzdrs(1,1));
+
+      normalderiv(1,3*node)   += (deriv_(1,node)*dxyzdrs(0,2)-deriv_(0,node)*dxyzdrs(1,2));
+      normalderiv(1,3*node+1) += 0.;
+      normalderiv(1,3*node+2) += (deriv_(0,node)*dxyzdrs(1,0)-deriv_(1,node)*dxyzdrs(0,0));
+
+      normalderiv(2,3*node)   += (deriv_(0,node)*dxyzdrs(1,1)-deriv_(1,node)*dxyzdrs(0,1));
+      normalderiv(2,3*node+1) += (deriv_(1,node)*dxyzdrs(0,0)-deriv_(0,node)*dxyzdrs(1,0));
+      normalderiv(2,3*node+2) += 0.;
+    }
+
+    //fill element matrix
+    for (int inode=0;inode<bdrynen_;inode++)
+    {
+      double normal_convel = 0.0;
+      LINALG::Matrix<1,3> convel;
+      for (int idof=0;idof<nsd_;idof++)
+      {
+        normal_convel += unitnormal_(idof) *(velint_(idof)
+            - gridvelint(idof)
+            ) ;
+        convel(idof) = velint_(idof) - gridvelint(idof)
+            ;
+      }
+
+      LINALG::Matrix<1,bdrynen_*3> tmp;
+      tmp.Multiply(convel,normalderiv);
+
+      if(not offdiag)
+        elevec1(inode*numdofpernode_+nsd_) -=  rhsfac * funct_(inode) * porosity_gp * normal_convel;
+      for (int nnod=0;nnod<bdrynen_;nnod++)
+      {
+        for (int idof2=0;idof2<nsd_;idof2++)
+        {
+          if(not offdiag)
+            elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) +=
+                timefacfacpre * funct_(inode) * porosity_gp * unitnormal_(idof2) * funct_(nnod);
+          else
+            elemat1(inode*numdofpernode_+nsd_,nnod*nsd_+idof2) +=
+                    + tmp(nnod*nsd_+idof2) * porosity_gp* funct_(inode) * timefacpre * fac
+                    -funct_(inode) * porosity_gp * unitnormal_(idof2) * timescale * funct_(nnod) * timefacfacpre;
+        }
+      }
+    }
+  } /* end of loop over integration points gpid */
   return;
 }
 

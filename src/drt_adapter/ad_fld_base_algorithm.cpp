@@ -489,6 +489,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(porodyn,"SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives",false);
     fluidtimeparams->set<bool>("do explicit predictor",false);
+    fluidtimeparams->set<bool>("conti partial integration", DRT::INPUT::IntegralValue<int>(porodyn,"CONTIPARTINT"));
   }
 
   // -------------------------------------------------------------------
@@ -545,12 +546,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     if (probtype == prb_poroelast or probtype == prb_poroscatra)
     {
-      //const INPAR::POROELAST::SolutionSchemeOverFields coupling =
-      //    DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(prbdyn,"COUPALGO");
-      //if (coupling != INPAR::POROELAST::Monolithic_fluidsplit )
-      {
-        dirichletcond = false;
-      }
+      dirichletcond = false;
     }
 
     //------------------------------------------------------------------

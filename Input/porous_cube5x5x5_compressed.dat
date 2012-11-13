@@ -112,6 +112,8 @@ RESTOL                          1e-06
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
+SECONDORDER                     no
+CONTIPARTINT                    no
 --------------------------------------------------------------------SOLVER 1
 AMGBS_BS_DAMPING 1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack
@@ -504,6 +506,12 @@ DSURF                           0
 ------------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -
+-----------------------------------------DESIGN SUFACE PORO PARTIAL INTEGRATION
+DSURF                           0
+// Surface x-
+//E 4 - 
+// Surface x+
+//E 6 - 
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 212 DNODE 1
 NODE 62 DNODE 2

@@ -134,6 +134,12 @@ public:
   inline virtual int NumDofPerNode(const DRT::Node& node) const
   {return 3;}
 
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    //ask the parent element for the number of dofs of the other dofset
+    return parent_->NumDofPerNode(nds,node);
+  };
+
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
@@ -190,6 +196,22 @@ public:
                        Epetra_SerialDenseVector& elevector2,
                        Epetra_SerialDenseVector& elevector3);
 
+  //! Evaluate method for StructuralSurface-Elements
+  virtual int Evaluate(ParameterList& params,
+                       DRT::Discretization&      discretization,
+                       LocationArray&            la,
+                       Epetra_SerialDenseMatrix& elematrix1,
+                       Epetra_SerialDenseMatrix& elematrix2,
+                       Epetra_SerialDenseVector& elevector1,
+                       Epetra_SerialDenseVector& elevector2,
+                       Epetra_SerialDenseVector& elevector3);
+
+  //! Return a pointer to the parent element of this boundary element
+  virtual DRT::Element* ParentElement() const
+  {return parent_;}
+
+  //! Return local surface number
+  const int LSurfNumber() const {return lsurface_;}
 
 protected:
 
@@ -215,7 +237,8 @@ protected:
     calc_undo_struct_rotation,
     calc_struct_area,
     calc_ref_nodal_normals,
-    calc_cur_nodal_normals
+    calc_cur_nodal_normals,
+    calc_struct_area_poro
   };
 
   // don't want = operator

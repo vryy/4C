@@ -30,6 +30,7 @@
 namespace DRT
 {
   class Condition;
+  class Discretization;
 }
 
 namespace LINALG
@@ -39,7 +40,7 @@ namespace LINALG
 
 namespace ADAPTER
 {
-  class Fluid;
+  class FluidPoro;
   class Coupling;
   class FSIStructureWrapper;
 }
@@ -73,7 +74,7 @@ namespace POROELAST
       const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
       //! access to fluid field
-      ::ADAPTER::Fluid& FluidField(){return *fluid_;}
+      ::ADAPTER::FluidPoro& FluidField(){return *fluid_;}
 
       //! solve time step (depending on algorithm)
       virtual void Solve() = 0;
@@ -94,12 +95,17 @@ namespace POROELAST
 
       //@}
 
-      //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-      //virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
-      //    ){dserror("Evaluate not implemented in deriving class");};
+      /// HACK
+      void CalculateSurfPoro(const string& condstring);
 
-      //! SetupSystemMatrix
-      //virtual void SetupSystemMatrix() {dserror("SetupSystemMatrix not implemented in deriving class");};
+      //! export node-based multivector to column map and add it to a parameter
+      //list --> copy from scatra!!! move this to drt_lib eventually
+      void AddMultiVectorToParameterList(
+         Teuchos::ParameterList&          p,    //!< parameter list
+         const std::string                name, //!< naming string for added vector
+         Teuchos::RCP<Epetra_MultiVector> vec,   //!< Epetra_MultiVector to be added
+         Teuchos::RCP<DRT::Discretization> discret //!< discretization
+        );
 
     protected:
 
@@ -175,7 +181,7 @@ namespace POROELAST
       Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
 
       //! underlying fluid of the FSI problem
-      Teuchos::RCP< ::ADAPTER::Fluid>        fluid_;
+      Teuchos::RCP< ::ADAPTER::FluidPoro>        fluid_;
 
       //@}
 
