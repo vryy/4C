@@ -2050,7 +2050,9 @@ FLD::XFluidFluid::XFluidFluid(
   DRT::UTILS::PrintParallelDistribution(*boundarydis_);
 
   // prepare embedded dis for Nitsche-Coupling-Type Ale-Sided
-  if ( coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring )
+  // this also needed for error calculation method
+  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
+  if ((coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring) or (calcerr != INPAR::FLUID::no_error_calculation))
   {
     PrepareEmbeddedDistribution();
     CreateBoundaryEmbeddedMap();
@@ -3802,7 +3804,6 @@ void FLD::XFluidFluid::Output()
 
   if (write_visualization_data)
   {
-    cout << "hier " << endl;
     //Velnp()->Print(cout);
     /*vector<int> lm;
     lm.push_back(17041);
@@ -4269,15 +4270,10 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
   // this functions provides a general implementation for calculating error norms between computed solutions
   // and an analytical solution which is implemented or given by a function in the input file
 
-  // how is the analytical solution available (implemented of via function?)
   INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
-
-
-  //CreateEmbeddedGhostingAndBoundaryEmbeddedMap();
 
   if(calcerr != INPAR::FLUID::no_error_calculation)
   {
-
     //TODO: decide between absolute and relative errors
 
     // TODO: for xfluidfluid: evaluate errors w.r.t both domains
@@ -4502,6 +4498,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
                 const size_t nui = patchelementslm.size();
                 Epetra_SerialDenseMatrix  Cuiui(nui,nui);
+
 
                 if(BoundIntType() == INPAR::XFEM::BoundaryTypeSigma or
                    BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
