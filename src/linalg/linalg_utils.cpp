@@ -1809,7 +1809,6 @@ void LINALG::PrintMapInMatlabFormat(std::string fname,
       int NumMyElements1 = map.NumMyElements();
       int MaxElementSize1 = map.MaxElementSize();
       int* MyGlobalElements1 = map.MyGlobalElements();
-      if (MaxElementSize1!=1) FirstPointInElementList1 = map.FirstPointInElementList();
 
       for (int i=0; i<NumMyElements1; i++)
       {
