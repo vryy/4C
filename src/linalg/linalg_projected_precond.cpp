@@ -55,8 +55,7 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
   // of problem
   if(project_)
   {
-    int ierr2=0;
-    ierr2 = projector_->ApplyP(Y);
+    projector_->ApplyP(Y);
   }
 
   return(ierr);
