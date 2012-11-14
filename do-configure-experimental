@@ -63,12 +63,25 @@ if [ "$OS_VERSION" == "FC16" ]; then
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q3_2012/fc16/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q3_2012/fc16/openmpi-gcc/lib"
 	Trilinos_PREFIX="/lnm/lib/Q3_2012/trilinos/fc16_openmpi_$TRILINOS_BUILD_TYPE/"
+	# libM replacement
+	AMDLIBMDIR_PATH="/lnm/lib/Q3_2012/amdlibm-3-0-2"
+	# AMD core math library BLAS/LAPACK replacement
+	ACMLDIR_PATH="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64"
+	BLAS_LIBS="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64/lib/libacml.a"
+	LAPACK_LIBS="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64/lib/libacml.a"
 else
 	# no Q3/2012 Trilinos available for FC8 and FC12.
 	# use Q2/2012 instead
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q2_2012/fc8/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q2_2012/fc8/openmpi-gcc/lib"
 	Trilinos_PREFIX="/lnm/lib/Q2_2012/trilinos/fc8_openmpi_release/"
+	# libM replacement
+	AMDLIBMDIR_PATH=""
+	# AMD core math library BLAS/LAPACK replacement
+	ACMLDIR_PATH=""
+	BLAS_LIBS=""
+	LAPACK_LIBS=""
+
 	echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!"
 	echo "!!       You are using an outdated system.       !!"
 	echo "!! It's highly recommended to update your system !!"
@@ -76,6 +89,10 @@ else
 	echo "!! No Q3/2012 Trilinos available for FC8 and FC12!!" 
 	echo "!! The configuration script now uses the Q2/2012 !!"
 	echo "!! Trilinos release.                             !!" 
+	echo "!! New BLAS/LAPACK library replacements may not  !!"
+	echo "!! work with old 32bit systems any more. We do   !!"
+	echo "!! NOT guarantee for the reliability of your     !!"
+	echo "!! results using wrong BLAS/LAPACK libraries     !!"
 	echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!"
 	read -p "Press [Enter] to proceed..."
 fi
@@ -123,6 +140,11 @@ $CMAKE_COMMAND \
     -D QHULL_INCLUDE_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D MPI_DIR:FILEPATH=$MPIDIR \
     -D CUBIT_DIR:FILEPATH=$CUBIT_PATH \
+    -D BLA_VENDOR:STRING="ACML.5.2.0" \
+    -D BLAS_LIBRARIES:FILEPATH=$BLAS_LIBS \
+    -D LAPACK_LIBRARIES:FILEPATH=$LAPACK_LIBS \
+    -D ACMLDIR:STRING=$ACMLDIR_PATH \
+    -D AMDLIBMDIR:FILEPATH=$AMDLIBMDIR_PATH \
     $EXTRA_ARGS \
     ${BACI_HOME}
 
