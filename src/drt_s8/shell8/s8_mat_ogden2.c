@@ -28,12 +28,10 @@ void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain,
                             DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc)
 {
 INT                 i,j,k,l,p,a,c;
-DOUBLE              nue;
 DOUBLE              beta,minusbeta;
 static DOUBLE       monethird;
 DOUBLE             *alfap;
 DOUBLE             *mup;
-DOUBLE              lame1;
 DOUBLE              kappa;
 DOUBLE              mu,E;                  /* shear and Young's modulus */
 DOUBLE              work,work2,sum1,sum2;
@@ -91,12 +89,10 @@ for (l=0; l<3; l++)
    mat->init=1;
 /*}*/
 /*-------------------------------------------------- get some constants */
-nue       = mat->nue;
 beta      = mat->beta;
 minusbeta = -beta;
 alfap     = mat->alfap;
 mup       = mat->mup;
-lame1     = mat->lambda;
 kappa     = mat->kappa;
 /*------------------------------------------- make deformation gradient */
 /*

@@ -31,10 +31,8 @@ void s8_mat_ogden_coupled(
       int      i,j,k,l,p;
       double      mu;
       double      E;
-      double      kappa;
       double      beta,mbeta;
       double      lame1;
-      double      nue;
       double     *mup;
       double     *alfap;
       double      J;
@@ -91,13 +89,11 @@ if (!(mat->init))
    mat->init=1;
 }
 /*-------------------------------------------------- get some constants */
-nue       = mat->nue;
 beta      = mat->beta;
 mbeta     = -beta;
 alfap     = mat->alfap;
 mup       = mat->mup;
 lame1     = mat->lambda;
-kappa     = mat->kappa;
 /*---------------------------- make right Cauchy-Green strain tensor CG */
 /*
 CG = Ft * F = gmkovc_ij

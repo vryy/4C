@@ -30,8 +30,6 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
       DOUBLE      E;
       DOUBLE      kappa;
       DOUBLE      beta,mbeta;
-      DOUBLE      lame1;
-      DOUBLE      nue;
       DOUBLE     *mup;
       DOUBLE     *alfap;
       DOUBLE      J;
@@ -106,12 +104,10 @@ if (!(mat->init))
    mat->init=1;
 }
 /*-------------------------------------------------- get some constants */
-nue       = mat->nue;
 beta      = mat->beta;
 mbeta     = -beta;
 alfap     = mat->alfap;
 mup       = mat->mup;
-lame1     = mat->lambda;
 kappa     = mat->kappa;
 /*---------------------------- make right Cauchy-Green strain tensor CG */
 /*

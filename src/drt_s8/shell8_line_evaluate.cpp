@@ -73,19 +73,12 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   vector<double> funct(iel);
   Epetra_SerialDenseMatrix deriv(2,iel);
 
-  double a3r[3][MAXNOD_SHELL8];
   double xrefe[3][MAXNOD_SHELL8];
   double xjm[3][3];
 
   // get geometry
   for (int k=0; k<iel; ++k)
   {
-    const double h2 = (*thick)[k];
-
-    a3r[0][k] = (*a3ref)(0,k)*h2;
-    a3r[1][k] = (*a3ref)(1,k)*h2;
-    a3r[2][k] = (*a3ref)(2,k)*h2;
-
     xrefe[0][k] = parent_->Nodes()[k]->X()[0];
     xrefe[1][k] = parent_->Nodes()[k]->X()[1];
     xrefe[2][k] = parent_->Nodes()[k]->X()[2];

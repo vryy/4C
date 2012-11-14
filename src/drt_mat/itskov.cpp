@@ -149,7 +149,8 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 
 {
 	int i,k;
-	double energy(0.0), energy_constr(0.0), delta1(0.0), delta2(0.0);
+	//double energy(0.0);
+	double energy_constr(0.0), delta1(0.0), delta2(0.0);
 	double epsilonPen_soll(0.0), W_soll(0.0);						//for adapted penalty parameter
 
 	// get material parameters
@@ -274,7 +275,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 //--------------------------------constraint function incompressibility
 	energy_constr= (epsilonPen*(pow(I3,gammaPen)+pow(I3,(-gammaPen))-2));
 //-----------------------------------------------strain-energy-function
-	energy=energy_constr+factors1[0]+factors1[1]+factors2[0]+factors2[1];
+	//energy=energy_constr+factors1[0]+factors1[1]+factors2[0]+factors2[1];
 
 //---------------------------------------------------------------------
 // PK2 Stresses
