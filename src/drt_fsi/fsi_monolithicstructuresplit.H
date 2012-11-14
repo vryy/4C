@@ -1,4 +1,19 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_mortarmonolithic_structuresplit.h
 
+\brief Solve FSI problem with matching grids using a monolithic scheme
+with condensed structure interface displacements
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHICSTRUCTURESPLIT_H
 #define FSI_MONOLITHICSTRUCTURESPLIT_H
@@ -166,41 +181,41 @@ namespace FSI
 
     //@}
 
-    /// @name Some quantities to recover the Langrange multiplier at the end of each time step
+    /// @name Some quantities to recover the Lagrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
-    //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
-
-    //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const Epetra_Vector> fgcur_;
-
-    //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const Epetra_Vector> fgpre_;
 
     //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddiinc_;
 
     //! inner displacement solution of the structure at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> solipre_;
+    Teuchos::RCP<const Epetra_Vector> soliprev_;
 
     //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddginc_;
 
+    //! fluid interface velocity increment \f$\Delta(\Delta u_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> duginc_;
+
     //! interface displacement solution of the structure at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> solgpre_;
+    Teuchos::RCP<const Epetra_Vector> disgprev_;
+
+    //! interface velocity solution of the fluid at previous NOX iteration
+    Teuchos::RCP<const Epetra_Vector> velgprev_;
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> sgicur_;
 
     //! block \f$S_{\Gamma I,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> sgipre_;
+    Teuchos::RCP<const LINALG::SparseMatrix> sgiprev_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> sggcur_;
 
     //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> sggpre_;
+    Teuchos::RCP<const LINALG::SparseMatrix> sggprev_;
 
     //@}
 
