@@ -61,11 +61,11 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
   std::ostringstream statmechfilepath;
   statmechfilepath << outputrootpath_ << "/StatMechOutput/";
   struct stat st;
-  if(stat(statmechfilepath.str().c_str(), &st) !=0)
+  if(stat(statmechfilepath.str().c_str(), &st) !=0 && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")!=INPAR::STATMECH::statout_none)
     dserror("The folder %s was not found but is required for statistical mechanics output!", statmechfilepath.str().c_str());
   std::ostringstream gmshfilepath;
   gmshfilepath << outputrootpath_ <<"/GmshOutput/";
-  if(stat(gmshfilepath.str().c_str(), &st) !=0)
+  if(stat(gmshfilepath.str().c_str(), &st) !=0 && DRT::INPUT::IntegralValue<int>(statmechparams_, "GMSHOUTPUT"))
     dserror("The folder %s was not found but is required for Gmsh output!", gmshfilepath.str().c_str());
 
   switch (DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT"))
