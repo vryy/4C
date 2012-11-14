@@ -356,7 +356,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PtentFact));
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
-  Teuchos::RCP<RAPFactory> AcFact = Teuchos:: Teuchos::rcp( new RAPFactory(PFact, RFact) );
+  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory(PFact, RFact) );
   //AcFact->setVerbLevel(Teuchos::VERB_HIGH);
   AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
