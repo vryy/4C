@@ -293,8 +293,18 @@ if (ACML_FOUND)
   include_directories(${ACML_INCLUDES})
   #link_directories(${ACML_INCLUDES})
   set(LIBRARIES ${ACML_LIBRARIES} ${LIBRARIES}  )
+  #set(LIBRARIES /lnm/lib/Q3_2012/amdlibm-3-0-2/lib/static/libamdlibm.a ${LIBRARIES} )
   MESSAGE("II Found ACML (AMD Core Math Library): ${ACML_LIBRARIES}")
   MESSAGE("II Found ACML (AMD Core Math Library): ${ACML_INCLUDES}")
+endif()
+
+# find AMD replacement for libM
+find_package(AMDLIBM)
+if (AMDLIBM_FOUND)
+  include_directories(${AMDLIBM_INCLUDES})
+  set(LIBRARIES ${AMDLIBM_LIBRARIES} ${LIBRARIES}  )
+  MESSAGE("II Found AMD libM: ${AMDLIBM_LIBRARIES}")
+  MESSAGE("II Found AMD libM: ${AMDLIBM_INCLUDES}")
 endif()
 
 ###------------------------------------------------------------------ List of files
