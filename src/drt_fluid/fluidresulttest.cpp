@@ -25,6 +25,7 @@ http://www.lnm.mw.tum.de/Members/kuettler
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
+  : DRT::ResultTest("FLUID")
 {
     fluiddis_= fluid.discret_;
     mysol_   = fluid.velnp_ ;
@@ -130,13 +131,3 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
     }
   }
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool FLD::FluidResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("FLUID");
-}
-
-

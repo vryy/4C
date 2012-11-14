@@ -59,9 +59,6 @@ public:
         int& test_count
     );
 
-    /// return true if this is a fluid adjoint test
-    virtual bool Match(DRT::INPUT::LineDefinition& res);
-
 private:
 
     /// pointer to fluid discretization

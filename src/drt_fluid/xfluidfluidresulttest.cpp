@@ -26,6 +26,7 @@ Maintainer: Shadan Shahmiri
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::XFluidFluidResultTest::XFluidFluidResultTest(XFluidFluid& fluid)
+  : DRT::ResultTest("FLUID")
 {
   embfluiddis_= fluid.embdis_;
   bgfluiddis_= fluid.bgdis_;
@@ -199,12 +200,3 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
      }
    }
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool FLD::XFluidFluidResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("FLUID");
-}
-

@@ -23,8 +23,12 @@ Maintainer: Ulrich Kuettler
 #include "drt_inputreader.H"
 
 
-DRT::ResultTest::ResultTest()
+DRT::ResultTest::ResultTest(const std::string name)
+  : myname_(name)
 {
+  cout << __LINE__ << __FILE__ << endl;
+  cout << myname_ << endl;
+  cout << name << endl;
 }
 
 DRT::ResultTest::~ResultTest()
@@ -66,6 +70,8 @@ int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition&
 {
   FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
 
+  int node;
+  res.ExtractInt("NODE",node);
   std::string quantity;
   res.ExtractString("QUANTITY",quantity);
   double givenresult;
@@ -77,30 +83,61 @@ int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition&
   if (res.HaveNamed("NAME"))
     res.ExtractString("NAME",name);
 
+  // return value (0 if results are correct, 1 if results are not correct)
   int ret = 0;
+
+  // write to error file
   fprintf(err,"actual = %.17e, given = %.17e, diff = %.17e\n",
           actresult, givenresult, actresult-givenresult);
+
+  // prepare string stream 'msghead' containing general information on the current test
+  std::stringstream msghead;
+  msghead << std::left << std::setw(9) << myname_
+          << ": "
+          << std::left << std::setw(8) << quantity.c_str();
+
+  if (name != "")
+    msghead << "(" << name << ")";
+
+  msghead << " at node "
+          << std::right << std::setw(3)<< node;
+
+  // write something to screen depending if the result check was ok or not
   if (!(fabs(fabs(actresult-givenresult)-fabs(actresult-givenresult)) < tolerance) )
   {
-    printf("RESULTCHECK: %s is NAN!\n", quantity.c_str());
+    // Result is 'not a number'
+    IO::cout  << msghead.str()
+              << " is NAN!\n";
     ret = 1;
   }
   else if (fabs(actresult-givenresult) > tolerance)
   {
-    printf("RESULTCHECK: %s not correct. actresult=%.17e, givenresult=%.17e\n",
-           quantity.c_str(), actresult, givenresult);
+    // Result is wrong
+    IO::cout  << msghead.str()
+              << " is WRONG --> actresult="
+              << std::setw(24) << std::setprecision(17) << std::scientific << actresult
+              << ", givenresult="
+              << std::setw(24) << std::setprecision(17) << std::scientific << givenresult
+              << "\n";
+
     ret = 1;
   }
-/*
-  cout<<"TEST passed: "<<quantity;
-  if (name != "")
-    cout<<"("<<name<<")"<<endl;
-*/
+  else
+  {
+    // Result is correct
+    IO::cout  << msghead.str()
+              << " is CORRECT\n";
+  }
+
   return ret;
 }
 
-
-///////////////////////////////////////////////////////////////////
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ResultTest::Match(DRT::INPUT::LineDefinition& res)
+{
+  return res.HaveNamed(myname_);
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -116,12 +153,12 @@ void DRT::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 {
   FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
-  int nerr = 0;       // number of tests with errors
-  int test_count = 0; // number of tests performed
-  int size = results_.size();
+  int nerr = 0;                     // number of tests with errors
+  int test_count = 0;               // number of tests performed
+  const int size = results_.size(); // total number of tests
 
   if (comm.MyPID()==0)
-    IO::cout << "\nChecking results of "<<size<<" tests...\n";
+    IO::cout << "\nChecking results of "<< size <<" tests:\n";
 
   for (unsigned i=0; i<results_.size(); ++i)
   {
@@ -298,6 +335,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(fld_adj);
   lines->Add(opti);
   lines->Add(fsi);
+
   return lines;
 }
 
@@ -320,5 +358,3 @@ void PrintResultDescrDatHeader()
 
   lines->Print(std::cout);
 }
-
-

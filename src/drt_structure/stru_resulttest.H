@@ -66,9 +66,6 @@ public:
   //!                             "accx", "accy", "accz"
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-  //! return true if this is a structure test
-  virtual bool Match(DRT::INPUT::LineDefinition& res);
-
 private:
 
   //! our discretisation

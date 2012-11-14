@@ -26,6 +26,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::CombustFluidResultTest::CombustFluidResultTest(CombustFluidImplicitTimeInt& fluid)
+  : DRT::ResultTest("FLUID")
 {
   fluiddis_ = fluid.discret_;
   fluidstddofset_ = fluid.standarddofset_;
@@ -124,12 +125,3 @@ void FLD::CombustFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
     }
   }
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool FLD::CombustFluidResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("FLUID");
-}
-

@@ -22,6 +22,7 @@ Maintainer: Mahmoud Ismail
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airways)
+  : DRT::ResultTest("RED_AIRWAY")
 {
   dis_    = airways.Discretization();
   mysol_  = airways.Pnp();
@@ -78,13 +79,3 @@ void AIRWAY::RedAirwayResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
     }
   }
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool AIRWAY::RedAirwayResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("RED_AIRWAY");
-}
-
-

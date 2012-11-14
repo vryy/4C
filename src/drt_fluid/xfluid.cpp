@@ -5206,7 +5206,8 @@ void FLD::XFluid::XFluidState::GenAlphaUpdateAcceleration()
 }
 
 FLD::XFluidResultTest2::XFluidResultTest2( XFluid * xfluid )
-  : discret_( *xfluid->discret_ ),
+  : DRT::ResultTest("FLUID"),
+    discret_( *xfluid->discret_ ),
     velnp_( xfluid->state_->velnp_ )
 {
 }
@@ -5271,9 +5272,4 @@ void FLD::XFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr
       test_count++;
     }
   }
-}
-
-bool FLD::XFluidResultTest2::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("FLUID");
 }

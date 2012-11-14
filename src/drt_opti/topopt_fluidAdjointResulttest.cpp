@@ -26,7 +26,8 @@ Maintainer: Martin Winklmaier
 TOPOPT::ADJOINT::FluidAdjointResultTest::FluidAdjointResultTest(
     const ImplicitTimeInt& adjointfluid
 )
-: fluiddis_(adjointfluid.Discretization()),
+: DRT::ResultTest("ADJOINT"),
+  fluiddis_(adjointfluid.Discretization()),
   mysol_(adjointfluid.Velnp())
 {
   return;
@@ -116,12 +117,3 @@ void TOPOPT::ADJOINT::FluidAdjointResultTest::TestNode(
     }
   }
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool TOPOPT::ADJOINT::FluidAdjointResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("ADJOINT");
-}
-

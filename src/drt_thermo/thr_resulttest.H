@@ -54,9 +54,6 @@ namespace THR
       int& test_count
       );
 
-    //! return true if this is a thermo test
-    virtual bool Match(DRT::INPUT::LineDefinition& res);
-
   private:
 
     //! our discretisation

@@ -23,8 +23,9 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
-: aledis_(ale.Discretization()),
-    dispnp_(ale.Disp())
+: DRT::ResultTest("ALE"),
+  aledis_(ale.Discretization()),
+          dispnp_(ale.Disp())
 {
 }
 
@@ -88,11 +89,3 @@ void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
     }
   }
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool ALE::AleResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("ALE");
-}
-

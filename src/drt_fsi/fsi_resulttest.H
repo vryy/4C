@@ -59,9 +59,6 @@ namespace FSI
                           int& nerr,                        ///< number of tests with errors
                           int& test_count);                 ///< number of tests performed
 
-    //! return true if this is a fsi test
-    virtual bool Match(DRT::INPUT::LineDefinition& res);
-
   private:
 
     //! slave discretisation

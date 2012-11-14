@@ -86,9 +86,6 @@ namespace FLD
     */
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-    /// return true if this is an ale test
-    virtual bool Match(DRT::INPUT::LineDefinition& res);
-
   private:
     DRT::Discretization & discret_;
     Teuchos::RCP<Epetra_Vector> velnp_;

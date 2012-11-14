@@ -23,7 +23,8 @@ Maintainer: Martin Winklmaier
 OPTI::OptiResultTest::OptiResultTest(
     const GCMMA& optimizer
 )
-: optidis_(optimizer.Discretization()),
+: DRT::ResultTest("OPTI"),
+  optidis_(optimizer.Discretization()),
   sol_(optimizer.X())
 {
   return;
@@ -81,12 +82,4 @@ void OPTI::OptiResultTest::TestNode(
       test_count++;
     }
   }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool OPTI::OptiResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("OPTI");
 }

@@ -22,6 +22,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraTimIntImpl& scatra)
+  : DRT::ResultTest("SCATRA")
 {
   dis_    = scatra.Discretization();
   mysol_  = scatra.Phinp();
@@ -101,12 +102,3 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
     }
   }
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool SCATRA::ScaTraResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("SCATRA");
-}
-

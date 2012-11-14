@@ -49,10 +49,10 @@ namespace DRT
   {
   public:
 
-    /// not yet doxumented
-    ResultTest();
+    /// not yet documented
+    ResultTest(const std::string name = "NONE");
 
-    /// not yet doxumented
+    /// not yet documented
     virtual ~ResultTest();
 
     /// perform element value test
@@ -65,12 +65,17 @@ namespace DRT
     virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// tell whether this field test matches to a given line
-    virtual bool Match(DRT::INPUT::LineDefinition& res) = 0;
+    virtual bool Match(DRT::INPUT::LineDefinition& res);
 
   protected:
 
     /// compare a calculated value with the expected one
     virtual int CompareValues(double actresult, DRT::INPUT::LineDefinition& res);
+
+  private:
+
+    /// specific name of a field test
+    const std::string myname_;
   };
 
   /*!

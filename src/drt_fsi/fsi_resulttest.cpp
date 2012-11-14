@@ -27,6 +27,7 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------*/
 FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic> fsi,
                                   const Teuchos::ParameterList& fsidyn)
+  : DRT::ResultTest("FSI")
 {
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
@@ -120,10 +121,7 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
       if (actnode->Owner() != slavedisc_->Comm().MyPID())
         return;
 
-      // verbose output
-      //cout << "TESTING STRUCTURE RESULTS with FSIResultTest::TestNode(..)" << endl;
-
-      string position;
+      std::string position;
       res.ExtractString("QUANTITY",position);
       bool unknownpos = true; // make sure the result value string can be handled
       double result = 0.0;    // will hold the actual result of run
@@ -156,21 +154,6 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
       const int err = CompareValues(result, res);
       nerr += err;
       test_count++;
-
-      // verbose output
-      cout.precision(16);
-      cout << "FSI RESULT "  << test_count
-          << " IS " << std::scientific << position << " = " << result
-          << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
-          << endl;
     }
   }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool FSI::FSIResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("FSI");
 }

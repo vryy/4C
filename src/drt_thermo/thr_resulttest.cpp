@@ -28,6 +28,7 @@ Maintainer: Caroline Danowski
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
 THR::ResultTest::ResultTest(TimInt& tintegrator)
+  : DRT::ResultTest("THERMAL")
 {
   temp_ = tintegrator.Temp();
   rate_ = tintegrator.Rate();
@@ -109,24 +110,6 @@ void THR::ResultTest::TestNode(
       const int err = CompareValues(result, res);
       nerr += err;
       test_count++;
-
-      // verbose output
-      cout.precision(16);
-      cout << "RESULT "  << test_count
-          << " IS " << std::scientific << result
-          << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
-          << endl;
     }
   }
 } // TestNode
-
-/*----------------------------------------------------------------------*
- |                                                           dano 08/09 |
- *----------------------------------------------------------------------*/
-bool THR::ResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  // res.field is a enum of type _FIELDTYP and can be found in headers/enums.h
-  return (res.HaveNamed("THERMAL"));
-}
-
-/*----------------------------------------------------------------------*/

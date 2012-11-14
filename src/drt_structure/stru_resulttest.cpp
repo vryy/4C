@@ -26,6 +26,7 @@ StruResultTest::StruResultTest(Teuchos::RCP<DRT::Discretization> strudis_in,
                                Teuchos::RCP<Epetra_Vector> dis,
                                Teuchos::RCP<Epetra_Vector> vel,
                                Teuchos::RCP<Epetra_Vector> acc)
+  : DRT::ResultTest("STRUCTURE")
 {
   strudisc_ = strudis_in;
   dis_ = dis;
@@ -36,6 +37,7 @@ StruResultTest::StruResultTest(Teuchos::RCP<DRT::Discretization> strudis_in,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 StruResultTest::StruResultTest(STR::TimInt& tintegrator)
+  : DRT::ResultTest("STRUCTURE")
 {
   dis_ = tintegrator.Dis();
   vel_ = tintegrator.Vel();
@@ -160,21 +162,6 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       const int err = CompareValues(result, res);
       nerr += err;
       test_count++;
-
-      // verbose output
-      cout.precision(16);
-      cout << "RESULT "  << test_count
-          << " IS " << std::scientific << result
-          << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
-          << endl;
     }
   }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool StruResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("STRUCTURE");
 }

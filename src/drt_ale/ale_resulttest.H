@@ -43,9 +43,6 @@ public:
    */
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-  /// return true if this is an ale test
-  virtual bool Match(DRT::INPUT::LineDefinition& res);
-
 private:
 
   /// pointer to ALE discretization

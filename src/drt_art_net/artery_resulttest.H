@@ -42,9 +42,6 @@ public:
    */
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-  /// return true if this is a scalar transport test
-  virtual bool Match(DRT::INPUT::LineDefinition& res);
-
 private:
 
   /// RCP to scalar transport discretization

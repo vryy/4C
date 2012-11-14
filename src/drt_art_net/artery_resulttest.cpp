@@ -21,6 +21,7 @@ Maintainer: Mahmoud Ismail
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
+  : DRT::ResultTest("ARTNET")
 {
   dis_    = art_net.Discretization();
   mysol_  = art_net.QAnp();
@@ -81,13 +82,3 @@ void ART::ArteryResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
     }
   }
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool ART::ArteryResultTest::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("ARTNET");
-}
-
-
