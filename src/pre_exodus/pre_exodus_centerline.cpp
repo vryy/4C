@@ -317,9 +317,9 @@ Centerline::Centerline(string filename,vector<double> coordcorr)
         //clp[j] = table[i][j] + coordcorr[j];  // first 3 numbers are CL coords
         clp[j] = row[j] + coordcorr[j];  // first 3 numbers are CL coords
       }
-      points_->insert(pair<int,vector<double> >(clp_id,clp)); // fill std::map
-      //diam_->insert(pair<int,double>(clp_id,row[7])); // fitted diameter is 7th entry in cline table
-      diam_->insert(pair<int,double>(clp_id,row[7])); // minimum diameter is 8th entry in cline table
+      points_->insert(std::pair<int,vector<double> >(clp_id,clp)); // fill std::map
+      //diam_->insert(std::pair<int,double>(clp_id,row[7])); // fitted diameter is 7th entry in cline table
+      diam_->insert(std::pair<int,double>(clp_id,row[7])); // minimum diameter is 8th entry in cline table
       ++ clp_id;
     }
   }
@@ -503,7 +503,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
   // std::map which stores the surface normals for each element
   std::map<int,vector<double> > ele_normals;
   
-  std::map <pair<int,int> ,vector <double> > np_eb_el;
+  std::map <std::pair<int,int> ,vector <double> > np_eb_el;
   // Get all Element Blocks 
   std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
   std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
@@ -575,13 +575,13 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
       //pair<int,int> eb_e = make_pair(i_ebs->first,it_2->first);
       std::pair<int,int> eb_e = std::make_pair(eb_ids[0],it_2->first);
       //np_eb_el contains ((eblock-ID, element-ID),ele_normal)
-      np_eb_el.insert(pair < pair<int,int>,vector <double> >(eb_e,ele_vec_norm));
+      np_eb_el.insert(std::pair < std::pair<int,int>,vector <double> >(eb_e,ele_vec_norm));
     }
   }
 
   std::map<int,vector<double> > midpoints;  // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
-  std::map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  std::map<int,std::pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
   //conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
   std::map<int,vector<int> > conn_mp_cp;
   //auxiliary variables
@@ -589,8 +589,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
   int clID_2=-1;
   vector<int> ids(2,0);
   vector<double> mean_cl_dir(3,0);
-  std::list< pair<int,double> > distances;
-  std::list< pair< double, vector <double> > > cl_direction;
+  std::list< std::pair<int,double> > distances;
+  std::list< std::pair< double, vector <double> > > cl_direction;
   std::map<int,vector<double> > clpoints = *(mycline.GetPoints());
 
   //calculate mean direction of centerline to determine fiber direction
@@ -650,8 +650,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
     r_4 = r_0;
     normalize3d(r_0);
     //take the normal vector calculated from surface nodes if existent
-    pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
-    std::map < pair<int,int> ,vector <double> >::iterator normal;
+    std::pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
+    std::map < std::pair<int,int> ,vector <double> >::iterator normal;
     normal= np_eb_el.find(eb_el);
 
     if(np_eb_el.find(eb_el)!=np_eb_el.end())
@@ -700,7 +700,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
 }
 
 // function for sorting pairs by value of -> second
- bool MyDataSortPredicate( pair<int, double> lhs,  pair<int, double> rhs)
+ bool MyDataSortPredicate( std::pair<int, double> lhs,  std::pair<int, double> rhs)
 {
   return lhs.second < rhs.second;
 }
@@ -716,7 +716,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
 
   std::map<int,vector<double> > midpoints;  // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
-  std::map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  std::map<int,std::pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
 	//auxiliary variables
@@ -811,7 +811,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
 		directions.push_back(r_2);
 
 		//ebID_elID_local_cosy(ebID,elID,directions)
-	  pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
+	  std::pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
     ebID_elID_local_cosy[eb_el.first][eb_el.second] = directions;
 
 	}
@@ -828,7 +828,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
 {
   std::map<int,vector<double> > midpoints;  // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
-  std::map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  std::map<int,std::pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
   //conn_mp_cp will contain (midpoint-ID, centerpoint-ID)
   std::map<int,int > conn_mp_cp;
   //auxiliary variables
@@ -914,7 +914,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
     directions.push_back(r_0);
 
     //ebID_elID_local_cosy(ebID,elID,directions)
-    pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
+    std::pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
     ebID_elID_local_cosy[eb_el.first][eb_el.second] = directions;
 
   }
@@ -929,7 +929,7 @@ void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, c
 {
   std::map<int,vector<double> > midpoints; // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, eblock-ID, element-ID)
-  std::map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  std::map<int,std::pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
 	//auxiliary variables

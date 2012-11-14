@@ -292,8 +292,8 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   // merge nodes
   map<int,vector<double> >::const_iterator i_node;
   for(i_node = extNodes->begin(); i_node != extNodes->end(); ++i_node){
-    pair< map<int,vector<double> >::iterator, bool > check;
-    check = baseNodes->insert(pair<int,vector<double> >(i_node->first,i_node->second));
+    std::pair< map<int,vector<double> >::iterator, bool > check;
+    check = baseNodes->insert(std::pair<int,vector<double> >(i_node->first,i_node->second));
     // happens when concatenating: if (check.second == false)  dserror("Extension node already exists!");
   }
   nodes_ = baseNodes;
@@ -304,7 +304,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
     elementBlocks_.insert(std::pair<int,RCP<ElementBlock> >(i_block->first,i_block->second));
   }
   for(i_block = extBlocks.begin(); i_block != extBlocks.end(); ++i_block){
-    pair< map<int,RCP<ElementBlock> >::iterator, bool > check;
+    std::pair< map<int,RCP<ElementBlock> >::iterator, bool > check;
     check = elementBlocks_.insert(std::pair<int,RCP<ElementBlock> >(i_block->first,i_block->second));
     if (check.second == false) dserror("Extension ElementBlock already exists!");
     else total_num_elem += i_block->second->GetNumEle();
@@ -317,7 +317,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
     nodeSets_.insert(std::pair<int,NodeSet>(i_ns->first,i_ns->second));
   }
   for(i_ns = extNodesets.begin(); i_ns != extNodesets.end(); ++i_ns){
-    pair< map<int,NodeSet>::iterator, bool > check;
+    std::pair< map<int,NodeSet>::iterator, bool > check;
     check = nodeSets_.insert(std::pair<int,NodeSet>(i_ns->first,i_ns->second));
     if (check.second == false) dserror("Extension NodeSet already exists!");
   }
@@ -328,7 +328,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
     sideSets_.insert(std::pair<int,SideSet>(i_ss->first,i_ss->second));
   }
   for(i_ss = extSidesets.begin(); i_ss != extSidesets.end(); ++i_ss){
-    pair< map<int,SideSet>::iterator, bool > check;
+    std::pair< map<int,SideSet>::iterator, bool > check;
     check = sideSets_.insert(std::pair<int,SideSet>(i_ss->first,i_ss->second));
     if (check.second == false) dserror("Extension SideSet already exists!");
   }
@@ -781,11 +781,11 @@ vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSe
   for (i_ele = sideconn.begin(); i_ele != sideconn.end(); ++i_ele){
     int numnodes = i_ele->second.size();
     if (numnodes == 4){
-      quadconn->insert(pair<int,vector<int> >(quadcounter,i_ele->second));
+      quadconn->insert(std::pair<int,vector<int> >(quadcounter,i_ele->second));
       quadcounter ++;
     }
     else if (numnodes == 3){
-      triconn->insert(pair<int,vector<int> >(tricounter,i_ele->second));
+      triconn->insert(std::pair<int,vector<int> >(tricounter,i_ele->second));
       tricounter ++;
     }
     else dserror("Number of basenodes for conversion from SideSet to EBlock not supported");
@@ -1032,10 +1032,10 @@ void EXODUS::Mesh::EraseSideSet(const int id)
  | - calculates the midpoint of each element                               |
  | - returns map <midpoint-ID,pair<eblock-ID,element-ID> >         SP 06/08|
  *------------------------------------------------------------------------*/
-map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const
+map<int,std::pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const
 {
 	//map that will be returned
-	map<int,pair<int,int> > conn_mpID_elID;
+	map<int,std::pair<int,int> > conn_mpID_elID;
 
 //	//initialising midpoints
 //	this->midpoints_ = Teuchos::rcp(new map<int,vector<double> >);
@@ -1097,7 +1097,7 @@ map<int,pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& 
       midpoints.insert(std::pair<int,vector<double> >(counter_elements,midPoint));
 			//conn_mpID_elID = (midpoint-ID, eblock-ID, element-ID)
       std::pair<int,int> eb_e = std::make_pair(it->first,it_2->first);
-			conn_mpID_elID.insert(std::pair<int,pair<int,int> >(counter_elements,eb_e));
+			conn_mpID_elID.insert(std::pair<int,std::pair<int,int> >(counter_elements,eb_e));
 		}
 	}
 	//EXODUS::PrintMap(cout,conn_mpID_elID);
@@ -1507,8 +1507,8 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
         tri2[0] = quad[2]; tri2[1] = quad[3]; tri2[2] = quad[0];
         int tri1_id = 2*i_quad->first;
         int tri2_id = 2*i_quad->first + 1;
-        triconn->insert(pair<int,vector<int> >(tri1_id,tri1));
-        triconn->insert(pair<int,vector<int> >(tri2_id,tri2));
+        triconn->insert(std::pair<int,vector<int> >(tri1_id,tri1));
+        triconn->insert(std::pair<int,vector<int> >(tri2_id,tri2));
       }
 
       RCP<EXODUS::ElementBlock> triblock = Teuchos::rcp(new EXODUS::ElementBlock(EXODUS::ElementBlock::tri3,triconn,quadblock->GetName()));
@@ -1614,13 +1614,13 @@ void EXODUS::PrintMap(ostream& os,const map<int,map<int,int> > mymap)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(ostream& os,const map<int,pair<int,int> > mymap)
+void EXODUS::PrintMap(ostream& os,const map<int,std::pair<int,int> > mymap)
 {
-  map<int,pair<int,int> >::const_iterator iter;
+  map<int,std::pair<int,int> >::const_iterator iter;
   for(iter = mymap.begin(); iter != mymap.end(); ++iter)
   {
       os << iter->first << ": ";
-      pair<int,int> actpair = iter->second;
+      std::pair<int,int> actpair = iter->second;
       os << actpair.first << " <=> " << actpair.second;
       os << endl;
   }

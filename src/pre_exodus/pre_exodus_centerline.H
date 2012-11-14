@@ -12,7 +12,7 @@
 #include "pre_exodus_reader.H" //contains class Mesh (necessary for method - element_cosys)
 
 // Helper function to sort list of pairs according to second entry of the pair
-bool MyDataSortPredicate(pair<int, double> lhs,pair<int, double> rhs);
+bool MyDataSortPredicate(std::pair<int, double> lhs,std::pair<int, double> rhs);
 
 namespace EXODUS
 {

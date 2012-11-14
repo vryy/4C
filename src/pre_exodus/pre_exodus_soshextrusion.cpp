@@ -205,7 +205,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       }
 
       // put new coords into newnode map
-      newnodes->insert(pair<int,vector<double> >(newid,newcoords));
+      newnodes->insert(std::pair<int,vector<double> >(newid,newcoords));
 
       // put new node into map of OldNodeToNewNode
       vector<int> newids(1,newid);
@@ -230,7 +230,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         // numbering of new ids nodewise not layerwise as may be expected
         newid = highestnid+1; ++ highestnid;
         // put new coords into newnode map
-        newnodes->insert(pair<int,vector<double> >(newid,newcoords));
+        newnodes->insert(std::pair<int,vector<double> >(newid,newcoords));
         // put new node into map of OldNodeToNewNode
         node_pair[*i_node].push_back(newid);
         // finally store this node where it will be connected to an ele
@@ -263,7 +263,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       newelenodes.insert(newelenodes.begin(),basenodes.begin(),basenodes.end());
       newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
       // insert new element into new connectivity
-      newconn->insert(pair<int,vector<int> >(newele,newelenodes));
+      newconn->insert(std::pair<int,vector<int> >(newele,newelenodes));
       layerstack.find(stackbase)->second.push_back(newele);
 
       // if we are at top layer put the corresponding side into newsideset
@@ -376,7 +376,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             }
 
             // put new coords into newnode map
-            newnodes->insert(pair<int,vector<double> >(newid,newcoords));
+            newnodes->insert(std::pair<int,vector<double> >(newid,newcoords));
 
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
@@ -402,7 +402,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
               newid = highestnid+1; ++ highestnid;
               // put new coords into newnode map
-              newnodes->insert(pair<int,vector<double> >(newid,newcoords));
+              newnodes->insert(std::pair<int,vector<double> >(newid,newcoords));
 
               // put new node into map of OldNodeToNewNode
               node_pair[thirdnode].push_back(newid);
@@ -445,7 +445,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               }
 
              // put new coords into newnode map
-              newnodes->insert(pair<int,vector<double> >(newid,newcoords));
+              newnodes->insert(std::pair<int,vector<double> >(newid,newcoords));
 
               // put new node into map of OldNodeToNewNode
               vector<int> newids(1,newid);
@@ -471,7 +471,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
                 const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
                 newid = highestnid+1; ++ highestnid;
                 // put new coords into newnode map
-                newnodes->insert(pair<int,vector<double> >(newid,newcoords));
+                newnodes->insert(std::pair<int,vector<double> >(newid,newcoords));
 
                 // put new node into map of OldNodeToNewNode
                 node_pair[fourthnode].push_back(newid);
@@ -502,7 +502,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             newelenodes.insert(newelenodes.begin(),basenodes.begin(),basenodes.end());
             newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
             // insert new element into new connectivity
-            newconn->insert(pair<int,vector<int> >(newele,newelenodes));
+            newconn->insert(std::pair<int,vector<int> >(newele,newelenodes));
             layerstack.find(stackbase)->second.push_back(newele);
 
             // if we are at top layer put the corresponding side into newsideset
@@ -584,7 +584,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         int numnodes = i_ele->second.size();
         if (numnodes == 8){
           if (diveblocks ==0 ){ // standard case: just one eblock over extrusion
-            hexconn->insert(pair<int,vector<int> >(hexcounter,i_ele->second));
+            hexconn->insert(std::pair<int,vector<int> >(hexcounter,i_ele->second));
             if (newsideset.find(i_ele->first)!=newsideset.end()){
               newsideset.find(i_ele->first)->second.at(0) = hexcounter;  // update sideset with new element ids
               // store eblockid the sideset is related to at 3rd position, in hexcase it will be highestblock
@@ -596,11 +596,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             if (layerstack.find(i_ele->first) != layerstack.end()) innerelecounter = 0;
 
             if (innerelecounter < diveblocks){  // insert ele into inner layer eblock
-              hexconn->insert(pair<int,vector<int> >(hexcounter,i_ele->second));
+              hexconn->insert(std::pair<int,vector<int> >(hexcounter,i_ele->second));
               hexcounter ++;
               innerelecounter ++;
             } else { // insert ele into outer layer eblock
-              hexconn2->insert(pair<int,vector<int> >(hexcounter2,i_ele->second));
+              hexconn2->insert(std::pair<int,vector<int> >(hexcounter2,i_ele->second));
               if (newsideset.find(i_ele->first)!=newsideset.end()){
                 newsideset.find(i_ele->first)->second.at(0) = hexcounter2;  // update sideset with new element ids
                 // store eblockid the sideset is related to at 3rd position, it will be highestblock + 1
@@ -612,7 +612,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         }
         else if (numnodes == 6){
           if (diveblocks == 0){ // standard case: just one eblock over extrusion
-            wegconn->insert(pair<int,vector<int> >(wegcounter,i_ele->second));
+            wegconn->insert(std::pair<int,vector<int> >(wegcounter,i_ele->second));
             if (newsideset.find(i_ele->first)!=newsideset.end()){
               newsideset.find(i_ele->first)->second.at(0) = wegcounter;  // update sideset with new element ids
               // store eblockid the sideset is related to at 3rd position, in wegcase it will be highestblock or if we have hexes highestblock+1
@@ -624,11 +624,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             if (layerstack.find(i_ele->first) != layerstack.end()) innerelecounter = 0;
 
             if (innerelecounter < diveblocks){  // insert ele into inner layer eblock
-              wegconn->insert(pair<int,vector<int> >(wegcounter,i_ele->second));
+              wegconn->insert(std::pair<int,vector<int> >(wegcounter,i_ele->second));
               wegcounter ++;
               innerelecounter ++;
             } else { // insert ele into outer layer eblock
-              wegconn2->insert(pair<int,vector<int> >(wegcounter2,i_ele->second));
+              wegconn2->insert(std::pair<int,vector<int> >(wegcounter2,i_ele->second));
               if (newsideset.find(i_ele->first)!=newsideset.end()){
                 newsideset.find(i_ele->first)->second.at(0) = wegcounter2;  // update sideset with new element ids
                 // store eblockid the sideset is related to at 3rd position, in wegcase it will be highestblock or if we have hexes highestblock+2+1
@@ -930,7 +930,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
 
       // store angular deviation between avgNormal to nodeNormal
       map<double,int> normaldeviations;  // carefull, we compare doubles here, should work though
-      pair<map<double,int>::iterator,bool> doubleentry;
+      std::pair<map<double,int>::iterator,bool> doubleentry;
       const double epsilon = 1.0E-6;
       map<int,vector<double> > node_normals;
       // calculate node normals of baseface

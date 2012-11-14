@@ -163,7 +163,7 @@ public:
   void EraseSideSet(const int id);
 
   //! Calculate the midpoint of all elements and return map<midpoint,map<eb,ele> >
-  map<int,pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const;
+  std::map<int,std::pair<int,int> > createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const;
 
   //! Adjust local element ids referenced in SideSet to global ids
   map<int,vector<int> > GlobalifySSeleids(const int ssid) const;
@@ -412,7 +412,7 @@ void PrintMap(ostream& os,const map<int,vector<int> > mymap);
 void PrintMap(ostream& os, const map<int,vector<double> >mymap);
 void PrintMap(ostream& os,const map<int,std::set<int> > mymap);
 void PrintMap(ostream& os,const map<int,map<int,int> > mymap);
-void PrintMap(ostream& os,const map<int,pair<int,int> > mymap);
+void PrintMap(ostream& os,const map<int,std::pair<int,int> > mymap);
 void PrintMap(ostream& os,const map<int,int> mymap);
 void PrintMap(ostream& os,const map<int,double> mymap);
 void PrintMap(ostream& os,const map<double,int> mymap);
