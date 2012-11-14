@@ -68,9 +68,6 @@ isconverged_(false)
   //suppress all output printed to screen in case of single filament studies in order not to generate too much output on the cluster
   SuppressOutput();
 
-  // Initialize Statistical Mechanics Output
-  statmechman_->InitOutput(DRT::Problem::Instance()->NDim(),(*dt_)[0]);
-
   // set up inverted dirichlet toggle vector (old dbc way)
   if(dirichtoggle_!=Teuchos::null)
   {
@@ -1647,12 +1644,8 @@ void STR::TimIntStatMech::StatMechPrepareStep()
       if(statmechparams.get<int>("INITOCCUPIEDBSPOTS",0)>0)
         statmechman_->SetInitialCrosslinkers(beamcman_);
 
-      if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"GMSHOUTPUT"))
-      {
-        std::ostringstream filename;
-        filename << statmechman_->StatMechRootPath()<<"/GmshOutput/network000000.pos";
-        statmechman_->GmshOutput(*((*dis_)(0)),filename,step_);
-      }
+      // Initialize Statistical Mechanics Output
+      statmechman_->InitOutput(DRT::Problem::Instance()->NDim(),*((*dis_)(0)),step_,(*dt_)[0]);
     }
 
     //save relevant class variables at the beginning of this time step

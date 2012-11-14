@@ -149,7 +149,10 @@ public:
   void UpdateTimeAndStepSize(double& dt, double& timeconverged);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
-  void InitOutput(const int& ndim, const double& dt);
+  void InitOutput(const int& ndim,
+                  const Epetra_Vector& dis,
+                  const int& istep,
+                  const double& dt);
 
   //! \brief Get current binding spot positions
   void GetNodePositions(Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations, bool positionsonly=false);

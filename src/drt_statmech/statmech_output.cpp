@@ -37,7 +37,10 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
+void STATMECH::StatMechManager::InitOutput(const int& ndim,
+                                           const Epetra_Vector& dis,
+                                           const int& istep,
+                                           const double& dt)
 {
   //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   // create file name and check existence of the required output folder
@@ -99,7 +102,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
           {
             outputfilenumber_++;
             outputfilename.str("");
-            outputfilename << "EndToEnd" << outputfilenumber_ << ".dat";
+            outputfilename << outputrootpath_ << "/StatMechOutput/EndToEnd" << outputfilenumber_ << ".dat";
             fp = fopen(outputfilename.str().c_str(), "r");
           }
           while (fp != NULL);
@@ -129,7 +132,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
 
           //defining outputfilename by means of new testnumber
           outputfilename.str("");
-          outputfilename << "EndToEnd" << outputfilenumber_ << ".dat";
+          outputfilename << outputrootpath_ << "/StatMechOutput/EndToEnd" << outputfilenumber_ << ".dat";
         }
 
         //increasing the number in the numbering file by one
@@ -184,7 +187,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
             //defining name of output file
             outputfilenumber_++;
             outputfilename.str("");
-            outputfilename << "E2E_" << discret_->NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
+            outputfilename << outputrootpath_ << "/StatMechOutput/E2E_" << discret_->NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
             fp = fopen(outputfilename.str().c_str(), "r");
           }
           while (fp != NULL);
@@ -214,7 +217,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
 
           //defining outputfilename by means of new testnumber
           outputfilename.str("");
-          outputfilename << "E2E_" << discret_->NumMyRowElements() << '_' << dt << '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
+          outputfilename << outputrootpath_ << "/StatMechOutput/E2E_" << discret_->NumMyRowElements() << '_' << dt << '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
 
           //set up new file with name "outputfilename" without writing anything into this file
           fp = fopen(outputfilename.str().c_str(), "w");
@@ -263,7 +266,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
           {
             outputfilenumber_++;
             outputfilename.str("");
-            outputfilename << "OrientationCorrelation" << outputfilenumber_<< ".dat";
+            outputfilename << outputrootpath_ << "/StatMechOutput/OrientationCorrelation" << outputfilenumber_<< ".dat";
             fp = fopen(outputfilename.str().c_str(), "r");
           }
           while (fp != NULL);
@@ -293,7 +296,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
 
           //defining outputfilename by means of new testnumber
           outputfilename.str("");
-          outputfilename << "OrientationCorrelation" << outputfilenumber_<< ".dat";
+          outputfilename << outputrootpath_ << "/StatMechOutput/OrientationCorrelation" << outputfilenumber_<< ".dat";
         }
 
         //set up new file with name "outputfilename" without writing anything into this file
@@ -340,8 +343,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
           {
             outputfilenumber_++;
             outputfilename.str("");
-            outputfilename << "AnisotropicDiffusion" << outputfilenumber_
-                << ".dat";
+            outputfilename << outputrootpath_ << "/StatMechOutput/AnisotropicDiffusion" << outputfilenumber_ << ".dat";
             fp = fopen(outputfilename.str().c_str(), "r");
           }
           while (fp != NULL);
@@ -371,7 +373,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
 
           //defining outputfilename by means of new testnumber
           outputfilename.str("");
-          outputfilename << "AnisotropicDiffusion" << outputfilenumber_ << ".dat";
+          outputfilename << outputrootpath_ << "/StatMechOutput/AnisotropicDiffusion" << outputfilenumber_ << ".dat";
         }
 
         //set up new file with name "outputfilename" without writing anything into this file
@@ -420,7 +422,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
         //defining name of output file related to processor Id
         std::ostringstream outputfilename;
         outputfilename.str("");
-        outputfilename << "ViscoElOutputProc.dat";
+        outputfilename << outputrootpath_ << "/StatMechOutput/ViscoElOutputProc.dat";
 
         fp = fopen(outputfilename.str().c_str(), "w");
 
@@ -435,6 +437,13 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim, const double& dt)
     case INPAR::STATMECH::statout_none:
     default:
       break;
+  }
+
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))
+  {
+    std::ostringstream filename;
+    filename << outputrootpath_<<"/GmshOutput/network000000.pos";
+    GmshOutput(dis,filename,istep);
   }
 
   return;
