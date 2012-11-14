@@ -9,7 +9,7 @@ void test_unit_intersection_touch()
   double scale = 1.1e-6;
   for ( int i=0; i<7; ++i )
   {
-    double x = pow( 0.1, i );
+    double x = std::pow( 0.1, i );
     GEO::CUT::Options options;
     GEO::CUT::Mesh mesh( options, x );
 
