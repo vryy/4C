@@ -154,7 +154,7 @@ void MAT::BioCell::Evaluate(
   C(2,2) += 1.0;
 
   // Principal Invariants I1 = tr(C) and I3 = det(C)
-  const double I1 = C(0,0)+C(1,1)+C(2,2); // Necessary only for energy
+  //const double I1 = C(0,0)+C(1,1)+C(2,2); // Necessary only for energy
   const double I3 = C(0,0)*C(1,1)*C(2,2) + C(0,1)*C(1,2)*C(2,0)
                   + C(0,2)*C(1,0)*C(2,1) - (C(0,2)*C(1,1)*C(2,0)
                   + C(0,1)*C(1,0)*C(2,2) + C(0,0)*C(1,2)*C(2,1));
@@ -201,10 +201,10 @@ void MAT::BioCell::Evaluate(
 
 
   // Strain Energy /////////////////////////////////////////////////////////////
-  double W,W_an,W_af;
-  if (AN) { W_an = c_an * (I1 - 3) + (c_an/beta) * (pow(I3,-beta) - 1); }
-  if (AF) { W_af = c_af * (J4_af/pow(I3,drittel) - 1) * (J4_af/pow(I3,drittel) - 1); }
-  W = W_an + W_af;
+  //double W,W_an,W_af;
+  //if (AN) { W_an = c_an * (I1 - 3) + (c_an/beta) * (pow(I3,-beta) - 1); }
+  //if (AF) { W_af = c_af * (J4_af/pow(I3,drittel) - 1) * (J4_af/pow(I3,drittel) - 1); }
+  //W = W_an + W_af;
 
   // PK2 Stresses //////////////////////////////////////////////////////////////
   LINALG::SerialDenseMatrix PK2(3,3);

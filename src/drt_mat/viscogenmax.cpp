@@ -519,7 +519,7 @@ void MAT::ViscoGenMax::Evaluate(
         //initialize scalars
         double artscalar1(true);
         double artscalar2(true);
-        double scalarvisco(true);
+        //double scalarvisco(true);
 
         const double theta= 0.5 ;//params_->theta_;
 
@@ -534,7 +534,7 @@ void MAT::ViscoGenMax::Evaluate(
         artscalar2=tau_isomod_iso_/(tau_isomod_iso_ + theta*dt);
 
         // factor to calculate visco stiffness matrix from elastic stiffness matrix
-        scalarvisco = 1+beta_isomod_iso_*exp(-dt/(2*tau_isomod_iso_));//+alpha1*tau/(tau+theta*dt);
+        //scalarvisco = 1+beta_isomod_iso_*exp(-dt/(2*tau_isomod_iso_));//+alpha1*tau/(tau+theta*dt);
 
         // read history
         LINALG::Matrix<NUM_STRESS_3D,1> Siso_n (histstressisomodisolast_->at(gp));
