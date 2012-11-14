@@ -792,19 +792,11 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   {
     for (int j=0;j<(int)poly2.size();++j)
     {
-      // we need two diff vectors and edges first
-      double diffp1[3] = {0.0, 0.0, 0.0};
-      double diffp2[3] = {0.0, 0.0, 0.0};
-      double diffq1[3] = {0.0, 0.0, 0.0};
-      double diffq2[3] = {0.0, 0.0, 0.0};
+      // we need two edges first
       double edge1[3] = {0.0, 0.0, 0.0};
       double edge2[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k)
       {
-        diffp1[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
-        diffp2[k] = (poly1[i].Next())->Coord()[k] - poly2[j].Coord()[k];
-        diffq1[k] = poly2[j].Coord()[k] - poly1[i].Coord()[k];
-        diffq2[k] = (poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k];
         edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
         edge2[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
       }
@@ -1150,11 +1142,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         edge1[k] = (intersec1[i].Next())->Coord()[k] - (intersec1[i].Prev())->Coord()[k];
         edge2[k] = ((intersec1[i].Neighbor())->Next())->Coord()[k] - ((intersec1[i].Neighbor())->Prev())->Coord()[k];
       }
-      double n1[3] = {0.0, 0.0, 0.0};
       double n2[3] = {0.0, 0.0, 0.0};
-      n1[0] = edge1[1]*Auxn()[2]-edge1[2]*Auxn()[1];
-      n1[1] = edge1[2]*Auxn()[0]-edge1[0]*Auxn()[2];
-      n1[2] = edge1[0]*Auxn()[1]-edge1[1]*Auxn()[0];
       n2[0] = edge2[1]*Auxn()[2]-edge2[2]*Auxn()[1];
       n2[1] = edge2[2]*Auxn()[0]-edge2[0]*Auxn()[2];
       n2[2] = edge2[0]*Auxn()[1]-edge2[1]*Auxn()[0];
@@ -1173,11 +1161,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         edge1[k] = (intersec2[i].Next())->Coord()[k] - (intersec2[i].Prev())->Coord()[k];
         edge2[k] = ((intersec2[i].Neighbor())->Next())->Coord()[k] - ((intersec2[i].Neighbor())->Prev())->Coord()[k];
       }
-      double n1[3] = {0.0, 0.0, 0.0};
       double n2[3] = {0.0, 0.0, 0.0};
-      n1[0] = edge1[1]*Auxn()[2]-edge1[2]*Auxn()[1];
-      n1[1] = edge1[2]*Auxn()[0]-edge1[0]*Auxn()[2];
-      n1[2] = edge1[0]*Auxn()[1]-edge1[1]*Auxn()[0];
       n2[0] = edge2[1]*Auxn()[2]-edge2[2]*Auxn()[1];
       n2[1] = edge2[2]*Auxn()[0]-edge2[0]*Auxn()[2];
       n2[2] = edge2[0]*Auxn()[1]-edge2[1]*Auxn()[0];
@@ -1666,11 +1650,14 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       // dserror, if not, simply continue with the next pair!
       int sid = SlaveElement().Id();
       int mid = MasterElement().Id();
-      std::cout << "***WARNING*** Input polygon 2 not convex! (S/M-pair: " << sid << "/" << mid << ")" << endl;
       bool nearcheck = RoughCheckNodes();
+      if (nearcheck)
+      {
+        std::cout << "***WARNING*** Input polygon 2 not convex! (S/M-pair: " << sid << "/" << mid << ")" << endl;
+      }
+      
       if (nearcheck && out)
       {
-        //std::cout << "***WARNING*** Input polygon 2 not convex, but close pair!" << endl;
         std::ostringstream filename;
         static int problemcount=0;
         filename << "o/gmsh_output/" << "problem_";
@@ -1706,7 +1693,54 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         std::vector<MortarNode*> mycmnodes(nmnodes);
         for (int i=0;i<nmnodes;++i)
           mycmnodes[i] = static_cast<MortarNode*> (mymnodes[i]);
+        
+        // get node coordinates
+        LINALG::SerialDenseMatrix scoord(3,nsnodes);
+        SlaveIntElement().GetNodalCoords(scoord);
+        double scolor = (double)SlaveIntElement().Owner();
+        LINALG::SerialDenseMatrix mcoord(3,nmnodes);
+        MasterIntElement().GetNodalCoords(mcoord);
+        double mcolor = (double)MasterIntElement().Owner();
           
+        // plot elements
+        // 3D linear case (3noded triangular elements)
+        if (SlaveIntElement().Shape()==DRT::Element::tri3)
+        {
+          gmshfilecontent << "ST(" << std::scientific << scoord(0,0) << "," << scoord(1,0) << ","
+                              << scoord(2,0) << "," << scoord(0,1) << "," << scoord(1,1) << ","
+                              << scoord(2,1) << "," << scoord(0,2) << "," << scoord(1,2) << ","
+                              << scoord(2,2) << ")";
+          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor << "};" << endl;
+        }
+        else if (SlaveIntElement().Shape()==DRT::Element::quad4)
+        {
+          gmshfilecontent << "SQ(" << std::scientific << scoord(0,0) << "," << scoord(1,0) << ","
+                                   << scoord(2,0) << "," << scoord(0,1) << "," << scoord(1,1) << ","
+                                   << scoord(2,1) << "," << scoord(0,2) << "," << scoord(1,2) << ","
+                                   << scoord(2,2) << "," << scoord(0,3) << "," << scoord(1,3) << ","
+                                   << scoord(2,3) << ")";
+          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor << "," << scolor << "};" << endl;
+        }
+        
+        if (MasterIntElement().Shape()==DRT::Element::tri3)
+        {
+          gmshfilecontent << "ST(" << std::scientific << mcoord(0,0) << "," << mcoord(1,0) << ","
+                              << mcoord(2,0) << "," << mcoord(0,1) << "," << mcoord(1,1) << ","
+                              << mcoord(2,1) << "," << mcoord(0,2) << "," << mcoord(1,2) << ","
+                              << mcoord(2,2) << ")";
+          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor << "};" << endl;
+        }
+        else if (MasterIntElement().Shape()==DRT::Element::quad4)
+        {
+          gmshfilecontent << "SQ(" << std::scientific << mcoord(0,0) << "," << mcoord(1,0) << ","
+                                   << mcoord(2,0) << "," << mcoord(0,1) << "," << mcoord(1,1) << ","
+                                   << mcoord(2,1) << "," << mcoord(0,2) << "," << mcoord(1,2) << ","
+                                   << mcoord(2,2) << "," << mcoord(0,3) << "," << mcoord(1,3) << ","
+                                   << mcoord(2,3) << ")";
+          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor << "," << mcolor << "};" << endl;
+        }
+          
+        // plot edges
         for (int i=0;i<nsnodes;++i)
         {
           if (i!=nsnodes-1)
@@ -1757,9 +1791,6 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       }
       
       return false;
-      
-      //if (nearcheck) dserror("ERROR: Input polygon 2 not convex, but close pair!");
-      //else return false;
     }
   }
 
@@ -1841,19 +1872,11 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   {
     for (int j=0;j<(int)poly2.size();++j)
     {
-      // we need two diff vectors and edges first
-      double diffp1[3] = {0.0, 0.0, 0.0};
-      double diffp2[3] = {0.0, 0.0, 0.0};
-      double diffq1[3] = {0.0, 0.0, 0.0};
-      double diffq2[3] = {0.0, 0.0, 0.0};
+      // we need two edges first
       double edge1[3] = {0.0, 0.0, 0.0};
       double edge2[3] = {0.0, 0.0, 0.0};
       for (int k=0;k<3;++k)
       {
-        diffp1[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
-        diffp2[k] = (poly1[i].Next())->Coord()[k] - poly2[j].Coord()[k];
-        diffq1[k] = poly2[j].Coord()[k] - poly1[i].Coord()[k];
-        diffq2[k] = (poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k];
         edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
         edge2[k] = (poly2[j].Next())->Coord()[k] - poly2[j].Coord()[k];
       }

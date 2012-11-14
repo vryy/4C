@@ -426,6 +426,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // store content of BOTH ParameterLists in local parameter list
   mtparams.setParameters(mortar);
   mtparams.setParameters(meshtying);
+  mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
   
   // no parallel redistribution in the serial case
   if (Comm().NumProc()==1) mtparams.set<std::string>("PARALLEL_REDIST","None");

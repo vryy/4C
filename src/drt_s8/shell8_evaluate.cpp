@@ -279,10 +279,6 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
   const Epetra_SerialDenseMatrix* a3ref = data_.Get<Epetra_SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot find array of directors");
-  double a3ref2[3][MAXNOD_SHELL8];
-  for (int i=0; i<3; ++i)
-    for (int j=0; j<iel; ++j)
-      a3ref2[i][j] = (*a3ref)(i,j);
 
   vector<double> funct(iel);
   Epetra_SerialDenseMatrix deriv(2,iel);
@@ -2820,7 +2816,7 @@ void DRT::ELEMENTS::Shell8::s8_ansqshapefunctions(
    const double rthreei = 1.0 / (sqrt(3.0));
    double pr[3],ps[3];
    double qr[2],qs[2];
-   double rr[3],rs[3];
+   //double rr[3],rs[3];
 
    pr[0] = -0.5 * s * (1.0-s);
    pr[1] =  (1.0-s) * (1.0+s);
@@ -2829,9 +2825,9 @@ void DRT::ELEMENTS::Shell8::s8_ansqshapefunctions(
    qr[0] =  0.5 * (1.0-r/rthreei);
    qr[1] =  0.5 * (1.0+r/rthreei);
 
-   rr[0] =  1.0/6.0 - 0.5 * s;
-   rr[1] =  2.0/3.0;
-   rr[2] =  1.0/6.0 + 0.5 * s;
+   //rr[0] =  1.0/6.0 - 0.5 * s;
+   //rr[1] =  2.0/3.0;
+   //rr[2] =  1.0/6.0 + 0.5 * s;
 
    ps[0] = -0.5 * r * (1.0-r);
    ps[1] =  (1.0-r) * (1.0+r);
@@ -2840,9 +2836,9 @@ void DRT::ELEMENTS::Shell8::s8_ansqshapefunctions(
    qs[0] =  0.5 * (1.0-s/rthreei);
    qs[1] =  0.5 * (1.0+s/rthreei);
 
-   rs[0] =  1.0/6.0 - 0.5 * r;
-   rs[1] =  2.0/3.0;
-   rs[2] =  1.0/6.0 + 0.5 * r;
+   //rs[0] =  1.0/6.0 - 0.5 * r;
+   //rs[1] =  2.0/3.0;
+   //rs[2] =  1.0/6.0 + 0.5 * r;
 
    frq[0] = pr[0] * qr[0];
    frq[1] = pr[1] * qr[0];

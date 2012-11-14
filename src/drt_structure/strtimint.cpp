@@ -418,7 +418,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   const Teuchos::ParameterList&   smortar  = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->ContactDynamicParams();
   INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
-  INPAR::MORTAR::ShapeFcn         shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar,"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn         shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(DRT::Problem::Instance()->MortarCouplingParams(),"SHAPEFCN");
   INPAR::CONTACT::SolvingStrategy soltype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
   bool semismooth = DRT::INPUT::IntegralValue<int>(scontact,"SEMI_SMOOTH_NEWTON");
 

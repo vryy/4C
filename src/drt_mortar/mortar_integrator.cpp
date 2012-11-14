@@ -564,13 +564,6 @@ Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D
   n[1][0] = snode1->MoData().n()[0];
   n[1][1] = snode1->MoData().n()[1];
 
-  // tangents
-  double t[2][2];
-  t[0][0] = -n[0][1];
-  t[0][1] =  n[0][0];
-  t[1][0] = -n[1][1];
-  t[1][1] =  n[1][0];
-
   // scalar product n1 * n2
   double n1n2 = 0.0;
   for (int i=0;i<2;++i)

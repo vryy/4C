@@ -494,7 +494,6 @@ inline void DRT::ELEMENTS::Beam3ii::strainstress(const LINALG::Matrix<3,1>& gamm
   Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0;
   double sm = 0;
-  double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this beam
   switch(currmat->MaterialType())
@@ -504,7 +503,6 @@ inline void DRT::ELEMENTS::Beam3ii::strainstress(const LINALG::Matrix<3,1>& gamm
       const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
       ym = actmat->Youngs();
       sm = ym / (2*(1 + actmat->PoissonRatio()));
-      density = actmat->Density();
     }
     break;
     default:

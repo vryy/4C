@@ -3238,17 +3238,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     sele.DerivShapeDual(dualmap);
   }
 
-  // prepare directional derivative of dual shape functions
-  // this is necessary for all slave element types except tri3
-  bool dualintlin = false;
-  std::vector<std::vector<std::map<int,double> > > dualintmap(nintrow,std::vector<std::map<int,double> >(nintrow));
-  if ((shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (sintele.Shape()!=MORTAR::MortarElement::tri3))
-  {
-    dualintlin = true;
-    sintele.DerivShapeDual(dualintmap);
-  }
-
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
   bool bound = false;

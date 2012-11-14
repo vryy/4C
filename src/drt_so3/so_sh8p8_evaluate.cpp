@@ -2374,26 +2374,6 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
     stc_fact = sosh8_calcaspectratio();
   }
 
-  // Compute different scaling factors for STC or Inv(STC)
-  double factor1=0.0;
-  double factor2=0.0;
-  double factor3=0.0;
-  double factor4=0.0;
-  if (!calcinverse)
-  {
-    factor1=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact));
-    factor2=(stc_fact-1.0)/(2.0*stc_fact);
-    factor3=(1.0/stc_fact);
-    factor4=(1.0-1.0/stc_fact);
-  }
-  else
-  {
-    factor1=(1.0+stc_fact)/2.0;
-    factor2=(1.0-stc_fact)/2.0;
-    factor3=stc_fact;
-    factor4=1-stc_fact;
-  }
-
   if (stc_scaling==INPAR::STR::stc_curr or stc_scaling==INPAR::STR::stc_currsym)
   {
 

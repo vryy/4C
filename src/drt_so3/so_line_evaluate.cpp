@@ -38,21 +38,23 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
     neum_live
   };
   LoadType ltype;
+
   // spatial or material configuration depends on the type of load
   // currently only material frame used
-  enum Configuration
-  {
-    config_none,
-    config_material,
-    config_spatial,
-    config_both
-  };
-  Configuration config = config_none;
+  //enum Configuration
+  //{
+  //  config_none,
+  //  config_material,
+  //  config_spatial,
+  //  config_both
+  //};
+  //Configuration config = config_none;
+
   const string* type = condition.Get<string>("type");
   if (*type == "neum_live")
   {
     ltype  = neum_live;
-    config = config_material;
+    //config = config_material;
   }
   else dserror("Unknown type of LineNeumann condition");
 

@@ -432,39 +432,34 @@ void DRT::ELEMENTS::Torsion2::t2_nlnstiffmass(std::vector<double>&      disp,
 			    B(j,j)  += 1/lcurr(0)/lcurr(1);
 			    B(2+j,j)+= 1/lcurr(0)/lcurr(1);
 			  }
-			  
-			  
-			  double cos_theta=0.0;
-			  cos_theta=(aux(0)*aux(2)+aux(1)*aux(3))/lcurr(0)/lcurr(1);
-			  
-			  
-			    //internal forces (equation 3.16, same as for theta almost zero)
-			    if (force != NULL)
-			    {
-			      for (int j=0; j<6; ++j)
-			        (*force)(j) = -spring*grtheta2(j);      //-
-			    }
-			    
-			    
-			    //stiffness matrix (equation 3.17, same as for theta almost zero)
-			    if (stiffmatrix != NULL) 
-			    {
-			      for (int j=0; j<2; ++j) 
-			      { 
-			        for (int i=0; i<2; ++i)
-			        {
-			          (*stiffmatrix)(  j,  i) =-spring*( -A(j  ,i) );
-			          (*stiffmatrix)(  j,2+i) =-spring*(  A(j  ,i)+B(j+2,i) );
-			          (*stiffmatrix)(  j,4+i) =-spring*( -B(j+2,i) );
-			          (*stiffmatrix)(2+j,  i) =-spring*(  A(j  ,i)+B(j  ,i) );
-			          (*stiffmatrix)(2+j,2+i) =-spring*( -A(j  ,i)-A(j+2,i)-B(j ,i)-B(j+2,i) );
-			          (*stiffmatrix)(2+j,4+i) =-spring*(  A(j+2,i)+B(j+2,i) );
-			          (*stiffmatrix)(4+j,  i) =-spring*( -B(j  ,i) );
-			          (*stiffmatrix)(4+j,2+i) =-spring*(  A(j+2,i)+B(j  ,i) );
-			          (*stiffmatrix)(4+j,4+i) =-spring*( -A(j+2,i) );
-			        }
-			      }
-			    }
+
+        //internal forces (equation 3.16, same as for theta almost zero)
+        if (force != NULL)
+        {
+          for (int j=0; j<6; ++j)
+            (*force)(j) = -spring*grtheta2(j);      //-
+        }
+
+
+        //stiffness matrix (equation 3.17, same as for theta almost zero)
+        if (stiffmatrix != NULL)
+        {
+          for (int j=0; j<2; ++j)
+          {
+            for (int i=0; i<2; ++i)
+            {
+              (*stiffmatrix)(  j,  i) =-spring*( -A(j  ,i) );
+              (*stiffmatrix)(  j,2+i) =-spring*(  A(j  ,i)+B(j+2,i) );
+              (*stiffmatrix)(  j,4+i) =-spring*( -B(j+2,i) );
+              (*stiffmatrix)(2+j,  i) =-spring*(  A(j  ,i)+B(j  ,i) );
+              (*stiffmatrix)(2+j,2+i) =-spring*( -A(j  ,i)-A(j+2,i)-B(j ,i)-B(j+2,i) );
+              (*stiffmatrix)(2+j,4+i) =-spring*(  A(j+2,i)+B(j+2,i) );
+              (*stiffmatrix)(4+j,  i) =-spring*( -B(j  ,i) );
+              (*stiffmatrix)(4+j,2+i) =-spring*(  A(j+2,i)+B(j  ,i) );
+              (*stiffmatrix)(4+j,4+i) =-spring*( -A(j+2,i) );
+            }
+          }
+        }
 		
 		
 	}//bending potetial cosine

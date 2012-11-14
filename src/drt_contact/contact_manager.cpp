@@ -639,6 +639,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // store contents of BOTH ParameterLists in local parameter list
   cparams.setParameters(mortar);
   cparams.setParameters(contact);
+  cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // no parallel redistribution in the serial case
   if (Comm().NumProc()==1) cparams.set<std::string>("PARALLEL_REDIST","None");
