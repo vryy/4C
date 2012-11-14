@@ -25,9 +25,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_fsi/fsi_utils.H"
 
 
-using namespace std;
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::Coupling::Coupling()
