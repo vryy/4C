@@ -746,6 +746,8 @@ void fluid_fluid_fsi_drt()
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(*comm);
+
+    break;
   }
   }
 }
@@ -1015,6 +1017,8 @@ void fsi_ale_drt()
 
     // do the actual testing
     DRT::Problem::Instance()->TestAll(comm);
+
+    break;
   }
   }
 
@@ -1104,6 +1108,7 @@ void xfsi_drt()
   case fsi_iter_monolithicfluidsplit:
   case fsi_iter_monolithicstructuresplit:
     dserror("Unreasonable choice");
+    break;
   default:
   {
     // Any partitioned algorithm. Stable of working horses.
@@ -1132,6 +1137,8 @@ void xfsi_drt()
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
+
+    break;
   }
   }
 
