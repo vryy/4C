@@ -120,7 +120,6 @@ NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-ITEMAX                          10
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
