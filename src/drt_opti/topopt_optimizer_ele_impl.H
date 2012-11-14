@@ -198,7 +198,7 @@ private:
     std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
     LINALG::Matrix<nen_,1>& edens,
     LINALG::Matrix<nen_,1>& egrad,
-    LINALG::Matrix<nen_,1>* econstr_der,
+    LINALG::Matrix<nen_,1>& econstr_der,
     RCP<MAT::Material> mat,
     DRT::UTILS::GaussIntegration& intpoints
   );
@@ -276,16 +276,6 @@ private:
   double fac_;
   //@}
 
-
-  //! @name physical coefficients
-
-  //! physical viscosity
-  double visc_;
-  //! reaction coefficient
-  double reacoeff_;
-  //! density
-  double dens_;
-  //@}
 
   //! Flag to (de)activate higher order elements
   //! elements with only mixed second order derivatives are not counted as higher order elements
@@ -451,16 +441,6 @@ private:
   double fac_;
   //@}
 
-
-  //! @name physical coefficients
-
-  //! physical viscosity
-  double visc_;
-  //! reaction coefficient
-  double reacoeff_;
-  //! density
-  double dens_;
-  //@}
 
   //! Flag to (de)activate higher order elements
   //! elements with only mixed second order derivatives are not counted as higher order elements

@@ -3756,8 +3756,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("OBJECTIVE_DISSIPATION","No","dissipation part of the objective function",&topoptcontrol);
   BoolParameter("OBJECTIVE_PRESSURE_DROP","No","pressure drop part of the objective function",&topoptcontrol);
 
-  DoubleParameter("DISSIPATION_FAC",0.0,"factor for the dissipation part of the objective",&topoptcontrol);
-  DoubleParameter("PRESSURE_DROP_FAC",0.0,"factor for the mean pressure drop part of the objective",&topoptcontrol);
+  DoubleParameter("DISSIPATION_FAC",-1.0,"factor for the dissipation part of the objective",&topoptcontrol);
+  DoubleParameter("PRESSURE_DROP_FAC",-1.0,"factor for the mean pressure drop part of the objective",&topoptcontrol);
 
   BoolParameter("OUTPUT_EVERY_ITER","No","write output of every iteration",&topoptcontrol);
 

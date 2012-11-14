@@ -88,6 +88,10 @@ params_(params)
       Teuchos::null,
       output
   ));
+
+  // write output using the derived optimizer -> optimizer must be present here
+  Output();
+
   return;
 }
 
@@ -154,6 +158,26 @@ void TOPOPT::Optimizer::ComputeGradients()
   params.set("action","compute_gradients");
 
   params.set("constraints_derivations",constr_deriv_);
+
+//  for (int i=0;i<optidis_->NumMyRowNodes();i++)
+//  {
+//    const int nsd = 2;
+//    const DRT::Node* node = optidis_->lRowNode(i);
+//    const double* coords = node->X();
+//
+//    vector<int> fluiddofs = fluiddis_->Dof(node);
+//    vector<int> optidof = optidis_->Dof(node);
+//
+//    for (int j=0;j<nsd;j++)
+//    {
+//      (*fluidvel_->begin()->second)[i*(nsd+1)+j] = 1.0;
+//      (*adjointvel_->begin()->second)[i*(nsd+1)+j] = 1.0;
+//    }
+//
+//    if (optidof.size()!=1) dserror("wrong size is %i",optidof.size());
+//
+//    (*dens_)[i] =1.0;
+//  }
 
   params.set("fluidvel",fluidvel_);
   params.set("adjointvel",adjointvel_);

@@ -254,6 +254,18 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
     fluidadjointtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
+    // check parameter
+    if (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") != INPAR::FLUID::topopt)
+      dserror("This physical type is not supported for fluid topology optimization");
+
+    if ((fluidadjointtimeparams->get<bool>("OBJECTIVE_DISSIPATION") == true) and
+        (fluidadjointtimeparams->get<double>("DISSIPATION_FAC") <= 0.0))
+        dserror("Optimizing dissipation with negative dissipation coefficient");
+
+    if ((fluidadjointtimeparams->get<bool>("OBJECTIVE_PRESSURE_DROP") == true) and
+        (fluidadjointtimeparams->get<double>("PRESSURE_DROP_FAC") <= 0.0))
+        dserror("Optimizing dissipation with negative dissipation coefficient");
+
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor);

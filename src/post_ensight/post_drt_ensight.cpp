@@ -461,12 +461,23 @@ int main(
     case prb_fluid_topopt:
     {
       string basename = problem.outname();
+      int numfield = problem.num_discr();
 
       PostField* fluidfield = problem.get_discretization(0);
       FluidEnsightWriter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
 
-      PostField* optifield = problem.get_discretization(1);
+      PostField* optifield = NULL;
+      // this is a hack due to the strange saving of discretization in postprocessing
+      // here, they are saved in the order in which they are read from file
+      // Thus, for two discretizations present everything is standard
+      // For one discretization, a discretization with number 1 is not allowed
+      // although this number is associated with the discretization in the rest
+      // of the code. So for one discretization which can be either fluid or opti
+      // both PostFields are tried, both with discretization number 0
+      // 
+      if (numfield==1)      optifield = problem.get_discretization(0);
+      else if (numfield==2) optifield = problem.get_discretization(1);
       ScaTraEnsightWriter optiwriter(optifield, basename);
       optiwriter.WriteFiles();
 

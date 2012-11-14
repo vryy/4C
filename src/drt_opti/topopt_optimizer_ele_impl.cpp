@@ -19,6 +19,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/optimization_density.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -137,9 +138,6 @@ poroint_(0.0),
 intpoints_( distype ),
 xsi_(true),
 fac_(0.0),
-visc_(0.0),
-reacoeff_(0.0),
-dens_(0.0),
 is_higher_order_ele_(false)
 {
   // pointer to class FluidEleParameter (access to the general parameter)
@@ -244,8 +242,6 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
-  double value = 0.0; // total unscaled entries at one gauss point
-
   double& densint = (*constraints)[0]; // integrated density
 
   //------------------------------------------------------------------------
@@ -253,6 +249,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
   //------------------------------------------------------------------------
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
+    double value = 0.0;
+
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
@@ -289,13 +287,12 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
           else // all other time steps -> factor 1-theta as old sol, factor theta as new sol -> overall factor 1
             timefac = 1.0;
 
+          value += timefac*poroint_*fluidvelint_.Dot(fluidvelint_);
           for (int idim=0;idim<nsd_;idim++)
           {
-            value += timefac*poroint_*fluidvelint_.Dot(fluidvelint_);
-
             for (int jdim=0;jdim<nsd_;jdim++)
             {
-              value += timefac*visc_*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+              value += timefac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
             }
           }
         }
@@ -355,8 +352,8 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 {
   LINALG::Matrix<nen_,1> egrad(elevec1_epetra,true);
 
-  RCP<Epetra_MultiVector> constr_der = params.get<RCP<Epetra_MultiVector> >("constraints_derivations");
-  LINALG::Matrix<nen_,1>* econstr_der = new LINALG::Matrix<nen_,1>[1];
+  Epetra_SerialDenseVector constr_deriv(nen_);
+  LINALG::Matrix<nen_,1> econstr_der(constr_deriv,true); // volume constraint
 
   RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
 
@@ -371,11 +368,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 
   // extract element data of all time steps from fluid solution
   vector<int> fluidlm;
-  {
-    vector<int> lmowner; // dummy for function call
-    vector<int> lmstride; // dummy for function call
-    ele->LocationVector(*fluiddis,fluidlm,lmowner,lmstride);
-  }
+  DRT::UTILS::DisBasedLocationVector(*fluiddis,*ele,fluidlm,nsd_+1);
 
   for (map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
       i!=fluidvels->end();i++)
@@ -413,6 +406,18 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
       intpoints
   );
 
+  // the derivation of the constraints is not handled by the standard assembly process
+  // since it is a MultiVector. Thus it is handled manually here
+  RCP<Epetra_MultiVector> constr_der = params.get<RCP<Epetra_MultiVector> >("constraints_derivations");
+
+  vector<int> dummylm; // the same as lm
+  vector<int> dummylmstride; // not required
+  vector<int> lmowner; // owners of the lm-dofs
+  ele->LocationVector(optidis,dummylm,lmowner,dummylmstride);
+  if (dummylm!=lm) dserror("non fitting local maps which shall be identical");
+
+  LINALG::Assemble(*constr_der,0,constr_deriv,lm,lmowner);
+
   return 0;
 }
 
@@ -426,18 +431,18 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
   map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
   LINALG::Matrix<nen_,1>& edens,
   LINALG::Matrix<nen_,1>& egrad,
-  LINALG::Matrix<nen_,1>* econstr_der,
+  LINALG::Matrix<nen_,1>& econstr_der,
   RCP<MAT::Material> mat,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
-  double value = 0.0;
-
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
+    double value = 0.0;
+
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
@@ -483,11 +488,13 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
       dserror("unknown time integration scheme while evaluating objective gradient");
     }
 
+
     value*= fac_*optiparams_->Dt()*poroderdens_; // scale with integration factor, time step size and poro-derivative
 
     for (int vi=0;vi<nen_;vi++)
     {
       egrad(vi,0) += value*funct_(vi);
+      econstr_der(vi,0) += fac_*funct_(vi);
     }
   }
   //------------------------------------------------------------------------
@@ -569,7 +576,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalPorosityAtIntPoint(
   // dporo/ddens = (poro_min - poro_max) * (fac+fac*fac) / (rho+fac)
   poroderdens_ = (optiparams_->MinPoro()-optiparams_->MaxPoro())
                 *(optiparams_->SmearFac()+optiparams_->SmearFac()*optiparams_->SmearFac())
-                /(densint+optiparams_->SmearFac());
+                /pow(densint+optiparams_->SmearFac(),2);
 }
 
 
@@ -711,9 +718,6 @@ DRT::ELEMENTS::TopOptBoundaryImpl<distype>::TopOptBoundaryImpl
 : intpoints_( distype ),
 xsi_(true),
 fac_(0.0),
-visc_(0.0),
-reacoeff_(0.0),
-dens_(0.0),
 is_higher_order_ele_(false)
 {
   // pointer to class FluidEleParameter (access to the general parameter)

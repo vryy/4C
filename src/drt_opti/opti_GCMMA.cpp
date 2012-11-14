@@ -337,10 +337,10 @@ void OPTI::GCMMA::InitIter(
     *constr_deriv_ = *constraintsgrad;
     obj_ = objective;
     *obj_deriv_ = *objectivegrad;
-    cout << "new obj is " << obj_ << endl;
-    cout << "new obj deriv is " << *obj_deriv_ << endl;
-    cout << "new constr are " << *constr_ << endl;
-    cout << "new constr deriv are " << *constr_deriv_ << endl;
+//    cout << "new obj is " << obj_ << endl;
+//    cout << "new obj deriv is " << *obj_deriv_ << endl;
+//    cout << "new constr are " << *constr_ << endl;
+//    cout << "new constr deriv are " << *constr_deriv_ << endl;
 
     // reset optimization variables
     *x_old2_ = *x_old_;
@@ -353,8 +353,8 @@ void OPTI::GCMMA::InitIter(
   }
   else // new inner iter -> new values, update rho
   {
-cout << "new obj is " << objective << endl;
-cout << "new constr are " << *constraints << endl;
+//cout << "new obj is " << objective << endl;
+//cout << "new constr are " << *constraints << endl;
     UpdateRho(objective,constraints);
   }
 }
@@ -422,8 +422,8 @@ void OPTI::GCMMA::Asymptotes()
       xdiff++;
     }
   }
-  cout << "low is " << *asymp_min_ << endl;
-  cout << "upp is " << *asymp_max_ << endl;
+//  cout << "low is " << *asymp_min_ << endl;
+//  cout << "upp is " << *asymp_max_ << endl;
 }
 
 
@@ -498,8 +498,8 @@ void OPTI::GCMMA::InitRho()
     rho++;
     rhomin++;
   }
-  cout << "rho0 is " << rho0_ << endl;
-  cout << "rho is " << *rho_ << endl;
+//  cout << "rho0 is " << rho0_ << endl;
+//  cout << "rho is " << *rho_ << endl;
 }
 
 
@@ -564,8 +564,8 @@ void OPTI::GCMMA::UpdateRho(
     constr_appr++;
     rho++;
   }
-  cout << "rho0 is " << rho0_ << endl;
-  cout << "rho is " << *rho_ << endl;
+//  cout << "rho0 is " << rho0_ << endl;
+//  cout << "rho is " << *rho_ << endl;
 }
 
 
@@ -1012,7 +1012,7 @@ bool OPTI::GCMMA::InnerConvergence(
   numNotFinished = 0;
 
   if (obj_appr_ + tol_sub_ < objective)
-  {
+  {cout << "objective not finished" << endl;
     finished = false;
     numNotFinished++;
   }
@@ -1023,7 +1023,7 @@ bool OPTI::GCMMA::InnerConvergence(
   for (int i=0;i<m_;i++)
   {
     if (*constr_appr + tol_sub_ < *constr)
-    {
+    {cout << "constraint " << i << " not finished" << endl;
       finished = false;
       numNotFinished++;
     }
@@ -1238,13 +1238,13 @@ void OPTI::GCMMA::InitSubSolve()
   *b_ += *constr_;
   b_->Scale(-1.0);
 
-  cout << "init subsolve: " << endl;
-  cout << "m is " << m_ << ", n is " << n_ << ", epsimin is " << tol_sub_ << endl;
-  cout << "low asy is " << *asymp_min_ << "upp asy is " << *asymp_max_ << endl;
-  cout << "alpha is " << *alpha_ << "beta is " << *beta_ << endl;
-  cout << "p0 is " << *p0_ << "q0 is " << *q0_ << endl;
-  cout << "p is " << *P_ << "q is " << *Q_ << endl;
-  cout << "a0 is " << a0_ << ", a is " << *a_ << ", b is " << *b_ << ", c is " << *c_ << ", d is " << *d_ << endl;
+//  cout << "init subsolve: " << endl;
+//  cout << "m is " << m_ << ", n is " << n_ << ", epsimin is " << tol_sub_ << endl;
+//  cout << "low asy is " << *asymp_min_ << "upp asy is " << *asymp_max_ << endl;
+//  cout << "alpha is " << *alpha_ << "beta is " << *beta_ << endl;
+//  cout << "p0 is " << *p0_ << "q0 is " << *q0_ << endl;
+//  cout << "p is " << *P_ << "q is " << *Q_ << endl;
+//  cout << "a0 is " << a0_ << ", a is " << *a_ << ", b is " << *b_ << ", c is " << *c_ << ", d is " << *d_ << endl;
 }
 
 
@@ -1955,12 +1955,12 @@ void OPTI::GCMMA::SubSolve()
     else
       tol_reached = true;
   }
-  cout << "after subsolv:" << endl;
-  cout << "x is " << *x_mma_ << endl;
-  cout << "y is " << *y_mma_ << ", z is " << z_mma_ << ", lam is " << *lam_ << endl;
-  cout << "xsi is " << *xsi_ << endl;
-  cout << "eta is " << *eta_ << endl;
-  cout << "mu is " << *mu_ << ", zet is " << zet_ << ", s is " << *s_ << endl;
+//  cout << "after subsolv:" << endl;
+//  cout << "x is " << *x_mma_ << endl;
+//  cout << "y is " << *y_mma_ << ", z is " << z_mma_ << ", lam is " << *lam_ << endl;
+//  cout << "xsi is " << *xsi_ << endl;
+//  cout << "eta is " << *eta_ << endl;
+//  cout << "mu is " << *mu_ << ", zet is " << zet_ << ", s is " << *s_ << endl;
 }
 
 
