@@ -9,6 +9,7 @@ General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
 3D bubble with surface tension
+with jump enrichements for pressure only
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        8000
 NODES                           9261
@@ -74,6 +75,7 @@ SMOOTHGRADPHI                   smooth_grad_phi_leastsquares_3D
 //                              grad_phi_leastsquares_2Dx
 //                              grad_phi_leastsquares_2Dy
 //                              grad_phi_leastsquares_2Dz
+SELECTED_ENRICHMENT              pressure
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No
 REFINEMENTLEVEL                 1
@@ -20650,7 +20652,7 @@ NODE 9261 COORD 5.00000000e-01 5.00000000e-01 -5.00000000e-01
 FLUID DIS fluid NODE 4630 QUANTITY velx VALUE 0.0000000000e+00 TOLERANCE 1e-5
 FLUID DIS fluid NODE 4630 QUANTITY vely VALUE 0.0000000000e+00 TOLERANCE 1e-5
 FLUID DIS fluid NODE 4630 QUANTITY pressure VALUE 4.666666666e-01 TOLERANCE 1e-2
-FLUID DIS fluid NODE 4635 QUANTITY pressure VALUE 4.69125301738615108e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 4635 QUANTITY pressure VALUE 4.69149100018343423e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 4638 QUANTITY velx VALUE 0.0000000000e+00 TOLERANCE 1e-4
 FLUID DIS fluid NODE 4638 QUANTITY vely VALUE 0.0000000000e+00 TOLERANCE 1e-4
 FLUID DIS fluid NODE 4638 QUANTITY pressure VALUE 0.0000000000e+00 TOLERANCE 1e-3

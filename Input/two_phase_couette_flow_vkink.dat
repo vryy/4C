@@ -9,6 +9,7 @@ General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
 planar two-phase Couette flow
+kink enrichments for velocity only
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        100
 NODES                           252
@@ -118,6 +119,7 @@ SMOOTHGRADPHI                   smooth_grad_phi_none
 XFEMINTEGRATION                 Cut
 XFEMTIMEINT                     DoNothing
 XFEMTIMEINT_ENR                 QuasiStatic
+SELECTED_ENRICHMENT             velocity
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      yes
 REFINEMENTLEVEL                 1
@@ -1452,8 +1454,8 @@ NODE 252 COORD 4.00000000e+00 1.00000000e+00 2.00000003e-01
 ----------------------------------------------------------RESULT DESCRIPTION
 //node 129: plane x=0, second node from the top
 //node 123: plane x=0, second node from the bottom
-FLUID DIS fluid NODE 129 QUANTITY velx VALUE 4.6666666666666e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 123 QUANTITY velx VALUE 1.6666666666666e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 129 QUANTITY velx VALUE 4.66666666666666e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 123 QUANTITY velx VALUE 1.66666666666666e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 123 QUANTITY pressure VALUE 0.000000000000e+00 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END
