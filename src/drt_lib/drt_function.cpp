@@ -1144,15 +1144,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractDoubleVector("RADIUS_LIN",tmp);
 
         double x1[3];
-        double x2[3];
         x1[0] = tmp[0];
         x1[1] = tmp[1];
         x1[2] = tmp[2];
-        //double val1 = tmp[3];
-        x2[0] = tmp[4];
-        x2[1] = tmp[5];
-        x2[2] = tmp[6];
-        //double val2 = tmp[7];
 
         /* calculate slope and offset */
         double b = tmp[3];
@@ -1172,14 +1166,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractDoubleVector("RADIUS_QUAD",tmp);
 
         double x1[3];
-        double x2[3];
 
         x1[0] = tmp[0];
         x1[1] = tmp[1];
         x1[2] = tmp[2];
-        x2[0] = tmp[3];
-        x2[1] = tmp[4];
-        x2[2] = tmp[5];
 
         /* calculate length */
         double length = sqrt((tmp[3]-tmp[0])*(tmp[3]-tmp[0]) +
