@@ -1044,15 +1044,13 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
     Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(fcv));
-    int err = modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
-    if (err != 0) { dserror("modsv->Update() returned err = %i.",err); }
+    modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> lambdaglobal = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(lambda_));
-      err = modsv->Update(-(stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam)), *lambdaglobal, 1.0);
-      if (err != 0) { dserror("modsv->Update() returned err = %i.",err); }
+      modsv->Update((stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam)), *lambdaglobal, 1.0);
     }
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
@@ -1117,6 +1115,7 @@ FSI::MonolithicFluidSplit::CreateLinearSystem(ParameterList& nlParams,
     break;
   default:
     dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+    break;
   }
 
   return linSys;
@@ -1358,8 +1357,8 @@ void FSI::MonolithicFluidSplit::Output()
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("UPRES");
-    if (uprestart != 0 && FluidField().Step() % uprestart == 0 || FluidField().Step() % upres)
-      FluidField().DiscWriter()->WriteVector("lambda", lambdafull);
+    if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres == 0)
+      FluidField().DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
 
   AleField().      Output();
@@ -1384,7 +1383,7 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdafull = rcp(new Epetra_Vector(*FluidField().DofRowMap(),true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(FluidField().Discretization(),step);
-    reader.ReadVector(lambdafull, "lambda");
+    reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = FluidField().Interface()->ExtractFSICondVector(lambdafull);
   }
 
@@ -1474,9 +1473,8 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
 
   // ---------Addressing term (3)
   Teuchos::RCP<Epetra_Vector> fluidresidual = FluidField().Interface()->ExtractFSICondVector(FluidField().RHS());
-  fluidresidual->Scale(-1.0);  // scale by -1.0 to get fluid residual, not RHS
+  fluidresidual->Scale(-1.0);
   tmpvec = rcp(new Epetra_Vector(*fluidresidual));
-//  lambda_->Update(1.0,*fgprev_,1.0);
   // ---------End of term (3)
 
   // ---------Addressing term (4)
@@ -1554,8 +1552,8 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   // Finally, divide by (1.0-ftiparam) which is common to all terms
   lambda_->Scale(1.0/(1.0-ftiparam));
 
-  // Finally, the Lagrange multiplier lambda_ is recovered here. It has the unit [N/m^2].
-  // Actual nodal forces are obtained by multiplication with mortar matrices M or D later on.
+  // Scale by -1 such that lambda corresponds to the traction onto the structure
+  lambda_->Scale(-1.0);
 
   return;
 }
