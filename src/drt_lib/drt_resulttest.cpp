@@ -26,9 +26,6 @@ Maintainer: Ulrich Kuettler
 DRT::ResultTest::ResultTest(const std::string name)
   : myname_(name)
 {
-  cout << __LINE__ << __FILE__ << endl;
-  cout << myname_ << endl;
-  cout << name << endl;
 }
 
 DRT::ResultTest::~ResultTest()
