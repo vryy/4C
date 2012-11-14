@@ -1032,14 +1032,14 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
     double zeta = -2.0*ci/3.0;
     const double xiplussqrteta = 32.0*(xi+sqrt(eta));
     if (xiplussqrteta < 0.0)
-      zeta -= pow(fabs(xiplussqrteta), (1.0/3.0));
+      zeta -= std::pow(fabs(xiplussqrteta), (1.0/3.0));
     else
-      zeta += pow(xiplussqrteta, (1.0/3.0));
+      zeta += std::pow(xiplussqrteta, (1.0/3.0));
     const double ximinussqrteta = 32.0*(xi-sqrt(eta));
     if (ximinussqrteta < 0.0)
-      zeta -= pow(fabs(ximinussqrteta), (1.0/3.0));
+      zeta -= std::pow(fabs(ximinussqrteta), (1.0/3.0));
     else
-      zeta += pow(ximinussqrteta, (1.0/3.0));
+      zeta += std::pow(ximinussqrteta, (1.0/3.0));
 
     // invariants of material stretch tensor U
     // 1st invariant: I_U = tr(U)

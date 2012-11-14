@@ -147,8 +147,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildKnotMaps()
   if (countrow != numrowknots) dserror("Mismatch in no. of rowknots");
   if (countcol != numcolknots) dserror("Mismatch in no. of colknots");
   if (countgho != (numcolknots-numrowknots)) dserror("Mismatch in no. of ghoknots");
-  knotcolmap_ = rcp(new Epetra_Map(-1,numcolknots,&knotcolids[0],0,Comm()));
-  knotrowmap_ = rcp(new Epetra_Map(-1,numrowknots,&knotrowids[0],0,Comm()));
+  knotcolmap_ = Teuchos::rcp(new Epetra_Map(-1,numcolknots,&knotcolids[0],0,Comm()));
+  knotrowmap_ = Teuchos::rcp(new Epetra_Map(-1,numrowknots,&knotrowids[0],0,Comm()));
   return;
 }
 

@@ -36,7 +36,7 @@ DRT::MESHFREE::MeshfreeDiscretization::MeshfreeDiscretization(
   INPAR::MESHFREE::meshfreetype meshfreetype = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(params,"TYPE");
   switch (meshfreetype)
   {
-  case INPAR::MESHFREE::maxent:{solutionfunct_ = rcp(new MaxEntProblem(params)); break;}
+  case INPAR::MESHFREE::maxent:{solutionfunct_ = Teuchos::rcp(new MaxEntProblem(params)); break;}
   default: dserror("No valid meshfree discretization.");
   }
   return;
@@ -201,7 +201,7 @@ RCP<vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
     k->Pack(buffer);
   }
 
-  RCP<vector<char> > block = rcp(new vector<char>);
+  RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -223,7 +223,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyKnots(RCP<vector<char> > k)
       dserror("Failed to build a knot from the knot data");
     }
     knot->SetOwner(comm_->MyPID());
-    AddKnot(rcp(knot));
+    AddKnot(Teuchos::rcp(knot));
   }
   // in case AddKnot forgets...
   Reset();
@@ -336,7 +336,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
             // ... and knot is owned by other proc, update procmap.
             //     (every proc only deals with its own knots)
             if (knotcurr->Owner()!=myrank)
-              procmap[knotcurr->Owner()].insert(make_pair(nodeid,knotcurr->Id()));
+              procmap[knotcurr->Owner()].insert(std::make_pair(nodeid,knotcurr->Id()));
             // ... and proc is owner of knot, start recursion over elements of this knot.
             else
               AssignSingleNode(xn,nodeid,node,range,knotcurr->NumElement(),knotcurr->Elements(),elegid,knotgid,myrank,procmap);
@@ -427,7 +427,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
       init_knot = knot_.find(init_knotid)->second.get();
 
       if (init_knot->Owner()!=myrank){
-        procmap[init_knot->Owner()].insert(make_pair(nodeid,init_knot->Id()));
+        procmap[init_knot->Owner()].insert(std::make_pair(nodeid,init_knot->Id()));
       }
 
       // assignment node<>{knot,cell} on proc by recursive function call
@@ -552,7 +552,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
           if (dof.size())
           {
             os << " Dofs ";
-            for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+            for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
         os << endl;
@@ -578,7 +578,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
           if (dof.size())
           {
             os << " Dofs ";
-            for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+            for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
         os << endl;
@@ -604,7 +604,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
           if (dof.size())
           {
             os << " Dofs ";
-            for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+            for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
         os << endl;

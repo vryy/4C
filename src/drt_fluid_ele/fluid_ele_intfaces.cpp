@@ -199,7 +199,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 #endif
 
     //insert a pair of node-Id and current length of master_lm ( to get the start offset for node's dofs)
-    m_node_lm_offset.insert(pair<int,int>(node->Id(), master_lm.size()));
+    m_node_lm_offset.insert(std::pair<int,int>(node->Id(), master_lm.size()));
 
     for (int j=0; j< size; ++j)
     {

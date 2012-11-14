@@ -95,7 +95,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+      statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
@@ -110,7 +110,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+      statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
@@ -125,7 +125,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_            ,
+      statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_            ,
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
@@ -140,7 +140,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
+      statistics_ldc_    =Teuchos::rcp(new TurbulenceStatisticsLdc(discret_,*params_));
     }
     else if(fluid.special_flow_=="loma_lid_driven_cavity")
     {
@@ -151,7 +151,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ldc_    =rcp(new TurbulenceStatisticsLdc(discret_,*params_));
+      statistics_ldc_    =Teuchos::rcp(new TurbulenceStatisticsLdc(discret_,*params_));
     }
     else if(fluid.special_flow_=="backward_facing_step")
     {
@@ -162,7 +162,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
+      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
 
       // statistics manager for turbulent boundary layer not available
       if (inflow_)
@@ -177,7 +177,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
+      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -189,7 +189,7 @@ namespace FLD
           // do not write any dissipation rates for inflow channels
           subgrid_dissipation_ = false;
           // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
+          statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
@@ -209,7 +209,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",false));
+      statistics_oracles_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",false));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -219,7 +219,7 @@ namespace FLD
           // do not write any dissipation rates for inflow channels
           subgrid_dissipation_ = false;
           // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
+          statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
@@ -239,7 +239,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_sqc_    =rcp(new TurbulenceStatisticsSqc(discret_,*params_));
+      statistics_sqc_    =Teuchos::rcp(new TurbulenceStatisticsSqc(discret_,*params_));
     }
     else if(fluid.special_flow_=="square_cylinder_nurbs")
     {
@@ -258,7 +258,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
+      statistics_ccy_=Teuchos::rcp(new TurbulenceStatisticsCcy(discret_            ,
                                                       alefluid_           ,
                                                       mydispnp_           ,
                                                       *params_             ,
@@ -274,7 +274,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
+      statistics_ccy_=Teuchos::rcp(new TurbulenceStatisticsCcy(discret_            ,
                                                       alefluid_           ,
                                                       mydispnp_           ,
                                                       *params_             ,
@@ -307,7 +307,7 @@ namespace FLD
       {
         // additional averaging of scalar field
         statistics_general_mean_
-        =rcp(new TurbulenceStatisticsGeneralMean(
+        =Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
             discret_,
             homdir,
             fluid.VelPresSplitter(),true));
@@ -315,7 +315,7 @@ namespace FLD
       else
       {
         statistics_general_mean_
-        =rcp(new TurbulenceStatisticsGeneralMean(
+        =Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
             discret_,
             homdir,
             fluid.VelPresSplitter(),false));
@@ -389,7 +389,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_multiphase_ = rcp(new COMBUST::TurbulenceStatisticsBcf(discret_, *params_ ));
+      statistics_channel_multiphase_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsBcf(discret_, *params_ ));
     }
     else if(timeint.special_flow_=="combust_oracles")
     {
@@ -405,7 +405,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",withscatra_));
+      statistics_oracles_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",withscatra_));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -415,7 +415,7 @@ namespace FLD
           // do not write any dissipation rates for inflow channels
           subgrid_dissipation_ = false;
           // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
+          statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_,
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
@@ -895,41 +895,41 @@ namespace FLD
           map<string,RCP<Epetra_Vector> > statevecs;
           map<string,RCP<Epetra_MultiVector> > statetenss;
 
-          statevecs.insert(pair<string,RCP<Epetra_Vector> >("hist",myhist_));
-          statevecs.insert(pair<string,RCP<Epetra_Vector> >("accam",myaccam_));
-          statevecs.insert(pair<string,RCP<Epetra_Vector> >("scaaf",myscaaf_));
-          statevecs.insert(pair<string,RCP<Epetra_Vector> >("scaam",myscaam_));
+          statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("hist",myhist_));
+          statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("accam",myaccam_));
+          statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("scaaf",myscaaf_));
+          statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("scaam",myscaam_));
 
           if (alefluid_)
           {
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("dispnp", mydispnp_   ));
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("gridv" , mygridvelaf_));
+            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("dispnp", mydispnp_   ));
+            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("gridv" , mygridvelaf_));
           }
 
           if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha
             or DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
           {
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("velaf",myvelaf_));
+            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velaf",myvelaf_));
             if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
-              statevecs.insert(pair<string,RCP<Epetra_Vector> >("velnp",myvelnp_));
+              statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velnp",myvelnp_));
           }
           else
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("velaf",myvelnp_));
+            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velaf",myvelnp_));
 
           if (params_->sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC")!= "No"
               or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
           {
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
+            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
             if (myfsvelaf_==null)
               dserror ("Have not got fsvel!");
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
+            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
             if (myfsscaaf_==null)
                           dserror ("Have not got fssca!");
           }
           if (turbmodel_ == INPAR::FLUID::scale_similarity_basic)
           {
-            statetenss.insert(pair<string,RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
-            statetenss.insert(pair<string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
+            statetenss.insert(std::pair<string,RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
+            statetenss.insert(std::pair<string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
           }
 
           statistics_channel_->EvaluateResiduals(statevecs,statetenss,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);

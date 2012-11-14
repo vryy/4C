@@ -203,7 +203,7 @@ public:
   /*!
   \brief Add a CONTACT::CoNode to the interface (Filled()==true NOT prerequisite)
 
-  \param cnode (in): rcp to a contact node
+  \param cnode (in): Teuchos::rcp to a contact node
 
   \return Filled()==false
 
@@ -213,7 +213,7 @@ public:
   /*!
   \brief Add a CONTACT::CoElement to the interface (Filled()==true is prerequisite)
 
-  \param cele (in): rcp to a contact element
+  \param cele (in): Teuchos::rcp to a contact element
 
   \return Filled()==false
 

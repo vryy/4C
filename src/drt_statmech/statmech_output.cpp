@@ -477,18 +477,18 @@ void STATMECH::StatMechManager::Output(const int ndim,
       //as soon as system is equilibrated (after time STARTTIMEOUT) a new file for storing output is generated
       if ( (time > starttime && fabs(time-starttime)>dt/1e4) && (starttimeoutput_ == -1.0))
       {
-        endtoendref_ = pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
+        endtoendref_ = std::pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
             (dis)[num_dof - 2] - (dis)[1], 2), 0.5);
         starttimeoutput_ = time;
         istart_ = istep;
       }
       if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
       {
-        endtoend = pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
+        endtoend = std::pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
             (dis)[num_dof - 2] - (dis)[1], 2), 0.5);
 
         //applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
-        DeltaR2 = pow((endtoend * endtoend - endtoendref_ * endtoendref_) / (endtoend + endtoendref_), 2);
+        DeltaR2 = std::pow((endtoend * endtoend - endtoendref_ * endtoendref_) / (endtoend + endtoendref_), 2);
 
         //writing output: writing Delta(R^2) according to PhD thesis Hallatschek, eq. (4.60), where t=0 corresponds to starttimeoutput_
         if ((istep - istart_) % int(ceil(pow(10, floor(log10((time - starttimeoutput_) / (10* dt )))))) == 0)
@@ -508,7 +508,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
 
             //defining temporary stringstream variable
             std::stringstream filecontent;
-            filecontent << scientific << setprecision(15) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
+            filecontent << std::scientific << std::setprecision(15) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
 
             // move temporary stringstream to file and close it
             fprintf(fp, filecontent.str().c_str());
@@ -572,7 +572,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
             fp = fopen(outputfilename.str().c_str(), "a");
             //defining temporary stringstream variable
             std::stringstream filecontent;
-            filecontent << scientific << setprecision(15) << time << "  "
+            filecontent << std::scientific << std::setprecision(15) << time << "  "
                         << endtoend << " " << fint[num_dof - discret_->NumDof(
                            discret_->gNode(discret_->NumMyRowNodes() - 1))] << endl;
             // move temporary stringstream to file and close it
@@ -612,13 +612,13 @@ void STATMECH::StatMechManager::Output(const int ndim,
           //calculate the deformed length of every element
           for (int j=0; j<ndim; j++)
           {
-            arclength[id] += pow((coord(id + 1, j) - coord(id, j)), 2);
+            arclength[id] += std::pow((coord(id + 1, j) - coord(id, j)), 2);
             cosdiffer[id] += (coord(id + 1, j) - coord(id, j)) * (coord(0 + 1, j) - coord(0, j));
           }
 
           //calculate the cosine difference referring to the first element
           //Dot product of the (id+1)th element with the 1st element and devided by the length of the (id+1)th element and the 1st element
-          arclength[id] = pow(arclength[id], 0.5);
+          arclength[id] = std::pow(arclength[id], 0.5);
           cosdiffer[id] = cosdiffer[id] / (arclength[id] * arclength[0]);
         }
 
@@ -635,7 +635,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
           fp = fopen(outputfilename.str().c_str(), "a");
           std::stringstream filecontent;
           filecontent << istep;
-          filecontent << scientific << setprecision(10);
+          filecontent << std::scientific << std::setprecision(10);
 
           for (int id = 0; id < discret_->NumMyColNodes() - 1; id++)
             filecontent << " " << cosdiffer[id];
@@ -704,7 +704,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
         sumsquareincmid_ += incdispmiddle;
 
         //update sum of square displacement increments of middle point parallel to new filament axis (computed by scalar product)
-        double disppar_square = pow(axisnew(0) * dispmiddle(0) + axisnew(1) * dispmiddle(1) + axisnew(2) * dispmiddle(2), 2);
+        double disppar_square = std::pow(axisnew(0) * dispmiddle(0) + axisnew(1) * dispmiddle(1) + axisnew(2) * dispmiddle(2), 2);
         sumsquareincpar_ += disppar_square;
 
         //update sum of square displacement increments of middle point orthogonal to new filament axis (via crossproduct)
@@ -761,7 +761,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
 
           //defining temporary stringstream variable
           std::stringstream filecontent;
-          filecontent << scientific << setprecision(15) << dt << " "<< sumsquareincmid_ << " "<< sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() <<endl;
+          filecontent << std::scientific << std::setprecision(15) << dt << " "<< sumsquareincmid_ << " "<< sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() <<endl;
 //              << sumsquareincmid_ << " " << sumsquareincpar_ << " "
 //              << sumsquareincort_ << " " << sumsquareincrot_ << " "
 //              << sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() << " "
@@ -783,7 +783,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
 
           //defining temporary stringstream variable
           std::stringstream filecontent2;
-          filecontent2 << scientific << setprecision(15) <<midpoint(0)<<" "<<midpoint(1)<<" "<<midpoint(2)<< endl;
+          filecontent2 << std::scientific << std::setprecision(15) <<midpoint(0)<<" "<<midpoint(1)<<" "<<midpoint(2)<< endl;
 
           // move temporary stringstream to file and close it
           fprintf(fp, filecontent2.str().c_str());
@@ -808,7 +808,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
 
         // additional Density-Density-Correlation Output if required
         std::ostringstream ddcorrfilename;
-        ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
         //DDCorrOutput(dis, ddcorrfilename, istep, dt);
       }
     }
@@ -821,7 +821,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
         if(periodlength_->at(0) == periodlength_->at(1) && periodlength_->at(0) == periodlength_->at(2))
         {
           std::ostringstream filename;
-          filename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
+          filename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
           DDCorrOutput(dis, filename, istep, dt);
         }
         else
@@ -889,7 +889,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
 
     //creating complete file name dependent on step number with 6 digits and leading zeros
     if (istep<1000000)
-      filename << outputrootpath_ << "/GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
+      filename << outputrootpath_ << "/GmshOutput/network"<< std::setw(6) << std::setfill('0') << istep <<".pos";
     else
       dserror("Gmsh output implemented for a maximum of 999999 steps");
 
@@ -1052,10 +1052,10 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
             {
               for (int j=0; j<element->NumNode()-1; j++)
               {
-                gmshfilecontent << "SL(" << scientific;
+                gmshfilecontent << "SL(" << std::scientific;
                 gmshfilecontent << coord(0, j) << "," << coord(1, j) << ","<< coord(2, j) << ","
                                 << coord(0, j + 1) << "," << coord(1,j + 1) << "," << coord(2, j + 1);
-                gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+                gmshfilecontent << ")" << "{" << std::scientific << color << ","<< color << "};" << endl;
               }
             }
             else
@@ -1066,9 +1066,9 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
             double beadcolor = 0.75;
             for (int j=0; j<element->NumNode(); j++)
             {
-              gmshfilecontent << "SP(" << scientific;
+              gmshfilecontent << "SP(" << std::scientific;
               gmshfilecontent << coord(0, j) << "," << coord(1, j) << ","<< coord(2, j);
-              gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+              gmshfilecontent << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << endl;
             }
           }
           else
@@ -1116,8 +1116,8 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
       // plot the cog
       std::vector<double> dimension(3,0.05);
       GmshOutputBox(0.75, &cog_, dimension, &filename, false);
-      gmshfileend << "SP(" << scientific;
-      gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
+      gmshfileend << "SP(" << std::scientific;
+      gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << std::scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
 
       // gmsh output of detected network structure volume
       int nline = 16;
@@ -1174,9 +1174,9 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
       for (int i=0; i<element->NumNode(); i++)
       {
         //writing element by nodal coordinates as a sphere
-        gmshfilecontent << "SP(" << scientific;
+        gmshfilecontent << "SP(" << std::scientific;
         gmshfilecontent << coord(0,i) << "," << coord(1, i) << "," << coord(2,i);
-        gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+        gmshfilecontent << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << endl;
       }
     }
     /* determine whether crosslink connects two filaments or occupies two binding spots on the same filament;
@@ -1361,53 +1361,53 @@ void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matr
     double zmax = (*boxcenter)(2)+dimension[2]/2.0;
 
     // define boundary lines
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmin << "," << ymin << "," << zmin << "," << xmax << ","<< ymin << "," << zmin;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 2
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmax << "," << ymin << "," << zmin << "," << xmax << "," << ymax << "," << zmin;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 3
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmax << "," << ymax << "," << zmin << "," << xmax << "," << ymax << "," << zmax;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 4
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmax << "," << ymax << "," << zmax << "," << xmin << "," << ymax << "," << zmax;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 5
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmin << "," << ymax << "," << zmax << "," << xmin << "," << ymin << "," << zmax;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 6
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmin << "," << ymin << "," << zmax << "," << xmin << ","<< ymin << "," << zmin;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 7
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmin << "," << ymin << "," << zmin << "," << xmin << ","<< ymax << "," << zmin;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 8
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmin << "," << ymax << "," << zmin << "," << xmax << "," << ymax << "," << zmin;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 9
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmin << "," << ymax << "," << zmin << "," << xmin << "," << ymax << "," << zmax;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 10
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmax << "," << ymin << "," << zmin << "," << xmax << "," << ymin << "," << zmax;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 11
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmax << "," << ymin << "," << zmax << "," << xmax << "," << ymax<< "," << zmax;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 12
-    gmshfilefooter << "SL(" << scientific;
+    gmshfilefooter << "SL(" << std::scientific;
     gmshfilefooter << xmax << "," << ymin << "," << zmax << "," << xmin << "," << ymin<< "," << zmax;
-    gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
+    gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
 
     fprintf(fp, gmshfilefooter.str().c_str());
     fclose(fp);
@@ -1437,9 +1437,9 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
       {
         double beadcolor = 5*color;
         //writing element by nodal coordinates as a sphere
-        gmshfilecross << "SP(" << scientific;
+        gmshfilecross << "SP(" << std::scientific;
         gmshfilecross<< (*visualizepositions_)[0][i]<< "," << (*visualizepositions_)[1][i] << "," << (*visualizepositions_)[2][i];
-        gmshfilecross << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+        gmshfilecross << ")" << "{" << std::scientific << beadcolor << "," << beadcolor << "};" << endl;
       }
     }
     fprintf(fp,gmshfilecross.str().c_str());
@@ -1487,18 +1487,18 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
             GmshOutputPeriodicBoundary(coord, 2*color, gmshfilebonds, tmpelement->Id(), true);
             // visualization of "real" crosslink molecule positions
             //beadcolor = 0.0; //black
-            //gmshfilebonds << "SP(" << scientific;
+            //gmshfilebonds << "SP(" << std::scientific;
             //gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
-            //gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+            //gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << endl;
           }
           else
           {
-            gmshfilebonds << "SL(" << scientific;
+            gmshfilebonds << "SL(" << std::scientific;
             gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
-            gmshfilebonds << ")" << "{" << scientific << 2*color << ","<< 2*color << "};" << endl;
-            gmshfilebonds << "SP(" << scientific;
+            gmshfilebonds << ")" << "{" << std::scientific << 2*color << ","<< 2*color << "};" << endl;
+            gmshfilebonds << "SP(" << std::scientific;
             gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
-            gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+            gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << endl;
           }
         }
           break;
@@ -1511,9 +1511,9 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
             if((*crosslinkonsamefilament_)[i] < 0.1)
             {
               double beadcolor = 4* color ; //red
-              gmshfilebonds << "SP(" << scientific;
+              gmshfilebonds << "SP(" << std::scientific;
               gmshfilebonds << (*visualizepositions_)[0][i] << ","<< (*visualizepositions_)[1][i] << ","<< (*visualizepositions_)[2][i];
-              gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+              gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << endl;
             }
           }
           else  // passive crosslink molecule
@@ -1546,18 +1546,18 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
               GmshOutputPeriodicBoundary(coord, 3*color, gmshfilebonds, tmpelement->Id(), true);
               // visualization of "real" crosslink molecule positions
               //beadcolor = 0.0; //black
-              //gmshfilebonds << "SP(" << scientific;
+              //gmshfilebonds << "SP(" << std::scientific;
               //gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
-              //gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+              //gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << endl;
             }
             else
             {
-              gmshfilebonds << "SL(" << scientific;
+              gmshfilebonds << "SL(" << std::scientific;
               gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
-              gmshfilebonds << ")" << "{" << scientific << 3*color << ","<< 3*color << "};" << endl;
-              gmshfilebonds << "SP(" << scientific;
+              gmshfilebonds << ")" << "{" << std::scientific << 3*color << ","<< 3*color << "};" << endl;
+              gmshfilebonds << "SP(" << std::scientific;
               gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
-              gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+              gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << endl;
             }
           }
         }
@@ -1635,15 +1635,15 @@ void STATMECH::StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix
   for (int j=0; j<3; j++)
     thirdpoint.at(j) = (coord(j, 0) + coord(j, element->NumNode() - 1)) / 2.0 + h * nrot.at(j);
 
-  gmshfilecontent << "SL(" << scientific << coord(0,0) << ","<< coord(1,0) << "," << coord(2,0) << ","
+  gmshfilecontent << "SL(" << std::scientific << coord(0,0) << ","<< coord(1,0) << "," << coord(2,0) << ","
                   << thirdpoint.at(0) << ","<< thirdpoint.at(1) << "," << thirdpoint.at(2) << ")"
-                  << "{" << scientific<< color << "," << color << "};" << endl;
-  gmshfilecontent << "SL(" << scientific << thirdpoint.at(0) << "," << thirdpoint.at(1)<< "," << thirdpoint.at(2) << ","
+                  << "{" << std::scientific<< color << "," << color << "};" << endl;
+  gmshfilecontent << "SL(" << std::scientific << thirdpoint.at(0) << "," << thirdpoint.at(1)<< "," << thirdpoint.at(2) << ","
                   << coord(0, 1) << "," << coord(1,1) << "," << coord(2,1) << ")"
-                  << "{" << scientific<< color << "," << color << "};" << endl;
-  gmshfilecontent << "SP(" << scientific
+                  << "{" << std::scientific<< color << "," << color << "};" << endl;
+  gmshfilecontent << "SP(" << std::scientific
                   << thirdpoint.at(0) << "," << thirdpoint.at(1) << ","<< thirdpoint.at(2)
-                  << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+                  << ")" << "{" << std::scientific << color << ","<< color << "};" << endl;
 
   /*/ cout block
    cout<<"coord  = \n"<<coord<<endl;
@@ -2040,7 +2040,7 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
     gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
     gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
     gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
-    gmshfilecontent << "){" << scientific;
+    gmshfilecontent << "){" << std::scientific;
     gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
 
     // now the other prisms will be computed
@@ -2085,25 +2085,25 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
       gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
       gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
       gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
-      gmshfilecontent << "){" << scientific;
+      gmshfilecontent << "){" << std::scientific;
       gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
     }
   }
   //no thickness >0 specified; plot elements as line segements without physical volume
   else
   {
-    gmshfilecontent << "SL(" << scientific;
+    gmshfilecontent << "SL(" << std::scientific;
     gmshfilecontent << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
                     << coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
-    gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+    gmshfilecontent << ")" << "{" << std::scientific << color << ","<< color << "};" << endl;
   }
   // crosslink molecules are marked with an additional small ball if they are plotted as volumeless lines
   if(ignoreeleid && drawsphere)
   {
     double beadcolor = color;
-    gmshfilecontent << "SP(" << scientific;
+    gmshfilecontent << "SP(" << std::scientific;
     gmshfilecontent << coord(0,1) << "," << coord(1,1) << ","<< coord(2,1);
-    gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+    gmshfilecontent << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << endl;
   }
   return;
 }//GmshWedge
@@ -2309,10 +2309,10 @@ void STATMECH::StatMechManager::GmshNetworkStructVolume(const int& n, std::strin
           }
 
           GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
-          /*gmshfilecontent << "SL(" << scientific;
+          /*gmshfilecontent << "SL(" << std::scientific;
           gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
           gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
-          gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
+          gmshfilecontent << ")" << "{" << std::scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
         }
 
         // now the other edges will be computed
@@ -2355,10 +2355,10 @@ void STATMECH::StatMechManager::GmshNetworkStructVolume(const int& n, std::strin
             }
 
             GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
-            /*gmshfilecontent << "SL(" << scientific;
+            /*gmshfilecontent << "SL(" << std::scientific;
             gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
             gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
-            gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
+            gmshfilecontent << ")" << "{" << std::scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
           }
         }
       }
@@ -2413,24 +2413,24 @@ void STATMECH::StatMechManager::GmshNetworkStructVolume(const int& n, std::strin
                   GmshNetworkStructVolumePeriodic(connection1,4,gmshfilecontent,color-0.5);
                   // draw continous box also (for now)
                   // upper edge
-                  gmshfilecontent << "SL(" << scientific;
+                  gmshfilecontent << "SL(" << std::scientific;
                   gmshfilecontent << testvolumepos_[i](0)+halfthick*normal(0) << "," << testvolumepos_[i](1)+halfthick*normal(1) << "," << testvolumepos_[i](2)+halfthick*normal(2) << ",";
                   gmshfilecontent << testvolumepos_[j](0)+halfthick*normal(0) << "," << testvolumepos_[j](1)+halfthick*normal(1) << "," << testvolumepos_[j](2)+halfthick*normal(2);
-                  gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                  gmshfilecontent << ")" << "{" << std::scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
                   // lower edge
-                  gmshfilecontent << "SL(" << scientific;
+                  gmshfilecontent << "SL(" << std::scientific;
                   gmshfilecontent << testvolumepos_[i](0)-halfthick*normal(0) << "," << testvolumepos_[i](1)-halfthick*normal(1) << "," << testvolumepos_[i](2)-halfthick*normal(2) << ",";
                   gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
-                  gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                  gmshfilecontent << ")" << "{" << std::scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
                   // connections
-                  gmshfilecontent << "SL(" << scientific;
+                  gmshfilecontent << "SL(" << std::scientific;
                   gmshfilecontent << testvolumepos_[i](0)+halfthick*normal(0) << "," << testvolumepos_[i](1)+halfthick*normal(1) << "," << testvolumepos_[i](2)+halfthick*normal(2) << ",";
                   gmshfilecontent << testvolumepos_[i](0)-halfthick*normal(0) << "," << testvolumepos_[i](1)-halfthick*normal(1) << "," << testvolumepos_[i](2)-halfthick*normal(2);
-                  gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-                  gmshfilecontent << "SL(" << scientific;
+                  gmshfilecontent << ")" << "{" << std::scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                  gmshfilecontent << "SL(" << std::scientific;
                   gmshfilecontent << testvolumepos_[j](0)+halfthick*normal(0) << "," << testvolumepos_[j](1)+halfthick*normal(1) << "," << testvolumepos_[j](2)+halfthick*normal(2) << ",";
                   gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
-                  gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                  gmshfilecontent << ")" << "{" << std::scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
                 }
       }
       break;
@@ -2579,7 +2579,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
 
   // Compute internal energy
   double internalenergy;
-  const RCP<Epetra_Vector> disp = rcp(new Epetra_Vector(disrow));
+  const RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
   ComputeInternalEnergy(disp, internalenergy,dt, filename);
 
   //calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
@@ -2847,7 +2847,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
 
   /// determine normed vectors as well as output filament element vectors
       std::ostringstream orientfilename;
-      orientfilename << "./FilamentOrientations_"<<std::setw(6) << setfill('0') << istep <<".dat";
+      orientfilename << "./FilamentOrientations_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
       FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
 
       // select the vector best fitting the axis of the bundle cylinder: vector with the greatest length -> smallest
@@ -4146,7 +4146,7 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
         // consider only filament 0 (horizontal filament)
         if((int)(*filamentnumber_)[i]==0 && (*bspotstatus_)[i]>-0.1)
           // store both singly and doubly bound linkers
-          coverage<<bspotcolmap_->GID(i)<<"  "<<(int)(*numbond_)[(int)(*bspotstatus_)[i]]<<"  "<< scientific << setprecision(15) <<(currentpositions.find(i)->second)(0)<<endl;
+          coverage<<bspotcolmap_->GID(i)<<"  "<<(int)(*numbond_)[(int)(*bspotstatus_)[i]]<<"  "<< std::scientific << std::setprecision(15) <<(currentpositions.find(i)->second)(0)<<endl;
         else if((int)(*filamentnumber_)[i]>0)
           break;
       }
@@ -4164,7 +4164,7 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
         else if((int)(*filamentnumber_)[i]>0)
           break;
       }
-      coverage << sum << " "<< setprecision(5) <<(double)(sum)/(double)(bspotstatus_->MyLength())*bspotinterval <<endl;
+      coverage << sum << " "<< std::setprecision(5) <<(double)(sum)/(double)(bspotstatus_->MyLength())*bspotinterval <<endl;
     }
     // print to file and close
     fprintf(fp, coverage.str().c_str());
@@ -4259,7 +4259,7 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "a");
       std::stringstream internalforce;
-      internalforce << scientific << setprecision(15) << distance.Norm2()<< "  " << (distance.Norm2()-l0)/l0<<"  "<< fint(0) <<endl;
+      internalforce << std::scientific << std::setprecision(15) << distance.Norm2()<< "  " << (distance.Norm2()-l0)/l0<<"  "<< fint(0) <<endl;
 
       fprintf(fp, internalforce.str().c_str());
       fclose(fp);
@@ -4285,7 +4285,7 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& dis
 
   // Compute internal energy
   double internalenergy;
-  const RCP<Epetra_Vector> disp = rcp(new Epetra_Vector(disrow));
+  const RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
   ComputeInternalEnergy(disp, internalenergy,dt, filename, false, false);
 
   // retrieve distance between fixed end (at x=0) and hoop position (x=x_hoop)
@@ -4303,7 +4303,7 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& dis
         fp = fopen(filename.str().c_str(), "a");
         std::stringstream elasticenergy;
 
-        elasticenergy << scientific << std::setprecision(15) << xring << " " << internalenergy <<endl;
+        elasticenergy << std::scientific << std::setprecision(15) << xring << " " << internalenergy <<endl;
         fprintf(fp, elasticenergy.str().c_str());
         fclose(fp);
         break;
@@ -4458,7 +4458,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
                   // direction between currently considered two nodes
                   LINALG::Matrix<3,1> direction(distance);
                   direction.Scale(1.0/direction.Norm2());
-                  RCP<double> phifil = rcp(new double(0.0));
+                  RCP<double> phifil = Teuchos::rcp(new double(0.0));
                   bool orientation = CheckOrientation(direction,nodaltriadscol,LID,phifil);
 
                   // increment count for that bin
@@ -4531,7 +4531,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     if(!discret_->Comm().MyPID())
     {
       std::ostringstream orientfilename;
-      orientfilename << outputrootpath_ << "/StatMechOutput/LinkerSpotsOrCorr_"<<std::setw(6) << setfill('0') << istep <<".dat";
+      orientfilename << outputrootpath_ << "/StatMechOutput/LinkerSpotsOrCorr_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
 
       FILE* fp = NULL;
       fp = fopen(orientfilename.str().c_str(), "w");
@@ -4723,7 +4723,7 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
   if(discret_->Comm().MyPID()==0)
   {
     std::ostringstream filename;
-    filename << outputrootpath_ << "/StatMechOutput/LocalMeshSize_"<<std::setw(6) << setfill('0') << istep <<".dat";
+    filename << outputrootpath_ << "/StatMechOutput/LocalMeshSize_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
 
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "w");
@@ -4777,7 +4777,7 @@ void STATMECH::StatMechManager::ViscoelasticityOutput(const double& time, const 
     /*the output to be written consists of internal forces at exactly those degrees of freedom
      * marked in *forcesensor_ by a one entry*/
 
-    filecontent << scientific << setprecision(10) << time;//changed
+    filecontent << std::scientific << std::setprecision(10) << time;//changed
 
     //Putting time, displacement, meanforce  in Filestream
     filecontent << "   "<< d << "   " << fglob << "   " << discret_->NumGlobalElements() << endl; //changed

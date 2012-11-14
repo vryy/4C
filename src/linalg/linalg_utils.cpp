@@ -57,14 +57,14 @@ Maintainer: Michael Gee
 RefCountPtr<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, const int npr)
 {
   if (!rowmap.UniqueGIDs()) dserror("Row map is not unique");
-  return rcp(new Epetra_CrsMatrix(Copy,rowmap,npr,false));
+  return Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,npr,false));
 }
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector  (public)                         mwgee 12/06|
  *----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector> LINALG::CreateVector(const Epetra_Map& rowmap, const bool init)
 {
-  return rcp(new Epetra_Vector(rowmap,init));
+  return Teuchos::rcp(new Epetra_Vector(rowmap,init));
 }
 /*----------------------------------------------------------------------*
  |  export a Epetra_Vector  (public)                         mwgee 12/06|
@@ -258,7 +258,7 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
   RCP<EpetraExt::RowMatrix_Transpose> Atrans = null;
   if (transposeA)
   {
-    Atrans = rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+    Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
   else
@@ -308,12 +308,12 @@ RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
   RCP<EpetraExt::RowMatrix_Transpose> Atrans =
-  		rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+      Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
   Epetra_CrsMatrix* Aprime =
-  		&(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
+      &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
 
 
-  return rcp(new Epetra_CrsMatrix(*Aprime));
+  return Teuchos::rcp(new Epetra_CrsMatrix(*Aprime));
 }
 
 /*----------------------------------------------------------------------*
@@ -342,7 +342,7 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
   int err = EpetraExt::MatrixMatrix::Multiply(A,transA,B,transB,*C,complete);
   if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
 
-  return rcp(C);
+  return Teuchos::rcp(C);
 }
 
 
@@ -893,7 +893,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   }
 
   //--------------------------------------------------- create matrix A22
-  A22 = rcp(new Epetra_CrsMatrix(Copy,A22map,100));
+  A22 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A22map,100));
   {
     vector<int>    a22gcindices(100);
     vector<double> a22values(100);
@@ -941,7 +941,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   A22->OptimizeStorage();
 
   //----------------------------------------------------- create matrix A11
-  A11 = rcp(new Epetra_CrsMatrix(Copy,A11map,100));
+  A11 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A11map,100));
   {
     vector<int>    a11gcindices(100);
     vector<double> a11values(100);
@@ -984,7 +984,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   A11->OptimizeStorage();
 
   //---------------------------------------------------- create matrix A12
-  A12 = rcp(new Epetra_CrsMatrix(Copy,A11map,100));
+  A12 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A11map,100));
   {
     vector<int>    a12gcindices(100);
     vector<double> a12values(100);
@@ -1027,7 +1027,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   A12->OptimizeStorage();
 
   //----------------------------------------------------------- create A21
-  A21 = rcp(new Epetra_CrsMatrix(Copy,A22map,100));
+  A21 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A22map,100));
   {
     vector<int>    a21gcindices(100);
     vector<double> a21values(100);
@@ -1097,8 +1097,8 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
     dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   vector<RCP<const Epetra_Map> > maps(2);
-  maps[0] = rcp(new Epetra_Map(*A11rowmap));
-  maps[1] = rcp(new Epetra_Map(*A22rowmap));
+  maps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
+  maps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
   LINALG::MultiMapExtractor extractor(A->RowMap(),maps);
 
   // create SparseMatrix view to input matrix A
@@ -1194,7 +1194,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   //----------------------------------------------------- create matrix A11
   if (A11rmap.NumGlobalElements()>0 && A11dmap.NumGlobalElements()>0)
   {
-    A11 = rcp(new LINALG::SparseMatrix(A11rmap,100));
+    A11 = Teuchos::rcp(new LINALG::SparseMatrix(A11rmap,100));
     {
       vector<int>    a11gcindices(100);
       vector<double> a11values(100);
@@ -1239,7 +1239,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   //--------------------------------------------------- create matrix A22
   if (A22rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
   {
-    A22 = rcp(new LINALG::SparseMatrix(A22rmap,100));
+    A22 = Teuchos::rcp(new LINALG::SparseMatrix(A22rmap,100));
     {
       vector<int>    a22gcindices(100);
       vector<double> a22values(100);
@@ -1284,7 +1284,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   //---------------------------------------------------- create matrix A12
   if (A11rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
   {
-    A12 = rcp(new LINALG::SparseMatrix(A11rmap,100));
+    A12 = Teuchos::rcp(new LINALG::SparseMatrix(A11rmap,100));
     {
       vector<int>    a12gcindices(100);
       vector<double> a12values(100);
@@ -1329,7 +1329,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   //---------------------------------------------------- create matrix A21
   if (A22rmap.NumGlobalElements()>0 && A11dmap.NumGlobalElements()>0)
   {
-    A21 = rcp(new LINALG::SparseMatrix(A22rmap,100));
+    A21 = Teuchos::rcp(new LINALG::SparseMatrix(A22rmap,100));
     {
       vector<int>    a21gcindices(100);
       vector<double> a21values(100);
@@ -1412,10 +1412,10 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   // local variables
   vector<RCP<const Epetra_Map> > rangemaps(2);
   vector<RCP<const Epetra_Map> > domainmaps(2);
-  rangemaps[0] = rcp(new Epetra_Map(*A11rowmap));
-  rangemaps[1] = rcp(new Epetra_Map(*A22rowmap));
-  domainmaps[0] = rcp(new Epetra_Map(*A11domainmap));
-  domainmaps[1] = rcp(new Epetra_Map(*A22domainmap));
+  rangemaps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
+  rangemaps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
+  domainmaps[0] = Teuchos::rcp(new Epetra_Map(*A11domainmap));
+  domainmaps[1] = Teuchos::rcp(new Epetra_Map(*A22domainmap));
   LINALG::MultiMapExtractor range(A->RangeMap(),rangemaps);
   LINALG::MultiMapExtractor domain(A->DomainMap(),domainmaps);
 
@@ -1436,10 +1436,10 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   Ablock->Complete();
   // extract internal data from Ablock in RCP form and let Ablock die
   // (this way, internal data from Ablock will live)
-  A11 = rcp(new SparseMatrix((*Ablock)(0,0),View));
-  A12 = rcp(new SparseMatrix((*Ablock)(0,1),View));
-  A21 = rcp(new SparseMatrix((*Ablock)(1,0),View));
-  A22 = rcp(new SparseMatrix((*Ablock)(1,1),View));
+  A11 = Teuchos::rcp(new SparseMatrix((*Ablock)(0,0),View));
+  A12 = Teuchos::rcp(new SparseMatrix((*Ablock)(0,1),View));
+  A21 = Teuchos::rcp(new SparseMatrix((*Ablock)(1,0),View));
+  A22 = Teuchos::rcp(new SparseMatrix((*Ablock)(1,1),View));
 
   return true;
 }
@@ -1487,7 +1487,7 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
     if ((overlap==false) && map1.NumGlobalElements()>0)
       dserror("LINALG::MergeMap: Result map is overlapping");
     else
-      return rcp(new Epetra_Map(map1));
+      return Teuchos::rcp(new Epetra_Map(map1));
   }
 
   vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
@@ -1517,7 +1517,7 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
   // sort merged map
   sort(mygids.begin(),mygids.end());
 
-  return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
 }
 
 /*----------------------------------------------------------------------*
@@ -1531,9 +1531,9 @@ RCP<Epetra_Map> LINALG::MergeMap(const RCP<const Epetra_Map>& map1,
   if (map1==null && map2==null)
     return null;
   else if (map1==null)
-    return rcp(new Epetra_Map(*map2));
+    return Teuchos::rcp(new Epetra_Map(*map2));
   else if (map2==null)
-    return rcp(new Epetra_Map(*map1));
+    return Teuchos::rcp(new Epetra_Map(*map1));
 
   // wrapped call to non-RCP version of MergeMap
   return LINALG::MergeMap(*map1,*map2,overlap);
@@ -1933,7 +1933,7 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
 
   if (emap.Comm().MyPID()==pid)
   {
-	  rmap = rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+	  rmap = Teuchos::rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
 	  // check the map
 	  dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
 	  			  "Processor with pid does not get all map elements");
@@ -1941,7 +1941,7 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
   else
   {
 	  rv.clear();
-	  rmap = rcp(new Epetra_Map(-1,0,NULL,0,emap.Comm()));
+	  rmap = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,emap.Comm()));
 	  // check the map
 	  dsassert(rmap->NumMyElements() == 0,
 	  			  "At least one proc will keep a map element");
@@ -1962,7 +1962,7 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
   AllreduceEMap(rv,emap);
   RefCountPtr<Epetra_Map> rmap;
 
-  rmap = rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+  rmap = Teuchos::rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
   // check the map
 
   return rmap;
@@ -1980,7 +1980,7 @@ RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap)
   std::set<int> rs(rv.begin(),rv.end());
   rv.assign(rs.begin(),rs.end());
 
-  return rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
 }
 
 

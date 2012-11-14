@@ -76,7 +76,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  velpressplitter_ = rcp(new LINALG::MapExtractor());
+  velpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
   FLD::UTILS::SetupFluidSplit(*discret_,numdim_,*velpressplitter_);
 
   // -------------------------------------------------------------------
@@ -748,13 +748,13 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::OutputToGmsh(
   std::ostringstream filename;
   const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
   std::ostringstream pid_stream;
-  pid_stream << ".p" << std::setw(2) << setfill('0') << myrank_;
-  filename    << filebase << "_adjoint.solution_velpres_" << std::setw(5) << setfill('0') << step           << pid_stream.str() << ".pos";
+  pid_stream << ".p" << std::setw(2) << std::setfill('0') << myrank_;
+  filename    << filebase << "_adjoint.solution_velpres_" << std::setw(5) << std::setfill('0') << step           << pid_stream.str() << ".pos";
 
   // delete old Gmsh postprocessing file
   int step_diff = 20; // stepdiff files are kept
   std::ostringstream filenamedel;
-  filenamedel << filebase << "_adjoint_" << std::setw(5) << setfill('0') << step-step_diff << pid_stream.str() << ".pos";
+  filenamedel << filebase << "_adjoint_" << std::setw(5) << std::setfill('0') << step-step_diff << pid_stream.str() << ".pos";
   std::remove(filenamedel.str().c_str());
 
   std::ofstream gmshfilecontent(filename.str().c_str());

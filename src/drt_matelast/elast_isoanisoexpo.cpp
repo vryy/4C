@@ -153,7 +153,7 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(
     double I3
 )
 {
-  double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
+  double incJ = std::pow(I3,-1.0/3.0);  // J^{-2/3}
 
   double J4 = incJ * ( A_(0)*rcg(0) + A_(1)*rcg(1) + A_(2)*rcg(2)
             + A_(3)*rcg(3) + A_(4)*rcg(4) + A_(5)*rcg(5)); //J4 = J^{-2/3} I4

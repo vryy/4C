@@ -742,7 +742,7 @@ void MAT::CHARMM::CHARMmfileapi(
     statusfile << Path() << "output/status_" << CHARMmPar["FCD_ENDD"] << ".out";
 
     // Print out the beginning of the CHARMM info line
-    cout << setw(4) << left << "MD (" << showpoint << CHARMmPar["FCD_STARTD"] << setw(2) << "->" << CHARMmPar["FCD_ENDD"] << setw(3) << "): " << flush;
+    cout << std::setw(4) << left << "MD (" << showpoint << CHARMmPar["FCD_STARTD"] << std::setw(2) << "->" << CHARMmPar["FCD_ENDD"] << std::setw(3) << "): " << flush;
 
     // Check if the status file already exists
     // In that case skip the charmm call
@@ -802,7 +802,7 @@ void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
     md_status.clear();
     Reader(status, md_status);
     if (!md_status["CHARMMEND"]) dserror("CHARMm API: Run not successful till end.");
-    else cout << setw(5) << left << "0" << flush;
+    else cout << std::setw(5) << left << "0" << flush;
 
     // Get the results at STARTD + ENDD
     ostringstream results(ios_base::out);
@@ -817,9 +817,9 @@ void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
     Reader(results, md_ENDD);
 
     // Print out Information line
-    cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (md_ENDD["E"] - md_STARTD["E"]);
-    cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << md_ENDD["NUM"];
-    cout << setw(8) << "Volume:" << setw(12) << left << setprecision(3) << md_ENDD["VOL"] << endl;
+    cout << std::setw(4) << "dV:" << std::setw(15) << left << std::scientific << std::setprecision(6) << (md_ENDD["E"] - md_STARTD["E"]);
+    cout << std::setw(8) << "#Atoms:" << std::setw(10) << left << fixed << std::setprecision(0) << md_ENDD["NUM"];
+    cout << std::setw(8) << "Volume:" << std::setw(12) << left << std::setprecision(3) << md_ENDD["VOL"] << endl;
 
     ////////////////////////////////////////////////////////////////////////////
     // Results vector: charmm_result
@@ -915,40 +915,40 @@ void MAT::CHARMM::CHARMmfakeapi(const double STARTD,
 	//cout << ENDD << " " << MD(i,0);
 	if (abs(ENDD) == 0.0) { // start call at the beginning; just to give some information
 	    i = 0;
-	    cout << setw(4) << left << "MD (" << showpoint << STARTD << setw(2) << "->" << ENDD << setw(3) << "): " << flush;
+	    cout << std::setw(4) << left << "MD (" << showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << flush;
 	    charmm_result[0] = NAN;
 	    charmm_result[1] = MD(i, 1);
 	    charmm_result[2] = NAN;
 	    charmm_result[3] = MD(i, 2);
 	    charmm_result[4] = NAN;
 	    charmm_result[5] = MD(i, 3);
-	    cout << setw(4) << "V(0):" << setw(15) << left << scientific << setprecision(6) << (charmm_result[1]);
-	    cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << charmm_result[3] << setw(8) << "Volume:" << setw(12) << left << setprecision(2) << charmm_result[5] << endl;
+	    cout << std::setw(4) << "V(0):" << std::setw(15) << left << std::scientific << std::setprecision(6) << (charmm_result[1]);
+	    cout << std::setw(8) << "#Atoms:" << std::setw(10) << left << fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << left << std::setprecision(2) << charmm_result[5] << endl;
 	    i = -1; //break loop
 	} else if (abs(ENDD) < (abs(MD(i, 0)) + roundoff) && abs(ENDD) > (abs(MD(i, 0)) - roundoff)) {
 	    // main loop where basically at every step the data is given
-	    cout << setw(4) << left << "MD (" << showpoint << STARTD << setw(2) << "->" << ENDD << setw(3) << "): " << flush;
+	    cout << std::setw(4) << left << "MD (" << showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << flush;
 	    charmm_result[0] = MD(i - 1, 1);
 	    charmm_result[1] = MD(i, 1);
 	    charmm_result[2] = MD(i - 1, 2);
 	    charmm_result[3] = MD(i, 2);
 	    charmm_result[4] = MD(i - 1, 3);
 	    charmm_result[5] = MD(i, 3);
-	    cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (charmm_result[1] - charmm_result[0]);
-	    cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << charmm_result[3] << setw(8) << "Volume:" << setw(12) << left << setprecision(2) << charmm_result[5] << endl;
+	    cout << std::setw(4) << "dV:" << std::setw(15) << left << std::scientific << std::setprecision(6) << (charmm_result[1] - charmm_result[0]);
+	    cout << std::setw(8) << "#Atoms:" << std::setw(10) << left << fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << left << std::setprecision(2) << charmm_result[5] << endl;
 	    i = -1; //break loop
 	} else {
 	    // in case that only one dV is given, use it for all. If more then break.
 	    if (n == 2) {
-		cout << setw(4) << left << "MD (" << showpoint << STARTD << setw(2) << "->" << ENDD << setw(3) << "): " << flush;
+		cout << std::setw(4) << left << "MD (" << showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << flush;
 		charmm_result[0] = MD(0, 1);
 		charmm_result[1] = MD(1, 1);
 		charmm_result[2] = MD(0, 2);
 		charmm_result[3] = MD(1, 2);
 		charmm_result[4] = MD(0, 3);
 		charmm_result[5] = MD(1, 3);
-		cout << setw(4) << "dV:" << setw(15) << left << scientific << setprecision(6) << (charmm_result[1] - charmm_result[0]);
-		cout << setw(8) << "#Atoms:" << setw(10) << left << fixed << setprecision(0) << charmm_result[3] << setw(8) << "Volume:" << setw(12) << left << setprecision(2) << charmm_result[5] << endl;
+		cout << std::setw(4) << "dV:" << std::setw(15) << left << std::scientific << std::setprecision(6) << (charmm_result[1] - charmm_result[0]);
+		cout << std::setw(8) << "#Atoms:" << std::setw(10) << left << fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << left << std::setprecision(2) << charmm_result[5] << endl;
 		i = -1; //break loop
 	    } else {
 		dserror("No appropriate MD result found for ENDD");

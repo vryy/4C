@@ -334,7 +334,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
     // get characteristic element length for Smagorinsky model for 2D and 3D
     // 3D: hk = V^1/3
     // 2D: hk = A^1/2
-    const double hk = pow(vol,(1.0/dim));
+    const double hk = std::pow(vol,(1.0/dim));
 
     // mixing length set proportional to grid witdh: lmix = Cs * hk
     double lmix = Cs * hk;
@@ -366,7 +366,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcFineScaleSubgrVisc(
   //     // get characteristic element length for Smagorinsky model for 2D and 3D
   // 3D: hk = V^1/3
   // 2D: hk = A^1/2
-  const double hk = pow(vol,(1.0/dim));
+  const double hk = std::pow(vol,(1.0/dim));
 
   if (fldpara_->Fssgv() == INPAR::FLUID::smagorinsky_all)
   {
@@ -484,14 +484,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       case INPAR::FLUID::sphere_diameter:
       {
         // b) volume-equivalent diameter
-        hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+        hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
         break;
       }
       case INPAR::FLUID::cube_edge:
       {
         // c) qubic element length
-        hk = pow(vol,(1.0/nsd_));
+        hk = std::pow(vol,(1.0/nsd_));
         break;
       }
       case INPAR::FLUID::metric_tensor:
@@ -533,7 +533,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
             normG+=G(nn,rr)*G(nn,rr);
           }
         }
-        hk = pow(normG,-0.25);
+        hk = std::pow(normG,-0.25);
 
         break;
       }
@@ -1468,7 +1468,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
           (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
           if (turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2")
           {
-            // recompute delta = pow((vol),(1.0/3.0))
+            // recompute delta = std::pow((vol),(1.0/3.0))
             EvalShapeFuncAndDerivsAtEleCenter(eid);
             (*(turbmodelparams.get<RCP<vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((fac_),(1.0/3.0));
             (*(turbmodelparams.get<RCP<vector<double> > >("local_Ci_delta_sq_sum")))[nlayer]+=Ci_delta_sq;

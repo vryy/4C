@@ -447,7 +447,7 @@ public:
       else
       {
         //setting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-        double lin1norm = pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
+        double lin1norm = std::pow(pow(Tref(1,0),2)+pow(Tref(2,0),2),0.5);
         Tref(1,1) = -Tref(2,0)/lin1norm;
         Tref(2,1) =  Tref(1,0)/lin1norm;
       }

@@ -100,7 +100,7 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,size);
 
   // iterator
-  map<int,std::vector<double> >::const_iterator iter;
+  std::map<int,std::vector<double> >::const_iterator iter;
 
   int i=0;
   for(iter=surfporosity_->begin();iter!=surfporosity_->end();++iter)
@@ -166,7 +166,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
   // porosity_
   int size = 0;
   ExtractfromPack(position,data,size);
-  porosity_=rcp(new std::vector<double >);
+  porosity_=Teuchos::rcp(new std::vector<double >);
   double tmp = 0.0;
   for (int i=0; i<size; ++i)
   {
@@ -176,7 +176,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
 
   ExtractfromPack(position,data,size);
 
-  surfporosity_ = rcp(new std::map<int, std::vector< double > >);
+  surfporosity_ = Teuchos::rcp(new std::map<int, std::vector< double > >);
 
   for(int i=0;i<size;i++)
   {
@@ -191,7 +191,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
   }
 
   // gradporosity_
-  gradporosity_=rcp(new std::vector<LINALG::Matrix<3,1> >);
+  gradporosity_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >);
   ExtractfromPack(position,data,size);
   LINALG::Matrix<3,1> tmp2(true);
   for (int i=0; i<size; ++i)
@@ -202,7 +202,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
 
   // dporodt_
   ExtractfromPack(position,data,size);
-  dporodt_=rcp(new std::vector<double >);
+  dporodt_=Teuchos::rcp(new std::vector<double >);
   tmp = 0.0;
   for (int i=0; i<size; ++i)
   {
@@ -211,7 +211,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
   }
 
   // gradporosity_
-  gradJ_=rcp(new std::vector<LINALG::Matrix<1,3> >);
+  gradJ_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,3> >);
   ExtractfromPack(position,data,size);
   LINALG::Matrix<1,3> tmp3(true);
   for (int i=0; i<size; ++i)
@@ -501,12 +501,12 @@ void MAT::StructPoro::GetGradPorosityAtGP(LINALG::Matrix<2,1>& gradporosity, int
  *----------------------------------------------------------------------*/
 void MAT::StructPoro::Setup(const int numgp)
 {
-  porosity_ = rcp(new std::vector< double > (numgp,params_->initporosity_));
-  //surfporosity_ = rcp(new std::vector< double > (numgp,-1.0));
-  surfporosity_ = rcp(new std::map<int, std::vector< double > >);
-  gradporosity_ = rcp(new std::vector< LINALG::Matrix<3,1> > (numgp));
-  dporodt_ = rcp(new std::vector<double> (numgp));
-  gradJ_ = rcp(new std::vector< LINALG::Matrix<1,3> > (numgp));
+  porosity_ = Teuchos::rcp(new std::vector< double > (numgp,params_->initporosity_));
+  //surfporosity_ = Teuchos::rcp(new std::vector< double > (numgp,-1.0));
+  surfporosity_ = Teuchos::rcp(new std::map<int, std::vector< double > >);
+  gradporosity_ = Teuchos::rcp(new std::vector< LINALG::Matrix<3,1> > (numgp));
+  dporodt_ = Teuchos::rcp(new std::vector<double> (numgp));
+  gradJ_ = Teuchos::rcp(new std::vector< LINALG::Matrix<1,3> > (numgp));
 
   const LINALG::Matrix<3,1> emptyvec(true);
   const LINALG::Matrix<1,3> emptyvecT(true);

@@ -37,15 +37,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(const string  eletyp
 {
   if ( eletype=="FLUID3" )
   {
-      return rcp(new DRT::ELEMENTS::Fluid(id,owner));
+      return Teuchos::rcp(new DRT::ELEMENTS::Fluid(id,owner));
   }
   else if ( eletype=="FLUID2" )
   {
-      return rcp(new DRT::ELEMENTS::Fluid(id,owner));
+      return Teuchos::rcp(new DRT::ELEMENTS::Fluid(id,owner));
   }
   else if (eletype=="FLUID")
   {
-      return rcp(new DRT::ELEMENTS::Fluid(id,owner));
+      return Teuchos::rcp(new DRT::ELEMENTS::Fluid(id,owner));
   }
   return Teuchos::null;
 }
@@ -53,7 +53,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(const string  eletyp
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create( const int id, const int owner )
 {
-  return rcp(new DRT::ELEMENTS::Fluid(id,owner));
+  return Teuchos::rcp(new DRT::ELEMENTS::Fluid(id,owner));
 }
 
 
@@ -507,7 +507,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
   {
     // 1D (we return the element itself)
     vector<RCP<Element> > surfaces(1);
-    surfaces[0]= rcp(this, false);
+    surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
   else
@@ -537,7 +537,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
   {
     // 2D (we return the element itself)
     vector<RCP<Element> > surfaces(1);
-    surfaces[0]= rcp(this, false);
+    surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
   else  // 1D elements
@@ -556,7 +556,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
   if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
   {
     vector<RCP<Element> > volumes(1);
-    volumes[0]= rcp(this, false);
+    volumes[0]= Teuchos::rcp(this, false);
     return volumes;
   }
   else //

@@ -172,9 +172,9 @@ void MAT::Growth::Unpack(const vector<char>& data)
   }
 
   // unpack growth internal variables
-  theta_ = rcp(new vector<double> (numgp));
-  thetaold_ = rcp(new vector<double> (numgp));
-  mandel_ = rcp(new vector<double> (numgp));
+  theta_ = Teuchos::rcp(new vector<double> (numgp));
+  thetaold_ = Teuchos::rcp(new vector<double> (numgp));
+  mandel_ = Teuchos::rcp(new vector<double> (numgp));
   for (int gp = 0; gp < numgp; ++gp) {
     double a;
     ExtractfromPack(position,data,a);
@@ -193,7 +193,7 @@ void MAT::Growth::Unpack(const vector<char>& data)
     MAT::Material* matel = dynamic_cast<MAT::Material*>(o);
     if (matel==NULL)
       dserror("failed to unpack elastic material");
-    matelastic_ = rcp(matel);
+    matelastic_ = Teuchos::rcp(matel);
   } else matelastic_ = Teuchos::null;
 
   // alternative way to unpack, but not in postprocessing
@@ -213,9 +213,9 @@ void MAT::Growth::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::Growth::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  theta_ = rcp(new vector<double> (numgp));
-  thetaold_ = rcp(new vector<double> (numgp));
-  mandel_ = rcp(new vector<double> (numgp));
+  theta_ = Teuchos::rcp(new vector<double> (numgp));
+  thetaold_ = Teuchos::rcp(new vector<double> (numgp));
+  mandel_ = Teuchos::rcp(new vector<double> (numgp));
   for (int j=0; j<numgp; ++j)
   {
     theta_->at(j) = 1.0;
@@ -547,14 +547,14 @@ void MAT::GrowthOutputToGmsh
   const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
   // file for mandel stress
   std::stringstream filename_mandel;
-  filename_mandel << filebase << "_mandel" << std::setw(3) << setfill('0') << timestep << std::setw(2) << setfill('0') << iter << ".pos";
+  filename_mandel << filebase << "_mandel" << std::setw(3) << std::setfill('0') << timestep << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system_mandel(filename_mandel.str().c_str());
   stringstream gmshfilecontent_mandel;
   gmshfilecontent_mandel << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
 
   // file for theta
   std::stringstream filename_theta;
-  filename_theta << filebase << "_theta" << std::setw(3) << setfill('0') << timestep << std::setw(2) << setfill('0') << iter << ".pos";
+  filename_theta << filebase << "_theta" << std::setw(3) << std::setfill('0') << timestep << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system_theta(filename_theta.str().c_str());
   stringstream gmshfilecontent_theta;
   gmshfilecontent_theta << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
@@ -632,19 +632,19 @@ void MAT::GrowthOutputToGmsh
 
       // write mandel stress
       double mandelgp = mandel->at(gp);
-      gmshfilecontent_mandel << "SP(" << scientific << point(0,0) << ",";
-      gmshfilecontent_mandel << scientific << point(0,1) << ",";
-      gmshfilecontent_mandel << scientific << point(0,2) << ")";
-      gmshfilecontent_mandel << "{" << scientific
+      gmshfilecontent_mandel << "SP(" << std::scientific << point(0,0) << ",";
+      gmshfilecontent_mandel << std::scientific << point(0,1) << ",";
+      gmshfilecontent_mandel << std::scientific << point(0,2) << ")";
+      gmshfilecontent_mandel << "{" << std::scientific
       << mandelgp
       << "};" << endl;
 
       // write theta
       double thetagp = theta->at(gp);
-	    gmshfilecontent_theta << "SP(" << scientific << point(0,0) << ",";
-  	  gmshfilecontent_theta << scientific << point(0,1) << ",";
-	    gmshfilecontent_theta << scientific << point(0,2) << ")";
-	    gmshfilecontent_theta << "{" << scientific
+	    gmshfilecontent_theta << "SP(" << std::scientific << point(0,0) << ",";
+  	  gmshfilecontent_theta << std::scientific << point(0,1) << ",";
+	    gmshfilecontent_theta << std::scientific << point(0,2) << ")";
+	    gmshfilecontent_theta << "{" << std::scientific
 	    << thetagp
       << "};" << endl;
     }

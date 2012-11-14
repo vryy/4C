@@ -23,7 +23,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
     if(fabs(alfa[1])<0.0000001)
       basef_line = 0.5*pow((alfa[0]+alfa[2]*pt(1,0)),2)*pt(0,0);
     else
-      basef_line = pow((alfa[0]+alfa[1]*pt(0,0)+alfa[2]*pt(1,0)),3)/6.0/alfa[1];
+      basef_line = std::pow((alfa[0]+alfa[1]*pt(0,0)+alfa[2]*pt(1,0)),3)/6.0/alfa[1];
     return basef_line;
   }
   if(inte_num==3) //f(x,y,z) = y
@@ -40,9 +40,9 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   if(inte_num==5) //f(x,y,z) = x^2
   {
     if(fabs(alfa[1])<0.0000001)
-      basef_line = pow((alfa[0]+alfa[2]*pt(1,0)),3)*pt(0,0)/3.0;
+      basef_line = std::pow((alfa[0]+alfa[2]*pt(1,0)),3)*pt(0,0)/3.0;
     else
-      basef_line = pow((alfa[0]+alfa[1]*pt(0,0)+alfa[2]*pt(1,0)),4)/12.0/alfa[1];
+      basef_line = std::pow((alfa[0]+alfa[1]*pt(0,0)+alfa[2]*pt(1,0)),4)/12.0/alfa[1];
     return basef_line;
   }
   if(inte_num==6) //f(x,y,z) = xy
@@ -59,7 +59,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   }
   if(inte_num==8) //f(x,y,z) = y^2
   {
-    basef_line = pow(pt(0,0),3)*(4*alfa[2]*pt(1,0)+4*alfa[0])+3*alfa[1]*pow(pt(0,0),4);
+    basef_line = std::pow(pt(0,0),3)*(4*alfa[2]*pt(1,0)+4*alfa[0])+3*alfa[1]*pow(pt(0,0),4);
     return basef_line/12.0;
   }
   if(inte_num==9) //f(x,y,z) = yz
@@ -69,7 +69,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   }
   if(inte_num==10) //f(x,y,z) = z^2
   {
-    basef_line = pow(pt(1,0),2)*(alfa[2]*pt(0,0)*pt(1,0)+0.5*alfa[1]*pt(0,0)*pt(0,0)+alfa[0]*pt(0,0));
+    basef_line = std::pow(pt(1,0),2)*(alfa[2]*pt(0,0)*pt(1,0)+0.5*alfa[1]*pt(0,0)*pt(0,0)+alfa[0]*pt(0,0));
     return basef_line;
   }
 
@@ -97,7 +97,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   }
   if(inte_num==14) //f(x,y,z) = xy^2
   {
-    basef_line = pow(pt(0,0),3)*(10*pow((alfa[2]*pt(1,0)),2)+20*alfa[0]*alfa[2]*pt(1,0)+10*alfa[0]*alfa[0])+pow(pt(0,0),4)*(15*alfa[1]*alfa[2]*pt(1,0)+15*alfa[0]*alfa[1])+
+    basef_line = std::pow(pt(0,0),3)*(10*pow((alfa[2]*pt(1,0)),2)+20*alfa[0]*alfa[2]*pt(1,0)+10*alfa[0]*alfa[0])+pow(pt(0,0),4)*(15*alfa[1]*alfa[2]*pt(1,0)+15*alfa[0]*alfa[1])+
             6*alfa[1]*alfa[1]*pow(pt(0,0),5);
     return basef_line/60.0;
   }
@@ -115,7 +115,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   }
   if(inte_num==17) //f(x,y,z) = y^3
   {
-    basef_line = pow(pt(0,0),4)*5*(alfa[2]*pt(1,0)+alfa[0])+4*alfa[1]*pow(pt(0,0),5);
+    basef_line = std::pow(pt(0,0),4)*5*(alfa[2]*pt(1,0)+alfa[0])+4*alfa[1]*pow(pt(0,0),5);
     return basef_line*0.05;
   }
   if(inte_num==18) //f(x,y,z) = y^2 z
@@ -130,7 +130,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   }
   if(inte_num==20) //f(x,y,z) = z^3
   {
-    basef_line = pow(pt(1,0),3)*(alfa[2]*pt(0,0)*pt(1,0)+0.5*alfa[1]*pt(0,0)*pt(0,0)+alfa[0]*pt(0,0));
+    basef_line = std::pow(pt(1,0),3)*(alfa[2]*pt(0,0)*pt(1,0)+0.5*alfa[1]*pt(0,0)*pt(0,0)+alfa[0]*pt(0,0));
     return basef_line;
   }
 
@@ -229,9 +229,9 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   if(inte_num==36) //f(x,y,z) = x^5
   {
     if(fabs(alfa[1])<0.0000001)
-      basef_line = pow((alfa[0]+alfa[2]*pt(1,0)),6)*pt(0,0)/6.0;
+      basef_line = std::pow((alfa[0]+alfa[2]*pt(1,0)),6)*pt(0,0)/6.0;
     else
-      basef_line = pow((alfa[0]+alfa[1]*pt(0,0)+alfa[2]*pt(1,0)),7)/42.0/alfa[1];
+      basef_line = std::pow((alfa[0]+alfa[1]*pt(0,0)+alfa[2]*pt(1,0)),7)/42.0/alfa[1];
     return basef_line;
   }
   if(inte_num==37) //f(x,y,z) = x^4*y
@@ -253,7 +253,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   }
   if(inte_num==39) //f(x,y,z) = x^3*y^2
   {
-    basef_line = pow(pt(0,0),3)*(35*a24*z4+140*alfa[0]*a23*z3+210*a02*a22*z2+140*a03*alfa[2]*pt(1,0)+35*a04)+pow(pt(0,0),4)*(105*alfa[1]*a23*z3+
+    basef_line = std::pow(pt(0,0),3)*(35*a24*z4+140*alfa[0]*a23*z3+210*a02*a22*z2+140*a03*alfa[2]*pt(1,0)+35*a04)+pow(pt(0,0),4)*(105*alfa[1]*a23*z3+
             315*alfa[0]*alfa[1]*a22*z2+315*a02*alfa[1]*alfa[2]*pt(1,0)+105*a03*alfa[1])+pow(pt(0,0),5)*(126*a12*a22*z2+252*alfa[0]*a12*alfa[2]*pt(1,0)+
             126*a02*a12)+pow(pt(0,0),6)*(70*a13*alfa[2]*pt(1,0)+70*alfa[0]*a13)+15*a14*y7;
     return basef_line/420.0;
@@ -357,9 +357,9 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   if(inte_num==57) //f(x,y,z) = x^6
   {
     if(fabs(alfa[1])<0.0000001)
-      basef_line = pow((alfa[0]+alfa[2]*pt(1,0)),7)*pt(0,0)/7.0;
+      basef_line = std::pow((alfa[0]+alfa[2]*pt(1,0)),7)*pt(0,0)/7.0;
     else
-      basef_line = pow((alfa[0]+alfa[1]*pt(0,0)+alfa[2]*pt(1,0)),8)/56.0/alfa[1];
+      basef_line = std::pow((alfa[0]+alfa[1]*pt(0,0)+alfa[2]*pt(1,0)),8)/56.0/alfa[1];
     return basef_line;
   }
   if(inte_num==58) //f(x,y,z) = x^5*y

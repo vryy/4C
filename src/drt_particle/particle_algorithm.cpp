@@ -175,7 +175,7 @@ void PARTICLE::Algorithm::Integrate()
 void PARTICLE::Algorithm::Update()
 {
   // update of state vectors to the new maps
-  rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
   // TODO: must be combined
   particles_->Update();
   return;
@@ -337,9 +337,9 @@ void PARTICLE::Algorithm::FillParticlesIntoBins(std::set<Teuchos::RCP<DRT::Node>
       {
         std::vector<char> data;
         DRT::ParObject::ExtractfromPack(index,rdata,data);
-        // this rcp holds the memory of the node
+        // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data),true);
-        Teuchos::RCP<DRT::Node> node = rcp_dynamic_cast<DRT::Node>(object);
+        Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
         if (node == Teuchos::null) dserror("Received object is not a node");
 
         // process received particle

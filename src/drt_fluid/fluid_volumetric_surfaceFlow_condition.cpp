@@ -88,7 +88,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
       if(lineID == surfID)
       {
         // Since the condition is ok then create the corresponding the condition
-        RCP<FluidVolumetricSurfaceFlowBc> fvsf_bc = rcp(new FluidVolumetricSurfaceFlowBc(discret_, output_, dta,"VolumetricSurfaceFlowCond","VolumetricFlowBorderNodesCond", surfID, i, j));
+        RCP<FluidVolumetricSurfaceFlowBc> fvsf_bc = Teuchos::rcp(new FluidVolumetricSurfaceFlowBc(discret_, output_, dta,"VolumetricSurfaceFlowCond","VolumetricFlowBorderNodesCond", surfID, i, j));
         bool inserted = fvsf_map_.insert( make_pair( surfID, fvsf_bc ) ).second;
         if ( !inserted )
         {
@@ -201,7 +201,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateCondMap(RCP<Epetra_M
 {
 
   //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
-  bcmap =   rcp(new Epetra_Map(*(womersley_mp_extractor_->VolumetricSurfaceFlowCondMap())));
+  bcmap =   Teuchos::rcp(new Epetra_Map(*(womersley_mp_extractor_->VolumetricSurfaceFlowCondMap())));
 }
 
 
@@ -218,7 +218,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateMapExtractor(RCP<FLD
 {
 
   //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
-  mapextractor =   rcp(new FLD::UTILS::MapExtractor(*(womersley_mp_extractor_)));
+  mapextractor =   Teuchos::rcp(new FLD::UTILS::MapExtractor(*(womersley_mp_extractor_)));
 }
 
 
@@ -302,12 +302,12 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   // calculate the center of mass and varage normal of the surface
   // condition
   // -------------------------------------------------------------------
-  RCP<std::vector<double> > cmass  = rcp(new std::vector<double>);
-  RCP<std::vector<double> > normal = rcp(new std::vector<double>);
+  RCP<std::vector<double> > cmass  = Teuchos::rcp(new std::vector<double>);
+  RCP<std::vector<double> > normal = Teuchos::rcp(new std::vector<double>);
   this->CenterOfMassCalculation(cmass,normal,ds_condname);
 
   // get the normal
-  normal_ =  rcp(new vector<double>(*normal));
+  normal_ =  Teuchos::rcp(new vector<double>(*normal));
   string normal_info = *(conditions[surf_numcond])->Get<string>("NORMAL");
   if(normal_info == "self_evaluate_normal")
   {
@@ -315,7 +315,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Normal is automatically evaluated"<<endl;
     }
-    vnormal_ =  rcp(new vector<double>(*normal));
+    vnormal_ =  Teuchos::rcp(new vector<double>(*normal));
   }
   else if (normal_info ==  "use_prescribed_normal")
   {
@@ -323,7 +323,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Normal is manually setup"<<endl;
     }
-    vnormal_ =  rcp(new vector<double>);
+    vnormal_ =  Teuchos::rcp(new vector<double>);
     (*vnormal_)[0] = (conditions[surf_numcond])->GetDouble("n1");
     (*vnormal_)[1] = (conditions[surf_numcond])->GetDouble("n2");
     (*vnormal_)[2] = (conditions[surf_numcond])->GetDouble("n3");
@@ -342,7 +342,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Center of mass is automatically evaluated"<<endl;
     }
-    cmass_ =  rcp(new vector<double>(*cmass));
+    cmass_ =  Teuchos::rcp(new vector<double>(*cmass));
   }
   else if (c_mass_info ==  "use_prescribed_center_of_mass")
   {
@@ -350,7 +350,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Center of mass is manually setup"<<endl;
     }
-    normal_ =  rcp(new vector<double>);
+    normal_ =  Teuchos::rcp(new vector<double>);
     (*cmass_)[0] = (conditions[surf_numcond])->GetDouble("c1");
     (*cmass_)[1] = (conditions[surf_numcond])->GetDouble("c2");
     (*cmass_)[2] = (conditions[surf_numcond])->GetDouble("c3");
@@ -387,7 +387,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   // -------------------------------------------------------------------
   int num_steps = int(period_/dta) + 1;
 
-  flowrates_ = rcp(new vector<double>(num_steps,0.0));
+  flowrates_ = Teuchos::rcp(new vector<double>(num_steps,0.0));
 
   if (prebiasing_flag_=="PREBIASED"||prebiasing_flag_=="FORCED")
   {
@@ -847,7 +847,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
   //--------------------------------------------------------------------
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
-  cond_noderowmap = rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,dis->Comm()));
+  cond_noderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,dis->Comm()));
 
 }//BuildConditionNodeRowMap
 
@@ -910,7 +910,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
   //--------------------------------------------------------------------
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
-  cond_dofrowmap = rcp(new Epetra_Map(-1,dofids.size(),&dofids[0],0,dis->Comm()));
+  cond_dofrowmap = Teuchos::rcp(new Epetra_Map(-1,dofids.size(),&dofids[0],0,dis->Comm()));
 
 }//FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap
 
@@ -1027,7 +1027,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ReadRestart(
 
     // evaluate the new flowrates vector
     int nq_pos = 0;
-    RCP<std::vector<double> > nq = rcp(new vector<double>(nQSize,0.0));
+    RCP<std::vector<double> > nq = Teuchos::rcp(new vector<double>(nQSize,0.0));
     this->Interpolate(flowrates_,nq,flowratespos_,nq_pos,period_);
 
     // store new values in class
@@ -1092,7 +1092,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   }
 #endif
 
-  RCP<ParameterList>  params = rcp(new ParameterList);
+  RCP<ParameterList>  params = Teuchos::rcp(new ParameterList);
 
   params->set<int>("Number of Harmonics",n_harmonics_);
   // condition id
@@ -1255,7 +1255,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
   // history of avarage velocities at the outlet
   RCP<std::vector<double> > flowrates;
   flowrates            = params->get<RCP<std::vector<double> > >("Flowrates");
-  RCP<std::vector<double> > velocities = rcp(new vector<double>(*flowrates));
+  RCP<std::vector<double> > velocities = Teuchos::rcp(new vector<double>(*flowrates));
 
   // the velocity position
   int velocityposition = params->get<int>("Velocity Position");
@@ -1276,7 +1276,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
   // -------------------------------------------------------------------
   // Get the volumetric flowrates Fourier coefficients
   // -------------------------------------------------------------------
-  RCP<std::vector<complex<double> > > Vn;
+  RCP<std::vector<std::complex<double> > > Vn;
   vector<double> Bn;
 
   //
@@ -1482,13 +1482,13 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
   // loop over all of the nodes
   RCP<Epetra_Vector> correction_velnp = LINALG::CreateVector(*cond_dofrowmap_,true);
 
-  RCP<ParameterList>  params = rcp(new ParameterList);
+  RCP<ParameterList>  params = Teuchos::rcp(new ParameterList);
 
   params->set<int>("Number of Harmonics",0);
   // condition id
   params->set<int>("Condition ID", condid_);
   // history of avarage velocities at the outlet
-  RCP<std::vector<double> > flowrates = rcp(new vector<double> );
+  RCP<std::vector<double> > flowrates = Teuchos::rcp(new vector<double> );
   flowrates->push_back(1.0*area_);
   params->set<RCP<std::vector<double> > >("Flowrates", flowrates);
   // the velocity position
@@ -1759,7 +1759,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::WomersleyVelocity(double r,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(complex<double> z, bool order)
+complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::complex<double> z, bool order)
 {
   // DESCRIPTION:
   // Bessel functions of order 0 (order==false) or 1 (order==true) are calculated for
@@ -1793,9 +1793,9 @@ complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(complex<doub
       gamma *= (double)(k);
     }
 
-    Jmine += pow(z*complex<double>(0.5),double(alpha))
+    Jmine += std::pow(z*complex<double>(0.5),double(alpha))
       *  pow(-complex<double>(0.25)*z*z,double(m))
-      /(complex<double> (fac) * complex<double> (gamma));
+      /(std::complex<double> (fac) * complex<double> (gamma));
       
   }
 #if 1
@@ -1806,8 +1806,8 @@ complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(complex<doub
     {
       for(int k=2;k<=m;k++)
 	fac *= (double)(k);
-      J += (complex<double>)((double)(pow(-1.0,(double)(m)))/pow(fac,2.0))*
-      pow((z/(complex<double>)(2.0)),(complex<double>)(2*m));
+      J += (std::complex<double>)((double)(pow(-1.0,(double)(m)))/pow(fac,2.0))*
+      pow((z/(std::complex<double>)(2.0)),(std::complex<double>)(2*m));
       fac = 1.0;
     }
     if(z == complex<double>(0.0,0.0))
@@ -1820,8 +1820,8 @@ complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(complex<doub
     {
       for(int k=2;k<=m;k++)
 	fac *= (double)(k);
-      J += (complex<double>)((pow(-1.0,(double)(m)))/((double)(m+1)*pow(fac,2.0)))*
-      pow((z/complex<double>(2.0)),(complex<double>)(2*m+1));
+      J += (std::complex<double>)((pow(-1.0,(double)(m)))/((double)(m+1)*pow(fac,2.0)))*
+      pow((z/complex<double>(2.0)),(std::complex<double>)(2*m+1));
       fac = 1.0;
     }
   }
@@ -1910,13 +1910,13 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::DFT(RCP<std::vector<double> >   f,
-                                                   RCP<std::vector<complex<double> > > & F,
+                                                   RCP<std::vector<std::complex<double> > > & F,
                                                    int starting_pos)
 {
   //--------------------------------------------------------------------
   // Initialise the Fourier values
   //--------------------------------------------------------------------
-  F =Teuchos::rcp(new std::vector<complex<double> >(f->size(),0.0));
+  F =Teuchos::rcp(new std::vector<std::complex<double> >(f->size(),0.0));
 
   const double N  = double(f->size());
   const int fsize = f->size();
@@ -2140,7 +2140,7 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(RefCountPtr<DRT::Disc
       if(lineID == surfID)
       {
         // Since the condition is ok then create the corresponding the condition
-        RCP<FluidVolumetricSurfaceFlowBc> fvsf_bc = rcp(new FluidVolumetricSurfaceFlowBc(discret_, output_, dta,"TotalTractionCorrectionCond","TotalTractionCorrectionBorderNodesCond", surfID, i, j));
+        RCP<FluidVolumetricSurfaceFlowBc> fvsf_bc = Teuchos::rcp(new FluidVolumetricSurfaceFlowBc(discret_, output_, dta,"TotalTractionCorrectionCond","TotalTractionCorrectionBorderNodesCond", surfID, i, j));
         bool inserted = fvsf_map_.insert( make_pair( surfID, fvsf_bc ) ).second;
         if ( !inserted )
         {
@@ -2226,7 +2226,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateCondMap(RCP<Epetra_Map> &  bcma
 {
 
   //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
-  bcmap =   rcp(new Epetra_Map(*(traction_mp_extractor_->TotalTractionCorrectionCondMap())));
+  bcmap =   Teuchos::rcp(new Epetra_Map(*(traction_mp_extractor_->TotalTractionCorrectionCondMap())));
 }
 
 
@@ -2243,7 +2243,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateMapExtractor(RCP<FLD::UTILS::Ma
 {
 
   //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
-  mapextractor =   rcp(new FLD::UTILS::MapExtractor(*(traction_mp_extractor_)));
+  mapextractor =   Teuchos::rcp(new FLD::UTILS::MapExtractor(*(traction_mp_extractor_)));
 }
 
 

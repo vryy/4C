@@ -110,7 +110,7 @@ void FS3I::PartFS3I::CheckInterfaceDirichletBC()
   const Teuchos::RCP<const Epetra_Map> masterdirichmap = masterdirichmapex->CondMap();
 
   // filter out master dirichlet dofs associated with the interface
-  Teuchos::RCP<Epetra_Vector> masterifdirich = rcp(new Epetra_Vector(*mastermap,true));
+  Teuchos::RCP<Epetra_Vector> masterifdirich = Teuchos::rcp(new Epetra_Vector(*mastermap,true));
   for (int i=0; i<mastermap->NumMyElements(); ++i)
   {
     int gid = mastermap->GID(i);
@@ -125,7 +125,7 @@ void FS3I::PartFS3I::CheckInterfaceDirichletBC()
   const Teuchos::RCP<const Epetra_Map> slavedirichmap = slavedirichmapex->CondMap();
 
   // filter out slave dirichlet dofs associated with the interface
-  Teuchos::RCP<Epetra_Vector> slaveifdirich = rcp(new Epetra_Vector(*slavemap,true));
+  Teuchos::RCP<Epetra_Vector> slaveifdirich = Teuchos::rcp(new Epetra_Vector(*slavemap,true));
   for (int i=0; i<slavemap->NumMyElements(); ++i)
   {
     int gid = slavemap->GID(i);
@@ -175,10 +175,10 @@ void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >&
 
   // extract structure velocities and accelerations
 
-  Teuchos::RCP<Epetra_Vector> velocity = rcp(new Epetra_Vector(*(fsi_->StructureField()->ExtractVelnp())));
+  Teuchos::RCP<Epetra_Vector> velocity = Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->ExtractVelnp())));
   vel.push_back(velocity);
   // structure ScaTra: velocity and grid velocity are identical!
-  Teuchos::RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(velocity->Map(),true));
+  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(velocity->Map(),true));
   convel.push_back(zeros);
 }
 

@@ -44,7 +44,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create( const string ele
 {
   if ( eletype=="SOLIDT10" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet10(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet10(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -53,7 +53,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create( const string ele
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet10(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet10(id,owner));
   return ele;
 }
 
@@ -363,7 +363,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 
@@ -401,7 +401,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Lines()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                 st 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::So_tet10::VisNames(std::map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);

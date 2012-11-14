@@ -177,7 +177,7 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     PrepareTimeStep();
 
     // start time measurement
-    Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
+    Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
 
     // calculate initial linear system at current position
     // (no increment)
@@ -754,8 +754,8 @@ void FSI::MonolithicFS::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_V
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(1,1).EpetraMatrix();
 
-    arowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    acolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*arowsum_);
     A->InvColSums(*acolsum_);
     if (A->LeftScale(*arowsum_) or

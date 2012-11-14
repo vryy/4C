@@ -78,7 +78,7 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int,double>& V)
     DRT::Condition& cond = *(coupcond_[condID]);
     double tmp = 0.;
     params.set("ConditionID",condID);
-    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;

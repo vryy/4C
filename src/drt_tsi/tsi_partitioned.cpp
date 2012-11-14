@@ -38,12 +38,12 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 : Algorithm(comm),
-  tempincnp_(rcp(new Epetra_Vector(*(ThermoField()->Tempnp())))),
-  dispincnp_(rcp(new Epetra_Vector(*(StructureField()->Dispnp())))),
+  tempincnp_(Teuchos::rcp(new Epetra_Vector(*(ThermoField()->Tempnp())))),
+  dispincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp())))),
   disp_(Teuchos::null),
   veln_(Teuchos::null),
   velnp_(Teuchos::null),
-  temp_(rcp(new Epetra_Vector(*(ThermoField()->Tempn())))),
+  temp_(Teuchos::rcp(new Epetra_Vector(*(ThermoField()->Tempn())))),
   del_(Teuchos::null),
   delhist_(Teuchos::null),
   mu_(0.0)

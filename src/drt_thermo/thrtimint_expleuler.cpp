@@ -90,7 +90,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   // ordinary internal force and conductivity matrix
   {
     // displacement increment in step
-    Teuchos::RCP<Epetra_Vector> tempinc = rcp(new Epetra_Vector(*tempn_));
+    Teuchos::RCP<Epetra_Vector> tempinc = Teuchos::rcp(new Epetra_Vector(*tempn_));
     tempinc->Update(-1.0, *(*temp_)(0), 1.0);
     // create an empty parameter list for the discretisation
     Teuchos::ParameterList p;

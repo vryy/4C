@@ -25,7 +25,7 @@ Maintainer: Martin Winklmaier
 
     // make the name unique but compiler dependent
     // This is fine since DofKeyType<doftype> is never written to binary io.
-    const type_info & ti = typeid( *this );
+    const std::type_info & ti = typeid( *this );
     return ti.name();
   }
 
@@ -70,7 +70,7 @@ Maintainer: Martin Winklmaier
   std::string XFEM::DofKey::toString() const
   {
     std::stringstream s;
-    s << "Dofkey: [" << setw(3) << gid_ << ", " << fieldenr_.toString() << "]";
+    s << "Dofkey: [" << std::setw(3) << gid_ << ", " << fieldenr_.toString() << "]";
     return s.str();
   };
 

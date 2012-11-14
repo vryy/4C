@@ -285,18 +285,18 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   //----------------------------
   {
     // horizontal line vectors
-    x1_midupperchannel_ = rcp(new vector<double> ); // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
-    x1_midlowerchannel_ = rcp(new vector<double> ); // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
-    x1_midchamber_      = rcp(new vector<double> ); // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
-    x1_wallchamber_     = rcp(new vector<double> ); // x1-coordinates of nodes at the walls
-    x1_wallinflowchannel_ = rcp(new vector<double> ); // x1-coordinates of nodes at the walls
+    x1_midupperchannel_ = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
+    x1_midlowerchannel_ = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
+    x1_midchamber_      = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
+    x1_wallchamber_     = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at the walls
+    x1_wallinflowchannel_ = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at the walls
 
     // vertical line vectors
-    x2_inflow_ = rcp(new vector<double> ); // x2-coordinates of nodes at x =-5h (both inflow channels)
-    x2_0h_     = rcp(new vector<double> ); // x2-coordinates of nodes at x = 0h (step/expansion)
-    x2_1h_     = rcp(new vector<double> ); // x2-coordinates of nodes at x = 1h
-    x2_2h_     = rcp(new vector<double> ); // x2-coordinates of nodes at x = 2h
-    x2_3h_     = rcp(new vector<double> ); // x2-coordinates of nodes at x > 3h
+    x2_inflow_ = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x =-5h (both inflow channels)
+    x2_0h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x = 0h (step/expansion)
+    x2_1h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x = 1h
+    x2_2h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x = 2h
+    x2_3h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x > 3h
 
     for(set<double,LineSortCriterion>::const_iterator coorditer=x1_midupperchannel.begin(); coorditer!=x1_midupperchannel.end(); ++coorditer)
       x1_midupperchannel_->push_back(*coorditer);
@@ -312,7 +312,7 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
       x1_wallinflowchannel_->push_back(*coorditer);
 
     Teuchos::RCP<vector<double> > x1_wallchamberbottom;
-    x1_wallchamberbottom = rcp(new vector<double> );
+    x1_wallchamberbottom = Teuchos::rcp(new vector<double> );
     for(set<double,LineSortCriterion>::const_iterator coorditer=x1_wallbottomchamber.begin(); coorditer!=x1_wallbottomchamber.end(); ++coorditer)
       x1_wallchamberbottom->push_back(*coorditer);
     if ((*x1_wallchamber_).size() != (*x1_wallchamberbottom).size()) dserror("grid mismatch between top and bottom wall");
@@ -355,255 +355,255 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   //----------------------------------------------
   // allocate arrays holding time mean Cs profiles
   //----------------------------------------------
-  wallforceu_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
-  wallforcev_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
-  wallforcew_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
-  wallp_      = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
+  wallforceu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
+  wallforcev_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
+  wallforcew_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
+  wallp_      = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
 
-  wallvelu_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
-  wallvelv_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
-  wallvelw_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
+  wallvelu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
+  wallvelv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
+  wallvelw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
 
-  wallinflowchannelforceu_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
-  wallinflowchannelforcev_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
-  wallinflowchannelforcew_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
-  wallinflowchannelp_      = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelforceu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelforcev_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelforcew_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelp_      = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
 
-  wallinflowchannelvelu_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
-  wallinflowchannelvelv_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
-  wallinflowchannelvelw_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelvelu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelvelv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelvelw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
 
   //------------------------------------------------------------------
   // allocate arrays holding time mean profiles of first order moments
   //------------------------------------------------------------------
   // time average of vertical profiles in inflow zone (-5h, -4h)
-  vertinflowu_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinflowv_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinfloww_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinflowp_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinflowg_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinfloww_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowg_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
 
-  vertmixingu_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixingv_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixingw_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixingp_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixingg_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingg_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
 
-  vert1hu_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1hv_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1hw_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1hp_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1hg_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hg_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
 
-  vert2hu_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2hv_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2hw_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2hp_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2hg_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hg_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
 
-  vertchamberu_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchamberv_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchamberw_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchamberp_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchamberg_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-
-  //-------------------------------------------------------------------
-  // allocate arrays holding time mean profiles of second order moments
-  //-------------------------------------------------------------------
-  vertinflowuu_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinflowvv_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinflowww_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinflowpp_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-
-  vertmixinguu_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixingvv_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixingww_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixingpp_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-
-  vert1huu_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1hvv_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1hww_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1hpp_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-
-  vert2huu_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2hvv_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2hww_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2hpp_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-
-  vertchamberuu_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchambervv_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchamberww_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchamberpp_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberg_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
 
   //-------------------------------------------------------------------
   // allocate arrays holding time mean profiles of second order moments
   //-------------------------------------------------------------------
-  vertinflowuv_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinflowuw_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
-  vertinflowvw_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowuu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowvv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowww_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowpp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
 
-  vertmixinguv_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixinguw_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
-  vertmixingvw_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixinguu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingvv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingww_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingpp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
 
-  vert1huv_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1huw_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
-  vert1hvw_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1huu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hvv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hww_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hpp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
 
-  vert2huv_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2huw_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
-  vert2hvw_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2huu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hvv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hww_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hpp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
 
-  vertchamberuv_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchamberuw_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
-  vertchambervw_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberuu_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchambervv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberww_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberpp_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+
+  //-------------------------------------------------------------------
+  // allocate arrays holding time mean profiles of second order moments
+  //-------------------------------------------------------------------
+  vertinflowuv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowuw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowvw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+
+  vertmixinguv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixinguw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingvw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+
+  vert1huv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1huw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hvw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+
+  vert2huv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2huw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hvw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+
+  vertchamberuv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberuw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchambervw_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
 
   if (discret_->Comm().MyPID()==0)
   {
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.-5h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.ramp.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.00h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.01h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.02h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.03h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.04h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.05h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.06h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.07h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.08h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.09h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.10h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.11h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.12h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.13h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.14h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.15h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.16h.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.horiz.chamber.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES horizontal chamber flow statistics file\n";
       title.flush();
     }
     {
       std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       outfile.append(".oracles.horiz.inflow.flow_statistics");
-      std::ofstream title(outfile.c_str(),ios::out);
+      std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES horizontal inflow flow statistics file\n";
       title.flush();
     }
@@ -1336,7 +1336,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
 
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
       (*log) << "\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -1346,11 +1346,11 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       (*log) << "#   x               force u        force v        force w        p\n";
       for(size_t ix1pos=0; ix1pos<numx1_wallchamber_; ++ix1pos)
       {
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallchamber_)[ix1pos];
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallforceu_)(0,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallforcev_)(0,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallforcew_)(0,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallp_)     (0,ix1pos);
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1_wallchamber_)[ix1pos];
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforceu_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforcev_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforcew_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallp_)     (0,ix1pos);
         (*log) << &endl;
       }
       log->flush();
@@ -1360,11 +1360,11 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       (*log) << "#   x               force u        force v        force w        p\n";
       for(size_t ix1pos=0; ix1pos<numx1_wallchamber_; ++ix1pos)
       {
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallchamber_)[ix1pos];
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallforceu_)(1,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallforcev_)(1,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallforcew_)(1,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallp_)     (1,ix1pos);
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1_wallchamber_)[ix1pos];
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforceu_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforcev_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforcew_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallp_)     (1,ix1pos);
         (*log) << &endl;
       }
       log->flush();
@@ -1374,10 +1374,10 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       (*log) << "#   x               u              v              w\n";
       for(size_t ix1pos=0; ix1pos<numx1_wallchamber_; ++ix1pos)
       {
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallchamber_)[ix1pos];
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallvelu_)(0,ix1pos);
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallvelv_)(0,ix1pos);
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallvelw_)(0,ix1pos);
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1_wallchamber_)[ix1pos];
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelu_)(0,ix1pos);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelv_)(0,ix1pos);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelw_)(0,ix1pos);
         (*log) << &endl;
       }
       log->flush();
@@ -1387,10 +1387,10 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       (*log) << "#   x               u              v              w\n";
       for(size_t ix1pos=0; ix1pos<numx1_wallchamber_; ++ix1pos)
       {
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallchamber_)[ix1pos];
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallvelu_)(1,ix1pos);
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallvelv_)(1,ix1pos);
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallvelw_)(1,ix1pos);
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1_wallchamber_)[ix1pos];
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelu_)(1,ix1pos);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelv_)(1,ix1pos);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelw_)(1,ix1pos);
         (*log) << &endl;
       }
       log->flush();
@@ -1405,7 +1405,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
 
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
       (*log) << "\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -1415,11 +1415,11 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       (*log) << "#   x               force u        force v        force w        p\n";
       for(size_t ix1pos=0; ix1pos<numx1_wallinflowchannel_; ++ix1pos)
       {
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforceu_)(0,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforcev_)(0,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforcew_)(0,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelp_)     (0,ix1pos);
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforceu_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforcev_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforcew_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelp_)     (0,ix1pos);
         (*log) << &endl;
       }
       log->flush();
@@ -1429,11 +1429,11 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       (*log) << "#   x               force u        force v        force w        p\n";
       for(size_t ix1pos=0; ix1pos<numx1_wallinflowchannel_; ++ix1pos)
       {
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforceu_)(1,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforcev_)(1,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforcew_)(1,ix1pos)/area/dens_;
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelp_)     (1,ix1pos);
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforceu_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforcev_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforcew_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelp_)     (1,ix1pos);
         (*log) << &endl;
       }
       log->flush();
@@ -1443,10 +1443,10 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       (*log) << "#   x               u              v              w\n";
       for(size_t ix1pos=0; ix1pos<numx1_wallinflowchannel_; ++ix1pos)
       {
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelu_)(0,ix1pos);
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelv_)(0,ix1pos);
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelw_)(0,ix1pos);
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelu_)(0,ix1pos);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelv_)(0,ix1pos);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelw_)(0,ix1pos);
         (*log) << &endl;
       }
       log->flush();
@@ -1456,10 +1456,10 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       (*log) << "#   x               u              v              w\n";
       for(size_t ix1pos=0; ix1pos<numx1_wallinflowchannel_; ++ix1pos)
       {
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelu_)(1,ix1pos);
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelv_)(1,ix1pos);
-        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelw_)(1,ix1pos);
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelu_)(1,ix1pos);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelv_)(1,ix1pos);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelw_)(1,ix1pos);
         (*log) << &endl;
       }
       log->flush();
@@ -1617,44 +1617,44 @@ void COMBUST::TurbulenceStatisticsORACLES::WriteStatisticsFile(
 
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+  log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
 
   (*log) << "\n";
   (*log) << "# Statistics record " << countrecord_;
   (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
-  (*log) << "# profile at x-position " << setw(5) << setprecision(2) << x1positions_(x1pos)/h_ << " h \n";
+  (*log) << "# profile at x-position " << std::setw(5) << std::setprecision(2) << x1positions_(x1pos)/h_ << " h \n";
   (*log) << "\n";
 
   (*log) << "#     y             y+";
   (*log) << "          umean         vmean         wmean         pmean";
   (*log) << "        mean u^2      mean v^2      mean w^2";
   (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2      mean G\n";
-  (*log) << scientific;
+  (*log) << std::scientific;
 
   for(int ix2pos=x2locations.size()-1; ix2pos>=0; --ix2pos)
   {
     // y and y+
-    (*log) <<  " "  << setw(11) << setprecision(4) << x2locations[ix2pos];
-    (*log) << "   " << setw(11) << setprecision(4) << x2locations[ix2pos]*utau_/visc_;
+    (*log) <<  " "  << std::setw(11) << std::setprecision(4) << x2locations[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << x2locations[ix2pos]*utau_/visc_;
 
     // time mean values
-    (*log) << "   " << setw(11) << setprecision(4) << profileu[ix2pos];
-    (*log) << "   " << setw(11) << setprecision(4) << profilev[ix2pos];
-    (*log) << "   " << setw(11) << setprecision(4) << profilew[ix2pos];
-    (*log) << "   " << setw(11) << setprecision(4) << profilep[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profileu[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profilev[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profilew[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profilep[ix2pos];
 
-    (*log) << "   " << setw(11) << setprecision(4) << profileuu[ix2pos];
-    (*log) << "   " << setw(11) << setprecision(4) << profilevv[ix2pos];
-    (*log) << "   " << setw(11) << setprecision(4) << profileww[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profileuu[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profilevv[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profileww[ix2pos];
 
-    (*log) << "   " << setw(11) << setprecision(4) << profileuv[ix2pos];
-    (*log) << "   " << setw(11) << setprecision(4) << profileuw[ix2pos];
-    (*log) << "   " << setw(11) << setprecision(4) << profilevw[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profileuv[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profileuw[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profilevw[ix2pos];
 
-    (*log) << "   " << setw(11) << setprecision(4) << profilepp[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profilepp[ix2pos];
 
-    (*log) << "   " << setw(11) << setprecision(4) << profileg[ix2pos];
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << profileg[ix2pos];
 
     (*log) << "\n";
   }

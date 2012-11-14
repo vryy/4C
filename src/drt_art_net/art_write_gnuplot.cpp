@@ -148,7 +148,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
       // ---------------------------------------------------------------
       // Allocate the gnuplot export condition
       // ---------------------------------------------------------------
-      RCP<ArtWriteGnuplot> artgnu_c = rcp(new ArtWriteGnuplot(Artery_Number));    
+      RCP<ArtWriteGnuplot> artgnu_c = Teuchos::rcp(new ArtWriteGnuplot(Artery_Number));    
 
 
       // ---------------------------------------------------------------
@@ -156,7 +156,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
       // condition exists more than once, which shouldn't be allowed
       // ---------------------------------------------------------------
       bool inserted  = agmap_.insert( make_pair( Artery_Number, artgnu_c ) ).second;
-      bool inserted2 = agnode_map_.insert(make_pair(Artery_Number, sorted_nodes)).second;
+      bool inserted2 = agnode_map_.insert(std::make_pair(Artery_Number, sorted_nodes)).second;
 
       if(!inserted || !inserted2)
         dserror("Each artery must have a unique artery number, please correct your input file\n");
@@ -239,7 +239,7 @@ ART::UTILS::ArtWriteGnuplot:: ArtWriteGnuplot(int ArteryNum):
   str+= ".art";
   cstr  = new char [str.size()+1];
   strcpy (cstr, str.c_str());
-  fout_ = rcp(new ofstream(cstr));
+  fout_ = Teuchos::rcp(new ofstream(cstr));
   delete [] cstr;
 
 }
@@ -296,7 +296,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
     vector<int> lmstride;
-    RCP<vector<int> > lmowner = rcp(new vector<int>);
+    RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
     const int* ele_nodes = ele[0][0].NodeIds();
 
     if(ele_nodes[0] == (*nodes)[i])

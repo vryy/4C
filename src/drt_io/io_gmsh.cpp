@@ -379,7 +379,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: DRT::UTILS::GetColVersionOfRowVector() does only work for Epetra_Vectors on DofRowMap
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for Epetra_MultiVectors
-  const Teuchos::RCP<Epetra_MultiVector> vectorfield = rcp(new Epetra_MultiVector(*discret->NodeColMap(),3,true));
+  const Teuchos::RCP<Epetra_MultiVector> vectorfield = Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(),3,true));
   LINALG::Export(*vectorfield_row,*vectorfield);
 #else
   const Teuchos::RCP<Epetra_MultiVector> vectorfield = vectorfield_row;
@@ -425,7 +425,7 @@ void IO::GMSH::ScalarToStream(
     std::ostream&                          s
     )
 {
-  s.setf(ios::scientific,ios::floatfield);
+  s.setf(std::ios::scientific,std::ios::floatfield);
   s.precision(12);
 
   const int numnode = distypeToGmshNumNode(distype);
@@ -449,7 +449,7 @@ void IO::GMSH::ScalarToStream(
     std::ostream&              s            ///< stream
 )
 {
-  s.setf(ios::scientific,ios::floatfield);
+  s.setf(std::ios::scientific,std::ios::floatfield);
   s.precision(12);
 
   s << "SP("; // scalar field indicator
@@ -469,7 +469,7 @@ void IO::GMSH::VectorToStream(
     std::ostream&              s            ///< stream
 )
 {
-  s.setf(ios::scientific,ios::floatfield);
+  s.setf(std::ios::scientific,std::ios::floatfield);
   s.precision(12);
 
   s << "VP("; // vector field indicator
@@ -496,7 +496,7 @@ void IO::GMSH::elementAtInitialPositionToStream(
   const DRT::Element::DiscretizationType distype = ele->Shape();
   const int numnode = distypeToGmshNumNode(distype);
 
-  s.setf(ios::scientific,ios::floatfield);
+  s.setf(std::ios::scientific,std::ios::floatfield);
   s.precision(12);
 
   s << "S" << distypeToGmshElementHeader(distype) << "(";
@@ -570,9 +570,9 @@ std::string IO::GMSH::text3dToString(
   s << "T3";
   // coordinates
   s << "(";
-  s << scientific << xyz(0) <<",";
-  s << scientific << xyz(1) <<",";
-  s << scientific << xyz(2) <<",";
+  s << std::scientific << xyz(0) <<",";
+  s << std::scientific << xyz(1) <<",";
+  s << std::scientific << xyz(2) <<",";
   s << fontsize << ")";
   s << "{\"" << text <<"\"};";
   s << "\n";
@@ -647,10 +647,10 @@ std::string IO::GMSH::GetNewFileNameAndDeleteOldFiles(
   const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
   std::ostringstream pid_stream;
-  pid_stream << ".p" << std::setw(2) << setfill('0') << pid;
+  pid_stream << ".p" << std::setw(2) << std::setfill('0') << pid;
 
-  filename    << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep           << pid_stream.str() << ".pos";
-  filenamedel << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep-step_diff << pid_stream.str() << ".pos";
+  filename    << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0') << actstep           << pid_stream.str() << ".pos";
+  filenamedel << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0') << actstep-step_diff << pid_stream.str() << ".pos";
   std::remove(filenamedel.str().c_str());
   if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"..."<<std::endl;
   return filename.str();
@@ -669,9 +669,9 @@ std::string IO::GMSH::GetFileName(
   const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
   std::ostringstream pid_stream;
-  pid_stream << ".p" << std::setw(2) << setfill('0') << pid;
+  pid_stream << ".p" << std::setw(2) << std::setfill('0') << pid;
 
-  filename    << filebase << "." << filename_base << "_" << std::setw(5) << setfill('0') << actstep           << pid_stream.str() << ".pos";
+  filename    << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0') << actstep           << pid_stream.str() << ".pos";
 
   if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"..."<<std::endl;
 

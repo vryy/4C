@@ -27,7 +27,6 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "../drt_lib/drt_inputreader.H"
 
 
-using namespace std;
 using namespace Teuchos;
 using namespace EXODUS;
 

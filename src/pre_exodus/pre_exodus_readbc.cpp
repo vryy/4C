@@ -19,7 +19,6 @@ Here is everything related with reading a bc file
 #include "pre_exodus_reader.H"
 
 
-using namespace std;
 using namespace Teuchos;
 
 /*----------------------------------------------------------------------*/
@@ -27,9 +26,9 @@ using namespace Teuchos;
 void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs, vector<EXODUS::cond_def>& condefs)
 {
   // first we read the whole file into one stream/string
-  stringstream bcstream;
+  std::stringstream bcstream;
   const char *bcfilechar = bcfile.c_str();
-  ifstream bcfstream(bcfilechar, ifstream::in);
+  std::ifstream bcfstream(bcfilechar, std::ifstream::in);
   if (!bcfstream.good()){
     cout << endl << "Unable to open file: " << bcfile << endl;
     dserror("Unable to open bc-file");
@@ -91,7 +90,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
     size_t found2 = actcond.find_first_of("=");
     string buffer = actcond.substr(markerlength,found2-markerlength);
     // convert string to int
-    istringstream bufferstream(buffer);
+    std::istringstream bufferstream(buffer);
     int id;
     bufferstream >> id;
 
@@ -117,7 +116,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
           else {
             ++ndp;
             E_id = ndp;
-            eb_dp2Eid.insert(pair<int,int>(id, E_id));
+            eb_dp2Eid.insert(std::pair<int,int>(id, E_id));
           }
           break;
         }
@@ -127,7 +126,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
           else {
             ++ndl;
             E_id = ndl;
-            eb_dl2Eid.insert(pair<int,int>(id, E_id));
+            eb_dl2Eid.insert(std::pair<int,int>(id, E_id));
           }
           break;
         }
@@ -137,7 +136,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
           else {
             ++nds;
             E_id = nds;
-            eb_ds2Eid.insert(pair<int,int>(id, E_id));
+            eb_ds2Eid.insert(std::pair<int,int>(id, E_id));
           }
           break;
         }
@@ -147,7 +146,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
           else {
             ++ndv;
             E_id = ndv;
-            eb_dv2Eid.insert(pair<int,int>(id, E_id));
+            eb_dv2Eid.insert(std::pair<int,int>(id, E_id));
           }
           break;
         }
@@ -174,7 +173,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
         else {
           ++ndp;
           E_id = ndp;
-          ns_dp2Eid.insert(pair<int,int>(id, E_id));
+          ns_dp2Eid.insert(std::pair<int,int>(id, E_id));
         }
         break;
       }
@@ -184,7 +183,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
         else {
           ++ndl;
           E_id = ndl;
-          ns_dl2Eid.insert(pair<int,int>(id, E_id));
+          ns_dl2Eid.insert(std::pair<int,int>(id, E_id));
         }
         break;
       }
@@ -194,7 +193,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
         else {
           ++nds;
           E_id = nds;
-          ns_ds2Eid.insert(pair<int,int>(id, E_id));
+          ns_ds2Eid.insert(std::pair<int,int>(id, E_id));
         }
         break;
       }
@@ -204,7 +203,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
         else {
           ++ndv;
           E_id = ndv;
-          ns_dv2Eid.insert(pair<int,int>(id, E_id));
+          ns_dv2Eid.insert(std::pair<int,int>(id, E_id));
         }
         break;
       }
@@ -394,7 +393,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       size_t end_m = master_con.desc.find("Master"); // master
       string string_mconditionid = master_con.desc.substr(0,end_m-1);
       // convert string to int
-      istringstream string_mconditionidstream(string_mconditionid);
+      std::istringstream string_mconditionidstream(string_mconditionid);
       int master_conditionID = -1;
       string_mconditionidstream >> master_conditionID;
   
@@ -413,7 +412,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
           size_t end_s = slave_con.desc.find("Slave"); // slave
           string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
           // convert string to int
-          istringstream string_sconditionidstream(string_sconditionid);
+          std::istringstream string_sconditionidstream(string_sconditionid);
           string_sconditionidstream >> slave_conditionID;
           
           if(slave_conditionID == master_conditionID)
@@ -431,7 +430,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       start_tol = start_tol + tol_length + 1;
       string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
       // convert string to int
-      istringstream string_tolstream(string_tol);
+      std::istringstream string_tolstream(string_tol);
       double abstol = -1.0;
       string_tolstream >> abstol;
       
@@ -446,15 +445,15 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
         dserror("num master nodes != num slave nodes before adjusting coords");
       }
       
-      const set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
-      const set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
+      const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
+      const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
       
       // reference values for x on the master side and x on the slave side
       const double x_master = (mesh.GetNode(*master_nodeset_ids.begin()))[0];
       const double x_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[0];
       
       // loop over all master nodes 
-      for(  set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
+      for(  std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
             m_node_id != master_nodeset_ids.end();
             m_node_id++)
       {
@@ -465,7 +464,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
 
         int count_slavenodes = 0;
         // loop over all slave nodes and find matching node
-        for(  set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
+        for(  std::set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
               s_node_id != slave_nodeset_ids.end();
               s_node_id++)
         {
@@ -532,7 +531,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       size_t end_m = master_con.desc.find("Master"); // master
       string string_mconditionid = master_con.desc.substr(0,end_m-1);
       // convert string to int
-      istringstream string_mconditionidstream(string_mconditionid);
+      std::istringstream string_mconditionidstream(string_mconditionid);
       int master_conditionID = -1;
       string_mconditionidstream >> master_conditionID;
 
@@ -552,7 +551,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
           size_t end_s = slave_con.desc.find("Slave"); // slave
           string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
           // convert string to int
-          istringstream string_sconditionidstream(string_sconditionid);
+          std::istringstream string_sconditionidstream(string_sconditionid);
           string_sconditionidstream >> slave_conditionID;
         
           if(slave_conditionID == master_conditionID)
@@ -570,7 +569,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       start_tol = start_tol + tol_length + 1;
       string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
       // convert string to int
-      istringstream string_tolstream(string_tol);
+      std::istringstream string_tolstream(string_tol);
       double abstol = -1.0;
       string_tolstream >> abstol;
       
@@ -585,15 +584,15 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
          dserror("xz num master nodes != num slave nodes before adjusting coords");
        }
       
-      const set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
-      const set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
+      const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
+      const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
       
       // reference values for x on the master side and x on the slave side
       const double y_master = (mesh.GetNode(*master_nodeset_ids.begin()))[1];  // get y-coord
       const double y_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[1];  // get y-coord
 
       // loop over all master nodes 
-      for(  set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
+      for(  std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
             m_node_id != master_nodeset_ids.end();
             m_node_id++)
       {
@@ -604,7 +603,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
 
         int count_slavenodes = 0;
         // loop over all slave nodes and find matching node
-        for(  set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
+        for(  std::set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
               s_node_id != slave_nodeset_ids.end();
               s_node_id++)
         {
@@ -671,7 +670,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        size_t end_m = master_con.desc.find("Master"); // master
        string string_mconditionid = master_con.desc.substr(0,end_m-1);
        // convert string to int
-       istringstream string_mconditionidstream(string_mconditionid);
+       std::istringstream string_mconditionidstream(string_mconditionid);
        int master_conditionID = -1;
        string_mconditionidstream >> master_conditionID;
 
@@ -690,7 +689,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
            size_t end_s = slave_con.desc.find("Slave"); // slave
            string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
            // convert string to int
-           istringstream string_sconditionidstream(string_sconditionid);
+           std::istringstream string_sconditionidstream(string_sconditionid);
            string_sconditionidstream >> slave_conditionID;
            
            if(slave_conditionID == master_conditionID)
@@ -708,7 +707,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        start_tol = start_tol + tol_length + 1;
        string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
        // convert string to int
-       istringstream string_tolstream(string_tol);
+       std::istringstream string_tolstream(string_tol);
        double abstol = -1.0;
        string_tolstream >> abstol;
        
@@ -723,15 +722,15 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
           dserror("xy num master nodes != num slave nodes before adjusting coords");
         }
        
-       const set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
-       const set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
+       const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
+       const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
        
        // reference values for z on the master side and z on the slave side
        const double z_master = (mesh.GetNode(*master_nodeset_ids.begin()))[2];
        const double z_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[2];
       
        // loop over all master nodes 
-       for(  set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
+       for(  std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
              m_node_id != master_nodeset_ids.end();
              m_node_id++)
        {
@@ -742,7 +741,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        
          int count_slavenodes = 0;
          // loop over all slave nodes and find matching node
-         for(  set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
+         for(  std::set<int>::const_iterator s_node_id = slave_nodeset_ids.begin();
                s_node_id != slave_nodeset_ids.end();
                s_node_id++)
          {

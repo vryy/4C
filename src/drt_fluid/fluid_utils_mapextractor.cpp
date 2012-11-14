@@ -15,12 +15,12 @@ void FLD::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"VolumetricSurfaceFlowCond",0,ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"Mortar",0,ndim)));
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"TotalTractionCorrectionCond",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"VolumetricSurfaceFlowCond",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"Mortar",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"TotalTractionCorrectionCond",0,ndim)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 
@@ -51,7 +51,7 @@ Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(con
 void FLD::UTILS::KSPMapExtractor::Setup(const DRT::Discretization& dis)
 {
   DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(rcp(new DRT::UTILS::ConditionSelector(dis,"KrylovSpaceProjection")));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::ConditionSelector(dis,"KrylovSpaceProjection")));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 

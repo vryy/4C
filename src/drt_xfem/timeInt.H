@@ -738,7 +738,7 @@ protected:
 
     // create an element dof manager
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
-    Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*dofman));
+    Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = Teuchos::rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*dofman));
 
     // the enrichment functions may depend on the point
     // therefore the computation of the enrichment functions is called here
@@ -748,7 +748,7 @@ protected:
     {
     case 0: // side by phi-value
     {
-      enrvals = rcp(new XFEM::ElementEnrichmentValues(
+      enrvals = Teuchos::rcp(new XFEM::ElementEnrichmentValues(
           *element,
           *eleDofManager,
           nodephi,
@@ -759,7 +759,7 @@ protected:
     }
     case -1:
   {
-      enrvals = rcp(new XFEM::ElementEnrichmentValues(
+      enrvals = Teuchos::rcp(new XFEM::ElementEnrichmentValues(
           *element,
           *eleDofManager,
           XFEM::Enrichment::approachFromMinus,
@@ -771,7 +771,7 @@ protected:
   }
     case 1:
     {
-      enrvals = rcp(new XFEM::ElementEnrichmentValues(
+      enrvals = Teuchos::rcp(new XFEM::ElementEnrichmentValues(
           *element,
           *eleDofManager,
           XFEM::Enrichment::approachFromPlus,
@@ -862,7 +862,7 @@ protected:
 
     // create an element dof manager
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
-    Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*dofman));
+    Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = Teuchos::rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*dofman));
 
     // the enrichment functions may depend on the point
     // therefore the computation of the enrichment functions is called here

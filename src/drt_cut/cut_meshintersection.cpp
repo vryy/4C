@@ -345,7 +345,7 @@ void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::
 
                 if( e!=NULL )
                 {
-                    sourrounding_elements.insert(pair<int, ElementHandle*>(adj_eid, e));
+                    sourrounding_elements.insert(std::pair<int, ElementHandle*>(adj_eid, e));
                 }
 
             } // end loop over adjacent elements
@@ -749,7 +749,7 @@ void GEO::CUT::MeshIntersection::ConnectNodalDOFSets( std::vector<Node *> &     
                 else
                 {
                   // insert the required pair of nid and unset dofsetnumber value (-1)
-                  nids_dofsetnumber_map_toComm.insert(pair<int,int>(nid,-1));
+                  nids_dofsetnumber_map_toComm.insert(std::pair<int,int>(nid,-1));
 
                   // set dofset number to minus one, not a valid dofset number
                   nds.push_back(-1);

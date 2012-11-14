@@ -30,7 +30,7 @@ POTENTIAL::Potential::Potential(
     DRT::Discretization&                discret):
     discretRCP_(discretRCP),
     discret_(discret),
-    searchTree_(rcp(new GEO::SearchTree(8)))
+    searchTree_(Teuchos::rcp(new GEO::SearchTree(8)))
 {
   prob_dim_= DRT::Problem::Instance()->NDim();
   return;
@@ -1239,7 +1239,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
     // d = distance - 2* radius
     const double radius = vdw_radius;
     //double globalv = 63527.0;
-    // const double radius_test = pow( ((3*globalv)/(4*M_PI) ) ,(1.0/3.0));
+    // const double radius_test = std::pow( ((3*globalv)/(4*M_PI) ) ,(1.0/3.0));
     //cout << "radius_test = " << radius_test << endl;
     const double d = distance - 2.0*radius;
     const double x = d/(2.0*radius);
@@ -1339,7 +1339,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
     const double radius = vdw_radius;
     cout << "Analytical volume = " << 4.0*M_PI*pow(radius,3)/3.0 -4.0*M_PI*pow((radius-thickness),3)/3.0 << endl;
     //double globalv = 63527.0;
-    // const double radius_test = pow( ((3*globalv)/(4*M_PI) ) ,(1.0/3.0));
+    // const double radius_test = std::pow( ((3*globalv)/(4*M_PI) ) ,(1.0/3.0));
     //cout << "radius_test = " << radius_test << endl;
     const double d = distance - 2.0*radius;
     const double x = d/(2.0*radius);

@@ -167,14 +167,14 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   // create the junction boundary conditions
   ParameterList junparams;
 
-  junc_nodal_vals_=rcp(new map<const int, RCP<ART::UTILS::JunctionNodeParams> >);
+  junc_nodal_vals_=Teuchos::rcp(new map<const int, RCP<ART::UTILS::JunctionNodeParams> >);
 
   junparams.set<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
-  artjun_ = rcp(new UTILS::ArtJunctionWrapper(discret_, output_, junparams, dta_) );
+  artjun_ = Teuchos::rcp(new UTILS::ArtJunctionWrapper(discret_, output_, junparams, dta_) );
 
   // create the gnuplot export conditions
-  artgnu_ = rcp(new ART::UTILS::ArtWriteGnuplotWrapper(discret_,junparams));
+  artgnu_ = Teuchos::rcp(new ART::UTILS::ArtWriteGnuplotWrapper(discret_,junparams));
 
   // ---------------------------------------------------------------------------------------
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
@@ -195,7 +195,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
     //    vector<int> lm;
     //    vector<int> lmstride;
     //    vector<int> lmowner;
-    //        RCP<vector<int> > lmowner = rcp(new vector<int>);
+    //        RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
     //    ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors

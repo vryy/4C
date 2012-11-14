@@ -17,8 +17,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 	{ // create Centerline object from NodeSet
 	  int centerlineid = -1;
 
-	  map<int,EXODUS::NodeSet> nss = mymesh.GetNodeSets();
-	  map<int,EXODUS::NodeSet>::const_iterator i_ns;
+	  std::map<int,EXODUS::NodeSet> nss = mymesh.GetNodeSets();
+	  std::map<int,EXODUS::NodeSet>::const_iterator i_ns;
 	  // check for Centerline or Centerpoint Nodeset
 	  bool clbool=true;
 	  for(i_ns=nss.begin();i_ns!=nss.end();++i_ns)
@@ -41,8 +41,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 	  myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
 
 	  // get rid of helper eb where the centerline ns was based on
-	  map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-	  map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+	  std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+	  std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
 	  vector<int> eb_ids;
 	  // check for Centerline ElementBlock
 	  for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb)
@@ -55,7 +55,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     }
 
 	  //generation of coordinate systems
-	  map<int,map<int,vector<vector<double> > > > centlineinfo;
+	  std::map<int,map<int,vector<vector<double> > > > centlineinfo;
 	  if (clbool)
 	    centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
 	  //generation of degenerated coordinate systems
@@ -78,8 +78,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 
     int centerlineid = -1;
 
-    map<int,EXODUS::NodeSet> nss = centerlinemesh.GetNodeSets();
-    map<int,EXODUS::NodeSet>::const_iterator i_ns;
+    std::map<int,EXODUS::NodeSet> nss = centerlinemesh.GetNodeSets();
+    std::map<int,EXODUS::NodeSet>::const_iterator i_ns;
     // check for Centerline or Centerpoint Nodeset
     bool clbool=true;
     for(i_ns=nss.begin();i_ns!=nss.end();++i_ns){
@@ -100,8 +100,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
 
     // get rid of helper eb where the centerline ns was based on
-    map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-    map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+    std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+    std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
     vector<int> eb_ids;
     // check for Centerline ElementBlock
     for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb)
@@ -114,14 +114,14 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     }
 
     //generation of coordinate systems
-    map<int,map<int,vector<vector<double> > > > centlineinfo;
+    std::map<int,map<int,vector<vector<double> > > > centlineinfo;
     if (clbool)
     {
       //switch with which method normals are computed
       // get nodeset with all surface nodes
       int surfnodes_id = -1;
-      map<int,EXODUS::NodeSet> nss = mymesh.GetNodeSets();
-      map<int,EXODUS::NodeSet>::const_iterator i_ns;
+      std::map<int,EXODUS::NodeSet> nss = mymesh.GetNodeSets();
+      std::map<int,EXODUS::NodeSet>::const_iterator i_ns;
       // check for Surface Nodeset for normal calculation
       for(i_ns=nss.begin();i_ns!=nss.end();++i_ns)
       {
@@ -140,7 +140,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
       {
         cout << RED << "Found surface nodes NodeSet! Fiber directions computed accordingly" << END_COLOR << endl;
 
-        set<int> all_surfnodes=nss.find(surfnodes_id)->second.GetNodeSet();
+        std::set<int> all_surfnodes=nss.find(surfnodes_id)->second.GetNodeSet();
 
         //int node_id_first_node = *all_surfnodes.begin();
         // select only one element block for fiber direction calculation
@@ -185,8 +185,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
 
     // get ids of the eblocks you want to calculate the locsys's
     string identifier = "ext";
-    map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-    map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+    std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+    std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
     vector<int> eb_ids;
 
     for (i_eb=ebs.begin(); i_eb!=ebs.end(); ++i_eb) {
@@ -199,7 +199,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     cout << "Generating local cosys..." << endl;
     myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
     //generation of coordinate systems
-    map<int,map<int,vector<vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
+    std::map<int,map<int,vector<vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
     cout << "...done" << endl;
 
 //    cout << "Generating gmsh plots..." << endl;
@@ -215,22 +215,22 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
   }
 
   // weirdo impossible case
-  map<int,map<int,vector<vector<double> > > > mymap;
+  std::map<int,map<int,vector<vector<double> > > > mymap;
   return mymap;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-map<int,double> EXODUS::NdCenterlineThickness(string cline,const set<int>& nodes, const map<int,vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr)
+map<int,double> EXODUS::NdCenterlineThickness(string cline,const std::set<int>& nodes, const std::map<int,vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr)
 {
-  map<int,double> ndthick;
-  set<int>::const_iterator i_node;
+  std::map<int,double> ndthick;
+  std::set<int>::const_iterator i_node;
 
   // create centerline object with diameter info
   cout << "Reading centerline and generating variable nodal thicknesses..." << endl;
   EXODUS::Centerline mycline(cline,coordcorr);
-  map<int,vector<double> > clpoints = *(mycline.GetPoints());
-  map<int,double> cldiams = *(mycline.GetDiams());
+  std::map<int,vector<double> > clpoints = *(mycline.GetPoints());
+  std::map<int,double> cldiams = *(mycline.GetDiams());
 
   mycline.PlotCL_Gmsh(); // plot centerline with coloured diameter (change comment in plot function!)
   mesh.PlotConnGmsh("extrusionsideset.gmsh",mesh,conn);
@@ -257,7 +257,7 @@ map<int,double> EXODUS::NdCenterlineThickness(string cline,const set<int>& nodes
     // ratio = thickness / radius
     double thickness = ratio * radius;
 
-    ndthick.insert(pair<int,double>(*i_node,thickness));
+    ndthick.insert(std::pair<int,double>(*i_node,thickness));
 
   }
   cout << "...done" << endl;
@@ -273,12 +273,12 @@ map<int,double> EXODUS::NdCenterlineThickness(string cline,const set<int>& nodes
 Centerline::Centerline(string filename,vector<double> coordcorr)
 {
 	//initialization of points_
-	points_ = rcp(new map<int,vector<double> >);
-	diam_ = rcp(new map<int,double>);
+	points_ = Teuchos::rcp(new std::map<int,vector<double> >);
+	diam_ = Teuchos::rcp(new std::map<int,double>);
 
 	//routine to open file
-	ifstream infile;
-	infile.open(filename.c_str(), ifstream::in);
+	std::ifstream infile;
+	infile.open(filename.c_str(), std::ifstream::in);
 
 	// check
 	if(!infile){
@@ -294,7 +294,7 @@ Centerline::Centerline(string filename,vector<double> coordcorr)
 	while(infile){
 	  string line;
 	  getline(infile, line);
-	  istringstream is(line);
+	  std::istringstream is(line);
 	  Row row;
 	  while (is){
 	    float data;
@@ -317,7 +317,7 @@ Centerline::Centerline(string filename,vector<double> coordcorr)
         //clp[j] = table[i][j] + coordcorr[j];  // first 3 numbers are CL coords
         clp[j] = row[j] + coordcorr[j];  // first 3 numbers are CL coords
       }
-      points_->insert(pair<int,vector<double> >(clp_id,clp)); // fill map
+      points_->insert(pair<int,vector<double> >(clp_id,clp)); // fill std::map
       //diam_->insert(pair<int,double>(clp_id,row[7])); // fitted diameter is 7th entry in cline table
       diam_->insert(pair<int,double>(clp_id,row[7])); // minimum diameter is 8th entry in cline table
       ++ clp_id;
@@ -366,10 +366,10 @@ Centerline::Centerline(string filename,vector<double> coordcorr)
 Centerline::Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,vector<double> > > nodes)
 {
   //initialization of points_
-  points_ = rcp(new map<int,vector<double> >);
-  diam_ = rcp(new map<int,double>);   // stays empty for mesh-based clines
-  set<int> nodeset = ns.GetNodeSet();
-  set<int>::const_iterator it;
+  points_ = Teuchos::rcp(new std::map<int,vector<double> >);
+  diam_ = Teuchos::rcp(new std::map<int,double>);   // stays empty for mesh-based clines
+  std::set<int> nodeset = ns.GetNodeSet();
+  std::set<int>::const_iterator it;
   int id = 0;
   //ns.Print(cout,true);
   for(it=nodeset.begin(); it!=nodeset.end(); ++it){
@@ -403,7 +403,7 @@ void Centerline::PrintPoints()
  *------------------------------------------------------------------------*/
 void Centerline::PlotCL_Gmsh()
 {
-	ofstream gmshFile("centerline.gmsh");
+  std::ofstream gmshFile("centerline.gmsh");
 	gmshFile << "View \" Centerline \" {" << endl;
 
 	for(map<int,vector<double> >::const_iterator it = points_->begin(); it != points_->end(); ++it)
@@ -498,20 +498,20 @@ void EXODUS::normalize3d(vector<double>& v)
  |- returns a map containing calc. directions referred to each element    |
  *------------------------------------------------------------------------*/
 map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Centerline& mycline,
-    const EXODUS::Mesh& mymesh, const vector <int>& eb_ids, set<int>& mysurfnodes)
+    const EXODUS::Mesh& mymesh, const vector <int>& eb_ids, std::set<int>& mysurfnodes)
 {
-  // map which stores the surface normals for each element
-  map<int,vector<double> > ele_normals;
+  // std::map which stores the surface normals for each element
+  std::map<int,vector<double> > ele_normals;
   
-  map <pair<int,int> ,vector <double> > np_eb_el;
+  std::map <pair<int,int> ,vector <double> > np_eb_el;
   // Get all Element Blocks 
-  map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-  map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
+  std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+  std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
   // vector to store the  surface nodes of the each element
   vector<vector<double> > ele_surf_nodes; 
   vector<vector<double> >:: iterator counter_ele_surfnodes;
-  map<int,vector<int> > EleConn;
-  map<int,vector<int> >::const_iterator it_2;
+  std::map<int,vector<int> > EleConn;
+  std::map<int,vector<int> >::const_iterator it_2;
   vector<int>::const_iterator it_3;
   // store node connecting vectors
   vector<double> ele_vec_12, ele_vec_14, ele_vec_23, ele_vec_21, ele_vec_34, ele_vec_32, ele_vec_41, ele_vec_43;
@@ -571,33 +571,33 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
       //normalize normal vector
       normalize3d(ele_vec_norm);
       ele_normals.insert(std::pair<int,vector<double> >(ele_counter,ele_vec_norm));
-      // Write data in map which stores ele Block data as well
+      // Write data in std::map which stores ele Block data as well
       //pair<int,int> eb_e = make_pair(i_ebs->first,it_2->first);
-      pair<int,int> eb_e = make_pair(eb_ids[0],it_2->first);
+      std::pair<int,int> eb_e = std::make_pair(eb_ids[0],it_2->first);
       //np_eb_el contains ((eblock-ID, element-ID),ele_normal)
       np_eb_el.insert(pair < pair<int,int>,vector <double> >(eb_e,ele_vec_norm));
     }
   }
 
-  map<int,vector<double> > midpoints;  // here midpoints are stored
+  std::map<int,vector<double> > midpoints;  // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
-  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  std::map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
   //conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
-  map<int,vector<int> > conn_mp_cp;
+  std::map<int,vector<int> > conn_mp_cp;
   //auxiliary variables
   int clID=-1;
   int clID_2=-1;
   vector<int> ids(2,0);
   vector<double> mean_cl_dir(3,0);
-  list< pair<int,double> > distances;
-  list< pair< double, vector <double> > > cl_direction;
-  map<int,vector<double> > clpoints = *(mycline.GetPoints());
+  std::list< pair<int,double> > distances;
+  std::list< pair< double, vector <double> > > cl_direction;
+  std::map<int,vector<double> > clpoints = *(mycline.GetPoints());
 
   //calculate mean direction of centerline to determine fiber direction
   //loop over all points of the centerline to find the two nearest
   for(map<int,vector<double> >::const_iterator cl_iter = clpoints.begin(); cl_iter != clpoints.end(); ++cl_iter)
   {
-    cl_direction.push_back(make_pair(EXODUS::distance3d((*clpoints.begin()).second,cl_iter->second),EXODUS::substract3d((*clpoints.begin()).second,cl_iter->second)));
+    cl_direction.push_back(std::make_pair(EXODUS::distance3d((*clpoints.begin()).second,cl_iter->second),EXODUS::substract3d((*clpoints.begin()).second,cl_iter->second)));
   }
   cl_direction.sort();
   mean_cl_dir=cl_direction.back().second;
@@ -611,7 +611,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
     //loop over all points of the centerline to find the two nearest
     for(map<int,vector<double> >::const_iterator cl_iter = clpoints.begin(); cl_iter != clpoints.end(); ++cl_iter)
     {
-      distances.push_back(make_pair(cl_iter->first, EXODUS::distance3d(el_iter->second,cl_iter->second)));
+      distances.push_back(std::make_pair(cl_iter->first, EXODUS::distance3d(el_iter->second,cl_iter->second)));
     }
     // sort distance map not by key but by value of second entry (here distance)
     distances.sort(MyDataSortPredicate);
@@ -631,7 +631,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
   //in this section the three directions of all local coordinate systems are calculated
   //with the aid of conn_mp_cp
   //map that will be returned containing (eblock-ID, element-ID, directions of local coordinate systems)
-  map<int,map<int,vector<vector<double> > > > ebID_elID_local_cosy;
+  std::map<int,map<int,vector<vector<double> > > > ebID_elID_local_cosy;
 
   vector<double> r_0(3,0);
   vector<double> r_1(3,0);
@@ -651,7 +651,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
     normalize3d(r_0);
     //take the normal vector calculated from surface nodes if existent
     pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
-    map < pair<int,int> ,vector <double> >::iterator normal;
+    std::map < pair<int,int> ,vector <double> >::iterator normal;
     normal= np_eb_el.find(eb_el);
 
     if(np_eb_el.find(eb_el)!=np_eb_el.end())
@@ -714,9 +714,9 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
     const EXODUS::Mesh& mymesh, const vector<int>& eb_ids)
 {
 
-  map<int,vector<double> > midpoints;  // here midpoints are stored
+  std::map<int,vector<double> > midpoints;  // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
-  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  std::map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
 	//auxiliary variables
@@ -826,16 +826,16 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
   const EXODUS::Mesh& mymesh,
   const vector<int>& eb_ids)
 {
-  map<int,vector<double> > midpoints;  // here midpoints are stored
+  std::map<int,vector<double> > midpoints;  // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
-  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  std::map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
   //conn_mp_cp will contain (midpoint-ID, centerpoint-ID)
-  map<int,int > conn_mp_cp;
+  std::map<int,int > conn_mp_cp;
   //auxiliary variables
   int clID=-1;
   double min_distance,temp;
 
-  map<int,vector<double> > clpoints = *(mycline.GetPoints());
+  std::map<int,vector<double> > clpoints = *(mycline.GetPoints());
 
   // this search should later be replaced by a nice search-tree!
   //in this section for each element the nearest point on the centerline is searched
@@ -872,7 +872,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
   //with the aid of conn_mp_cp
   //
   //map that will be returned containing (eblock-ID, (element-ID, directions of local coordinate systems))
-  map<int,map<int,vector<vector<double> > > > ebID_elID_local_cosy;
+  std::map<int,map<int,vector<vector<double> > > > ebID_elID_local_cosy;
 
   vector<double> r_0(3,0);
   //  vector<double> r_1(3,0);
@@ -927,9 +927,9 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
  *------------------------------------------------------------------------*/
 void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, const vector<int>& eb_ids)
 {
-  map<int,vector<double> > midpoints; // here midpoints are stored
+  std::map<int,vector<double> > midpoints; // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, eblock-ID, element-ID)
-  map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
+  std::map<int,pair<int,int> > mp_eb_el = mymesh.createMidpoints(midpoints,eb_ids);
 	//conn_mp_cp will contain (midpoint-ID, centerpoint-ID_1, centerpoint-ID_2)
 	map<int,vector<int> > conn_mp_cp;
 	//auxiliary variables
@@ -1026,7 +1026,7 @@ void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, c
 	//
 	//generation of gmsh-file to visualize local coordinate systems
 	//
-	ofstream gmshFile("local_coordinate_systems.gmsh");
+	std::ofstream gmshFile("local_coordinate_systems.gmsh");
 
 	gmshFile << "View \" local coordinate systems \" {" << endl;
 

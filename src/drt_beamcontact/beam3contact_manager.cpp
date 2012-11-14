@@ -43,15 +43,15 @@ alphaf_(alphaf)
   // Then, within all beam contact specific routines we will
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
-  RCP<Epetra_Comm> comm = rcp(pdiscret_.Comm().Clone());
-  cdiscret_ = rcp(new DRT::Discretization((string)"beam contact",comm));
+  RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
+  cdiscret_ = Teuchos::rcp(new DRT::Discretization((string)"beam contact",comm));
 
   // loop over all column nodes of underlying problem discret and add
   for (int i=0;i<(ProblemDiscret().NodeColMap())->NumMyElements();++i)
   {
     DRT::Node* node = ProblemDiscret().lColNode(i);
     if (!node) dserror("Cannot find node with lid %",i);
-    RCP<DRT::Node> newnode = rcp(node->Clone());
+    RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
     ContactDiscret().AddNode(newnode);
   }
 
@@ -60,7 +60,7 @@ alphaf_(alphaf)
   {
     DRT::Element* ele = ProblemDiscret().lColElement(i);
     if (!ele) dserror("Cannot find element with lid %",i);
-    RCP<DRT::Element> newele = rcp(ele->Clone());
+    RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
     ContactDiscret().AddElement(newele);
   }
 
@@ -69,10 +69,10 @@ alphaf_(alphaf)
   ContactDiscret().FillComplete(false,false,false);
 
   // store the node and element row and column maps into this manager
-  noderowmap_ = rcp (new Epetra_Map(*(ContactDiscret().NodeRowMap())));
-  elerowmap_  = rcp (new Epetra_Map(*(ContactDiscret().ElementRowMap())));
-  nodecolmap_ = rcp (new Epetra_Map(*(ContactDiscret().NodeColMap())));
-  elecolmap_  = rcp (new Epetra_Map(*(ContactDiscret().ElementColMap())));
+  noderowmap_ = Teuchos::rcp(new Epetra_Map(*(ContactDiscret().NodeRowMap())));
+  elerowmap_  = Teuchos::rcp(new Epetra_Map(*(ContactDiscret().ElementRowMap())));
+  nodecolmap_ = Teuchos::rcp(new Epetra_Map(*(ContactDiscret().NodeColMap())));
+  elecolmap_  = Teuchos::rcp(new Epetra_Map(*(ContactDiscret().ElementColMap())));
 
   // build fully overlapping node and element maps
   // fill my own row node ids into vector (e)sdata
@@ -116,21 +116,21 @@ alphaf_(alphaf)
   LINALG::Gather<int>(esdata,erdata,(int)ertproc.size(),&ertproc[0],ContactDiscret().Comm());
 
   // build completely overlapping node map (on participating processors)
-  RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,ContactDiscret().Comm()));
+  RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,ContactDiscret().Comm()));
   sdata.clear();
   stproc.clear();
   rdata.clear();
   allproc.clear();
 
   // build completely overlapping element map (on participating processors)
-  RCP<Epetra_Map> newelecolmap = rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,ContactDiscret().Comm()));
+  RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,ContactDiscret().Comm()));
   esdata.clear();
   estproc.clear();
   erdata.clear();
 
   // store the fully overlapping node and element maps
-  nodefullmap_ = rcp (new Epetra_Map(*newnodecolmap));
-  elefullmap_  = rcp (new Epetra_Map(*newelecolmap));
+  nodefullmap_ = Teuchos::rcp(new Epetra_Map(*newnodecolmap));
+  elefullmap_  = Teuchos::rcp(new Epetra_Map(*newelecolmap));
 
   // pass new fully overlapping node and element maps to beam contact discretization
   ContactDiscret().ExportColumnNodes(*newnodecolmap);
@@ -180,7 +180,7 @@ alphaf_(alphaf)
   {
     if (!pdiscret_.Comm().MyPID())
       cout << "Penalty parameter      = " << currentpp_ << endl;
-    tree_ = rcp(new Beam3ContactOctTree(scontact_,pdiscret_,*cdiscret_,dofoffset_));
+    tree_ = Teuchos::rcp(new Beam3ContactOctTree(scontact_,pdiscret_,*cdiscret_,dofoffset_));
   }
   else
   {
@@ -303,11 +303,11 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   //**********************************************************************
   
   // initialize global contact force vectors
-  fc_ = rcp(new Epetra_Vector(fres.Map()));
-  if (fcold_==Teuchos::null) fcold_ = rcp(new Epetra_Vector(fres.Map()));
+  fc_ = Teuchos::rcp(new Epetra_Vector(fres.Map()));
+  if (fcold_==Teuchos::null) fcold_ = Teuchos::rcp(new Epetra_Vector(fres.Map()));
   
   // initialize contact stiffness and uncomplete global stiffness
-  stiffc_ = rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
+  stiffc_ = Teuchos::rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
   stiffmatrix.UnComplete();
 
   //for (int i=0;i<(int)pairs_.size();++i)
@@ -876,7 +876,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   std::ostringstream filename;
   filename << "o/gmsh_output/";
   if (timestep<1000000)
-    filename << "beams_t" << std::setw(6) << setfill('0') << timestep;
+    filename << "beams_t" << std::setw(6) << std::setfill('0') << timestep;
   else /*(timestep>=1000000)*/
     dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
   
@@ -1537,7 +1537,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
   gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
   gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
-  gmshfilecontent << "){" << scientific;
+  gmshfilecontent << "){" << std::scientific;
   gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
         
   // now the other prisms will be computed
@@ -1581,7 +1581,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
     gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
     gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
-    gmshfilecontent << "){" << scientific;
+    gmshfilecontent << "){" << std::scientific;
     gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
   }
 
@@ -1591,8 +1591,8 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
    // get nodal coordinates
    DRT::Node* currnode = thisele->Nodes()[k];
    double* coord = currnode->X();
-   gmshfilecontent << "VP(" << scientific << coord[0] << "," << coord[1] << "," << coord[2] << ")";
-   gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+   gmshfilecontent << "VP(" << std::scientific << coord[0] << "," << coord[1] << "," << coord[2] << ")";
+   gmshfilecontent << "{" << std::scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
   }*/
 
    return;
@@ -1733,7 +1733,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
     gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
     gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
-    gmshfilecontent << "){" << scientific;
+    gmshfilecontent << "){" << std::scientific;
     gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
           
     // now the other prisms will be computed
@@ -1777,7 +1777,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
       gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
       gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
       gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
-      gmshfilecontent << "){" << scientific;
+      gmshfilecontent << "){" << std::scientific;
       gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
     }
   }   

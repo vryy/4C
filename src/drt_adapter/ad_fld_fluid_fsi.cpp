@@ -62,7 +62,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
     fluidimpl_->AddDirichCond(interface_->FSICondMap());
   }
 
-  interfaceforcen_ = rcp(new Epetra_Vector(*(interface_->FSICondMap())));
+  interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(interface_->FSICondMap())));
 }
 
 /*----------------------------------------------------------------------*/
@@ -369,7 +369,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   // create an element map with offset
   const int numallele = fluidimpl_->Discretization()->NumGlobalElements();
   const int mapoffset = dbcfsimap->MaxAllGID()+fluidimpl_->Discretization()->ElementRowMap()->MinAllGID() + 1;
-  Teuchos::RCP<Epetra_Map> elemap = rcp(new Epetra_Map(numallele,mapoffset,fluidimpl_->Discretization()->Comm()));
+  Teuchos::RCP<Epetra_Map> elemap = Teuchos::rcp(new Epetra_Map(numallele,mapoffset,fluidimpl_->Discretization()->Comm()));
 
   // create the combination of dbcfsimap and elemap
   std::vector<Teuchos::RCP<const Epetra_Map> > domainmaps;
@@ -377,10 +377,10 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   domainmaps.push_back(elemap);
   Teuchos::RefCountPtr<Epetra_Map> domainmap = LINALG::MultiMapExtractor::MergeMaps(domainmaps);
 
-  Teuchos::RCP<LINALG::MapExtractor> domainmapex = rcp(new LINALG::MapExtractor(*domainmap, dbcfsimap));
+  Teuchos::RCP<LINALG::MapExtractor> domainmapex = Teuchos::rcp(new LINALG::MapExtractor(*domainmap, dbcfsimap));
 
   const int numofrowentries = 82;
-  Teuchos::RCP<LINALG::SparseMatrix> B = rcp(new LINALG::SparseMatrix(*DofRowMap(),numofrowentries,false));
+  Teuchos::RCP<LINALG::SparseMatrix> B = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMap(),numofrowentries,false));
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -439,13 +439,13 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   // Compute the projection operator
   Teuchos::RCP<LINALG::SparseMatrix> BTB = LINALG::Multiply(*B,true,*B,false,true);
 
-  Teuchos::RCP<Epetra_Vector> BTvR = rcp(new Epetra_Vector(*domainmap));
+  Teuchos::RCP<Epetra_Vector> BTvR = Teuchos::rcp(new Epetra_Vector(*domainmap));
   B->Multiply(true,*fluidimpl_->ViewOfVelnp(),*BTvR);
-  Teuchos::RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(*dbcfsimap, true));
+  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*dbcfsimap, true));
 
   domainmapex->InsertCondVector(zeros,BTvR);
 
-  Teuchos::RCP<Epetra_Vector> x = rcp(new Epetra_Vector(*domainmap));
+  Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(*domainmap));
 
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   const int simplersolvernumber = fdyn.get<int>("SIMPLER_SOLVER");
@@ -453,7 +453,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     dserror("no simpler solver, that is used to solve this system, defined for fluid pressure problem. \nPlease set SIMPLER_SOLVER in FLUID DYNAMIC to a valid number!");
 
   Teuchos::RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(simplersolvernumber),
+    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(simplersolvernumber),
                            fluidimpl_->Discretization()->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -470,7 +470,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
   solver->Solve(BTB->EpetraOperator(),x,BTvR,true,true);
 
-  Teuchos::RCP<Epetra_Vector> vmod = rcp(new Epetra_Vector(fluidimpl_->ViewOfVelnp()->Map(),true));
+  Teuchos::RCP<Epetra_Vector> vmod = Teuchos::rcp(new Epetra_Vector(fluidimpl_->ViewOfVelnp()->Map(),true));
   B->Multiply(false,*x,*vmod);
   fluidimpl_->ViewOfVelnp()->Update(-1.0, *vmod, 1.0);
 }

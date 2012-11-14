@@ -48,14 +48,28 @@ Maintainer: Michael Gee
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 #include "Epetra_CrsGraph.h"
-using namespace std;
-using Teuchos::RCP;
 
 #include "drt_element.H"
 #include "drt_node.H"
 #include "drt_dofset.H"
 #include "drt_dserror.H"
 
+// ToDo These using statements have to go away!
+// This is an intermediate solution to still use these objects without
+// an explicit specification of the namespace std or Teuchos in front.
+
+// note, we do not include a whole namespace!
+using Teuchos::RCP;
+using Teuchos::null;
+
+using std::map;
+using std::set;
+using std::list;
+using std::pair;
+using std::stringstream;
+using std::ostringstream;
+using std::ofstream;
+using std::cout;
 
 namespace LINALG
 {
@@ -1236,11 +1250,11 @@ public:
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     if (state_.size()<=nds)
-      return null;
+      return Teuchos::null;
     map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     if (fool==state_[nds].end()) dserror("Cannot find state %s",&name[0]);
     else return fool->second;
-    return null;
+    return Teuchos::null;
   }
 
   /*!
@@ -1932,7 +1946,7 @@ protected:
 
   vector<map<string,RCP<const Epetra_Vector> > > state_;    // map of references to solution states
 
-  multimap<string,RCP<Condition> >      condition_;         // some conditions e.g. BCs
+  std::multimap<string,RCP<Condition> > condition_;         // some conditions e.g. BCs
 
   vector<RCP<DofSet> >                  dofsets_;           // set of DofSets
 }; // class Discretization

@@ -116,7 +116,7 @@ node_(old.node_)
 {
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway
-  map<string,RefCountPtr<Condition> >::const_iterator fool;
+  std::map<string,RefCountPtr<Condition> >::const_iterator fool;
   for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
     SetCondition(fool->first,fool->second);
 
@@ -150,13 +150,13 @@ ostream& operator << (ostream& os, const DRT::Element& element)
  *----------------------------------------------------------------------*/
 void DRT::Element::Print(ostream& os) const
 {
-  os << setw(12) << Id() << " Owner " << setw(5) << Owner() << " ";
+  os << std::setw(12) << Id() << " Owner " << std::setw(5) << Owner() << " ";
   const int nnode = NumNode();
   const int* nodeids = NodeIds();
   if (nnode > 0)
   {
     os << " Nodes ";
-    for (int i=0; i<nnode; ++i) os << setw(10) << nodeids[i] << " ";
+    for (int i=0; i<nnode; ++i) os << std::setw(10) << nodeids[i] << " ";
   }
 
 #if 0
@@ -165,7 +165,7 @@ void DRT::Element::Print(ostream& os) const
   if (numcond)
   {
     os << endl << numcond << " Conditions:\n";
-    map<string,RefCountPtr<Condition> >::const_iterator curr;
+    std::map<string,RefCountPtr<Condition> >::const_iterator curr;
     for (curr=condition_.begin(); curr != condition_.end(); ++curr)
     {
       os << curr->first << " ";
@@ -279,7 +279,7 @@ void DRT::Element::Unpack(const vector<char>& data)
     MAT::Material* mat = dynamic_cast<MAT::Material*>(o);
     if (mat==NULL)
       dserror("failed to unpack material");
-    mat_ = rcp(mat);
+    mat_ = Teuchos::rcp(mat);
   }
   else
   {
@@ -335,12 +335,12 @@ void DRT::Element::GetCondition(const string& name,vector<DRT::Condition*>& out)
 {
   const int num = condition_.count(name);
   out.resize(num);
-  multimap<string,RefCountPtr<Condition> >::const_iterator startit =
+  std::multimap<string,RefCountPtr<Condition> >::const_iterator startit =
                                          condition_.lower_bound(name);
-  multimap<string,RefCountPtr<Condition> >::const_iterator endit =
+  std::multimap<string,RefCountPtr<Condition> >::const_iterator endit =
                                          condition_.upper_bound(name);
   int count=0;
-  multimap<string,RefCountPtr<Condition> >::const_iterator curr;
+  std::multimap<string,RefCountPtr<Condition> >::const_iterator curr;
   for (curr=startit; curr!=endit; ++curr)
     out[count++] = curr->second.get();
   if (count != num) dserror("Mismatch in number of conditions found");
@@ -353,7 +353,7 @@ void DRT::Element::GetCondition(const string& name,vector<DRT::Condition*>& out)
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Element::GetCondition(const string& name) const
 {
-  multimap<string,RefCountPtr<Condition> >::const_iterator curr =
+  std::multimap<string,RefCountPtr<Condition> >::const_iterator curr =
                                          condition_.find(name);
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);

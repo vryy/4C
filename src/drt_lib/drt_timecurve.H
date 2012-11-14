@@ -50,10 +50,8 @@ Maintainer: Ulrich Kuettler
 #include <vector>
 #include <Teuchos_RCP.hpp>
 
-//#include "drt_dserror.H"
 #include "drt_parser.H"
 
-using namespace Teuchos;
 
 namespace DRT {
 
@@ -138,7 +136,7 @@ namespace UTILS {
     TimeCurveManager& operator=(const TimeCurveManager&);
 
     /// all curves defined
-    std::vector<RCP<TimeCurve> > curves_;
+    std::vector<Teuchos::RCP<TimeCurve> > curves_;
   };
 
 }  // end namespace UTILS

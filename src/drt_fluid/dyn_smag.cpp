@@ -67,9 +67,9 @@ FLD::DynSmagFilter::DynSmagFilter(
       const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
       // vectors for the filtered quantities
-      filtered_vel_                     = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-      filtered_reynoldsstress_          = rcp(new Epetra_MultiVector(*noderowmap,9,true));
-      filtered_modeled_subgrid_stress_  = rcp(new Epetra_MultiVector(*noderowmap,9,true));
+      filtered_vel_                     = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      filtered_reynoldsstress_          = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,9,true));
+      filtered_modeled_subgrid_stress_  = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,9,true));
 
       // check, if averaging is desired
       if (DRT::INPUT::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"),"C_SMAGORINSKY_AVERAGED")==true)
@@ -123,9 +123,9 @@ FLD::DynSmagFilter::DynSmagFilter(
       const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
       // vectors for the filtered quantities
-      filtered_vel_                     = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-      filtered_reynoldsstress_          = rcp(new Epetra_MultiVector(*noderowmap,9,true));
-      fs_vel_                           = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      filtered_vel_                     = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      filtered_reynoldsstress_          = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,9,true));
+      fs_vel_                           = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
     }
   }
 
@@ -253,7 +253,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
     // be careful since this vector has not yet been commuicated
     RCP<vector<double> > local_Cs_delta_sq_sum = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum");
     RefCountPtr<vector<double> > global_Cs_delta_sq_sum;
-    global_Cs_delta_sq_sum = rcp(new vector<double> (nlayer,0.0));
+    global_Cs_delta_sq_sum = Teuchos::rcp(new vector<double> (nlayer,0.0));
     discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum )[0]),
                             &((*global_Cs_delta_sq_sum)[0]),
                             local_Cs_delta_sq_sum->size());
@@ -296,13 +296,13 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   // hom. direction
   int numlayers = 0;
 
-  RCP<vector<double> > averaged_LijMij        = rcp(new vector<double>);
-  RCP<vector<double> > averaged_MijMij        = rcp(new vector<double>);
+  RCP<vector<double> > averaged_LijMij        = Teuchos::rcp(new vector<double>);
+  RCP<vector<double> > averaged_MijMij        = Teuchos::rcp(new vector<double>);
 
   // additional averaged quantities for extension to variable-density flow at low-Mach number
   // quantities to estimate CI
-  RCP<vector<double> > averaged_CI_numerator   = rcp(new vector<double>);
-  RCP<vector<double> > averaged_CI_denominator = rcp(new vector<double>);
+  RCP<vector<double> > averaged_CI_numerator   = Teuchos::rcp(new vector<double>);
+  RCP<vector<double> > averaged_CI_denominator = Teuchos::rcp(new vector<double>);
 
   vector<int>          count_for_average      ;
   vector<int>          local_count_for_average;
@@ -314,8 +314,8 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
   // final constants (Cs*delta)^2 and (Ci*delta)^2 (loma only)
   const Epetra_Map* elerowmap = discret_->ElementRowMap();
-  RCP<Epetra_Vector> Cs_delta_sq = rcp(new Epetra_Vector(*elerowmap,true));
-  RCP<Epetra_Vector> Ci_delta_sq = rcp(new Epetra_Vector(*elerowmap,true));
+  RCP<Epetra_Vector> Cs_delta_sq = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
+  RCP<Epetra_Vector> Ci_delta_sq = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
 
   if(homdir_)
   {
@@ -570,10 +570,10 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
   // export from row to column map
   const Epetra_Map* elecolmap = discret_->ElementColMap();
-  RCP<Epetra_Vector> col_Cs_delta_sq = rcp(new Epetra_Vector(*elecolmap,true));
+  RCP<Epetra_Vector> col_Cs_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
   col_Cs_delta_sq->PutScalar(0.0);
   LINALG::Export(*Cs_delta_sq,*col_Cs_delta_sq);
-  RCP<Epetra_Vector> col_Ci_delta_sq = rcp(new Epetra_Vector(*elecolmap,true));
+  RCP<Epetra_Vector> col_Ci_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
   col_Ci_delta_sq->PutScalar(0.0);
   LINALG::Export(*Ci_delta_sq,*col_Ci_delta_sq);
   // store in parameters
@@ -669,14 +669,14 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
   TEUCHOS_FUNC_TIME_MONITOR("ComputePrt");
 
   const Epetra_Map* elerowmap = scatradiscret_->ElementRowMap();
-  RCP<Epetra_Vector> Prt = rcp(new Epetra_Vector(*elerowmap,true));
+  RCP<Epetra_Vector> Prt = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
 
   // for special flows, LijMij and MijMij averaged in each
   // hom. direction
   int numlayers = 0;
 
-  RCP<vector<double> > averaged_LkMk        = rcp(new vector<double>);
-  RCP<vector<double> > averaged_MkMk        = rcp(new vector<double>);
+  RCP<vector<double> > averaged_LkMk        = Teuchos::rcp(new vector<double>);
+  RCP<vector<double> > averaged_MkMk        = Teuchos::rcp(new vector<double>);
 
   vector<int>          count_for_average      ;
   vector<int>          local_count_for_average;
@@ -913,7 +913,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
 
   // export from row to column map
   const Epetra_Map* elecolmap = scatradiscret_->ElementColMap();
-  RCP<Epetra_Vector> col_Prt = rcp(new Epetra_Vector(*elecolmap,true));
+  RCP<Epetra_Vector> col_Prt = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
   col_Prt->PutScalar(0.0);
   LINALG::Export(*Prt,*col_Prt);
   // store in parameters
@@ -1018,7 +1018,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
   // alloc an additional vector to store/add up the patch volume
-  RCP<Epetra_Vector> patchvol     = rcp(new Epetra_Vector(*noderowmap,true));
+  RCP<Epetra_Vector> patchvol     = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
 
   // free mem and reallocate to zero out vecs
   filtered_vel_                   = Teuchos::null;
@@ -1036,20 +1036,20 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   if (apply_box_filter_)
     fs_vel_ = Teuchos::null;
 
-  filtered_vel_                   = rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
-  filtered_reynoldsstress_        = rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
+  filtered_vel_                   = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
+  filtered_reynoldsstress_        = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
   if (apply_dynamic_smagorinsky_)
   {
-    filtered_modeled_subgrid_stress_= rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
+    filtered_modeled_subgrid_stress_= Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
     if (physicaltype_ == INPAR::FLUID::loma)
     {
-      filtered_dens_vel_ = rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
-      filtered_dens_ = rcp(new Epetra_Vector(*noderowmap,true));
-      filtered_dens_strainrate_ = rcp(new Epetra_Vector(*noderowmap,true));
+      filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
+      filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
+      filtered_dens_strainrate_ = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
     }
   }
   if (apply_box_filter_)
-    fs_vel_ = rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
+    fs_vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
 
   // ---------------------------------------------------------------
   // do the integration of the (not normalized) box filter function
@@ -1062,9 +1062,9 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
     DRT::Element* ele = discret_->lColElement(nele);
 
     // provide vectors for filtered quantities
-    RCP<vector<double> > vel_hat = rcp(new vector<double> ((numdim),0.0));
-    RCP<vector<vector<double> > > reynoldsstress_hat = rcp(new vector<vector<double> >);
-    RCP<vector<vector<double> > > modeled_subgrid_stress = rcp(new vector<vector<double> >);
+    RCP<vector<double> > vel_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
+    RCP<vector<vector<double> > > reynoldsstress_hat = Teuchos::rcp(new vector<vector<double> >);
+    RCP<vector<vector<double> > > modeled_subgrid_stress = Teuchos::rcp(new vector<vector<double> >);
     // set to dimensions
     (*reynoldsstress_hat).resize(numdim);
     (*modeled_subgrid_stress).resize(numdim);
@@ -1082,7 +1082,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         (*modeled_subgrid_stress)[rr][ss] = 0.0;
       }
     }
-    RCP<vector<double> > densvel_hat = rcp(new vector<double> ((numdim),0.0));
+    RCP<vector<double> > densvel_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
     // and set them in parameter list
     filterparams.set<RCP<vector<double> > >("vel_hat",vel_hat);
     filterparams.set<RCP<vector<vector<double> > > >("reynoldsstress_hat",reynoldsstress_hat);
@@ -1534,17 +1534,17 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
 
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes
-  col_filtered_vel_                    = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-  col_filtered_reynoldsstress_         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+  col_filtered_vel_                    = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  col_filtered_reynoldsstress_         = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
   if (apply_dynamic_smagorinsky_)
-    col_filtered_modeled_subgrid_stress_ = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+    col_filtered_modeled_subgrid_stress_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
   if (apply_box_filter_)
-    col_fs_vel_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+    col_fs_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
   if (apply_dynamic_smagorinsky_ and physicaltype_ == INPAR::FLUID::loma)
   {
-    col_filtered_dens_vel_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-    col_filtered_dens_ = rcp(new Epetra_Vector(*nodecolmap,true));
-    col_filtered_dens_strainrate_ = rcp(new Epetra_Vector(*nodecolmap,true));
+    col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+    col_filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
+    col_filtered_dens_strainrate_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
   }
 
   // export filtered vectors in rowmap to columnmap format
@@ -1596,7 +1596,7 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
     //SetState cannot be used since this multi-vector is nodebased and not dofbased!
     const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
     int numcol = velocity->NumVectors();
-    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    RefCountPtr<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
     LINALG::Export(*velocity,*tmp);
     filterparams.set("velocity",tmp);
   }
@@ -1621,7 +1621,7 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
   const Epetra_Map* noderowmap = scatradiscret_->NodeRowMap();
 
   // alloc an additional vector to store/add up the patch volume
-  RCP<Epetra_Vector> patchvol     = rcp(new Epetra_Vector(*noderowmap,true));
+  RCP<Epetra_Vector> patchvol     = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
 
   // free mem and reallocate to zero out vecs
   filtered_dens_vel_temp_ = Teuchos::null;
@@ -1632,13 +1632,13 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
   filtered_dens_temp_ = Teuchos::null;
   filtered_dens_ = Teuchos::null;
 
-  filtered_dens_vel_temp_ = rcp(new Epetra_MultiVector(*noderowmap,numdim,true));
-  filtered_dens_rateofstrain_temp_ = rcp(new Epetra_MultiVector(*noderowmap,numdim,true));
-  filtered_vel_ = rcp(new Epetra_MultiVector(*noderowmap,numdim,true));
-  filtered_dens_vel_ = rcp(new Epetra_MultiVector(*noderowmap,numdim,true));
-  filtered_temp_ = rcp(new Epetra_Vector(*noderowmap,true));
-  filtered_dens_temp_ = rcp(new Epetra_Vector(*noderowmap,true));
-  filtered_dens_ = rcp(new Epetra_Vector(*noderowmap,true));
+  filtered_dens_vel_temp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim,true));
+  filtered_dens_rateofstrain_temp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim,true));
+  filtered_vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim,true));
+  filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim,true));
+  filtered_temp_ = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
+  filtered_dens_temp_ = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
+  filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
 
 
   // ---------------------------------------------------------------
@@ -1652,10 +1652,10 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
     DRT::Element* ele = scatradiscret_->lColElement(nele);
 
     // provide vectors for filtered quantities
-    RCP<vector<double> > vel_hat = rcp(new vector<double> ((numdim),0.0));
-    RCP<vector<double> > densvel_hat = rcp(new vector<double> ((numdim),0.0));
-    RCP<vector<double> > densveltemp_hat = rcp(new vector<double> ((numdim),0.0));
-    RCP<vector<double> > densstraintemp_hat = rcp(new vector<double> ((numdim),0.0));
+    RCP<vector<double> > vel_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
+    RCP<vector<double> > densvel_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
+    RCP<vector<double> > densveltemp_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
+    RCP<vector<double> > densstraintemp_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
     // and set them in parameter list
     filterparams.set<RCP<vector<double> > >("vel_hat",vel_hat);
     filterparams.set<RCP<vector<double> > >("densvel_hat",densvel_hat);
@@ -1938,13 +1938,13 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
 
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes
-  col_filtered_vel_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-  col_filtered_dens_vel_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-  col_filtered_dens_vel_temp_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-  col_filtered_dens_rateofstrain_temp_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-  col_filtered_temp_ = rcp(new Epetra_Vector(*nodecolmap,true));
-  col_filtered_dens_ = rcp(new Epetra_Vector(*nodecolmap,true));
-  col_filtered_dens_temp_ = rcp(new Epetra_Vector(*nodecolmap,true));
+  col_filtered_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  col_filtered_dens_vel_temp_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  col_filtered_dens_rateofstrain_temp_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  col_filtered_temp_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
+  col_filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
+  col_filtered_dens_temp_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
 
   // export filtered vectors in rowmap to columnmap format
   LINALG::Export(*filtered_vel_,*col_filtered_vel_);

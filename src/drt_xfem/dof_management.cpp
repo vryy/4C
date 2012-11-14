@@ -256,7 +256,7 @@ void XFEM::DofManager::fillDofRowDistributionMaps(
     std::set<FieldEnr>::const_iterator fieldenr;
     for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
     {
-      NodalDofDistributionMap.insert(make_pair(DofKey(gid, *fieldenr), gdofs[dofcount]));
+      NodalDofDistributionMap.insert(std::make_pair(DofKey(gid, *fieldenr), gdofs[dofcount]));
       dofcount++;
     }
   };
@@ -295,7 +295,7 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
     std::set<FieldEnr>::const_iterator fieldenr;
     for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
     {
-      NodalDofColDistributionMap.insert(make_pair(DofKey(gid, *fieldenr), gdofs[dofcount]));
+      NodalDofColDistributionMap.insert(std::make_pair(DofKey(gid, *fieldenr), gdofs[dofcount]));
       dofcount++;
     }
   }
@@ -316,7 +316,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
   const Epetra_Map* outdofrowmap = outdofset.DofRowMap();
   const Epetra_Map* xfemdofrowmap = ih_->FluidDis()->DofRowMap();
   // create output vector (standard FEM layout)
-  Teuchos::RCP<Epetra_Vector> outvector = rcp(new Epetra_Vector(*outdofrowmap,true));
+  Teuchos::RCP<Epetra_Vector> outvector = Teuchos::rcp(new Epetra_Vector(*outdofrowmap,true));
 
   // loop nodes on this processor
   for (int inode=0; inode<ih_->FluidDis()->NumMyRowNodes(); ++inode)

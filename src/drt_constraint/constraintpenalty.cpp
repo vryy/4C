@@ -33,8 +33,8 @@ Constraint(discr,conditionname)
       int condID=constrcond_[i]->GetInt("ConditionID");
       if (mypenalties->size() and myrhos->size())
       {
-        penalties_.insert(pair<int,double>(condID,(*mypenalties)[0]));
-        rho_.insert(pair<int,double>(condID,(*myrhos)[0]));
+        penalties_.insert(std::pair<int,double>(condID,(*mypenalties)[0]));
+        rho_.insert(std::pair<int,double>(condID,(*myrhos)[0]));
       }
       else
       {
@@ -48,13 +48,13 @@ Constraint(discr,conditionname)
       nummyele=numele;
     }
     // initialize maps and importer
-    errormap_=rcp(new Epetra_Map(numele,nummyele,0,actdisc_->Comm()));
+    errormap_=Teuchos::rcp(new Epetra_Map(numele,nummyele,0,actdisc_->Comm()));
     rederrormap_ = LINALG::AllreduceEMap(*errormap_);
-    errorexport_ = rcp (new Epetra_Export(*rederrormap_,*errormap_));
-    errorimport_ = rcp (new Epetra_Import(*rederrormap_,*errormap_));
-    acterror_=rcp(new Epetra_Vector(*rederrormap_));
-    initerror_=rcp(new Epetra_Vector(*rederrormap_));
-    lagrvalues_=rcp(new Epetra_Vector(*rederrormap_));
+    errorexport_ = Teuchos::rcp(new Epetra_Export(*rederrormap_,*errormap_));
+    errorimport_ = Teuchos::rcp(new Epetra_Import(*rederrormap_,*errormap_));
+    acterror_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
+    initerror_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
+    lagrvalues_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
   }
   else
   {
@@ -228,7 +228,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
       
       (*lagrvalues_)[condID-1]+=rho_[condID]*diff;
       // elements might need condition
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -318,7 +318,7 @@ void UTILS::ConstraintPenalty::EvaluateError(
     // if current time is larger than initialization time of the condition, start computing
     if(inittimes_.find(condID)->second<=time)
     {
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -368,7 +368,7 @@ void UTILS::ConstraintPenalty::EvaluateError(
     }
 
   }
-  RCP<Epetra_Vector> acterrdist = rcp(new Epetra_Vector(*errormap_));
+  RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
   acterrdist->Export(*systemvector,*errorexport_,Add);
   systemvector->Import(*acterrdist,*errorimport_,Insert);
   return;

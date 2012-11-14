@@ -20,7 +20,6 @@ Maintainer: Aline Brunon
 #include "material.H"
 #include "elasthyper.H"
 
-using namespace Teuchos;
 
 // forward declaration due to avoid header definition
 namespace MAT

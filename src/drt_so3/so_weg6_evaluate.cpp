@@ -489,7 +489,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         // add stresses to global map
         //get EleID Id()
         int gid = Id();
-        RCP<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
+        RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
         gpstress->Shape(NUMGPT_WEG6,NUMSTR_WEG6);
 
         //move stresses to serial dense matrix
@@ -502,7 +502,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         }
 
         //strains
-        RCP<Epetra_SerialDenseMatrix> gpstrain = rcp(new Epetra_SerialDenseMatrix);
+        RCP<Epetra_SerialDenseMatrix> gpstrain = Teuchos::rcp(new Epetra_SerialDenseMatrix);
         gpstrain->Shape(NUMGPT_WEG6,NUMSTR_WEG6);
 
         //move stresses to serial dense matrix

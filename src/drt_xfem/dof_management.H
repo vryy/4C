@@ -160,7 +160,7 @@ namespace XFEM
       const Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih_;
 
       //! connection between master and slave row nodes
-      const Teuchos::RCP<map<int,vector<int> > > pbcmap_;
+      const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap_;
 
       /*! unknowns for each global node id (gid) on this processor
        * if it does not contain the key, the number of unknowns is supposed to be zero

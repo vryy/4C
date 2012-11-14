@@ -57,7 +57,7 @@ LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
     list1_ = list2;
   }
 
-  A_ = rcp_dynamic_cast<BlockSparseMatrixBase>(A);
+  A_ = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(A);
   if (A_!=null)
   {
     // Make a shallow copy of the block matrix as the preconditioners on the
@@ -81,14 +81,14 @@ LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
  *----------------------------------------------------------------------*/
 void LINALG::BGS2x2_Operator::SetupBlockPreconditioners()
 {
-  Teuchos::RCP<ParameterList> rcplist1 = rcp(&list1_,false);
-  Teuchos::RCP<LINALG::Solver> s1 = rcp(new LINALG::Solver(rcplist1,A_->Comm(),outfile_));
+  Teuchos::RCP<ParameterList> rcplist1 = Teuchos::rcp(&list1_,false);
+  Teuchos::RCP<LINALG::Solver> s1 = Teuchos::rcp(new LINALG::Solver(rcplist1,A_->Comm(),outfile_));
   solver1_ = Teuchos::rcp(new LINALG::Preconditioner(s1));
   const LINALG::SparseMatrix& Op11 = A_->Matrix(firstind_,firstind_);
   solver1_->Setup(Op11.EpetraMatrix());
 
-  Teuchos::RCP<ParameterList> rcplist2 = rcp(&list2_,false);
-  Teuchos::RCP<LINALG::Solver> s2 = rcp(new LINALG::Solver(rcplist2,A_->Comm(),outfile_));
+  Teuchos::RCP<ParameterList> rcplist2 = Teuchos::rcp(&list2_,false);
+  Teuchos::RCP<LINALG::Solver> s2 = Teuchos::rcp(new LINALG::Solver(rcplist2,A_->Comm(),outfile_));
   solver2_ = Teuchos::rcp(new LINALG::Preconditioner(s2));
   const LINALG::SparseMatrix& Op22 = A_->Matrix(secind_,secind_);
   solver2_->Setup(Op22.EpetraMatrix());

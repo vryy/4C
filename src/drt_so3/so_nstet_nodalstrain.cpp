@@ -139,11 +139,11 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   {
     rmap = &(systemmatrix1->OperatorRangeMap());
     dmap = rmap;
-    systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
+    systemmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
     if (systemmatrix != null && systemmatrix->Filled())
-      stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
+      stifftmp = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
     else
-      stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
+      stifftmp = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
   }
 
   //-----------------------------------------------------------------
@@ -1007,7 +1007,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   // do averaging
   fad_Jnode /= VnodeL;
 
-  FAD Jpowthird = pow(fad_Jnode,1./3.);
+  FAD Jpowthird = std::pow(fad_Jnode,1./3.);
 
   // build volumetric deformation gradient
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);

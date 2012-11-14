@@ -129,9 +129,9 @@ void ElementReader::Partition()
     }
 
     // open input file at the right position
-    ifstream file(inputfile_name.c_str());
-    ifstream::pos_type pos = reader_.ExcludedSectionPosition(sectionname_);
-    if (pos!=ifstream::pos_type(-1))
+    std::ifstream file(inputfile_name.c_str());
+    std::ifstream::pos_type pos = reader_.ExcludedSectionPosition(sectionname_);
+    if (pos!=std::ifstream::pos_type(-1))
     {
       file.seekg(pos);
 
@@ -150,7 +150,7 @@ void ElementReader::Partition()
         }
         else
         {
-          istringstream t;
+          std::istringstream t;
           t.str(line);
           int elenumber;
           string eletype;
@@ -179,7 +179,7 @@ void ElementReader::Partition()
   if (numele==0)
   {
     // This is it. Build an empty reader and leave.
-    coleles_ = roweles_ = colnodes_ = rownodes_ = rcp(new Epetra_Map(-1,0,NULL,0,*comm_));
+    coleles_ = roweles_ = colnodes_ = rownodes_ = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,*comm_));
     if (comm_->MyPID()==0 && reader_.MyOutputFlag() == 0)
     {
       cout << time.ElapsedTime() << " secs\n";
@@ -205,7 +205,7 @@ void ElementReader::Partition()
     mysize = numele-(numproc-1)*bsize;
 
   // construct the map
-  roweles_ = rcp(new Epetra_Map(-1,mysize,&eids[myrank*bsize],0,*comm_));
+  roweles_ = Teuchos::rcp(new Epetra_Map(-1,mysize,&eids[myrank*bsize],0,*comm_));
 
   // throw away redundant vector of elements
   eids.clear();
@@ -244,7 +244,7 @@ void ElementReader::Partition()
 
   // open input file at correct position,
   // valid on proc 0 only!
-  ifstream file;
+  std::ifstream file;
   if (0==myrank)
   {
     file.open(inputfile_name.c_str());
@@ -286,7 +286,7 @@ void ElementReader::Partition()
         }
         else
         {
-          istringstream t;
+          std::istringstream t;
           t.str(line);
           int elenumber;
           string eletype;
@@ -323,7 +323,7 @@ void ElementReader::Partition()
 
               ele->SetNodeIds(distype,linedef);
               ele->ReadElement(eletype,distype,linedef);
-              Teuchos::RCP<DRT::MESHFREE::Cell> cell = rcp_dynamic_cast<DRT::MESHFREE::Cell>(ele);
+              Teuchos::RCP<DRT::MESHFREE::Cell> cell = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(ele);
               if (cell!=Teuchos::null)
               {
                 // we have a meshfree shadow or dummy element
@@ -409,7 +409,7 @@ void ElementReader::Partition()
   {
     // We are empty. Just a proper initialization.
     int zero = 0;
-    colnodes_ = rcp(new Epetra_Map(-1,zero,&zero,0,*comm_));
+    colnodes_ = Teuchos::rcp(new Epetra_Map(-1,zero,&zero,0,*comm_));
     rownodes_ = colnodes_;
   }
 
@@ -497,9 +497,9 @@ void ParticleReader::Partition()
     }
 
     // open input file at the node section
-    ifstream file(inputfile_name.c_str());
-    ifstream::pos_type pos = reader_.ExcludedSectionPosition("--NODE COORDS");
-    if (pos!=ifstream::pos_type(-1))
+    std::ifstream file(inputfile_name.c_str());
+    std::ifstream::pos_type pos = reader_.ExcludedSectionPosition("--NODE COORDS");
+    if (pos!=std::ifstream::pos_type(-1))
     {
       file.seekg(pos);
 
@@ -516,7 +516,7 @@ void ParticleReader::Partition()
         }
         else
         {
-          istringstream t;
+          std::istringstream t;
           t.str(line);
           int nodeid;
           string nodetype;

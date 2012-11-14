@@ -70,8 +70,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     // generate an empty boundary discretisation
     bnd_discret_ 
-      = rcp(new DRT::Discretization((string)"boundary discretisation",
-                                    rcp(pdiscret_->Comm().Clone())));
+      = Teuchos::rcp(new DRT::Discretization((string)"boundary discretisation",
+                                    Teuchos::rcp(pdiscret_->Comm().Clone())));
 
     // make the condition known to the boundary discretisation
     for (unsigned numcond=0;numcond<MHDcnd.size();++numcond)
@@ -79,7 +79,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       // We use the same nodal ids and therefore we can just copy the
       // conditions.
       bnd_discret_->SetCondition("SurfaceMixHybDirichlet", 
-                                 rcp(new DRT::Condition(*MHDcnd[numcond])));
+                                 Teuchos::rcp(new DRT::Condition(*MHDcnd[numcond])));
     }
 
     // get set of ids of all MHD nodes
@@ -153,7 +153,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     {
       DRT::Node* actnode=pdiscret_->gNode(*id);
 
-      RCP<DRT::Node> bndnode =rcp(actnode->Clone());
+      RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
 
       bnd_discret_->AddNode(bndnode);
     }
@@ -184,7 +184,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       // yes, we have a MHD condition
       if(found==true)
       {
-        RCP<DRT::Element> bndele =rcp(actele->Clone());
+        RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
 
         bnd_discret_->AddElement(bndele);
       }
@@ -207,7 +207,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       }
 
       // build noderowmap for new distribution of nodes
-      newrownodemap = rcp(new Epetra_Map(-1,
+      newrownodemap = Teuchos::rcp(new Epetra_Map(-1,
                                          rownodes.size(),
                                          &rownodes[0],
                                          0,
@@ -222,7 +222,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
         colnodes.push_back(*id);
       }
       // build nodecolmap for new distribution of nodes
-      newcolnodemap = rcp(new Epetra_Map(-1,
+      newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
                                          colnodes.size(),
                                          &colnodes[0],
                                          0,
@@ -287,7 +287,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
         (*mysurfpbcs[numcond]).Delete("Node Ids");
         (*mysurfpbcs[numcond]).Add("Node Ids",reduced_ids);
 
-        bnd_discret_->SetCondition("SurfacePeriodic", rcp(new DRT::Condition(*mysurfpbcs[numcond])));
+        bnd_discret_->SetCondition("SurfacePeriodic", Teuchos::rcp(new DRT::Condition(*mysurfpbcs[numcond])));
       }
       
       PeriodicBoundaryConditions pbc(bnd_discret_,false);
@@ -309,7 +309,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     // idea: use a transparent dofset and hand through the dof numbering
 
-    bnd_discret_->ReplaceDofSet(rcp(new DRT::TransparentDofSet(pdiscret_,true)));
+    bnd_discret_->ReplaceDofSet(Teuchos::rcp(new DRT::TransparentDofSet(pdiscret_,true)));
 
     bnd_discret_->Redistribute(*newrownodemap,*newcolnodemap,true,true,true);
 
@@ -321,7 +321,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       cout << "| matrix later on.\n";
     }
 
-    subdofrowmap_=rcp(new Epetra_Map(*bnd_discret_->DofRowMap()));
+    subdofrowmap_=Teuchos::rcp(new Epetra_Map(*bnd_discret_->DofRowMap()));
     Epetra_Map subdofcolmap(*bnd_discret_->DofColMap());
 
 
@@ -364,9 +364,9 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     RCP<Epetra_Map> bndrownodes;
     RCP<Epetra_Map> bndcolnodes;
 
-    RCP<Epetra_Map> belemap = rcp( new Epetra_Map(*bnd_discret_->ElementRowMap()));
+    RCP<Epetra_Map> belemap = Teuchos::rcp( new Epetra_Map(*bnd_discret_->ElementRowMap()));
     Epetra_Time time(pdiscret_->Comm());
-    RCP<Epetra_Comm> comm = rcp(pdiscret_->Comm().Clone());
+    RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
  
     DRT::UTILS::PartUsingParMetis(bnd_discret_,
                                   belemap,
@@ -379,8 +379,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 #if defined(PARALLEL)
     dserror("require PARMETIS not METIS");
 #else
-    bndrownodes=rcp(new Epetra_Map(*newrownodemap));
-    bndcolnodes=rcp(new Epetra_Map(*newcolnodemap));
+    bndrownodes=Teuchos::rcp(new Epetra_Map(*newrownodemap));
+    bndcolnodes=Teuchos::rcp(new Epetra_Map(*newcolnodemap));
 #endif
 #endif
     if(bnd_discret_->Comm().MyPID()==0)
@@ -414,7 +414,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     }
 
     // idea: use a transparent dofset and hand through the dof numbering
-    bnd_discret_->ReplaceDofSet(rcp(new DRT::TransparentDofSet(pdiscret_,true)));
+    bnd_discret_->ReplaceDofSet(Teuchos::rcp(new DRT::TransparentDofSet(pdiscret_,true)));
       
     bnd_discret_->FillComplete();
   
@@ -567,7 +567,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
       {
         map<int,RCP<DRT::Element> >& geom = (*bndMHDcnd[numcond]).Geometry();
 
-        RCP<DRT::Condition> thiscond = rcp(bndMHDcnd[numcond],false);
+        RCP<DRT::Condition> thiscond = Teuchos::rcp(bndMHDcnd[numcond],false);
 
         mhdbcparams.set<RCP<DRT::Condition> >("condition",thiscond);
 
@@ -592,9 +592,9 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
           // the parameterlist --- the element will fill
           // them since only the element implementation
           // knows its parent
-          RCP<vector<int> > plm     =rcp(new vector<int>);
-          RCP<vector<int> > plmowner=rcp(new vector<int>);
-          RCP<vector<int> > plmstride=rcp(new vector<int>);
+          RCP<vector<int> > plm     =Teuchos::rcp(new vector<int>);
+          RCP<vector<int> > plmowner=Teuchos::rcp(new vector<int>);
+          RCP<vector<int> > plmstride=Teuchos::rcp(new vector<int>);
 
           mhdbcparams.set<RCP<vector<int> > >("plm",plm);
           mhdbcparams.set<RCP<vector<int> > >("plmowner",plmowner);

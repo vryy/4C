@@ -25,7 +25,7 @@ FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(const Epetra_Comm& c
                                                             const Teuchos::ParameterList& timeparams)
   : ConstrMonolithic(comm,timeparams)
 {
-  sconT_ = rcp(new LINALG::SparseMatrix(*conman_->GetConstraintMap(),81,false,true));
+  sconT_ = Teuchos::rcp(new LINALG::SparseMatrix(*conman_->GetConstraintMap(),81,false,true));
 
   fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
   fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
@@ -376,7 +376,7 @@ void FSI::ConstrMonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> i
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::InitialGuess");
 
-  Teuchos::RCP<Epetra_Vector> ConstraintInitialGuess = rcp(new Epetra_Vector(*(conman_->GetConstraintMap()),true));
+  Teuchos::RCP<Epetra_Vector> ConstraintInitialGuess = Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap()),true));
 
   SetupVector(*ig,
               StructureField()->InitialGuess(),

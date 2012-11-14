@@ -97,11 +97,11 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
     RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
       params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
 
-    (*lastalpha)[Id()] = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-    (*oldalpha)[Id()]  = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-    (*oldfeas)[Id()]   = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-    (*oldKaainv)[Id()] = rcp(new Epetra_SerialDenseMatrix(neas_, neas_));
-    (*oldKda)[Id()]    = rcp(new Epetra_SerialDenseMatrix(neas_, NUMDOF_SOH8));
+    (*lastalpha)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+    (*oldalpha)[Id()]  = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+    (*oldfeas)[Id()]   = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+    (*oldKaainv)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, neas_));
+    (*oldKda)[Id()]    = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, NUMDOF_SOH8));
   }
   return;
 }

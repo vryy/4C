@@ -56,7 +56,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
   p.set("AZTOL",newtol);
 
   RCP<LINALG::Solver> lssolver =
-      rcp(new LINALG::Solver(p,
+      Teuchos::rcp(new LINALG::Solver(p,
           dis.Comm(),
           outfile));
   dis.ComputeNullSpaceIfNecessary(lssolver->Params());

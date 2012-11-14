@@ -1282,7 +1282,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     // reference length for stabilization parameters
     //---------------------------------------------------------------
     // volume based element size
-    double hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+    double hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
     h += fac_*hk;
 
     // streamlength based element size

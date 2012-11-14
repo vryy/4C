@@ -39,24 +39,24 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::Con
 {
   std::map<std::string, std::string> conditions_to_copy;
 
-  conditions_to_copy.insert(pair<std::string, std::string> ("PoroDirichlet",
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("PoroDirichlet",
       "Dirichlet"));
-  conditions_to_copy.insert(pair<std::string, std::string> ("PoroPointNeumann",
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("PoroPointNeumann",
       "PointNeumann"));
-  conditions_to_copy.insert(pair<std::string, std::string> ("PoroLineNeumann",
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("PoroLineNeumann",
       "LineNeumann"));
-  conditions_to_copy.insert(pair<std::string, std::string> (
+  conditions_to_copy.insert(std::pair<std::string, std::string> (
       "PoroSurfaceNeumann", "SurfaceNeumann"));
-  conditions_to_copy.insert(pair<std::string, std::string> (
+  conditions_to_copy.insert(std::pair<std::string, std::string> (
       "PoroVolumeNeumann", "VolumeNeumann"));
 
-  conditions_to_copy.insert(pair<std::string, std::string> ("NoPenetration",
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("NoPenetration",
       "NoPenetration"));
-  conditions_to_copy.insert(pair<std::string, std::string> ("PoroPartInt",
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("PoroPartInt",
       "PoroPartInt"));
-  conditions_to_copy.insert(pair<std::string, std::string> ("PoroCoupling",
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("PoroCoupling",
       "PoroCoupling"));
-  conditions_to_copy.insert(pair<std::string, std::string> ("FSICoupling",
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("FSICoupling",
       "FSICoupling"));
 
   return conditions_to_copy;

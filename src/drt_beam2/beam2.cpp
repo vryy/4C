@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2Type::Create( const std::string e
 {
   if ( eletype=="BEAM2" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam2(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2Type::Create( const std::string e
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam2Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam2(id,owner));
   return ele;
 }
 
@@ -259,7 +259,7 @@ void DRT::ELEMENTS::Beam2::Unpack(const std::vector<char>& data)
 std::vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2::Lines()
 {
   std::vector<RCP<Element> > lines(1);
-  lines[0]= rcp(this, false);
+  lines[0]= Teuchos::rcp(this, false);
   return lines;
 }
 
@@ -307,7 +307,7 @@ void DRT::ELEMENTS::Beam2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xre
     isinit_ = true;
 
     //length in reference configuration
-    lrefe_  = pow( pow(xrefe(3)-xrefe(1),2) + pow(xrefe(2)-xrefe(0),2) , 0.5 );
+    lrefe_  = std::pow( pow(xrefe(3)-xrefe(1),2) + pow(xrefe(2)-xrefe(0),2) , 0.5 );
 
     //resize jacobi_, jacobimass_, jacobinode_  so they can each store for each Gauss point jacobi determinant lrefe_ / 2.0
 

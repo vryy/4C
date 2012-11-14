@@ -78,7 +78,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool w
   }
   // else: we just return a zero vector field (needed for result testing)
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  return rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+  return Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 }
 
 /*----------------------------------------------------------------------*
@@ -92,7 +92,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // empty vector for (normal) mass or heat flux vectors (always 3D)
-  Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 
   // We have to treat each spatial direction separately
   Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
@@ -198,7 +198,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // empty vector for (normal) mass or heat flux vectors (always 3D)
-  Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 
   // determine the averaged normal vector field for indicated boundaries
   // used for the output of the normal flux as a vector field
@@ -887,14 +887,14 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
     if (myrank_ == 0)
     {
       if (scatratype_==INPAR::SCATRA::scatratype_loma)
-        cout << "Mean scalar: " << setprecision (9) << (*scalars)[0]/domint << endl;
+        cout << "Mean scalar: " << std::setprecision (9) << (*scalars)[0]/domint << endl;
       else
       {
-        cout << "Domain integral:          " << setprecision (9) << domint << endl;
+        cout << "Domain integral:          " << std::setprecision (9) << domint << endl;
         for (int k = 0; k < numscal_; k++)
         {
-          cout << "Total concentration (c_"<<k+1<<"): "<< setprecision (9) << (*scalars)[k] << endl;
-          cout << "Mean concentration (c_"<<k+1<<"): "<< setprecision (9) << (*scalars)[k]/domint << endl;
+          cout << "Total concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k] << endl;
+          cout << "Mean concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k]/domint << endl;
         }
       }
     }
@@ -1588,7 +1588,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
 
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
   for(int k=0;k<numscal_;++k)
   {
     ostringstream temp;
@@ -1617,7 +1617,7 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   // create vectors for x,y and z component of average normal vector field
   // get noderowmap of discretization
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  RCP<Epetra_MultiVector> normal = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  RCP<Epetra_MultiVector> normal = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
   discret_->ClearState();
 
@@ -1805,7 +1805,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
   = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
   if(nurbsdis!=NULL)
   {
-    RCP<Epetra_Vector> normalflux = rcp(((*flux)(0)),false);
+    RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)),false);
     output_->WriteVector("normalflux", normalflux, IO::DiscretizationWriter::dofvector);
     return; // leave here
   }
@@ -1815,7 +1815,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
 
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
   for (vector<int>::iterator it = writefluxids_.begin(); it!=writefluxids_.end(); ++it)
   {
     int k=(*it);
@@ -2525,7 +2525,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     const int scale_sep_solvernumber = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
     if (scale_sep_solvernumber != (-1))     // create a dummy solver
     {
-      Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
+      Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
                                             discret_->Comm(),
                                             DRT::Problem::Instance()->ErrorFile()->Handle()));
       // compute the null space,
@@ -2608,7 +2608,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
   }
 
   // get unscaled S^T*M*S from Sep
-  sysmat_sd_ = rcp(new LINALG::SparseMatrix(*Mnsv_));
+  sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*Mnsv_));
 
   // left and right scaling of normalized fine-scale subgrid-viscosity matrix
   ierr = sysmat_sd_->LeftScale(*subgrdiff_);
@@ -2750,7 +2750,7 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     if (myrank_ == 0)
     {
       std::cout << "\n+--------------------------------------------------------------------------------------------+" << std::endl;
-      std::cout << "Multifractal subgrid scales: adaption of CsgsD from near-wall limit of CsgsB:  " << setprecision (8) << meanCai << std::endl;
+      std::cout << "Multifractal subgrid scales: adaption of CsgsD from near-wall limit of CsgsB:  " << std::setprecision (8) << meanCai << std::endl;
       std::cout << "+--------------------------------------------------------------------------------------------+\n" << std::endl;
     }
 

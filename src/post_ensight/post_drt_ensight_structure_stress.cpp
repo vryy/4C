@@ -226,7 +226,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
   Epetra_MultiVector* tmp = new Epetra_MultiVector(*noderowmap,6,true);
-  RCP<Epetra_MultiVector> nodal_stress = rcp(tmp);
+  RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(tmp);
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,null,null,null,null,null);
   if (nodal_stress==null)
@@ -235,7 +235,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
   }
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,6));
+  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,6));
   Epetra_Export exporter(*noderowmap,*proc0map_);
   int err = data_proc0->Export(*nodal_stress,exporter,Insert);
   if (err>0) dserror("Exporting everything to proc 0 went wrong. Export returns %d",err);
@@ -400,7 +400,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", data);
-  RCP<Epetra_MultiVector> elestress = rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
+  RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
   p.set("poststress",elestress);
   dis->Evaluate(p,null,null,null,null,null);
   if (elestress==null)
@@ -423,7 +423,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
 
   // do stupid conversion into Epetra map
   RefCountPtr<Epetra_Map> epetradatamap;
-  epetradatamap = rcp(new Epetra_Map(datamap.NumGlobalElements(),
+  epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
                                      0,
@@ -439,7 +439,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0datamap,6));
+  RefCountPtr<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
   Epetra_Import proc0dofimporter(*proc0datamap,datamap);
   int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -584,7 +584,7 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
     startfilepos[i] = 0;
   for (int i=0;i<numfiles;++i)
   {
-    files[i] = rcp(new ofstream);
+    files[i] = Teuchos::rcp(new ofstream);
 
     if (myrank_==0)
     {
@@ -706,7 +706,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
-  RCP<Epetra_MultiVector> nodal_stress = rcp(new Epetra_MultiVector(*noderowmap,6,true));
+  RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,6,true));
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,null,null,null,null,null);
   if (nodal_stress==null)
@@ -715,7 +715,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   }
 
   // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
-  RCP<Epetra_MultiVector> nodal_eigen_val_vec = rcp(new Epetra_MultiVector(*noderowmap,12));
+  RCP<Epetra_MultiVector> nodal_eigen_val_vec = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,12));
 
   const int numnodes = dis->NumMyRowNodes();
   bool threedim = true;
@@ -787,7 +787,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   }
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,12));
+  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,12));
   Epetra_Export exporter(*noderowmap,*proc0map_);
   int err = data_proc0->Export(*nodal_eigen_val_vec,exporter,Insert);
   if (err>0) dserror("Exporting everything to proc 0 went wrong. Export returns %d",err);
@@ -937,7 +937,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
 
   for (int i=0;i<numfiles;++i)
   {
-    files[i] = rcp(new ofstream);
+    files[i] = Teuchos::rcp(new ofstream);
 
     if (myrank_==0)
     {
@@ -1059,7 +1059,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", data);
-  RCP<Epetra_MultiVector> elestress = rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
+  RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
   p.set("poststress",elestress);
   dis->Evaluate(p,null,null,null,null,null);
   if (elestress==null)
@@ -1071,7 +1071,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
 
   // do stupid conversion into Epetra map
   RefCountPtr<Epetra_Map> epetradatamap;
-  epetradatamap = rcp(new Epetra_Map(datamap.NumGlobalElements(),
+  epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
                                      0,
@@ -1087,7 +1087,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0datamap,6));
+  RefCountPtr<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
   Epetra_Import proc0dofimporter(*proc0datamap,datamap);
   int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);

@@ -143,7 +143,7 @@ STR::TimInt::TimInt
   stiff_(Teuchos::null),
   mass_(Teuchos::null),
   damp_(Teuchos::null),
-  timer_(rcp(new Epetra_Time(actdis->Comm()))),
+  timer_(Teuchos::rcp(new Epetra_Time(actdis->Comm()))),
   dtsolve_(0.0),
   dtele_(0.0),
   dtcmt_(0.0),
@@ -404,7 +404,7 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
       alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
 
     // create beam contact manager
-    beamcman_ = rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
+    beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
   }
 
   return;
@@ -448,16 +448,16 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // decide whether this is meshtying or contact and create manager
     if (apptype == INPAR::CONTACT::app_mortarmeshtying)
-      cmtman_ = rcp(new CONTACT::MtManager(*discret_,alphaf));
+      cmtman_ = Teuchos::rcp(new CONTACT::MtManager(*discret_,alphaf));
     else if (apptype == INPAR::CONTACT::app_mortarcontact)
-      cmtman_ = rcp(new CONTACT::CoManager(*discret_,alphaf));
+      cmtman_ = Teuchos::rcp(new CONTACT::CoManager(*discret_,alphaf));
 
     // store DBC status in contact nodes
     cmtman_->GetStrategy().StoreDirichletStatus(dbcmaps_);
 
     // create old style dirichtoggle vector (supposed to go away)
-    dirichtoggle_ = rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
-    RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+    dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
+    RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
     temp->PutScalar(1.0);
     LINALG::Export(*temp,*dirichtoggle_);
 
@@ -624,10 +624,10 @@ void STR::TimInt::PrepareStatMech()
 
   if(tbtype != INPAR::STATMECH::thermalbath_none)
   {
-    statmechman_ = rcp(new STATMECH::StatMechManager(discret_));
+    statmechman_ = Teuchos::rcp(new STATMECH::StatMechManager(discret_));
 
     dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-    RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+    RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
     temp->PutScalar(1.0);
     LINALG::Export(*temp,*dirichtoggle_);
 
@@ -1684,9 +1684,9 @@ void STR::TimInt::OutputNodalPositions()
   // does discret_ exist here?
   //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
 
-  //RCP<Epetra_Vector> mynoderowmap = rcp(new Epetra_Vector(discret_->NodeRowMap()));
-  //RCP<Epetra_Vector> noderowmap_ = rcp(new Epetra_Vector(discret_->NodeRowMap()));
-  //dofrowmap_  = rcp(new discret_->DofRowMap());
+  //RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
+  //RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
+  //dofrowmap_  = Teuchos::rcp(new discret_->DofRowMap());
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 

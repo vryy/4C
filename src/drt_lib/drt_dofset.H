@@ -50,8 +50,6 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
-using namespace std;
-
 #include "drt_dofset_base.H"
 #include "drt_dserror.H"
 #include "drt_element.H"

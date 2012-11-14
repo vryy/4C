@@ -22,7 +22,6 @@ Here is everything related with writing a dat-file
 #include "../drt_lib/drt_conditiondefinition.H"
 
 
-using namespace std;
 using namespace Teuchos;
 
 /*----------------------------------------------------------------------*/
@@ -32,7 +31,7 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
     const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
 {
   // open datfile
-  ofstream dat(datfile.c_str());
+  std::ofstream dat(datfile.c_str());
   if (!dat) dserror("failed to open file: %s", datfile.c_str());
 
   // write dat-file intro
@@ -92,9 +91,9 @@ void EXODUS::WriteDatIntro(const string& headfile, const EXODUS::Mesh& mymesh, o
 /*----------------------------------------------------------------------*/
 void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
 {
-  stringstream head;
+  std::stringstream head;
   const char *headfilechar = headfile.c_str();
-  ifstream header(headfilechar, ifstream::in);
+  std::ifstream header(headfilechar, std::ifstream::in);
   if (not header.good()){
     cout << endl << "Unable to open file: " << headfilechar << endl;
     dserror("Unable to open head-file");
@@ -236,7 +235,7 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
         // special case for locsys conditions: calculate normal
         vector<double> normtang = EXODUS::CalcNormalSurfLocsys(actcon.id,mymesh);
         dat << "E " << actcon.e_id << " - ";
-        for (unsigned int i = 0; i < normtang.size() ; ++i) dat <<  setprecision (10) << fixed << normtang[i] << " ";
+        for (unsigned int i = 0; i < normtang.size() ; ++i) dat <<  std::setprecision (10) << std::fixed << normtang[i] << " ";
         dat << endl;
       } else
         dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
@@ -264,17 +263,17 @@ vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& 
   vector<double> normaltangent;
   EXODUS::NodeSet ns = m.GetNodeSet(ns_id);
 
-  set<int> nodes_from_nodeset = ns.GetNodeSet();
-  set<int>::iterator it;
+  std::set<int> nodes_from_nodeset = ns.GetNodeSet();
+  std::set<int>::iterator it;
 
   // compute normal
-  set<int>::iterator surfit = nodes_from_nodeset.begin();
+  std::set<int>::iterator surfit = nodes_from_nodeset.begin();
   int origin = *surfit;      // get first set node
   ++surfit;
   int head1 = *surfit;  // get second set node
   ++surfit;
 
-  set<int>::iterator thirdnode;
+  std::set<int>::iterator thirdnode;
 
   // find third node such that a proper normal can be computed
   for(it=surfit;it!=nodes_from_nodeset.end();++it){
@@ -322,10 +321,10 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   vector<EXODUS::cond_def>::const_iterator i;
   for (i=condefs.begin();i!=condefs.end();++i){
     EXODUS::cond_def acte = *i;
-    if (acte.gtype==DRT::Condition::Point) dpoints.insert(pair<int,EXODUS::cond_def>(acte.e_id,acte));
-    else if (acte.gtype==DRT::Condition::Line) dlines.insert(pair<int,EXODUS::cond_def>(acte.e_id,acte));
-    else if (acte.gtype==DRT::Condition::Surface) dsurfs.insert(pair<int,EXODUS::cond_def>(acte.e_id,acte));
-    else if (acte.gtype==DRT::Condition::Volume) dvols.insert(pair<int,EXODUS::cond_def>(acte.e_id,acte));
+    if (acte.gtype==DRT::Condition::Point) dpoints.insert(std::pair<int,EXODUS::cond_def>(acte.e_id,acte));
+    else if (acte.gtype==DRT::Condition::Line) dlines.insert(std::pair<int,EXODUS::cond_def>(acte.e_id,acte));
+    else if (acte.gtype==DRT::Condition::Surface) dsurfs.insert(std::pair<int,EXODUS::cond_def>(acte.e_id,acte));
+    else if (acte.gtype==DRT::Condition::Volume) dvols.insert(std::pair<int,EXODUS::cond_def>(acte.e_id,acte));
     else if (acte.gtype==DRT::Condition::NoGeom);
     else dserror ("Cannot identify Condition GeometryType");
   }
@@ -333,8 +332,8 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   dat << "-----------------------------------------------DNODE-NODE TOPOLOGY"<<endl;
   for (it=dpoints.begin();it!=dpoints.end();++it){
     EXODUS::cond_def acte = it->second;
-    const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
-    set<int>::const_iterator i;
+    const std::set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
+    std::set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
       dat << "NODE    " << *i << " " << "DNODE " << acte.e_id << endl;
       //dat << EXODUS::CondGeomTypeToString(acte) << " " << acte.e_id << endl;
@@ -343,8 +342,8 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   dat << "-----------------------------------------------DLINE-NODE TOPOLOGY"<<endl;
   for (it=dlines.begin();it!=dlines.end();++it){
     EXODUS::cond_def acte = it->second;
-    const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
-    set<int>::const_iterator i;
+    const std::set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
+    std::set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
       dat << "NODE    " << *i << " " << "DLINE " << acte.e_id << endl;
     }
@@ -352,8 +351,8 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   dat << "-----------------------------------------------DSURF-NODE TOPOLOGY"<<endl;
   for (it=dsurfs.begin();it!=dsurfs.end();++it){
     EXODUS::cond_def acte = it->second;
-    const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
-    set<int>::const_iterator i;
+    const std::set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
+    std::set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
       dat << "NODE    " << *i << " " << "DSURFACE " << acte.e_id << endl;
     }
@@ -361,8 +360,8 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   dat << "------------------------------------------------DVOL-NODE TOPOLOGY"<<endl;
   for (it=dvols.begin();it!=dvols.end();++it){
     EXODUS::cond_def acte = it->second;
-    const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
-    set<int>::const_iterator i;
+    const std::set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
+    std::set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
       dat << "NODE    " << *i << " " << "DVOL " << acte.e_id << endl;
     }
@@ -374,13 +373,13 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
+const std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
 {
   if (e.me==EXODUS::bcns){
     EXODUS::NodeSet ns = m.GetNodeSet(e.id);
     return ns.GetNodeSet();
   } else if (e.me==EXODUS::bceb){
-    set<int> allnodes;
+    std::set<int> allnodes;
     RCP<EXODUS::ElementBlock> eb = m.GetElementBlock(e.id);
     RCP<const map<int,vector<int> > > eles = eb->GetEleConn();
     map<int,vector<int> >::const_iterator i_ele;
@@ -391,7 +390,7 @@ const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS
     }
     return allnodes;
   } else if (e.me==EXODUS::bcss){
-    set<int> allnodes;
+    std::set<int> allnodes;
     EXODUS::SideSet ss = m.GetSideSet(e.id);
     const map<int,vector<int> > eles = ss.GetSideSet();
     map<int,vector<int> >::const_iterator i_ele;
@@ -402,7 +401,7 @@ const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS
     }
     return allnodes;
   } else dserror("Cannot identify mesh_entity");
-  set<int> n;
+  std::set<int> n;
   return n;
 }
 
@@ -419,7 +418,7 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
   {
     vector<double> coords = i_node->second;
     dat << "NODE " << i_node->first << "  " << '\t' << "COORD" << '\t';
-    for(unsigned int i=0; i<coords.size(); ++i) dat << scientific << coords[i] << '\t';
+    for(unsigned int i=0; i<coords.size(); ++i) dat << std::scientific << coords[i] << '\t';
     dat << endl;
   }
   return;
@@ -513,7 +512,7 @@ void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def
   map<int,vector<int> >::const_iterator i_ele;
   for (i_ele=eles->begin();i_ele!=eles->end();++i_ele)
   {
-    stringstream dat; // first build up the string for actual element line
+    std::stringstream dat; // first build up the string for actual element line
     const vector<int> nodes = i_ele->second;
     vector<int>::const_iterator i_n;
     dat << "   " << startele;
@@ -528,7 +527,7 @@ void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def
     	{
     		// write local cosy from centerline to each element
     		vector<vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
-		  dat << " RAD " << fixed << setprecision(8) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
+		  dat << " RAD " << std::fixed << std::setprecision(8) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
 		  dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
 		  dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];
     	}

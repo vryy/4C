@@ -121,7 +121,7 @@ void UTILS::Monitor::EvaluateMonitor
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     const int condID=(*CondIDVec)[0];
     const int offsetID=params.get("OffsetID",0);
-    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;

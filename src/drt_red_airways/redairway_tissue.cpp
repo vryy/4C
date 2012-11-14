@@ -276,7 +276,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter>  output = rcp( new IO::DiscretizationWriter(actdis),false);
+  RCP<IO::DiscretizationWriter>  output = Teuchos::rcp( new IO::DiscretizationWriter(actdis),false);
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
@@ -294,7 +294,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   // check if the present solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC to a valid number!");
-  RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+  RCP<LINALG::Solver> solver = Teuchos::rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                                    actdis->Comm(),
                                                    DRT::Problem::Instance()->ErrorFile()->Handle()),
                                     false);

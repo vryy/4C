@@ -66,7 +66,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   // ask base algorithm for the structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, structdis));
-  structure_ = rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
 
   if(structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
@@ -74,7 +74,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,true));
-  fluid_ = rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidFieldrcp());
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidFieldrcp());
 
   // access the problem-specific parameter lists
   const Teuchos::ParameterList& sdyn
@@ -138,7 +138,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
                           not submeshes_);
 
   if(submeshes_)
-    psiextractor_ = rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
+    psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
 
   //FluidField().SetMeshMap(coupfs_->MasterDofMap());
   FluidField().SetMeshMap(coupfs_->SlaveDofMap());
@@ -284,9 +284,9 @@ void POROELAST::PoroBase::BuidNoPenetrationMap()
   {
     condIDs.push_back(*it);
   }
-  Teuchos::RCP<Epetra_Map> nopendofmap = rcp(new Epetra_Map(-1, condIDs.size(), &condIDs[0], 0, FluidField().Discretization()->Comm()));
+  Teuchos::RCP<Epetra_Map> nopendofmap = Teuchos::rcp(new Epetra_Map(-1, condIDs.size(), &condIDs[0], 0, FluidField().Discretization()->Comm()));
 
-  nopenetration_ = rcp(new LINALG::MapExtractor(*FluidField().DofRowMap(), nopendofmap));
+  nopenetration_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField().DofRowMap(), nopendofmap));
 
   return;
 }
@@ -420,7 +420,7 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
   // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
   const Epetra_Map* noderowmap = structdis->NodeRowMap();
-  Teuchos::RCP<Epetra_MultiVector> convel = rcp(new Epetra_MultiVector(*noderowmap,numdim+1,true));
+  Teuchos::RCP<Epetra_MultiVector> convel = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim+1,true));
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<structdis->NumMyRowNodes();lnodeid++)
   {
@@ -467,7 +467,7 @@ void POROELAST::PoroBase::AddMultiVectorToParameterList
     //SetState cannot be used since this multi-vector is nodebased and not dofbased!
     const Epetra_Map* nodecolmap = discret->NodeColMap();
     int numcol = vec->NumVectors();
-    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    RefCountPtr<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
     LINALG::Export(*vec,*tmp);
     p.set(name,tmp);
   }

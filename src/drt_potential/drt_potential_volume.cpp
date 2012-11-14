@@ -486,7 +486,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
         element->LocationVector(*discretRCP_,lm,lmowner,lmstride);
         const double beta = GetAtomicDensity(element->Id(), "Potential", labelByElement_);
 
-        RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer(
+        RCP<PotentialElementContainer> pec = Teuchos::rcp( new PotentialElementContainer(
             element->Id(),
             element->Shape(),
             labelIter->first,
@@ -547,7 +547,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
   vector<char>::size_type position = 0;
   for(int i_ele = 0; i_ele < numEle_send; ++i_ele)
   {
-    RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer());
+    RCP<PotentialElementContainer> pec = Teuchos::rcp( new PotentialElementContainer());
     pec->Unpack(data_send, position);
     // std::map<int, std::set<PotentialElementContainer>  set because some of the
     // elements are sends a few times since loop over col elements

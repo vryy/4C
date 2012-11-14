@@ -171,7 +171,7 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
   }
 
   // initialize Poroelasticity-systemmatrix_
-  systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<
+  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
       LINALG::DefaultBlockMatrixStrategy>(Extractor(), Extractor(), 81, false,
       true));
 
@@ -222,7 +222,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::CombinedDBCMap()
       otherdbcmapvector.push_back(gid);
   }
 
-  Teuchos::RCP<Epetra_Map> otherdbcmap = rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
+  Teuchos::RCP<Epetra_Map> otherdbcmap = Teuchos::rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
   //dsassert(otherdbcmap->UniqueGIDs(),"DBC applied on both master and slave side on inteface!");
 
   return otherdbcmap;

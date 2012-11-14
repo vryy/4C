@@ -82,7 +82,7 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
   if (pos!=dofmapvec.end() and *pos < 0)
     dserror("illegal dof number %d", *pos);
 
-  Teuchos::RCP<Epetra_Map> outflowfsidofmap = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
+  Teuchos::RCP<Epetra_Map> outflowfsidofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
 
   outflowfsiinterface_ = Teuchos::rcp(new LINALG::MapExtractor(*Interface()->FullMap(), outflowfsidofmap));
 }
@@ -135,7 +135,7 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
 
     ParameterList params;
     params.set("ConditionID",condID);
-    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
     params.set<int>("action",FLD::flowratederiv);
     params.set("flowrateonly", true);
     const double dt = Dt();
@@ -227,7 +227,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
     const double lagraval = (*lagrMultVecRed)[lindex];
 
     // elements might need condition
-    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;  // (d^2 Q)/(du dd)

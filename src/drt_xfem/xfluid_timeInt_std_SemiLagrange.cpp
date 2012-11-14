@@ -784,7 +784,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 
 //  if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapol) // use Extrapolation as alternative
 //  {
-//    RCP<XFEM::TIMEINT> timeIntData = rcp(new XFEM::TIMEINT(
+//    RCP<XFEM::TIMEINT> timeIntData = Teuchos::rcp(new XFEM::TIMEINT(
 //        discret_,
 //        olddofman_,
 //        newdofman_,
@@ -796,7 +796,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 //        newNodalDofRowDistrib_,
 //        pbcmap_));
 //
-//    RCP<XFEM::Extrapolation> extrapol = rcp(new XFEM::Extrapolation(
+//    RCP<XFEM::Extrapolation> extrapol = Teuchos::rcp(new XFEM::Extrapolation(
 //        *timeIntData,
 //        timeIntType_,
 //        veln_,
@@ -808,7 +808,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 //    resetState(TimeIntData::failedSL_,TimeIntData::extrapolateStd_);
 //
 //    // vector with data for extrapolation
-//    extrapol->timeIntData_ = rcp(new vector<TimeIntData>);
+//    extrapol->timeIntData_ = Teuchos::rcp(new vector<TimeIntData>);
 //
 //    // add data for extrapolation
 //    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
@@ -1238,7 +1238,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
 
   for (size_t index=0;index<newRowVectors.size();index++)
   {
-    RCP<Epetra_Vector> tmpColVector = rcp(new Epetra_Vector(newdofcolmap,true));
+    RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(newdofcolmap,true));
     newColVectors.push_back(tmpColVector);
     LINALG::Export(*newRowVectors[index],*newColVectors[index]);
   }

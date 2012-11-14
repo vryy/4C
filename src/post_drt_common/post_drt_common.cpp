@@ -71,10 +71,10 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("tempgrad",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
 
-  CommandLineProcessor::EParseCommandLineReturn
+  Teuchos::CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
 
-  if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)
+  if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
   {
     exit(1);
   }
@@ -246,7 +246,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
 {
   MAP temp_table;
 
-  comm_ = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+  comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
 
   /* The warning system is not set up. It's rather stupid anyway. */
 
@@ -720,16 +720,16 @@ PostField PostProblem::getfield(MAP* field_info)
   {
     if(problemtype_==prb_combust)
     {
-      dis=rcp(new DRT::DiscretizationXFEM(field_name,comm_));
+      dis=Teuchos::rcp(new DRT::DiscretizationXFEM(field_name,comm_));
     }
     else
     {
-      dis=rcp(new DRT::Discretization(field_name,comm_));
+      dis=Teuchos::rcp(new DRT::Discretization(field_name,comm_));
     }
   }
   else if(spatial_approx_=="Nurbs")
   {
-    dis=rcp(new DRT::NURBS::NurbsDiscretization(field_name,comm_));
+    dis=Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name,comm_));
   }
   else
   {
@@ -982,13 +982,13 @@ PostResult::read_result_serialdensematrix(const string name)
   RCP<std::vector<char> > data = file_.ReadResultDataVecChar(id_path, value_path, columns,
                                                                      *comm, elemap);
 
-  RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > mapdata = rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > mapdata = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   std::vector<char>::size_type position=0;
 //   cout << "elemap:\n" << *elemap << endl;
 //   cout << "myelenum: " << elemap->NumMyElements() << endl;
   for (int i=0;i<elemap->NumMyElements();++i)
   {
-    RCP<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
+    RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
     DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)]=gpstress;
   }

@@ -530,7 +530,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
       // extract current temperatures declared as RCP<vector>
-      Teuchos::RCP<std::vector<double> >robtempnp = rcp(new std::vector<double>(la[1].lm_.size()) );
+      Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
       params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
 
@@ -593,7 +593,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double> >robtempnp = rcp(new std::vector<double>(la[1].lm_.size()) );
+      Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
       params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
 
@@ -660,7 +660,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double> >robtempnp = rcp(new std::vector<double>(la[1].lm_.size()) );
+      Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
       params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
 
@@ -756,7 +756,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
         // extract local values of the global vectors
-        Teuchos::RCP<std::vector<double> >robtempnp = rcp(new std::vector<double>(la[1].lm_.size()) );
+        Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
         DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
         params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
 

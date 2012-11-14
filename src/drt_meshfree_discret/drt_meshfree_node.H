@@ -251,8 +251,8 @@ protected:
 protected:
   // internal data:
 
-  vector<int>        nodeid_;  //!< List of gids of my nodes, length NumNode()
-  vector<DRT::Node*> node_;    //!< pointers to adjacent nodes
+  std::vector<int>        nodeid_;  //!< List of gids of my nodes, length NumNode()
+  std::vector<DRT::Node*> node_;    //!< pointers to adjacent nodes
 
 }; // end MeshfreeNode
 

@@ -133,7 +133,7 @@ LINALG::SparseMatrix::SparseMatrix(
   if(matrixtype_ == CRS_MATRIX)
     sysmat_ = matrix;
   else if(matrixtype_ == FE_MATRIX)
-    sysmat_ = rcp_dynamic_cast<Epetra_FECrsMatrix>(matrix, true);
+    sysmat_ = Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(matrix, true);
   else
     dserror("matrix type is not correct");
 
@@ -1197,7 +1197,7 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
       {
         if (diagonalblock)
         {
-#if DEBUG
+#ifdef DEBUG
           int err = trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
           if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
 #else
@@ -1729,7 +1729,7 @@ ostream& LINALG::operator << (ostream& os, const LINALG::SparseMatrix& mat)
   if(mat.GetMatrixtype() == SparseMatrix::CRS_MATRIX)
     os << *(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
   else if(mat.GetMatrixtype() == SparseMatrix::FE_MATRIX)
-    os << rcp_dynamic_cast<Epetra_FECrsMatrix>(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
+    os << Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
   else
     dserror("matrixtype does not exist");
   return os;

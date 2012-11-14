@@ -67,8 +67,8 @@ maxRefinementLevel_(0),
 xfeminttype_(INPAR::COMBUST::xfemintegration_cut)
 {
   // construct interfacehandles using initial flame front
-  interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis));
-  interfacehandle_old_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis));
+  interfacehandle_ = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis));
+  interfacehandle_old_ = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis));
 }
 
 
@@ -169,7 +169,7 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
   if (fluiddis_->Comm().MyPID()==0)
     IO::cout << "---  capturing flame front... " << IO::flush;
 
-  const Teuchos::RCP<Epetra_Vector> phicol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
+  const Teuchos::RCP<Epetra_Vector> phicol = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   if (phicol->MyLength() != phi->MyLength())
     dserror("vector phi needs to be distributed according to fluid node column map");
 
@@ -192,7 +192,7 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
 #endif
 
     // create refinement cell from a fluid element -> cell will have same geometry as element!
-    const Teuchos::RCP<COMBUST::RefinementCell> rootcell = rcp(new COMBUST::RefinementCell(ele));
+    const Teuchos::RCP<COMBUST::RefinementCell> rootcell = Teuchos::rcp(new COMBUST::RefinementCell(ele));
 
     // refinement strategy is turned on
     if (refinement_)
@@ -263,9 +263,9 @@ void COMBUST::FlameFront::StorePhiVectors(
   //------------------------------------------------------------------------------------------------
   // Rearranging phi vectors from gfuncdis DofRowMap to fluiddis NodeRowMap
   //------------------------------------------------------------------------------------------------
-  //const Teuchos::RCP<Epetra_Vector> phinmrow = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
-  const Teuchos::RCP<Epetra_Vector> phinrow  = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
-  const Teuchos::RCP<Epetra_Vector> phinprow = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+  //const Teuchos::RCP<Epetra_Vector> phinmrow = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+  const Teuchos::RCP<Epetra_Vector> phinrow  = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+  const Teuchos::RCP<Epetra_Vector> phinprow = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
 
   //----------------------------------------------------------------------------------------------
   // congruent (matching) discretizations (Fluid == G-function)
@@ -358,9 +358,9 @@ void COMBUST::FlameFront::StorePhiVectors(
   // accessibility.
   // remark: SetState() can not be used here, because it is designed for dof-based vectors only.
   //------------------------------------------------------------------------------------------------
-  const Teuchos::RCP<Epetra_Vector> phincol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
+  const Teuchos::RCP<Epetra_Vector> phincol = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   LINALG::Export(*phinrow,*phincol);
-  const Teuchos::RCP<Epetra_Vector> phinpcol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
+  const Teuchos::RCP<Epetra_Vector> phinpcol = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   LINALG::Export(*phinprow,*phinpcol);
 
   // store vector on fluiddis NodeColMap holding G-function values in member variable
@@ -407,10 +407,10 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // pointer to phivector at time n with rowmap
-    RCP<Epetra_Vector> phinTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+    RCP<Epetra_Vector> phinTmp = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
     LINALG::Export(*phin_,*phinTmp);
     // pointer to phivector at time n+1 with rowmap
-    RCP<Epetra_Vector> phinpTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+    RCP<Epetra_Vector> phinpTmp = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
     LINALG::Export(*phinp_,*phinpTmp);
 
 
@@ -538,10 +538,10 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
 
 
     // pointer to phivector at time n with rowmap
-    RCP<Epetra_Vector> phinTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+    RCP<Epetra_Vector> phinTmp = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
     LINALG::Export(*phin_,*phinTmp);
     // pointer to phivector at time n+1 with rowmap
-    RCP<Epetra_Vector> phinpTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+    RCP<Epetra_Vector> phinpTmp = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
     LINALG::Export(*phinp_,*phinpTmp);
 
     // phinp_ and phin_ are given in same nodeColMap
@@ -885,11 +885,11 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // gradphi_ gets a NodeColMap
-  gradphi_ = rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),nsd));
+  gradphi_ = Teuchos::rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),nsd));
   gradphi_->PutScalar(0.0);
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
-  const Teuchos::RCP<Epetra_MultiVector> gradphirow = rcp(new Epetra_MultiVector(*fluiddis_->NodeRowMap(),nsd));
+  const Teuchos::RCP<Epetra_MultiVector> gradphirow = Teuchos::rcp(new Epetra_MultiVector(*fluiddis_->NodeRowMap(),nsd));
   gradphirow->PutScalar(0.0);
 
   // map of pointers to nodes which must be reconstructed by this processor <local id, node>
@@ -1804,10 +1804,10 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
 void COMBUST::FlameFront::ComputeCurvatureForCombustion(const Teuchos::ParameterList& combustdyn)
 {
   // gradphi_ lives on fluid NodeColMap
-  curvature_ = rcp(new Epetra_Vector(*fluiddis_->NodeColMap(),true));
+  curvature_ = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeColMap(),true));
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
-  const Teuchos::RCP<Epetra_Vector> rowcurv = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap(),true));
+  const Teuchos::RCP<Epetra_Vector> rowcurv = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeRowMap(),true));
 
   // loop over nodes on this processor
   for(int lnodeid=0; lnodeid<fluiddis_->NumMyRowNodes(); ++lnodeid)
@@ -1904,7 +1904,7 @@ void COMBUST::FlameFront::ComputeCurvatureForSurfaceTension(const Teuchos::Param
   curvature_ = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeColMap(),true));
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
-  // this is only used in this method, so there is no need to make it an rcp
+  // this is only used in this method, so there is no need to make it an Teuchos::rcp
   Epetra_Vector rowcurv(*fluiddis_->NodeRowMap(),true);
 
   // this is only needed in case we use the node based curvature
@@ -2570,7 +2570,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
         }
 
         // store coordinates of intersection point for each line
-        intersectionpoints.insert(pair<int, std::vector<double> >( iline, coordinates));
+        intersectionpoints.insert(std::pair<int, std::vector<double> >( iline, coordinates));
         //intersectionpoints[iline] = coordinates;
       }
       else
@@ -2707,16 +2707,16 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
               for (int i = 0; i < 3; i++) {
                 IO::cout << coordinates2[i] << IO::endl;
               }
-              intersectionpoints.insert(pair<int, std::vector<double> > (iline, coordinates1));
-              intersectionpoints.insert(pair<int, std::vector<double> > (iline, coordinates2));
+              intersectionpoints.insert(std::pair<int, std::vector<double> > (iline, coordinates1));
+              intersectionpoints.insert(std::pair<int, std::vector<double> > (iline, coordinates2));
               //dserror("Check this first!");
             }
             else {
             // store intersectionpoint if it is located in the interval ]-1.0;1.0[
             if (fabs(xi_1) < 1.0)
-              intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates1));
+              intersectionpoints.insert(std::pair<int,std::vector<double> >(iline,coordinates1));
             if ((fabs(xi_2) < 1.0) and (xi_2 != xi_1))
-              intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates2));
+              intersectionpoints.insert(std::pair<int,std::vector<double> >(iline,coordinates2));
           }
         }
       }
@@ -2743,7 +2743,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
                 coordinates1[dim] = xi_1;
               }
             }
-            intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates1));
+            intersectionpoints.insert(std::pair<int,std::vector<double> >(iline,coordinates1));
           }
         }
       }
@@ -3676,11 +3676,11 @@ void COMBUST::FlameFront::projectMidpoint2D(
   std::vector<int> segment(2);
   segment[0] = polypoints[first_id];
   segment[1] = midpointback_id;
-  segmentlist.insert(pair<int,std::vector<int> >(segid,segment));
+  segmentlist.insert(std::pair<int,std::vector<int> >(segid,segment));
 
   segment[0] = midpointback_id;
   segment[1] = polypoints[second_id];
-  segmentlist.insert(pair<int,std::vector<int> >(segid,segment));
+  segmentlist.insert(std::pair<int,std::vector<int> >(segid,segment));
 
   // replace segment on front side by two segments connected to midpointfront
   for (std::map<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
@@ -3695,15 +3695,15 @@ void COMBUST::FlameFront::projectMidpoint2D(
   segmentlist.erase(segid);
   segment[0] = polypoints[third_id];
   segment[1] = midpointfront_id;
-  segmentlist.insert(pair<int,std::vector<int> >(segid,segment));
+  segmentlist.insert(std::pair<int,std::vector<int> >(segid,segment));
   segment[0] = midpointfront_id;
   segment[1] = polypoints[forth_id];
-  segmentlist.insert(pair<int,std::vector<int> >(segid,segment));
+  segmentlist.insert(std::pair<int,std::vector<int> >(segid,segment));
 
   // add segment connecting both midpoints (arbitrary ID 6)
   segment[0] = midpointback_id;
   segment[1] = midpointfront_id;
-  segmentlist.insert(pair<int,std::vector<int> >(6,segment));
+  segmentlist.insert(std::pair<int,std::vector<int> >(6,segment));
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -4160,14 +4160,14 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
           if (gfuncvalues[surfacepointlist[i][1]]*gfuncvalues[surfacepointlist[i][3]]<0)
           {
             //store in segmentlist
-            segmentlist.insert(pair<int,std::vector<int> >(i,zeropoints));
+            segmentlist.insert(std::pair<int,std::vector<int> >(i,zeropoints));
           }
         }
         else if (((zeropoints[0]==surfacepointlist[i][1])and(zeropoints[1]==surfacepointlist[i][3])))
         {
           if (gfuncvalues[surfacepointlist[i][0]]*gfuncvalues[surfacepointlist[i][2]]<0)
           {
-            segmentlist.insert(pair<int,std::vector<int> >(i,zeropoints));
+            segmentlist.insert(std::pair<int,std::vector<int> >(i,zeropoints));
           }
         }
         else
@@ -4190,7 +4190,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
           }
           if(not_in_segmentlist)
             //store in segmentlist
-            segmentlist.insert(pair<int,std::vector<int> >(-1,zeropoints));
+            segmentlist.insert(std::pair<int,std::vector<int> >(-1,zeropoints));
         }
         break;
       }
@@ -4250,7 +4250,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
               not_in_segmentlist = false;
           }
           if(not_in_segmentlist)
-            segmentlist.insert(pair<int,std::vector<int> >(-1,segment));
+            segmentlist.insert(std::pair<int,std::vector<int> >(-1,segment));
         }
         break;
       }
@@ -4293,14 +4293,14 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       std::vector<int> segment (2);
       segment[0] = segmentpoints[0];
       segment[1] = zeropoints[0];
-      segmentlist.insert(pair<int,std::vector<int> >(i,segment));
+      segmentlist.insert(std::pair<int,std::vector<int> >(i,segment));
 
       break;
     }
     case 2:
     {
       //store segment in segmentlist
-      segmentlist.insert(pair<int,std::vector<int> >(i,segmentpoints));
+      segmentlist.insert(std::pair<int,std::vector<int> >(i,segmentpoints));
       break;
     }
     case 3:
@@ -4349,8 +4349,8 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
         std::vector<int> segment2 (2);
         segment2[0] = segmentpoints[1];
         segment2[1] = segmentpoints[2];
-        segmentlist.insert(pair<int,std::vector<int> >(i,segment1));
-        segmentlist.insert(pair<int,std::vector<int> >(i,segment2));
+        segmentlist.insert(std::pair<int,std::vector<int> >(i,segment1));
+        segmentlist.insert(std::pair<int,std::vector<int> >(i,segment2));
       }
       else
       {
@@ -4360,8 +4360,8 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
         std::vector<int> segment2 (2);
         segment2[0] = segmentpoints[2];
         segment2[1] = segmentpoints[3];
-        segmentlist.insert(pair<int,std::vector<int> >(i,segment1));
-        segmentlist.insert(pair<int,std::vector<int> >(i,segment2));
+        segmentlist.insert(std::pair<int,std::vector<int> >(i,segment1));
+        segmentlist.insert(std::pair<int,std::vector<int> >(i,segment2));
       }
       break;
     }
@@ -4482,12 +4482,12 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
           // different sign of Phi at the remaining vertices
           if (gfuncvalues[surfacepointlist[surfaceNo][1]] * gfuncvalues[surfacepointlist[surfaceNo][3]] < 0) {
             //store in segmentlist
-            segmentlist.insert(pair<int, std::vector<int> > (surfaceNo, zeropoints));
+            segmentlist.insert(std::pair<int, std::vector<int> > (surfaceNo, zeropoints));
           }
         }
         else if (((zeropoints[0] == surfacepointlist[surfaceNo][1]) and (zeropoints[1] == surfacepointlist[surfaceNo][3]))) {
           if (gfuncvalues[surfacepointlist[surfaceNo][0]] * gfuncvalues[surfacepointlist[surfaceNo][2]] < 0) {
-            segmentlist.insert(pair<int, std::vector<int> > (surfaceNo, zeropoints));
+            segmentlist.insert(std::pair<int, std::vector<int> > (surfaceNo, zeropoints));
           }
         }
         else {
@@ -4507,7 +4507,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
           }
           if (not_in_segmentlist)
             //store in segmentlist
-            segmentlist.insert(pair<int, std::vector<int> > (-1, zeropoints));
+            segmentlist.insert(std::pair<int, std::vector<int> > (-1, zeropoints));
         }
         break;
       }
@@ -4557,7 +4557,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
               not_in_segmentlist = false;
           }
           if (not_in_segmentlist)
-            segmentlist.insert(pair<int, std::vector<int> > (-1, segment));
+            segmentlist.insert(std::pair<int, std::vector<int> > (-1, segment));
         }
         break;
       }
@@ -4599,7 +4599,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
         {
           segment[0] = segmentpoints[0];
           segment[1] = zeropoints[0];
-          segmentlist.insert(pair<int,std::vector<int> >(surfaceNo,segment));
+          segmentlist.insert(std::pair<int,std::vector<int> >(surfaceNo,segment));
         }
         break;
       }
@@ -4622,7 +4622,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
       {
         segment[0] = segmentpoints[0];
         segment[1] = segmentpoints[1];
-        segmentlist.insert(pair<int,std::vector<int> >(surfaceNo,segment));
+        segmentlist.insert(std::pair<int,std::vector<int> >(surfaceNo,segment));
         break;
       }
       default:
@@ -4647,8 +4647,8 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
             LINALG::Matrix<3,1> SurfaceNormal = GEO::computeCrossProduct(Diff1, Diff2);
             if (SurfaceNormal.Norm1() <= 1e-10) //the two lines are parallel
             {
-              segmentlist.insert(pair<int, int>(segmentpoints[0], segmentpoints[2]));
-              segmentlist.insert(pair<int, int>(segmentpoints[1], segmentpoints[3]));
+              segmentlist.insert(std::pair<int, int>(segmentpoints[0], segmentpoints[2]));
+              segmentlist.insert(std::pair<int, int>(segmentpoints[1], segmentpoints[3]));
             }
             else //lines are not parallel
             {
@@ -4659,13 +4659,13 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
                   * (d + planeNormal(0) *SegmentationCoordinates[3](0) + planeNormal(1)*SegmentationCoordinates[3](1) + planeNormal(2)*SegmentationCoordinates[3](2))
                   > 0)
               {
-                segmentlist.insert(pair<int, int>(segmentpoints[0], segmentpoints[2]));
-                segmentlist.insert(pair<int, int>(segmentpoints[1], segmentpoints[3]));
+                segmentlist.insert(std::pair<int, int>(segmentpoints[0], segmentpoints[2]));
+                segmentlist.insert(std::pair<int, int>(segmentpoints[1], segmentpoints[3]));
               }
               else
               {//Diff1 and Diff2 are intersected within the surface
-                segmentlist.insert(pair<int, int>(segmentpoints[0], segmentpoints[3]));
-                segmentlist.insert(pair<int, int>(segmentpoints[1], segmentpoints[2]));
+                segmentlist.insert(std::pair<int, int>(segmentpoints[0], segmentpoints[3]));
+                segmentlist.insert(std::pair<int, int>(segmentpoints[1], segmentpoints[2]));
               }
             }
           }
@@ -4858,7 +4858,7 @@ void COMBUST::FlameFront::buildPLC(
   for (std::multimap<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
   {
     pointlist.push_back(iter->second);
-    intersectionpointsids.insert(pair<int, int>(iter->first,numofpoints));
+    intersectionpointsids.insert(std::pair<int, int>(iter->first,numofpoints));
     //intersectionpointsids[iter->first] = numofpoints;
     numofpoints++;
   }
@@ -5284,7 +5284,7 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
   for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
     GEO::CUT::VolumeCell * volcell = *ivolcell;
-    //cout << "volumen " << setw(24)<< std::setprecision(20) << volcell->Volume() << IO::endl;
+    //cout << "volumen " << std::setw(24)<< std::setprecision(20) << volcell->Volume() << IO::endl;
 
     if (volcell->Volume()/refvol >= voltol) // volume cell is large enough
     {
@@ -5478,8 +5478,8 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
           // do not store boundary cells for small volumes, but do store large boundary cells for
           // small volumes -> this will be a touched element, we have to keep its boundary cell
           //cout << "small boundary cell not stored" << IO::endl;
-          //cout << "volumen "  << setw(24)<< std::setprecision(20) << volume << IO::endl;
-          //cout << "flaeche "  << setw(24)<< std::setprecision(20) << bcell->Area() << IO::endl;
+          //cout << "volumen "  << std::setw(24)<< std::setprecision(20) << volume << IO::endl;
+          //cout << "flaeche "  << std::setw(24)<< std::setprecision(20) << bcell->Area() << IO::endl;
         }
         else if (bcell->Area()/refarea < 1.0E-8)
         {
@@ -6025,7 +6025,7 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
     }
 
     // add group of cells for this element to the map
-    intcellmap.insert(make_pair(elegid,intcellvector));
+    intcellmap.insert(std::make_pair(elegid,intcellvector));
 
   }
   // check correct reading

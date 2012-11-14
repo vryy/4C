@@ -1131,7 +1131,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       {
         const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtPrescribedCond");
         Cparams.set<string>("Condition Name","ArtPrescribedCond");
-        ART::UTILS::SolvePrescribedTerminalBC(rcp(&discretization,false), condition, Cparams);
+        ART::UTILS::SolvePrescribedTerminalBC(Teuchos::rcp(&discretization,false), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1144,7 +1144,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         Cparams.set<RCP<ParameterList > >("coupling with 3D fluid params",CoupledTo3DParams);
         Cparams.set<string>("Condition Name","Art_redD_3D_CouplingCond");
 
-        ART::UTILS::SolvePrescribedTerminalBC(rcp(&discretization,false), condition, Cparams);
+        ART::UTILS::SolvePrescribedTerminalBC(Teuchos::rcp(&discretization,false), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1153,7 +1153,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       if(ele->Nodes()[i]->GetCondition("ArtRfCond"))
       {
         const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtRfCond");
-        ART::UTILS::SolveReflectiveTerminal(rcp(&discretization,false), condition, Cparams);
+        ART::UTILS::SolveReflectiveTerminal(Teuchos::rcp(&discretization,false), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1166,7 +1166,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         Cparams.set<double>("external pressure",pext_(i));
         Cparams.set<double>("terminal volumetric flow rate",qn_(i));
         Cparams.set<double>("terminal cross-sectional area",an_(i));
-        ART::UTILS::SolveExplWindkesselBC(rcp(&discretization,false), condition, Cparams);
+        ART::UTILS::SolveExplWindkesselBC(Teuchos::rcp(&discretization,false), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1204,7 +1204,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         double val; 
         double cross_area;
 
-        cross_area = pow(2.0*dens*area0_(i)/beta,2.0)*pow((Wf - Wb)/8.0,4.0);
+        cross_area = std::pow(2.0*dens*area0_(i)/beta,2.0)*pow((Wf - Wb)/8.0,4.0);
      
         gid = lm[2*i];
         val = cross_area;

@@ -55,7 +55,7 @@ POTENTIAL::SurfacePotential::SurfacePotential(
   dsassert(potentialdis_->NumGlobalNodes() > 0, "empty discretization detected. Potential conditions applied?");
 
   // set new dof set
-  RCP<POTENTIAL::PotentialDofSet> pdofset = rcp(new POTENTIAL::PotentialDofSet(discretRCP_));
+  RCP<POTENTIAL::PotentialDofSet> pdofset = Teuchos::rcp(new POTENTIAL::PotentialDofSet(discretRCP_));
   (*potentialdis_).ReplaceDofSet(pdofset);
   (*potentialdis_).FillComplete(false, false, false);
 
@@ -101,7 +101,7 @@ POTENTIAL::SurfacePotential::SurfacePotential(
   idisp_total_    = LINALG::CreateVector(*potsurface_dofcolmap_total,true);
 
   // create importer
-  importer_ = rcp(new Epetra_Import(idisp_total_->Map(),idisp_onproc_->Map()));
+  importer_ = Teuchos::rcp(new Epetra_Import(idisp_total_->Map(),idisp_onproc_->Map()));
 
   // set up tree
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*potentialdis_);

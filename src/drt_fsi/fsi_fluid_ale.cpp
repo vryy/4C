@@ -66,7 +66,7 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
     std::cout << "\n"
               << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
               << "     DT = " << std::scientific << dt_
-              << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
+              << "     STEP = " YELLOW_LIGHT << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_
               << "\n\n";
 
   MBFluidField().PrepareTimeStep();

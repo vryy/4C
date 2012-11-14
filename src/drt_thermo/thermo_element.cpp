@@ -49,7 +49,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const string elety
 {
   if ( eletype=="THERMO" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Thermo(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Thermo(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -58,7 +58,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const string elety
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Thermo(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Thermo(id,owner));
   return ele;
 }
 
@@ -77,7 +77,7 @@ void DRT::ELEMENTS::ThermoType::ComputeNullSpace( DRT::Discretization & dis, std
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoBoundaryType::Create( const int id, const int owner )
 {
-  //return rcp(new DRT::ELEMENTS::ThermoBoundary(id,owner));
+  //return Teuchos::rcp(new DRT::ELEMENTS::ThermoBoundary(id,owner));
   return Teuchos::null;
 }
 

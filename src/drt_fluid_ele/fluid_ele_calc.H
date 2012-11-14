@@ -184,7 +184,7 @@ namespace ELEMENTS
         std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
         Teuchos::ParameterList&                                             params,            ///< parameter list
         const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element
-        map<int,int> &                                                      boundary_emb_gid_map
+        std::map<int,int> &                                                 boundary_emb_gid_map
     ){dserror("Implemented in derived xfem class!"); return 1;};
 
     /// Evaluate the XFEM cut element
@@ -281,7 +281,7 @@ namespace ELEMENTS
                                        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
                                        Teuchos::ParameterList&                                           params,
                                        DRT::Discretization &                                             alediscret,
-                                       map<int,int> &                                                    boundary_emb_gid_map,
+                                       std::map<int,int> &                                               boundary_emb_gid_map,
                                        Epetra_SerialDenseMatrix&                                         elemat1_epetra,
                                        Epetra_SerialDenseVector&                                         elevec1_epetra,
                                        Epetra_SerialDenseMatrix&                                         Cuiui,

@@ -35,7 +35,7 @@ LINALG::AMGPreconditioner::AMGPreconditioner(RCP<Epetra_Operator> A, const Param
 {
   SparseMatrix* tmp = new SparseMatrix((rcp_dynamic_cast<Epetra_CrsMatrix>(A)));
   if(!tmp) dserror("Expected Epetra_CrsMatrix");
-  Ainput_ = rcp(tmp,true);
+  Ainput_ = Teuchos::rcp(tmp,true);
 
   Setup();  // setup of multigrid hirarchy
 }
@@ -59,7 +59,7 @@ void LINALG::AMGPreconditioner::Setup()
   // prepare null space approximation
   const int length = Ainput_->RowMap().NumMyElements();
   const int nlnnode = length/nsdim;
-  RCP<vector<double> > ns = rcp(new vector<double>(nsdim*length,0.0));
+  RCP<vector<double> > ns = Teuchos::rcp(new vector<double>(nsdim*length,0.0));
   for (int i=0; i<nlnnode; ++i)
   {
     (*ns)[i*nsdim] = 1.0;
@@ -72,7 +72,7 @@ void LINALG::AMGPreconditioner::Setup()
 
   params_.set("null space: vectors",&((*ns)[0])); // adapt default null space
   params_.remove("nullspace",false);
-  RCP<Epetra_MultiVector> curNS = rcp(new Epetra_MultiVector(View,Ainput_->RowMap(),&((*ns)[0]),Ainput_->EpetraMatrix()->RowMatrixRowMap().NumMyElements(),nsdim));
+  RCP<Epetra_MultiVector> curNS = Teuchos::rcp(new Epetra_MultiVector(View,Ainput_->RowMap(),&((*ns)[0]),Ainput_->EpetraMatrix()->RowMatrixRowMap().NumMyElements(),nsdim));
 
 
 
@@ -84,7 +84,7 @@ void LINALG::AMGPreconditioner::Setup()
   postS_.resize(nmaxlevels_);
 
   int curlevel = 0;
-  A_[curlevel] = rcp(new SparseMatrix(*Ainput_,View));
+  A_[curlevel] = Teuchos::rcp(new SparseMatrix(*Ainput_,View));
 
 #ifdef WRITEOUTAGGREGATES
     // plot out aggregates
@@ -262,8 +262,8 @@ int LINALG::AMGPreconditioner::ApplyInverse(const Epetra_MultiVector& X, Epetra_
 {
   TEUCHOS_FUNC_TIME_MONITOR("AMGPreconditioner::ApplyInverse");
 
-  RCP<Epetra_MultiVector> b = rcp(new Epetra_MultiVector(X));
-  RCP<Epetra_MultiVector> x = rcp(new Epetra_MultiVector(Y));
+  RCP<Epetra_MultiVector> b = Teuchos::rcp(new Epetra_MultiVector(X));
+  RCP<Epetra_MultiVector> x = Teuchos::rcp(new Epetra_MultiVector(Y));
   x->PutScalar(0.0);
   Vcycle(*b,*x,0);
   Y.Update(1.0,*x,0.0);
@@ -282,7 +282,7 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
 
 #ifdef ANALYSIS
 #ifdef DEBUG
-  RCP<Epetra_Vector> resXX = rcp(new Epetra_Vector(sol.Map(),true));
+  RCP<Epetra_Vector> resXX = Teuchos::rcp(new Epetra_Vector(sol.Map(),true));
   A_[level]->Apply(sol,*resXX);
   resXX->Update(1.0,rhs,-1.0);
 
@@ -334,7 +334,7 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
 
   ////////////// on finest level
   // calculate residual
-  RCP<Epetra_MultiVector> res = rcp(new Epetra_MultiVector(rhs.Map(),1,true));
+  RCP<Epetra_MultiVector> res = Teuchos::rcp(new Epetra_MultiVector(rhs.Map(),1,true));
   //if(level == 0)  // don't distinguish between levels! this is the best version...
   {
     A_[level]->Apply(sol,*res);
@@ -392,8 +392,8 @@ void LINALG::AMGPreconditioner::Vcycle(const Epetra_MultiVector& rhs, Epetra_Mul
 #endif
 
   ////////////// define vectors for coarse levels
-  RCP<Epetra_MultiVector> rhs_c = rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,false));
-  RCP<Epetra_MultiVector> sol_c = rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,true));
+  RCP<Epetra_MultiVector> rhs_c = Teuchos::rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,false));
+  RCP<Epetra_MultiVector> sol_c = Teuchos::rcp(new Epetra_MultiVector(T_[level]->OperatorDomainMap(),1,true));
 
   ////////////// zero out coarse solution vector
   sol_c->PutScalar(0.0);

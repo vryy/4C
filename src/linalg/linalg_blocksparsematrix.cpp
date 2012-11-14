@@ -142,7 +142,7 @@ void LINALG::BlockSparseMatrixBase::Complete()
     }
   }
 
-  fullrowmap_ = rcp(new Epetra_Map(*(rangemaps_.FullMap())));
+  fullrowmap_ = Teuchos::rcp(new Epetra_Map(*(rangemaps_.FullMap())));
 
   if (fullcolmap_==Teuchos::null)
   {
@@ -464,7 +464,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(
       for (int j=0; j<C->Cols(); j++)
       {
         // build block C(i,j)
-        RCP<SparseMatrix> Cij = rcp(new LINALG::SparseMatrix(C->RangeMap(i),npr,explicitdirichlet,savegraph));
+        RCP<SparseMatrix> Cij = Teuchos::rcp(new LINALG::SparseMatrix(C->RangeMap(i),npr,explicitdirichlet,savegraph));
 
           for (int l=0; l<C->Cols(); l++)
           {
@@ -485,7 +485,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(
     if(completeoutput)
       C->Complete();
 
-    return rcp_dynamic_cast<BlockSparseMatrixBase>(C);
+    return Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(C);
 
 }
 
@@ -509,23 +509,23 @@ Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > LIN
   std::vector<RCP<const Epetra_Map> > range_maps;
   range_maps.reserve(2);
 
-  range_maps.push_back(rcp(new Epetra_Map(A00.RangeMap())));
-  range_maps.push_back(rcp(new Epetra_Map(A10.RangeMap())));
+  range_maps.push_back(Teuchos::rcp(new Epetra_Map(A00.RangeMap())));
+  range_maps.push_back(Teuchos::rcp(new Epetra_Map(A10.RangeMap())));
   RCP<const Epetra_Map> range_map = MultiMapExtractor::MergeMaps(range_maps);
-  RCP<MultiMapExtractor> rangeMMex = rcp(new MultiMapExtractor(*range_map,range_maps));
+  RCP<MultiMapExtractor> rangeMMex = Teuchos::rcp(new MultiMapExtractor(*range_map,range_maps));
 
   // generate domain map
   std::vector<RCP<const Epetra_Map> > domain_maps;
   domain_maps.reserve(2);
 
-  domain_maps.push_back(rcp(new Epetra_Map(A00.DomainMap())));
-  domain_maps.push_back(rcp(new Epetra_Map(A01.DomainMap())));
+  domain_maps.push_back(Teuchos::rcp(new Epetra_Map(A00.DomainMap())));
+  domain_maps.push_back(Teuchos::rcp(new Epetra_Map(A01.DomainMap())));
   RCP<const Epetra_Map> domain_map = MultiMapExtractor::MergeMaps(domain_maps);
-  RCP<MultiMapExtractor> domainMMex = rcp(new MultiMapExtractor(*domain_map,domain_maps));
+  RCP<MultiMapExtractor> domainMMex = Teuchos::rcp(new MultiMapExtractor(*domain_map,domain_maps));
 
   // generate result matrix
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > C = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainMMex,*rangeMMex));
-  //Teuchos::RCP<LINALG::BlockSparseMatrixBase> Cb = rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(C);
+  //Teuchos::RCP<LINALG::BlockSparseMatrixBase> Cb = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(C);
   // assign matrices
   C->Assign(0,0,View,A00);
   C->Assign(0,1,View,A01);

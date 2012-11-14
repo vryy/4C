@@ -266,7 +266,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
       itrs = 0;
       //step 1
       Wfnp   = 2.0*BCin/Ao - Wb;
-      f      = pow(2.0*dens*Ao/beta,2)
+      f      = std::pow(2.0*dens*Ao/beta,2)
               *pow((Wfnp - Wb)/8.0,4)*(  Wfnp +   Wb)/2.0;
       while(fabs(f)>0.00000001)
       {
@@ -370,7 +370,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
       itrs = 0;
       //step 1
       Wbnp  = 2.0*BCin/Ao - Wf;
-      f     = pow(2.0*dens*Ao/beta,2)
+      f     = std::pow(2.0*dens*Ao/beta,2)
              *pow((Wf - Wbnp)/8.0,4)*(  Wf + Wbnp)/2.0;
       while(fabs(f)>0.000001)
       {
@@ -477,14 +477,14 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     if (returnedBC  == "flow")
     {
       double c = (Wfnp - Wbnp)/8.0;
-      double A = pow(c,4)*4.0*pow(dens*Ao/beta,2);
+      double A = std::pow(c,4)*4.0*pow(dens*Ao/beta,2);
       BC3d     = (Wfnp + Wbnp)/2.0*A;
       cout<<"1D is returning flowrate = "<<BC3d<<endl;
     }
     else if (returnedBC == "pressure")
     {
       double c = (Wfnp - Wbnp)/8.0;
-      double A = pow(c,4)*4.0*pow(dens*Ao/beta,2);
+      double A = std::pow(c,4)*4.0*pow(dens*Ao/beta,2);
       BC3d     = beta*(sqrt(A)-sqrt(Ao))/Ao + pext;
     }
     else
@@ -883,14 +883,14 @@ void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
       F    = R1*Wf*A  - 4.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(pow(A,5)))
                       - Pext - beta/Ao*(sqrt(A)-sqrt(Ao)) + Pc;
       int i = 0;
-      F_A = pow(F*sqrt(Ao)/beta+1.0,2);
+      F_A = std::pow(F*sqrt(Ao)/beta+1.0,2);
       while(fabs(F_A)>0.0000001)
       {
         dFdA = R1*Wf - 5.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(A)) - 0.5*beta/(Ao*sqrt(A));
         A= A - F/dFdA;
         F = R1*Wf*A  - 4.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(pow(A,5))) - Pext - beta/Ao*(sqrt(A)-sqrt(Ao)) + Pc;
         i++;
-        F_A = pow(F*sqrt(Ao)/beta+1.0,2)-1.0;
+        F_A = std::pow(F*sqrt(Ao)/beta+1.0,2)-1.0;
         if(i>40)
         {
           dserror("3 element windkessel Newton Raphson is not converging\n");

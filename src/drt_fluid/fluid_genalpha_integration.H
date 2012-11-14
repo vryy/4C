@@ -739,7 +739,7 @@ public:
     else
     {
       // make an intermediate copy of velnp
-      Teuchos::RCP<Epetra_Vector> convel = rcp(new Epetra_Vector(*(Velnp())));
+      Teuchos::RCP<Epetra_Vector> convel = Teuchos::rcp(new Epetra_Vector(*(Velnp())));
       // now subtract the grid velocity
       convel->Update(-1.0,*(GridVel()),1.0);
 

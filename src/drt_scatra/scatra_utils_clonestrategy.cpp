@@ -28,37 +28,37 @@ std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
 {
   std::map<string,string> conditions_to_copy;
 
-  conditions_to_copy.insert(pair<string,string>("TransportDirichlet","Dirichlet"));
-  conditions_to_copy.insert(pair<string,string>("TransportPointNeumann","PointNeumann"));
-  conditions_to_copy.insert(pair<string,string>("TransportLineNeumann","LineNeumann"));
-  conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
-  conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
-  conditions_to_copy.insert(pair<string,string>("TransportNeumannInflow","TransportNeumannInflow"));
-  conditions_to_copy.insert(pair<string,string>("TaylorGalerkinOutflow","TaylorGalerkinOutflow")); // schott
-  conditions_to_copy.insert(pair<string,string>("TaylorGalerkinNeumannInflow","TaylorGalerkinNeumannInflow")); // schott
-  conditions_to_copy.insert(pair<string,string>("ReinitializationTaylorGalerkin","ReinitializationTaylorGalerkin")); // schott
+  conditions_to_copy.insert(std::pair<string,string>("TransportDirichlet","Dirichlet"));
+  conditions_to_copy.insert(std::pair<string,string>("TransportPointNeumann","PointNeumann"));
+  conditions_to_copy.insert(std::pair<string,string>("TransportLineNeumann","LineNeumann"));
+  conditions_to_copy.insert(std::pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
+  conditions_to_copy.insert(std::pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
+  conditions_to_copy.insert(std::pair<string,string>("TransportNeumannInflow","TransportNeumannInflow"));
+  conditions_to_copy.insert(std::pair<string,string>("TaylorGalerkinOutflow","TaylorGalerkinOutflow")); // schott
+  conditions_to_copy.insert(std::pair<string,string>("TaylorGalerkinNeumannInflow","TaylorGalerkinNeumannInflow")); // schott
+  conditions_to_copy.insert(std::pair<string,string>("ReinitializationTaylorGalerkin","ReinitializationTaylorGalerkin")); // schott
   // when the fluid problem is periodic we also expect the mass transport to be so:
-  conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
-  conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
+  conditions_to_copy.insert(std::pair<string,string>("LinePeriodic","LinePeriodic"));
+  conditions_to_copy.insert(std::pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
   // when the fluid problem has a turbulent inflow section, we also expect this section for scatra:
-  conditions_to_copy.insert(pair<string,string>("TurbulentInflowSection","TurbulentInflowSection"));
+  conditions_to_copy.insert(std::pair<string,string>("TurbulentInflowSection","TurbulentInflowSection"));
 
-  conditions_to_copy.insert(pair<string,string>("LineNeumann","FluidLineNeumann"));
-  conditions_to_copy.insert(pair<string,string>("SurfaceNeumann","FluidSurfaceNeumann"));
-  conditions_to_copy.insert(pair<string,string>("VolumeNeumann","FluidVolumeNeumann"));
-  conditions_to_copy.insert(pair<string,string>("KrylovSpaceProjection","KrylovSpaceProjection"));
-  conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
-  conditions_to_copy.insert(pair<string,string>("ScaTraFluxCalc","ScaTraFluxCalc"));
-  conditions_to_copy.insert(pair<string,string>("Initfield","Initfield"));
+  conditions_to_copy.insert(std::pair<string,string>("LineNeumann","FluidLineNeumann"));
+  conditions_to_copy.insert(std::pair<string,string>("SurfaceNeumann","FluidSurfaceNeumann"));
+  conditions_to_copy.insert(std::pair<string,string>("VolumeNeumann","FluidVolumeNeumann"));
+  conditions_to_copy.insert(std::pair<string,string>("KrylovSpaceProjection","KrylovSpaceProjection"));
+  conditions_to_copy.insert(std::pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
+  conditions_to_copy.insert(std::pair<string,string>("ScaTraFluxCalc","ScaTraFluxCalc"));
+  conditions_to_copy.insert(std::pair<string,string>("Initfield","Initfield"));
 
   // for moving boundary problems
-  conditions_to_copy.insert(pair<string,string>("FSICoupling","FSICoupling"));
+  conditions_to_copy.insert(std::pair<string,string>("FSICoupling","FSICoupling"));
 
   // mortar meshtying
-  conditions_to_copy.insert(pair<string,string>("Mortar","Mortar"));
+  conditions_to_copy.insert(std::pair<string,string>("Mortar","Mortar"));
 
   // for coupled scalar transport fields
-  conditions_to_copy.insert(pair<string,string>("ScaTraCoupling","ScaTraCoupling"));
+  conditions_to_copy.insert(std::pair<string,string>("ScaTraCoupling","ScaTraCoupling"));
 
   return conditions_to_copy;
 }

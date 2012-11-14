@@ -535,16 +535,16 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
           // it is already in the map. This y cannot overwrite
           // something since pairs (x,y) are unique
 
-          (x_and_y->second).insert(pair<double,int>(y[i],i));
+          (x_and_y->second).insert(std::pair<double,int>(y[i],i));
         }
         else
         {
           // it's not in the map yet. construct second map with
           // one initial connection
           map<double,int,doublecomp> y_to_i_map;
-          y_to_i_map.insert(pair<double,int>(y[i],i));
+          y_to_i_map.insert(std::pair<double,int>(y[i],i));
 
-          xtoy.insert(pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
+          xtoy.insert(std::pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
         }
       }
 
@@ -845,16 +845,16 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
         // it is already in the map. This y cannot overwrite
         // something since pairs (x,y) are unique
 
-        (x_and_y->second).insert(pair<double,int>(y[i],i));
+        (x_and_y->second).insert(std::pair<double,int>(y[i],i));
       }
       else
       {
         // it's not in the map yet. construct second map with
         // one initial connection
         map<double,int,doublecomp> y_to_i_map;
-        y_to_i_map.insert(pair<double,int>(y[i],i));
+        y_to_i_map.insert(std::pair<double,int>(y[i],i));
 
-        xtoy.insert(pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
+        xtoy.insert(std::pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
       }
     }
 
@@ -1315,14 +1315,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
   if (curr_avg_ != Teuchos::null)
   {
     old = curr_avg_;
-    curr_avg_ = rcp(new Epetra_Vector(*dofrowmap),true);
+    curr_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap),true);
     LINALG::Export(*old, *curr_avg_);
   }
 
   if (prev_avg_ != Teuchos::null)
   {
     old = prev_avg_;
-    prev_avg_ = rcp(new Epetra_Vector(*dofrowmap),true);
+    prev_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap),true);
     LINALG::Export(*old, *prev_avg_);
   }
 
@@ -1331,14 +1331,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
     if (curr_avg_sca_ != Teuchos::null)
     {
       old = curr_avg_sca_;
-      curr_avg_sca_ = rcp(new Epetra_Vector(*dofrowmap),true);
+      curr_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap),true);
       LINALG::Export(*old, *curr_avg_sca_);
     }
 
     if (prev_avg_sca_ != Teuchos::null)
     {
       old = prev_avg_sca_;
-      prev_avg_sca_ = rcp(new Epetra_Vector(*dofrowmap),true);
+      prev_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap),true);
       LINALG::Export(*old, *prev_avg_sca_);
     }
 
@@ -1349,14 +1349,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
       if (curr_avg_scatra_ != Teuchos::null)
       {
         old = curr_avg_scatra_;
-        curr_avg_scatra_ = rcp(new Epetra_Vector(*scatradofrowmap),true);
+        curr_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap),true);
         LINALG::Export(*old, *curr_avg_scatra_);
       }
 
       if (prev_avg_scatra_ != Teuchos::null)
       {
         old = prev_avg_scatra_;
-        prev_avg_scatra_ = rcp(new Epetra_Vector(*scatradofrowmap),true);
+        prev_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap),true);
         LINALG::Export(*old, *prev_avg_scatra_);
       }
     }

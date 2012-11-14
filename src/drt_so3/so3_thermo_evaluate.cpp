@@ -57,7 +57,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::PreEvaluate(
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double> >robtempnp
-        = rcp(new std::vector<double>(la[1].lm_.size()) );
+        = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
 
       // now set the current temperature vector in the parameter list

@@ -133,15 +133,15 @@ namespace COMBUST
     //! destructor
     virtual ~CauchyStressAnsatz(){};
     //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
-    virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
+    virtual std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
     {
-      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxx,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayy,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmazz,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxy,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmaxz,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Sigmayz,COMBUST::getStressInterpolationType3D(eledistype)));
+      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Sigmaxx,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Sigmayy,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Sigmazz,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Sigmaxy,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Sigmaxz,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Sigmayz,COMBUST::getStressInterpolationType3D(eledistype)));
       return element_ansatz;
     }
   };
@@ -158,16 +158,16 @@ namespace COMBUST
     //! destructor
     virtual ~TauPressureAnsatz(){};
     //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
-    virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
+    virtual std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
     {
-      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauxx   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauyy   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauzz   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauxy   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauxz   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Tauyz   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::DiscPres,COMBUST::getDiscPressureInterpolationType3D(eledistype)));
+      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Tauxx   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Tauyy   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Tauzz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Tauxy   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Tauxz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Tauyz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::DiscPres,COMBUST::getDiscPressureInterpolationType3D(eledistype)));
       return element_ansatz;
     }
   };
@@ -184,16 +184,16 @@ namespace COMBUST
     //! destructor
     virtual ~EpsilonPressureAnsatz(){};
     //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
-    virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
+    virtual std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
     {
-      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonxx   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonyy   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonzz   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonxy   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonxz   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonyz   ,COMBUST::getStressInterpolationType3D(eledistype)));
-      element_ansatz.insert(make_pair(XFEM::PHYSICS::DiscPres,COMBUST::getDiscPressureInterpolationType3D(eledistype)));
+      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Epsilonxx   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Epsilonyy   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Epsilonzz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Epsilonxy   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Epsilonxz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::Epsilonyz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(std::make_pair(XFEM::PHYSICS::DiscPres,COMBUST::getDiscPressureInterpolationType3D(eledistype)));
       return element_ansatz;
     }
   };

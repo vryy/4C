@@ -79,12 +79,12 @@ int DRT::IndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
   // or element.
 
   // numdf for all nodes and elements
-  numdfcolnodes_ = rcp(new Epetra_IntVector(*dis.NodeColMap()));
-  numdfcolelements_ = rcp(new Epetra_IntVector(*dis.ElementColMap()));
+  numdfcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+  numdfcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
 
   // index of first dof for all nodes and elements
-  idxcolnodes_ = rcp(new Epetra_IntVector(*dis.NodeColMap()));
-  idxcolelements_ = rcp(new Epetra_IntVector(*dis.ElementColMap()));
+  idxcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+  idxcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
 
   //////////////////////////////////////////////////////////////////
 
@@ -216,10 +216,10 @@ int DRT::IndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
     std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
   }
 
-  dofrowmap_ = rcp(new Epetra_Map(-1,localrowdofs.size(),&localrowdofs[0],0,dis.Comm()));
+  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,localrowdofs.size(),&localrowdofs[0],0,dis.Comm()));
   if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
 
-  dofcolmap_ = rcp(new Epetra_Map(-1,localcoldofs.size(),&localcoldofs[0],0,dis.Comm()));
+  dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1,localcoldofs.size(),&localcoldofs[0],0,dis.Comm()));
 
   filled_ = true;
 

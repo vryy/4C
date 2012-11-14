@@ -139,7 +139,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
             }
           }
           // create refinement cell from a fluid element -> cell will have same geometry as element!
-          const Teuchos::RCP<COMBUST::RefinementCell> surfcell = rcp(new COMBUST::RefinementCell(parent_, DRT::Element::quad4, xicoord));
+          const Teuchos::RCP<COMBUST::RefinementCell> surfcell = Teuchos::rcp(new COMBUST::RefinementCell(parent_, DRT::Element::quad4, xicoord));
 
           // reset G-function values close to 0 with in tolerance 1.0e-10
           // remark: facilitates handling of special cases
@@ -208,7 +208,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                   }
 
                   // store coordinates of intersection point for each line
-                  intersectionpoints.insert(pair<int, std::vector<double> >( iline, coordinates));
+                  intersectionpoints.insert(std::pair<int, std::vector<double> >( iline, coordinates));
                   //intersectionpoints[iline] = coordinates;
                 }
                 else
@@ -267,7 +267,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
               for (std::multimap<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
               {
                 pointlist.push_back(iter->second);
-                intersectionpointsids.insert(pair<int, int>(iter->first,numofpoints));
+                intersectionpointsids.insert(std::pair<int, int>(iter->first,numofpoints));
                 //intersectionpointsids[iter->first] = numofpoints;
                 numofpoints++;
               }

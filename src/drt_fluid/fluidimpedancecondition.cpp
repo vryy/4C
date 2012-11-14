@@ -81,7 +81,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discre
       // -------------------------------------------------------------------
       // allocate the impedance bc class members for every case
       // -------------------------------------------------------------------
-      RCP<FluidImpedanceBc> impedancebc = rcp(new FluidImpedanceBc(discret_, output_, dta, condid, i) );
+      RCP<FluidImpedanceBc> impedancebc = Teuchos::rcp(new FluidImpedanceBc(discret_, output_, dta, condid, i) );
 
       // -----------------------------------------------------------------
       // sort impedance bc's in map and test, if one condition ID appears
@@ -421,7 +421,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   else
   {
 
-    flowrates_    = rcp(new vector<double>);
+    flowrates_    = Teuchos::rcp(new vector<double>);
     flowrates_->push_back(0.0);
 
     // -------------------------------------------------------------------
@@ -440,7 +440,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   // ---------------------------------------------------------------------
   // initialize the pressures vecotrs
   // ---------------------------------------------------------------------
-  pressures_ = rcp(new  vector<double>);
+  pressures_ = Teuchos::rcp(new  vector<double>);
   pressures_->push_back(0.0);
 
 
@@ -584,7 +584,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
   // evaluate the new pressure vector
   int np_pos = 0;
-  RCP<std::vector<double> > np = rcp(new vector<double>(nPSize,0.0));
+  RCP<std::vector<double> > np = Teuchos::rcp(new vector<double>(nPSize,0.0));
   this->interpolate(pressures_,np,pressurespos_,np_pos,t);
 
   // store new values in class
@@ -656,7 +656,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
     // evaluate the new flow rate vector
     int nfr_pos = 0;
-    RCP<std::vector<double> > nfr = rcp(new vector<double>(nQSize,0.0));
+    RCP<std::vector<double> > nfr = Teuchos::rcp(new vector<double>(nQSize,0.0));
     this->interpolate(flowrates_,nfr,flowratespos_,nfr_pos,t);
     // store new values in class
     flowratespos_ = nfr_pos;
@@ -761,9 +761,9 @@ double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, i
 void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, double viscosity )
 {
   // setup variables
-  vector<complex<double> > frequencydomain;  // impedances in the frequency domain
+  vector<std::complex<double> > frequencydomain;  // impedances in the frequency domain
   frequencydomain.resize(cyclesteps_,0);
-  vector<complex<double> > timedomain;       // impedances in the time domain
+  vector<std::complex<double> > timedomain;       // impedances in the time domain
   timedomain.resize(cyclesteps_,0);
 
   // size: number of generations
@@ -830,11 +830,11 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
   for (int timefrac = 0; timefrac < cyclesteps_; timefrac++)
   {
     for (int k=0; k<cyclesteps_/2; k++)
-      timedomain[timefrac] += pow(eiwt,timefrac*k) * frequencydomain[k];
+      timedomain[timefrac] += std::pow(eiwt,timefrac*k) * frequencydomain[k];
 
     // and now the conjugated ones are added
     for (int k=1; k<cyclesteps_/2; k++)
-      timedomain[timefrac] += pow(eiwt,-timefrac*k) * conj(frequencydomain[k]);
+      timedomain[timefrac] += std::pow(eiwt,-timefrac*k) * conj(frequencydomain[k]);
   }
 
   //Get Real component of TimeDomain, imaginary part should be anyway zero.
@@ -934,7 +934,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
 
 
   // get elemental flowrates ...
-  RCP<Epetra_Vector> myStoredPressures=rcp(new Epetra_Vector(*dofrowmap,100));
+  RCP<Epetra_Vector> myStoredPressures=Teuchos::rcp(new Epetra_Vector(*dofrowmap,100));
 
   discret_->EvaluateCondition(eleparams,myStoredPressures,condstring,condid);
 

@@ -62,9 +62,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 
-using namespace std;
-using namespace Teuchos;
-
 
 namespace DRT {
 namespace UTILS {
@@ -477,7 +474,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       break;
 
     // so we have a new time curve
-    curves_.push_back(rcp(new TimeCurve()));
+    curves_.push_back(Teuchos::rcp(new TimeCurve()));
     TimeCurve& curve = *(curves_.back());
 
     for (unsigned j=0; j<curves.size(); ++j)
@@ -492,7 +489,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         curves[j]->ExtractDoubleVector("Yes",byabstime);
         std::vector<double> factor;
         curves[j]->ExtractDoubleVector("FACTOR",factor);
-        curve.AddSlice(rcp(new PolygonalTimeSlice(byabstime[0],byabstime[1],
+        curve.AddSlice(Teuchos::rcp(new PolygonalTimeSlice(byabstime[0],byabstime[1],
                                                   factor[0],factor[1])));
       }
       else if (curves[j]->HaveNamed("Explicit"))
@@ -533,7 +530,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         curves[j]->ExtractDouble("c1",c1);
         curves[j]->ExtractDouble("c2",c2);
 
-        curve.AddSlice(rcp(new ExplicitTimeSlice(numex,c1,c2)));
+        curve.AddSlice(Teuchos::rcp(new ExplicitTimeSlice(numex,c1,c2)));
       }
       else if (curves[j]->HaveNamed("EXPR"))
       {
@@ -546,7 +543,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         curves[j]->ExtractDouble("t1",begin);
         curves[j]->ExtractDouble("t2",end);
 
-        curve.AddSlice(rcp(new ExprTimeSlice(begin, end, buffer)));
+        curve.AddSlice(Teuchos::rcp(new ExprTimeSlice(begin, end, buffer)));
       }
       else if (curves[j]->HaveNamed("LungSinus"))
       {
@@ -558,7 +555,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         curves[j]->ExtractDouble("pPEEP",ppeep);
         curves[j]->ExtractDouble("Phase",phase);
 
-        curve.AddSlice(rcp(new LungTimeSlice(frequ, ppeep, phase)));
+        curve.AddSlice(Teuchos::rcp(new LungTimeSlice(frequ, ppeep, phase)));
       }
       else if (curves[j]->HaveNamed("PhysiologicalWaveform"))
       {
@@ -574,7 +571,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         curves[j]->ExtractInt("Samplingpoints",points);
         curves[j]->ExtractDoubleVector("Arrayread",Arrayread);
 
-        curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate,type_of_interp, points, Arrayread)));
+        curve.AddSlice(Teuchos::rcp(new BloodTimeSlice(period, flowrate,type_of_interp, points, Arrayread)));
       }
       else if (curves[j]->HaveNamed("PeriodicRepetition"))
       {
@@ -586,7 +583,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         curves[j]->ExtractDouble("t1",begin);
         curves[j]->ExtractDouble("t2",end);
 
-        curve.AddSlice(rcp(new PeriodicTimeSlice(begin,end,period,curve)));
+        curve.AddSlice(Teuchos::rcp(new PeriodicTimeSlice(begin,end,period,curve)));
       }
       else
         dserror("unknown type of time curve in CURVE%d", i);

@@ -62,7 +62,7 @@ comm_(comm),
 filled_(false),
 havedof_(false)
 {
-  dofsets_.push_back(rcp(new DofSet()));
+  dofsets_.push_back(Teuchos::rcp(new DofSet()));
 }
 
 /*----------------------------------------------------------------------*
@@ -72,18 +72,18 @@ DRT::Discretization::Discretization(const DRT::Discretization& old) :
 name_(old.name_),
 state_(old.state_)
 {
-  comm_ = rcp(old.comm_->Clone());
+  comm_ = Teuchos::rcp(old.comm_->Clone());
   Reset();
 
   // deep copy elements
   map<int,RCP<DRT::Element> >::const_iterator ecurr;
   for (ecurr=old.element_.begin(); ecurr!=old.element_.end(); ++ecurr)
-    element_[ecurr->first] = rcp(ecurr->second->Clone());
+    element_[ecurr->first] = Teuchos::rcp(ecurr->second->Clone());
 
   // deep copy nodes
   map<int,RCP<DRT::Node> >::const_iterator ncurr;
   for (ncurr=old.node_.begin(); ncurr!=old.node_.end(); ++ncurr)
-    node_[ncurr->first] = rcp(ncurr->second->Clone());
+    node_[ncurr->first] = Teuchos::rcp(ncurr->second->Clone());
 
   for (unsigned i=0; i<old.dofsets_.size(); ++i)
     dofsets_.push_back(old.dofsets_[i]->Clone());
@@ -441,7 +441,7 @@ void DRT::Discretization::Print(ostream& os) const
           if (dof.size())
           {
             os << " Dofs ";
-            for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+            for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
         os << endl;
@@ -466,7 +466,7 @@ void DRT::Discretization::Print(ostream& os) const
           if (dof.size())
           {
             os << " Dofs ";
-            for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+            for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
         os << endl;
@@ -624,7 +624,7 @@ void DRT::Discretization::SetState(unsigned nds,const string& name,RCP<const Epe
  *----------------------------------------------------------------------*/
 void DRT::Discretization::SetCondition(const string& name,RCP<Condition> cond)
 {
-  condition_.insert(pair<string,RCP<Condition> >(name,cond));
+  condition_.insert(std::pair<string,RCP<Condition> >(name,cond));
   filled_ = false;
   return;
 }
@@ -707,7 +707,7 @@ RCP<vector<char> > DRT::Discretization::PackMyElements() const
     e->Pack(buffer);
   }
 
-  RCP<vector<char> > block = rcp(new vector<char>);
+  RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -741,7 +741,7 @@ RCP<vector<char> > DRT::Discretization::PackMyNodes() const
     n->Pack(buffer);
   }
 
-  RCP<vector<char> > block = rcp(new vector<char>);
+  RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -779,7 +779,7 @@ RCP<vector<char> > DRT::Discretization::PackCondition(const string condname) con
     c->Pack(buffer);
   }
 
-  RCP<vector<char> > block = rcp(new vector<char>);
+  RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -803,7 +803,7 @@ void DRT::Discretization::UnPackMyElements(RCP<vector<char> > e)
       dserror("Failed to build an element from the element data");
     }
     ele->SetOwner(comm_->MyPID());
-    AddElement(rcp(ele));
+    AddElement(Teuchos::rcp(ele));
   }
   // in case AddElement forgets...
   Reset();
@@ -827,7 +827,7 @@ void DRT::Discretization::UnPackMyNodes(RCP<vector<char> > e)
       dserror("Failed to build a node from the node data");
     }
     n->SetOwner(comm_->MyPID());
-    AddNode(rcp(n));
+    AddNode(Teuchos::rcp(n));
   }
   // in case AddNode forgets...
   Reset();
@@ -852,7 +852,7 @@ void DRT::Discretization::UnPackCondition(
     {
       dserror("Failed to build boundary condition from the stored data %s", condname.c_str());
     }
-    SetCondition(condname,rcp(cond));
+    SetCondition(condname,Teuchos::rcp(cond));
   }
   Reset();
 }

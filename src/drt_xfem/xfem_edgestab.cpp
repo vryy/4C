@@ -392,8 +392,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
   if(gmsh_discret_out)
   {
-    ghost_penalty_stab_.insert(pair<int,int>(faceele->Id(),num_ghostpenalty));
-    edge_based_stab_.insert(pair<int,int>(faceele->Id(),num_edgestab));
+    ghost_penalty_stab_.insert(std::pair<int,int>(faceele->Id(),num_ghostpenalty));
+    edge_based_stab_.insert(std::pair<int,int>(faceele->Id(),num_edgestab));
   }
 
   //--------------------------------------------------------------------------------------------

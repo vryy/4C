@@ -436,7 +436,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 
       // build meshtying solver
       solver =
-      rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                              actdis->Comm(),
                              DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -485,7 +485,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 
       // build meshtying solver
       solver =
-      rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                              actdis->Comm(),
                              DRT::Problem::Instance()->ErrorFile()->Handle()));
       actdis->ComputeNullSpaceIfNecessary(solver->Params());

@@ -37,7 +37,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TopOptType::Create( const string elety
 {
   if (eletype=="TOPOPT")
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::TopOpt(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::TopOpt(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -46,7 +46,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TopOptType::Create( const string elety
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TopOptType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::TopOpt(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::TopOpt(id,owner));
   return ele;
 }
 
@@ -302,7 +302,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
   {
     // 1D (we return the element itself)
     vector<RCP<Element> > lines(1);
-    lines[0]= rcp(this, false);
+    lines[0]= Teuchos::rcp(this, false);
     return lines;
   }
 
@@ -327,7 +327,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
   {
     // 2D (we return the element itself)
     vector<RCP<Element> > surfaces(1);
-    surfaces[0]= rcp(this, false);
+    surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
   else
@@ -347,7 +347,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Volumes()
   if (NumVolume() == 1)
   {
     vector<RCP<Element> > volumes(1);
-    volumes[0]= rcp(this, false);
+    volumes[0]= Teuchos::rcp(this, false);
     return volumes;
   }
   else

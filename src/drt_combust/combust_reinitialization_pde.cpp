@@ -26,8 +26,8 @@ COMBUST::ReinitializationPDE::ReinitializationPDE()
 {
   Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
 
-  // make a copy (inside an rcp) containing also all sublists
-  combustdynreinit_ = rcp(new ParameterList(combustdyn));
+  // make a copy (inside an Teuchos::rcp) containing also all sublists
+  combustdynreinit_ = Teuchos::rcp(new ParameterList(combustdyn));
 
   // -------------------------------------------------------------------
   // overrule certain parameters

@@ -857,7 +857,7 @@ dt_(dt)
   if (initialize)
   {
     const int nsd = 3; // dimension
-    timeIntData_ = rcp(new vector<TimeIntData>); // vector containing all data used for computation
+    timeIntData_ = Teuchos::rcp(new vector<TimeIntData>); // vector containing all data used for computation
 
     /*------------------------*
      * Initialization         *
@@ -1450,7 +1450,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
    const std::string filename_startvalues = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_startvalues.str(), step, step_diff, screen_out,myrank);
    if (true) cout << endl;
    std::ofstream gmshfilecontent_startvalues(filename_startvalues.c_str());
-   gmshfilecontent_startvalues.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_startvalues.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_startvalues.precision(16);
 
    gmshfilecontent_startvalues         << "View \"" << "SL " << "node "   << n_new->Id() << "\" {\n";
@@ -2173,11 +2173,11 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
         locallineXiCoords.push_back(xi_line);
 
         // set line id w.r.t side->Id() that contains the projected point
-        proj_nid_line.insert(pair<vector<int>,vector<int> >(line_nids, sideids));
+        proj_nid_line.insert(std::pair<vector<int>,vector<int> >(line_nids, sideids));
         // update local line id w.r.t side
-        proj_lineid.insert(pair<vector<int>,vector<int> >(line_nids,locallineids));
+        proj_lineid.insert(std::pair<vector<int>,vector<int> >(line_nids,locallineids));
         // update local coordinates w.r.t line
-        proj_xi_line.insert(pair<vector<int>,vector<double> >(line_nids,locallineXiCoords));
+        proj_xi_line.insert(std::pair<vector<int>,vector<double> >(line_nids,locallineXiCoords));
       }
 
       //--------------------

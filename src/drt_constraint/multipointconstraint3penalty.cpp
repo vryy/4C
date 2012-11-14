@@ -66,7 +66,7 @@ MPConstraint
     {
       RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, discriter->second);
       actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-      RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentDofSet(actdisc_));
+      RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
       (discriter->second)->ReplaceDofSet(newdofset);
       newdofset=null;
       (discriter->second)->FillComplete();
@@ -79,12 +79,12 @@ MPConstraint
       nummyele=numele;
     }
     // initialize maps and importer
-    errormap_=rcp(new Epetra_Map(numele,nummyele,0,actdisc_->Comm()));
+    errormap_=Teuchos::rcp(new Epetra_Map(numele,nummyele,0,actdisc_->Comm()));
     rederrormap_ = LINALG::AllreduceEMap(*errormap_);
-    errorexport_ = rcp (new Epetra_Export(*rederrormap_,*errormap_));
-    errorimport_ = rcp (new Epetra_Import(*rederrormap_,*errormap_));
-    acterror_=rcp(new Epetra_Vector(*rederrormap_));
-    initerror_=rcp(new Epetra_Vector(*rederrormap_));
+    errorexport_ = Teuchos::rcp(new Epetra_Export(*rederrormap_,*errormap_));
+    errorimport_ = Teuchos::rcp(new Epetra_Import(*rederrormap_,*errormap_));
+    acterror_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
+    initerror_=Teuchos::rcp(new Epetra_Vector(*rederrormap_));
   }
 
 }
@@ -243,8 +243,8 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
     for (conditer=constrcondvec.begin();conditer!=constrcondvec.end();conditer++)
     {
       // initialize a new discretization
-      RCP<Epetra_Comm> com = rcp(actdisc->Comm().Clone());
-      RCP<DRT::Discretization> newdis = rcp(new DRT::Discretization(discret_name,com));
+      RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
+      RCP<DRT::Discretization> newdis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
       const int myrank = newdis->Comm().MyPID();
       set<int> rownodeset;
       set<int> colnodeset;
@@ -305,7 +305,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
           if (rownodeset.find(gid)!=rownodeset.end())
           {
             const DRT::Node* standardnode = actdisc->lRowNode(i);
-            newdis->AddNode(rcp(new DRT::Node(gid, standardnode->X(), myrank)));
+            newdis->AddNode(Teuchos::rcp(new DRT::Node(gid, standardnode->X(), myrank)));
           }
         }
 
@@ -331,7 +331,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       //build unique node row map
       vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
       rownodeset.clear();
-      RCP<Epetra_Map> constraintnoderowmap = rcp(new Epetra_Map(-1,
+      RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
               boundarynoderowvec.size(),
               &boundarynoderowvec[0],
               0,
@@ -341,7 +341,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       //build overlapping node column map
       vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
       colnodeset.clear();
-      RCP<Epetra_Map> constraintnodecolmap = rcp(new Epetra_Map(-1,
+      RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
               constraintnodecolvec.size(),
               &constraintnodecolvec[0],
               0,
@@ -398,7 +398,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
       int eid=actele->Id();
       int condID = eletocondID_.find(eid)->second;
       DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
-      params.set< RCP<DRT::Condition> >("condition", rcp(cond,false));
+      params.set< RCP<DRT::Condition> >("condition", Teuchos::rcp(cond,false));
 
       // computation only if time is larger or equal than initialization time for constraint
       if(inittimes_.find(condID)->second<=time)
@@ -491,7 +491,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError
       int eid=actele->Id();
       int condID = eletocondID_.find(eid)->second;
       DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
-      params.set< RCP<DRT::Condition> >("condition", rcp(cond,false));
+      params.set< RCP<DRT::Condition> >("condition", Teuchos::rcp(cond,false));
 
       // get element location vector, dirichlet flags and ownerships
       vector<int> lm;
@@ -528,7 +528,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError
       }
     }
     
-    RCP<Epetra_Vector> acterrdist = rcp(new Epetra_Vector(*errormap_));
+    RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
     acterrdist->Export(*systemvector,*errorexport_,Add);
     systemvector->Import(*acterrdist,*errorimport_,Insert);
     return;

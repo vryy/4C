@@ -2340,7 +2340,7 @@ void SysmatBoundaryNitscheNormal(
   const double hk_eleDiam = COMBUST::getEleDiameter<DISTYPE>(xyze);
 
   // get maximum of the viscosities of all fluid materials
-  const double dynvisc_max = max(dynvisc_plus,dynvisc_minus);
+  const double dynvisc_max = std::max(dynvisc_plus,dynvisc_minus);
 
   // Nitsche parameter velocity ( alph_u := 1/h_k * mu_max * gamma_u ) see Becker, Hansbo 2009
   const double alphau = 1.0/hk_eleDiam * dynvisc_max * nitschevel;

@@ -35,7 +35,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const string eletyp
 {
   if ( eletype=="BELE3" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -44,7 +44,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const string eletyp
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3(id,owner));
   return ele;
 }
 
@@ -181,7 +181,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Surfaces()
 {
   vector<RCP<DRT::Element> > surfaces(1);
-  surfaces[0]=rcp(this,false);
+  surfaces[0]=Teuchos::rcp(this,false);
   return surfaces;
 }
 

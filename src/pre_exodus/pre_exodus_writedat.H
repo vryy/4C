@@ -20,7 +20,6 @@ Here is everything related with writing a dat-file
 
 #include "pre_exodus_readbc.H"
 
-using namespace std;
 using namespace Teuchos;
 
 /*!
@@ -56,7 +55,7 @@ vector<double> CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& m);
 void WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, ostream& dat);
 
 //! return set of nodes in bc_entity
-const set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
+const std::set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
 
 //! Nodes into datfile
 void WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat);

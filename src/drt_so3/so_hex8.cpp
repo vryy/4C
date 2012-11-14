@@ -64,7 +64,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create( const string elet
 {
   if (eletype == "SOLIDH8")
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(id,owner));
     return ele;
   }
 
@@ -74,7 +74,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create( const string elet
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(id,owner));
   return ele;
 }
 
@@ -137,10 +137,10 @@ time_(0.0)
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
   }
   if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
 
   if (pstype_==INPAR::STR::prestress_id)
-    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8,NUMGPT_SOH8));
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8,NUMGPT_SOH8));
 
   return;
 }
@@ -169,10 +169,10 @@ time_(old.time_)
   }
 
   if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   if (pstype_==INPAR::STR::prestress_id)
-    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
   return;
 }
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
       // see whether I am actually a So_hex8fbar element
       DRT::ELEMENTS::So_hex8fbar* me = dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(this);
       if (me) numgpt += 1; // one more history entry for centroid data in hex8fbar
-      prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,numgpt));
+      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,numgpt));
     }
     prestress_->Unpack(tmpprestress);
   }
@@ -298,7 +298,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
     vector<char> tmpinvdesign(0);
     ExtractfromPack(position,data,tmpinvdesign);
     if (invdesign_ == Teuchos::null)
-      invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8,NUMGPT_SOH8));
+      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8,NUMGPT_SOH8));
     invdesign_->Unpack(tmpinvdesign);
   }
 
@@ -486,7 +486,7 @@ void DRT::ELEMENTS::So_hex8::soh8_expol
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 
@@ -551,7 +551,7 @@ vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::So_hex8::VisNames(std::map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);

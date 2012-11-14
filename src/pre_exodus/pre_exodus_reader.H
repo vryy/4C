@@ -25,7 +25,6 @@ is handed to a c++ object mesh.
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace EXODUS
@@ -134,7 +133,7 @@ public:
   NodeSet SideSetToNodeSet(const SideSet& sideset, const map<int,vector<int> >& sideconn) const;
 
   //! Get Set of Nodes in SideSet
-  set<int> GetSideSetNodes(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const;
+  std::set<int> GetSideSetNodes(const EXODUS::SideSet& sideset, const std::map<int,vector<int> >& sideconn) const;
 
   //! Get Node map
   RCP<map<int,vector<double> > > GetNodes() const {return nodes_;}
@@ -270,11 +269,11 @@ private:
 class NodeSet
 {
 public:
-  NodeSet(const set<int>& nodeids, const string& name, const string& propname);
+  NodeSet(const std::set<int>& nodeids, const string& name, const string& propname);
 
   virtual ~NodeSet();
 
-  set<int> GetNodeSet() const {return nodeids_;};
+  std::set<int> GetNodeSet() const {return nodeids_;};
 
   string GetName() const {return name_;};
 
@@ -287,7 +286,7 @@ public:
   void Print(ostream& os, bool verbose=false) const;
 
 private:
-  set<int> nodeids_;  // nodids in NodeSet
+  std::set<int> nodeids_;  // nodids in NodeSet
   string name_;       // NodeSet name
   string propname_;   // Icem assignes part names as property names
 };
@@ -411,7 +410,7 @@ inline DRT::Element::DiscretizationType PreShapeToDrt(const ElementBlock::Shape 
 
 void PrintMap(ostream& os,const map<int,vector<int> > mymap);
 void PrintMap(ostream& os, const map<int,vector<double> >mymap);
-void PrintMap(ostream& os,const map<int,set<int> > mymap);
+void PrintMap(ostream& os,const map<int,std::set<int> > mymap);
 void PrintMap(ostream& os,const map<int,map<int,int> > mymap);
 void PrintMap(ostream& os,const map<int,pair<int,int> > mymap);
 void PrintMap(ostream& os,const map<int,int> mymap);
@@ -419,7 +418,7 @@ void PrintMap(ostream& os,const map<int,double> mymap);
 void PrintMap(ostream& os,const map<double,int> mymap);
 void PrintVec(ostream& os, const vector<int> actvec);
 void PrintVec(ostream& os, const vector<double> actvec);
-void PrintSet(ostream& os, const set<int> actset);
+void PrintSet(ostream& os, const std::set<int> actset);
 
 
 int HexSideNumberExoToBaci(const int exoface);

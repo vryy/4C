@@ -72,9 +72,9 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   //----------------------------------------------------------------------
   // create sets of coordinates for centerlines in x1-, x2- and x3-direction
   //----------------------------------------------------------------------
-  x1coordinates_ = rcp(new vector<double> );
-  x2coordinates_ = rcp(new vector<double> );
-  x3coordinates_ = rcp(new vector<double> );
+  x1coordinates_ = Teuchos::rcp(new vector<double> );
+  x2coordinates_ = Teuchos::rcp(new vector<double> );
+  x3coordinates_ = Teuchos::rcp(new vector<double> );
 
   // the criterion allows differences in coordinates by 1e-9
   set<double,LineSortCriterion> x1avcoords;
@@ -384,9 +384,9 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   // push coordinates in x1-, x2- and x3-direction in a vector
   //----------------------------------------------------------------------
   {
-    x1coordinates_ = rcp(new vector<double> );
-    x2coordinates_ = rcp(new vector<double> );
-    x3coordinates_ = rcp(new vector<double> );
+    x1coordinates_ = Teuchos::rcp(new vector<double> );
+    x2coordinates_ = Teuchos::rcp(new vector<double> );
+    x3coordinates_ = Teuchos::rcp(new vector<double> );
 
     for(set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
         coord1!=x1avcoords.end();
@@ -418,134 +418,134 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   int size3 = x3coordinates_->size();
 
   // first-order moments
-  x1sumu_ =  rcp(new vector<double> );
+  x1sumu_ =  Teuchos::rcp(new vector<double> );
   x1sumu_->resize(size1,0.0);
-  x2sumu_ =  rcp(new vector<double> );
+  x2sumu_ =  Teuchos::rcp(new vector<double> );
   x2sumu_->resize(size2,0.0);
-  x3sumu_ =  rcp(new vector<double> );
+  x3sumu_ =  Teuchos::rcp(new vector<double> );
   x3sumu_->resize(size3,0.0);
 
-  x1sumv_ =  rcp(new vector<double> );
+  x1sumv_ =  Teuchos::rcp(new vector<double> );
   x1sumv_->resize(size1,0.0);
-  x2sumv_ =  rcp(new vector<double> );
+  x2sumv_ =  Teuchos::rcp(new vector<double> );
   x2sumv_->resize(size2,0.0);
-  x3sumv_ =  rcp(new vector<double> );
+  x3sumv_ =  Teuchos::rcp(new vector<double> );
   x3sumv_->resize(size3,0.0);
 
-  x1sumw_ =  rcp(new vector<double> );
+  x1sumw_ =  Teuchos::rcp(new vector<double> );
   x1sumw_->resize(size1,0.0);
-  x2sumw_ =  rcp(new vector<double> );
+  x2sumw_ =  Teuchos::rcp(new vector<double> );
   x2sumw_->resize(size2,0.0);
-  x3sumw_ =  rcp(new vector<double> );
+  x3sumw_ =  Teuchos::rcp(new vector<double> );
   x3sumw_->resize(size3,0.0);
 
-  x1sump_ =  rcp(new vector<double> );
+  x1sump_ =  Teuchos::rcp(new vector<double> );
   x1sump_->resize(size1,0.0);
-  x2sump_ =  rcp(new vector<double> );
+  x2sump_ =  Teuchos::rcp(new vector<double> );
   x2sump_->resize(size2,0.0);
-  x3sump_ =  rcp(new vector<double> );
+  x3sump_ =  Teuchos::rcp(new vector<double> );
   x3sump_->resize(size3,0.0);
 
   // second-order moments
-  x1sumsqu_ =  rcp(new vector<double> );
+  x1sumsqu_ =  Teuchos::rcp(new vector<double> );
   x1sumsqu_->resize(size1,0.0);
-  x2sumsqu_ =  rcp(new vector<double> );
+  x2sumsqu_ =  Teuchos::rcp(new vector<double> );
   x2sumsqu_->resize(size2,0.0);
-  x3sumsqu_ =  rcp(new vector<double> );
+  x3sumsqu_ =  Teuchos::rcp(new vector<double> );
   x3sumsqu_->resize(size3,0.0);
 
-  x1sumsqv_ =  rcp(new vector<double> );
+  x1sumsqv_ =  Teuchos::rcp(new vector<double> );
   x1sumsqv_->resize(size1,0.0);
-  x2sumsqv_ =  rcp(new vector<double> );
+  x2sumsqv_ =  Teuchos::rcp(new vector<double> );
   x2sumsqv_->resize(size2,0.0);
-  x3sumsqv_ =  rcp(new vector<double> );
+  x3sumsqv_ =  Teuchos::rcp(new vector<double> );
   x3sumsqv_->resize(size3,0.0);
 
-  x1sumsqw_ =  rcp(new vector<double> );
+  x1sumsqw_ =  Teuchos::rcp(new vector<double> );
   x1sumsqw_->resize(size1,0.0);
-  x2sumsqw_ =  rcp(new vector<double> );
+  x2sumsqw_ =  Teuchos::rcp(new vector<double> );
   x2sumsqw_->resize(size2,0.0);
-  x3sumsqw_ =  rcp(new vector<double> );
+  x3sumsqw_ =  Teuchos::rcp(new vector<double> );
   x3sumsqw_->resize(size3,0.0);
 
-  x1sumsqp_ =  rcp(new vector<double> );
+  x1sumsqp_ =  Teuchos::rcp(new vector<double> );
   x1sumsqp_->resize(size1,0.0);
-  x2sumsqp_ =  rcp(new vector<double> );
+  x2sumsqp_ =  Teuchos::rcp(new vector<double> );
   x2sumsqp_->resize(size2,0.0);
-  x3sumsqp_ =  rcp(new vector<double> );
+  x3sumsqp_ =  Teuchos::rcp(new vector<double> );
   x3sumsqp_->resize(size3,0.0);
 
-  x1sumuv_ =  rcp(new vector<double> );
+  x1sumuv_ =  Teuchos::rcp(new vector<double> );
   x1sumuv_->resize(size1,0.0);
-  x2sumuv_ =  rcp(new vector<double> );
+  x2sumuv_ =  Teuchos::rcp(new vector<double> );
   x2sumuv_->resize(size2,0.0);
-  x3sumuv_ =  rcp(new vector<double> );
+  x3sumuv_ =  Teuchos::rcp(new vector<double> );
   x3sumuv_->resize(size3,0.0);
 
-  x1sumuw_ =  rcp(new vector<double> );
+  x1sumuw_ =  Teuchos::rcp(new vector<double> );
   x1sumuw_->resize(size1,0.0);
-  x2sumuw_ =  rcp(new vector<double> );
+  x2sumuw_ =  Teuchos::rcp(new vector<double> );
   x2sumuw_->resize(size2,0.0);
-  x3sumuw_ =  rcp(new vector<double> );
+  x3sumuw_ =  Teuchos::rcp(new vector<double> );
   x3sumuw_->resize(size3,0.0);
 
-  x1sumvw_ =  rcp(new vector<double> );
+  x1sumvw_ =  Teuchos::rcp(new vector<double> );
   x1sumvw_->resize(size1,0.0);
-  x2sumvw_ =  rcp(new vector<double> );
+  x2sumvw_ =  Teuchos::rcp(new vector<double> );
   x2sumvw_->resize(size2,0.0);
-  x3sumvw_ =  rcp(new vector<double> );
+  x3sumvw_ =  Teuchos::rcp(new vector<double> );
   x3sumvw_->resize(size3,0.0);
 
   // the following vectors are only necessary for low-Mach-number flow
   // first-order moments
-  x1sumrho_ =  rcp(new vector<double> );
+  x1sumrho_ =  Teuchos::rcp(new vector<double> );
   x1sumrho_->resize(size1,0.0);
-  x2sumrho_ =  rcp(new vector<double> );
+  x2sumrho_ =  Teuchos::rcp(new vector<double> );
   x2sumrho_->resize(size2,0.0);
-  x3sumrho_ =  rcp(new vector<double> );
+  x3sumrho_ =  Teuchos::rcp(new vector<double> );
   x3sumrho_->resize(size3,0.0);
 
-  x1sumT_ =  rcp(new vector<double> );
+  x1sumT_ =  Teuchos::rcp(new vector<double> );
   x1sumT_->resize(size1,0.0);
-  x2sumT_ =  rcp(new vector<double> );
+  x2sumT_ =  Teuchos::rcp(new vector<double> );
   x2sumT_->resize(size2,0.0);
-  x3sumT_ =  rcp(new vector<double> );
+  x3sumT_ =  Teuchos::rcp(new vector<double> );
   x3sumT_->resize(size3,0.0);
 
   // second-order moments
-  x1sumsqrho_ =  rcp(new vector<double> );
+  x1sumsqrho_ =  Teuchos::rcp(new vector<double> );
   x1sumsqrho_->resize(size1,0.0);
-  x2sumsqrho_ =  rcp(new vector<double> );
+  x2sumsqrho_ =  Teuchos::rcp(new vector<double> );
   x2sumsqrho_->resize(size2,0.0);
-  x3sumsqrho_ =  rcp(new vector<double> );
+  x3sumsqrho_ =  Teuchos::rcp(new vector<double> );
   x3sumsqrho_->resize(size3,0.0);
 
-  x1sumsqT_ =  rcp(new vector<double> );
+  x1sumsqT_ =  Teuchos::rcp(new vector<double> );
   x1sumsqT_->resize(size1,0.0);
-  x2sumsqT_ =  rcp(new vector<double> );
+  x2sumsqT_ =  Teuchos::rcp(new vector<double> );
   x2sumsqT_->resize(size2,0.0);
-  x3sumsqT_ =  rcp(new vector<double> );
+  x3sumsqT_ =  Teuchos::rcp(new vector<double> );
   x3sumsqT_->resize(size3,0.0);
 
-  x1sumuT_ =  rcp(new vector<double> );
+  x1sumuT_ =  Teuchos::rcp(new vector<double> );
   x1sumuT_->resize(size1,0.0);
-  x2sumuT_ =  rcp(new vector<double> );
+  x2sumuT_ =  Teuchos::rcp(new vector<double> );
   x2sumuT_->resize(size2,0.0);
-  x3sumuT_ =  rcp(new vector<double> );
+  x3sumuT_ =  Teuchos::rcp(new vector<double> );
   x3sumuT_->resize(size3,0.0);
 
-  x1sumvT_ =  rcp(new vector<double> );
+  x1sumvT_ =  Teuchos::rcp(new vector<double> );
   x1sumvT_->resize(size1,0.0);
-  x2sumvT_ =  rcp(new vector<double> );
+  x2sumvT_ =  Teuchos::rcp(new vector<double> );
   x2sumvT_->resize(size2,0.0);
-  x3sumvT_ =  rcp(new vector<double> );
+  x3sumvT_ =  Teuchos::rcp(new vector<double> );
   x3sumvT_->resize(size3,0.0);
 
-  x1sumwT_ =  rcp(new vector<double> );
+  x1sumwT_ =  Teuchos::rcp(new vector<double> );
   x1sumwT_->resize(size1,0.0);
-  x2sumwT_ =  rcp(new vector<double> );
+  x2sumwT_ =  Teuchos::rcp(new vector<double> );
   x2sumwT_->resize(size2,0.0);
-  x3sumwT_ =  rcp(new vector<double> );
+  x3sumwT_ =  Teuchos::rcp(new vector<double> );
   x3sumwT_->resize(size3,0.0);
 
   //----------------------------------------------------------------------
@@ -561,14 +561,14 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
     {
       s.append(".loma_statistics");
 
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
       (*log) << "# Statistics for turbulent variable-density flow in a lid-driven cavity at low Mach number (first- and second-order moments)\n\n";
     }
     else
     {
       s.append(".flow_statistics");
 
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
       (*log) << "# Statistics for turbulent incompressible flow in a lid-driven cavity (first- and second-order moments)\n\n";
     }
 
@@ -1216,7 +1216,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
     (*log) << "# Statistics for turbulent incompressible flow in a lid-driven cavity (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
@@ -1227,7 +1227,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
     (*log) << "         urms          vrms          wrms";
     (*log) << "          u'v'          u'w'          v'w'          prms\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<x1coordinates_->size(); ++i)
     {
       double x1u    = (*x1sumu_)[i]/numsamp_;
@@ -1244,18 +1244,18 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x1uw   = (*x1sumuw_)[i]/numsamp_-x1u*x1w;
       double x1vw   = (*x1sumvw_)[i]/numsamp_-x1v*x1w;
 
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << x1u;
-      (*log) << "   " << setw(11) << setprecision(4) << x1v;
-      (*log) << "   " << setw(11) << setprecision(4) << x1w;
-      (*log) << "   " << setw(11) << setprecision(4) << x1p;
-      (*log) << "   " << setw(11) << setprecision(4) << x1urms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1uv;
-      (*log) << "   " << setw(11) << setprecision(4) << x1uw;
-      (*log) << "   " << setw(11) << setprecision(4) << x1vw;
-      (*log) << "   " << setw(11) << setprecision(4) << x1prms;
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1coordinates_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1u;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1v;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1w;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1p;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1urms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1vrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1wrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1uv;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1uw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1vw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1prms;
       (*log) << "\n";
     }
 
@@ -1265,7 +1265,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
     (*log) << "         urms          vrms          wrms";
     (*log) << "          u'v'          u'w'          v'w'          prms\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<x2coordinates_->size(); ++i)
     {
       double x2u    = (*x2sumu_)[i]/numsamp_;
@@ -1282,18 +1282,18 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x2uw   = (*x2sumuw_)[i]/numsamp_-x2u*x2w;
       double x2vw   = (*x2sumvw_)[i]/numsamp_-x2v*x2w;
 
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*x2coordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << x2u;
-      (*log) << "   " << setw(11) << setprecision(4) << x2v;
-      (*log) << "   " << setw(11) << setprecision(4) << x2w;
-      (*log) << "   " << setw(11) << setprecision(4) << x2p;
-      (*log) << "   " << setw(11) << setprecision(4) << x2urms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2uv;
-      (*log) << "   " << setw(11) << setprecision(4) << x2uw;
-      (*log) << "   " << setw(11) << setprecision(4) << x2vw;
-      (*log) << "   " << setw(11) << setprecision(4) << x2prms;
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x2coordinates_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2u;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2v;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2w;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2p;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2urms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2vrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2wrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2uv;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2uw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2vw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2prms;
       (*log) << "\n";
     }
 
@@ -1303,7 +1303,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
     (*log) << "         urms          vrms          wrms";
     (*log) << "          u'v'          u'w'          v'w'          prms\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<x3coordinates_->size(); ++i)
     {
       double x3u    = (*x3sumu_)[i]/numsamp_;
@@ -1320,18 +1320,18 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x3uw   = (*x3sumuw_)[i]/numsamp_-x3u*x3w;
       double x3vw   = (*x3sumvw_)[i]/numsamp_-x3v*x3w;
 
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*x3coordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << x3u;
-      (*log) << "   " << setw(11) << setprecision(4) << x3v;
-      (*log) << "   " << setw(11) << setprecision(4) << x3w;
-      (*log) << "   " << setw(11) << setprecision(4) << x3p;
-      (*log) << "   " << setw(11) << setprecision(4) << x3urms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3uv;
-      (*log) << "   " << setw(11) << setprecision(4) << x3uw;
-      (*log) << "   " << setw(11) << setprecision(4) << x3vw;
-      (*log) << "   " << setw(11) << setprecision(4) << x3prms;
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x3coordinates_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3u;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3v;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3w;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3p;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3urms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3vrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3wrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3uv;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3uw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3vw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3prms;
       (*log) << "\n";
     }
     log->flush();
@@ -1355,7 +1355,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".loma_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
     (*log) << "# Statistics for turbulent variable-density flow in a lid-driven cavity at low Mach number (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
@@ -1366,7 +1366,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
     (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
     (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<x1coordinates_->size(); ++i)
     {
       double x1u    = (*x1sumu_)[i]/numsamp_;
@@ -1390,25 +1390,25 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x1vT   = (*x1sumvT_)[i]/numsamp_-x1v*x1T;
       double x1wT   = (*x1sumwT_)[i]/numsamp_-x1w*x1T;
 
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << x1u;
-      (*log) << "   " << setw(11) << setprecision(4) << x1v;
-      (*log) << "   " << setw(11) << setprecision(4) << x1w;
-      (*log) << "   " << setw(11) << setprecision(4) << x1p;
-      (*log) << "   " << setw(11) << setprecision(4) << x1rho;
-      (*log) << "   " << setw(11) << setprecision(4) << x1T;
-      (*log) << "   " << setw(11) << setprecision(4) << x1urms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1prms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1rhorms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1Trms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1uv;
-      (*log) << "   " << setw(11) << setprecision(4) << x1uw;
-      (*log) << "   " << setw(11) << setprecision(4) << x1vw;
-      (*log) << "   " << setw(11) << setprecision(4) << x1uT;
-      (*log) << "   " << setw(11) << setprecision(4) << x1vT;
-      (*log) << "   " << setw(11) << setprecision(4) << x1wT;
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1coordinates_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1u;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1v;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1w;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1p;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1rho;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1T;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1urms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1vrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1wrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1prms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1rhorms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1Trms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1uv;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1uw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1vw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1uT;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1vT;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x1wT;
       (*log) << "\n";
     }
 
@@ -1417,7 +1417,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
     (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
     (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<x2coordinates_->size(); ++i)
     {
       double x2u    = (*x2sumu_)[i]/numsamp_;
@@ -1441,25 +1441,25 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x2vT   = (*x2sumvT_)[i]/numsamp_-x2v*x2T;
       double x2wT   = (*x2sumwT_)[i]/numsamp_-x2w*x2T;
 
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*x2coordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << x2u;
-      (*log) << "   " << setw(11) << setprecision(4) << x2v;
-      (*log) << "   " << setw(11) << setprecision(4) << x2w;
-      (*log) << "   " << setw(11) << setprecision(4) << x2p;
-      (*log) << "   " << setw(11) << setprecision(4) << x2rho;
-      (*log) << "   " << setw(11) << setprecision(4) << x2T;
-      (*log) << "   " << setw(11) << setprecision(4) << x2urms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2prms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2rhorms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2Trms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2uv;
-      (*log) << "   " << setw(11) << setprecision(4) << x2uw;
-      (*log) << "   " << setw(11) << setprecision(4) << x2vw;
-      (*log) << "   " << setw(11) << setprecision(4) << x2uT;
-      (*log) << "   " << setw(11) << setprecision(4) << x2vT;
-      (*log) << "   " << setw(11) << setprecision(4) << x2wT;
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x2coordinates_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2u;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2v;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2w;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2p;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2rho;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2T;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2urms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2vrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2wrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2prms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2rhorms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2Trms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2uv;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2uw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2vw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2uT;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2vT;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x2wT;
       (*log) << "\n";
     }
 
@@ -1468,7 +1468,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
     (*log) << "         urms          vrms          wrms          prms        rhorms          Trms";
     (*log) << "          u'v'          u'w'          v'w'          u'T'          v'T'          w'T'\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<x3coordinates_->size(); ++i)
     {
       double x3u    = (*x3sumu_)[i]/numsamp_;
@@ -1492,25 +1492,25 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x3vT   = (*x3sumvT_)[i]/numsamp_-x3v*x3T;
       double x3wT   = (*x3sumwT_)[i]/numsamp_-x3w*x3T;
 
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*x3coordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << x3u;
-      (*log) << "   " << setw(11) << setprecision(4) << x3v;
-      (*log) << "   " << setw(11) << setprecision(4) << x3w;
-      (*log) << "   " << setw(11) << setprecision(4) << x3p;
-      (*log) << "   " << setw(11) << setprecision(4) << x3rho;
-      (*log) << "   " << setw(11) << setprecision(4) << x3T;
-      (*log) << "   " << setw(11) << setprecision(4) << x3urms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3prms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3rhorms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3Trms;
-      (*log) << "   " << setw(11) << setprecision(4) << x3uv;
-      (*log) << "   " << setw(11) << setprecision(4) << x3uw;
-      (*log) << "   " << setw(11) << setprecision(4) << x3vw;
-      (*log) << "   " << setw(11) << setprecision(4) << x3uT;
-      (*log) << "   " << setw(11) << setprecision(4) << x3vT;
-      (*log) << "   " << setw(11) << setprecision(4) << x3wT;
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x3coordinates_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3u;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3v;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3w;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3p;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3rho;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3T;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3urms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3vrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3wrms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3prms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3rhorms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3Trms;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3uv;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3uw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3vw;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3uT;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3vT;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << x3wT;
       (*log) << "\n";
     }
     log->flush();

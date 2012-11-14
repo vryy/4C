@@ -347,7 +347,7 @@ void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers()
 
 
 
-  dofSetData_ = rcp (new std::vector<MeshIntersection::DofSetData>);
+  dofSetData_ = Teuchos::rcp(new std::vector<MeshIntersection::DofSetData>);
 
   // check if there are missing dofset for volumecells on this proc
   meshintersection_.FillParallelDofSetData(dofSetData_, discret_);

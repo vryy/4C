@@ -36,7 +36,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroType::Create( const string 
 {
   if ( eletype=="SOLIDH8PORO" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>
                                                                     (id,owner));
     return ele;
   }
@@ -45,7 +45,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroType::Create( const string 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>
                                                                         (id,owner));
   return ele;
 }
@@ -106,7 +106,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroType::Create( const string 
 {
   if ( eletype=="SOLIDT4PORO" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>
                                                                     (id,owner));
     return ele;
   }
@@ -115,7 +115,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroType::Create( const string 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>
                                                                    (id,owner));
   return ele;
 }
@@ -175,7 +175,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create( const string
 {
   if ( eletype=="SOLIDH27PORO" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>
                                                                     (id,owner));
     return ele;
   }
@@ -184,7 +184,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create( const string
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>
                                                                    (id,owner));
   return ele;
 }

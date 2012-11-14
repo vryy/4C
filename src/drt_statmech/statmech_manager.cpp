@@ -439,7 +439,7 @@ void STATMECH::StatMechManager::Update(const int& istep,
     double standarddev = sqrt(statmechparams_.get<double> ("KT", 0.0) / (2*M_PI * statmechparams_.get<double> ("ETA", 0.0) * statmechparams_.get<double> ("R_LINK", 0.0)) * dt);
     CrosslinkerDiffusion(disrow, 0.0, standarddev, dt);
 
-    /*the following tow rcp pointers are auxiliary variables which are needed in order provide in the very end of the
+    /*the following tow Teuchos::rcp pointers are auxiliary variables which are needed in order provide in the very end of the
      * crosslinker administration a node row and column map; these maps have to be taken here before the first modification
      * by deleting and adding elements have been carried out with the discretization since after such modifications the maps
      * cannot be called from the discretization before calling FillComplete() again which should be done only in the very end

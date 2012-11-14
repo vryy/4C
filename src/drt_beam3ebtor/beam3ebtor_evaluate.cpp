@@ -1168,7 +1168,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(vector<double>& disp,
 
     for (int i=0; i<3;  i++)
     {
-      r_x_abs += pow(r_x(i,0),2);
+      r_x_abs += std::pow(r_x(i,0),2);
     }
     r_x_abs=pow(r_x_abs,0.5);
 
@@ -1540,7 +1540,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(ParameterList& params,
 
     for (int i=0; i<3;  i++)
      {
-      abs_tangent += pow(tangent(i,0),2);
+      abs_tangent += std::pow(tangent(i,0),2);
      }
     abs_tangent=pow(abs_tangent,0.5);
 

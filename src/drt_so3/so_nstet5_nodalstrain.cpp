@@ -140,11 +140,11 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
   {
     rmap = &(systemmatrix1->OperatorRangeMap());
     dmap = rmap;
-    systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
+    systemmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
     if (systemmatrix != null && systemmatrix->Filled())
-      stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
+      stifftmp = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
     else
-      stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
+      stifftmp = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
   }
 
   //-----------------------------------------------------------------

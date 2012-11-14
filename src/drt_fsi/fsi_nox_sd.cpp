@@ -65,7 +65,7 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
                        .innerProduct(dir);
 
   step = - numerator / denominator;
-  utils_->out() << "          RELAX = " << setw(5) << step << "\n";
+  utils_->out() << "          RELAX = " << std::setw(5) << step << "\n";
 
   newgrp.computeX(oldgrp, dir, step);
   newgrp.computeF();
@@ -73,7 +73,7 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
   double checkOrthogonality = fabs( newgrp.getF().innerProduct(dir) );
 
   if (utils_->isPrintType(NOX::Utils::InnerIteration)) {
-    utils_->out() << setw(3) << "1" << ":";
+    utils_->out() << std::setw(3) << "1" << ":";
     utils_->out() << " step = " << utils_->sciformat(step);
     utils_->out() << " orth = " << utils_->sciformat(checkOrthogonality);
     utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << endl;

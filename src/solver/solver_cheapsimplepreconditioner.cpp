@@ -86,7 +86,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   //-------------------------------------------------------------------------
   // either do manual split or use provided BlockSparseMatrixBase
   //-------------------------------------------------------------------------
-  A_ = rcp_dynamic_cast<BlockSparseMatrixBase>(A);
+  A_ = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(A);
   if (A_!=null)
   {
     // Make a shallow copy of the block matrix as the preconditioners on the
@@ -115,7 +115,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
     Epetra_Vector diag(*mmex_.Map(0),false);
     RCP<Epetra_CrsMatrix> A00 = (*A_)(0,0).EpetraMatrix();
     A00->InvRowSums(diag);
-    diagAinv_ = rcp(new SparseMatrix(diag));
+    diagAinv_ = Teuchos::rcp(new SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
   }
 #else
@@ -127,7 +127,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
     (*A_)(0,0).ExtractDiagonalCopy(diag);
     int err = diag.Reciprocal(diag);
     if (err) dserror("Epetra_MultiVector::Reciprocal returned %d",err);
-    diagAinv_ = rcp(new SparseMatrix(diag));
+    diagAinv_ = Teuchos::rcp(new SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
   }
 #endif
@@ -174,7 +174,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   // Allocate preconditioner for pressure and velocity
   //-------------------------------------------------------------------------
     if (visml)
-      Ppredict_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*A00,predictSolver_list_.sublist("ML Parameters"),true));
+      Ppredict_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*A00,predictSolver_list_.sublist("ML Parameters"),true));
     else
     {
       string type = predictSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
@@ -183,14 +183,14 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
       prec->SetParameters(predictSolver_list_.sublist("IFPACK Parameters"));
       prec->Initialize();
       prec->Compute();
-      Ppredict_ = rcp(prec);
+      Ppredict_ = Teuchos::rcp(prec);
     }
     if (!myrank && SIMPLER_TIMING) printf("--- Time to do P(v)         %10.3E\n",time.ElapsedTime());
     time.ResetStartTime();
 
     if (pisml)
     {
-      Pschur_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*A11,schurSolver_list_.sublist("ML Parameters"),true));
+      Pschur_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*A11,schurSolver_list_.sublist("ML Parameters"),true));
     }
     else
     {
@@ -200,7 +200,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
       prec->SetParameters(schurSolver_list_.sublist("IFPACK Parameters"));
       prec->Initialize();
       prec->Compute();
-      Pschur_ = rcp(prec);
+      Pschur_ = Teuchos::rcp(prec);
     }
     if (!myrank && SIMPLER_TIMING) printf("--- Time to do P(p)         %10.3E\n",time.ElapsedTime());
     time.ResetStartTime();
@@ -210,28 +210,28 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   // Allocate solver for pressure and velocity
   //-------------------------------------------------------------------------
   {
-    RCP<ParameterList> vrcplist = rcp(&predictSolver_list_,false);
-    vsolver_ = rcp(new LINALG::Solver(vrcplist,A_->Comm(),outfile_));
-    RCP<ParameterList> prcplist = rcp(&schurSolver_list_,false);
-    psolver_ = rcp(new LINALG::Solver(prcplist,A_->Comm(),outfile_));
+    RCP<ParameterList> vrcplist = Teuchos::rcp(&predictSolver_list_,false);
+    vsolver_ = Teuchos::rcp(new LINALG::Solver(vrcplist,A_->Comm(),outfile_));
+    RCP<ParameterList> prcplist = Teuchos::rcp(&schurSolver_list_,false);
+    psolver_ = Teuchos::rcp(new LINALG::Solver(prcplist,A_->Comm(),outfile_));
   }
 #endif
 
   //-------------------------------------------------------------------------
   // Allocate velocity and pressure solution and rhs vectors
   //-------------------------------------------------------------------------
-  vx_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
-  vb_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
-  px_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
-  pb_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
+  vx_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  vb_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  px_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
+  pb_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
 
   //-------------------------------------------------------------------------
   // Allocate working vectors for velocity and pressure
   //-------------------------------------------------------------------------
-  vwork1_  = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
-  vwork2_  = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
-  pwork1_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
-  pwork2_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
+  vwork1_  = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  vwork2_  = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  pwork1_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
+  pwork2_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
 
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do allocate mem %10.3E\n",time.ElapsedTime());
   if (!myrank && SIMPLER_TIMING) printf("=== Total simpler setup === %10.3E\n",totaltime.ElapsedTime());

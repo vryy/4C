@@ -47,10 +47,10 @@ POTENTIAL::PotentialManager::PotentialManager(
       volume_ = true;
 
   if(surface_)
-    surfacePotential_ = rcp(new POTENTIAL::SurfacePotential(discretRCP,discret,treetype_));
+    surfacePotential_ = Teuchos::rcp(new POTENTIAL::SurfacePotential(discretRCP,discret,treetype_));
 
   if(volume_)
-    volumePotential_ = rcp(new POTENTIAL::VolumePotential(discretRCP,discret,treetype_));
+    volumePotential_ = Teuchos::rcp(new POTENTIAL::VolumePotential(discretRCP,discret,treetype_));
 
   cout << "Potential manager constructed" << endl;
   return;

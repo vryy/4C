@@ -1476,7 +1476,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
                                              nurbsdis->Comm()));
 
   // allocate the coordinates of the vizualisation points
-  nodecoords = rcp(new Epetra_MultiVector(*vispointmap_,3));
+  nodecoords = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_,3));
 
   // loop over the nodes on this proc and store the coordinate information
   for (int inode=0; inode<(int)local_vis_point_x.size(); inode++)
@@ -1493,7 +1493,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map,*vispointmap_);
-  RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
+  RefCountPtr<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
   int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -2159,7 +2159,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_,*vispointmap_);
-  RefCountPtr<Epetra_MultiVector> allsols = rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  RefCountPtr<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
   int err = allsols->Import(*idata,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -3680,7 +3680,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_,*vispointmap_);
-  RefCountPtr<Epetra_MultiVector> allsols = rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  RefCountPtr<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
   int err = allsols->Import(*idata,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 

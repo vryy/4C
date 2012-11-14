@@ -222,7 +222,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   // generate new aggregegate ids if necessary (independent on each processor)
 
   // Build aggregates using the lagrange multiplier node map
-  RCP<Aggregates> aggregates = rcp(new Aggregates(lagr_NodeMap));
+  RCP<Aggregates> aggregates = Teuchos::rcp(new Aggregates(lagr_NodeMap));
   aggregates->setObjectLabel("UC (slave)");
   //aggregates->SetNumAggregates(Teuchos::as<LocalOrdinal>(dispAggId2lagAggId.size())); // dont forget to set number of new aggregates
 
@@ -408,7 +408,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 6" << std::endl;
 
   // Build aggregates using the lagrange multiplier node map
-  RCP<Aggregates> aggregates = rcp(new Aggregates(lagr_NodeMap));
+  RCP<Aggregates> aggregates = Teuchos::rcp(new Aggregates(lagr_NodeMap));
   aggregates->setObjectLabel("UC (slave)");
   aggregates->SetNumAggregates(Teuchos::as<LocalOrdinal>(dispAggId2lagAggId.size())); // dont forget to set number of new aggregates
 

@@ -28,8 +28,8 @@
 POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
                                           const Teuchos::ParameterList& timeparams) :
       PoroBase(comm, timeparams),
-      fluidincnp_(rcp(new Epetra_Vector(*(FluidField().Velnp())))),
-      structincnp_(rcp(new Epetra_Vector(*(StructureField()->Dispnp())))),
+      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField().Velnp())))),
+      structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp())))),
       del_(Teuchos::null),
       delhist_(Teuchos::null),
       omegan_(0.0),

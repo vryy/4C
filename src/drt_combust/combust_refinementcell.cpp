@@ -634,7 +634,7 @@ void COMBUST::RefinementCell::RefineCell() // input: a refinement cell; output: 
     }
 
     // create new refinement cell
-    children_.push_back(rcp(new RefinementCell(this, refinecellvertexcoord)));
+    children_.push_back(Teuchos::rcp(new RefinementCell(this, refinecellvertexcoord)));
 //    std::cout << "Cell  build" << std::endl;
   }
 

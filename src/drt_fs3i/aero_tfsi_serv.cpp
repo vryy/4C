@@ -76,14 +76,14 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   }
 
   // initialize new discretizations
-  RCP<Epetra_Comm> com = rcp(structdis->Comm().Clone());
+  RCP<Epetra_Comm> com = Teuchos::rcp(structdis->Comm().Clone());
   // structure
   const string discret_name1 = "istructdis";
-  RCP<DRT::Discretization> istructnewdis = rcp(new DRT::Discretization(discret_name1,com));
+  RCP<DRT::Discretization> istructnewdis = Teuchos::rcp(new DRT::Discretization(discret_name1,com));
   const int myrank = istructnewdis->Comm().MyPID();
   // thermo
   const string discret_name2 = "ithermodis";
-  RCP<DRT::Discretization> ithermonewdis = rcp(new DRT::Discretization(discret_name2,com));
+  RCP<DRT::Discretization> ithermonewdis = Teuchos::rcp(new DRT::Discretization(discret_name2,com));
 
   
   map<int, map<int, DRT::Node*> >::iterator mnit;
@@ -100,17 +100,17 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
         nodeids.push_back( (*nit).second->Id() );
 
       //discretizations are feeded
-      istructnewdis->AddNode(rcp(new DRT::Node((*nit).second->Id(), (*nit).second->X(), (*nit).second->Owner())));
-      ithermonewdis->AddNode(rcp(new DRT::Node((*nit).second->Id(), (*nit).second->X(), (*nit).second->Owner())));
+      istructnewdis->AddNode(Teuchos::rcp(new DRT::Node((*nit).second->Id(), (*nit).second->X(), (*nit).second->Owner())));
+      ithermonewdis->AddNode(Teuchos::rcp(new DRT::Node((*nit).second->Id(), (*nit).second->X(), (*nit).second->Owner())));
     }
   }
   //row node map of struct interface
-  RCP<Epetra_Map> istructnoderowmap = rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,istructnewdis->Comm()));
+  RCP<Epetra_Map> istructnoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,istructnewdis->Comm()));
   //fully overlapping node map
   RCP<Epetra_Map> istructrednodecolmap =  LINALG::AllreduceEMap(*istructnoderowmap);
 
   //row node map of thermo interface
-  RCP<Epetra_Map> ithermonoderowmap = rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,istructnewdis->Comm()));
+  RCP<Epetra_Map> ithermonoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,istructnewdis->Comm()));
   //fully overlapping node map
   RCP<Epetra_Map> ithermorednodecolmap =  LINALG::AllreduceEMap(*ithermonoderowmap);
 
@@ -138,7 +138,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
 #ifdef D_THERMO
         RCP<DRT::Element> ithermoele = DRT::UTILS::Factory("THERMO","Polynomial", (*eit).second->Id(), (*eit).second->Owner());
         ithermoele->SetNodeIds( ((*eit).second->NumNode()), ((*eit).second->NodeIds()) );
-        rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(ithermoele,true)->SetDisType( istructele->Shape() );
+        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(ithermoele,true)->SetDisType( istructele->Shape() );
         ithermonewdis->AddElement( ithermoele );
 #else
         dserror("D_THERMO flag is switched off! You need thermo for Aero_TFSI.");
@@ -148,12 +148,12 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   }
 
   //row ele map of structural interface
-  RCP<Epetra_Map> istructelerowmap = rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,istructnewdis->Comm()));
+  RCP<Epetra_Map> istructelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,istructnewdis->Comm()));
   //fully overlapping ele map
   RCP<Epetra_Map> istructredelecolmap =  LINALG::AllreduceEMap(*istructelerowmap);
 
   //row ele map of thermo interface
-  RCP<Epetra_Map> ithermoelerowmap = rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,istructnewdis->Comm()));
+  RCP<Epetra_Map> ithermoelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,istructnewdis->Comm()));
   //fully overlapping ele map
   RCP<Epetra_Map> ithermoredelecolmap =  LINALG::AllreduceEMap(*ithermoelerowmap);
 
@@ -171,7 +171,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
     parallel = true;
 
   //dofs of the original discretizations are used to set same dofs for the new interface discretization
-  RCP<DRT::DofSet> newdofset1=rcp(new DRT::TransparentDofSet(structdis,parallel));
+  RCP<DRT::DofSet> newdofset1=Teuchos::rcp(new DRT::TransparentDofSet(structdis,parallel));
   istructnewdis->ReplaceDofSet(newdofset1);
   newdofset1=null;
 
@@ -180,7 +180,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
 
 
   //dofs of the original discretizations are used to set same dofs for the new interface discretization
-  RCP<DRT::DofSet> newdofset2=rcp(new DRT::TransparentDofSet(thermodis,parallel));
+  RCP<DRT::DofSet> newdofset2=Teuchos::rcp(new DRT::TransparentDofSet(thermodis,parallel));
   ithermonewdis->ReplaceDofSet(newdofset2);
   newdofset2=null;
 
@@ -200,7 +200,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   for(int interf=0; interf<(maxid_+1); interf++)
   {
     //row ele map of each single structural interface
-    singleinterfstructelerowmap[interf] = rcp(new Epetra_Map(-1,interfaceeleids[interf].size(),
+    singleinterfstructelerowmap[interf] = Teuchos::rcp(new Epetra_Map(-1,interfaceeleids[interf].size(),
                           &interfaceeleids[interf][0],0,istructnewdis->Comm()));
     //fully overlapping ele map of each single structural interface
     singleinterfstructredelecolmap[interf] =  LINALG::AllreduceEMap(*(singleinterfstructelerowmap[interf]));
@@ -211,7 +211,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
       // first, find elegid in map of each single interface, then find lid in istructdis_
       int elegid = singleinterfstructredelecolmap[interf]->GID(it);
       int elelid = istructredelecolmap->LID(elegid);
-      structreduelements_[interf][it] = rcp(istructdis_->lColElement(elelid), false);
+      structreduelements_[interf][it] = Teuchos::rcp(istructdis_->lColElement(elelid), false);
     }
   }
 
@@ -239,7 +239,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   }
   
   // map extractor for the communication between the full thermo field and the newly created thermo surf discret
-  thermorowmapext_ = rcp(new LINALG::MapExtractor(*(thermodis->DofRowMap()),rcp(ithermodis_->DofRowMap(), false)));
+  thermorowmapext_ = Teuchos::rcp(new LINALG::MapExtractor(*(thermodis->DofRowMap()),Teuchos::rcp(ithermodis_->DofRowMap(), false)));
 
   // set-up FSI interface
   interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
@@ -309,7 +309,7 @@ void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
 )
 {
   // Redistribute displacement of structural nodes on the interface to all processors --> redundant disp needed
-  Teuchos::RCP<Epetra_Import> interimpo = rcp (new Epetra_Import(*istructdofredumap_,*(istructdis_->DofRowMap())));
+  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*istructdofredumap_,*(istructdis_->DofRowMap())));
   Teuchos::RCP<Epetra_Vector> redudisp = LINALG::CreateVector(*istructdofredumap_,true);
   redudisp -> Import(*idispn,*interimpo,Add);
 
@@ -323,7 +323,7 @@ void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
     for(forcesiter = aerocoords[interf].begin(); forcesiter != aerocoords[interf].end(); ++forcesiter)
     {
       //init of 3D search tree
-      Teuchos::RCP<GEO::SearchTree> searchTree = rcp(new GEO::SearchTree(0));
+      Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(0));
       const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofEles(structreduelements_[interf], currentpositions);
       searchTree->initializeTreeSlideALE(rootBox, structreduelements_[interf], GEO::TreeType(GEO::OCTTREE));
 
@@ -446,12 +446,12 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
 {
   // make all interface data full redundant
   // idispn
-  Teuchos::RCP<Epetra_Import> interimpo = rcp (new Epetra_Import(*istructdofredumap_,*(istructdis_->DofRowMap())));
+  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*istructdofredumap_,*(istructdis_->DofRowMap())));
   Teuchos::RCP<Epetra_Vector> redudisp = LINALG::CreateVector(*istructdofredumap_,true);
   redudisp -> Import(*idispnp,*interimpo,Add);
 
   // itemp
-  Teuchos::RCP<Epetra_Import> interimpothermo = rcp (new Epetra_Import(*ithermodofredumap_,*(ithermodis_->DofRowMap())));
+  Teuchos::RCP<Epetra_Import> interimpothermo = Teuchos::rcp(new Epetra_Import(*ithermodofredumap_,*(ithermodis_->DofRowMap())));
   Teuchos::RCP<Epetra_Vector> redutemp = LINALG::CreateVector(*ithermodofredumap_,true);
   redutemp -> Import(*itempnp,*interimpothermo,Add);
 

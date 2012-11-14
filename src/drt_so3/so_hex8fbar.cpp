@@ -36,7 +36,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarType::Create( const string 
 {
   if ( eletype=="SOLIDH8FBAR" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8fbar(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8fbar(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -45,7 +45,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarType::Create( const string 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8fbar(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8fbar(id,owner));
   return ele;
 }
 
@@ -89,7 +89,7 @@ DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) :
 DRT::ELEMENTS::So_hex8(id,owner)
 {
   if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8+1));
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8+1));
   return;
 }
 

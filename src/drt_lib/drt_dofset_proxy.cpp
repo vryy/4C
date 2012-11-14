@@ -92,7 +92,7 @@ void DRT::DofSetProxy::NotifyAssigned()
 {
   if (dofset_!=NULL)
   {
-    // Just copy those rcps.
+    // Just copy those Teuchos::rcps.
     dofrowmap_        = dofset_->dofrowmap_;
     dofcolmap_        = dofset_->dofcolmap_;
     numdfcolnodes_    = dofset_->numdfcolnodes_;
@@ -107,7 +107,7 @@ void DRT::DofSetProxy::NotifyAssigned()
  *----------------------------------------------------------------------*/
 void DRT::DofSetProxy::NotifyReset()
 {
-  // clear my rcps.
+  // clear my Teuchos::rcps.
   Reset();
 }
 
@@ -121,7 +121,7 @@ void DRT::DofSetProxy::Disconnect(DofSet* dofset)
   else
     dserror("cannot disconnect from non-connected DofSet");
 
-  // clear my rcps.
+  // clear my Teuchos::rcps.
   Reset();
 }
 

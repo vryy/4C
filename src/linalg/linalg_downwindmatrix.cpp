@@ -65,7 +65,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
       i += (bsize-1);
     }
     if (count != numnoderows) dserror("# nodes wrong: %d != %d",count,numnoderows);
-    onoderowmap = rcp(new Epetra_Map(-1,numnoderows,&gnodeids[0],0,A.Comm()));
+    onoderowmap = Teuchos::rcp(new Epetra_Map(-1,numnoderows,&gnodeids[0],0,A.Comm()));
   }
 
 
@@ -73,7 +73,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   RCP<Epetra_CrsMatrix> onodegraph;
   {
     const int maxnumentries = A.MaxNumEntries();
-    RCP<SparseMatrix> tmp = rcp(new SparseMatrix(*onoderowmap,maxnumentries));
+    RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(*onoderowmap,maxnumentries));
     vector<int> indices(maxnumentries);
     vector<double> values(maxnumentries);
     for (int i=0; i<numdofrows; ++i)
@@ -153,7 +153,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     // create a transposed of the full graph
     RCP<Epetra_CrsMatrix> onodegrapht = LINALG::Transpose(onodegraph);
     // create a new graph that will store the directed graph
-    RCP<SparseMatrix> tmp = rcp(new SparseMatrix(*onoderowmap,(int)(onodegraph->MaxNumEntries())));
+    RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(*onoderowmap,(int)(onodegraph->MaxNumEntries())));
     const Epetra_Map& rowmap = onodegraph->RowMap();
     const Epetra_Map& colmap = onodegraph->ColMap();
     const Epetra_Map& colmapt = onodegrapht->ColMap();
@@ -198,7 +198,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   // coarsen directed graph
   {
     // create a new graph that will store the directed graph
-    RCP<SparseMatrix> tmp = rcp(new SparseMatrix(nnodegraph->RowMap(),(int)(nnodegraph->MaxNumEntries())));
+    RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(nnodegraph->RowMap(),(int)(nnodegraph->MaxNumEntries())));
     const Epetra_Map& rowmap = nnodegraph->RowMap();
     const Epetra_Map& colmap = onodegraph->ColMap();
     for (int i=0; i<rowmap.NumMyElements(); ++i)
@@ -240,7 +240,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
       if (gid<0) dserror("nnodegraph->RowMap().GID(index[i]) failed");
       gindices[i] = gid;
     }
-    nnoderowmap = rcp(new Epetra_Map(-1,length,gindices.Values(),0,A.Comm()));
+    nnoderowmap = Teuchos::rcp(new Epetra_Map(-1,length,gindices.Values(),0,A.Comm()));
   }
 
   // create a new dof row map which is the final result
@@ -251,15 +251,15 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     for (int i=0; i<mynodelength; ++i)
       for (int j=0; j<bs_; ++j)
         gindices[i*bs_+j] = nnoderowmap->GID(i)*bs_+j;
-    ndofrowmap_ = rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,A.Comm()));
+    ndofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,A.Comm()));
     ML_az_sort(&gindices[0],mynodelength*bs_,NULL,NULL);
-    sndofrowmap_ = rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,A.Comm()));
+    sndofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,A.Comm()));
   }
 
 
   // Allocate an exporter from ndofrowmap_ to sndofrowmap_ and back
-  sexporter_ = rcp(new Epetra_Export(*ndofrowmap_,*sndofrowmap_));
-  rexporter_ = rcp(new Epetra_Export(*sndofrowmap_,*ndofrowmap_));
+  sexporter_ = Teuchos::rcp(new Epetra_Export(*ndofrowmap_,*sndofrowmap_));
+  rexporter_ = Teuchos::rcp(new Epetra_Export(*sndofrowmap_,*ndofrowmap_));
 
 
   if (!A.Comm().MyPID() && outlevel_)

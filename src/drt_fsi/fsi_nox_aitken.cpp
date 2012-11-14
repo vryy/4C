@@ -88,7 +88,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   nu_ = nu_ + (nu_ - 1.)*top/den;
   step = 1. - nu_;
 
-  utils_->out() << "          RELAX = " << setw(5) << step << "\n";
+  utils_->out() << "          RELAX = " << std::setw(5) << step << "\n";
 
   grp.computeX(oldGrp, dir, step);
 
@@ -102,7 +102,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 
   if (utils_->isPrintType(Utils::InnerIteration))
   {
-    utils_->out() << setw(3) << "1" << ":";
+    utils_->out() << std::setw(3) << "1" << ":";
     utils_->out() << " step = " << utils_->sciformat(step);
     utils_->out() << " orth = " << utils_->sciformat(checkOrthogonality);
     utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << endl;

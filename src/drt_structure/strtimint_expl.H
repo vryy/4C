@@ -257,7 +257,7 @@ namespace STR
       return false;
     };
 
-    //! Return rcp to ConstraintManager conman_
+    //! Return Teuchos::rcp to ConstraintManager conman_
     virtual const RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
       dserror("GetConstraintManager() has not been tested for explicit time integrators");

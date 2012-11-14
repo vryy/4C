@@ -222,7 +222,7 @@ void LARGEROTATIONS::triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Mat
       if(R(i,i) >= R(j,j) && R(i,i) >= R(k,k))
       {
         //equation (16.78a)
-        q(i) = pow(0.5*R(i,i) + 0.25*(1 - trace) , 0.5);
+        q(i) = std::pow(0.5*R(i,i) + 0.25*(1 - trace) , 0.5);
 
         //equation (16.78b)
         q(3) = 0.25*(R(k,j) - R(j,k)) / q(i);
@@ -244,7 +244,7 @@ void LARGEROTATIONS::triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Mat
 LINALG::Matrix<3,3> LARGEROTATIONS::Tmatrix(LINALG::Matrix<3,1> theta)
 {
   LINALG::Matrix<3,3> result;
-  double theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
+  double theta_abs = std::pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
 
   //in case of theta_abs == 0 the following computation has problems with singularities
   if(theta_abs > 0)
@@ -280,7 +280,7 @@ LINALG::Matrix<3,3> LARGEROTATIONS::Tinvmatrix(LINALG::Matrix<3,1> theta)
 {
 
   LINALG::Matrix<3,3> result;
-  double theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
+  double theta_abs = std::pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
 
   //in case of theta_abs == 0 the following computation has problems with singularities
   if(theta_abs > 0)

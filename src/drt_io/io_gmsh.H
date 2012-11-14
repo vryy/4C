@@ -86,7 +86,7 @@ namespace IO
         std::ostream&                          s
     )
     {
-      s.setf(ios::scientific,ios::floatfield);
+      s.setf(std::ios::scientific,std::ios::floatfield);
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
@@ -115,7 +115,7 @@ namespace IO
         std::ostream&                          s
     )
     {
-      s.setf(ios::scientific,ios::floatfield);
+      s.setf(std::ios::scientific,std::ios::floatfield);
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
@@ -166,7 +166,7 @@ namespace IO
         std::ostream&                          s
     )
     {
-      s.setf(ios::scientific,ios::floatfield);
+      s.setf(std::ios::scientific,std::ios::floatfield);
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
@@ -191,7 +191,7 @@ namespace IO
         std::ostream&                          s
     )
     {
-      s.setf(ios::scientific,ios::floatfield);
+      s.setf(std::ios::scientific,std::ios::floatfield);
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
@@ -203,7 +203,7 @@ namespace IO
       {
         for (int isd = 0; isd < nsd; ++isd)
         {
-          s << scientific << vectorfield(isd, inode);
+          s << std::scientific << vectorfield(isd, inode);
           if (isd < nsd-1)
             s << ",";
         }
@@ -223,7 +223,7 @@ namespace IO
         std::ostream&                          s
     )
     {
-      s.setf(ios::scientific,ios::floatfield);
+      s.setf(std::ios::scientific,std::ios::floatfield);
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
@@ -233,8 +233,8 @@ namespace IO
       for (int inode = 0; inode<numnode; ++inode)
       {
         // 2D
-        s << scientific << vectorfield(0, inode) << ",";
-        s << scientific << vectorfield(1, inode) << ",";
+        s << std::scientific << vectorfield(0, inode) << ",";
+        s << std::scientific << vectorfield(1, inode) << ",";
         s << "0.000000000000e+00";
         if (inode < numnode-1)
         {
@@ -251,7 +251,7 @@ namespace IO
         std::ostream&                          s
     )
     {
-      s.setf(ios::scientific,ios::floatfield);
+      s.setf(std::ios::scientific,std::ios::floatfield);
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
@@ -263,7 +263,7 @@ namespace IO
       {
         for (int ientry = 0; ientry < numTensorEntries; ++ientry)
         {
-          s << scientific << tensorfield(ientry, inode);
+          s << std::scientific << tensorfield(ientry, inode);
           if (ientry < numTensorEntries-1)
             s << ",";
         }

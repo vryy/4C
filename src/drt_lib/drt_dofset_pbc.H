@@ -30,7 +30,6 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_lib/drt_dofset.H"
 
-using namespace std;
 
 
 // forward declarations
@@ -67,7 +66,7 @@ public:
   \return void
 
   */
-  PBCDofSet(RefCountPtr<map<int,vector<int> > >  couplednodes);
+  PBCDofSet(RefCountPtr<std::map<int,vector<int> > >  couplednodes);
 
   /*!
   \brief Destructor
@@ -88,7 +87,7 @@ public:
   virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
 
   /// Update the coupled nodes map of dofset
-  virtual void SetCoupledNodes(RefCountPtr<map<int,vector<int> > >  couplednodes);
+  virtual void SetCoupledNodes(RefCountPtr<std::map<int,vector<int> > >  couplednodes);
 
 protected:
 
@@ -103,7 +102,7 @@ protected:
   }
 
   //!\brief master and slave node connectivity for periodic boundary conditions
-  RefCountPtr<map<int,vector<int> > >           perbndcouples_;
+  RefCountPtr<std::map<int,vector<int> > >           perbndcouples_;
 
   //!\brief the largest original GID, to stop the dofset from 'shrinking'
   int myMaxGID_;

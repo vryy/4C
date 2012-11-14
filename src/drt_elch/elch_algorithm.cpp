@@ -36,8 +36,8 @@ ELCH::Algorithm::Algorithm(
    natconv_(DRT::INPUT::IntegralValue<int>(prbdyn,"NATURAL_CONVECTION")),
    itmax_ (prbdyn.get<int>("ITEMAX")),
    ittol_ (prbdyn.get<double>("CONVTOL")),
-   velincnp_ (rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
-   conpotincnp_ (rcp(new Epetra_Vector(*(ScaTraField().Phinp())))),
+   velincnp_ (Teuchos::rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
+   conpotincnp_ (Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phinp())))),
    samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
    samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
@@ -439,9 +439,9 @@ void ELCH::Algorithm::OuterIterationConvection()
   string outname = temp.str();
   string probtype = DRT::Problem::Instance()->ProblemName();
 
-  RCP<IO::OutputControl> myoutputcontrol = rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
+  RCP<IO::OutputControl> myoutputcontrol = Teuchos::rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
   // create discretization writer with my own control settings
-  RCP<IO::DiscretizationWriter> myoutput = rcp(new IO::DiscretizationWriter(ScaTraField().Discretization(),myoutputcontrol));
+  RCP<IO::DiscretizationWriter> myoutput = Teuchos::rcp(new IO::DiscretizationWriter(ScaTraField().Discretization(),myoutputcontrol));
   // write mesh at step 0
   myoutput->WriteMesh(0,0.0);
 #endif

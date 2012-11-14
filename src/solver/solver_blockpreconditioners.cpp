@@ -51,7 +51,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
     if (mt || co || cstr)
     {
       // adapt ML null space for contact/meshtying/constraint problems
-      RCP<BlockSparseMatrixBase> A = rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==null) dserror("matrix is not a BlockSparseMatrix");
 
       // fix null space for "Inverse1"
@@ -69,7 +69,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         inv2.sublist("ML Parameters").set("PDE equations",1);
         inv2.sublist("ML Parameters").set("null space: dimension",1);
         const int plength = (*A)(1,1).RowMap().NumMyElements();
-        RCP<vector<double> > pnewns = rcp(new vector<double>(plength,1.0));
+        RCP<vector<double> > pnewns = Teuchos::rcp(new vector<double>(plength,1.0));
         //TODO: vector<double> has zero length for particular cases (e.g. no Lagrange multiplier on this processor)
         //      -> RCP for the null space is set to NULL in Fedora 12 -> dserror
         //      -> RCP points to a random memory field in Fedora 8 -> RCP for null space is not NULL
@@ -96,7 +96,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
       const Epetra_Map& fullmap = matrix->OperatorRangeMap();
       const int length = fullmap.NumMyElements();
 
-      RCP<BlockSparseMatrixBase> A = rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==null) dserror("matrix is not a BlockSparseMatrix");
 
       // this is a fix for the old SIMPLER sublist

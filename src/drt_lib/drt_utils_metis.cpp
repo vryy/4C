@@ -70,7 +70,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
 
   if (numproc==1)
   {
-    Teuchos::RCP<Epetra_CrsGraph> outgraph = rcp(new Epetra_CrsGraph(graph));
+    Teuchos::RCP<Epetra_CrsGraph> outgraph = Teuchos::rcp(new Epetra_CrsGraph(graph));
     return outgraph;
   }
 
@@ -266,7 +266,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
 
   // create the output graph and export to it
   Teuchos::RCP<Epetra_CrsGraph> outgraph =
-                           rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
+                           Teuchos::rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
   Epetra_Export exporter2(graph.RowMap(),newmap);
   err = outgraph->Export(graph,exporter2,Add);
   if (err<0) dserror("Graph export returned err=%d",err);
@@ -313,7 +313,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
 #ifdef WE_DO_NOT_HAVE_MUCH_MEMORY_BUT_A_LOT_OF_TIME
 
     // construct graph
-    Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
+    Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
     if (myrank==0)
     {
       for (list<vector<int> >::iterator i=elementnodes.begin();
@@ -368,10 +368,10 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
     transform(localgraph.begin(),
               localgraph.end(),
               back_inserter(entriesperrow),
-              mem_fun_ref(&set<int>::size));
+              std::mem_fun_ref(&set<int>::size));
 
     // construct graph
-    Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,&entriesperrow[0],false));
+    Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*rownodes,&entriesperrow[0],false));
 
     entriesperrow.clear();
 
@@ -406,12 +406,12 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
     // do stupid conversion from Epetra_BlockMap to Epetra_Map
     const Epetra_BlockMap& brow = graph->RowMap();
     const Epetra_BlockMap& bcol = graph->ColMap();
-    rownodes = rcp(new Epetra_Map(brow.NumGlobalElements(),
+    rownodes = Teuchos::rcp(new Epetra_Map(brow.NumGlobalElements(),
                                    brow.NumMyElements(),
                                    brow.MyGlobalElements(),
                                    0,
                                    *comm));
-    colnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),
+    colnodes = Teuchos::rcp(new Epetra_Map(bcol.NumGlobalElements(),
                                    bcol.NumMyElements(),
                                    bcol.MyGlobalElements(),
                                    0,

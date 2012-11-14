@@ -371,7 +371,7 @@ public:
   \brief Calculate the Flowrate on a boundary
   */
   void   DFT(RCP<vector<double> >   f,
-             RCP<vector<complex<double> > > & F,
+             RCP<vector<std::complex<double> > > & F,
              int starting_pos);
 
 

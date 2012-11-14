@@ -66,7 +66,7 @@ id_(id),
 buildgeometry_(buildgeometry),
 type_(type),
 gtype_(gtype),
-comm_(null)
+comm_(Teuchos::null)
 {
   return;
 }
@@ -80,7 +80,7 @@ id_(-1),
 buildgeometry_(false),
 type_(none),
 gtype_(NoGeom),
-comm_(null)
+comm_(Teuchos::null)
 {
   return;
 }
@@ -217,7 +217,7 @@ void DRT::Condition::Print(ostream& os) const
   {
     os << endl;
     os << "Elements of this condition:\n";
-    map<int,RefCountPtr<DRT::Element> >::const_iterator curr;
+    std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator curr;
     for (curr=geometry_.begin(); curr!=geometry_.end(); ++curr)
       os << "      " << *(curr->second) << endl;
   }
@@ -289,8 +289,8 @@ void DRT::Condition::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void DRT::Condition::AdjustId(const int shift)
 {
-  map<int,RefCountPtr<DRT::Element> > geometry;
-  map<int,RefCountPtr<DRT::Element> >::iterator iter;
+  std::map<int,RefCountPtr<DRT::Element> > geometry;
+  std::map<int,RefCountPtr<DRT::Element> >::iterator iter;
 
   for (iter=geometry_.begin();iter!=geometry_.end();++iter)
   {

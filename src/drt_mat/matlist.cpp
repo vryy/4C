@@ -77,7 +77,7 @@ MAT::MatList::MatList(MAT::PAR::MatList* params)
   {
     SetupMatMap();
   }
-  // else: material rcps live inside MAT::PAR::MatList
+  // else: material Teuchos::rcps live inside MAT::PAR::MatList
 }
 
 

@@ -160,14 +160,14 @@ void MAT::HumphreyCardio::Unpack(const vector<char>& data)
     return;
   }
   // unpack fiber internal variables
-  a1_ = rcp(new vector<vector<double> >(numgp));
-  a2_ = rcp(new vector<vector<double> >(numgp));
-  a3_ = rcp(new vector<vector<double> >(numgp));
-  a4_ = rcp(new vector<vector<double> >(numgp));
-  ca1_ = rcp(new vector<vector<double> >(numgp));
-  ca2_ = rcp(new vector<vector<double> >(numgp));
-  ca3_ = rcp(new vector<vector<double> >(numgp));
-  ca4_ = rcp(new vector<vector<double> >(numgp));
+  a1_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  a2_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  a3_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  a4_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  ca1_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  ca2_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  ca3_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  ca4_ = Teuchos::rcp(new vector<vector<double> >(numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
@@ -205,14 +205,14 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
     Fibers are related to a local element cosy which has to be
     specified in the element line */
 
-  a1_ = rcp(new vector<vector<double> > (numgp));
-  a2_ = rcp(new vector<vector<double> > (numgp));
-  a3_ = rcp(new vector<vector<double> > (numgp));
-  a4_ = rcp(new vector<vector<double> > (numgp));
-  ca1_ = rcp(new vector<vector<double> > (numgp));
-  ca2_ = rcp(new vector<vector<double> > (numgp));
-  ca3_ = rcp(new vector<vector<double> > (numgp));
-  ca4_ = rcp(new vector<vector<double> > (numgp));
+  a1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  a2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  a3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  a4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  ca1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  ca2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  ca3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  ca4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
 
   for (int gp = 0; gp < numgp; gp++) {
     a1_->at(gp).resize(3);
@@ -366,7 +366,7 @@ void MAT::HumphreyCardio::Evaluate
         - 0.25 * C(2)*C(3)*C(3)
         - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
   const double J = sqrt(I3);     // determinant of F
-  const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
+  const double incJ = std::pow(I3,-1.0/3.0);  // J^{-2/3}
 
   //--------------------------------------------------------------------------------------
   // invert C

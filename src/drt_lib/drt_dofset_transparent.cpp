@@ -88,7 +88,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
       dofrowvec.push_back(*idof);
     }
 
-    dofrowmap_ = rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
+    dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
 
     //build dofcolvec
     set<int> dofcolset;
@@ -127,7 +127,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
       dofcolvec.push_back(*idof);
     }
 
-    dofcolmap_ = rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
+    dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
@@ -164,7 +164,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     const DRT::Node* newnode = newdis.lColNode(inode);
     int gid=newnode->Id();
     vector<int> emptyvec;
-    gid_to_dofs.insert(pair<int, vector<int> >(gid,emptyvec));
+    gid_to_dofs.insert(std::pair<int, vector<int> >(gid,emptyvec));
   }
 
   {
@@ -303,7 +303,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     dofrowvec.push_back(*idof);
   }
 
-  dofrowmap_ = rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
+  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
 
   //build dofcolvec
   set<int> dofcolset;
@@ -337,7 +337,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     dofcolvec.push_back(*idof);
   }
 
-  dofcolmap_ = rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
+  dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
 
 
   return;
@@ -466,7 +466,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
       mydofs.push_back(thisdof);
     }
 
-    gid_to_dofs.insert(pair<int, vector<int> >(gid,mydofs));
+    gid_to_dofs.insert(std::pair<int, vector<int> >(gid,mydofs));
   }
 
   rblock.clear();

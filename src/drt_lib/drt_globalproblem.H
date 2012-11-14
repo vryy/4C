@@ -29,9 +29,6 @@ Maintainer: Ulrich Kuettler
 #include "drt_resulttest.H"
 #include "drt_utils.H"
 
-using Teuchos::RCP;
-using Teuchos::ParameterList;
-
 namespace IO
 {
   class OutputControl;
@@ -324,7 +321,7 @@ public:
   /// @name Discretizations
 
   /// get access to a particular discretization
-  RCP<DRT::Discretization> GetDis(const std::string name) const;
+  Teuchos::RCP<DRT::Discretization> GetDis(const std::string name) const;
 
   /// tell number of known fields
   unsigned NumFields() const { return discretizationmap_.size(); }
@@ -336,7 +333,7 @@ public:
   bool DoesExistDis(const std::string name) const;
 
   /// add a discretization to the global problem
-  void AddDis(const std::string name, RCP<Discretization> dis);
+  void AddDis(const std::string name, Teuchos::RCP<Discretization> dis);
 
 
   //@}
@@ -408,10 +405,10 @@ private:
   int restartstep_;
 
   /// discretizations of this problem
-  map<std::string,RCP<Discretization> > discretizationmap_;
+  std::map<std::string,Teuchos::RCP<Discretization> > discretizationmap_;
 
   /// keep a list of all active element implementations
-  vector<DRT::SingletonDestruction *> sds_;
+  std::vector<DRT::SingletonDestruction *> sds_;
 
   /// material bundle
   Teuchos::RCP<MAT::PAR::Bundle> materials_;

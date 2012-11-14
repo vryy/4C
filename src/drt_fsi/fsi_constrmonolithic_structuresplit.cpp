@@ -69,7 +69,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   Teuchos::RCP<LINALG::MapExtractor> extractor;
   extractor->Setup(*conman_->GetConstraintMap(),emptymap,conman_->GetConstraintMap());
   conman_->UseBlockMatrix(extractor,StructureField()->Interface());
-  sconT_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*StructureField()->Interface(),*extractor,81,false,true));
+  sconT_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*StructureField()->Interface(),*extractor,81,false,true));
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
@@ -415,7 +415,7 @@ void FSI::ConstrMonolithicStructureSplit::InitialGuess(Teuchos::RCP<Epetra_Vecto
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::InitialGuess");
 
-  Teuchos::RCP<Epetra_Vector> ConstraintInitialGuess = rcp(new Epetra_Vector(*(conman_->GetConstraintMap()),true));
+  Teuchos::RCP<Epetra_Vector> ConstraintInitialGuess = Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap()),true));
 
   SetupVector(*ig,
               StructureField()->InitialGuess(),

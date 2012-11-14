@@ -489,7 +489,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList&   params,
 
   // internal force vector stored by class variable before application of stochastic excitations
   if(params.get<string>("internalforces","no")=="yes" && force != NULL)
-    internalforces_ = rcp(new Epetra_SerialDenseVector(*force));
+    internalforces_ = Teuchos::rcp(new Epetra_SerialDenseVector(*force));
 
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of truss3 elements in the frame of statistical mechanics problems; for these problems a

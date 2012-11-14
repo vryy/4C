@@ -223,7 +223,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // create Hierarchy
     ///////////////////////////////////////////////////////////////////////
 
-    Teuchos::RCP<Hierarchy> H = rcp(new Hierarchy());
+    Teuchos::RCP<Hierarchy> H = Teuchos::rcp(new Hierarchy());
     H->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
     H->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize));
     H->GetLevel(0)->Set("A",Teuchos::rcp_dynamic_cast<Matrix>(bOp));

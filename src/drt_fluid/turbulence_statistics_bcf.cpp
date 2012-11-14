@@ -70,7 +70,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
     // iterate over all fluids and get fluid viscosity from
     // material definition --- for computation of ltau
     visc_.clear();
-    matidtoindex_ = rcp(new std::map<int, int>);
+    matidtoindex_ = Teuchos::rcp(new std::map<int, int>);
     matidtoindex_->clear();
     int index = 0;
     const int nummat = DRT::Problem::Instance()->Materials()->Num();
@@ -107,7 +107,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   // the integral/volume sampling. If an element has 4 nodes
   // in that plane and the remaining nodes are greater than the
   // plane, it belongs to said plane.
-  nodeplanes_ = rcp(new vector<double> );
+  nodeplanes_ = Teuchos::rcp(new vector<double> );
 
   // allocate array for bounding box
   //
@@ -118,7 +118,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   //	  max |     |	  |
   //
   //
-  boundingbox_ = rcp(new Epetra_SerialDenseMatrix(2,3));
+  boundingbox_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(2,3));
   for (int row = 0;row<3;++row)
   {
     (*boundingbox_)(0,row) = +10e+19;
@@ -298,7 +298,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   for (size_t i = 0; i < numphase_; i++)
   {
-    sumvol_[i] = rcp(new vector<double>);
+    sumvol_[i] = Teuchos::rcp(new vector<double>);
     sumvol_[i]->resize(size,0.0);
   }
 
@@ -325,42 +325,42 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   for (size_t i = 0; i < numphase_; i++)
   {
-    pointsumnode_[i] =  rcp(new vector<double> );
+    pointsumnode_[i] =  Teuchos::rcp(new vector<double> );
     pointsumnode_[i]->resize(size,0.0);
 
     // first order moments
-    pointsumu_[i] =  rcp(new vector<double> );
+    pointsumu_[i] =  Teuchos::rcp(new vector<double> );
     pointsumu_[i]->resize(size,0.0);
 
-    pointsumv_[i] =  rcp(new vector<double> );
+    pointsumv_[i] =  Teuchos::rcp(new vector<double> );
     pointsumv_[i]->resize(size,0.0);
 
-    pointsumw_[i] =  rcp(new vector<double> );
+    pointsumw_[i] =  Teuchos::rcp(new vector<double> );
     pointsumw_[i]->resize(size,0.0);
 
-    pointsump_[i] =  rcp(new vector<double> );
+    pointsump_[i] =  Teuchos::rcp(new vector<double> );
     pointsump_[i]->resize(size,0.0);
 
     // second order moments
-    pointsumsqu_[i] =  rcp(new vector<double> );
+    pointsumsqu_[i] =  Teuchos::rcp(new vector<double> );
     pointsumsqu_[i]->resize(size,0.0);
 
-    pointsumsqv_[i] =  rcp(new vector<double> );
+    pointsumsqv_[i] =  Teuchos::rcp(new vector<double> );
     pointsumsqv_[i]->resize(size,0.0);
 
-    pointsumsqw_[i] =  rcp(new vector<double> );
+    pointsumsqw_[i] =  Teuchos::rcp(new vector<double> );
     pointsumsqw_[i]->resize(size,0.0);
 
-    pointsumsqp_[i] =  rcp(new vector<double> );
+    pointsumsqp_[i] =  Teuchos::rcp(new vector<double> );
     pointsumsqp_[i]->resize(size,0.0);
 
-    pointsumuv_[i] =  rcp(new vector<double> );
+    pointsumuv_[i] =  Teuchos::rcp(new vector<double> );
     pointsumuv_[i]->resize(size,0.0);
 
-    pointsumuw_[i] =  rcp(new vector<double> );
+    pointsumuw_[i] =  Teuchos::rcp(new vector<double> );
     pointsumuw_[i]->resize(size,0.0);
 
-    pointsumvw_[i] =  rcp(new vector<double> );
+    pointsumvw_[i] =  Teuchos::rcp(new vector<double> );
     pointsumvw_[i]->resize(size,0.0);
   }
 
@@ -378,7 +378,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
     {
       s.append(".flow_statistics");
 
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
       (*log) << "# Statistics for turbulent incompressible multi phase channel flow\n\n";
 
       log->flush();
@@ -613,10 +613,10 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
 
   for (size_t i = 0; i < numphase_; i++)
   {
-    locvol[i] = rcp(new vector<double> );
+    locvol[i] = Teuchos::rcp(new vector<double> );
     locvol[i]->resize(size,0.0);
 
-    globvol[i] = rcp(new vector<double>);
+    globvol[i] = Teuchos::rcp(new vector<double>);
     globvol[i]->resize(size,0.0);
   }
 
@@ -1007,7 +1007,7 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
     (*log) << "\n\n\n";
     (*log) << "# Statistics record " << countrecord_;
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -1026,13 +1026,13 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
       }
 
       (*log) << "# Material ID  	 : ";
-      (*log) << "   " << setw(11) << setprecision(1) << matid;
+      (*log) << "   " << std::setw(11) << std::setprecision(1) << matid;
       (*log) << &endl;
 
       (*log) << "# (u_tau)^2 = tau_W/rho : ";
-      (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/area;
-      (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/area;
-      (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/area;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/area;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/area;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/area;
       (*log) << &endl;
 
 
@@ -1045,27 +1045,27 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
       (*log) << "   umean         vmean      wmean     pmean";
       (*log) << "   mean u^2      mean v^2      mean w^2";
       (*log) << "      mean u*v      mean u*w     mean v*w    mean p^2    no. samp \n";
-      (*log) << scientific;
+      (*log) << std::scientific;
       for(size_t i=0; i<nodeplanes_->size(); ++i)
       {
          // y, y+ and volfraction
-         (*log) <<  " "  << setw(11) << setprecision(4) << (*nodeplanes_)[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*nodeplanes_)[i]/ltau[j];
-         (*log) <<  " "  << setw(11) << setprecision(4) << (*(sumvol_[j]))[i];
+         (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[i]/ltau[j];
+         (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*(sumvol_[j]))[i];
 
          // pointwise means
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumu_   [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumv_   [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumw_   [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsump_   [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqu_ [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqv_ [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqw_ [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuv_  [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuw_  [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumvw_  [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqp_ [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumnode_[j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumu_   [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumv_   [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumw_   [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsump_   [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumsqu_ [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumsqv_ [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumsqw_ [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumuv_  [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumuw_  [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumvw_  [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumsqp_ [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumnode_[j]))[i];
          (*log) << "   \n";
       }
     }
@@ -1142,7 +1142,7 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
     (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
@@ -1162,13 +1162,13 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
       }
 
       (*log) << "# Material ID  	 : ";
-      (*log) << "   " << setw(11) << setprecision(1) << matid;
+      (*log) << "   " << std::setw(11) << std::setprecision(1) << matid;
       (*log) << &endl;
 
       (*log) << "# (u_tau)^2 = tau_W/rho : ";
-      (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/(area*numsamp_);
-      (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/(area*numsamp_);
-      (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/(area*numsamp_);
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/(area*numsamp_);
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/(area*numsamp_);
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_);
       (*log) << &endl;
 
       (*log) << "#     y	    y+   volfraction";
@@ -1177,7 +1177,7 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
       (*log) << "      mean u*v      mean u*w	   mean v*w    no. samp";
       (*log) << "\n";
 
-      (*log) << scientific;
+      (*log) << std::scientific;
       for(size_t i=0; i<nodeplanes_->size(); ++i)
       {
          const double numsamp = ((*(pointsumnode_[j]))[i]);
@@ -1198,25 +1198,25 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
            (*(pointsumvw_[j]))[i]   /= numsamp;
          }
 
-         (*log) <<  " "  << setw(11) << setprecision(4) << (*nodeplanes_)[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*nodeplanes_)[i]/ltau[j];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(sumvol_[j]))[i]/numsamp_;
+         (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[i]/ltau[j];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(sumvol_[j]))[i]/numsamp_;
 
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumu_       [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumv_       [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumw_       [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsump_       [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumu_       [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumv_       [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumw_       [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsump_       [j]))[i];
 
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqu_     [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqv_     [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqw_     [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumsqp_     [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumsqu_     [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumsqv_     [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumsqw_     [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumsqp_     [j]))[i];
 
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuv_       [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumuw_       [j]))[i];
-         (*log) << "   " << setw(11) << setprecision(4) << (*(pointsumvw_       [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumuv_       [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumuw_       [j]))[i];
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumvw_       [j]))[i];
 
-         (*log) << "   " << setw(11) << setprecision(4) << numsamp;
+         (*log) << "   " << std::setw(11) << std::setprecision(4) << numsamp;
 
          (*log) << "\n\n";
       }

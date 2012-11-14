@@ -117,7 +117,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     DRT::Condition& cond = *(nopencond_[i]);
 
     // elements might need condition
-    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;

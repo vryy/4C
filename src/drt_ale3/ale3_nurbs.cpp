@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Ale3_NurbsType::Create( const s
   {
     if(eledistype=="NURBS8" || eledistype=="NURBS27")
     {
-      return rcp(new DRT::ELEMENTS::NURBS::Ale3Nurbs(id,owner));
+      return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale3Nurbs(id,owner));
     }
   }
   return Teuchos::null;

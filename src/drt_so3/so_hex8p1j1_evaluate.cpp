@@ -410,7 +410,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
 
     // modified deformation gradient modF = (t_/J)^1/3 * F
     const double J = defgrd.Determinant();
-    const double scalar = pow((t_(0,0)/J), 1.0/3.0);
+    const double scalar = std::pow((t_(0,0)/J), 1.0/3.0);
     mod_defgrd.Update(scalar, defgrd);
 
     // Modified Right Cauchy-Green tensor = modF^T * modF
@@ -1120,7 +1120,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
 
       // modified deformation gradient modF = (t_/J)^1/3 * F
       const double J = defgrd.Determinant();
-      double scalar = pow((t(0, 0)/J), 1.0/3.0);
+      double scalar = std::pow((t(0, 0)/J), 1.0/3.0);
       mod_defgrd.Update(scalar, defgrd);
 
       // Modified Right Cauchy-Green tensor = modF^T * modF

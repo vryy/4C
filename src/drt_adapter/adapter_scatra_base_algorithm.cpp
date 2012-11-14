@@ -60,7 +60,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // context for output and restart
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
+    Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   if(!reinitswitch) output->WriteMesh(0,0.0); // don't write mesh for level set reinitialization time loops
 
   // -------------------------------------------------------------------
@@ -87,7 +87,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter list? -> no default paramter possible any more
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solverparams,
+    Teuchos::rcp(new LINALG::Solver(solverparams,
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
@@ -95,8 +95,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  // make a copy (inside an rcp) containing also all sublists
-  RCP<ParameterList> scatratimeparams= rcp(new ParameterList(scatradyn));
+  // make a copy (inside an Teuchos::rcp) containing also all sublists
+  RCP<ParameterList> scatratimeparams= Teuchos::rcp(new ParameterList(scatradyn));
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
@@ -231,37 +231,37 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      case INPAR::SCATRA::timeint_stationary:
      {
        // create instance of time integration class (call the constructor)
-       scatra_ = rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
+       scatra_ = Teuchos::rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
        break;
      }
      case INPAR::SCATRA::timeint_one_step_theta:
      {
        // create instance of time integration class (call the constructor)
-       scatra_ = rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
+       scatra_ = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
        break;
      }
      case INPAR::SCATRA::timeint_bdf2:
      {
        // create instance of time integration class (call the constructor)
-       scatra_ = rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
+       scatra_ = Teuchos::rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
        break;
      }
      case INPAR::SCATRA::timeint_gen_alpha:
      {
        // create instance of time integration class (call the constructor)
-       scatra_ = rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
+       scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
        break;
      }
      case INPAR::SCATRA::timeint_tg2:
      {
        // create instance of time integration class (call the constructor)
-       scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+       scatra_ = Teuchos::rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
        break;
      }
      case INPAR::SCATRA::timeint_tg3:
      {
        // create instance of time integration class (call the constructor)
-       scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+       scatra_ = Teuchos::rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
        break;
      }
      default:
@@ -280,13 +280,13 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      case INPAR::SCATRA::timeint_one_step_theta:
      {
        // create instance of time integration class (call the constructor)
-       scatra_ = rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
+       scatra_ = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
        break;
      }
      case INPAR::SCATRA::timeint_tg2:
      {
        // create instance of time integration class (call the constructor)
-       scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+       scatra_ = Teuchos::rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
        break;
      }
      default:

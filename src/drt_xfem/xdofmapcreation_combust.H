@@ -110,14 +110,14 @@ namespace XFEM
    */
   void ApplyElementEnrichmentCombust(
       const DRT::Element*                                                xfemele,           ///<
-      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,    ///< element dofs
+      const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,    ///< element dofs
       std::map<int, std::set<XFEM::FieldEnr> >&                          elementDofMap,     ///<
       const COMBUST::InterfaceHandleCombust&                             ih                 ///<
       );
 
   void ApplyElementEnrichmentCombust(
       const DRT::Element*                                                xfemele,
-      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
+      const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
       std::set<XFEM::FieldEnr>&                                          elementFieldEnrSet,
       const COMBUST::InterfaceHandleCombust&                             ih
       );

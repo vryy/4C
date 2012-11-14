@@ -187,7 +187,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // then again a new redistribution of the redistributed scatra discretization would be performed
   if(reinitswitch_ == false)
   {
-    pbc_ = rcp(new PeriodicBoundaryConditions (discret_, false));
+    pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
     pbc_->UpdateDofsForPeriodicBoundaryConditions();
     pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
   }
@@ -222,13 +222,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       numscal_ -= 1;
     }
     // set up the concentration-el.potential splitter
-    splitter_ = rcp(new LINALG::MapExtractor);
+    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
   }
   else if (scatratype_ == INPAR::SCATRA::scatratype_loma and numscal_ > 1)
   {
     // set up a species-temperature splitter (if more than one scalar)
-    splitter_ = rcp(new LINALG::MapExtractor);
+    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
   }
 
@@ -314,18 +314,18 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  vel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
   // acceleration and pressure required for computation of subgrid-scale
   // velocity (always four components per node)
-  accpre_ = rcp(new Epetra_MultiVector(*noderowmap,4,true));
+  accpre_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,4,true));
 
   if (isale_)
   {
     // displacement field for moving mesh applications using ALE
     // (get noderowmap of discretization for creating this multivector)
-    dispnp_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
   }
 
   // -------------------------------------------------------------------
@@ -431,7 +431,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // transferred from the fluid field
     // only Smagorinsky small
     if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
-      fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
     // Output
     if (myrank_ == 0)
@@ -488,7 +488,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
       // fine-scale velocities (always three velocity components per node)
       // transferred from the fluid field
-      fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
       ParameterList * mfsparams =&(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
       if (mfsparams->get<string>("SCALE_SEPARATION")!= "algebraic_multigrid_operator")
@@ -548,7 +548,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     if (magnetfuncno > 0)
     {
       // allocate the multivector
-      magneticfield_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      magneticfield_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
       // fill it with values
       SetMagneticField(magnetfuncno);
     }
@@ -987,13 +987,13 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
   if (IsElch(scatratype_))
   {
     // set up the concentration-el.potential splitter
-    splitter_ = rcp(new LINALG::MapExtractor);
+    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
   }
   else if (scatratype_ == INPAR::SCATRA::scatratype_loma and numscal_ > 1)
   {
     // set up a species-temperature splitter (if more than one scalar)
-    splitter_ = rcp(new LINALG::MapExtractor);
+    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
   }
 
@@ -1102,19 +1102,19 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
   if (convel_ != Teuchos::null)
   {
     oldMulti = convel_;
-    convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
     LINALG::Export(*oldMulti, *convel_);
   }
   if (vel_ != Teuchos::null)
   {
     oldMulti = vel_;
-    vel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
     LINALG::Export(*oldMulti, *vel_);
   }
   if (fsvel_ != Teuchos::null)
   {
     oldMulti = fsvel_;
-    fsvel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
     LINALG::Export(*oldMulti, *fsvel_);
   }
 
@@ -1123,14 +1123,14 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
   if (accpre_ != Teuchos::null)
   {
     oldMulti = accpre_;
-    accpre_ = rcp(new Epetra_MultiVector(*noderowmap,4,true));
+    accpre_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,4,true));
     LINALG::Export(*oldMulti, *accpre_);
   }
 
   if (dispnp_ != Teuchos::null)
   {
     oldMulti = dispnp_;
-    dispnp_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
     LINALG::Export(*oldMulti, *dispnp_);
   }
 
@@ -1951,12 +1951,12 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
     // create vectors if not existing yet
     if (w_ == Teuchos::null)
     {
-      w_ = rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
+      w_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
       justcreated = true;
     }
     if (c_ == Teuchos::null)
     {
-      c_ = rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
+      c_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
       justcreated = true;
     }
 
@@ -2020,7 +2020,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
            */
 
           // get an RCP of the current column Epetra_Vector of the MultiVector
-          Teuchos::RCP<Epetra_Vector> wi = rcp((*w_)(imode),false);
+          Teuchos::RCP<Epetra_Vector> wi = Teuchos::rcp((*w_)(imode),false);
 
           // compute integral of shape functions
           discret_->EvaluateCondition
@@ -2077,7 +2077,7 @@ void SCATRA::ScaTraTimIntImpl::AddMultiVectorToParameterList
     //SetState cannot be used since this multi-vector is nodebased and not dofbased!
     const Epetra_Map* nodecolmap = discret_->NodeColMap();
     int numcol = vec->NumVectors();
-    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    RefCountPtr<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
     LINALG::Export(*vec,*tmp);
     p.set(name,tmp);
   }
@@ -2534,10 +2534,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   string outname = temp.str();
   string probtype = DRT::Problem::Instance()->ProblemType();
 
-  RCP<IO::OutputControl> myoutputcontrol = rcp(new IO::OutputControl(discret_->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
+  RCP<IO::OutputControl> myoutputcontrol = Teuchos::rcp(new IO::OutputControl(discret_->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
   // create discretization writer with my own control settings
   RCP<IO::DiscretizationWriter> myoutput =
-    rcp(new IO::DiscretizationWriter(discret_,myoutputcontrol));
+    Teuchos::rcp(new IO::DiscretizationWriter(discret_,myoutputcontrol));
   // write mesh at step 0
   myoutput->WriteMesh(0,0.0);
 */

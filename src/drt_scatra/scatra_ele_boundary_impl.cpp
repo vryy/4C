@@ -1597,14 +1597,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         double pow_conint_gamma_k = 0.0;
         if ((conint[k]/refcon) < EPS13)
         {
-          pow_conint_gamma_k = pow(EPS13,gamma);
+          pow_conint_gamma_k = std::pow(EPS13,gamma);
 #ifdef DEBUG
           cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint[k]/refcon)<<endl;
           cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
 #endif
         }
         else
-          pow_conint_gamma_k = pow(conint[k]/refcon,gamma);
+          pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
 
         if (kinetics==INPAR::SCATRA::butler_volmer)
         {
@@ -1687,14 +1687,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 #endif
         if ((conint[k]/refcon) < EPS13)
         {
-          pow_conint_gamma_k = pow(EPS13,gamma);
+          pow_conint_gamma_k = std::pow(EPS13,gamma);
 #ifdef DEBUG
             cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<endl;
             cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
 #endif
         }
         else
-          pow_conint_gamma_k = pow(conint[k]/refcon,gamma);
+          pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
 
         // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
         const double expterm = -exp((-alpha)*frt*eta);
@@ -1742,14 +1742,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         double pow_conint_gamma_k = 0.0;
         if ((conint[k]/refcon) < EPS13)
         {
-          pow_conint_gamma_k = pow(EPS13,gamma);
+          pow_conint_gamma_k = std::pow(EPS13,gamma);
 #ifdef DEBUG
           cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<endl;
           cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
 #endif
         }
         else
-          pow_conint_gamma_k = pow(conint[k]/refcon,gamma);
+          pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
         const double linearfunct = (alphaa*frt*eta + 1.0);
         // note: gamma==0 deactivates concentration dependency
         double concterm = 0.0;
@@ -1827,8 +1827,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         {
           if ((conint[kk]) < EPS13) // 1.0E-16)
           {
-            pow_conint_p *= pow(EPS13,p[kk]);
-            pow_conint_q *= pow(EPS13,q[kk]);
+            pow_conint_p *= std::pow(EPS13,p[kk]);
+            pow_conint_q *= std::pow(EPS13,q[kk]);
 #ifdef DEBUG
             cout<<"WARNING: Rel. Conc. of species" <<k<<" in Butler-Volmer formula is zero/negative: "<<(conint[k])<<endl;
             cout<<"-> Replacement value: pow(1.0E-16,p[ispec]) = "<< pow(EPS13,p[k]) << " pow(1.0E-13,q[k]) = "<< pow(EPS13,q[k]) <<endl;
@@ -1836,8 +1836,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           }
           else
           {
-            pow_conint_p *= pow((conint[kk]),p[kk]);
-            pow_conint_q *= pow((conint[kk]),q[kk]);
+            pow_conint_p *= std::pow((conint[kk]),p[kk]);
+            pow_conint_q *= std::pow((conint[kk]),q[kk]);
           }
         }
 
@@ -2286,8 +2286,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
           if (kinetics==INPAR::SCATRA::butler_volmer)
           {
             // general Butler-Volmer
-            expterm = pow(conint[k]/refcon,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
-            linea = pow(conint[k]/refcon,gamma) * frt*((alphaa*exp(alphaa*frt*eta)) + (alphac*exp((-alphac)*frt*eta)));
+            expterm = std::pow(conint[k]/refcon,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+            linea = std::pow(conint[k]/refcon,gamma) * frt*((alphaa*exp(alphaa*frt*eta)) + (alphac*exp((-alphac)*frt*eta)));
           }
           if (kinetics==INPAR::SCATRA::butler_volmer_yang1997)
           {
@@ -2356,8 +2356,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 
         if(iselch)
         {
-          const double expterm = pow(conint[k]/refcon,gamma) * (-exp((-alpha)*frt*eta));
-          linea = pow(conint[k]/refcon,gamma) * frt*(alpha*exp((-alpha)*frt*eta));
+          const double expterm = std::pow(conint[k]/refcon,gamma) * (-exp((-alpha)*frt*eta));
+          linea = std::pow(conint[k]/refcon,gamma) * frt*(alpha*exp((-alpha)*frt*eta));
           // compute integrals
           overpotentialint += eta * fac;
           electdiffpotint += epd*fac;
@@ -2412,7 +2412,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
           concentrationint += conint[k]*fac;
 
           // tangent and rhs (= negative residual) for galvanostatic equation
-          linea = pow(conint[k]/refcon,gamma)*(alphaa*frt);
+          linea = std::pow(conint[k]/refcon,gamma)*(alphaa*frt);
           currderiv += i0*linea*timefac*fac;
           currentresidual += i0*(alphaa*frt*eta + 1.0)*timefac*fac;
         }
@@ -2476,8 +2476,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
           {
             if ((conint[kk]) < EPS13)
             {
-              pow_conint_p *= pow(EPS13,p[kk]);
-              pow_conint_q *= pow(EPS13,q[kk]);
+              pow_conint_p *= std::pow(EPS13,p[kk]);
+              pow_conint_q *= std::pow(EPS13,q[kk]);
 #ifdef DEBUG
               cout<<"WARNING: Rel. Conc. of species"<<kk<<" in Butler-Volmer formula is zero/negative: "<<(conint[kk])<<endl;
               cout<<"-> Replacement value: pow(EPS,p[ispec]) = "<< pow(EPS13,p[kk]) << " pow(1.0E-16,q[i]) = "<< pow(EPS13,q[kk]) <<endl;
@@ -2485,8 +2485,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
             }
             else
             {
-              pow_conint_p *= pow((conint[kk]),p[kk]);
-              pow_conint_q *= pow((conint[kk]),q[kk]);
+              pow_conint_p *= std::pow((conint[kk]),p[kk]);
+              pow_conint_q *= std::pow((conint[kk]),q[kk]);
             }
           }
           expterma = exp((1-beta)*nume*frt*epd);
@@ -3146,7 +3146,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
   // computation of characteristic length of (boundary) element
   // (2D: square root of element area, 1D: element length)
-  const double h = pow(area,(1.0/dim));
+  const double h = std::pow(area,(1.0/dim));
 
   //------------------------------------------------------------------------
   // preliminary computations for integration loop

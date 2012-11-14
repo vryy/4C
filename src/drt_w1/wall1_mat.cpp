@@ -197,7 +197,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 
           // S(2,2)=0 -> condition for unknown CG(2,2)
           double temp = CG(0,0)*CG(1,1)-CG(0,1)*CG(1,0);
-          CG(2,2) = pow(temp,-beta/(1+beta));
+          CG(2,2) = std::pow(temp,-beta/(1+beta));
 
           // Principal Invariant I3 = det(CG)
           const double I3 = CG(0,0)*CG(1,1)*CG(2,2) + CG(0,1)*CG(1,2)*CG(2,0)

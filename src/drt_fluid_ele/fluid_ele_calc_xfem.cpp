@@ -396,15 +396,15 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     // evaluate the velocity gradient
     if(calcerr == INPAR::FLUID::beltrami_stat_stokes)
     {
-      function      = rcp(new DRT::UTILS::BeltramiStatStokesUP());
-      function_grad = rcp(new DRT::UTILS::BeltramiStatStokesGradU());
+      function      = Teuchos::rcp(new DRT::UTILS::BeltramiStatStokesUP());
+      function_grad = Teuchos::rcp(new DRT::UTILS::BeltramiStatStokesGradU());
     }
     else if(calcerr == INPAR::FLUID::beltrami_stat_navier_stokes)
     {
       // we use the same analytical solution for the navier-stokes equations
       // remark: just the rhs is different
-      function      = rcp(new DRT::UTILS::BeltramiStatStokesUP());
-      function_grad = rcp(new DRT::UTILS::BeltramiStatStokesGradU());
+      function      = Teuchos::rcp(new DRT::UTILS::BeltramiStatStokesUP());
+      function_grad = Teuchos::rcp(new DRT::UTILS::BeltramiStatStokesGradU());
     }
 
     if(my::nsd_==3)
@@ -501,15 +501,15 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     // evaluate the velocity gradient
     if(calcerr == INPAR::FLUID::kimmoin_stat_stokes)
     {
-      function      = rcp(new DRT::UTILS::KimMoinStatStokesUP());
-      function_grad = rcp(new DRT::UTILS::KimMoinStatStokesGradU());
+      function      = Teuchos::rcp(new DRT::UTILS::KimMoinStatStokesUP());
+      function_grad = Teuchos::rcp(new DRT::UTILS::KimMoinStatStokesGradU());
     }
     else if(calcerr == INPAR::FLUID::kimmoin_stat_navier_stokes)
     {
       // we use the same analytical solution for the navier-stokes equations
       // remark: just the rhs is different
-      function      = rcp(new DRT::UTILS::KimMoinStatStokesUP());
-      function_grad = rcp(new DRT::UTILS::KimMoinStatStokesGradU());
+      function      = Teuchos::rcp(new DRT::UTILS::KimMoinStatStokesUP());
+      function_grad = Teuchos::rcp(new DRT::UTILS::KimMoinStatStokesGradU());
     }
 
     if(my::nsd_==3)

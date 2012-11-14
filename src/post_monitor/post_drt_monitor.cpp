@@ -564,7 +564,7 @@ void FluidMonWriter::WriteResult(
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(20) << result.step();
-  outfile << right << std::setw(20) << scientific << result.time();
+  outfile << right << std::setw(20) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = velmap.MinAllGID();
@@ -573,7 +573,7 @@ void FluidMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(20) << std::setprecision(10) << scientific << (*resvec)[lid];
+    outfile << right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -630,7 +630,7 @@ void CombustMonWriter::WriteResult(
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(20) << result.step();
-  outfile << right << std::setw(20) << scientific << result.time();
+  outfile << right << std::setw(20) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = velmap.MinAllGID();
@@ -639,7 +639,7 @@ void CombustMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(20) << std::setprecision(10) << scientific << (*resvec)[lid];
+    outfile << right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -950,7 +950,7 @@ void StructMonWriter::WriteStrResult(
   p.set("gpstressmap", data);
 
   const Epetra_Map* nodemap = dis->NodeRowMap();
-  RCP<Epetra_MultiVector> nodal_stress = rcp(new Epetra_MultiVector(*nodemap,6));
+  RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,null,null,null,null,null);
     if (nodal_stress==null)
@@ -1020,7 +1020,7 @@ void AleMonWriter::WriteResult(
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(10) << result.step();
-  outfile << right << std::setw(16) << scientific << result.time();
+  outfile << right << std::setw(16) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
@@ -1029,7 +1029,7 @@ void AleMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
+    outfile << right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -1082,7 +1082,7 @@ void FsiFluidMonWriter::WriteResult(
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(10) << result.step();
-  outfile << right << std::setw(16) << scientific << result.time();
+  outfile << right << std::setw(16) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
@@ -1090,7 +1090,7 @@ void FsiFluidMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
+    outfile << right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
 
@@ -1105,7 +1105,7 @@ void FsiFluidMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(16) << scientific << (*resvec)[lid];
+    outfile << right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -1210,7 +1210,7 @@ void ScatraMonWriter::WriteResult(
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << right << std::setw(10) << result.step();
-  outfile << right << std::setw(20) << scientific << result.time();
+  outfile << right << std::setw(20) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
@@ -1219,7 +1219,7 @@ void ScatraMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(20) << std::setprecision(10) << scientific << (*resvec)[lid];
+    outfile << right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }

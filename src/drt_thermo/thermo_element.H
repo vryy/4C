@@ -269,9 +269,9 @@ namespace ELEMENTS
     //! Example:
     //! \code
     //!  // Name of data is 'Owner', dimension is 1 (scalar value)
-    //!  names.insert(pair<string,int>("Owner",1));
+    //!  names.insert(std::pair<string,int>("Owner",1));
     //!  // Name of data is 'HeatfluxXYZ', dimension is 3 (vector value)
-    //!  names.insert(pair<string,int>("HeatfluxXYZ",3));
+    //!  names.insert(std::pair<string,int>("HeatfluxXYZ",3));
     //! \endcode
     //!
     //! \param names (out): On return, the derived class has filled names with

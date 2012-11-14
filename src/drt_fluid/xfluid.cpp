@@ -120,7 +120,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   //--------------------------------------------------------------------------------------
   if(xfluid_.myrank_ == 0) cout << "\n" << endl;
 
-  velpressplitter_ = rcp( new LINALG::MapExtractor());
+  velpressplitter_ = Teuchos::rcp( new LINALG::MapExtractor());
 
   FLD::UTILS::SetupFluidSplit(*xfluid.discret_, xfluid.numdim_, 1, *velpressplitter_);
 
@@ -208,7 +208,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   if (false/*xfluid_.params_->get<bool>("INFNORMSCALING")*/)
   {
-    xfluid_.fluid_infnormscaling_ = rcp(new FLD::UTILS::FluidInfNormScaling(*velpressplitter_));
+    xfluid_.fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(*velpressplitter_));
   }
 
 
@@ -692,7 +692,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     if (err1) dserror("Export using exporter returned err=%d",err1);
     xfluid_.itrueresidual_->Update(1.0,iforce_tmp,0.0);
 
-//    Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp (new Epetra_Export(iforcecolnp->Map(),xfluid_.itrueresidual_->Map()));
+//    Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp(new Epetra_Export(iforcecolnp->Map(),xfluid_.itrueresidual_->Map()));
 //    xfluid_.itrueresidual_->PutScalar(0.0);
 //    xfluid_.itrueresidual_->Export(*iforcecolnp,*conimpo,Add);
 
@@ -744,7 +744,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    if (xfluid_.gmsh_debug_out_screen_) cout << endl;
    std::ofstream gmshfilecontent_vel(filename_vel.c_str());
-   gmshfilecontent_vel.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_vel.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_vel.precision(16);
 
    std::ostringstream filename_base_press;
@@ -753,7 +753,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    if (xfluid_.gmsh_debug_out_screen_) cout << endl;
    std::ofstream gmshfilecontent_press(filename_press.c_str());
-   gmshfilecontent_press.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_press.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_press.precision(16);
 
    std::ostringstream filename_base_acc;
@@ -762,7 +762,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_acc = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    if (xfluid_.gmsh_debug_out_screen_) cout << endl;
    std::ofstream gmshfilecontent_acc(filename_acc.c_str());
-   gmshfilecontent_acc.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_acc.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_acc.precision(16);
 
    std::ostringstream filename_base_bound;
@@ -771,7 +771,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_bound = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_bound.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    if (xfluid_.gmsh_debug_out_screen_) cout << endl;
    std::ofstream gmshfilecontent_bound(filename_bound.c_str());
-   gmshfilecontent_bound.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_bound.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_bound.precision(16);
 
 
@@ -782,7 +782,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_vel_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    if (xfluid_.gmsh_debug_out_screen_) cout << endl;
    std::ofstream gmshfilecontent_vel_ghost(filename_vel_ghost.c_str());
-   gmshfilecontent_vel_ghost.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_vel_ghost.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_vel_ghost.precision(16);
 
    std::ostringstream filename_base_press_ghost;
@@ -791,7 +791,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_press_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    if (xfluid_.gmsh_debug_out_screen_) cout << endl;
    std::ofstream gmshfilecontent_press_ghost(filename_press_ghost.c_str());
-   gmshfilecontent_press_ghost.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_press_ghost.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_press_ghost.precision(16);
 
    std::ostringstream filename_base_acc_ghost;
@@ -800,7 +800,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_acc_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc_ghost.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    if (xfluid_.gmsh_debug_out_screen_) cout << endl;
    std::ofstream gmshfilecontent_acc_ghost(filename_acc_ghost.c_str());
-   gmshfilecontent_acc_ghost.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_acc_ghost.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_acc_ghost.precision(16);
 
 
@@ -1720,7 +1720,7 @@ FLD::XFluid::XFluid(
   }
 
   // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
-  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
+  RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
 
@@ -1746,7 +1746,7 @@ FLD::XFluid::XFluid(
   // -------------------------------------------------------------------
 
   // store a dofset with the complete fluid unknowns
-  dofset_out_ = rcp(new DRT::IndependentDofSet());
+  dofset_out_ = Teuchos::rcp(new DRT::IndependentDofSet());
   dofset_out_->Reset();
   dofset_out_->AssignDegreesOfFreedom(*discret_,0,0);
   // split based on complete fluid field (standard splitter that handles one dofset)
@@ -1765,7 +1765,7 @@ FLD::XFluid::XFluid(
     gmshfilecontent.close();
   }
 
-  boundary_output_ = rcp(new IO::DiscretizationWriter(boundarydis_));
+  boundary_output_ = Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_));
   boundary_output_->WriteMesh(0,0.0);
 
 
@@ -2520,7 +2520,7 @@ void FLD::XFluid::Integrate()
     TimeLoop();
 
   // print the results of time measurements
-  TimeMonitor::summarize();
+  Teuchos::TimeMonitor::summarize();
 }
 
 
@@ -3330,7 +3330,7 @@ void FLD::XFluid::CutAndSetStateVectors()
       // output for all dofsets of nodes
       const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method", step_, step_diff, true, discret_->Comm().MyPID());
       std::ofstream gmshfilecontent(filename.c_str());
-      gmshfilecontent.setf(ios::scientific,ios::floatfield);
+      gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
       gmshfilecontent.precision(16);
       {
         gmshfilecontent << "View \" " << "Reconstr-Method \" {\n";
@@ -3378,11 +3378,11 @@ void FLD::XFluid::CutAndSetStateVectors()
 
       vector<RCP<Epetra_Vector> > oldColStateVectorsn;
       {
-        RCP<Epetra_Vector> veln_col = rcp(new Epetra_Vector(olddofcolmap,true));
+        RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
         LINALG::Export(*staten_->veln_,*veln_col);
         oldColStateVectorsn.push_back(veln_col);
 
-        RCP<Epetra_Vector> accn_col = rcp(new Epetra_Vector(olddofcolmap,true));
+        RCP<Epetra_Vector> accn_col = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
         LINALG::Export(*staten_->accn_,*accn_col);
         oldColStateVectorsn.push_back(accn_col);
       }
@@ -3400,7 +3400,7 @@ void FLD::XFluid::CutAndSetStateVectors()
 //        {
 //          std::vector<INPAR::XFEM::XFluidTimeInt> vec;
 //          vec.push_back(INPAR::XFEM::Xf_TimeInt_SemiLagrange);
-//          reconstr_method.insert(pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(106, vec ));
+//          reconstr_method.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(106, vec ));
 //        }
 //
 //
@@ -3413,7 +3413,7 @@ void FLD::XFluid::CutAndSetStateVectors()
 //        {
 //          std::vector<INPAR::XFEM::XFluidTimeInt> vec;
 //          vec.push_back(INPAR::XFEM::Xf_TimeInt_SemiLagrange);
-//          reconstr_method.insert(pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(107, vec ));
+//          reconstr_method.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(107, vec ));
 //        }
 //
 //
@@ -3426,7 +3426,7 @@ void FLD::XFluid::CutAndSetStateVectors()
 //        {
 //          std::vector<INPAR::XFEM::XFluidTimeInt> vec;
 //          vec.push_back(INPAR::XFEM::Xf_TimeInt_SemiLagrange);
-//          reconstr_method.insert(pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(120, vec ));
+//          reconstr_method.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(120, vec ));
 //        }
 //      } // hack for step == 2
 
@@ -3444,7 +3444,7 @@ void FLD::XFluid::CutAndSetStateVectors()
         // basic time integration data
         RCP<XFEM::XFLUID_TIMEINT_BASE> timeIntData = Teuchos::null;
 
-        timeIntData = rcp(new XFEM::XFLUID_TIMEINT_BASE(
+        timeIntData = Teuchos::rcp(new XFEM::XFLUID_TIMEINT_BASE(
             discret_,
             boundarydis_,
             staten_->Wizard(),
@@ -3461,7 +3461,7 @@ void FLD::XFluid::CutAndSetStateVectors()
         case INPAR::XFEM::Xf_TimeInt_SemiLagrange:
         {
           // time integration data for standard dofs, semi-lagrangean approach
-          timeIntStd_ = rcp(new XFEM::XFLUID_SemiLagrange(
+          timeIntStd_ = Teuchos::rcp(new XFEM::XFLUID_SemiLagrange(
               *timeIntData,
               reconstr_method,
               xfemtimeint_,
@@ -3872,10 +3872,10 @@ void FLD::XFluid::LiftDrag() const
           << right << std::setw(16) << "F_x"
           << right << std::setw(16) << "F_y"
           << right << std::setw(16) << "F_z";
-      s << left  << std::setw(10) << scientific << Time()
-          << right << std::setw(16) << scientific << c(0)
-          << right << std::setw(16) << scientific << c(1)
-          << right << std::setw(16) << scientific << c(2);
+      s << left  << std::setw(10) << std::scientific << Time()
+          << right << std::setw(16) << std::scientific << c(0)
+          << right << std::setw(16) << std::scientific << c(1)
+          << right << std::setw(16) << std::scientific << c(2);
 
       std::ofstream f;
       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -4014,7 +4014,7 @@ void FLD::XFluid::Output()
         currpos(0) = node->X()[0] + mydisp[0];
         currpos(1) = node->X()[1] + mydisp[1];
         currpos(2) = node->X()[2] + mydisp[2];
-        currsolidpositions.insert(make_pair(node->Id(),currpos));
+        currsolidpositions.insert(std::make_pair(node->Id(),currpos));
       }
     }
 
@@ -4041,7 +4041,7 @@ void FLD::XFluid::Output()
         currpos(0) = node->X()[0] + mydisp[0];
         currpos(1) = node->X()[1] + mydisp[1];
         currpos(2) = node->X()[2] + mydisp[2];
-        currinterfacepositions.insert(make_pair(node->Id(),currpos));
+        currinterfacepositions.insert(std::make_pair(node->Id(),currpos));
       }
     }
   }
@@ -4059,7 +4059,7 @@ void FLD::XFluid::Output()
     // output for Element and Node IDs
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", step_, step_diff, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
-    gmshfilecontent.setf(ios::scientific,ios::floatfield);
+    gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
     gmshfilecontent.precision(16);
     {
       // draw bg elements with associated gid
@@ -5152,7 +5152,7 @@ void FLD::XFluid::XFluidState::GenAlphaIntermediateValues()
     Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(accn_ );
     Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->ExtractOtherVector(accnp_);
 
-    Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
+    Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
 
     onlyaccam->Update((xfluid_.alphaM_),*onlyaccnp,(1.0-xfluid_.alphaM_),*onlyaccn,0.0);
 
@@ -5194,7 +5194,7 @@ void FLD::XFluid::XFluidState::GenAlphaUpdateAcceleration()
   Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_->ExtractOtherVector(veln_ );
   Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->ExtractOtherVector(velnp_);
 
-  Teuchos::RCP<Epetra_Vector> onlyaccnp = rcp(new Epetra_Vector(onlyaccn->Map()));
+  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
 
   const double fact1 = 1.0/(xfluid_.gamma_*xfluid_.dta_);
   const double fact2 = 1.0 - (1.0/xfluid_.gamma_);

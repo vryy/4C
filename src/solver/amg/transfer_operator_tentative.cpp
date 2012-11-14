@@ -80,7 +80,7 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
   for(int i=0; i<naggs; ++i)
   {
     vector<int> gids(0);
-    aggdofs.insert(pair<int,vector<int> >(firstagg+i,gids));  // is meant to contain all dof gids for an aggregate
+    aggdofs.insert(std::pair<int,vector<int> >(firstagg+i,gids));  // is meant to contain all dof gids for an aggregate
   }
   for(int i=0; i<mylength; ++i)
   {
@@ -90,11 +90,11 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
   }
 
   //////////////// coarse level nullspace to be filled
-  NextNS = rcp(new Epetra_MultiVector(pdomainmap,nsdim,true));
+  NextNS = Teuchos::rcp(new Epetra_MultiVector(pdomainmap,nsdim,true));
   Epetra_MultiVector& nextns = * NextNS;
 
   //////////////// create Ptent
-  Ptent = rcp(new SparseMatrix(rowmap, nsdim));   // create new Ptent matrix
+  Ptent = Teuchos::rcp(new SparseMatrix(rowmap, nsdim));   // create new Ptent matrix
 
   // fill Ptent
   // loop over aggregates and extract the appropriate slices of the null space

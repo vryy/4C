@@ -1109,10 +1109,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         // Keep it simple. We use the expression based function class
         // that is able to handle straight lines.
-        ostringstream expr;
+        std::ostringstream expr;
         expr << "(" << b << ") + ((" << x2[0]-x1[0] << ")*x + (" << x2[1]-x1[1] << ")*y + (" << x2[2]-x1[2] << ")*z)/(" << length << ")/(" << length << ")*(" << m << ")";
 
-        functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
+        functions_.push_back(Teuchos::rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
       else if (function->HaveNamed("LINE_QUAD"))
       {
@@ -1134,9 +1134,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
                              (tmp[5]-tmp[2])*(tmp[5]-tmp[2]));
 
         // Keep it simple.
-        ostringstream expr;
+        std::ostringstream expr;
         expr << "1.0 - 4 * (((" << x2[0]-x1[0] << ")*x + (" << x2[1]-x1[1] << ")*y + (" << x2[2]-x1[2] << ")*z)/(" << length << ")/(" << length << ") - 1.0/2.0)^2.0";
-        functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
+        functions_.push_back(Teuchos::rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
       else if (function->HaveNamed("RADIUS_LIN"))
       {
@@ -1162,9 +1162,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
                              (tmp[6]-tmp[2])*(tmp[6]-tmp[2]));
 
         // Keep it simple.
-        ostringstream expr;
+        std::ostringstream expr;
         expr << "(" << b << ") + sqrt(x*x + y*y + z*z)/(" << length << ")*(" << m << ")";
-        functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
+        functions_.push_back(Teuchos::rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
       else if (function->HaveNamed("RADIUS_QUAD"))
       {
@@ -1187,35 +1187,35 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
                              (tmp[5]-tmp[2])*(tmp[5]-tmp[2]));
 
         // Keep it simple.
-        ostringstream expr;
+        std::ostringstream expr;
         expr << "1.0 - (x*x + y*y + z*z)/(" << length << ")/(" << length << ")";
-        functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
+        functions_.push_back(Teuchos::rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
       else if (function->HaveNamed("BELTRAMI"))
       {
-        functions_.push_back(rcp(new BeltramiFunction()));
+        functions_.push_back(Teuchos::rcp(new BeltramiFunction()));
       }
       else if (function->HaveNamed("KIM-MOIN"))
       {
-        functions_.push_back(rcp(new KimMoinFunction()));
+        functions_.push_back(Teuchos::rcp(new KimMoinFunction()));
       }
       else if (function->HaveNamed("BOCHEV-UP"))
       {
-        functions_.push_back(rcp(new BochevUPFunction()));
+        functions_.push_back(Teuchos::rcp(new BochevUPFunction()));
       }
       else if (function->HaveNamed("BOCHEV-RHS"))
       {
-        functions_.push_back(rcp(new BochevRHSFunction()));
+        functions_.push_back(Teuchos::rcp(new BochevRHSFunction()));
       }
       else if (function->HaveNamed("BELTRAMI-STAT-STOKES-UP") or
                function->HaveNamed("BELTRAMI-STAT-NAVIER-STOKES-UP"))
       {
-        functions_.push_back(rcp(new BeltramiStatStokesUP()));
+        functions_.push_back(Teuchos::rcp(new BeltramiStatStokesUP()));
       }
       else if (function->HaveNamed("BELTRAMI-STAT-STOKES-GRADU") or
                function->HaveNamed("BELTRAMI-STAT-NAVIER-STOKES-GRADU"))
       {
-        functions_.push_back(rcp(new BeltramiStatStokesGradU()));
+        functions_.push_back(Teuchos::rcp(new BeltramiStatStokesGradU()));
       }
       else if (function->HaveNamed("BELTRAMI-STAT-STOKES-RHS"))
       {
@@ -1224,7 +1224,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT",mat_id);
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-STAT-STOKES-RHS");
 
-        functions_.push_back(rcp(new BeltramiStatStokesRHS(mat_id)));
+        functions_.push_back(Teuchos::rcp(new BeltramiStatStokesRHS(mat_id)));
       }
       else if (function->HaveNamed("BELTRAMI-STAT-NAVIER-STOKES-RHS"))
       {
@@ -1233,17 +1233,17 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT",mat_id);
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-STAT-NAVIER-STOKES-RHS");
 
-        functions_.push_back(rcp(new KimMoinStatNavierStokesRHS(mat_id)));
+        functions_.push_back(Teuchos::rcp(new KimMoinStatNavierStokesRHS(mat_id)));
       }
       else if (function->HaveNamed("KIMMOIN-STAT-STOKES-UP") or
                function->HaveNamed("KIMMOIN-STAT-NAVIER-STOKES-UP"))
       {
-        functions_.push_back(rcp(new KimMoinStatStokesUP()));
+        functions_.push_back(Teuchos::rcp(new KimMoinStatStokesUP()));
       }
       else if (function->HaveNamed("KIMMOIN-STAT-STOKES-GRADU") or
                function->HaveNamed("KIMMOIN-STAT-NAVIER-STOKES-GRADU"))
       {
-        functions_.push_back(rcp(new KimMoinStatStokesGradU()));
+        functions_.push_back(Teuchos::rcp(new KimMoinStatStokesGradU()));
       }
       else if (function->HaveNamed("KIMMOIN-STAT-STOKES-RHS"))
       {
@@ -1252,7 +1252,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT",mat_id);
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STAT-STOKES-RHS");
 
-        functions_.push_back(rcp(new KimMoinStatStokesRHS(mat_id)));
+        functions_.push_back(Teuchos::rcp(new KimMoinStatStokesRHS(mat_id)));
       }
       else if (function->HaveNamed("KIMMOIN-STAT-NAVIER-STOKES-RHS"))
       {
@@ -1261,23 +1261,23 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT",mat_id);
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STAT-NAVIER-STOKES-RHS");
 
-        functions_.push_back(rcp(new KimMoinStatNavierStokesRHS(mat_id)));
+        functions_.push_back(Teuchos::rcp(new KimMoinStatNavierStokesRHS(mat_id)));
       }
       else if (function->HaveNamed("TURBBOULAYER"))
       {
-        functions_.push_back(rcp(new TurbBouLayerFunction()));
+        functions_.push_back(Teuchos::rcp(new TurbBouLayerFunction()));
       }
       else if (function->HaveNamed("TURBBOULAYER-BFS"))
       {
-        functions_.push_back(rcp(new TurbBouLayerFunctionBFS()));
+        functions_.push_back(Teuchos::rcp(new TurbBouLayerFunctionBFS()));
       }
       else if (function->HaveNamed("TURBBOULAYERORACLES"))
       {
-        functions_.push_back(rcp(new TurbBouLayerFunctionORACLES()));
+        functions_.push_back(Teuchos::rcp(new TurbBouLayerFunctionORACLES()));
       }
       else if (function->HaveNamed("JEFFERY-HAMEL"))
       {
-        functions_.push_back(rcp(new JefferyHamelFlowFunction()));
+        functions_.push_back(Teuchos::rcp(new JefferyHamelFlowFunction()));
       }
       else if (function->HaveNamed("WOMERSLEY"))
       {
@@ -1310,7 +1310,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         		fsi = false;
         }
 
-        functions_.push_back(rcp(new WomersleyFunction(localcoordsystem,e-1,mat,curve-1,fsi)));
+        functions_.push_back(Teuchos::rcp(new WomersleyFunction(localcoordsystem,e-1,mat,curve-1,fsi)));
       }
       else if (function->HaveNamed("CYLINDER_3D"))
       {
@@ -1320,49 +1320,49 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         // Keep it simple.
         // This is particularly odd. Very special. Useless.
-        ostringstream expr;
+        std::ostringstream expr;
         expr << "16*(" << um << ")*y*z*((" << h << ")-y)*((" << h << ")-z) / ((" << h << ")^4)";
-        functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), 0, 0, 0)));
+        functions_.push_back(Teuchos::rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), 0, 0, 0)));
       }
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
-        functions_.push_back(rcp(new ZalesaksDiskFunction()));
+        functions_.push_back(Teuchos::rcp(new ZalesaksDiskFunction()));
       }
       else if (function->HaveNamed("CIRCULARFLAME2"))
       {
-        functions_.push_back(rcp(new CircularFlame2Function()));
+        functions_.push_back(Teuchos::rcp(new CircularFlame2Function()));
       }
       else if (function->HaveNamed("CIRCULARFLAME3"))
       {
-        functions_.push_back(rcp(new CircularFlame3Function()));
+        functions_.push_back(Teuchos::rcp(new CircularFlame3Function()));
       }
       else if (function->HaveNamed("CIRCULARFLAME4"))
       {
-        functions_.push_back(rcp(new CircularFlame4Function()));
+        functions_.push_back(Teuchos::rcp(new CircularFlame4Function()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
-        functions_.push_back(rcp(new CollapsingWaterColumnFunction()));
+        functions_.push_back(Teuchos::rcp(new CollapsingWaterColumnFunction()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
       {
-        functions_.push_back(rcp(new CollapsingWaterColumnFunctionCoarse()));
+        functions_.push_back(Teuchos::rcp(new CollapsingWaterColumnFunctionCoarse()));
       }
       else if (function->HaveNamed("ORACLESGFUNC"))
       {
-        functions_.push_back(rcp(new ORACLESGFunction()));
+        functions_.push_back(Teuchos::rcp(new ORACLESGFunction()));
       }
       else if (function->HaveNamed("ROTATINGCONE"))
       {
-        functions_.push_back(rcp(new RotatingConeFunction()));
+        functions_.push_back(Teuchos::rcp(new RotatingConeFunction()));
       }
       else if (function->HaveNamed("LEVELSETCUTTEST"))
       {
-        functions_.push_back(rcp(new LevelSetCutTestFunction()));
+        functions_.push_back(Teuchos::rcp(new LevelSetCutTestFunction()));
       }
       else if (function->HaveNamed("EXPR"))
       {
-        Teuchos::RCP<ExprFunction> vecfunc = rcp(new ExprFunction());
+        Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
 
         std::vector<double> origin;
         function->ExtractDoubleVector("EXPR",origin);
@@ -1378,7 +1378,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
     else
     {
-      Teuchos::RCP<ExprFunction> vecfunc = rcp(new ExprFunction());
+      Teuchos::RCP<ExprFunction> vecfunc = Teuchos::rcp(new ExprFunction());
 
       for (unsigned j=0; j<functions.size(); ++j)
       {
@@ -1449,7 +1449,7 @@ DRT::UTILS::ExprFunction::ExprFunction(char* buf,
   y_.push_back(y);
   z_.push_back(z);
 
-  expr_.push_back(rcp(new DRT::PARSER::Parser<double>(buf)));
+  expr_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<double>(buf)));
 
   return;
 }
@@ -1470,7 +1470,7 @@ void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
                                        double z
   )
 {
-  expr_.push_back(rcp(new DRT::PARSER::Parser<double>(buf)));
+  expr_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<double>(buf)));
   x_.push_back(x);
   y_.push_back(y);
   z_.push_back(z);
@@ -2803,7 +2803,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   // calculate phase and radius of current node
   for(int i=0;i<(int)xptemp.size();i++)
   xptemp.at(i) = xp[i] - origin_.at(i);
-  cout.setf(ios::scientific);
+  cout.setf(std::ios::scientific);
   cout.precision(8);
   //cout<<"xpTemp: "<<xptemp.at(0)<<","<<xptemp.at(1)<<","<<xptemp.at(2)<<endl;
   //(n,t1,t2), signed
@@ -2901,13 +2901,13 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   double w = 0.0;
   // steady part (Hagen-Poiseuille)
   double wsteady = 0.0;
-  i_ = complex<double> (0.0,1.0);
+  i_ = std::complex<double> (0.0,1.0);
   // Womersley number
-  complex<double> alpha(0.0,0.0);
+  std::complex<double> alpha(0.0,0.0);
   // z = alpha*i_^(3/2)
-  complex<double> z(0.0,0.0);
+  std::complex<double> z(0.0,0.0);
   // term consisting of several Bessel functions
-  complex<double> bessel(0.0,0.0);
+  std::complex<double> bessel(0.0,0.0);
   
   // calculation of the velocity by components (index)
   // linear transition to physiological profile (may be of advantage to introduce a flexible t_start, here fixed at 1.0)
@@ -2919,10 +2919,10 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     {
       // Womersley number
       alpha = radius_*sqrt(2.0*M_PI*k*fbase_/viscosity_);
-      z = alpha*pow(i_,1.5);
+      z = alpha*std::pow(i_,1.5);
       // Bessel term
-      bessel = z*(BesselJ01(z,false)-BesselJ01(z*(complex<double>)(rabs/radius_), false))/
-        (z*BesselJ01(z,false)-(complex<double>)(2.0)*BesselJ01(z, true));
+      bessel = z*(BesselJ01(z,false)-BesselJ01(z*(std::complex<double>)(rabs/radius_), false))/
+        (z*BesselJ01(z,false)-(std::complex<double>)(2.0)*BesselJ01(z, true));
       w += vtemp_.at(k)*real(bessel);
     }
     // division through time curve value because of result = VALUE*CURVE*FUNCT
@@ -2944,8 +2944,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     {
       alpha = radius_*sqrt(2.0*M_PI*k*fbase_/viscosity_);
       z = alpha*pow(i_,1.5);
-      bessel= z*(BesselJ01(z,false)-BesselJ01(z*(complex<double>)(rabs/radius_), false))/
-        (z*BesselJ01(z,false)-(complex<double>)(2.0)*BesselJ01(z, true));
+      bessel= z*(BesselJ01(z,false)-BesselJ01(z*(std::complex<double>)(rabs/radius_), false))/
+        (z*BesselJ01(z,false)-(std::complex<double>)(2.0)*BesselJ01(z, true));
       w += vphyscurve.at(k)*real(bessel);
     }
     if(tc_.f(t)==0.0)
@@ -2964,14 +2964,14 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 /*----------------------------------------------------------------------*
  |  Womersley: Bessel functions of order 0 and 1          mueller 04/10 |
  *----------------------------------------------------------------------*/
-complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(complex<double> z, bool order)
+std::complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(std::complex<double> z, bool order)
 {
   // DESCRIPTION:
   // Bessel functions of order 0 (order==false) or 1 (order==true) are calculated for
   // a given argument z
 
   int end = 70;
-  complex<double> J(0.0,0.0);
+  std::complex<double> J(0.0,0.0);
   double fac = 1.0;
 
   // Bessel function of the first kind and order 0
@@ -2981,12 +2981,12 @@ complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(complex<double> z, bool
     {
       for(int k=2;k<=m;k++)
 	fac *= (double)(k);
-      J += (complex<double>)((double)(pow(-1.0,(double)(m)))/pow(fac,2.0))*
-      pow((z/(complex<double>)(2.0)),(complex<double>)(2*m));
+      J += (std::complex<double>)((double)(pow(-1.0,(double)(m)))/pow(fac,2.0))*
+      pow((z/(std::complex<double>)(2.0)),(std::complex<double>)(2*m));
       fac = 1.0;
     }
-    if(z == complex<double>(0.0,0.0))
-      J= complex<double>(1.0,0.0);
+    if(z == std::complex<double>(0.0,0.0))
+      J= std::complex<double>(1.0,0.0);
   }
   // Bessel function of the first kind and order 1
   else
@@ -2995,8 +2995,8 @@ complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(complex<double> z, bool
     {
       for(int k=2;k<=m;k++)
 	fac *= (double)(k);
-      J += (complex<double>)((pow(-1.0,(double)(m)))/((double)(m+1)*pow(fac,2.0)))*
-      pow((z/complex<double>(2.0)),(complex<double>)(2*m+1));
+      J += (std::complex<double>)((pow(-1.0,(double)(m)))/((double)(m+1)*pow(fac,2.0)))*
+      pow((z/std::complex<double>(2.0)),(std::complex<double>)(2*m+1));
       fac = 1.0;
     }
   }
@@ -3005,23 +3005,23 @@ complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(complex<double> z, bool
 /*----------------------------------------------------------------------*
  |  Womersley: Discrete Fourier Transfomation             mueller 04/10 |
  *----------------------------------------------------------------------*/
-void DRT::UTILS::WomersleyFunction::DFT(std::vector<double> *data, std::vector< complex<double> > *resdata, const int N)
+void DRT::UTILS::WomersleyFunction::DFT(std::vector<double> *data, std::vector< std::complex<double> > *resdata, const int N)
 {
   // DESCRIPTION:
   // a given vector data undergoes the DFT. The result is written back to resdata. N is the number
   // of sampling points
 
-  complex<double> exp_w;
-  complex<double> c;
-  complex<double> sum;
-  c = complex<double>(2.0/(double)(N), 0.0);
+  std::complex<double> exp_w;
+  std::complex<double> c;
+  std::complex<double> sum;
+  c = std::complex<double>(2.0/(double)(N), 0.0);
 
   for(int k=0;k<N;k++)
   {
-    sum = complex<double>(0.0,0.0);
+    sum = std::complex<double>(0.0,0.0);
     for(int n=0;n<N;n++)
     {
-      exp_w= complex<double>(cos(2.0*M_PI/double(N)*k*n), -sin(2.0*M_PI/double(N)*k*n));
+      exp_w= std::complex<double>(cos(2.0*M_PI/double(N)*k*n), -sin(2.0*M_PI/double(N)*k*n));
       sum += c*data->at(n)*exp_w;
     }
     resdata->push_back(sum);

@@ -137,7 +137,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // -> compute nullspace
   ns = null;
   mllist.set<RCP<vector<double> > >("nullspace",null);
-  // ML would not tolerate this rcp-ptr in its list otherwise
+  // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
   mllist.set<bool>("ML validate parameter list",false);
   const Epetra_Map* rowmap = DofRowMap(0);
 
@@ -157,7 +157,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   mllist.set("null space: add default vectors",false);
   // allocate dimns times the local length of the rowmap
   const int lrows = rowmap->NumMyElements();
-  ns = rcp(new vector<double>(dimns*lrows));
+  ns = Teuchos::rcp(new vector<double>(dimns*lrows));
   double* nullsp = &((*ns)[0]);
   mllist.set<RCP<vector<double> > >("nullspace",ns);
   mllist.set("null space: vectors",nullsp);

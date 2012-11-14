@@ -41,9 +41,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_fluid/drt_periodicbc.H"
 
-using namespace std;
-using namespace Teuchos;
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -273,7 +270,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   // context for output and restart
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
+    Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
@@ -291,12 +288,12 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
       dserror("no linear solver defined for ALE problems. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  RCP<ParameterList> params = rcp(new ParameterList());
+  RCP<ParameterList> params = Teuchos::rcp(new ParameterList());
   params->set<int>("numstep",    prbdyn.get<int>("NUMSTEP"));
   params->set<double>("maxtime", prbdyn.get<double>("MAXTIME"));
   params->set<double>("dt",      prbdyn.get<double>("TIMESTEP"));
@@ -355,15 +352,15 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
 
   int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
   if (aletype==INPAR::ALE::classic_lin)
-    ale_ = rcp(new AleLinear(actdis, solver, params, output, false, dirichletcond));
+    ale_ = Teuchos::rcp(new AleLinear(actdis, solver, params, output, false, dirichletcond));
   else if (aletype==INPAR::ALE::incr_lin)
-    ale_ = rcp(new AleLinear(actdis, solver, params, output, true , dirichletcond));
+    ale_ = Teuchos::rcp(new AleLinear(actdis, solver, params, output, true , dirichletcond));
   else if (aletype==INPAR::ALE::laplace)
-    ale_ = rcp(new AleLaplace(actdis, solver, params, output, true, dirichletcond));
+    ale_ = Teuchos::rcp(new AleLaplace(actdis, solver, params, output, true, dirichletcond));
   else if (aletype==INPAR::ALE::springs)
-    ale_ = rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
+    ale_ = Teuchos::rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
   else if (aletype==INPAR::ALE::springs_fixed_ref)
-    ale_ = rcp(new AleSpringsFixedRef(actdis, solver, params, output, true, dirichletcond));
+    ale_ = Teuchos::rcp(new AleSpringsFixedRef(actdis, solver, params, output, true, dirichletcond));
   else
     dserror("ale type '%s' unsupported",adyn.get<std::string>("ALE_TYPE").c_str());
 }

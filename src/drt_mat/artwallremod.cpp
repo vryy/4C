@@ -72,13 +72,13 @@ MAT::ArtWallRemod::ArtWallRemod()
 {
   dserror("This material law - ARTWALLREMOD - is not maintained anymore.");
   isinit_=false;
-  gamma_ = rcp(new vector<double>);
-  lambda_ = rcp(new vector<vector<double> >);
-  a1_ = rcp(new vector<vector<double> >);
-  a2_ = rcp(new vector<vector<double> >);
-  phi_ = rcp(new vector<Epetra_SerialDenseMatrix>);
-  stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
-  remtime_ = rcp(new vector<double>);
+  gamma_ = Teuchos::rcp(new vector<double>);
+  lambda_ = Teuchos::rcp(new vector<vector<double> >);
+  a1_ = Teuchos::rcp(new vector<vector<double> >);
+  a2_ = Teuchos::rcp(new vector<vector<double> >);
+  phi_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix>);
+  stresses_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix>);
+  remtime_ = Teuchos::rcp(new vector<double>);
 }
 
 
@@ -173,9 +173,9 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   if (numgp == 0) isinit_=false;
 
   // unpack internal variables independent of remodeling
-  remtime_ = rcp(new vector<double>(numgp));
-  a1_ = rcp(new vector<vector<double> >(numgp));
-  a2_ = rcp(new vector<vector<double> >(numgp));
+  remtime_ = Teuchos::rcp(new vector<double>(numgp));
+  a1_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  a2_ = Teuchos::rcp(new vector<vector<double> >(numgp));
   bool haveremodeldata = false;
   for (int gp = 0; gp < numgp; ++gp) {
     double mytime;
@@ -212,10 +212,10 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
     // because remodeling might be switched after restart
     if (params_->rembegt_ != -1.){
       // initialize internal variables of remodeling
-      gamma_ = rcp(new vector<double>(numgp));
-      phi_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
-      stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
-      lambda_ = rcp(new vector<vector<double> >(numgp));
+      gamma_ = Teuchos::rcp(new vector<double>(numgp));
+      phi_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
+      stresses_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
+      lambda_ = Teuchos::rcp(new vector<vector<double> >(numgp));
       if (haveremodeldata){ // unpack remodel data
         for (int gp = 0; gp < numgp; ++gp) {
           double gamma;
@@ -269,8 +269,8 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
 
 void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::LineDefinition* linedef)
 {
-  a1_ = rcp(new vector<vector<double> > (numgp));
-  a2_ = rcp(new vector<vector<double> > (numgp));
+  a1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  a2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
   int initflag = params_->init_;
   double gamma = params_->gamma_;
   gamma = (gamma * M_PI)/180.0;  // convert to radians
@@ -327,10 +327,10 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::Line
   // check for remodelling option and initialize
   if ((params_->rembegt_ > 0.)){
     // history
-    gamma_ = rcp(new vector<double> (numgp));  // of alignment angles
-    lambda_ = rcp(new vector<vector<double> > (numgp)); // of eigenvalues
-    phi_ = rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of eigenvectors
-    stresses_ = rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of stresses
+    gamma_ = Teuchos::rcp(new vector<double> (numgp));  // of alignment angles
+    lambda_ = Teuchos::rcp(new vector<vector<double> > (numgp)); // of eigenvalues
+    phi_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of eigenvectors
+    stresses_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of stresses
     for (int gp = 0; gp < numgp; ++gp) {
       gamma_->at(gp) = gamma;
       lambda_->at(gp).resize(3);
@@ -343,7 +343,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::Line
     // no remodeling
     params_->rembegt_ = -1.0;
   }
-  remtime_ = rcp(new vector<double> (numgp)); // of remodelling time
+  remtime_ = Teuchos::rcp(new vector<double> (numgp)); // of remodelling time
   for (int gp = 0; gp < numgp; ++gp) remtime_->at(gp) = params_->rembegt_;
 
   isinit_ = true;
@@ -389,7 +389,7 @@ void MAT::ArtWallRemod::Evaluate(
         - 0.25 * C(2)*C(3)*C(3)
         - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
   const double J = sqrt(I3);
-  const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
+  const double incJ = std::pow(I3,-1.0/3.0);  // J^{-2/3}
 
   // invert C
   LINALG::Matrix<NUM_STRESS_3D,1> Cinv(false);
@@ -709,7 +709,7 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 {
   std::stringstream filename;
   const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-  filename << filebase << "_rem" << std::setw(3) << setfill('0') << time << std::setw(2) << setfill('0') << iter << ".pos";
+  filename << filebase << "_rem" << std::setw(3) << std::setfill('0') << time << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system(filename.str().c_str());
 
   stringstream gmshfilecontent;
@@ -755,20 +755,20 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 
       for (int k=0; k<2; ++k){
 
-        gmshfilecontent << "VP(" << scientific << point[0] << ",";
-        gmshfilecontent << scientific << point[1] << ",";
-        gmshfilecontent << scientific << point[2] << ")";
-        gmshfilecontent << "{" << scientific
+        gmshfilecontent << "VP(" << std::scientific << point[0] << ",";
+        gmshfilecontent << std::scientific << point[1] << ",";
+        gmshfilecontent << std::scientific << point[2] << ")";
+        gmshfilecontent << "{" << std::scientific
         <<        fibgp.at(k)[0]
         << "," << fibgp.at(k)[1]
         << "," << fibgp.at(k)[2]
         << "};" << endl;
 
         // draw also negative direction to avoid "jumping"
-        gmshfilecontent << "VP(" << scientific << point[0] << ",";
-        gmshfilecontent << scientific << point[1] << ",";
-        gmshfilecontent << scientific << point[2] << ")";
-        gmshfilecontent << "{" << scientific
+        gmshfilecontent << "VP(" << std::scientific << point[0] << ",";
+        gmshfilecontent << std::scientific << point[1] << ",";
+        gmshfilecontent << std::scientific << point[2] << ")";
+        gmshfilecontent << "{" << std::scientific
         <<        -fibgp.at(k)[0]
         << "," << -fibgp.at(k)[1]
         << "," << -fibgp.at(k)[2]
@@ -780,10 +780,10 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 //      vector<double> lambda = remo->Getlambdas()->at(gp);
 //      const double scale = 100.0;
 //      for (int k=0; k<3; ++k){
-//        gmshfilecontent << "VP(" << scientific << point[0] << ",";
-//        gmshfilecontent << scientific << point[1] << ",";
-//        gmshfilecontent << scientific << point[2] << ")";
-//        gmshfilecontent << "{" << scientific
+//        gmshfilecontent << "VP(" << std::scientific << point[0] << ",";
+//        gmshfilecontent << std::scientific << point[1] << ",";
+//        gmshfilecontent << std::scientific << point[2] << ")";
+//        gmshfilecontent << "{" << std::scientific
 //        <<        scale*lambda[k]*Phi(0,k)
 //        << "," << scale*lambda[k]*Phi(1,k)
 //        << "," << scale*lambda[k]*Phi(2,k)

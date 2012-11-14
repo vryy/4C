@@ -221,7 +221,7 @@ public:
   /// Very simple internal gauss point iterator.
   ///
   /// With this iterator our gauss point loop looks familiar. Furthermore, we
-  /// store a raw pointer and avoid the rcp indirection. This is the gauss
+  /// store a raw pointer and avoid the Teuchos::rcp indirection. This is the gauss
   /// loop, after all!
   class GaussPointIterator
   {

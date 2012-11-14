@@ -133,7 +133,7 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
     // tolerance for polygon clipping
     double sminedge = SlaveIntElement().MinEdgeSize();
     double mminedge = MasterIntElement().MinEdgeSize();
-    tol = MORTARCLIPTOL * min(sminedge,mminedge);
+    tol = MORTARCLIPTOL * std::min(sminedge,mminedge);
   }
 
   // *******************************************************************
@@ -242,7 +242,7 @@ bool MORTAR::Coupling3d::RoughCheckCenters()
 {
   double sme = SlaveElement().MaxEdgeSize();
   double mme = MasterElement().MaxEdgeSize();
-  double near = 2.0 * max(sme,mme);
+  double near = 2.0 * std::max(sme,mme);
 
   double loccs[2] = {0.0, 0.0};
   DRT::Element::DiscretizationType dts = SlaveElement().Shape();
@@ -283,7 +283,7 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
   bool near = false;
   double sme = SlaveElement().MaxEdgeSize();
   double mme = MasterElement().MaxEdgeSize();
-  double limit = 0.3 * max(sme,mme);
+  double limit = 0.3 * std::max(sme,mme);
   
   for (int i=0;i<nnodes;++i)
   {
@@ -609,12 +609,12 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   {
     std::cout << "\nInput Poylgon 1:";
     for (int i=0;i<(int)poly1.size();++i)
-      std::cout << "\nVertex " << i << ":\t" << scientific << poly1[i].Coord()[0]
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].Coord()[0]
            << "\t" << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
   
     std::cout << "\nInput Poylgon 2:";
     for (int i=0;i<(int)poly2.size();++i)
-      std::cout << "\nVertex " << i << ":\t" << scientific << poly2[i].Coord()[0]
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].Coord()[0]
            << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
   
     std::cout << endl << endl;
@@ -1438,20 +1438,20 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     {
       if (i!=(int)poly1.size()-1)
       {
-        gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
                                  << poly1[i].Coord()[2] << "," << poly1[i+1].Coord()[0] << "," << poly1[i+1].Coord()[1] << ","
                                  << poly1[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
                                  << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
                                  << poly1[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
   
       }
-      gmshfilecontent << "T3(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "T3(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{" << "S" << i << "};" << endl;
     }
   
@@ -1459,20 +1459,20 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     {
       if (i!=(int)poly2.size()-1)
       {
-        gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
                                  << poly2[i].Coord()[2] << "," << poly2[i+1].Coord()[0] << "," << poly2[i+1].Coord()[1] << ","
                                  << poly2[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
                                  << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
                                  << poly2[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
   
       }
-      gmshfilecontent << "T3(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "T3(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{" << "M" << i << "};" << endl;
     }
   
@@ -1480,26 +1480,26 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     {
       if (i!=(int)respoly.size()-1)
       {
-        gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
                                  << respoly[i].Coord()[2] << "," << respoly[i+1].Coord()[0] << "," << respoly[i+1].Coord()[1] << ","
                                  << respoly[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
                                  << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
                                  << respoly[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
   
       }
-      gmshfilecontent << "T3(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
+      gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
       gmshfilecontent << "{" << "R" << i << "};" << endl;
     }
   
   //  for (int i=0;i<(int)intersec1.size();++i)
   //  {
-  //    gmshfilecontent << "T3(" << scientific << intersec1[i].Coord()[0] << "," << intersec1[i].Coord()[1] << "," << intersec1[i].Coord()[2] << "," << 17 << ")";
+  //    gmshfilecontent << "T3(" << std::scientific << intersec1[i].Coord()[0] << "," << intersec1[i].Coord()[1] << "," << intersec1[i].Coord()[2] << "," << 17 << ")";
   //    if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SEME" << "};" << endl;
   //    else if (intersec1[i].EntryExit()==false && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SXME" << "};" << endl;
   //    else if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==false) gmshfilecontent << "{" << "SEMX" << "};" << endl;
@@ -1711,20 +1711,20 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         {
           if (i!=nsnodes-1)
           {
-            gmshfilecontent << "SL(" << scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << ","
+            gmshfilecontent << "SL(" << std::scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << ","
                                      << mycsnodes[i]->xspatial()[2] << "," << mycsnodes[i+1]->xspatial()[0] << "," << mycsnodes[i+1]->xspatial()[1] << ","
                                      << mycsnodes[i+1]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
           }
           else
           {
-            gmshfilecontent << "SL(" << scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << ","
+            gmshfilecontent << "SL(" << std::scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << ","
                                      << mycsnodes[i]->xspatial()[2] << "," << mycsnodes[0]->xspatial()[0] << "," << mycsnodes[0]->xspatial()[1] << ","
                                      <<mycsnodes[0]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
       
           }
-          gmshfilecontent << "T3(" << scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << "," << mycsnodes[i]->xspatial()[2] << "," << 17 << ")";
+          gmshfilecontent << "T3(" << std::scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << "," << mycsnodes[i]->xspatial()[2] << "," << 17 << ")";
           gmshfilecontent << "{" << "S" << i << "};" << endl;
         }
       
@@ -1732,20 +1732,20 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         {
           if (i!=nmnodes-1)
           {
-            gmshfilecontent << "SL(" << scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << ","
+            gmshfilecontent << "SL(" << std::scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << ","
                                      << mycmnodes[i]->xspatial()[2] << "," << mycmnodes[i+1]->xspatial()[0] << "," << mycmnodes[i+1]->xspatial()[1] << ","
                                      << mycmnodes[i+1]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
           }
           else
           {
-            gmshfilecontent << "SL(" << scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << ","
+            gmshfilecontent << "SL(" << std::scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << ","
                                      << mycmnodes[i]->xspatial()[2] << "," << mycmnodes[0]->xspatial()[0] << "," << mycmnodes[0]->xspatial()[1] << ","
                                      <<mycmnodes[0]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
       
           }
-          gmshfilecontent << "T3(" << scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << "," << mycmnodes[i]->xspatial()[2] << "," << 17 << ")";
+          gmshfilecontent << "T3(" << std::scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << "," << mycmnodes[i]->xspatial()[2] << "," << 17 << ")";
           gmshfilecontent << "{" << "M" << i << "};" << endl;
         }
         
@@ -1768,12 +1768,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   {
     std::cout << "\nInput Poylgon 1:";
     for (int i=0;i<(int)poly1.size();++i)
-      std::cout << "\nVertex " << i << ":\t" << scientific << poly1[i].Coord()[0]
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].Coord()[0]
            << "\t" << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
   
     std::cout << "\nInput Poylgon 2:";
     for (int i=0;i<(int)poly2.size();++i)
-      std::cout << "\nVertex " << i << ":\t" << scientific << poly2[i].Coord()[0]
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].Coord()[0]
            << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
   
     std::cout << endl << endl;
@@ -2660,20 +2660,20 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     {
       if (i!=(int)poly1.size()-1)
       {
-        gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
                                  << poly1[i].Coord()[2] << "," << poly1[i+1].Coord()[0] << "," << poly1[i+1].Coord()[1] << ","
                                  << poly1[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
                                  << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
                                  << poly1[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 1.0 << "," << 1.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
   
       }
-      gmshfilecontent << "T3(" << scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "T3(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{" << "S" << i << "};" << endl;
     }
   
@@ -2681,20 +2681,20 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     {
       if (i!=(int)poly2.size()-1)
       {
-        gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
                                  << poly2[i].Coord()[2] << "," << poly2[i+1].Coord()[0] << "," << poly2[i+1].Coord()[1] << ","
                                  << poly2[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
                                  << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
                                  << poly2[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
   
       }
-      gmshfilecontent << "T3(" << scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "T3(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
       gmshfilecontent << "{" << "M" << i << "};" << endl;
     }
     
@@ -2702,20 +2702,20 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     {
       if (i!=(int)respoly.size()-1)
       {
-        gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
                                  << respoly[i].Coord()[2] << "," << respoly[i+1].Coord()[0] << "," << respoly[i+1].Coord()[1] << ","
                                  << respoly[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
                                  << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
                                  << respoly[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
   
       }
-      gmshfilecontent << "T3(" << scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
+      gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
       gmshfilecontent << "{" << "R" << i << "};" << endl;
     }
     
@@ -3694,26 +3694,26 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
     gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {" << endl;
     
     // dummy element 1
-    gmshfilecontent << "ST(" << scientific << 0.0 << "," << 0.0 << ","
+    gmshfilecontent << "ST(" << std::scientific << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << ")";
-    gmshfilecontent << "{" << scientific << 0 << "," << 0 << "," << 0 << "};" << endl;
+    gmshfilecontent << "{" << std::scientific << 0 << "," << 0 << "," << 0 << "};" << endl;
     
     // dummy element 1
-    gmshfilecontent << "ST(" << scientific << 0.0 << "," << 0.0 << ","
+    gmshfilecontent << "ST(" << std::scientific << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << ")";
-    gmshfilecontent << "{" << scientific << nproc-1 << "," << nproc-1 << "," << nproc-1 << "};" << endl;
+    gmshfilecontent << "{" << std::scientific << nproc-1 << "," << nproc-1 << "," << nproc-1 << "};" << endl;
   }
   
   // plot cell itself
-  gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+  gmshfilecontent << "ST(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                   << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                   << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                   << coord(2,2) << ")";
-  gmshfilecontent << "{" << scientific << proc << "," << proc << "," << proc << "};" << endl;
+  gmshfilecontent << "{" << std::scientific << proc << "," << proc << "," << proc << "};" << endl;
   
   // move everything to gmsh post-processing files and close them
   fprintf(fp,gmshfilecontent.str().c_str());

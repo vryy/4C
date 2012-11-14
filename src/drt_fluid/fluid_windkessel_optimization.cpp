@@ -78,7 +78,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
       // -----------------------------------------------------------------
       // stack the impedances into a map
       // -----------------------------------------------------------------
-      RCP<DRT::Condition> wkCond = rcp(new DRT::Condition(*(impedancecond[i])));
+      RCP<DRT::Condition> wkCond = Teuchos::rcp(new DRT::Condition(*(impedancecond[i])));
       bool inserted = wkmap.insert( make_pair( condid, wkCond ) ).second;
       
       if ( !inserted )
@@ -129,7 +129,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
       // sort optimization bc's in map and test if one condition ID
       // appears more than once. Currently this case is forbidden.
       // -----------------------------------------------------------------
-      RCP<DRT::Condition> wkoptCond = rcp(new DRT::Condition(*(wk_optim_cond[i])));
+      RCP<DRT::Condition> wkoptCond = Teuchos::rcp(new DRT::Condition(*(wk_optim_cond[i])));
       bool inserted = optwkmap_.insert( make_pair( optID, wkoptCond ) ).second;
       if ( !inserted )
       {
@@ -139,18 +139,18 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
       Dim += GetObjectiveFunctionSize(wkoptCond,optID);
     }
 
-    Jacobian_  = rcp(new Epetra_SerialDenseMatrix(Dim,Dim));
-    Jnm_       = rcp(new Epetra_SerialDenseMatrix(Dim,Dim));
-    fn_        = rcp(new Epetra_SerialDenseVector(Dim));
-    fnm_       = rcp(new Epetra_SerialDenseVector(Dim));
-    xn_        = rcp(new Epetra_SerialDenseVector(Dim));
-    xnm_       = rcp(new Epetra_SerialDenseVector(Dim));
+    Jacobian_  = Teuchos::rcp(new Epetra_SerialDenseMatrix(Dim,Dim));
+    Jnm_       = Teuchos::rcp(new Epetra_SerialDenseMatrix(Dim,Dim));
+    fn_        = Teuchos::rcp(new Epetra_SerialDenseVector(Dim));
+    fnm_       = Teuchos::rcp(new Epetra_SerialDenseVector(Dim));
+    xn_        = Teuchos::rcp(new Epetra_SerialDenseVector(Dim));
+    xnm_       = Teuchos::rcp(new Epetra_SerialDenseVector(Dim));
 
-    dN_du_     = rcp(new Epetra_SerialDenseMatrix(numOptlines*cyclesteps,numOptlines*cyclesteps));
-    dN_dphi_   = rcp(new Epetra_SerialDenseMatrix(numOptlines*cyclesteps,Dim));
-    dL_du_     = rcp(new Epetra_SerialDenseMatrix(Dim,numOptlines*cyclesteps));
-    dJ_dphi_   = rcp(new Epetra_SerialDenseMatrix(Dim,Dim));
-    du_dphi_   = rcp(new Epetra_SerialDenseMatrix(numOptlines*cyclesteps,Dim));
+    dN_du_     = Teuchos::rcp(new Epetra_SerialDenseMatrix(numOptlines*cyclesteps,numOptlines*cyclesteps));
+    dN_dphi_   = Teuchos::rcp(new Epetra_SerialDenseMatrix(numOptlines*cyclesteps,Dim));
+    dL_du_     = Teuchos::rcp(new Epetra_SerialDenseMatrix(Dim,numOptlines*cyclesteps));
+    dJ_dphi_   = Teuchos::rcp(new Epetra_SerialDenseMatrix(Dim,Dim));
+    du_dphi_   = Teuchos::rcp(new Epetra_SerialDenseMatrix(numOptlines*cyclesteps,Dim));
 
     // -----------------------------------------------------------------
     // initial optimization step is zero

@@ -272,7 +272,7 @@ void STR::TimAda::Indicate
     errorder_ = MethodOrderOfAccuracyDis();
 
   // optimal size ration with respect to given tolerance
-  double sizrat = pow(errtol_/norm, 1.0/(errorder_+1.0));
+  double sizrat = std::pow(errtol_/norm, 1.0/(errorder_+1.0));
 
   // debug
   if (myrank_ == 0)

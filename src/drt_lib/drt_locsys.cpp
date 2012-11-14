@@ -19,8 +19,6 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
 
-using namespace std;
-using namespace Teuchos;
 
 
 /*-------------------------------------------------------------------*
@@ -595,7 +593,7 @@ void DRT::UTILS::LocsysManager::Setup()
   // number of nodes subjected to local co-ordinate systems
   set<int> locsysdofset;
 
-  trafo_ = rcp(new LINALG::SparseMatrix(*dofrowmap,3));
+  trafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,3));
 
   for (int i=0;i<noderowmap->NumMyElements();++i)
   {
@@ -903,7 +901,7 @@ void DRT::UTILS::LocsysManager::Setup()
       nummyentries = locsysdofs.size();
       myglobalentries = &(locsysdofs[0]);
     }
-    locsysdofmap_ = rcp(new Epetra_Map(-1, nummyentries, myglobalentries,
+    locsysdofmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyentries, myglobalentries,
                                        discret_.DofRowMap()->IndexBase(),
                                        discret_.Comm()));
     if (locsysdofmap_ == null) dserror("Creation failed.");

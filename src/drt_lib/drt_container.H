@@ -43,12 +43,9 @@ Maintainer: Michael Gee
 
 
 #include <string>
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseMatrix.h"
-
-using Teuchos::RCP;
-using Teuchos::ParameterList;
 
 #include "drt_parobject.H"
 #include "drt_dserror.H"
@@ -189,14 +186,14 @@ public:
   { Add(name,&data[0],data.size()); return;}
 
   /*!
-  \brief Add rcp to vector of int to the container
+  \brief Add Teuchos::rcp to vector of int to the container
 
   \param name : Name of data to store data with
-  \param data : rcp to vector of integers to be added
+  \param data : Teuchos::rcp to vector of integers to be added
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const std::string& name, RefCountPtr<std::vector<int> > data);
+  void Add(const std::string& name, Teuchos::RCP<std::vector<int> > data);
 
   /*!
   \brief Add a double to the container
@@ -232,14 +229,14 @@ public:
   { Add(name,&data[0],data.size()); return;}
 
    /*!
-  \brief Add rcp to vector of double to the container
+  \brief Add Teuchos::rcp to vector of double to the container
 
   \param name : Name of data to store data with
-  \param data : rcp to vector of doubles to be added
+  \param data : Teuchos::rcp to vector of doubles to be added
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const std::string& name, RefCountPtr<std::vector<double> > data);
+  void Add(const std::string& name, Teuchos::RCP<std::vector<double> > data);
 
   /*!
   \brief Add a string to the container
@@ -273,20 +270,20 @@ public:
   void Add(const std::string& name, const Epetra_SerialDenseMatrix& matrix);
 
    /*!
-  \brief Add rcp to Epetra_SerialDenseMatrix to the container
+  \brief Add Teuchos::rcp to Epetra_SerialDenseMatrix to the container
 
   \param name : Name of data to store data with
-  \param data : rcp to Epetra_SerialDenseMatrix to be added
+  \param data : Teuchos::rcp to Epetra_SerialDenseMatrix to be added
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const std::string& name, RefCountPtr<Epetra_SerialDenseMatrix> data);
+  void Add(const std::string& name, Teuchos::RCP<Epetra_SerialDenseMatrix> data);
 
    /*!
-  \brief Add rcp to Epetra_MultiVector to the container
+  \brief Add Teuchos::rcp to Epetra_MultiVector to the container
 
   \param name : Name of data to store data with
-  \param data : rcp to Epetra_MultiVector to be added
+  \param data : Teuchos::rcp to Epetra_MultiVector to be added
 
   \note If record with name name already exists, it will be overwritten
 
@@ -297,10 +294,10 @@ public:
   void Add(const string& name, Epetra_MultiVector& data);
 
    /*!
-  \brief Add rcp to Epetra_Vector to the container
+  \brief Add Teuchos::rcp to Epetra_Vector to the container
 
   \param name : Name of data to store data with
-  \param data : rcp to Epetra_Vector to be added
+  \param data : Teuchos::rcp to Epetra_Vector to be added
 
   \note If record with name name already exists, it will be overwritten
 
@@ -515,19 +512,19 @@ private:  // these methods are for PURE internal use
 protected:
 
   //! a map to store integer data in
-  std::map<string,RCP<std::vector<int> > >             intdata_;
+  std::map<string,Teuchos::RCP<std::vector<int> > >             intdata_;
 
   //! a map to store double data in
-  std::map<string,RCP<std::vector<double> > >          doubledata_;
+  std::map<string,Teuchos::RCP<std::vector<double> > >          doubledata_;
 
   //! a map to store string data in
   std::map<string,string>                         stringdata_;
 
   //! a map to store matrices in
-  std::map<string,RCP<Epetra_SerialDenseMatrix> > matdata_;
+  std::map<string,Teuchos::RCP<Epetra_SerialDenseMatrix> > matdata_;
 
   //! a map to store epetra vectors in
-  std::map<string,RCP<Epetra_MultiVector> >       evecdata_;
+  std::map<string,Teuchos::RCP<Epetra_MultiVector> >       evecdata_;
 
 }; // class Container
 } // namespace DRT

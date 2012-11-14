@@ -497,7 +497,7 @@ void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
                                     LINALG::MapExtractor& extractor)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
-  SetupExtractor(dis,condname,0,ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
+  SetupExtractor(dis,condname,0,ndim,Teuchos::rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
 }
 
 /*----------------------------------------------------------------------*/
@@ -521,7 +521,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                 LINALG::MapExtractor& extractor)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
-  SetupExtractor(dis,condname,0,ndim,rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
+  SetupExtractor(dis,condname,0,ndim,Teuchos::rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
 }
 
 /*----------------------------------------------------------------------*/
@@ -534,7 +534,7 @@ void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
                                 LINALG::MapExtractor& extractor)
 {
   MultiConditionSelector mcs;
-  mcs.AddSelector(rcp(new NDimConditionSelector(dis,condname,startdim,enddim)));
+  mcs.AddSelector(Teuchos::rcp(new NDimConditionSelector(dis,condname,startdim,enddim)));
   mcs.SetupExtractor(dis,*fullmap,extractor);
 }
 
@@ -549,8 +549,8 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
         const vector<string>&          conditions_to_copy
         )
 {
-  RCP<Epetra_Comm> com = rcp(sourcedis->Comm().Clone());
-  RCP<DRT::Discretization> conditiondis = rcp(new DRT::Discretization(discret_name,com));
+  RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis->Comm().Clone());
+  RCP<DRT::Discretization> conditiondis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
 
   // make sure connectivity is all set
   // we don't care, whether dofs exist or not
@@ -579,7 +579,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     vector<int> nids;
     nids.reserve(sourceele->NumNode());
     transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
-              back_inserter(nids), mem_fun(&DRT::Node::Id));
+              back_inserter(nids), std::mem_fun(&DRT::Node::Id));
 
     if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcenoderowmap))==0)
     {
@@ -623,14 +623,14 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     if (rownodeset.find(gid)!=rownodeset.end())
     {
       const DRT::Node* sourcenode = sourcedis->lRowNode(i);
-      conditiondis->AddNode(rcp(new DRT::Node(gid, sourcenode->X(), myrank)));
+      conditiondis->AddNode(Teuchos::rcp(new DRT::Node(gid, sourcenode->X(), myrank)));
     }
   }
 
   // we get the node maps almost for free
   vector<int> condnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  RCP<Epetra_Map> condnoderowmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> condnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                       condnoderowvec.size(),
                                                       &condnoderowvec[0],
                                                       0,
@@ -639,7 +639,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 
   vector<int> condnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  RCP<Epetra_Map> condnodecolmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> condnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
                                                       condnodecolvec.size(),
                                                       &condnodecolvec[0],
                                                       0,
@@ -656,7 +656,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     for (unsigned i=0; i<conds.size(); ++i)
     {
       // We use the same nodal ids and therefore we can just copy the conditions.
-      conditiondis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
+      conditiondis->SetCondition(*conditername, Teuchos::rcp(new DRT::Condition(*conds[i])));
     }
   }
 

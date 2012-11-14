@@ -17,7 +17,7 @@ int LINALG::AggregationMethod_ML::GetGlobalAggregates(const RCP<Epetra_CrsMatrix
 {
   // create aggrinfo vector
   if(aggrinfo != null) aggrinfo = null;
-  aggrinfo = rcp(new Epetra_IntVector(A->RowMap(),true));
+  aggrinfo = Teuchos::rcp(new Epetra_IntVector(A->RowMap(),true));
 
   int naggregates = GetAggregates(A,params,*ThisNS,aggrinfo);
 

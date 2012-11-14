@@ -86,47 +86,47 @@ private:
   static NStet5Type                                   instance_;
 
   //! map of row nodes adjacent to NStet5 elements
-  map<int,DRT::Node*>                                 noderids_;
+  std::map<int,DRT::Node*>                                 noderids_;
 
   //! map of column NStet5 elements
-  map<int,DRT::ELEMENTS::NStet5*>                     elecids_;
+  std::map<int,DRT::ELEMENTS::NStet5*>                     elecids_;
 
   //! nodal stresses and strains for output
   Teuchos::RCP<Epetra_MultiVector>                    nstress_;
   Teuchos::RCP<Epetra_MultiVector>                    nstrain_;
 
   //! map of nodes forming a patch around a node (includes center node)
-  // map<centernodeid,map<nodeid,nodeptr> >
-  map<int,map<int,DRT::Node*> >                       adjnode_;
+  // std::map<centernodeid,std::map<nodeid,nodeptr> >
+  std::map<int,std::map<int,DRT::Node*> >                       adjnode_;
 
   //! vector of elements adjacent to each row node
-  // map<centernodeid,vector of ptrs to elements>
-  map<int,vector<DRT::ELEMENTS::NStet5*> >            adjele_;
+  // std::map<centernodeid,vector of ptrs to elements>
+  std::map<int,vector<DRT::ELEMENTS::NStet5*> >            adjele_;
 
   //! map of subelements of adjacent elements
-  // map<centernodeid,map<eleid,vector of local subele numbers> >
-  map<int,map<int,vector<int> > >                     adjsubele_;
+  // std::map<centernodeid,std::map<eleid,vector of local subele numbers> >
+  std::map<int,std::map<int,vector<int> > >                     adjsubele_;
 
   //! map of location vectors for patch around a node
-  // map<centernodeid,vector of degrees of freedom on patch including element dofs>
-  map<int,vector<int> >                               adjlm_;
+  // std::map<centernodeid,vector of degrees of freedom on patch including element dofs>
+  std::map<int,vector<int> >                               adjlm_;
 
   //! map of location vectors for patch around a node
-  map<int,vector<vector<vector<int> > > >             lmlm_;
+  std::map<int,vector<vector<vector<int> > > >             lmlm_;
 
-  void InitElementsandMaps(map<int,DRT::ELEMENTS::NStet5*>& elecids,
-                           map<int,DRT::Node*>&             noderids,
+  void InitElementsandMaps(std::map<int,DRT::ELEMENTS::NStet5*>& elecids,
+                           std::map<int,DRT::Node*>&             noderids,
                            const int                        myrank,
                            const int                        numproc,
                            DRT::Discretization&             dis);
 
-  void InitAdjacency(map<int,DRT::ELEMENTS::NStet5*>&          elecids,
-                     map<int,DRT::Node*>&                      noderids,
-                     map<int,vector<DRT::ELEMENTS::NStet5*> >& adjele,
-                     map<int,map<int,DRT::Node*> >&            adjnode,
-                     map<int,vector<int> >&                    adjlm,
-                     map<int,map<int,vector<int> > >&          adjsubele,
-                     map<int,vector<vector<vector<int> > > >&  adjlmlm,
+  void InitAdjacency(std::map<int,DRT::ELEMENTS::NStet5*>&          elecids,
+                     std::map<int,DRT::Node*>&                      noderids,
+                     std::map<int,vector<DRT::ELEMENTS::NStet5*> >& adjele,
+                     std::map<int,std::map<int,DRT::Node*> >&       adjnode,
+                     std::map<int,vector<int> >&                    adjlm,
+                     std::map<int,std::map<int,vector<int> > >&     adjsubele,
+                     std::map<int,vector<vector<vector<int> > > >&  adjlmlm,
                      DRT::Discretization&                      dis);
 
 
@@ -134,9 +134,9 @@ private:
 
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
-                        map<int,DRT::Node*>&            adjnode,
+                        std::map<int,DRT::Node*>&       adjnode,
                         vector<DRT::ELEMENTS::NStet5*>& adjele,
-                        map<int,vector<int> >&          adjsubele,
+                        std::map<int,vector<int> >&     adjsubele,
                         vector<int>&                    lm,
                         vector<vector<vector<int> > >&  lmlm,
                         const Epetra_Vector&            disp,

@@ -64,7 +64,7 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
 
   // container is filled with data for supporting procs
   map<int,Teuchos::RCP<DRT::Container> > condnamemap;
-  condnamemap[0] = rcp(new DRT::Container());
+  condnamemap[0] = Teuchos::rcp(new DRT::Container());
 
   condnamemap[0]->Add<3,3>("defgrd",*defgrd);
   condnamemap[0]->Add<6,6>("cmat",*cmat);
@@ -211,7 +211,7 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
 
   // container is filled with data for supporting procs
   map<int,Teuchos::RCP<DRT::Container> > condnamemap;
-  condnamemap[0] = rcp(new DRT::Container());
+  condnamemap[0] = Teuchos::rcp(new DRT::Container());
 
   condnamemap[0]->Add("gp",gp);
   condnamemap[0]->Add("microdisnum",microdisnum);

@@ -52,7 +52,7 @@ void GEO::SearchTree::initializeTree(
 
 
   treeRoot_ = Teuchos::null;
-  treeRoot_ = rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
   
   // insert element map into tree root node
   if(elementsByLabel.size()>0)
@@ -74,7 +74,7 @@ void GEO::SearchTree::initializeTree(
 {
 
   treeRoot_ = Teuchos::null;
-  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
   // inserts all elements in a map with key -1 and global id
   for (int i=0; i<dis.NumMyColElements(); i++)
@@ -93,7 +93,7 @@ void GEO::SearchTree::initializePointTree(
 {
 
   treeRoot_ = Teuchos::null;
-  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
   for(std::map<int,LINALG::Matrix<3,1> >::const_iterator mapit = currentpositions.begin(); mapit != currentpositions.end(); mapit++)
     treeRoot_->insertElement(-1,mapit->first);
@@ -113,7 +113,7 @@ void GEO::SearchTree::initializeTreeSlideALE(
 {
 
   treeRoot_ = Teuchos::null;
-  treeRoot_ = rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
   map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
@@ -409,7 +409,7 @@ void GEO::SearchTree::printTree(
 
   std::stringstream filename;
   std::stringstream node_string;
-  filename << prefix << "_octtree" << std::setw(5) << setfill('0') << step << ".pos";
+  filename << prefix << "_octtree" << std::setw(5) << std::setfill('0') << step << ".pos";
   cout << " " << filename.str() << " ...";
   node_string << "View \" " << "XFEM_FSI_Octree \" {" << endl;
   treeRoot_->printTreeNode(max_depth_,node_string);
@@ -759,7 +759,7 @@ void GEO::SearchTree::TreeNode::createChildren(
 {
   // create empty children
   for(int index = 0; index < getNumChildren(); index++)
-    children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
+    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
 
   // insert elements into child node
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
@@ -788,7 +788,7 @@ void GEO::SearchTree::TreeNode::createChildren(
 {
   // create empty children
   for(int index = 0; index < getNumChildren(); index++)
-    children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
+    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
 
   // insert elements into child node
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
@@ -816,7 +816,7 @@ void GEO::SearchTree::TreeNode::createChildren(
     const std::map<int,LINALG::Matrix<3,1> >&      currentpositions)
 {
   for(int index = 0; index < getNumChildren(); index++)
-    children_[index] = rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
+    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_-1), getChildNodeBox(index), treeType_));
 
   for (std::map<int, std::set<int> >::const_iterator labelIter = elementList_.begin(); labelIter != elementList_.end(); labelIter++)
     for (std::set<int>::const_iterator pointIter = (labelIter->second).begin(); pointIter != (labelIter->second).end(); pointIter++)
@@ -842,7 +842,7 @@ void GEO::SearchTree::TreeNode::createChildren(
   for(int index = 0; index < getNumChildren(); index++)
   {
     getChildNodeBox(index, childNodeBox );
-    children_[index] = rcp(new TreeNode(this, (treedepth_-1), childNodeBox, treeType_));
+    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_-1), childNodeBox, treeType_));
   }
   std::vector<int> elementClassification;
   // insert elements into child node
@@ -873,7 +873,7 @@ void GEO::SearchTree::TreeNode::createChildren(
   for(int index = 0; index < getNumChildren(); index++)
   {
     getChildNodeBox(index, childNodeBox );
-    children_[index] = rcp(new TreeNode(this, (treedepth_-1), childNodeBox, treeType_));
+    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_-1), childNodeBox, treeType_));
   }
 
   static std::vector<int> elementClassification;

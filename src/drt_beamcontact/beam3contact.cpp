@@ -52,8 +52,8 @@ contactflag_(false)
   gap_=0.0;
   oldgap_=0.0;
   
-  neighbor1_ = rcp(new CONTACT::B3CNeighbor());
-  neighbor2_ = rcp(new CONTACT::B3CNeighbor());
+  neighbor1_ = Teuchos::rcp(new CONTACT::B3CNeighbor());
+  neighbor2_ = Teuchos::rcp(new CONTACT::B3CNeighbor());
 
   // initialize class variables for contact point coordinates
   x1_.Size(NDIM);

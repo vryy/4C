@@ -463,7 +463,7 @@ int XFEM::getParentElementId(DRT::Discretization& discret, RCP<DRT::Element> sur
         int act_eid = actele->Id();
         ele_map_it = ele_map.find(act_eid);
         if(ele_map_it!=ele_map.end()) ele_map_it->second++;
-        else ele_map.insert(pair<int,int>(act_eid,1));
+        else ele_map.insert(std::pair<int,int>(act_eid,1));
       }
 
     }

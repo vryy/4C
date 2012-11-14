@@ -343,7 +343,7 @@ namespace FLD
     /// predictor
     void Predictor();
 
-    /// return rcp to linear solver
+    /// return Teuchos::rcp to linear solver
     Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions

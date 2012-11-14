@@ -145,7 +145,7 @@ void GEO::svdcmpSerialDense(
                      for (int k=i;k<m;++k)
                      {
                          A(k,i) /= scale;
-                         s += pow(A(k,i), 2);
+                         s += std::pow(A(k,i), 2);
                      }
                      const double f=A(i,i);
                      g = -XSIGN(sqrt(s),f);
@@ -178,7 +178,7 @@ void GEO::svdcmpSerialDense(
                      for (int k=l;k<n;k++)
                      {
                          A(i,k) /= scale;
-                         s += pow(A(i,k),2);
+                         s += std::pow(A(i,k),2);
                      }
                      const double f=A(i,l);
                      g = -XSIGN(sqrt(s),f);

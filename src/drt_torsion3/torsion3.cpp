@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create( const string ele
 {
   if ( eletype=="TORSION3" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion3(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Torsion3(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create( const string ele
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Torsion3Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Torsion3(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Torsion3(id,owner));
   return ele;
 }
 
@@ -183,7 +183,7 @@ void DRT::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
 std::vector<RCP<DRT::Element> > DRT::ELEMENTS::Torsion3::Lines()
 {
   std::vector<RCP<Element> > lines(1);
-  lines[0]= rcp(this, false);
+  lines[0]= Teuchos::rcp(this, false);
   return lines;
 }
 

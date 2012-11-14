@@ -39,7 +39,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const string ele
 {
   if ( eletype=="COMBUST3" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Combust3(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Combust3(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const string ele
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Combust3(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Combust3(id,owner));
   return ele;
 }
 
@@ -130,7 +130,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3LineType::Create( const int id
 /*----------------------------------------------------------------------*/
 // map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/
-map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3::stabstrtoact_;
+std::map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3::stabstrtoact_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 02/08|
@@ -350,7 +350,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Surfaces()
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 
@@ -479,10 +479,10 @@ DRT::ELEMENTS::Combust3::MyStateSurface::MyStateSurface(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::DLMInfo::DLMInfo(const int nd, const int na)
 {
-  oldKaainv_ = rcp(new LINALG::SerialDenseMatrix(na,na,true));
-  oldKad_ = rcp(new LINALG::SerialDenseMatrix(na,nd,true));
-  oldfa_ = rcp(new LINALG::SerialDenseVector(na,true));
-  stressdofs_ = rcp(new LINALG::SerialDenseVector(na,true));
+  oldKaainv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(na,na,true));
+  oldKad_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(na,nd,true));
+  oldfa_ = Teuchos::rcp(new LINALG::SerialDenseVector(na,true));
+  stressdofs_ = Teuchos::rcp(new LINALG::SerialDenseVector(na,true));
 
   return;
 }

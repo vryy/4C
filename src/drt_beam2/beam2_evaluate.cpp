@@ -464,7 +464,7 @@ void DRT::ELEMENTS::Beam2::nlnstiffmass(Teuchos::ParameterList&   params,
   }
 
   //current length
-  lcurr = pow( pow(xcurr(0,1)-xcurr(0,0),2) + pow(xcurr(1,1)-xcurr(1,0),2) , 0.5 );
+  lcurr = std::pow( pow(xcurr(0,1)-xcurr(0,0),2) + pow(xcurr(1,1)-xcurr(1,0),2) , 0.5 );
 
   //update absolute rotation angle alpha of element frame
   updatealpha(xcurr,lcurr);

@@ -147,7 +147,7 @@ LOMA::Algorithm::Algorithm(
       dserror("SOLVER %i is not valid for LOMA. It has to be an Aztec Solver with BGS2x2 block preconditioner",linsolvernumber);
 
     // use loma solver object
-    lomasolver_ = rcp(new LINALG::Solver(lomasolverparams,FluidField().Discretization()->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
+    lomasolver_ = Teuchos::rcp(new LINALG::Solver(lomasolverparams,FluidField().Discretization()->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
 
     // todo extract ScalarTransportFluidSolver
     const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");
@@ -171,13 +171,13 @@ LOMA::Algorithm::Algorithm(
     lomasystemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(lomablockdofrowmap_,lomablockdofrowmap_,135,false,true));
 
     // create loma rhs vector
-    lomarhs_ = rcp(new Epetra_Vector(*lomablockdofrowmap_.FullMap(),true));
+    lomarhs_ = Teuchos::rcp(new Epetra_Vector(*lomablockdofrowmap_.FullMap(),true));
 
     // create loma increment vector
-    lomaincrement_ = rcp(new Epetra_Vector(*lomablockdofrowmap_.FullMap(),true));
+    lomaincrement_ = Teuchos::rcp(new Epetra_Vector(*lomablockdofrowmap_.FullMap(),true));
 
     // create vector of zeros for enforcing zero Dirichlet boundary conditions
-    zeros_ = rcp(new Epetra_Vector(*lomablockdofrowmap_.FullMap(),true));
+    zeros_ = Teuchos::rcp(new Epetra_Vector(*lomablockdofrowmap_.FullMap(),true));
 
     // create combined Dirichlet boundary condition map
     const Teuchos::RCP<const Epetra_Map > fdbcmap = FluidField().GetDBCMapExtractor()->CondMap();

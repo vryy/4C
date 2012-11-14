@@ -57,7 +57,7 @@ namespace MueLu {
     RCP<OOperator> Ain = currentLevel.Get< RCP<OOperator> >("A", AFact_.get());
 
     // create new empty Operator
-    RCP<CrsOOperator> Aout = rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
+    RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
 
     // loop over local rows
     for(size_t row=0; row<Ain->getNodeNumRows(); row++) {

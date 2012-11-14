@@ -164,10 +164,10 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
     return;
   }
   // unpack fiber internal variables
-  a1_ = rcp(new vector<vector<double> >(numgp));
-  a2_ = rcp(new vector<vector<double> >(numgp));
-  ca1_ = rcp(new vector<vector<double> >(numgp));
-  ca2_ = rcp(new vector<vector<double> >(numgp));
+  a1_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  a2_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  ca1_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  ca2_ = Teuchos::rcp(new vector<vector<double> >(numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
@@ -184,10 +184,10 @@ void MAT::ViscoAnisotropic::Unpack(const vector<char>& data)
 
   // unpack history
   ExtractfromPack(position,data,numhist);
-  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   for (int var=0; var<numhist; var++)
   {
     // current vectors have to be initialized
@@ -219,10 +219,10 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, DRT::INPUT::LineDefinition* l
     Since we do not know know if thickness direction is defined, fibers are
     related to a local element cosy which has to be specified in the element line */
 
-  a1_ = rcp(new vector<vector<double> > (numgp));
-  a2_ = rcp(new vector<vector<double> > (numgp));
-  ca1_ = rcp(new vector<vector<double> > (numgp));
-  ca2_ = rcp(new vector<vector<double> > (numgp));
+  a1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  a2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  ca1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  ca2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
 
   if ((params_->gamma_<0) || (params_->gamma_ >90)) dserror("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_*PI)/180.; //convert
@@ -268,10 +268,10 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, DRT::INPUT::LineDefinition* l
         dserror("Check visocus parameters! Found beta < 0 or relax <= 0!");
 
   // initialize hist variables
-  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
 
   // how many stress types are used?
@@ -301,10 +301,10 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const vector<double> thickvec
   //in material definition
   if (params_->elethick_==1)
   {
-    a1_ = rcp(new vector<vector<double> > (numgp));
-    a2_ = rcp(new vector<vector<double> > (numgp));
-    ca1_ = rcp(new vector<vector<double> > (numgp));
-    ca2_ = rcp(new vector<vector<double> > (numgp));
+    a1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+    a2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+    ca1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+    ca2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
 
     if (abs(params_->gamma_)>=1.0E-6) dserror("Fibers can only be aligned in thickness direction for gamma = 0.0!");
     const double gamma = (params_->gamma_*PI)/180.; //convert
@@ -356,8 +356,8 @@ void MAT::ViscoAnisotropic::Update()
 
   // empty vectors of current data
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
-  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   const int histsize=histstresslast_->size();
   histstresscurr_->resize(histsize);
   artstresscurr_->resize(histsize);
@@ -417,7 +417,7 @@ void MAT::ViscoAnisotropic::Evaluate
         - 0.25 * C(2)*C(3)*C(3)
         - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
   const double J = sqrt(I3);
-  const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
+  const double incJ = std::pow(I3,-1.0/3.0);  // J^{-2/3}
 
   // invert C
   LINALG::Matrix<NUM_STRESS_3D,1> Cinv(6);

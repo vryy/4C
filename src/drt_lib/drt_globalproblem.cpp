@@ -179,7 +179,7 @@ std::string DRT::Problem::SpatialApproximation() const
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 {
-  RCP<ParameterList> list = rcp(new ParameterList("DAT FILE"));
+  RCP<ParameterList> list = Teuchos::rcp(new ParameterList("DAT FILE"));
 
   reader.ReadGidSection("--DISCRETISATION", *list);
   reader.ReadGidSection("--PROBLEM SIZE", *list);
@@ -513,7 +513,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
     condlist[c]->Read(*this,reader,cond);
 
     // add nodes to conditions
-    multimap<int,RCP<DRT::Condition> >::const_iterator curr;
+    std::multimap<int,Teuchos::RCP<DRT::Condition> >::const_iterator curr;
     for (curr=cond.begin(); curr!=cond.end(); ++curr)
     {
       switch (curr->second->GType())
@@ -744,15 +744,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     if(distype == "Nurbs")
     {
-      structdis = rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
-      fluiddis  = rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
-      aledis    = rcp(new DRT::NURBS::NurbsDiscretization("ale"      ,reader.Comm()));
+      structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale"      ,reader.Comm()));
     }
     else
     {
-      structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
-      fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+      structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
     AddDis("structure", structdis);
@@ -764,57 +764,57 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
   }
   case prb_fluid_fluid_ale:
   {
-    fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
-    xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
-    aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
+    xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
+    aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     AddDis("fluid", fluiddis);
     AddDis("xfluid", xfluiddis);
     AddDis("ale", aledis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
   }
   case prb_fluid_fluid_fsi:
   {
-    fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
-    xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
-    aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
-    structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
+    xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
+    aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
 
     AddDis("fluid", fluiddis);
     AddDis("xfluid", xfluiddis);
     AddDis("ale", aledis);
     AddDis("structure", structdis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
   }
   case prb_fluid_fluid:
   {
-    fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
-    xfluiddis = rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
+    xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
 
     AddDis("fluid", fluiddis);
     AddDis("xfluid", xfluiddis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
 
     break;
   }
@@ -827,9 +827,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     else
     {
-      structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
-      fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+      structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
     AddDis("structure", structdis);
@@ -841,20 +841,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
 #ifdef EXTENDEDPARALLELOVERLAP
     structdis->CreateExtendedOverlap(false,false,false);
 #endif
 
     // fluid scatra field
-    fluidscatradis = rcp(new DRT::Discretization("scatra1",reader.Comm()));
+    fluidscatradis = Teuchos::rcp(new DRT::Discretization("scatra1",reader.Comm()));
     AddDis("scatra1", fluidscatradis);
 
     // structure scatra field
-    structscatradis = rcp(new DRT::Discretization("scatra2",reader.Comm()));
+    structscatradis = Teuchos::rcp(new DRT::Discretization("scatra2",reader.Comm()));
     AddDis("scatra2", structscatradis);
 
     break;
@@ -868,10 +868,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       }
       else
       {
-        structdis    = rcp(new DRT::Discretization("structure",reader.Comm()));
-        fluiddis     = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-        aledis       = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
-        structaledis = rcp(new DRT::Discretization("structale",reader.Comm()));
+        structdis    = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+        fluiddis     = Teuchos::rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+        aledis       = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+        structaledis = Teuchos::rcp(new DRT::Discretization("structale",reader.Comm()));
       }
 
       AddDis("structure", structdis);
@@ -884,20 +884,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       fluidelementtypes.insert("FLUID2");
       fluidelementtypes.insert("FLUID3");
 
-      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-      //nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+      //nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
   #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false,false,false);
   #endif
 
       // fluid scatra field
-      fluidscatradis = rcp(new DRT::Discretization("scatra1",reader.Comm()));
+      fluidscatradis = Teuchos::rcp(new DRT::Discretization("scatra1",reader.Comm()));
       AddDis("scatra1", fluidscatradis);
 
       // structure scatra field
-      structscatradis = rcp(new DRT::Discretization("scatra2",reader.Comm()));
+      structscatradis = Teuchos::rcp(new DRT::Discretization("scatra2",reader.Comm()));
       AddDis("scatra2", structscatradis);
 
       break;
@@ -905,17 +905,17 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fsi_xfem:
   case prb_fluid_xfem2:
   {
-    structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis  = rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
-    aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
+    aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     AddDis("structure", structdis);
     AddDis("fluid", fluiddis);
     AddDis("ale", aledis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
   }
@@ -923,16 +923,16 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     if(distype == "Nurbs")
     {
-      aledis = rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
+      aledis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
     }
     else
     {
-      aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
+      aledis = Teuchos::rcp(new DRT::Discretization("ale",reader.Comm()));
     }
 
     AddDis("ale", aledis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
   }
@@ -940,15 +940,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     if(distype == "Meshfree")
     {
-      fluiddis = rcp(new DRT::MESHFREE::MeshfreeDiscretization("fluid",reader.Comm(),MeshfreeParams()));
+      fluiddis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("fluid",reader.Comm(),MeshfreeParams()));
     }
     else if(distype == "Nurbs")
     {
-      fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
+      fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
     }
     else
     {
-      fluiddis  = rcp(new DRT::Discretization("fluid",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
     }
 
     AddDis("fluid", fluiddis);
@@ -958,7 +958,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
 
     break;
   }
@@ -967,25 +967,25 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // create empty discretizations
     if(distype == "Meshfree")
     {
-      fluiddis = rcp(new DRT::MESHFREE::MeshfreeDiscretization("fluid",reader.Comm(),MeshfreeParams()));
-      scatradis = rcp(new DRT::MESHFREE::MeshfreeDiscretization("scatra",reader.Comm(),MeshfreeParams()));
+      fluiddis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("fluid",reader.Comm(),MeshfreeParams()));
+      scatradis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("scatra",reader.Comm(),MeshfreeParams()));
     }
     else if(distype == "Nurbs")
     {
-      fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
-      scatradis = rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
+      fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
     }
     else
     {
-      fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-      scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+      fluiddis = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
     }
 
     AddDis("fluid", fluiddis);
     AddDis("scatra", scatradis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
 
     break;
   }
@@ -994,14 +994,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     if(distype == "Nurbs")
     {
-      fluiddis  = rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
-      aledis    = rcp(new DRT::NURBS::NurbsDiscretization("ale"      ,reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale"      ,reader.Comm()));
     }
     else
     {
-      fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
-      aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      xfluiddis = Teuchos::rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
     AddDis("fluid", fluiddis);
@@ -1014,8 +1014,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
   }
@@ -1049,20 +1049,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     if(distype == "Meshfree")
     {
       dserror("Meshfree structure not implemented, yet.");
-      structdis = rcp(new DRT::MESHFREE::MeshfreeDiscretization("structure",reader.Comm(),MeshfreeParams()));
+      structdis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("structure",reader.Comm(),MeshfreeParams()));
     }
     else if(distype == "Nurbs")
     {
-      structdis = rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
+      structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
     }
     else
     {
-      structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
+      structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     }
 
     AddDis("structure", structdis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     break;
   }
@@ -1070,14 +1070,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_loma:
   {
     // create empty discretizations
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    fluiddis = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis("fluid", fluiddis);
 
-    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis("scatra", scatradis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
 
     break;
   }
@@ -1087,24 +1087,24 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // create empty discretizations
     if(distype == "Nurbs")
     {
-      fluiddis  = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
-      scatradis = rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
-      aledis    = rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
     }
     else
     {
-      fluiddis  = rcp(new DRT::Discretization("fluid",reader.Comm()));
-      scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
-      aledis    = rcp(new DRT::Discretization("ale",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale",reader.Comm()));
     }
 
     AddDis("fluid", fluiddis);
     AddDis("scatra", scatradis);
     AddDis("ale", aledis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis,reader, "--TRANSPORT ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis,   reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis,reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis,   reader, "--ALE ELEMENTS")));
 
     break;
   }
@@ -1112,13 +1112,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_combust:
   {
     // create empty discretizations
-    fluiddis = rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
+    fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
     AddDis("fluid", fluiddis);
 
-    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis("scatra", scatradis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     break;
   }
@@ -1126,20 +1126,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_art_net: // _1D_ARTERY_
   {
     // create empty discretizations
-    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
+    arterydis = Teuchos::rcp(new DRT::Discretization("artery",reader.Comm()));
     AddDis("artery", arterydis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
 
     break;
   }
   case prb_red_airways: // _reduced D airways
   {
     // create empty discretizations
-    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+    airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway",reader.Comm()));
     AddDis("red_airway", airwaydis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
 
     break;
   }
@@ -1158,13 +1158,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fluid_topopt:
   {
     // create empty discretizations
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-    optidis = rcp(new DRT::Discretization("opti",reader.Comm()));
+    fluiddis = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+    optidis = Teuchos::rcp(new DRT::Discretization("opti",reader.Comm()));
 
     AddDis("fluid", fluiddis);
     AddDis("opti", optidis);
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     break;
   }
@@ -1213,7 +1213,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     if(distype == "Meshfree")
     {
-      particledis = rcp(new DRT::Discretization("particle",reader.Comm()));
+      particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
     }
     else
     {
@@ -1224,7 +1224,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     // there are no elements available for particle simulations
     // section with --DUMMY ELEMENTS in dat file must not be filled
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
 
     break;
   }
@@ -1240,9 +1240,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("structure", structdis);
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
-    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+    airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway",reader.Comm()));
     AddDis("red_airway", airwaydis);
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
   }
   break;
   default:
@@ -1264,15 +1264,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     if(distype == "Polynomial")
     {
       // create empty discretizations
-      arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
+      arterydis = Teuchos::rcp(new DRT::Discretization("artery",reader.Comm()));
       AddDis("artery", arterydis);
-      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
     }
     if(distype == "Polynomial")
     {
-      airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+      airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway",reader.Comm()));
       AddDis("airway", airwaydis);
-      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
     }
   }
   break;
@@ -1390,7 +1390,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
   // do the splitting of the communicator
   MPI_Comm  mpi_local_comm;
-  MPI_Comm_split((rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,gcomm->MyPID(),&mpi_local_comm);
+  MPI_Comm_split((Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,gcomm->MyPID(),&mpi_local_comm);
 
   // sort out macro procs that do not have micro material
   if(foundmicromat == 1)
@@ -1450,7 +1450,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         // start with actual reading
         DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
-        RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+        RCP<DRT::Discretization> structdis_micro = Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
         micro_problem->AddDis("structure", structdis_micro);
 
         micro_problem->ReadParameter(micro_reader);
@@ -1467,7 +1467,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         micro_problem->ReadMaterials(micro_reader);
 
         DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
-        micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+        micronodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
         micronodereader.Read();
 
         // read conditions of microscale
@@ -1533,7 +1533,7 @@ void DRT::Problem::ReadMicrofields_NPsupport()
 
   // do the splitting of the communicator
   MPI_Comm  mpi_local_comm;
-  MPI_Comm_split((rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,gcomm->MyPID(),&mpi_local_comm);
+  MPI_Comm_split((Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,gcomm->MyPID(),&mpi_local_comm);
 
   // create the sub communicator that includes one macro proc and some supporting procs
   Teuchos::RCP<Epetra_Comm> subgroupcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
@@ -1561,7 +1561,7 @@ void DRT::Problem::ReadMicrofields_NPsupport()
     // start with actual reading
     DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
-    RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+    RCP<DRT::Discretization> structdis_micro = Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
     micro_problem->AddDis("structure", structdis_micro);
 
     micro_problem->ReadParameter(micro_reader);
@@ -1578,7 +1578,7 @@ void DRT::Problem::ReadMicrofields_NPsupport()
     micro_problem->ReadMaterials(micro_reader);
 
     DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
-    micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+    micronodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
     micronodereader.Read();
 
     // read conditions of microscale
@@ -1624,7 +1624,7 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
     // Read in other level
     DRT::INPUT::DatFileReader multilevel_reader(second_input_file, reader.Comm(), 1);
 
-    RCP<DRT::Discretization> structdis_multilevel = rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
+    RCP<DRT::Discretization> structdis_multilevel = Teuchos::rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
 
     multilevel_problem->AddDis("structure", structdis_multilevel);
     multilevel_problem->ReadParameter(multilevel_reader);
@@ -1635,7 +1635,7 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
     multilevel_problem->ReadMaterials(multilevel_reader);
     // Read in Nodes and Elements
     DRT::INPUT::NodeReader multilevelnodereader(multilevel_reader, "--NODE COORDS");
-    multilevelnodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_multilevel, multilevel_reader, "--STRUCTURE ELEMENTS")));
+    multilevelnodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis_multilevel, multilevel_reader, "--STRUCTURE ELEMENTS")));
     multilevelnodereader.Read();
 
     // read conditions of other levels
@@ -1694,7 +1694,7 @@ void DRT::Problem::AddDis(const std::string name, RCP<Discretization> dis)
   if (dis == Teuchos::null) dserror ("Received Teuchos::null.");
   if (dis->Name().empty())  dserror ("Discretization has empty name string.");
 
-  if (discretizationmap_.insert(make_pair(name, dis)).second == false)
+  if (discretizationmap_.insert(std::make_pair(name, dis)).second == false)
   {
     // if the same key already exists we have to inform the user since
     // the insert statement did not work in this case

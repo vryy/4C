@@ -695,7 +695,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
   Teuchos::RCP<std::map<int,std::vector<int> > > inversenodecoupling;
   inversenodecoupling=Teuchos::rcp(new std::map<int,std::vector<int> >);
 
-  // rcp to the constructed rowmap
+  // Teuchos::rcp to the constructed rowmap
   Teuchos::RCP<Epetra_Map> newrownodemap;
 
   //----------------------------------------------------------------------
@@ -948,7 +948,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
   Teuchos::RCP<std::map<int,std::vector<int> > > inversenodecoupling;
   inversenodecoupling=Teuchos::rcp(new std::map<int,std::vector<int> >);
 
-  // rcp to the constructed rowmap
+  // Teuchos::rcp to the constructed rowmap
   Teuchos::RCP<Epetra_Map> newrownodemap;
 
   {

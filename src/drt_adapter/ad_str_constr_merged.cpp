@@ -65,10 +65,10 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::InitialGuess()
 {
   //get initial guesses from structure and constraintmanager
   RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess();
-  RCP<const Epetra_Vector> lagrGuess = rcp(new Epetra_Vector(*(structure_->GetConstraintManager()->GetConstraintMap()),true));
+  RCP<const Epetra_Vector> lagrGuess = Teuchos::rcp(new Epetra_Vector(*(structure_->GetConstraintManager()->GetConstraintMap()),true));
 
   //merge stuff together
-  RCP<Epetra_Vector> mergedGuess = rcp(new Epetra_Vector(*dofrowmap_,true));
+  RCP<Epetra_Vector> mergedGuess = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
   conmerger_->AddCondVector(strucGuess,mergedGuess);
   conmerger_->AddOtherVector(lagrGuess,mergedGuess);
 
@@ -84,7 +84,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::RHS()
   RCP<const Epetra_Vector> lagrRHS = structure_->GetConstraintManager()->GetError();
 
   //merge stuff together
-  RCP<Epetra_Vector> mergedRHS = rcp(new Epetra_Vector(*dofrowmap_,true));
+  RCP<Epetra_Vector> mergedRHS = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
   conmerger_->AddCondVector(struRHS,mergedRHS);
   conmerger_->AddOtherVector(-1.0,lagrRHS,mergedRHS);
 
@@ -101,7 +101,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispnp()
   RCP<const Epetra_Vector> lagrmult = structure_->GetConstraintManager()->GetLagrMultVector();
 
   //merge stuff together
-  RCP<Epetra_Vector> mergedstat = rcp(new Epetra_Vector(*dofrowmap_,true));
+  RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
   conmerger_->AddCondVector(strudis,mergedstat);
   conmerger_->AddOtherVector(lagrmult,mergedstat);
 
@@ -118,7 +118,7 @@ RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispn()
   RCP<const Epetra_Vector> lagrmult = structure_->GetConstraintManager()->GetLagrMultVectorOld();
 
   //merge stuff together
-   RCP<Epetra_Vector> mergedstat = rcp(new Epetra_Vector(*dofrowmap_,true));
+   RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
    conmerger_->AddCondVector(strudis,mergedstat);
    conmerger_->AddOtherVector(lagrmult,mergedstat);
 
@@ -139,7 +139,7 @@ RCP<const Epetra_Map> ADAPTER::StructureConstrMerged::DofRowMap()
 RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemMatrix()
 {
   //create empty large matrix and get small ones from structure and constraints
-  RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*dofrowmap_, 81));
+  RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81));
   RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
   strustiff->Complete();
   

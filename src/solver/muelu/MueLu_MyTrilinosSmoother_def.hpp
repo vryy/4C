@@ -97,7 +97,7 @@ namespace MueLu {
     if(type_ == "ILU") {
       s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(type_, paramList_,overlap_,AFact_);
     } else {
-      s_ = rcp(new TrilinosSmoother(type_, paramList_, overlap_, AFact_));
+      s_ = Teuchos::rcp(new TrilinosSmoother(type_, paramList_, overlap_, AFact_));
     }
 
 
@@ -142,7 +142,7 @@ namespace MueLu {
 
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
   RCP<MueLu::SmootherPrototype<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Copy() const {
-    return rcp( new MyTrilinosSmoother(*this) );
+    return Teuchos::rcp( new MyTrilinosSmoother(*this) );
   }
 
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>

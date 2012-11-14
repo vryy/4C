@@ -38,7 +38,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_nurbs27Type::Create( const s
 {
   if ( eletype=="SONURBS27" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -47,7 +47,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_nurbs27Type::Create( const s
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_nurbs27Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id,owner));
   return ele;
 }
 
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(ostream& os) const
 vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 

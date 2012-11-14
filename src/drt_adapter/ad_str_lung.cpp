@@ -117,7 +117,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
     copy(&dof[0], &dof[0]+ndim, back_inserter(dofmapvec));
   }
 
-  lungconstraintmap_ = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
+  lungconstraintmap_ = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
 }
 
 
@@ -175,7 +175,7 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
       // Get ConditionID of current condition if defined and write value in parameterlist
       int condID=cond.GetInt("coupling id");
       params.set("ConditionID",condID);
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -281,7 +281,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
     params.set("ConditionID",condID);
 
     // elements might need condition
-    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // global and local ID of this bc in the redundant vectors
     const int gindex = condID-offsetID;
@@ -522,17 +522,17 @@ void ADAPTER::StructureLung::WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldF
   // results on all processors. However, only processor 0 writes
   // output in WriteRedundantDoubleVector.
 
-  Teuchos::RCP<std::vector<double> > flowrates = rcp(new std::vector<double>(OldFlowRatesRed->MyLength()));
+  Teuchos::RCP<std::vector<double> > flowrates = Teuchos::rcp(new std::vector<double>(OldFlowRatesRed->MyLength()));
   for (int i=0; i<OldFlowRatesRed->MyLength(); ++i)
   {
     (*flowrates)[i] = (*OldFlowRatesRed)[i];
   }
-  Teuchos::RCP<std::vector<double> > volumes = rcp(new std::vector<double>(OldVolsRed->MyLength()));
+  Teuchos::RCP<std::vector<double> > volumes = Teuchos::rcp(new std::vector<double>(OldVolsRed->MyLength()));
   for (int i=0; i<OldVolsRed->MyLength(); ++i)
   {
     (*volumes)[i] = (*OldVolsRed)[i];
   }
-  Teuchos::RCP<std::vector<double> > lmult = rcp(new std::vector<double>(OldLagrMultRed->MyLength()));
+  Teuchos::RCP<std::vector<double> > lmult = Teuchos::rcp(new std::vector<double>(OldLagrMultRed->MyLength()));
   for (int i=0; i<OldLagrMultRed->MyLength(); ++i)
   {
     (*lmult)[i] = (*OldLagrMultRed)[i];
@@ -570,9 +570,9 @@ void ADAPTER::StructureLung::ReadVolConRestart(const int step,
   std::stringstream stream3;
   stream3 << "OldLagrMult";
 
-  Teuchos::RCP<std::vector<double> > flowrates = rcp(new std::vector<double>(OldFlowRatesRed->MyLength()));
-  Teuchos::RCP<std::vector<double> > volumes = rcp(new std::vector<double>(OldVolsRed->MyLength()));
-  Teuchos::RCP<std::vector<double> > lmult = rcp(new std::vector<double>(OldLagrMultRed->MyLength()));
+  Teuchos::RCP<std::vector<double> > flowrates = Teuchos::rcp(new std::vector<double>(OldFlowRatesRed->MyLength()));
+  Teuchos::RCP<std::vector<double> > volumes = Teuchos::rcp(new std::vector<double>(OldVolsRed->MyLength()));
+  Teuchos::RCP<std::vector<double> > lmult = Teuchos::rcp(new std::vector<double>(OldLagrMultRed->MyLength()));
 
   reader.ReadRedundantDoubleVector(volumes, stream1.str());
   reader.ReadRedundantDoubleVector(flowrates, stream2.str());

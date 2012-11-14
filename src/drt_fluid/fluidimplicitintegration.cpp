@@ -317,7 +317,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   }
 #endif
 
-  vol_surf_flow_bc_     = rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, *output_, dta_) );
+  vol_surf_flow_bc_     = Teuchos::rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, *output_, dta_) );
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_   = LINALG::CreateVector(*dofrowmap,true);
@@ -359,7 +359,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       {
         discret_->SetState("dispnp", dispnp_);
       }
-      coupled3D_redDbc_art_=   rcp(new  UTILS::Fluid_couplingWrapper<ART::ArtNetExplicitTimeInt>
+      coupled3D_redDbc_art_=   Teuchos::rcp(new  UTILS::Fluid_couplingWrapper<ART::ArtNetExplicitTimeInt>
                                    ( discret_,
                                      ART_exp_timeInt_->Discretization(),
                                      ART_exp_timeInt_,
@@ -381,7 +381,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       {
         discret_->SetState("dispnp", dispnp_);
       }
-      coupled3D_redDbc_airways_ =   rcp(new  UTILS::Fluid_couplingWrapper<AIRWAY::RedAirwayImplicitTimeInt>
+      coupled3D_redDbc_airways_ =   Teuchos::rcp(new  UTILS::Fluid_couplingWrapper<AIRWAY::RedAirwayImplicitTimeInt>
                                    ( discret_,
                                      airway_imp_timeInt_->Discretization(),
                                      airway_imp_timeInt_,
@@ -399,7 +399,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     zeros_->PutScalar(0.0); // just in case of change
   }
 
-  traction_vel_comp_adder_bc_ = rcp(new UTILS::TotalTractionCorrector(discret_, *output_, dta_) );
+  traction_vel_comp_adder_bc_ = Teuchos::rcp(new UTILS::TotalTractionCorrector(discret_, *output_, dta_) );
 
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
@@ -450,7 +450,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
 
       // get one instance of the dynamic Smagorinsky class
-      DynSmag_=rcp(new FLD::DynSmagFilter(discret_            ,
+      DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
                                           pbcmapmastertoslave_,
                                           *params_             ));
     }
@@ -470,7 +470,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       {
         scale_sep_ = INPAR::FLUID::box_filter;
         // get one instance of the dynamic Smagorinsky class
-        DynSmag_=rcp(new FLD::DynSmagFilter(discret_            ,
+        DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
                                             pbcmapmastertoslave_,
                                             *params_             ));
       }
@@ -488,9 +488,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       }
 
       const Epetra_Map* nodecolmap = discret_->NodeColMap();
-      filteredvel_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-      finescalevel_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-      filteredreystr_ = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+      filteredvel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+      finescalevel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+      filteredreystr_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
 
       fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
     }
@@ -508,7 +508,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
         scale_sep_ = INPAR::FLUID::box_filter;
 
         // get one instance of the dynamic Smagorinsky class
-        DynSmag_=rcp(new FLD::DynSmagFilter(discret_            ,
+        DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
                                             pbcmapmastertoslave_,
                                             *params_             ));
 
@@ -522,7 +522,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       else if (scale_sep == "geometric_multigrid_operator")
       {
         scale_sep_ = INPAR::FLUID::geometric_multigrid_operator;
-        ScaleSepGMO_ = rcp(new LESScaleSeparation(scale_sep_,discret_));
+        ScaleSepGMO_ = Teuchos::rcp(new LESScaleSeparation(scale_sep_,discret_));
 
         if (fssgv_ != "No")
           dserror("No fine-scale subgrid viscosity for this scale separation operator!");
@@ -580,7 +580,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
   //
-  statisticsmanager_=rcp(new FLD::TurbulenceStatisticManager(*this));
+  statisticsmanager_=Teuchos::rcp(new FLD::TurbulenceStatisticManager(*this));
   // parameter for sampling/dumping period
   if (special_flow_ != "no")
     samstart_ = params_->sublist("TURBULENCE MODEL").get<int>("SAMPLING_START",1);
@@ -631,16 +631,16 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   }
 #endif // D_ALE_BFLOW
   // construct impedance bc wrapper
-  impedancebc_      = rcp(new UTILS::FluidImpedanceWrapper(discret_, *output_, dta_) );
+  impedancebc_      = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_, *output_, dta_) );
 
-  Wk_optimization_  = rcp(new UTILS::FluidWkOptimizationWrapper(discret_,
+  Wk_optimization_  = Teuchos::rcp(new UTILS::FluidWkOptimizationWrapper(discret_,
                                                                 *output_,
                                                                 impedancebc_,
                                                                 dta_) );
 
   if (params_->get<bool>("INFNORMSCALING"))
   {
-    fluid_infnormscaling_ = rcp(new FLD::UTILS::FluidInfNormScaling(velpressplitter_));
+    fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(velpressplitter_));
   }
 
   // ---------------------------------------------------------------------
@@ -1464,7 +1464,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
     // Treat the surface volumetric flow rate
-    //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+    //    RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
     //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
     vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
       vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
@@ -1957,7 +1957,7 @@ void FLD::FluidImplicitTimeInt::Predictor()
 
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
-  //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+  //    RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
   //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
   // -------------------------------------------------------------------
   vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
@@ -2630,7 +2630,7 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
   Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
   Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
 
-  Teuchos::RCP<Epetra_Vector> onlyaccnp = rcp(new Epetra_Vector(onlyaccn->Map()));
+  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
 
   const double fact1 = 1.0/(gamma_*dta_);
   const double fact2 = 1.0 - (1.0/gamma_);
@@ -2665,7 +2665,7 @@ void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
     Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
     Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
 
-    Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
+    Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
 
     onlyaccam->Update((alphaM_),*onlyaccnp,(1.0-alphaM_),*onlyaccn,0.0);
 
@@ -2739,7 +2739,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
-  //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+  //    RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
   //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
   // -------------------------------------------------------------------
   vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
@@ -3815,7 +3815,7 @@ void FLD::FluidImplicitTimeInt::Output()
   if (ART_exp_timeInt_ != Teuchos::null)
   {
     RCP<ParameterList> redD_export_params;
-    redD_export_params = rcp(new ParameterList());
+    redD_export_params = Teuchos::rcp(new ParameterList());
 
     redD_export_params->set<int>("step",step_);
     redD_export_params->set<int>("upres",upres_);
@@ -3829,7 +3829,7 @@ void FLD::FluidImplicitTimeInt::Output()
   if (airway_imp_timeInt_ != Teuchos::null)
   {
     RCP<ParameterList> redD_export_params;
-    redD_export_params = rcp(new ParameterList());
+    redD_export_params = Teuchos::rcp(new ParameterList());
 
     redD_export_params->set<int>("step",step_);
     redD_export_params->set<int>("upres",upres_);
@@ -3851,9 +3851,9 @@ void FLD::FluidImplicitTimeInt::Output()
   // does discret_ exist here?
   //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
 
-  //RCP<Epetra_Vector> mynoderowmap = rcp(new Epetra_Vector(discret_->NodeRowMap()));
-  //RCP<Epetra_Vector> noderowmap_ = rcp(new Epetra_Vector(discret_->NodeRowMap()));
-  //dofrowmap_  = rcp(new discret_->DofRowMap());
+  //RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
+  //RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
+  //dofrowmap_  = Teuchos::rcp(new discret_->DofRowMap());
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -4231,7 +4231,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     const int scale_sep_solvernumber = params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
     if (scale_sep_solvernumber != (-1))    // create a dummy solver
     {
-      Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
+      Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
                                             discret_->Comm(),
                                             DRT::Problem::Instance()->ErrorFile()->Handle()));
       // compute the null space,
@@ -5336,23 +5336,23 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       const Epetra_Map* dofcolmap = discret_->DofColMap();
 
       RCP<Epetra_Vector> row_filteredveltmp;
-      row_filteredveltmp = rcp(new Epetra_Vector(*dofrowmap,true));
+      row_filteredveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
       RCP<Epetra_Vector> col_filteredveltmp;
-      col_filteredveltmp = rcp(new Epetra_Vector(*dofcolmap,true));
+      col_filteredveltmp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
 
       RCP<Epetra_Vector> row_finescaleveltmp;
-      row_finescaleveltmp = rcp(new Epetra_Vector(*dofrowmap,true));
+      row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
       RCP<Epetra_Vector> col_finescaleveltmp;
-      col_finescaleveltmp = rcp(new Epetra_Vector(*dofcolmap,true));
+      col_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
 
       RCP<Epetra_MultiVector> row_filteredreystretmp;
-      row_filteredreystretmp = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+      row_filteredreystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
       RCP<Epetra_MultiVector> col_filteredreystretmp;
-      col_filteredreystretmp = rcp(new Epetra_MultiVector(*dofcolmap,3,true));
+      col_filteredreystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofcolmap,3,true));
       RCP<Epetra_MultiVector> row_reystretmp;
-      row_reystretmp = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+      row_reystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
       RCP<Epetra_MultiVector> row_finescalereystretmp;
-      row_finescalereystretmp = rcp(new Epetra_MultiVector(*dofrowmap,3,true));
+      row_finescalereystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 
       if (is_genalpha_)
       {
@@ -5602,7 +5602,7 @@ void FLD::FluidImplicitTimeInt::OutputofFilteredVel(
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   RCP<Epetra_Vector> row_finescaleveltmp;
-  row_finescaleveltmp = rcp(new Epetra_Vector(*dofrowmap,true));
+  row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
 
   if (is_genalpha_)
   {
@@ -6463,7 +6463,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
     if (myrank_ == 0)
     {
       std::cout << "\n+--------------------------------------------------------------------------------------------+" << std::endl;
-      std::cout << "Multifractal subgrid scales: adaption of CsgsD from near-wall limit of CsgsB:  " << setprecision (8) << meanCai << std::endl;
+      std::cout << "Multifractal subgrid scales: adaption of CsgsD from near-wall limit of CsgsB:  " << std::setprecision (8) << meanCai << std::endl;
       std::cout << "+--------------------------------------------------------------------------------------------+\n" << std::endl;
     }
 
@@ -6501,7 +6501,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::ExtrapolateEndPoint
   Teuchos::RCP<Epetra_Vector> vecm
 )
 {
-  Teuchos::RCP<Epetra_Vector> vecnp = rcp(new Epetra_Vector(*vecm));
+  Teuchos::RCP<Epetra_Vector> vecnp = Teuchos::rcp(new Epetra_Vector(*vecm));
 
   // For gen-alpha extrapolate mid-point quantities to end-point.
   // Otherwise, equilibrium time level is already end-point.
@@ -6550,7 +6550,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
   params.set<int>("action",FLD::calc_divop);
 
   // integrated divergence operator B in vector form
-  Teuchos::RCP<Epetra_Vector> divop = rcp(new Epetra_Vector(velnp_->Map(),true));
+  Teuchos::RCP<Epetra_Vector> divop = Teuchos::rcp(new Epetra_Vector(velnp_->Map(),true));
 
   // copy row map of mesh displacement to column map (only if ALE is used)
   discret_->ClearState();

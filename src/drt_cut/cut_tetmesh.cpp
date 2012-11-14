@@ -319,7 +319,7 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
       l = m;
       l.Update( 1, x, -1 );
       double n = l.Norm2();
-      length = max( n, length );
+      length = std::max( n, length );
     }
 #ifdef DEBUGCUTLIBRARY
     std::ofstream pointfile( "points.plot" );

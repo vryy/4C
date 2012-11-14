@@ -28,7 +28,7 @@ FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(const Epetra_Comm& comm)
   INPAR::FSI::SlideALEProj aletype =
       DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
 
-	slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
+	slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
 	                                              MBFluidField().Discretization(),
 	                                              StructureFluidCouplingMortar(),
 	                                              true,

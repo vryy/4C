@@ -307,9 +307,9 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
             else if(elemat1(line,col) == 0)
               std::cout<<"     0     ";
             else if(elemat1(line,col) >= 0)
-              std::cout<<"  "<< scientific << setprecision(3)<<elemat1(line,col);
+              std::cout<<"  "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
             else
-              std::cout<<" "<< scientific << setprecision(3)<<elemat1(line,col);
+              std::cout<<" "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
           }
           std::cout<<"\n";
         }
@@ -324,9 +324,9 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
             else if(stiff_approx(line,col) == 0)
               std::cout<<"     0     ";
             else if(stiff_approx(line,col) >= 0)
-              std::cout<<"  "<< scientific << setprecision(3)<<stiff_approx(line,col);
+              std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
             else
-              std::cout<<" "<< scientific << setprecision(3)<<stiff_approx(line,col);
+              std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
           }
           std::cout<<"\n";
         }
@@ -341,9 +341,9 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
             else if(stiff_relerr(line,col) == 0)
               std::cout<<"     0     ";
             else if(stiff_relerr(line,col) >= 0)
-              std::cout<<"  "<< scientific << setprecision(3)<<stiff_relerr(line,col);
+              std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
             else
-              std::cout<<" "<< scientific << setprecision(3)<<stiff_relerr(line,col);
+              std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
           }
           std::cout<<"\n";
         }
@@ -1004,7 +1004,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& p
 
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
-  double rsquare = pow((4*Iyy_/PI),0.5);
+  double rsquare = std::pow((4*Iyy_/PI),0.5);
   double artificial = 4000;//50;  20000//50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
 

@@ -36,7 +36,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const std::string 
   {
   if ( eletype=="TRUSS3" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -45,7 +45,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const std::string 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss3Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss3(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss3(id,owner));
   return ele;
 }
 
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const vector<char>& data)
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss3::Lines()
 {
   vector<RCP<Element> > lines(1);
-  lines[0]= rcp(this, false);
+  lines[0]= Teuchos::rcp(this, false);
   return lines;
 }
 
@@ -353,7 +353,7 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const vector<double>& xrefe, 
       X_(i) = xrefe[i];
 
     //length in reference configuration
-    lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
+    lrefe_ = std::pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
 
     //set jacobi determinants for integration of mass matrix and at nodes
     jacobimass_.resize(2);

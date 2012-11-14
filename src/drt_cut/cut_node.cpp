@@ -100,18 +100,18 @@ bool GEO::CUT::Cmp::Compare(
   // first build two minimized sets which don't have any points in common
   std::set<int> vc1pointsmin;
   std::set<int> vc2pointsmin;
-  for( set<int>::iterator iter=vc1points.begin(); iter!=vc1points.end(); iter++ )
+  for( std::set<int>::iterator iter=vc1points.begin(); iter!=vc1points.end(); iter++ )
   {
-    set<int>::iterator iter2 = vc2points.find(*iter);
+    std::set<int>::iterator iter2 = vc2points.find(*iter);
     if (iter2 == vc2points.end())
     {
       vc1pointsmin.insert(*iter);
     }
   }
 
-  for( set<int>::iterator iter=vc2points.begin(); iter!=vc2points.end(); iter++ )
+  for( std::set<int>::iterator iter=vc2points.begin(); iter!=vc2points.end(); iter++ )
   {
-    set<int>::iterator iter2 = vc1points.find(*iter);
+    std::set<int>::iterator iter2 = vc1points.find(*iter);
     if (iter2 == vc1points.end())
     {
       vc2pointsmin.insert(*iter);

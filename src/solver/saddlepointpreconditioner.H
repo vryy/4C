@@ -32,7 +32,6 @@
 #include "amg/transfer_operator.H"
 
 using namespace std;
-using namespace Teuchos;
 
 namespace LINALG
 {

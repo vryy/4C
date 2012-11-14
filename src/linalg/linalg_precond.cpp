@@ -82,7 +82,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
       ifpacklist.set<bool>("relaxation: zero starting solution",true);
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner
-      Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
+      Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
       // get the type of ifpack preconditioner from aztec
       std::string prectype = azlist.get("preconditioner","ILU");
       int    overlap  = azlist.get("AZ_overlap",0);
@@ -91,7 +91,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
       prec->SetParameters(ifpacklist);
       prec->Initialize();
       prec->Compute();
-      prec_ = rcp(prec);
+      prec_ = Teuchos::rcp(prec);
     }
 
     // do ml if desired
@@ -113,16 +113,16 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
         // create a copy of the scaled matrix
         // so we can reuse the preconditioner several times
         prec_ = Teuchos::null;
-        Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
-        prec_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
+        Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
+        prec_ = Teuchos::rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
       }
       else
       {
         // create a copy of the scaled (and downwinded) matrix
         // so we can reuse the preconditioner several times
         prec_ = Teuchos::null;
-        Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
-        prec_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
+        Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
+        prec_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
         // for debugging ML
         //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
       }
@@ -134,7 +134,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
       // SIMPLER does not need copy of preconditioning matrix to live
       // SIMPLER does not use the downwinding installed here, it does
       // its own downwinding inside if desired
-      prec_ = rcp(new LINALG::SIMPLER_Operator(matrix,Params(),
+      prec_ = Teuchos::rcp(new LINALG::SIMPLER_Operator(matrix,Params(),
                                                solver_->Params().sublist("SIMPLER"),
                                                outfile_));
       Pmatrix_ = null;
@@ -178,8 +178,8 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
     // they are always copied to x_ and b_ when the factorization is reused.
     if (refactor || reset)
     {
-      b_ = rcp(new Epetra_MultiVector(*b));
-      x_ = rcp(new Epetra_MultiVector(*x));
+      b_ = Teuchos::rcp(new Epetra_MultiVector(*b));
+      x_ = Teuchos::rcp(new Epetra_MultiVector(*x));
     }
     else
     {

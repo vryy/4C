@@ -18,7 +18,6 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-using namespace Teuchos;
 
 namespace MAT
 {

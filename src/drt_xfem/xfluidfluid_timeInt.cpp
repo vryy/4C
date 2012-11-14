@@ -1463,8 +1463,8 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
 {
 
   // generate an empty boundary discretisation
-  incompdis_ = rcp(new DRT::Discretization((string)"incompressibility discretisation",
-                                           rcp(bgdis->Comm().Clone())));
+  incompdis_ = Teuchos::rcp(new DRT::Discretization((string)"incompressibility discretisation",
+                                           Teuchos::rcp(bgdis->Comm().Clone())));
 
   std::set<int> incompelementids_set_all;
   std::set<int> incompnodeids_set_all;
@@ -1524,7 +1524,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
   {
     DRT::Node* actnode=bgdis->gNode(*id);
 
-    RCP<DRT::Node> incompnode =rcp(actnode->Clone());
+    RCP<DRT::Node> incompnode =Teuchos::rcp(actnode->Clone());
 
     incompdis_->AddNode(incompnode);
   }
@@ -1544,7 +1544,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
     // yes, we have a MHD condition
     if(found==true)
     {
-      RCP<DRT::Element> incompele =rcp(actele->Clone());
+      RCP<DRT::Element> incompele =Teuchos::rcp(actele->Clone());
 
       incompdis_->AddElement(incompele);
     }
@@ -1565,7 +1565,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
   }
 
   // build noderowmap for new distribution of nodes
-  newrownodemap = rcp(new Epetra_Map(-1,
+  newrownodemap = Teuchos::rcp(new Epetra_Map(-1,
                                      rownodes.size(),
                                      &rownodes[0],
                                      0,
@@ -1581,14 +1581,14 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
   }
 
   // build nodecolmap for new distribution of nodes
-  newcolnodemap = rcp(new Epetra_Map(-1,
+  newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
                                      colnodes.size(),
                                      &colnodes[0],
                                      0,
                                      incompdis_->Comm()));
 
   incompdis_->Redistribute(*newrownodemap,*newcolnodemap,false,false,false);
-  RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentIndependentDofSet(bgdis,true,wizard_np));
+  RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(bgdis,true,wizard_np));
   incompdis_->ReplaceDofSet(newdofset); // do not call this with true!!
   incompdis_->FillComplete();
 }
@@ -1739,7 +1739,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
   }
 
   // build dofrowmap for velocity dofs
-  RefCountPtr<Epetra_Map> veldofrowmap = rcp(new Epetra_Map(-1,
+  RefCountPtr<Epetra_Map> veldofrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                             C_vel_dofids.size(),
                                                             &C_vel_dofids[0],
                                                             0,
@@ -1762,7 +1762,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
   }
   Q->FillComplete();
 
-  Teuchos::RCP<LINALG::SparseMatrix> Q_spr = rcp(new LINALG::SparseMatrix(Q));
+  Teuchos::RCP<LINALG::SparseMatrix> Q_spr = Teuchos::rcp(new LINALG::SparseMatrix(Q));
   Q_spr->Complete();
 
   // ------------------------
@@ -1791,7 +1791,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
   for (int next=0; next<maxpair; ++next)
   {
     // build the rotation matrix for current next and next_us
-    Teuchos::RCP<Epetra_CrsMatrix> Q_i = rcp(new Epetra_CrsMatrix(Copy,*veldofrowmap,2));
+    Teuchos::RCP<Epetra_CrsMatrix> Q_i = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*veldofrowmap,2));
     // first build Q_i as an identity matrix
     double myval = 1.0;
     for(int j=0; j<C_vel->MyLength(); ++j)
@@ -1841,7 +1841,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
     incompdis_->Comm().Barrier();
     Q_i->FillComplete(*veldofrowmap,*veldofrowmap);
 
-    Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = rcp(new LINALG::SparseMatrix(Q_i));
+    Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = Teuchos::rcp(new LINALG::SparseMatrix(Q_i));
     Q_i_spr->Complete(*veldofrowmap,*veldofrowmap);
 
     // Update of C_vel (which is after every update Qc)
@@ -1859,7 +1859,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
     C_vel->Update(1.0,*C_vel_test,0.0);
 
     // build the final Q  = Qn..Q3*Q2*Q1
-    Teuchos::RCP<LINALG::SparseMatrix> Q_final = rcp(new LINALG::SparseMatrix(*veldofrowmap,C_vel->MyLength(),false,true));
+    Teuchos::RCP<LINALG::SparseMatrix> Q_final = Teuchos::rcp(new LINALG::SparseMatrix(*veldofrowmap,C_vel->MyLength(),false,true));
     Q_final = Multiply(*Q_i_spr,false,*Q_spr,false,false,false);
 
     // save this old Q_final
@@ -1885,7 +1885,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
                       &allproc[0],incompdis_->Comm());
 
   // build dofrowmap of last entries
-  RefCountPtr<Epetra_Map> lastdofrowmap = rcp(new Epetra_Map(-1,
+  RefCountPtr<Epetra_Map> lastdofrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              C_vellast_All.size(),
                                                              &C_vellast_All[0],
                                                              0,
@@ -1905,7 +1905,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
     for(int pr=0; pr<incompdis_->Comm().NumProc()-1; ++pr)
     {
       // build the rotation matrix for current next and next_us
-      Teuchos::RCP<Epetra_CrsMatrix> Q_i = rcp(new Epetra_CrsMatrix(Copy,*veldofrowmap,2));
+      Teuchos::RCP<Epetra_CrsMatrix> Q_i = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*veldofrowmap,2));
       // first build Q_i as an identity matrix
       double myval = 1.0;
       for(int j=0; j<C_vel->MyLength(); ++j)
@@ -1939,7 +1939,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
         Q_i->FillComplete(*veldofrowmap,*veldofrowmap);
 
 
-        Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = rcp(new LINALG::SparseMatrix(Q_i));
+        Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = Teuchos::rcp(new LINALG::SparseMatrix(Q_i));
         Q_i_spr->Complete(*veldofrowmap,*veldofrowmap);
 
         Teuchos::RCP<Epetra_Vector> C_vel_test =  LINALG::CreateVector(*veldofrowmap,true);
@@ -1947,7 +1947,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
         C_vel->Update(1.0,*C_vel_test,0.0);
 
         // build the final Q  = Qn..Q3*Q2*Q1
-        Teuchos::RCP<LINALG::SparseMatrix> Q_final = rcp(new LINALG::SparseMatrix(*veldofrowmap,C_vel->MyLength(),false,true));
+        Teuchos::RCP<LINALG::SparseMatrix> Q_final = Teuchos::rcp(new LINALG::SparseMatrix(*veldofrowmap,C_vel->MyLength(),false,true));
         Q_final = Multiply(*Q_i_spr,false,*Q_spr,false,false,false);
 
         // save this old Q_final

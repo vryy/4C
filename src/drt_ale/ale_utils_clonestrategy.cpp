@@ -34,16 +34,16 @@ std::map<std::string,std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCopy
 {
   std::map<std::string,std::string> conditions_to_copy;
 
-  conditions_to_copy.insert(pair<std::string,std::string>("ALEDirichlet","Dirichlet"));
-  conditions_to_copy.insert(pair<std::string,std::string>("FSICoupling","FSICoupling"));
-  conditions_to_copy.insert(pair<std::string,std::string>("FREESURFCoupling","FREESURFCoupling"));
-  conditions_to_copy.insert(pair<std::string,std::string>("StructAleCoupling","StructAleCoupling"));
-  conditions_to_copy.insert(pair<std::string,std::string>("LinePeriodic","LinePeriodic"));
-  conditions_to_copy.insert(pair<std::string,std::string>("SurfacePeriodic","SurfacePeriodic"));
-  conditions_to_copy.insert(pair<std::string,std::string>("ElectrodeKinetics","ElectrodeKinetics"));
-  conditions_to_copy.insert(pair<std::string,std::string>("XFEMCoupling","XFEMCoupling"));
-  conditions_to_copy.insert(pair<std::string,std::string>("FluidFluidCoupling","FluidFluidCoupling"));
-  conditions_to_copy.insert(pair<std::string,std::string>("AleWear","AleWear"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ALEDirichlet","Dirichlet"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("FSICoupling","FSICoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("FREESURFCoupling","FREESURFCoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("StructAleCoupling","StructAleCoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("LinePeriodic","LinePeriodic"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SurfacePeriodic","SurfacePeriodic"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ElectrodeKinetics","ElectrodeKinetics"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("XFEMCoupling","XFEMCoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("FluidFluidCoupling","FluidFluidCoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("AleWear","AleWear"));
 
   return conditions_to_copy;
 }

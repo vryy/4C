@@ -38,7 +38,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell8Type::Create( const string elety
 {
   if ( eletype=="SHELL8" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Shell8(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Shell8(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -47,7 +47,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell8Type::Create( const string elety
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Shell8Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Shell8(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Shell8(id,owner));
   return ele;
 }
 
@@ -349,7 +349,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Lines()
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Surfaces()
 {
   vector<RCP<Element> > surfaces(1);
-  surfaces[0]= rcp(this, false);
+  surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }
 

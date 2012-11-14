@@ -54,7 +54,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ThermoType::Create(
   if ( eletype=="SOLIDH8THERMO" )
   {
     Teuchos::RCP<DRT::Element> ele
-      = rcp(
+      = Teuchos::rcp(
           new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(
             id,
             owner
@@ -76,7 +76,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ThermoType::Create(
   )
 {
   Teuchos::RCP<DRT::Element> ele
-    = rcp(
+    = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(
           id,
           owner
@@ -178,7 +178,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ThermoType::Create(
   if ( eletype=="SOLIDT4THERMO" )
   {
     Teuchos::RCP<DRT::Element> ele
-      = rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(
+      = Teuchos::rcp(new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(
           id,
           owner
           )
@@ -199,7 +199,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ThermoType::Create(
   )
 {
   Teuchos::RCP<DRT::Element> ele
-    = rcp(
+    = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(
           id,
           owner

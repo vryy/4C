@@ -459,9 +459,9 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   // later we will export node and element column map to FULL overlap,
   // thus store the standard column maps first
   // get standard nodal column map (overlap=1)
-  oldnodecolmap_ = rcp (new Epetra_Map(*(Discret().NodeColMap())));
+  oldnodecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().NodeColMap())));
   // get standard element column map (overlap=1)
-  oldelecolmap_ = rcp (new Epetra_Map(*(Discret().ElementColMap())));
+  oldelecolmap_ = Teuchos::rcp(new Epetra_Map(*(Discret().ElementColMap())));
 
   // create interface local communicator
   // find all procs that have business on this interface (own or ghost nodes/elements)

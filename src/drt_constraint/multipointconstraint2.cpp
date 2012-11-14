@@ -46,7 +46,7 @@ UTILS::MPConstraint2::MPConstraint2(RCP<DRT::Discretization> discr,
     constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE2", dummy);
     RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-    RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(actdisc_));
+    RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
     (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
     newdofset = null;
     (constraintdis_.find(0)->second)->FillComplete();
@@ -169,9 +169,9 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   int& startID
 )
 {
-  RCP<Epetra_Comm> com = rcp(actdisc->Comm().Clone());
+  RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
 
-  RCP<DRT::Discretization> newdis = rcp(new DRT::Discretization(discret_name,com));
+  RCP<DRT::Discretization> newdis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
 
   if (!actdisc->Filled())
   {
@@ -209,7 +209,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
       if (rownodeset.find(gid)!=rownodeset.end())
       {
         const DRT::Node* standardnode = actdisc->lRowNode(i);
-        newdis->AddNode(rcp(new DRT::Node(gid, standardnode->X(), myrank)));
+        newdis->AddNode(Teuchos::rcp(new DRT::Node(gid, standardnode->X(), myrank)));
       }
     }
 
@@ -230,7 +230,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   //build unique node row map
   vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  RCP<Epetra_Map> constraintnoderowmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              boundarynoderowvec.size(),
                                                              &boundarynoderowvec[0],
                                                              0,
@@ -240,7 +240,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   //build overlapping node column map
   vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  RCP<Epetra_Map> constraintnodecolmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              constraintnodecolvec.size(),
                                                              &constraintnodecolvec[0],
                                                              0,
@@ -361,7 +361,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (assemblevec3) elevector3.Size(1); // elevector3 always contains a scalar
 
       params.set("ConditionID",condID);
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
       // call the element evaluate method
       int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                  elevector1,elevector2,elevector3);

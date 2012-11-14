@@ -38,7 +38,7 @@ std::string XFEM::Enrichment::toString() const
     if (xfemconditionlabel_ > 9)
       width = 2;
 
-    s << "Enr(" << enrTypeToString(type_) << ", " << setw(width) << xfemconditionlabel_ << ")";
+    s << "Enr(" << enrTypeToString(type_) << ", " << std::setw(width) << xfemconditionlabel_ << ")";
     return s.str();
 }
 

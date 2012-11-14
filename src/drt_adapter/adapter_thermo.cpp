@@ -238,7 +238,7 @@ void ADAPTER::Thermo::Integrate()
   }
 
   // print monitoring of time consumption
-  TimeMonitor::summarize();
+  Teuchos::TimeMonitor::summarize();
 
   // Jump you f***ers
   return;

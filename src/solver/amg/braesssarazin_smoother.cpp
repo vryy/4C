@@ -57,11 +57,11 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrh
   TEUCHOS_FUNC_TIME_MONITOR("BraessSarazin_Smoother::ApplyInverse");
 
   ////////////////// define some variables
-  RCP<Epetra_Vector> velres = rcp(new Epetra_Vector(F_->RowMap(),true));
-  RCP<Epetra_Vector> preres = rcp(new Epetra_Vector(Z_->RowMap(),true));
+  RCP<Epetra_Vector> velres = Teuchos::rcp(new Epetra_Vector(F_->RowMap(),true));
+  RCP<Epetra_Vector> preres = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
 
-  RCP<Epetra_Vector> vtemp = rcp(new Epetra_Vector(F_->RowMap(),true));
-  RCP<Epetra_Vector> ptemp = rcp(new Epetra_Vector(Z_->RowMap(),true));
+  RCP<Epetra_Vector> vtemp = Teuchos::rcp(new Epetra_Vector(F_->RowMap(),true));
+  RCP<Epetra_Vector> ptemp = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
 
   for(int k = 0; k<nSweeps_; k++)
   {
@@ -87,13 +87,13 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrh
     ////////////////// 2) solve for pressure update q = (D Fhatinv G)^{-1} (D Fhatinv velres - omega preres)
     ////////////////// 2.1) calculate rhs
     vtemp->PutScalar(0.0);
-    RCP<Epetra_Vector> qrhs = rcp(new Epetra_Vector(Z_->RowMap(),true));
+    RCP<Epetra_Vector> qrhs = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
     vtemp->Multiply(1.0,*diagFinv_,*velres,0.0);
     D_->Apply(*vtemp,*qrhs);
     qrhs->Update(omega_,*preres,-1.0);  // qrhs = -D * Fhatinv * velres + omega * preres
 
     ////////////////// 2.2) "solve" pressure correction equation for pressure update
-    RCP<Epetra_Vector> q = rcp(new Epetra_Vector(Z_->RowMap(),true)); // vector for "solution" (pressure update)
+    RCP<Epetra_Vector> q = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true)); // vector for "solution" (pressure update)
     Pp_->ApplyInverse(*qrhs,*q);    // use IFPACK
 
     ////////////////// 3) update step
@@ -101,7 +101,7 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrh
     G_->Apply(*q,*vtemp);
     vtemp->Update(1.0,*velres,-1.0);    // velres - G * q
 
-    RCP<Epetra_Vector> vx = rcp(new Epetra_Vector(diagFinv_->Map(),true));
+    RCP<Epetra_Vector> vx = Teuchos::rcp(new Epetra_Vector(diagFinv_->Map(),true));
     vx->Multiply(1/omega_,*diagFinv_,*vtemp,0.0); // vx = 1/omega_ diagFinv * (velres - G * q)
 
     ////////////////// adapt solution v: v = v + [vx;q]
@@ -134,7 +134,7 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   if (err) dserror("diagonal entries = 0");
 
   // create diagonal matrix
-  diagFinv_ = rcp(new SparseMatrix(F_->RowMap(),1));
+  diagFinv_ = Teuchos::rcp(new SparseMatrix(F_->RowMap(),1));
   for (int i=0; i<diagvec.Map().NumMyElements(); ++i)
   {
     int gid = diagvec.Map().GID(i);
@@ -150,12 +150,12 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   S_->Add(*Z_,false,omega_,-1.0); // S = omega Z - S
   S_->Complete();
 #else
-  diagFinv_ = rcp(new Epetra_Vector(F_->RowMap(),true));
+  diagFinv_ = Teuchos::rcp(new Epetra_Vector(F_->RowMap(),true));
   F_->ExtractDiagonalCopy(*diagFinv_);
   int err = diagFinv_->Reciprocal(*diagFinv_);
   if (err) dserror("diagonal entries = 0");
 
-  RCP<SparseMatrix> Gscaled = rcp(new SparseMatrix(*G_,Copy)); // ok, not the best but just works
+  RCP<SparseMatrix> Gscaled = Teuchos::rcp(new SparseMatrix(*G_,Copy)); // ok, not the best but just works
   Gscaled->LeftScale(*diagFinv_);                               // Ascaled = damping/maxeig(D^{-1} A) * D^{-1} * A
   S_ = LINALG::MLMultiply(*D_,*Gscaled,false);
   S_->Add(*Z_,false,omega_,-1.0);
@@ -187,7 +187,7 @@ bool LINALG::BraessSarazin_Smoother::Setup()
     prec->SetParameters(ifpackParams);
     prec->Initialize();
     prec->Compute();
-    Pp_ = rcp(prec);
+    Pp_ = Teuchos::rcp(prec);
     /*cout << "chosen IFPACK params" << endl;
     cout << ifpackParams << endl;
     cout << "out of parameters" << endl;
@@ -200,7 +200,7 @@ bool LINALG::BraessSarazin_Smoother::Setup()
     prec->SetParameters(params_.sublist("IFPACK Parameters"));
     prec->Initialize();
     prec->Compute();
-    Pp_ = rcp(prec);
+    Pp_ = Teuchos::rcp(prec);
     //cout << *prec << endl;
   }
   else if(type=="Jacobi stand-alone" || type=="Gauss-Seidel stand-alone" || type=="symmetric Gauss-Seidel stand-alone")
@@ -210,14 +210,14 @@ bool LINALG::BraessSarazin_Smoother::Setup()
     prec->SetParameters(params_.sublist("IFPACK Parameters"));
     prec->Initialize();
     prec->Compute();
-    Pp_ = rcp(prec);
+    Pp_ = Teuchos::rcp(prec);
     //cout << *prec << endl;
   }
   else if(type=="KLU")
   {
     ParameterList amesosParams;
     amesosParams.set("amesos: solver type","Amesos_Klu");
-    RCP<Ifpack_Amesos> prec = rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
+    RCP<Ifpack_Amesos> prec = Teuchos::rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
     prec->SetParameters(amesosParams);
     prec->Initialize();
     prec->Compute();
@@ -227,7 +227,7 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   {
     ParameterList amesosParams;
     amesosParams.set("amesos: solver type","Amesos_Umfpack");
-    RCP<Ifpack_Amesos> prec = rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
+    RCP<Ifpack_Amesos> prec = Teuchos::rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
     prec->SetParameters(amesosParams);
     prec->Initialize();
     prec->Compute();
@@ -237,7 +237,7 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   {
     /*if(params_.isSublist("ML Parameters"))
     {
-      Pp_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*S_->EpetraMatrix(),params_.sublist("ML Paramters")));
+      Pp_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*S_->EpetraMatrix(),params_.sublist("ML Paramters")));
     }
     else
       dserror("ML parameters for pressure correction missing!);*/

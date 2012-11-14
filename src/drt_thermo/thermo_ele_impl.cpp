@@ -2138,7 +2138,7 @@ double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
   // h = vol^(1/dim)
-  double h = pow(vol,(1.0/dim));
+  double h = std::pow(vol,(1.0/dim));
 
   return h;
 

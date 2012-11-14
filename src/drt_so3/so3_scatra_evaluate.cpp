@@ -55,7 +55,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(ParameterList& para
         dserror("calc_struct_nlnstiff: Cannot get state vector 'fluidvel' ");
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double> >mytemp = rcp(new std::vector<double>(la[1].lm_.size()) );
+      Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[1].lm_);
 
       params.set<Teuchos::RCP<vector<double> > >("scalar",mytemp);

@@ -512,7 +512,7 @@ flamefront_(flamefront)
   if (initialize)
   {
     const int nsd = 3; // dimension
-    timeIntData_ = rcp(new vector<TimeIntData>); // vector containing all data used for computation
+    timeIntData_ = Teuchos::rcp(new vector<TimeIntData>); // vector containing all data used for computation
 
     /*------------------------*
      * Initialization         *
@@ -791,7 +791,7 @@ void XFEM::STD::setFinalData(
       map<int,int>::iterator currstartpoint = usedStartpoints.find(gnodeid); // current start point
       if (currstartpoint==usedStartpoints.end()) // standard case and "standard alternative" case
       {
-        usedStartpoints.insert(pair<int,int>(gnodeid,1));
+        usedStartpoints.insert(std::pair<int,int>(gnodeid,1));
         numStartpoints = 1;
       }
       else
@@ -1102,7 +1102,7 @@ critTol_(1.0e-02)
   if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard)
     getCritCutElements();
 
-  timeIntData_ = rcp(new vector<TimeIntData>);
+  timeIntData_ = Teuchos::rcp(new vector<TimeIntData>);
   return;
 } // end constructor
 

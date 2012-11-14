@@ -182,8 +182,8 @@ void FLD::UTILS::computeStabilizationParams(
       const double re11 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(hk));
 
       // respective "switching" parameters
-      const double xi01 = max(re01,1.0);
-      const double xi11 = max(re11,1.0);
+      const double xi01 = std::max(re01,1.0);
+      const double xi11 = std::max(re11,1.0);
 
       tau_stab_Mu = timefac*DSQR(strle)/(DSQR(strle)*dens*xi01+(4.0*timefac*dynvisc/mk)*xi02);
       tau_stab_Mp = timefac*DSQR(hk)/(DSQR(hk)*dens*xi11+(4.0*timefac*dynvisc/mk)*xi12);

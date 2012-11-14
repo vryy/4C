@@ -60,7 +60,7 @@ Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeBinType::Create( const string 
 {
   if (eletype=="MESHFREEBIN")
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::MESHFREE::MeshfreeBin(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::MESHFREE::MeshfreeBin(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -69,7 +69,7 @@ Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeBinType::Create( const string 
 
 Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeBinType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::MESHFREE::MeshfreeBin(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::MESHFREE::MeshfreeBin(id,owner));
   return ele;
 }
 

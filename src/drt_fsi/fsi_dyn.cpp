@@ -149,7 +149,7 @@ void fluid_xfem2_drt()
 
     // create instance of fluid basis algorithm
     const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
     // run the simulation, calls the xfluid-"integrate()" routine
     fluidalgo->FluidField().Integrate();
@@ -193,7 +193,7 @@ void fluid_fluid_ale_drt()
 
   // create a communicator
   #ifdef PARALLEL
-   RCP<Epetra_Comm> comm = rcp(problem->GetDis("fluid")->Comm().Clone());
+   RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetDis("fluid")->Comm().Clone());
   #else
     Epetra_SerialComm comm;
   #endif
@@ -214,11 +214,11 @@ void fluid_fluid_ale_drt()
   {
     DRT::Element* ele = bgfluiddis->lColElement(i);
     const DRT::Node*const* elenodes = ele->Nodes();
-    RCP<DRT::Element> newele = rcp(ele->Clone());
+    RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
     embfluiddis->AddElement(newele);
     for (int inode=0; inode < ele->NumNode(); ++inode)
     {
-      RCP<DRT::Node> newnode = rcp(elenodes[inode]->Clone());
+      RCP<DRT::Node> newnode = Teuchos::rcp(elenodes[inode]->Clone());
       embfluiddis->AddNode(newnode);
     }
   }
@@ -256,7 +256,7 @@ void fluid_fluid_ale_drt()
      for (unsigned i=0; i<conds.size(); ++i)
      {
        // We use the same nodal ids and therefore we can just copy the conditions.
-       embfluiddis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
+       embfluiddis->SetCondition(*conditername, Teuchos::rcp(new DRT::Condition(*conds[i])));
      }
    }
 
@@ -342,7 +342,7 @@ void fluid_fluid_ale_drt()
   }
 
   // Background discretization redistribution..
-  RCP<Epetra_Map> bgroweles =  rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
+  RCP<Epetra_Map> bgroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
   RCP<Epetra_Map> bgrownodes = Teuchos::null;
   RCP<Epetra_Map> bgcolnodes = Teuchos::null;
 
@@ -392,7 +392,7 @@ void fluid_fluid_ale_drt()
   }
 
   // Embedded discretization redistribution..
-  RCP<Epetra_Map> embroweles =  rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
+  RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
   RCP<Epetra_Map> embrownodes = Teuchos::null;
   RCP<Epetra_Map> embcolnodes = Teuchos::null;
 
@@ -447,7 +447,7 @@ void fluid_fluid_fsi_drt()
 {
  // create a communicator
   #ifdef PARALLEL
-   RCP<Epetra_Comm> comm = rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
+   RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
   #else
     Epetra_SerialComm comm;
   #endif
@@ -475,11 +475,11 @@ void fluid_fluid_fsi_drt()
   {
     DRT::Element* ele = bgfluiddis->lColElement(i);
     const DRT::Node*const* elenodes = ele->Nodes();
-    RCP<DRT::Element> newele = rcp(ele->Clone());
+    RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
     embfluiddis->AddElement(newele);
     for (int inode=0; inode < ele->NumNode(); ++inode)
     {
-      RCP<DRT::Node> newnode = rcp(elenodes[inode]->Clone());
+      RCP<DRT::Node> newnode = Teuchos::rcp(elenodes[inode]->Clone());
       embfluiddis->AddNode(newnode);
     }
   }
@@ -519,7 +519,7 @@ void fluid_fluid_fsi_drt()
      for (unsigned i=0; i<conds.size(); ++i)
      {
        // We use the same nodal ids and therefore we can just copy the conditions.
-       embfluiddis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
+       embfluiddis->SetCondition(*conditername, Teuchos::rcp(new DRT::Condition(*conds[i])));
      }
    }
 
@@ -605,7 +605,7 @@ void fluid_fluid_fsi_drt()
   }
 
   // Background discretization redistribution..
-  RCP<Epetra_Map> bgroweles =  rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
+  RCP<Epetra_Map> bgroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
   RCP<Epetra_Map> bgrownodes = Teuchos::null;
   RCP<Epetra_Map> bgcolnodes = Teuchos::null;
 
@@ -655,7 +655,7 @@ void fluid_fluid_fsi_drt()
   }
 
   // Embedded discretization redistribution..
-  RCP<Epetra_Map> embroweles =  rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
+  RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
   RCP<Epetra_Map> embrownodes = Teuchos::null;
   RCP<Epetra_Map> embcolnodes = Teuchos::null;
 
@@ -976,7 +976,7 @@ void fsi_ale_drt()
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
     // create fsi specific result test
-    Teuchos::RCP<FSI::FSIResultTest> fsitest = rcp(new FSI::FSIResultTest(fsi,fsidyn));
+    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
     DRT::Problem::Instance()->AddFieldTest(fsitest);
 
     // do the actual testing
@@ -1115,7 +1115,7 @@ void xfsi_drt()
 
     if (method==INPAR::FSI::DirichletNeumann)
     {
-      fsi = rcp(new FSI::DirichletNeumann(comm));
+      fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
     }
     else
       dserror("only Dirichlet-Neumann partitioned schemes with XFEM");

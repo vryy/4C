@@ -45,9 +45,6 @@ Maintainer: Michael Gee
 #include "Epetra_Comm.h"
 #include "Teuchos_RefCountPtr.hpp"
 
-using namespace std;
-using Teuchos::RCP;
-
 #include "drt_container.H"
 #include "drt_parobjectfactory.H"
 #include "drt_dserror.H"
@@ -321,14 +318,14 @@ public:
   /*!
   \brief Return vector of my global node ids
   */
-  const vector<int>* Nodes() const { return Get<vector<int> >("Node Ids"); }
+  const std::vector<int>* Nodes() const { return Get<std::vector<int> >("Node Ids"); }
 
   /*!
     \brief Return if a node gid is contained in this condition
    */
   bool ContainsNode(int ngid) const
   {
-    const vector<int>* n = Nodes();
+    const std::vector<int>* n = Nodes();
     // DRT::Condition nodes are ordered by design! So we can perform a binary
     // search here.
     return std::binary_search(n->begin(), n->end(), ngid);
@@ -370,13 +367,13 @@ public:
   /*!
   \brief Return communicator
   */
-  inline const RefCountPtr<Epetra_Comm> Comm() const { return comm_; }
+  inline const Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
 
   /*!
   \brief Get a reference to the geometry description of the condition
 
   */
-  virtual map<int,RefCountPtr<DRT::Element> >& Geometry() { return geometry_; }
+  virtual std::map<int,Teuchos::RCP<DRT::Element> >& Geometry() { return geometry_; }
 
   /*!
   \brief Adjust IDs of associated elements in order to obtain global
@@ -394,7 +391,7 @@ protected:
   /*!
   \brief Set a communicator
   */
-  inline void SetComm(RefCountPtr<Epetra_Comm> comm)
+  inline void SetComm(Teuchos::RCP<Epetra_Comm> comm)
   { comm_ = comm; return; }
 
   /*!
@@ -420,7 +417,7 @@ protected:
                     Do not mess with their RefCountPtr!
 
   */
-  virtual void AddGeometry(map<int,RefCountPtr<DRT::Element> >& geom)
+  virtual void AddGeometry(std::map<int,Teuchos::RCP<DRT::Element> >& geom)
   { geometry_ = geom; return; }
 
   /*!
@@ -450,10 +447,10 @@ protected:
   GeometryType                        gtype_;
 
   //! Geometry description of this condition
-  map<int,RefCountPtr<DRT::Element> > geometry_;
+  std::map<int,Teuchos::RCP<DRT::Element> > geometry_;
 
   //! A communicator
-  RefCountPtr<Epetra_Comm>            comm_;     // a communicator
+  Teuchos::RCP<Epetra_Comm>            comm_;     // a communicator
 }; // class Condition
 
 

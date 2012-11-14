@@ -1169,7 +1169,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     Teuchos::RCP<LINALG::SparseMatrix> constr =
         (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
     Teuchos::RCP<LINALG::SparseMatrix> constrT =
-        rcp(new LINALG::SparseMatrix (*constr));
+        Teuchos::rcp(new LINALG::SparseMatrix (*constr));
 
     constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 

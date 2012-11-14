@@ -49,7 +49,7 @@ LINALG::SerialDenseMatrix GEO::InitialPositionArray(
 */
 LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
     const DRT::Element* const             ele,                      ///< element with nodal pointers
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions    ///< current positions of all cutter nodes
+    const std::map<int,LINALG::Matrix<3,1> >&  currentcutterpositions    ///< current positions of all cutter nodes
     )
 {
 	const int numnode = ele->NumNode();
@@ -74,7 +74,7 @@ LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
 */
 LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
     const RCP<const DRT::Element>             ele,			         ///< pointer on element
-    const map<int,LINALG::Matrix<3,1> >&      currentpositions	 ///< current positions of all cutter nodes
+    const std::map<int,LINALG::Matrix<3,1> >&      currentpositions	 ///< current positions of all cutter nodes
     )
 {
   const int numnode = ele->NumNode();

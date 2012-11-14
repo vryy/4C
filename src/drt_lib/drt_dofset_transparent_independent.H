@@ -20,7 +20,6 @@ Maintainer: Shadan Shahmiri
 #include "drt_dofset_transparent.H"
 #include "../drt_lib/drt_discret.H"
 
-using namespace std;
 
 namespace XFEM
 {

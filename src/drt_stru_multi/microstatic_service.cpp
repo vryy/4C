@@ -96,12 +96,12 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   }
 
   // create map based on the determined dofs of prescribed and free nodes
-  pdof_ = rcp(new Epetra_Map(-1, np_, &pdof[0], 0, discret_->Comm()));
-  fdof_ = rcp(new Epetra_Map(-1, ndof_-np_, &fdof[0], 0, discret_->Comm()));
+  pdof_ = Teuchos::rcp(new Epetra_Map(-1, np_, &pdof[0], 0, discret_->Comm()));
+  fdof_ = Teuchos::rcp(new Epetra_Map(-1, ndof_-np_, &fdof[0], 0, discret_->Comm()));
 
   // create importer
-  importp_ = rcp(new Epetra_Import(*pdof_, *(discret_->DofRowMap())));
-  importf_ = rcp(new Epetra_Import(*fdof_, *(discret_->DofRowMap())));
+  importp_ = Teuchos::rcp(new Epetra_Import(*pdof_, *(discret_->DofRowMap())));
+  importf_ = Teuchos::rcp(new Epetra_Import(*fdof_, *(discret_->DofRowMap())));
 
   // create vector containing material coordinates of prescribed nodes
   Epetra_Vector Xp_temp(*pdof_);
@@ -179,7 +179,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
     (*(DT(8)))[3*n+2] = (*Xp_)[3*n+1];
   }
 
-  rhs_ = rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 9));
+  rhs_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 9));
 
   for (int i=0;i<9;++i)
   {

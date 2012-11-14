@@ -177,7 +177,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
   }
 
   // now reconstruct the extended colmap
-  RCP<Epetra_Map> newcolnodemap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
                                      mycolnodes.size(),
                                      &mycolnodes[0],
                                      0,

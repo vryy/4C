@@ -311,7 +311,7 @@ private:
         };
 
         //! map that converts strings to actions (stabilization)
-        static map<string,StabilisationAction>          stabstrtoact_;
+        static std::map<string,StabilisationAction>          stabstrtoact_;
 
         //! store information about the unknowns of this element
         //!

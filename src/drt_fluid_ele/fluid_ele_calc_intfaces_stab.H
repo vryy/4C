@@ -398,7 +398,7 @@ namespace DRT
           line3 = sqrt(line3);
 
 
-          h_e = max(diam1, max(diam2, max(line0, max(line1, max(line2, line3)))));
+          h_e = std::max(diam1, std::max(diam2, std::max(line0, std::max(line1, std::max(line2, line3)))));
         }
         else if(numnode == 3) // tri3 surface
         {
@@ -421,7 +421,7 @@ namespace DRT
           line2 = sqrt(line2);
 
 
-          h_e = max(line0, max(line1, line2));
+          h_e = std::max(line0, std::max(line1, line2));
         }
         else dserror("unknown number of nodes");
 

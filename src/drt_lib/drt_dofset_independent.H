@@ -29,7 +29,6 @@ Maintainer: Ursula Rasthofer
 
 #include "../drt_lib/drt_dofset.H"
 
-using namespace std;
 
 // forward declarations
 namespace DRT

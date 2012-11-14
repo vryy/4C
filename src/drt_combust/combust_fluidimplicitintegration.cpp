@@ -218,20 +218,20 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 #ifdef COMBUST_STRESS_BASED
 #ifdef COMBUST_EPSPRES_BASED
   // define approach for extra stress field (stress-based Lagrange Multiplier approach)
-  physprob_.elementAnsatz_ = rcp(new COMBUST::EpsilonPressureAnsatz());
+  physprob_.elementAnsatz_ = Teuchos::rcp(new COMBUST::EpsilonPressureAnsatz());
 #endif
 #ifdef COMBUST_SIGMA_BASED
   // define approach for extra stress field (stress-based Lagrange Multiplier approach)
-  physprob_.elementAnsatz_ = rcp(new COMBUST::CauchyStressAnsatz());
+  physprob_.elementAnsatz_ = Teuchos::rcp(new COMBUST::CauchyStressAnsatz());
 #endif
 #else
   // for the Nitsche method assign an arbitrary element ansatz to compile
-  physprob_.elementAnsatz_ = rcp(new COMBUST::TauPressureAnsatz());
+  physprob_.elementAnsatz_ = Teuchos::rcp(new COMBUST::TauPressureAnsatz());
 #endif
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = Teuchos::rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanagerdummy;
@@ -248,7 +248,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
-  velpressplitterForOutput_ = rcp(new LINALG::MapExtractor());
+  velpressplitterForOutput_ = Teuchos::rcp(new LINALG::MapExtractor());
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,*velpressplitterForOutput_);
 
@@ -261,7 +261,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   // get layout of velocity and pressure dofs in a vector
   const int numdim = params_->get<int>("number of velocity degrees of freedom");
-  velpressplitter_ = rcp(new LINALG::MapExtractor());
+  velpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
   FLD::UTILS::SetupFluidSplit(*discret_,numdim,*velpressplitter_);
 
   //------------------------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // initialize turbulence statistics evaluation
   // -------------------------------------------------------------------
-  turbstatisticsmanager_ = rcp(new FLD::TurbulenceStatisticManager(*this));
+  turbstatisticsmanager_ = Teuchos::rcp(new FLD::TurbulenceStatisticManager(*this));
 
   // parameter for sampling/dumping period
   if (special_flow_ != "no")
@@ -371,7 +371,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     const std::string filename = tmpfilename.str();
     std::ofstream gmshfilecontent(filename.c_str());
     gmshfilecontent << "# total flame area for each time step\n";
-    gmshfilecontent << "#" << setw(6) << "step" << "  " << setw(6) << setprecision(6) << "time" << "  " << setprecision(13) << "flame area" << "\n\n";
+    gmshfilecontent << "#" << std::setw(6) << "step" << "  " << std::setw(6) << std::setprecision(6) << "time" << "  " << std::setprecision(13) << "flame area" << "\n\n";
   }
 #endif
 
@@ -390,10 +390,10 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     const std::string filename = tmpfilename.str();
     std::ofstream gmshfilecontent(filename.c_str());
     gmshfilecontent << "# amplitude on middle line for each time step\n";
-    gmshfilecontent << "#" << setw(6) << "step" << "  " << setw(6) << setprecision(6) << "time";
-    gmshfilecontent << "  " << setprecision(13) << "amplitude left";
-    gmshfilecontent << "  " << setprecision(13) << "amplitude middle";
-    gmshfilecontent << "  " << setprecision(13) << "amplitude" << "\n\n";
+    gmshfilecontent << "#" << std::setw(6) << "step" << "  " << std::setw(6) << std::setprecision(6) << "time";
+    gmshfilecontent << "  " << std::setprecision(13) << "amplitude left";
+    gmshfilecontent << "  " << std::setprecision(13) << "amplitude middle";
+    gmshfilecontent << "  " << std::setprecision(13) << "amplitude" << "\n\n";
   }
 #endif
 }
@@ -762,7 +762,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
       w_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
       c_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
 
-      kspsplitter_ = rcp(new FLD::UTILS::KSPMapExtractor());
+      kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
       kspsplitter_->Setup(*discret_);
     }
     else if (numfluid == 0)
@@ -809,7 +809,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   // build instance of DofManager with information about the interface from the interfacehandle
   // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
   // of enriched degrees of freedom change in every time step/FG-iteration
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = Teuchos::rcp(new XFEM::DofManager(
       interfacehandle_,
       phinp_,
       physprob_.xfemfieldset_,
@@ -867,20 +867,20 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     // extract old enrichment dofkeys and values before they are lost
     //---------------------------------------------------------------
     vector<RCP<Epetra_Vector> > oldColStateVectors; // same order of vectors as newRowVectorsn combined with newRowVectorsnp
-    RCP<Epetra_Vector> veln = rcp(new Epetra_Vector(olddofcolmap,true));
+    RCP<Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
     {
       LINALG::Export(*state_.veln_,*veln);
       oldColStateVectors.push_back(veln);
 
-      RCP<Epetra_Vector> accn = rcp(new Epetra_Vector(olddofcolmap,true));
+      RCP<Epetra_Vector> accn = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
       LINALG::Export(*state_.accn_,*accn);
       oldColStateVectors.push_back(accn);
 
-      RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(olddofcolmap,true));
+      RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
       LINALG::Export(*state_.velnp_,*velnp);
       oldColStateVectors.push_back(velnp);
 
-      RCP<Epetra_Vector> accnp = rcp(new Epetra_Vector(olddofcolmap,true));
+      RCP<Epetra_Vector> accnp = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
       LINALG::Export(*state_.accnp_,*accnp);
       oldColStateVectors.push_back(accnp);
     }
@@ -957,7 +957,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
             ((xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_donothing) and (xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_quasistatic)))
         {
           // basic time integration data
-          RCP<XFEM::TIMEINT> timeIntData = rcp(new XFEM::TIMEINT(
+          RCP<XFEM::TIMEINT> timeIntData = Teuchos::rcp(new XFEM::TIMEINT(
               discret_,
               olddofmanager,
               dofmanager,
@@ -980,7 +980,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
             INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrComp(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnrComp>(params_->sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR_COMP"));
 
             // enrichment time integration data
-            timeIntEnr_ = rcp(new XFEM::EnrichmentProjection(
+            timeIntEnr_ = Teuchos::rcp(new XFEM::EnrichmentProjection(
                 *timeIntData,
                 veljump,
                 xfemtimeint_enr_,
@@ -1000,7 +1000,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
           case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
           {
             // time integration data for standard dofs, semi-lagrangian approach
-            timeIntStd_ = rcp(new XFEM::SemiLagrange(
+            timeIntStd_ = Teuchos::rcp(new XFEM::SemiLagrange(
                 *timeIntData,
                 xfemtimeint_,
                 veln,
@@ -1014,7 +1014,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
           case INPAR::COMBUST::xfemtimeint_extrapolationold:
           {
             // time integration data for standard dofs, extrapolation approach
-            timeIntStd_ = rcp(new XFEM::ExtrapolationOld(
+            timeIntStd_ = Teuchos::rcp(new XFEM::ExtrapolationOld(
                 *timeIntData,
                 xfemtimeint_,
                 veln,
@@ -1027,7 +1027,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
           case INPAR::COMBUST::xfemtimeint_extrapolationnew:
           {
             // time integration data for standard dofs, extrapolation approach
-            timeIntStd_ = rcp(new XFEM::ExtrapolationNew(
+            timeIntStd_ = Teuchos::rcp(new XFEM::ExtrapolationNew(
                 *timeIntData,
                 xfemtimeint_,
                 veln,
@@ -1776,7 +1776,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
           dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
-          RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
+          RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
           LINALG::Export(*state_.velnp_,*velnp);
 
 
@@ -1905,7 +1905,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
         dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
-        RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
+        RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
         LINALG::Export(*state_.velnp_,*velnp);
 
 
@@ -2164,7 +2164,7 @@ void FLD::CombustFluidImplicitTimeInt::GenAlphaUpdateAcceleration()
   Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_->ExtractOtherVector(state_.veln_ );
   Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->ExtractOtherVector(state_.velnp_);
 
-  Teuchos::RCP<Epetra_Vector> onlyaccnp = rcp(new Epetra_Vector(onlyaccn->Map()));
+  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
 
   const double fact1 = 1.0/(gamma_*dta_);
   const double fact2 = 1.0 - (1.0/gamma_);
@@ -2193,7 +2193,7 @@ void FLD::CombustFluidImplicitTimeInt::GenAlphaIntermediateValues()
     Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(state_.accn_ );
     Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->ExtractOtherVector(state_.accnp_);
 
-    Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
+    Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
 
     onlyaccam->Update((alphaM_),*onlyaccnp,(1.0-alphaM_),*onlyaccn,0.0);
 
@@ -2365,7 +2365,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
         {
           lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
           vel(icomp) = (*velnp_out)[lids[icomp]];
-          IO::cout << setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
+          IO::cout << std::setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
         }
         IO::cout << "coordinates ";
         for (int icomp=0; icomp<3; ++icomp)
@@ -2399,7 +2399,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
         {
           lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
           vel(icomp) = (*velnp_out)[lids[icomp]];
-          IO::cout << setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
+          IO::cout << std::setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
         }
         IO::cout << "coordinates ";
         for (int icomp=0; icomp<3; ++icomp)
@@ -2433,7 +2433,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
         {
           lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
           vel(icomp) = (*velnp_out)[lids[icomp]];
-          IO::cout << setw(18)<<  std::setprecision(12) <<vel(icomp) << " ";
+          IO::cout << std::setw(18)<<  std::setprecision(12) <<vel(icomp) << " ";
         }
         IO::cout << "coordinates ";
         for (int icomp=0; icomp<3; ++icomp)
@@ -3110,8 +3110,8 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     std::ostringstream filename;
     std::ostringstream filenamedel;
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    filename    << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step   << ".pos";
-    filenamedel << filebase << ".solution_field_pressure_disc_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    filename    << filebase << ".solution_field_pressure_disc_" << std::setw(5) << std::setfill('0') << step   << ".pos";
+    filenamedel << filebase << ".solution_field_pressure_disc_" << std::setw(5) << std::setfill('0') << step-5 << ".pos";
     std::remove(filenamedel.str().c_str());
     if (screen_out) IO::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream gmshfilecontent(filename.str().c_str());
@@ -3534,8 +3534,8 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
 
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(filename.c_str(),ios::app));
-      (*log) <<  " "  << setw(6) << step_ << "  " << setw(6) << setprecision(6) << time_ << "  " << setprecision(13) << globflamearea;
+      log = Teuchos::rcp(new std::ofstream(filename.c_str(),std::ios::app));
+      (*log) <<  " "  << std::setw(6) << step_ << "  " << std::setw(6) << std::setprecision(6) << time_ << "  " << std::setprecision(13) << globflamearea;
       (*log) << &endl;
       log->flush();
 
@@ -3698,11 +3698,11 @@ void FLD::CombustFluidImplicitTimeInt::OutputInstabAmplitude(
 
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(filename.c_str(),ios::app));
-      (*log) <<  " "  << setw(6) << step_ << "  " << setw(6) << setprecision(6) << time_;
-      (*log) << "  " << setw(15) << setprecision(13) << amplitudeleft;
-      (*log) << "  " << setw(15) << setprecision(13) << amplitudemiddle;
-      (*log) << "  " << setw(15) << setprecision(13) << amplitude;
+      log = Teuchos::rcp(new std::ofstream(filename.c_str(),std::ios::app));
+      (*log) <<  " "  << std::setw(6) << step_ << "  " << std::setw(6) << std::setprecision(6) << time_;
+      (*log) << "  " << std::setw(15) << std::setprecision(13) << amplitudeleft;
+      (*log) << "  " << std::setw(15) << std::setprecision(13) << amplitudemiddle;
+      (*log) << "  " << std::setw(15) << std::setprecision(13) << amplitude;
       (*log) << &endl;
       log->flush();
 
@@ -5031,10 +5031,10 @@ void FLD::CombustFluidImplicitTimeInt::SetupXFluidSplit(
 
   // the rowmaps are generated according to the pattern provided by
   // the data vectors
-  RCP<Epetra_Map> velrowmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> velrowmap = Teuchos::rcp(new Epetra_Map(-1,
       velmapdata.size(),&velmapdata[0],0,
       dis.Comm()));
-  RCP<Epetra_Map> prerowmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> prerowmap = Teuchos::rcp(new Epetra_Map(-1,
       premapdata.size(),&premapdata[0],0,
       dis.Comm()));
 
@@ -5074,9 +5074,9 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
   pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
 
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = Teuchos::rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanagerdummy;

@@ -51,7 +51,7 @@ RCP<LINALG::TransferOperator> LINALG::TransferOperatorFactory::Create(const stri
     else
         dserror("error");
 
-    return rcp(op);
+    return Teuchos::rcp(op);
   }
   catch(string str)
   {

@@ -27,8 +27,6 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "../drt_lib/drt_element.H"
 
 
-using namespace std;
-
 namespace EXODUS{
 
 // forward declaration

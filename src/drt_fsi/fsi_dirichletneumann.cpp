@@ -25,7 +25,7 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, cons
 {
   if (displacementcoupling_) // coupling variable: interface displacements
   {
-    const Teuchos::RCP<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
+    const Teuchos::RCP<Epetra_Vector> idispn = Teuchos::rcp(new Epetra_Vector(x));
     if (MyDebugWriter()!=Teuchos::null)
       MyDebugWriter()->WriteVector("idispn",*idispn);
 
@@ -41,7 +41,7 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, cons
   }
   else // coupling variable: interface forces
   {
-    const Teuchos::RCP<Epetra_Vector> iforcen = rcp(new Epetra_Vector(x));
+    const Teuchos::RCP<Epetra_Vector> iforcen = Teuchos::rcp(new Epetra_Vector(x));
     if (MyDebugWriter()!=Teuchos::null)
       MyDebugWriter()->WriteVector("iforcen",*iforcen);
 

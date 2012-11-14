@@ -112,7 +112,7 @@ namespace UTILS
       const int nsd                         ///< number of space dimensions
       )
   {
-    if (global==null) dserror("received a TEUCHOS::null pointer");
+    if (global==Teuchos::null) dserror("received a TEUCHOS::null pointer");
     if (nsd > global->NumVectors())
       dserror("Requested %d of %d available columns", nsd,global->NumVectors());
     const int iel = ele->NumNode(); // number of nodes

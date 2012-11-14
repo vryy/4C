@@ -147,8 +147,8 @@ void FSI::ConstrMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat,
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
-    srowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    scolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*srowsum_);
     A->InvColSums(*scolsum_);
     if (A->LeftScale(*srowsum_) or
@@ -162,8 +162,8 @@ void FSI::ConstrMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat,
       dserror("structure scaling failed");
 
     A = mat.Matrix(2,2).EpetraMatrix();
-    arowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    acolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*arowsum_);
     A->InvColSums(*acolsum_);
     if (A->LeftScale(*arowsum_) or

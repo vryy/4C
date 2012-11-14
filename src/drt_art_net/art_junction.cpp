@@ -200,7 +200,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
         // -------------------------------------------------------------------
         // sort junction BCs in map 
         // -------------------------------------------------------------------
-        RCP<ArtJunctionBc> junbc = rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
+        RCP<ArtJunctionBc> junbc = Teuchos::rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
         ajunmap_.insert( make_pair( condid, junbc ) ).second;
 
         // -------------------------------------------------------------------
@@ -211,12 +211,12 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretizati
         // -------------------------------------------------------------------
         bool inserted;
         // create an empty map associated to the RCP nodalParams_
-        //      nodalParams = rcp(new map<const int, RCP<JunctionNodeParams> >());
+        //      nodalParams = Teuchos::rcp(new map<const int, RCP<JunctionNodeParams> >());
         
         for (unsigned int j=0 ; j< SortedConds[i].size(); j++)
         {
           const vector<int> * nodes = SortedConds[i][j]->Nodes();
-          RCP<JunctionNodeParams> nodeparams = rcp(new JunctionNodeParams);
+          RCP<JunctionNodeParams> nodeparams = Teuchos::rcp(new JunctionNodeParams);
 
           int local_id =  discret_->NodeRowMap()->LID((*nodes)[0]);
           inserted = nodalParams->insert( make_pair( local_id, nodeparams) ).second;

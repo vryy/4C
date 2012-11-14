@@ -38,7 +38,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create( const string elety
 {
   if ( eletype=="ART" )
   {
-    RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::Artery(id,owner));
+    RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::Artery(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -47,7 +47,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create( const string elety
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ArteryType::Create( const int id, const int owner )
 {
-  RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::Artery(id,owner));
+  RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::Artery(id,owner));
   return ele;
 }
 

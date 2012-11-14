@@ -108,7 +108,7 @@ void STRU_ALE::Algorithm::TimeLoop()
     // 2.-----------------------------------------------------------------     
     // mesh displacement from solution of ALE field in structural dofs
     // FIXGIT: Has to be done with transformation of vector
-    RCP<Epetra_Vector> idis = rcp(new Epetra_Vector(*(StructureField().Discretization()->DofRowMap()),true));
+    RCP<Epetra_Vector> idis = Teuchos::rcp(new Epetra_Vector(*(StructureField().Discretization()->DofRowMap()),true));
     for (int i=0; i<idis->MyLength(); ++i)
       (*idis)[i]=(*(AleField().ExtractDisplacement()))[i];
     
@@ -188,13 +188,13 @@ void STRU_ALE::Algorithm::InterfaceDisp(RCP<Epetra_Vector>& disinterface)
     Comm().SumAll(&slavecountnodes,&gslavecountnodes,1);
 
     // create slave node map and active dof map
-    slavedofs = rcp(new Epetra_Map(gslavecountnodes*dim,slavecountnodes*dim,&myslavealedofs[0],0,Comm()));
+    slavedofs = Teuchos::rcp(new Epetra_Map(gslavecountnodes*dim,slavecountnodes*dim,&myslavealedofs[0],0,Comm()));
   }
   
   // additional spatial displacements
   // FIXGIT: check has to be done with nodal normal
   // FIXGIT: transformation of results
-  disinterface = rcp(new Epetra_Vector(*slavedofs,true));
+  disinterface = Teuchos::rcp(new Epetra_Vector(*slavedofs,true));
   for (int i=0; i<disinterface->MyLength(); ++i)
   {
     if (i%2 > 0 and (*cstrategy.ContactWear())[i] > 0.0)
@@ -215,10 +215,10 @@ void STRU_ALE::Algorithm::ApplyMeshDisplacement(RCP<Epetra_Vector>& disale)
   RCP<Epetra_Vector> dispn = StructureField().ExtractDispn();
 
   // additional spatial displacements
-  RCP<Epetra_Vector> disadditional = rcp(new Epetra_Vector(dispn->Map()),true);
+  RCP<Epetra_Vector> disadditional = Teuchos::rcp(new Epetra_Vector(dispn->Map()),true);
 
   // material displacements
-  RCP<Epetra_Vector> dismat = rcp(new Epetra_Vector(dispn->Map()),true);
+  RCP<Epetra_Vector> dismat = Teuchos::rcp(new Epetra_Vector(dispn->Map()),true);
   
   // set state
   (StructureField().Discretization())->SetState(0,"displacement",dispn);

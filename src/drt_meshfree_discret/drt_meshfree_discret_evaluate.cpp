@@ -77,11 +77,11 @@ void DRT::MESHFREE::MeshfreeDiscretization::Evaluate(Teuchos::ParameterList&    
   {
     rmap = &(systemmatrix1->OperatorRangeMap());
     dmap = rmap;
-    systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
+    systemmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
     if (systemmatrix != null && systemmatrix->Filled())
-      systemmatrix_FE = rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
+      systemmatrix_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
     else
-      systemmatrix_FE = rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
+      systemmatrix_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
   }
 
   //-----------------------------------------------------------------

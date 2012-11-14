@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele2Type::Create( const string eletyp
 {
   if ( eletype=="BELE2" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele2(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele2(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele2Type::Create( const string eletyp
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele2Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele2(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele2(id,owner));
   return ele;
 }
 
@@ -154,7 +154,7 @@ void DRT::ELEMENTS::Bele2::Print(ostream& os) const
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Lines()
 {
   vector<RCP<DRT::Element> > lines(1);
-  lines[0]=rcp(this,false);
+  lines[0]=Teuchos::rcp(this,false);
   return lines;
 }
 

@@ -135,7 +135,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Vele3Surface::Lines()
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Vele3Surface::Surfaces()
 {
   vector<RCP<DRT::Element> > surfaces(1);
-  surfaces[0]=rcp(this,false);
+  surfaces[0]=Teuchos::rcp(this,false);
   return surfaces;
 }
 

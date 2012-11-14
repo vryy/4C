@@ -55,9 +55,6 @@ Maintainer: Michael Gee
 #include "drt_utils_factory.H"
 #include "drt_parobject.H"
 
-using namespace std;
-using namespace Teuchos;
-
 
 namespace DRT
 {
@@ -576,7 +573,7 @@ private:
       DRT::ParObject* o = DRT::UTILS::Factory(data);
       T* ptr = dynamic_cast<T*>(o);
       if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
-      RCP<T> refptr = rcp(ptr);
+      RCP<T> refptr = Teuchos::rcp(ptr);
       // add object to my map
       parobjects_[gid] = refptr;
     }
@@ -631,7 +628,7 @@ private:
 
     virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
     {
-      RCP<T> obj = rcp(new T);
+      RCP<T> obj = Teuchos::rcp(new T);
       ParObject::ExtractfromPack(index,recvblock,*obj);
 
       // add object to my map

@@ -46,9 +46,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // in the separate section of the problem
     // add your discretization name here!
     if (condition == "TurbulentInflowSection")
-      childdiscret_ = rcp(new DRT::Discretization((string)"inflow",rcp(parentdiscret_->Comm().Clone())));
+      childdiscret_ = Teuchos::rcp(new DRT::Discretization((string)"inflow",Teuchos::rcp(parentdiscret_->Comm().Clone())));
     else //dummy discretization
-      childdiscret_ = rcp(new DRT::Discretization((string)"none",rcp(parentdiscret_->Comm().Clone())));
+      childdiscret_ = Teuchos::rcp(new DRT::Discretization((string)"none",Teuchos::rcp(parentdiscret_->Comm().Clone())));
 
     // get set of ids of all child nodes
     set<int> sepcondnodeset;
@@ -161,7 +161,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     {
       DRT::Node* actnode=parentdiscret_->gNode(*id);
 
-      RCP<DRT::Node> sepcondnode =rcp(actnode->Clone());
+      RCP<DRT::Node> sepcondnode =Teuchos::rcp(actnode->Clone());
 
       childdiscret_->AddNode(sepcondnode);
     }
@@ -198,7 +198,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // yes, we have a turbulent separation condition (for this element)
       if(found==true)
       {
-        RCP<DRT::Element> sepcondele =rcp(actele->Clone());
+        RCP<DRT::Element> sepcondele =Teuchos::rcp(actele->Clone());
 
         childdiscret_->AddElement(sepcondele);
       }
@@ -220,7 +220,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
 
       // build noderowmap for new distribution of nodes
-      newrownodemap = rcp(new Epetra_Map(-1,
+      newrownodemap = Teuchos::rcp(new Epetra_Map(-1,
                                          rownodes.size(),
                                          &rownodes[0],
                                          0,
@@ -235,7 +235,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         colnodes.push_back(*id);
       }
       // build nodecolmap for new distribution of nodes
-      newcolnodemap = rcp(new Epetra_Map(-1,
+      newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
                                          colnodes.size(),
                                          &colnodes[0],
                                          0,
@@ -313,7 +313,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
           (*actcond[numactcond]).Add("Node Ids",reduced_ids);
 
           // finally set condition
-          childdiscret_->SetCondition(allcond[numcond],rcp(new DRT::Condition(*actcond[numactcond])));
+          childdiscret_->SetCondition(allcond[numcond],Teuchos::rcp(new DRT::Condition(*actcond[numactcond])));
         }
 
         // redistribute master and slave nodes
@@ -340,7 +340,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // idea: use a transparent dofset and hand through the dof numbering
     // get dof form parent discretization for child discretization
-    childdiscret_->ReplaceDofSet(rcp(new DRT::TransparentDofSet(parentdiscret_,true))); //true: parallel
+    childdiscret_->ReplaceDofSet(Teuchos::rcp(new DRT::TransparentDofSet(parentdiscret_,true))); //true: parallel
     // and assign the dofs to nodes
     // remark: nothing is redistributed here
     childdiscret_->Redistribute(*newrownodemap,*newcolnodemap,true,true,true);
@@ -364,9 +364,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     RCP<Epetra_Map> sepcondrownodes;
     RCP<Epetra_Map> sepcondcolnodes;
 
-    RCP<Epetra_Map> sepcondelenodesmap = rcp( new Epetra_Map(*childdiscret_->ElementRowMap()));
+    RCP<Epetra_Map> sepcondelenodesmap = Teuchos::rcp( new Epetra_Map(*childdiscret_->ElementRowMap()));
     Epetra_Time time(parentdiscret_->Comm());
-    RCP<Epetra_Comm> comm = rcp(parentdiscret_->Comm().Clone());
+    RCP<Epetra_Comm> comm = Teuchos::rcp(parentdiscret_->Comm().Clone());
 
     // ParMetis gets the current distribution (sepcondelenodesmap) and returns a better one (sepcondrownodes, sepcondcolnodes)
     // hopefully the optimal one
@@ -381,8 +381,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 #if defined(PARALLEL)
     dserror("require PARMETIS not METIS");
 #else
-    sepcondrownodes=rcp(new Epetra_Map(*newrownodemap));
-    sepcondcolnodes=rcp(new Epetra_Map(*newcolnodemap));
+    sepcondrownodes=Teuchos::rcp(new Epetra_Map(*newrownodemap));
+    sepcondcolnodes=Teuchos::rcp(new Epetra_Map(*newcolnodemap));
 #endif
 #endif
     if(childdiscret_->Comm().MyPID()==0)
@@ -424,7 +424,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     }
 
     // idea: use a transparent dofset and hand through the dof numbering
-    childdiscret_->ReplaceDofSet(rcp(new DRT::TransparentDofSet(parentdiscret_,true)));
+    childdiscret_->ReplaceDofSet(Teuchos::rcp(new DRT::TransparentDofSet(parentdiscret_,true)));
 
     // call FillComplete() to assign the dof
     // remark: equal Redistribute(*newrownodemap,*newcolnodemap,true,true,true) as

@@ -82,7 +82,7 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
     xfluidfluid_->AddDirichCond(interface_->FSICondMap());
   }
 
-  interfaceforcen_ = rcp(new Epetra_Vector(*(interface_->FSICondMap())));
+  interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(interface_->FSICondMap())));
 }
 
 

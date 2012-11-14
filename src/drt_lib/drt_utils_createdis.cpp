@@ -62,7 +62,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
       if (rownodeset.find(gid)!=rownodeset.end())
       {
         DRT::Node* fluidnode = sourcedis->lRowNode(i);
-        targetdis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+        targetdis->AddNode(Teuchos::rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
       }
     }
   }
@@ -76,7 +76,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
         DRT::NURBS::ControlPoint* fluidnode
         =
           dynamic_cast<DRT::NURBS::ControlPoint* >(sourcedis->lRowNode(i));
-          targetdis->AddNode(rcp(new DRT::NURBS::ControlPoint(gid, fluidnode->X(),fluidnode->W(),myrank)));
+          targetdis->AddNode(Teuchos::rcp(new DRT::NURBS::ControlPoint(gid, fluidnode->X(),fluidnode->W(),myrank)));
       }
     }
   }
@@ -97,7 +97,7 @@ RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
   vector<int> targetnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
 
-  RCP<Epetra_Map> targetnoderowmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> targetnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
       targetnoderowvec.size(),
       &targetnoderowvec[0],
       0,
@@ -116,7 +116,7 @@ RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
   // we get the node maps almost for free
   vector<int> targetnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  RCP<Epetra_Map> targetnodecolmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> targetnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
       targetnodecolvec.size(),
       &targetnodecolvec[0],
       0,
@@ -146,7 +146,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(
       // We use the same nodal ids and therefore we can just copy the conditions.
       // The string-map gives the new condition names
       // (e.g. renaming from TransportDirichlet to Dirichlet)
-      targetdis->SetCondition((*conditername).second, rcp(new DRT::Condition(*conds[i])));
+      targetdis->SetCondition((*conditername).second, Teuchos::rcp(new DRT::Condition(*conds[i])));
     }
     conds.clear();
   }

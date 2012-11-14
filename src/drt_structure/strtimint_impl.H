@@ -568,7 +568,7 @@ namespace STR
     //! Return bool indicating if constraints are defined
     virtual bool HaveConstraint();
 
-    //! Return rcp to ConstraintManager conman_
+    //! Return Teuchos::rcp to ConstraintManager conman_
     virtual const RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
       return conman_;

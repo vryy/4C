@@ -120,10 +120,10 @@ TSI::Monolithic::Monolithic(
 #ifdef TSIBLOCKMATRIXMERGE
   // create a linear solver
   // get UMFPACK...
-  Teuchos::RCP<Teuchos::ParameterList> solverparams = rcp(new Teuchos::ParameterList);
+  Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
   solverparams->set("solver","umfpack");
 
-  solver_ = rcp(new LINALG::Solver(
+  solver_ = Teuchos::rcp(new LINALG::Solver(
                       solverparams,
                       Comm(),
                       DRT::Problem::Instance()->ErrorFile()->Handle()
@@ -294,7 +294,7 @@ void TSI::Monolithic::CreateLinearSolver()
           break;
   }
 
-  solver_ = rcp(new LINALG::Solver(
+  solver_ = Teuchos::rcp(new LINALG::Solver(
                          tsisolverparams,
                          // ggfs. explizit Comm von STR wie lungscatra
                          Comm(),
@@ -550,7 +550,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 #endif // TSIPARALLEL
 
 #ifdef TSIMONOLITHASOUTPUT
-//    Teuchos::RCP<Epetra_Vector> tempera = rcp(new Epetra_Vector(ThermoField()->Tempn()->Map(),true));
+//    Teuchos::RCP<Epetra_Vector> tempera = Teuchos::rcp(new Epetra_Vector(ThermoField()->Tempn()->Map(),true));
 //    if (ThermoField()->Tempnp() != Teuchos::null)
 //      tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
 //    StructureField()->ApplyTemperatures(tempera);
@@ -703,7 +703,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   /*----------------------------------------------------------------------*/
   // initialize TSI-systemmatrix_
   systemmatrix_
-    = rcp(
+    = Teuchos::rcp(
         new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
               *Extractor(),
               *Extractor(),
@@ -831,7 +831,7 @@ void TSI::Monolithic::SetupRHS()
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
 
   // create full monolithic rhs vector
-  rhs_ = rcp(new Epetra_Vector(*DofRowMap(), true));
+  rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
   // fill the TSI rhs vector rhs_ with the single field rhss
   SetupVector(
@@ -1414,7 +1414,7 @@ void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_s
   RCP<LINALG::SparseMatrix> mmatrix = cstrategy.MMatrix();
 
   // necessary maps from thermal problem
-  RCP<Epetra_Map> thermoprobrowmap = rcp(new Epetra_Map(*(ThermoField()->Discretization()->DofRowMap(0))));
+  RCP<Epetra_Map> thermoprobrowmap = Teuchos::rcp(new Epetra_Map(*(ThermoField()->Discretization()->DofRowMap(0))));
 
   // abbreviations for active set
   int aset = adofs->NumGlobalElements();
@@ -1443,7 +1443,7 @@ void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_s
   /**********************************************************************/
   /* evaluation of the inverse of D, active part of M                   */
   /**********************************************************************/
-   RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix));
+   RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix));
    RCP<Epetra_Vector> diag = LINALG::CreateVector(*sdofs,true);
    int err = 0;
 
@@ -1478,7 +1478,7 @@ void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_s
   /* additional entries in master row                                   */
   /**********************************************************************/
   // do the multiplication mhataam = invda * mmatrixa
-  RCP<LINALG::SparseMatrix> mhataam = rcp(new LINALG::SparseMatrix(*adofs,10));
+  RCP<LINALG::SparseMatrix> mhataam = Teuchos::rcp(new LINALG::SparseMatrix(*adofs,10));
   mhataam = LINALG::MLMultiply(*invda,false,*mmatrixa,false,false,false,true);
   mhataam->Complete(*mdofs,*adofs);
 
@@ -1502,7 +1502,7 @@ void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_s
   /**********************************************************************/
   /* global setup of k_st_new                                           */
   /**********************************************************************/
-  RCP<LINALG::SparseMatrix> k_st_new = rcp(new LINALG::SparseMatrix(*(StructureField()->Discretization()->DofRowMap(0)),81,true,false,k_st->GetMatrixtype()));
+  RCP<LINALG::SparseMatrix> k_st_new = Teuchos::rcp(new LINALG::SparseMatrix(*(StructureField()->Discretization()->DofRowMap(0)),81,true,false,k_st->GetMatrixtype()));
   k_st_new->Add(*knt,false,1.0,0.0);
   k_st_new->Add(*kmt,false,1.0,0.0);
   k_st_new->Add(*kmtadd,false,1.0,1.0);
@@ -1544,15 +1544,15 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   // FIXGIT: This should be obtained from thermal field (and not build again)
   // convert maps (from structure discretization to thermo discretization)
   RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
-  RCP<Epetra_Map> thermoprobrowmap = rcp(new Epetra_Map(*(ThermoField()->Discretization()->DofRowMap(0))));
+  RCP<Epetra_Map> thermoprobrowmap = Teuchos::rcp(new Epetra_Map(*(ThermoField()->Discretization()->DofRowMap(0))));
   thermcontman_->ConvertMaps(sdofs,adofs,mdofs);
   smdofs = LINALG::MergeMap(sdofs,mdofs,false);
   ndofs = LINALG::SplitMap(*(ThermoField()->Discretization()->DofRowMap(0)),*smdofs);
 
   // FIXGIT: This should be obtained form thermal field (and not build again)
   // structural mortar matrices, converted to thermal dofs
-  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
-  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*sdofs,100));
+  RCP<LINALG::SparseMatrix> dmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
+  RCP<LINALG::SparseMatrix> mmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,100));
   thermcontman_->TransformDM(*dmatrix,*mmatrix,sdofs,mdofs);
 
   // FillComplete() global Mortar matrices
@@ -1560,7 +1560,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   mmatrix->Complete(*mdofs,*sdofs);
 
   // necessary map from structural problem
-  RCP<Epetra_Map> structprobrowmap = rcp(new Epetra_Map(*(StructureField()->Discretization()->DofRowMap(0))));
+  RCP<Epetra_Map> structprobrowmap = Teuchos::rcp(new Epetra_Map(*(StructureField()->Discretization()->DofRowMap(0))));
 
   // abbreviations for active and inactive set
   int aset = adofs->NumGlobalElements();
@@ -1573,9 +1573,9 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   //**********************************************************************
 
   // respective matrices
-  RCP<LINALG::SparseMatrix> lindmatrix = rcp(new LINALG::SparseMatrix(*sdofs,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  RCP<LINALG::SparseMatrix> linmmatrix = rcp(new LINALG::SparseMatrix(*mdofs,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  RCP<LINALG::SparseMatrix> lindismatrix = rcp(new LINALG::SparseMatrix(*adofs,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  RCP<LINALG::SparseMatrix> lindmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  RCP<LINALG::SparseMatrix> linmmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  RCP<LINALG::SparseMatrix> lindismatrix = Teuchos::rcp(new LINALG::SparseMatrix(*adofs,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
   // assemble them
   AssembleLinDM(*lindmatrix,*linmmatrix);
@@ -1614,7 +1614,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   /**********************************************************************/
   /* evaluation of the inverse of D                                     */
   /**********************************************************************/
-  RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix));
+  RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix));
   RCP<Epetra_Vector> diag = LINALG::CreateVector(*sdofs,true);
   int err = 0;
 
@@ -1640,7 +1640,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   /* evaluation of mhatmatrix, active parts                             */
   /**********************************************************************/
  // do the multiplication M^ = inv(D) * M
-  RCP<LINALG::SparseMatrix> mhatmatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
+  RCP<LINALG::SparseMatrix> mhatmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
   mhatmatrix = LINALG::MLMultiply(*invd,false,*mmatrix,false,false,false,true);
   mhatmatrix->Complete(*mdofs,*sdofs);
 
@@ -1675,7 +1675,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   /**********************************************************************/
   /* Global setup of k_ts_new                                           */
   /**********************************************************************/
-  RCP<LINALG::SparseMatrix> k_ts_new = rcp(new LINALG::SparseMatrix(*(ThermoField()->Discretization()->DofRowMap(0)),81,true,false,k_ts->GetMatrixtype()));
+  RCP<LINALG::SparseMatrix> k_ts_new = Teuchos::rcp(new LINALG::SparseMatrix(*(ThermoField()->Discretization()->DofRowMap(0)),81,true,false,k_ts->GetMatrixtype()));
   k_ts_new->Add(*knstruct,false,1.0,0.0);
   k_ts_new->Add(*kmstruct,false,1.0,0.0);
   k_ts_new->Add(*kmstructadd,false,1.0,1.0);
@@ -1727,9 +1727,9 @@ void TSI::Monolithic::RecoverStructThermLM()
 
   // extract field vectors
   ExtractFieldVectors(iterinc_,sx,tx);
-  Teuchos::RCP<Epetra_Vector> siterinc = rcp(new Epetra_Vector((sx->Map())));
+  Teuchos::RCP<Epetra_Vector> siterinc = Teuchos::rcp(new Epetra_Vector((sx->Map())));
   siterinc->Update(1.0,*sx,0.0);
-  Teuchos::RCP<Epetra_Vector> titerinc = rcp(new Epetra_Vector((tx->Map())));
+  Teuchos::RCP<Epetra_Vector> titerinc = Teuchos::rcp(new Epetra_Vector((tx->Map())));
   titerinc->Update(1.0,*tx,0.0);
 
   /**********************************************************************/
@@ -1760,17 +1760,17 @@ void TSI::Monolithic::RecoverStructThermLM()
   ndofs = LINALG::SplitMap(*(StructureField()->Discretization()->DofRowMap(0)),*smdofs);
 
   // multiplication
-  RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*sdofs));
+  RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*sdofs));
   kst_->Multiply(false,*tx,*mod);
 
   // active part of invd
   LINALG::SplitMatrix2x2(invd_,adofs,tempmap,adofs,tempmap,invda,tempmtx1,tempmtx2,tempmtx3);
-  RCP<LINALG::SparseMatrix> invdmod = rcp(new LINALG::SparseMatrix(*sdofs,10));
+  RCP<LINALG::SparseMatrix> invdmod = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
   invdmod->Add(*invda,false,1.0,1.0);
   invdmod->Complete();
 
   // vector to add
-  RCP<Epetra_Vector> zadd = rcp(new Epetra_Vector(*sdofs));
+  RCP<Epetra_Vector> zadd = Teuchos::rcp(new Epetra_Vector(*sdofs));
   invdmod->Multiply(true,*mod,*zadd);
 
   // lagrange multipliers from structural field to be modified
@@ -1804,17 +1804,17 @@ void TSI::Monolithic::RecoverStructThermLM()
   idofstherm = LINALG::SplitMap(*sdofstherm,*adofstherm);
 
   // multiplication
-  RCP<Epetra_Vector> modtherm = rcp(new Epetra_Vector(*sdofs));
+  RCP<Epetra_Vector> modtherm = Teuchos::rcp(new Epetra_Vector(*sdofs));
   kts_->Multiply(false,*sx,*modtherm);
 
   // active part of invdtherm
   LINALG::SplitMatrix2x2(invdtherm_,adofstherm,tempmaptherm,adofstherm,tempmaptherm,invdatherm,tempmtx4,tempmtx5,tempmtx6);
-  RCP<LINALG::SparseMatrix> invdmodtherm = rcp(new LINALG::SparseMatrix(*sdofstherm,10));
+  RCP<LINALG::SparseMatrix> invdmodtherm = Teuchos::rcp(new LINALG::SparseMatrix(*sdofstherm,10));
   invdmodtherm->Add(*invdatherm,false,1.0,1.0);
   invdmodtherm->Complete();
 
   // vector to add
-  RCP<Epetra_Vector> zaddtherm = rcp(new Epetra_Vector(*sdofstherm));
+  RCP<Epetra_Vector> zaddtherm = Teuchos::rcp(new Epetra_Vector(*sdofstherm));
   invdmodtherm->Multiply(true,*modtherm,*zaddtherm);
 
   // lagrange multipliers from thermal field to be modified

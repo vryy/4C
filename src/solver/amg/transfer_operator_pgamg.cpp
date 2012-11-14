@@ -54,14 +54,14 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
 
 
   ////////////////// extract diagonal of A
-  RCP<Epetra_Vector> diagA = rcp(new Epetra_Vector(A->RowMap(),true));
+  RCP<Epetra_Vector> diagA = Teuchos::rcp(new Epetra_Vector(A->RowMap(),true));
   A->ExtractDiagonalCopy(*diagA);
   int err = diagA->Reciprocal(*diagA);
   if(err) dserror("SaddlePointPreconditioner::PG_AMG: diagonal entries of A are 0");
 
 
   ///////////////// compute D^{-1}*A
-  RCP<SparseMatrix> DinvA = rcp(new SparseMatrix(*A,Copy)); // ok, not the best but just works
+  RCP<SparseMatrix> DinvA = Teuchos::rcp(new SparseMatrix(*A,Copy)); // ok, not the best but just works
   DinvA->LeftScale(*diagA);
 
   ///////////////// calculate D^{-1}*A*P0
@@ -86,7 +86,7 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
 #endif
   std::vector<int> rv;
   LINALG::AllreduceEMap(rv,DinvAP0->DomainMap());
-  RCP<Epetra_Map> colbasedomegamap = rcp(new Epetra_Map(rv.size(),rv.size(),&rv[0],0,Comm()));
+  RCP<Epetra_Map> colbasedomegamap = Teuchos::rcp(new Epetra_Map(rv.size(),rv.size(),&rv[0],0,Comm()));
 #ifdef DEBUG
   if(colbasedomegamap->DistributedGlobal() == true) dserror("colbasedomegamap is distributed global?");
   if(colbasedomegamap->MinAllGID()!=DinvAP0->DomainMap().MinAllGID()) dserror("MinAllGID does not match");
@@ -95,9 +95,9 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
 #endif
 
   ////////////// define vectors for Numerator and Denominator for calculating col based omegas
-  RCP<Epetra_Vector> Numerator      = rcp(new Epetra_Vector(*colbasedomegamap,true));
-  RCP<Epetra_Vector> Denominator    = rcp(new Epetra_Vector(*colbasedomegamap,true));
-  RCP<Epetra_Vector> ColBasedOmegas = rcp(new Epetra_Vector(*colbasedomegamap,true));
+  RCP<Epetra_Vector> Numerator      = Teuchos::rcp(new Epetra_Vector(*colbasedomegamap,true));
+  RCP<Epetra_Vector> Denominator    = Teuchos::rcp(new Epetra_Vector(*colbasedomegamap,true));
+  RCP<Epetra_Vector> ColBasedOmegas = Teuchos::rcp(new Epetra_Vector(*colbasedomegamap,true));
 
   ///////////////// minimize with respect to the (D^{-1} A)' D^{-1} A norm.
   //
@@ -155,7 +155,7 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
   //////////////// convert column based omegas to row-based omegas
 
   // RowBasedOmegas is a distributed vector
-  RCP<Epetra_Vector> RowBasedOmegas = rcp(new Epetra_Vector(DinvAP0->RowMap(),true));
+  RCP<Epetra_Vector> RowBasedOmegas = Teuchos::rcp(new Epetra_Vector(DinvAP0->RowMap(),true));
   RowBasedOmegas->PutScalar(-666.0);  // -666.0 -> this entry has not been set
 
 #ifdef DEBUG
@@ -286,8 +286,8 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
   }
 
   //////////////// compute new prolongator
-  RCP<SparseMatrix> OmegaDinvA = rcp(new SparseMatrix(*A,Copy));
-  RCP<Epetra_Vector> diagScaling = rcp(new Epetra_Vector(diagA->Map(),true));
+  RCP<SparseMatrix> OmegaDinvA = Teuchos::rcp(new SparseMatrix(*A,Copy));
+  RCP<Epetra_Vector> diagScaling = Teuchos::rcp(new Epetra_Vector(diagA->Map(),true));
   diagScaling->Multiply(1.0,*RowBasedOmegas,*diagA,0.0);
   OmegaDinvA->LeftScale(*diagScaling);
   P_smoothed = LINALG::MLMultiply(*OmegaDinvA,*P_tent,false);
@@ -348,7 +348,7 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
   //////////////// compute restrictor
   //R_smoothed = R_tent;
   //R_smoothed = P_smoothed->Transpose(); // geht aber wird im unsymmetrischen Teil ausgebremst
-  RCP<SparseMatrix> ADinvOmega = rcp(new SparseMatrix(*A,Copy));
+  RCP<SparseMatrix> ADinvOmega = Teuchos::rcp(new SparseMatrix(*A,Copy));
   ADinvOmega->RightScale(*diagScaling);
   R_smoothed = LINALG::MLMultiply(*R_tent,*ADinvOmega,false);
   R_smoothed->Add(*R_tent,false,1.0,-1.0);
@@ -362,7 +362,7 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
 void LINALG::PGAMGTransferOperator::MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm)
 {
   //////////// InnerProd_local lives on current proc only, but has gids of all processors
-  RCP<Epetra_Vector> Column2Norm_local = rcp(new Epetra_Vector(Column2Norm->Map(),true));
+  RCP<Epetra_Vector> Column2Norm_local = Teuchos::rcp(new Epetra_Vector(Column2Norm->Map(),true));
 
   //////////// collect local information
   //////////// store local scalar products in InnerProd_local vector
@@ -420,7 +420,7 @@ void LINALG::PGAMGTransferOperator::MultiplyAll(const RCP<SparseMatrix>& left, c
   if(!left->RowMap().SameAs(right->RowMap())) dserror("row map of left and right does not match");
 
   //////////// InnerProd_local lives on current proc only, but has gids of all processors
-  RCP<Epetra_Vector> InnerProd_local = rcp(new Epetra_Vector(InnerProd->Map(),true));
+  RCP<Epetra_Vector> InnerProd_local = Teuchos::rcp(new Epetra_Vector(InnerProd->Map(),true));
 
   //////////// collect local information
   //////////// store local scalar products in InnerProd_local vector

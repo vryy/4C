@@ -85,7 +85,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter>  output = rcp( new IO::DiscretizationWriter(actdis),false );
+  RCP<IO::DiscretizationWriter>  output = Teuchos::rcp( new IO::DiscretizationWriter(actdis),false );
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
@@ -106,7 +106,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // check if the solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined. Please set LINEAR_SOLVER in ARTERIAL DYNAMIC to a valid number!");
-  RCP<LINALG::Solver> solver = rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+  RCP<LINALG::Solver> solver = Teuchos::rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                                        actdis->Comm(),
                                                        DRT::Problem::Instance()->ErrorFile()->Handle()),false );
   actdis->ComputeNullSpaceIfNecessary(solver->Params());

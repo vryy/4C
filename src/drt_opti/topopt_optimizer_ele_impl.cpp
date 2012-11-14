@@ -203,7 +203,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
       i!=fluidvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&efluidvel,NULL,i->second);
-    efluidvels.insert(pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
+    efluidvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
   }
 
   RCP<const Epetra_Vector> dens = optidis.GetState("density");
@@ -381,14 +381,14 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
       i!=fluidvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&efluidvel,NULL,i->second);
-    efluidvels.insert(pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
+    efluidvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
   }
 
   for (map<int,RCP<Epetra_Vector> >::iterator i=adjointvels->begin();
       i!=adjointvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&eadjointvel,NULL,i->second);
-    eadjointvels.insert(pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,eadjointvel));
+    eadjointvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,eadjointvel));
   }
 
   RCP<const Epetra_Vector> dens = optidis.GetState("density");

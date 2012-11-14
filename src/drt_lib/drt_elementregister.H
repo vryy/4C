@@ -43,8 +43,7 @@ Maintainer: Michael Gee
 
 
 #include "Teuchos_RefCountPtr.hpp"
-using namespace std;
-using namespace Teuchos;
+
 #include "drt_parobject.H"
 #include "drt_element.H"
 #include "drt_parobjectfactory.H"

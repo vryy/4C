@@ -32,7 +32,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement2Type::Create( const 
 {
   if ( eletype=="CONSTRELE2" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement2(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::ConstraintElement2(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -41,7 +41,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement2Type::Create( const 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement2Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement2(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::ConstraintElement2(id,owner));
   return ele;
 }
 

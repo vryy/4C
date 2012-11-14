@@ -212,10 +212,10 @@ when writing algorithms with ANA:
   It does not work with RCPed Operators and does not accept RCPed quantities on the
   left hand side of the "=" operator:
   \code
-  RCP<LINALG::ANA::Vector>  a = rcp(new LINALG::ANA::Vector(A.RowMap(),false));
-  RCP<LINALG::ANA::Vector>  b = rcp(new LINALG::ANA::Vector(A.RowMap(),false));
-  RCP<LINALG::ANA::Vector>  c = rcp(new LINALG::ANA::Vector(A.RowMap(),false));
-  RCP<LINALG::SparseMatrix> A = rcp(Amatrix));
+  RCP<LINALG::ANA::Vector>  a = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
+  RCP<LINALG::ANA::Vector>  b = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
+  RCP<LINALG::ANA::Vector>  c = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
+  RCP<LINALG::SparseMatrix> A = Teuchos::rcp(Amatrix));
   *a = 3.141;              // Always need to dereference on the left of "="
   *b = 1.0;
   *c = 2.0*a + 3.0*b;      // no need to dereference on the right side of "="
@@ -419,7 +419,7 @@ public:
   {}
 
   virtual const RCP<LightWeightOperatorBase> Clone() const
-  { return rcp(new LightWeightOperator(*this));}
+  { return Teuchos::rcp(new LightWeightOperator(*this));}
 
   virtual ~LightWeightOperator() {}
 
@@ -488,7 +488,7 @@ public:
   virtual ~OperatorTransposed() {}
 
   virtual const RCP<LightWeightOperatorBase> Clone() const
-  { return rcp(new OperatorTransposed(*this)); }
+  { return Teuchos::rcp(new OperatorTransposed(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
   {
@@ -574,7 +574,7 @@ public:
   virtual ~OperatorScaled() {}
 
   virtual const RCP<LightWeightOperatorBase> Clone() const
-  { return rcp(new OperatorScaled(*this)); }
+  { return Teuchos::rcp(new OperatorScaled(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
   {
@@ -659,7 +659,7 @@ public:
   virtual ~OperatorProduct() {}
 
   virtual const RCP<LightWeightOperatorBase> Clone() const
-  { return rcp(new OperatorProduct(*this)); }
+  { return Teuchos::rcp(new OperatorProduct(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
   { usetransposed_ = UseTranspose; return 0;}
@@ -745,7 +745,7 @@ public:
   virtual ~OperatorSum() {}
 
   virtual const RCP<LightWeightOperatorBase> Clone() const
-  { return rcp(new OperatorSum(*this)); }
+  { return Teuchos::rcp(new OperatorSum(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
   { usetransposed_ = UseTranspose; return 0;}
@@ -832,14 +832,14 @@ public:
 
   OperatorInverse(const Epetra_Operator& op) :
   reset_(true),
-  defaultsolver_(rcp(new LINALG::Solver(op.Comm()))),
+  defaultsolver_(Teuchos::rcp(new LINALG::Solver(op.Comm()))),
   solver_(*defaultsolver_),
   op_(op)
   {}
 
   OperatorInverse(const LINALG::SparseOperator& op) :
   reset_(true),
-  defaultsolver_(rcp(new LINALG::Solver(op.Comm()))),
+  defaultsolver_(Teuchos::rcp(new LINALG::Solver(op.Comm()))),
   solver_(*defaultsolver_),
   op_(*(const_cast<LINALG::SparseOperator&>(op).EpetraOperator()))
   {}
@@ -855,7 +855,7 @@ public:
   virtual ~OperatorInverse() {}
 
   virtual const RCP<LightWeightOperatorBase> Clone() const
-  { return rcp(new OperatorInverse(*this)); }
+  { return Teuchos::rcp(new OperatorInverse(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
   {

@@ -87,7 +87,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
   if (solvertype != INPAR::SOLVER::umfpack)
     dserror("umfpack solver expected");
 
-  solver_ = rcp(new LINALG::Solver( solverparams,
+  solver_ = Teuchos::rcp(new LINALG::Solver( solverparams,
                                     Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle())
                );
@@ -304,7 +304,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::Monolithic::CalcVelocity(Teuchos::RCP<
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = rcp(new Epetra_Vector(*(StructureField()->ExtractDispn())));
+  vel = Teuchos::rcp(new Epetra_Vector(*(StructureField()->ExtractDispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / Dt(), *sx, -1. / Dt());
@@ -343,7 +343,7 @@ void POROELAST::Monolithic::SetupSystem()
   SetDofRowMaps(vecSpaces);
 
   // initialize Poroelasticity-systemmatrix_
-  systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<
+  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
       LINALG::DefaultBlockMatrixStrategy>(Extractor(), Extractor(), 81, false,
       true));
 
@@ -468,7 +468,7 @@ void POROELAST::Monolithic::SetupRHS(bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::SetupRHS");
 
   // create full monolithic rhs vector
-  rhs_ = rcp(new Epetra_Vector(*DofRowMap(), true));
+  rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
   SetupVector(*rhs_, StructureField()->RHS(), FluidField().RHS());
@@ -640,7 +640,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
           break;
   }
 
-  solver_ = rcp(new LINALG::Solver(
+  solver_ = Teuchos::rcp(new LINALG::Solver(
                           porosolverparams,
                          // ggfs. explizit Comm von STR wie lungscatra
                          Comm(),
@@ -1121,7 +1121,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
     k_fs->ApplyDirichlet(*nopenetrationmap, false);
 
-    cond_rhs_ = rcp(new Epetra_Vector(*DofRowMap(), true));
+    cond_rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
     cond_rhs_->PutScalar(0.0);
 
     EvaluateCondition(k_fs,cond_rhs_,1);
@@ -1171,12 +1171,12 @@ void POROELAST::Monolithic::PoroFDCheck()
   stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
 
   //Teuchos::RCP<Epetra_Vector> rhs_old= null;
-  Teuchos::RCP<Epetra_Vector> rhs_old = rcp(new Epetra_Vector(*DofRowMap(),
+  Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
       true));
   rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Epetra_Vector> rhs_copy = rcp(new Epetra_Vector(*DofRowMap(),
+  Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
       true));
-  //rhs_old = rcp(new Epetra_Vector(*rhs_));
+  //rhs_old = Teuchos::rcp(new Epetra_Vector(*rhs_));
   //cout<<"rhs_"<<endl<<*rhs_<<endl;
   //cout<<"rhs_old"<<endl<<*rhs_old<<endl;
 
@@ -1388,7 +1388,7 @@ void POROELAST::Monolithic::EvaluateCondition(Teuchos::RCP<LINALG::SparseOperato
                         StructureField()->Discretization()->DofRowMap()->NumGlobalElements(),
                         true, true));
 
-  condIDs_ = rcp(new std::set<int>());
+  condIDs_ = Teuchos::rcp(new std::set<int>());
   condIDs_->clear();
 
   //evaluate condition on elements and assemble matrixes

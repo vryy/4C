@@ -104,7 +104,7 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(bool screenout)
       if(it!=reconstr_counts_.end())
         (it->second)++; // increase counter
       else
-        reconstr_counts_.insert(pair<INPAR::XFEM::XFluidTimeInt,int>(*sets,1)); // initialize counter with 1
+        reconstr_counts_.insert(std::pair<INPAR::XFEM::XFluidTimeInt,int>(*sets,1)); // initialize counter with 1
     }
   }
 
@@ -761,7 +761,7 @@ void XFEM::XFluidTimeInt::SetReconstrMethod(
   {
     std::vector<INPAR::XFEM::XFluidTimeInt> vec;
     vec.push_back(method);
-    reconstr_method_.insert(pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(node->Id(), vec ));
+    reconstr_method_.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(node->Id(), vec ));
   }
 }
 

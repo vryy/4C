@@ -202,10 +202,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
 #ifdef COMBUST_STRESS_BASED
 #ifdef COMBUST_EPSPRES_BASED
-      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = rcp(new COMBUST::EpsilonPressureAnsatz());
+      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = Teuchos::rcp(new COMBUST::EpsilonPressureAnsatz());
 #endif
 #ifdef COMBUST_SIGMA_BASED
-      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = rcp(new COMBUST::CauchyStressAnsatz());
+      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = Teuchos::rcp(new COMBUST::CauchyStressAnsatz());
 #endif
 #endif
       // create an empty element ansatz map to be filled in the following
@@ -224,16 +224,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (params.get<bool>("DLM_condensation")) // DLM condensation turned on
       {
         // add node dofs, but no element dofs (stress unknowns) for this element
-        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
+        eleDofManager_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
       }
       else // DLM condensation turned off
       {
         // add node dofs and element dofs (stress unknowns) for this element
-        eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
+        eleDofManager_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
       }
 #else
       // add node dofs, but no element dofs (stress unknowns) for this element
-      eleDofManager_ = rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
+      eleDofManager_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
 #endif
 
       //----------------------------------------------------------------------------
@@ -258,12 +258,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         ApplyElementEnrichmentCombust(this, element_ansatz_filled, elementFieldEnrSet, *ih_);
 
         // add node dofs and element dofs (stress unknowns) for this element
-        eleDofManager_uncondensed_ = rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_filled));
+        eleDofManager_uncondensed_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_filled));
 #else
         // add node dofs and element dofs (stress unknowns) for this element
-        eleDofManager_uncondensed_ = rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_empty));
+        eleDofManager_uncondensed_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_empty));
 #endif
-        DLM_info_ = rcp(new DLMInfo(eleDofManager_uncondensed_->NumNodeDof(), eleDofManager_uncondensed_->NumElemDof()));
+        DLM_info_ = Teuchos::rcp(new DLMInfo(eleDofManager_uncondensed_->NumNodeDof(), eleDofManager_uncondensed_->NumElemDof()));
       }
       else // element not intersected
       {

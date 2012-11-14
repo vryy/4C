@@ -40,7 +40,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const string elety
 {
   if ( eletype=="SOLID3" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::SoDisp(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoDisp(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -49,7 +49,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const string elety
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::SoDisp(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoDisp(id,owner));
   return ele;
 }
 
@@ -335,7 +335,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Surfaces()
 vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 

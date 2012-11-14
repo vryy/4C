@@ -4096,10 +4096,10 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       vector <std::map<int,double> > dtmap(Dim());
 
       for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
-        dtmap[1].insert(pair<int,double>(colcurr->first,colcurr->second));
+        dtmap[1].insert(std::pair<int,double>(colcurr->first,colcurr->second));
 
       for (colcurr=dnmap[1].begin(); colcurr!=dnmap[1].end(); colcurr++)
-        dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
+        dtmap[0].insert(std::pair<int,double>(colcurr->first,(-1)*colcurr->second));
 
       // get more information from node
       double* jump = cnode->FriData().jump();

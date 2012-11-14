@@ -82,7 +82,7 @@ element_(old.element_)
 
   // we do NOT want a deep copy of the condition_ a condition is
   // only a reference in the node anyway
-  map<string,RefCountPtr<Condition> >::const_iterator fool;
+  std::map<string,Teuchos::RCP<Condition> >::const_iterator fool;
   for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
     SetCondition(fool->first,fool->second);
 
@@ -124,12 +124,12 @@ ostream& operator << (ostream& os, const DRT::Node& node)
 void DRT::Node::Print(ostream& os) const
 {
   // Print id and coordinates
-  os << "Node " << setw(12) << Id()
-     << " Owner " << setw(4) << Owner()
+  os << "Node " << std::setw(12) << Id()
+     << " Owner " << std::setw(4) << Owner()
      << " Coords "
-     << setw(12) << X()[0] << " "
-     << setw(12) << X()[1] << " "
-     << setw(12) << X()[2] << " ";
+     << std::setw(12) << X()[0] << " "
+     << std::setw(12) << X()[1] << " "
+     << std::setw(12) << X()[2] << " ";
 
 #if 0
   // Print conditions if there are any
@@ -177,9 +177,9 @@ void DRT::Node::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Node::Unpack(const vector<char>& data)
+void DRT::Node::Unpack(const std::vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -201,16 +201,16 @@ void DRT::Node::Unpack(const vector<char>& data)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Node::GetCondition(const string& name,vector<DRT::Condition*>& out) const
+void DRT::Node::GetCondition(const string& name,std::vector<DRT::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
-  multimap<string,RefCountPtr<Condition> >::const_iterator startit =
+  std::multimap<string,Teuchos::RCP<Condition> >::const_iterator startit =
                                          condition_.lower_bound(name);
-  multimap<string,RefCountPtr<Condition> >::const_iterator endit =
+  std::multimap<string,Teuchos::RCP<Condition> >::const_iterator endit =
                                          condition_.upper_bound(name);
   int count=0;
-  multimap<string,RefCountPtr<Condition> >::const_iterator curr;
+  std::multimap<string,Teuchos::RCP<Condition> >::const_iterator curr;
   for (curr=startit; curr!=endit; ++curr)
     out[count++] = curr->second.get();
   if (count != num) dserror("Mismatch in number of conditions found");
@@ -223,7 +223,7 @@ void DRT::Node::GetCondition(const string& name,vector<DRT::Condition*>& out) co
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Node::GetCondition(const string& name) const
 {
-  multimap<string,RefCountPtr<Condition> >::const_iterator curr =
+  std::multimap<string,Teuchos::RCP<Condition> >::const_iterator curr =
                                          condition_.find(name);
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);
@@ -235,7 +235,7 @@ DRT::Condition* DRT::Node::GetCondition(const string& name) const
  |  Change position reference                                  (public) |
  |                                                            mc	06/11 |
  *----------------------------------------------------------------------*/
-void DRT::Node::ChangePos(vector<double> nvector)
+void DRT::Node::ChangePos(std::vector<double> nvector)
 {
 
 	for (int i=0; i<3; ++i) x_[i] = x_[i]+ nvector[i];

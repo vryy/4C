@@ -74,19 +74,19 @@ ParObject(old),
 stringdata_(old.stringdata_)
 {
   // we want a true deep copy of the data, not a reference
-  std::map<string,RCP<std::vector<int> > >::const_iterator ifool;
+  std::map<string,Teuchos::RCP<std::vector<int> > >::const_iterator ifool;
   for (ifool=old.intdata_.begin(); ifool!=old.intdata_.end(); ++ifool)
     intdata_[ifool->first] = Teuchos::rcp(new std::vector<int>(*(ifool->second)));
 
-  std::map<string,RCP<std::vector<double> > >::const_iterator dfool;
+  std::map<string,Teuchos::RCP<std::vector<double> > >::const_iterator dfool;
   for (dfool=old.doubledata_.begin(); dfool!=old.doubledata_.end(); ++dfool)
     doubledata_[dfool->first] = Teuchos::rcp(new std::vector<double>(*(dfool->second)));
 
-  std::map<string,RCP<Epetra_SerialDenseMatrix> >::const_iterator curr;
+  std::map<string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator curr;
   for (curr=old.matdata_.begin();curr!=old.matdata_.end(); ++curr)
     matdata_[curr->first] = Teuchos::rcp(new Epetra_SerialDenseMatrix(*(curr->second)));
 
-  std::map<string,RCP<Epetra_MultiVector> >::const_iterator eveccurr;
+  std::map<string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator eveccurr;
   for (eveccurr=old.evecdata_.begin();eveccurr!=old.evecdata_.end(); ++eveccurr)
   {
     // test for Epetra_Vector because there could be both
@@ -147,14 +147,14 @@ void DRT::Container::Pack(DRT::PackBuffer& data) const
   // matdatasize
   AddtoPack(data,matdatasize);
   // iterate through intdata_ and add to pack
-  std::map<string,RCP<std::vector<int> > >::const_iterator icurr;
+  std::map<string,Teuchos::RCP<std::vector<int> > >::const_iterator icurr;
   for (icurr = intdata_.begin(); icurr != intdata_.end(); ++icurr)
   {
     AddtoPack(data,icurr->first);
     AddtoPack(data,*(icurr->second));
   }
   // iterate though doubledata_ and add to pack
-  std::map<string,RCP<std::vector<double> > >::const_iterator dcurr;
+  std::map<string,Teuchos::RCP<std::vector<double> > >::const_iterator dcurr;
   for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
   {
     AddtoPack(data,dcurr->first);
@@ -168,14 +168,14 @@ void DRT::Container::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,scurr->second);
   }
   // iterate though matdata_ and add to pack
-  std::map<string,RCP<Epetra_SerialDenseMatrix> >::const_iterator mcurr;
+  std::map<string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator mcurr;
   for (mcurr=matdata_.begin(); mcurr!=matdata_.end(); ++mcurr)
   {
     AddtoPack(data,mcurr->first);
     AddtoPack(data,*(mcurr->second));
   }
 
-  // on purpose the map<string,RCP<Epetra_MultiVector> > evecdata_
+  // on purpose the map<string,Teuchos::RCP<Epetra_MultiVector> > evecdata_
   // is NOT included in the Pack/Unpack stuff
 
   return;
@@ -245,7 +245,7 @@ void DRT::Container::Unpack(const std::vector<char>& data)
     Add(key,value);
   }
 
-  // on purpose the map<string,RCP<Epetra_MultiVector> > evecdata_
+  // on purpose the map<string,Teuchos::RCP<Epetra_MultiVector> > evecdata_
   // is NOT included in the Pack/Unpack stuff
 
   if (position != data.size())
@@ -259,7 +259,7 @@ void DRT::Container::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void DRT::Container::Print(ostream& os) const
 {
-  std::map<string,RCP<std::vector<int> > >::const_iterator curr;
+  std::map<string,Teuchos::RCP<std::vector<int> > >::const_iterator curr;
   for (curr = intdata_.begin(); curr != intdata_.end(); ++curr)
   {
     std::vector<int>& data = *(curr->second);
@@ -268,7 +268,7 @@ void DRT::Container::Print(ostream& os) const
     //os << endl;
   }
 
-  std::map<string,RCP<std::vector<double> > >::const_iterator dcurr;
+  std::map<string,Teuchos::RCP<std::vector<double> > >::const_iterator dcurr;
   for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
   {
     std::vector<double>& data = *(dcurr->second);
@@ -281,11 +281,11 @@ void DRT::Container::Print(ostream& os) const
   for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
     os << scurr->first << " : " << scurr->second << " ";
 
-  std::map<string,RCP<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
+  std::map<string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
   for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
     os << endl << matcurr->first << " :\n" << *(matcurr->second);
 
-  std::map<string,RCP<Epetra_MultiVector> >::const_iterator eveccurr;
+  std::map<string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator eveccurr;
   for (eveccurr=evecdata_.begin(); eveccurr!=evecdata_.end(); ++eveccurr)
     os << endl << eveccurr->first << " (type Epetra_Vector or Epetra_MultiVector) \n";
 
@@ -299,7 +299,7 @@ void DRT::Container::Print(ostream& os) const
 void DRT::Container::Add(const string& name, const int* data, const int num)
 {
   // get data in a vector
-  RefCountPtr<std::vector<int> > storage = Teuchos::rcp(new std::vector<int>(num));
+  Teuchos::RCP<std::vector<int> > storage = Teuchos::rcp(new std::vector<int>(num));
   std::vector<int>& access = *storage;
   for (int i=0; i<num; ++i) access[i] = data[i];
 
@@ -312,7 +312,7 @@ void DRT::Container::Add(const string& name, const int* data, const int num)
  |  Add stuff to the container                                 (public) |
  |                                                             lw 04/08 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, RefCountPtr<std::vector<int> > data)
+void DRT::Container::Add(const string& name, Teuchos::RCP<std::vector<int> > data)
 {
   intdata_[name] = data;
   return;
@@ -325,7 +325,7 @@ void DRT::Container::Add(const string& name, RefCountPtr<std::vector<int> > data
 void DRT::Container::Add(const string& name, const double* data, const int num)
 {
   // get data in a vector
-  RefCountPtr<std::vector<double> > storage = Teuchos::rcp(new std::vector<double>(num));
+  Teuchos::RCP<std::vector<double> > storage = Teuchos::rcp(new std::vector<double>(num));
   std::vector<double>& access = *storage;
   for (int i=0; i<num; ++i) access[i] = data[i];
 
@@ -338,7 +338,7 @@ void DRT::Container::Add(const string& name, const double* data, const int num)
  |  Add stuff to the container                                 (public) |
  |                                                             lw 04/08 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, RefCountPtr<std::vector<double> > data)
+void DRT::Container::Add(const string& name, Teuchos::RCP<std::vector<double> > data)
 {
   doubledata_[name] = data;
   return;
@@ -369,7 +369,7 @@ void DRT::Container::Add(const string& name, const Epetra_SerialDenseMatrix& mat
  |  Add stuff to the container                                 (public) |
  |                                                             lw 04/08 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, RCP<Epetra_SerialDenseMatrix> matrix)
+void DRT::Container::Add(const string& name, Teuchos::RCP<Epetra_SerialDenseMatrix> matrix)
 {
   matdata_[name] = matrix;
   return;
@@ -401,14 +401,14 @@ void DRT::Container::Add(const string& name, Epetra_Vector& data)
  *----------------------------------------------------------------------*/
 void DRT::Container::Delete(const string& name)
 {
-  std::map<string,RCP<std::vector<int> > >::iterator icurr = intdata_.find(name);
+  std::map<string,Teuchos::RCP<std::vector<int> > >::iterator icurr = intdata_.find(name);
   if (icurr != intdata_.end())
   {
     intdata_.erase(name);
     return;
   }
 
-  std::map<string,RCP<std::vector<double> > >::iterator dcurr = doubledata_.find(name);
+  std::map<string,Teuchos::RCP<std::vector<double> > >::iterator dcurr = doubledata_.find(name);
   if (dcurr != doubledata_.end())
   {
     doubledata_.erase(name);
@@ -422,14 +422,14 @@ void DRT::Container::Delete(const string& name)
     return;
   }
 
-  std::map<string,RCP<Epetra_SerialDenseMatrix> >::iterator matcurr = matdata_.find(name);
+  std::map<string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator matcurr = matdata_.find(name);
   if (matcurr != matdata_.end())
   {
     matdata_.erase(name);
     return;
   }
 
-  std::map<string,RCP<Epetra_MultiVector> >::iterator eveccurr = evecdata_.find(name);
+  std::map<string,Teuchos::RCP<Epetra_MultiVector> >::iterator eveccurr = evecdata_.find(name);
   if (eveccurr != evecdata_.end())
   {
     evecdata_.erase(name);
@@ -453,7 +453,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> const std::vector<int>* Container::Get(const string& name) const
   {
-    std::map<string,RefCountPtr<std::vector<int> > >::const_iterator icurr = intdata_.find(name);
+    std::map<string,Teuchos::RCP<std::vector<int> > >::const_iterator icurr = intdata_.find(name);
     if (icurr != intdata_.end())
       return icurr->second.get();
     else return NULL;
@@ -464,7 +464,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> const std::vector<double>* Container::Get(const string& name) const
   {
-    std::map<string,RefCountPtr<std::vector<double> > >::const_iterator dcurr = doubledata_.find(name);
+    std::map<string,Teuchos::RCP<std::vector<double> > >::const_iterator dcurr = doubledata_.find(name);
     if (dcurr != doubledata_.end())
       return dcurr->second.get();
     else return NULL;
@@ -486,7 +486,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> const Epetra_SerialDenseMatrix* Container::Get(const string& name) const
   {
-    std::map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator mcurr = matdata_.find(name);
+    std::map<string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator mcurr = matdata_.find(name);
     if (mcurr != matdata_.end())
       return mcurr->second.get();
     else return NULL;
@@ -497,7 +497,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> const Epetra_MultiVector* Container::Get(const string& name) const
   {
-    std::map<string,RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
+    std::map<string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
     if (curr != evecdata_.end())
       return curr->second.get();
     else return NULL;
@@ -508,7 +508,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> const Epetra_Vector* Container::Get(const string& name) const
   {
-    std::map<string,RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
+    std::map<string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
     if (curr != evecdata_.end())
     {
       Epetra_Vector* fool = dynamic_cast<Epetra_Vector*>(curr->second.get());
@@ -527,7 +527,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> std::vector<int>* Container::GetMutable(const string& name)
   {
-    std::map<string,RefCountPtr<std::vector<int> > >::iterator icurr = intdata_.find(name);
+    std::map<string,Teuchos::RCP<std::vector<int> > >::iterator icurr = intdata_.find(name);
     if (icurr != intdata_.end())
       return icurr->second.get();
     else return NULL;
@@ -538,7 +538,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> std::vector<double>* Container::GetMutable(const string& name)
   {
-    std::map<string,RefCountPtr<std::vector<double> > >::iterator dcurr = doubledata_.find(name);
+    std::map<string,Teuchos::RCP<std::vector<double> > >::iterator dcurr = doubledata_.find(name);
     if (dcurr != doubledata_.end())
       return dcurr->second.get();
     else return NULL;
@@ -560,7 +560,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> Epetra_SerialDenseMatrix* Container::GetMutable(const string& name)
   {
-    std::map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::iterator mcurr = matdata_.find(name);
+    std::map<string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator mcurr = matdata_.find(name);
     if (mcurr != matdata_.end())
       return mcurr->second.get();
     else return NULL;
@@ -571,7 +571,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> Epetra_MultiVector* Container::GetMutable(const string& name)
   {
-    std::map<string,RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
+    std::map<string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
     if (curr != evecdata_.end())
       return curr->second.get();
     else return NULL;
@@ -582,7 +582,7 @@ namespace DRT
  *----------------------------------------------------------------------*/
   template<> Epetra_Vector* Container::GetMutable(const string& name)
   {
-    std::map<string,RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
+    std::map<string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
     if (curr != evecdata_.end())
     {
       Epetra_Vector* fool = dynamic_cast<Epetra_Vector*>(curr->second.get());

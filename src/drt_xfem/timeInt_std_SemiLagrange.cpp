@@ -493,7 +493,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
   case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
   case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
   {
-    RCP<XFEM::TIMEINT> timeIntData = rcp(new XFEM::TIMEINT(
+    RCP<XFEM::TIMEINT> timeIntData = Teuchos::rcp(new XFEM::TIMEINT(
         discret_,
         olddofman_,
         newdofman_,
@@ -509,7 +509,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
 
     if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapol)
     {
-      extrapol = rcp(new XFEM::ExtrapolationOld(
+      extrapol = Teuchos::rcp(new XFEM::ExtrapolationOld(
           *timeIntData,
           timeIntType_,
           veln_,
@@ -520,7 +520,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
     }
     else
     {
-      extrapol = rcp(new XFEM::ExtrapolationNew(
+      extrapol = Teuchos::rcp(new XFEM::ExtrapolationNew(
           *timeIntData,
           timeIntType_,
           veln_,
@@ -533,7 +533,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
     resetState(TimeIntData::failedSL_,TimeIntData::extrapolateStd_);
 
     // vector with data for extrapolation
-    extrapol->timeIntData_ = rcp(new vector<TimeIntData>);
+    extrapol->timeIntData_ = Teuchos::rcp(new vector<TimeIntData>);
 
     // add data for extrapolation
     for (vector<TimeIntData>::iterator data=timeIntData_->begin();
@@ -1072,7 +1072,7 @@ void XFEM::SemiLagrange::newIteration_nodalData(
 
   for (size_t index=0;index<newRowVectors.size();index++)
   {
-    RCP<Epetra_Vector> tmpColVector = rcp(new Epetra_Vector(newdofcolmap,true));
+    RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(newdofcolmap,true));
     newColVectors.push_back(tmpColVector);
     LINALG::Export(*newRowVectors[index],*newColVectors[index]);
   }

@@ -55,7 +55,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create( const string elet
 {
   if ( eletype=="SOLIDW6" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_weg6(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_weg6(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -64,7 +64,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create( const string elet
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_weg6(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_weg6(id,owner));
   return ele;
 }
 
@@ -129,10 +129,10 @@ time_(0.0)
   }
 
   if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
 
   if (pstype_==INPAR::STR::prestress_id)
-    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
 
   return;
 }
@@ -157,10 +157,10 @@ time_(old.time_)
   }
 
   if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   if (pstype_==INPAR::STR::prestress_id)
-    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
   return;
 }
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
     vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
+      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
     prestress_->Unpack(tmpprestress);
   }
 
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
     vector<char> tmpinvdesign(0);
     ExtractfromPack(position,data,tmpinvdesign);
     if (invdesign_ == Teuchos::null)
-      invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
+      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
     invdesign_->Unpack(tmpinvdesign);
   }
 
@@ -404,7 +404,7 @@ vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
@@ -860,7 +860,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 

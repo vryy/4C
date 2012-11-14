@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3_4Type::Create( const string elet
 {
   if ( eletype=="BELE3_4" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3_4(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3_4(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3_4Type::Create( const string elet
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3_4Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3_4(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Bele3_4(id,owner));
   return ele;
 }
 

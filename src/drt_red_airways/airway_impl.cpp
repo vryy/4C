@@ -261,7 +261,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
   //vector<int> lmowner;
   vector<int> lmstride;
-  RCP<vector<int> > lmowner = rcp(new vector<int>);
+  RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   //--------------------------------------------------------------------
@@ -794,16 +794,16 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double Kp_np = 1.0/(E1*dt);
         const double Kp_n  = 1.0/(E1*dt);
 
-        sysmat(i,i) += pow(-1.0,i)*(Kp_np)*NumOfAcini;
-        rhs(i)      += pow(-1.0,i)*(Kp_np*Pp_np + Kp_n*(pn-Pp_n))*NumOfAcini;
+        sysmat(i,i) += std::pow(-1.0,i)*(Kp_np)*NumOfAcini;
+        rhs(i)      += std::pow(-1.0,i)*(Kp_np*Pp_np + Kp_n*(pn-Pp_n))*NumOfAcini;
       }
       else if (MatType == "KelvinVoigt")
       {
         const double Kp_np = 2.0/(E1*dt) + 1.0/Rt;
         const double Kp_n  = 2.0/(E1*dt) - 1.0/Rt;
 
-        sysmat(i,i) += pow(-1.0,i)*(Kp_np*NumOfAcini);
-        rhs(i)      += pow(-1.0,i)*(q_out + pn*NumOfAcini * Kp_n + Pp_np*NumOfAcini * Kp_np);
+        sysmat(i,i) += std::pow(-1.0,i)*(Kp_np*NumOfAcini);
+        rhs(i)      += std::pow(-1.0,i)*(q_out + pn*NumOfAcini * Kp_n + Pp_np*NumOfAcini * Kp_np);
       }
       else if (MatType == "ViscoElastic_2dof")
       {
@@ -813,8 +813,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double Kq_np = E1*E2 + Rt*(E1 + E2)/dt;
         const double Kq_n  = -Rt*(E1+E2)/dt;
 
-        sysmat(i,i)+= pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
-        rhs(i)     += pow(-1.0,i)*((Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
+        sysmat(i,i)+= std::pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
+        rhs(i)     += std::pow(-1.0,i)*((Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
 
       }
       else if (MatType == "ViscoElastic_3dof")
@@ -827,8 +827,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double Kq_n  = -2.0*Ra*Rt/(dt*dt) - (E1*Rt + E2*Ra + E2*Rt)/dt;
         const double Kq_nm = Ra*Rt/(dt*dt);
 
-        sysmat(i,i)+= pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
-        rhs(i)     += pow(-1.0,i)*(-(-Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + (Kq_n*qn + Kq_nm*qnm)/Kq_np);
+        sysmat(i,i)+= std::pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
+        rhs(i)     += std::pow(-1.0,i)*(-(-Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + (Kq_n*qn + Kq_nm*qnm)/Kq_np);
 
       }
       else if (MatType == "Exponential")
@@ -912,8 +912,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<endl;
         cout<<"p1n "<<pn<<"\tp2n: "<<Pp_n<<"\tqn: "<<qn<<"\tqnp: "<<qnp<<endl;
 #endif
-        sysmat(i,i)+= pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
-        rhs(i)     += pow(-1.0,i)*(-(-kp_np*Pp_np + kp_n*(pn-Pp_n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
+        sysmat(i,i)+= std::pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
+        rhs(i)     += std::pow(-1.0,i)*(-(-kp_np*Pp_np + kp_n*(pn-Pp_n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
 
         //      cout<<"p2: "<<Pp_n<<endl;
       }
@@ -991,8 +991,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(dvnp)+(qnp/NumOfAcini)*dt/2.0 + dvn);
         kq_np = kq_np + dpnpi2_dt*Rt/E2/2.0*dt;
 
-        sysmat(i,i)+= pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
-        rhs(i)     += pow(-1.0,i)*((kp_np*Pp_np - kp_n*(pn-Pp_n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
+        sysmat(i,i)+= std::pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
+        rhs(i)     += std::pow(-1.0,i)*((kp_np*Pp_np - kp_n*(pn-Pp_n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
       }
       else
       {

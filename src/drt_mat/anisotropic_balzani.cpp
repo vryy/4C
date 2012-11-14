@@ -401,7 +401,7 @@ void MAT::AnisotropicBalzani::Evaluate(
   // the wellknown factor 2!
   S.Scale(2.0);
 
-  //cout << setprecision(10) << S;
+  //cout << std::setprecision(10) << S;
 
   (*stress)(0) = S(0,0);
   (*stress)(1) = S(1,1);
@@ -431,7 +431,7 @@ void MAT::AnisotropicBalzani::Evaluate(
   // 1st fiber active
   if ( (K3 - 2.0) > 1.0E-15){
     // compute derivatives of W_ti w.r.t. Invariants
-    double K3fac = pow( K3-2.0 , alpha2-2.0);
+    double K3fac = std::pow( K3-2.0 , alpha2-2.0);
     double d2W_dJ4dJ4 = alpha1 * alpha2 * I1*I1 * (alpha2-1.0) * K3fac;
     double d2W_dJ5dJ5 = alpha1 * alpha2 * (alpha2-1.0) * K3fac;
     double d2W_dI1dJ4 = alpha1 * alpha2 * J4 * I1 * (alpha2-1.0) * K3fac
@@ -442,7 +442,7 @@ void MAT::AnisotropicBalzani::Evaluate(
     double d2W_dI1dI1 = alpha1 * alpha2 * (alpha2-1.0) * J4*J4 * K3fac;
 
 //    double K3m2sq = 1.0 / (K3 - 2.0) * (K3 - 2.0);
-//    double K3m2p = pow((K3 - 2.0),alpha2);
+//    double K3m2p = std::pow((K3 - 2.0),alpha2);
 //    double d2W_dJ4dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * I1*I1
 //                         -alpha1 * K3m2p * alpha2 * I1*I1 ) * K3m2sq;
 //    double d2W_dJ5dJ5 = ( alpha1 * K3m2p * alpha2*alpha2
@@ -472,7 +472,7 @@ void MAT::AnisotropicBalzani::Evaluate(
   if ( (K3_2 - 2.0) > 1.0E-15) {
     // temporay factors are NOT renamed to *_2 but refer to 2nd fiber
     // compute derivatives of W_ti w.r.t. Invariants
-    double K3fac = pow( K3_2-2.0 , alpha2_2-2.0);
+    double K3fac = std::pow( K3_2-2.0 , alpha2_2-2.0);
     double d2W_dJ4dJ4 = alpha1_2 * alpha2_2 * I1*I1 * (alpha2_2-1.0) * K3fac;
     double d2W_dJ5dJ5 = alpha1_2 * alpha2_2 * (alpha2_2-1.0) * K3fac;
     double d2W_dI1dJ4 = alpha1_2 * alpha2_2 * J4_2 * I1 * (alpha2_2-1.0) * K3fac

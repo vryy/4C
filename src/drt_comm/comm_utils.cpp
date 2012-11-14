@@ -84,7 +84,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
       {
         glayout = glayout.substr( 9, std::string::npos ).c_str();
 
-        istringstream layout( glayout );
+        std::istringstream layout( glayout );
         int sumprocs=0;
 
         while (layout)
@@ -294,7 +294,7 @@ int COMM_UTILS::NestedParGroup::LPID(int GPID)
   }
   // if GPID is not part of the current group
   printf("\n\n\nERROR: GPID (%d) is not in this group (%d) \n\n\n\n", GPID, groupId_);
-  MPI_Abort(rcp_dynamic_cast<Epetra_MpiComm>(gcomm_,true)->GetMpiComm(),EXIT_FAILURE);
+  MPI_Abort(Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm_,true)->GetMpiComm(),EXIT_FAILURE);
   exit(1);
 
   return -1;
@@ -491,7 +491,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       myrowelements[i] = dis->ElementRowMap()->GID(i);
       DRT::Element* ele = dis->lRowElement(i);
       if (myrowelements[i] != ele->Id()) dserror("Element global id mismatch");
-      RCP<DRT::Element> newele = rcp(ele->Clone());
+      RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
       newele->SetOwner(icomm->MyPID());
       commondis->AddElement(newele);
     }
@@ -499,7 +499,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
     for (int i=0; i<dis->NodeRowMap()->NumMyElements(); ++i)
     {
       DRT::Node* node = dis->lRowNode(i);
-      RCP<DRT::Node> newnode = rcp(node->Clone());
+      RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
       newnode->SetOwner(icomm->MyPID());
       commondis->AddNode(newnode);
     }
@@ -514,7 +514,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       if (lcomm->MyPID()==0) 
       {
         condmap[i] = *data;
-        condnamemap[i] = rcp(new DRT::Container());
+        condnamemap[i] = Teuchos::rcp(new DRT::Container());
         condnamemap[i]->Add("condname",condnames[i]);
       }
       commondis->UnPackCondition(data,condnames[i]);
@@ -545,15 +545,15 @@ void COMM_UTILS::NPDuplicateDiscretization(
     for ( ; fool1 != condmap.end(); ++fool1)
     {
       const string* name = fool2->second->Get<string>("condname");
-      commondis->UnPackCondition(rcp(&(fool1->second),false),*name);
-      dis->UnPackCondition(rcp(&(fool1->second),false),*name);
+      commondis->UnPackCondition(Teuchos::rcp(&(fool1->second),false),*name);
+      dis->UnPackCondition(Teuchos::rcp(&(fool1->second),false),*name);
       ++fool2;
     }
   }
   
   //-------------------------------------- finalize the commondis
   {
-    RCP<Epetra_Map> roweles = rcp(new Epetra_Map(-1,(int)myrowelements.size(),&myrowelements[0],-1,*icomm));
+    RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(-1,(int)myrowelements.size(),&myrowelements[0],-1,*icomm));
     RCP<Epetra_Map> coleles;
     RCP<Epetra_Map> rownodes;
     RCP<Epetra_Map> colnodes;
@@ -679,14 +679,14 @@ void COMM_UTILS::NPDuplicateDiscretization(
     for (int i=0; i<targetrowele.NumMyElements(); ++i)
     {
       DRT::Element* ele = commondis->gElement(targetrowele.GID(i));
-      RCP<DRT::Element> newele = rcp(ele->Clone());
+      RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
       newele->SetOwner(lcomm->MyPID());
       dis->AddElement(newele);
     }
     for (int i=0; i<targetrownode.NumMyElements(); ++i)
     {
       DRT::Node* node = commondis->gNode(targetrownode.GID(i));
-      RCP<DRT::Node> newnode = rcp(node->Clone());
+      RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
       newnode->SetOwner(lcomm->MyPID());
       dis->AddNode(newnode);
     }
@@ -695,7 +695,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
   //------------------------------------------- complete the discretization on the rgroup
   if (group->GroupId()==rgroup)
   {
-    RCP<Epetra_Map> roweles = rcp(new Epetra_Map(-1,targetrowele.NumMyElements(),targetrowele.MyGlobalElements(),-1,*lcomm));
+    RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(-1,targetrowele.NumMyElements(),targetrowele.MyGlobalElements(),-1,*lcomm));
     RCP<Epetra_Map> coleles;
     RCP<Epetra_Map> rownodes;
     RCP<Epetra_Map> colnodes;

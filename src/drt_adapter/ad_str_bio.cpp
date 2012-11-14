@@ -37,7 +37,7 @@ ADAPTER::StructureBio::StructureBio(
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(prbdyn, structdis));
-  structure_ = rcp_dynamic_cast<FSIStructureWrapper>(structurebase->StructureFieldrcp());
+  structure_ = Teuchos::rcp_dynamic_cast<FSIStructureWrapper>(structurebase->StructureFieldrcp());
 
   if(structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");

@@ -27,7 +27,6 @@ Maintainer: Ursula Rasthofer
 #include "../drt_lib/drt_dofset_fixed_size.H"
 #include "../drt_lib/drt_dofset_pbc.H"
 
-using namespace std;
 
 // forward declarations
 namespace DRT

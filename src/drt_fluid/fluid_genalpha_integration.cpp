@@ -62,10 +62,10 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   timeout_              = TimeMonitor::getNewTimer("      + output and statistics");
 
   // time measurement --- start TimeMonitor tm0
-  tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
+  tm0_ref_        = Teuchos::rcp(new TimeMonitor(*timedyntot_ ));
 
   // time measurement --- start TimeMonitor tm7
-  tm7_ref_        = rcp(new TimeMonitor(*timedyninit_ ));
+  tm7_ref_        = Teuchos::rcp(new TimeMonitor(*timedyninit_ ));
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
@@ -261,7 +261,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
 
   // all averaging is done in this statistics manager
-//  statisticsmanager_=rcp(new FLD::TurbulenceStatisticManager(*this));
+//  statisticsmanager_=Teuchos::rcp(new FLD::TurbulenceStatisticManager(*this));
   statisticsmanager_=Teuchos::null;
 
   if (special_flow_ != "no")
@@ -304,7 +304,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     if(model=="Dynamic_Smagorinsky")
     {
       // get one instance of the dynamic Smagorinsky class
-      DynSmag_=rcp(new FLD::DynSmagFilter(discret_            ,
+      DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
                                      pbcmapmastertoslave_,
                                      *params_             ));
     }
@@ -344,9 +344,9 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   tm7_ref_ = null;
 
   // extra discretisation for mixed/hybrid Dirichlet conditions
-  MHD_evaluator_=rcp(new FluidMHDEvaluate(discret_));
+  MHD_evaluator_=Teuchos::rcp(new FluidMHDEvaluate(discret_));
 
-  interface_ = rcp(new FLD::UTILS::MapExtractor());
+  interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   {
     interface_->Setup(*actdis);
 
@@ -359,7 +359,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     maps.push_back(dbcmaps->OtherMap());
     innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
 
-    interfaceforcen_ = rcp(new Epetra_Vector(*(interface_->FSICondMap())));
+    interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(interface_->FSICondMap())));
   }
 
 
@@ -395,7 +395,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
 {
 
   // start time measurement for timeloop
-  tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
+  tm2_ref_ = Teuchos::rcp(new TimeMonitor(*timedynloop_));
 
   bool stop_timeloop=false;
   while (stop_timeloop==false)
@@ -480,7 +480,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaPrepareTimeStep()
   //         evaluate dirichlet and neumann boundary conditions
   // -------------------------------------------------------------------
   // start time measurement for application of dirichlet conditions
-  tm1_ref_ = rcp(new TimeMonitor(*timeevaldirich_));
+  tm1_ref_ = Teuchos::rcp(new TimeMonitor(*timeevaldirich_));
 
   this->GenAlphaApplyDirichletAndNeumann();
 
@@ -543,7 +543,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   }
 
   // start time measurement for nonlinear iteration
-  tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
+  tm6_ref_ = Teuchos::rcp(new TimeMonitor(*timenlnloop_));
 
   // -------------------------------------------------------------------
   //  Evaluate acceleration and velocity at the intermediate time level
@@ -552,7 +552,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   //                             -> (0)
   // -------------------------------------------------------------------
   // start time measurement for nonlinear update
-  tm9_ref_ = rcp(new TimeMonitor(*timenonlinup_));
+  tm9_ref_ = Teuchos::rcp(new TimeMonitor(*timenonlinup_));
 
   this->GenAlphaComputeIntermediateSol();
 
@@ -613,7 +613,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // solve for increments
     // -------------------------------------------------------------------
     // start time measurement for solver call
-    tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
+    tm5_ref_ = Teuchos::rcp(new TimeMonitor(*timesolver_));
 
     // get cpu time
     tcpu=Teuchos::Time::wallTime();
@@ -625,7 +625,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     dtsolve_=Teuchos::Time::wallTime()-tcpu;
 
     // start time measurement for nonlinear update
-    tm9_ref_ = rcp(new TimeMonitor(*timenonlinup_));
+    tm9_ref_ = Teuchos::rcp(new TimeMonitor(*timenonlinup_));
 
     // -------------------------------------------------------------------
     // update estimates by incremental solution
@@ -986,7 +986,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
 {
   // time measurement --- start TimeMonitor tm8
-  tm8_ref_ = rcp(new TimeMonitor(*timeout_ ));
+  tm8_ref_ = Teuchos::rcp(new TimeMonitor(*timeout_ ));
 
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
@@ -1289,7 +1289,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   {
     RefCountPtr<TimeMonitor> timesparsitypattern_ref_
       =
-      rcp(new TimeMonitor(*timesparsitypattern_));
+      Teuchos::rcp(new TimeMonitor(*timesparsitypattern_));
 
     sysmat_->Zero();
 
@@ -1305,7 +1305,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   residual_->Update(1.0,*neumann_loads_,0.0);
 
   // start time measurement for element call
-  tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+  tm3_ref_ = Teuchos::rcp(new TimeMonitor(*timeeleloop_));
 
   // add stabilization term at Neumann outflow boundary if required
   if(outflow_stab_ == "yes_outstab")
@@ -1603,7 +1603,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // start time measurement for generation of sparsity pattern
   {
-    RefCountPtr<TimeMonitor> timesparsitypattern_ref_ = rcp(new TimeMonitor(*timesparsitypattern_));
+    RefCountPtr<TimeMonitor> timesparsitypattern_ref_ = Teuchos::rcp(new TimeMonitor(*timesparsitypattern_));
     // finalize the system matrix
     sysmat_->Complete();
 
@@ -1624,7 +1624,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // residuals are supposed to be zero at boundary conditions
   // -------------------------------------------------------------------
   // start time measurement for application of dirichlet conditions
-  tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
+  tm4_ref_ = Teuchos::rcp(new TimeMonitor(*timeapplydirich_));
 
   {
     // cast EpetraOperator sysmat_ to a LINALG::SparseMatrix in order to
@@ -1635,13 +1635,13 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       // transform to local co-ordinate systems
       if (locsysman_!=Teuchos::null)
       {
-        locsysman_->RotateGlobalToLocal(rcp(A,false),residual_);
+        locsysman_->RotateGlobalToLocal(Teuchos::rcp(A,false),residual_);
       }
 
       // apply the dirichlet conditions to the (rotated) system
       zeros_->PutScalar(0.0);
       {
-        LINALG::ApplyDirichlettoSystem(rcp(A,false)           ,
+        LINALG::ApplyDirichlettoSystem(Teuchos::rcp(A,false)           ,
                                        increment_             ,
                                        residual_              ,
                                        GetLocSysTrafo()       ,
@@ -3428,7 +3428,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::ExtrapolateEndPoint
   Teuchos::RCP<Epetra_Vector> vecm
 )
 {
-  Teuchos::RCP<Epetra_Vector> vecnp = rcp(new Epetra_Vector(*vecm));
+  Teuchos::RCP<Epetra_Vector> vecnp = Teuchos::rcp(new Epetra_Vector(*vecm));
 
   // For gen-alpha extrapolate mid-point quantities to end-point.
   vecnp->Update((alphaF_-1.0)/alphaF_,*vecn,1.0/alphaF_);

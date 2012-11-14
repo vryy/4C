@@ -450,7 +450,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
 
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
-  const double h = pow(vol,(1.0/dim));
+  const double h = std::pow(vol,(1.0/dim));
 
   // artficial all-scale subgrid diffusivity
   if (assgd )
@@ -466,7 +466,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
 
       // parameter relating convective and diffusive forces + respective switch
       const double epe = mk * densnp_[k] * vel_norm * h / diffus_[k];
-      const double xi = max(epe,1.0);
+      const double xi = std::max(epe,1.0);
 
       // compute subgrid diffusivity
       sgdiff_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus_[k]*xi);
@@ -513,7 +513,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           }
 
           // compute sigma
-          sigma = max(0.0,tau_bhpar-tau_[k]);
+          sigma = std::max(0.0,tau_bhpar-tau_[k]);
 
           // set specific term to convective term
           specific_term = conv_phi_[k];
@@ -556,10 +556,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           double zeta = 0.0;
           if (whichassgd == INPAR::SCATRA::assgd_docarmo)
             zeta = 1.0;
-          else zeta = max(1.0,(conv_phi_[k]/scatrares_[k]));
+          else zeta = std::max(1.0,(conv_phi_[k]/scatrares_[k]));
 
           // compute sigma
-          sigma = tau_[k]*max(0.0,(vel_norm/vel_norm_zh)-zeta);
+          sigma = tau_[k]*std::max(0.0,(vel_norm/vel_norm_zh)-zeta);
 
           // set specific term to residual
           specific_term = scatrares_[k];
@@ -657,7 +657,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcFineScaleSubgrDiff(
 
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
-  const double h = pow(vol,(1.0/dim));
+  const double h = std::pow(vol,(1.0/dim));
 
   //----------------------------------------------------------------------
   // computation of fine-scale subgrid diffusivity for non-incremental
@@ -674,7 +674,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcFineScaleSubgrDiff(
 
     // parameter relating convective and diffusive forces + respective switch
     const double epe = mk * densnp_[k] * vel_norm * h / diffus_[k];
-    const double xi = max(epe,1.0);
+    const double xi = std::max(epe,1.0);
 
     // compute artificial subgrid diffusivity
     sgdiff_[k] = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp_[k]))/(2.0*diffus_[k]*xi);
@@ -904,7 +904,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   {
     B_mfs(dim,0) = Csgs_vel_nw *sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1));
 //    if (eid_ == 100)
-//     std::cout << "B  " << setprecision (10) << B_mfs(dim,0) << std::endl;
+//     std::cout << "B  " << std::setprecision (10) << B_mfs(dim,0) << std::endl;
   }
 
   //----------------------------------------------------------------
@@ -995,7 +995,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //
   D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
 //    if (eid_ == 100)
-//     std::cout << "D  " << setprecision(10) << D_mfs << std::endl;
+//     std::cout << "D  " << std::setprecision(10) << D_mfs << std::endl;
 #endif
 
   // second implementation for tests on cluster
@@ -1097,14 +1097,14 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalcRefLength(
     case INPAR::FLUID::sphere_diameter:
     {
       // b) volume-equivalent diameter
-      hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+      hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
       break;
     }
     case INPAR::FLUID::cube_edge:
     {
       // c) qubic element length
-      hk = pow(vol,(1.0/nsd_));
+      hk = std::pow(vol,(1.0/nsd_));
 
       break;
     }
@@ -1147,7 +1147,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalcRefLength(
          normG+=G(nn,rr)*G(nn,rr);
        }
      }
-     hk = pow(normG,-0.25);
+     hk = std::pow(normG,-0.25);
 
      break;
   }

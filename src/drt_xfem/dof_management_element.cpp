@@ -34,9 +34,9 @@ XFEM::ElementDofManager::ElementDofManager() :
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager(
     const DRT::Element& ele,
-    const map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,
+    const std::map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,
     const std::set<XFEM::FieldEnr>& enrfieldset,
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
 ) :
   nodalDofSet_(nodalDofSet),
   DisTypePerElementField_(element_ansatz)
@@ -63,7 +63,7 @@ XFEM::ElementDofManager::ElementDofManager(
   for (std::size_t inode = 0; inode < numnode; ++inode)
   {
     const int gid = ele.NodeIds()[inode];
-    nodalDofSet_.insert(make_pair(gid,dofman.getNodeDofSet(gid)));
+    nodalDofSet_.insert(std::make_pair(gid,dofman.getNodeDofSet(gid)));
   }
 
   // element dofs for ele
@@ -77,9 +77,9 @@ XFEM::ElementDofManager::ElementDofManager(
  *----------------------------------------------------------------------*/
 void XFEM::ElementDofManager::ComputeDependentInfo(
     const DRT::Element& ele,
-    const map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,  ///< node dofs
+    const std::map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,  ///< node dofs
     const std::set<XFEM::FieldEnr>& enrfieldset,                   ///< element dofs
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz)
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz)
 {
 #ifdef COMBUST_NORMAL_ENRICHMENT
   //numParamsPerField_[XFEM::PHYSICS::Veln] = 0;
@@ -97,12 +97,12 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
 
   // set number of parameters per field to zero
   // for nodal dofs
-  for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
+  for (std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
        tmp != nodalDofSet.end();
        ++tmp)
   {
     const std::set<XFEM::FieldEnr> lenrfieldset = tmp->second;
-    for (set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
          enrfield != lenrfieldset.end();
          ++enrfield)
     {
@@ -130,7 +130,7 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
   for (std::size_t inode=0; inode<numnode; ++inode)
   {
     const int nodegid = nodeids[inode];
-    map<int, const set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(nodegid);
+    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(nodegid);
     if (entry == nodalDofSet.end())
       dserror("impossible");
     const std::set<XFEM::FieldEnr> & lenrfieldset = entry->second;
@@ -191,11 +191,11 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
 std::string XFEM::ElementDofManager::toString() const
 {
   std::stringstream s;
-  map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp;
+  std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp;
   for (tmp = nodalDofSet_.begin(); tmp != nodalDofSet_.end(); ++tmp)
   {
     const int gid = tmp->first;
-    const set <XFEM::FieldEnr> actset = tmp->second;
+    const std::set <XFEM::FieldEnr> actset = tmp->second;
     for ( std::set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
     {
       s << "Node: " << gid << ", " << var->toString() << endl;
@@ -211,7 +211,7 @@ const std::set<XFEM::FieldEnr>& XFEM::ElementDofManager::FieldEnrSetPerNode(
     const int  gid
     ) const
 {
-  map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
+  std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
   if (tmp == nodalDofSet_.end())
   {
     std::cout << gid << endl;

@@ -4041,7 +4041,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   std::vector<double>                mydispnp;
 
   Teuchos::RCP<std::vector<int> >mycondIDs;
-  mycondIDs = rcp(new  vector<int>);
+  mycondIDs = Teuchos::rcp(new  vector<int>);
   //Teuchos::RCP<std::set<int> >mycondIDs = params.get<Teuchos::RCP< std::set<int> > >("mycondIDs",Teuchos::null);
 
   if (ele->ParentElement()->IsAle())

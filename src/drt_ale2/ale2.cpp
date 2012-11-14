@@ -41,7 +41,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create( const string eletype
   {
     if (eledistype!="NURBS4" and eledistype!="NURBS9")
     {
-      ele = rcp(new DRT::ELEMENTS::Ale2(id,owner));
+      ele = Teuchos::rcp(new DRT::ELEMENTS::Ale2(id,owner));
     }
   }
 
@@ -203,7 +203,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Surfaces()
 {
   vector<RCP<Element> > surfaces(1);
-  surfaces[0]= rcp(this, false);
+  surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }
 

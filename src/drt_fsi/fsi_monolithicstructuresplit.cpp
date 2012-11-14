@@ -294,13 +294,13 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     // store structural interface displacement increment due to predictor
     // or inhomogeneous Dirichlet boundary conditions
-    ddgpre_ = rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
+    ddgpre_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
     ddgpre_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
 
     // store fluid interface velocity increment due to predictor
     // or inhomogeneous Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
-    dugpre_ = rcp(new Epetra_Vector(*FluidField().ExtractInterfaceVelnp()));
+    dugpre_ = Teuchos::rcp(new Epetra_Vector(*FluidField().ExtractInterfaceVelnp()));
     dugpre_->Update(-1.0, *fveln, 1.0);
 
     // get time integration parameters of structure an fluid time integrators
@@ -329,20 +329,20 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
      *
      */
     // ----------adressing term 1
-    rhs = rcp(new Epetra_Vector(sig.RowMap(),true));
+    rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(),true));
     sig.Apply(*ddgpre_,*rhs);
 
     Extractor().AddVector(*rhs,0,f);
 
     // ----------adressing term 2
-    rhs = rcp(new Epetra_Vector(sig.RowMap(),true));
+    rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(),true));
     sig.Apply(*FluidToStruct(fveln),*rhs);
     rhs->Scale(-dt);
 
     Extractor().AddVector(*rhs,0,f);
 
     // ----------adressing term 3
-    rhs = rcp(new Epetra_Vector(sig.RowMap(),true));
+    rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(),true));
     sig.Apply(*FluidToStruct(dugpre_),*rhs);
     rhs->Scale(-1.0/timescale);
 
@@ -428,7 +428,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     }
 
     // ----------addressing term 3
-    rhs = rcp(new Epetra_Vector(sgg.RowMap(),true));
+    rhs = Teuchos::rcp(new Epetra_Vector(sgg.RowMap(),true));
     sgg.Apply(*FluidToStruct(fveln),*rhs);
     rhs->Scale(-dt * (1.-ftiparam) / ((1-stiparam) * scale));
 
@@ -438,7 +438,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*rhs,1,f);
 
     // ----------addressing term 4
-    rhs = rcp(new Epetra_Vector(sgg.RowMap(),true));
+    rhs = Teuchos::rcp(new Epetra_Vector(sgg.RowMap(),true));
     sgg.Apply(*FluidToStruct(dugpre_),*rhs);
     rhs->Scale(-1.0 *  (1.-ftiparam) / ((1-stiparam) * timescale * scale));
 
@@ -448,7 +448,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*rhs,1,f);
 
     // ----------addressing term 5
-    rhs = rcp(new Epetra_Vector(sgg.RowMap(),true));
+    rhs = Teuchos::rcp(new Epetra_Vector(sgg.RowMap(),true));
     sgg.Apply(*ddgpre_,*rhs);
     rhs->Scale((1.-ftiparam) / ((1-stiparam) * scale));
 
@@ -469,14 +469,14 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
      *
      */
     // ----------addressing term 1
-    rhs = rcp(new Epetra_Vector(aig.RowMap(),true));
+    rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap(),true));
     aig.Apply(*FluidToAleInterface(fveln),*rhs);
     rhs->Scale(-dt);
 
     Extractor().AddVector(*rhs,2,f);
 
     // ----------addressing term 2
-    rhs = rcp(new Epetra_Vector(aig.RowMap(),true));
+    rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap(),true));
     aig.Apply(*FluidToAleInterface(dugpre_),*rhs);
     rhs->Scale(-1.0/timescale);
 
@@ -489,7 +489,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     // Apply Dirichlet boundary conditions
     // structure
     rhs = Extractor().ExtractVector(f,0);
-    Teuchos::RCP<const Epetra_Vector> zeros = rcp(new const Epetra_Vector(rhs->Map(),true));
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
     LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
     Extractor().InsertVector(*rhs,0,f);
 
@@ -621,7 +621,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    true,
                    true);
 
-  RCP<LINALG::SparseMatrix> lsgi = rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
+  RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
   (*sgitransform_)(s->Matrix(1,0),
                    (1.0-ftiparam)/((1.0-stiparam)*scale),
                    ADAPTER::CouplingMasterConverter(coupsf),
@@ -654,7 +654,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     f->Add(fmgg,false,1./timescale,1.0);
     f->Add(fmig,false,1./timescale,1.0);
 
-    RCP<LINALG::SparseMatrix> lfmgi = rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
+    RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
     (*fmgitransform_)(mmm->FullRowMap(),
                       mmm->FullColMap(),
                       fmgi,
@@ -736,8 +736,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   // store parts of structural matrix to know them in the next iteration as previous iteration matrices
   sgiprev_ = sgicur_;
   sggprev_ = sggcur_;
-  sgicur_ = rcp(new LINALG::SparseMatrix(s->Matrix(1,0)));
-  sggcur_ = rcp(new LINALG::SparseMatrix(s->Matrix(1,1)));
+  sgicur_ = Teuchos::rcp(new LINALG::SparseMatrix(s->Matrix(1,0)));
+  sggcur_ = Teuchos::rcp(new LINALG::SparseMatrix(s->Matrix(1,1)));
 }
 
 
@@ -768,8 +768,8 @@ void FSI::MonolithicStructureSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& m
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
-    srowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    scolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*srowsum_);
     A->InvColSums(*scolsum_);
     if (A->LeftScale(*srowsum_) or
@@ -781,8 +781,8 @@ void FSI::MonolithicStructureSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& m
       dserror("structure scaling failed");
 
     A = mat.Matrix(2,2).EpetraMatrix();
-    arowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    acolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*arowsum_);
     A->InvColSums(*acolsum_);
     if (A->LeftScale(*arowsum_) or
@@ -1171,7 +1171,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 
   // process ale unknowns
   Teuchos::RCP<Epetra_Vector> fcxforale = FluidField().Interface()->ExtractFSICondVector(fx);
-  Teuchos::RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(fcxforale->Map(),true));
+  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fcxforale->Map(),true));
   FluidField().VelocityToDisplacement(fcxforale,zeros,dugpre_);
   Teuchos::RCP<Epetra_Vector> acx = FluidToStruct(fcxforale);
   acx = StructToAle(acx);
@@ -1197,14 +1197,14 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   if (soliprev_ != Teuchos::null)
     ddiinc_->Update(1.0, *sox, -1.0, *soliprev_, 0.0);  // compute current iteration increment
   else
-    ddiinc_ = rcp(new Epetra_Vector(*sox));           // first iteration increment
+    ddiinc_ = Teuchos::rcp(new Epetra_Vector(*sox));           // first iteration increment
 
   soliprev_ = sox;                                      // store current step increment
 
   if (disgprev_ != Teuchos::null)
     ddginc_->Update(1.0, *scx, -1.0, *disgprev_, 0.0);  // compute current iteration increment
   else
-    ddginc_ = rcp(new Epetra_Vector(*scx));           // first iteration increment
+    ddginc_ = Teuchos::rcp(new Epetra_Vector(*scx));           // first iteration increment
 
   disgprev_ = scx;                                      // store current step increment
 
@@ -1250,7 +1250,7 @@ void FSI::MonolithicStructureSplit::ReadRestart(int step)
 {
   // read Lagrange multiplier
   {
-    Teuchos::RCP<Epetra_Vector> lambdafull = rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
+    Teuchos::RCP<Epetra_Vector> lambdafull = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
     reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);

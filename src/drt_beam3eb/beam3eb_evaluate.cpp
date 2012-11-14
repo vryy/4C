@@ -334,7 +334,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(ParameterList& params,
     if (precond)
     {
       double length = jacobi_*2.0;
-      double radius = pow(crosssec_/M_PI,0.5);
+      double radius = std::pow(crosssec_/M_PI,0.5);
       for (int zeile=0; zeile <2; zeile++)
       {
         for (int spalte=0; spalte<12; spalte++)
@@ -643,7 +643,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
   if (precond)
   {
     double length = jacobi_*2.0;
-    double radius = pow(crosssec_/M_PI,0.5);
+    double radius = std::pow(crosssec_/M_PI,0.5);
     for (int zeile=0; zeile <2; zeile++)
     {
       for (int spalte=0; spalte<12; spalte++)
@@ -970,7 +970,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass( ParameterList& params,
   if (precond)
   {
     double length = jacobi_*2.0;
-    double radius = pow(crosssec_/M_PI,0.5);
+    double radius = std::pow(crosssec_/M_PI,0.5);
     for (int zeile=0; zeile <2; zeile++)
     {
       for (int spalte=0; spalte<12; spalte++)
@@ -1775,7 +1775,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(ParameterList& params,
 
     for (int i=0; i<3;  i++)
      {
-      abs_tangent += pow(tangent(i,0),2);
+      abs_tangent += std::pow(tangent(i,0),2);
      }
     abs_tangent=pow(abs_tangent,0.5);
 

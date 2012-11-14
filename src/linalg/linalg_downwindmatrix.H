@@ -69,7 +69,7 @@ public:
     EpetraExt::CrsMatrix_Reindex reindexer(*ndofrowmap_);
     Epetra_CrsMatrix& reA = reindexer(*Aorig);
     reA.FillComplete();
-    RCP<Epetra_CrsMatrix> dwA = rcp(new Epetra_CrsMatrix(Copy,DownwindRowMap(),reA.MaxNumEntries()));
+    RCP<Epetra_CrsMatrix> dwA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,DownwindRowMap(),reA.MaxNumEntries()));
     dwA->Export(reA,*sexporter_,Insert);
     if (!dwA->Filled()) dwA->FillComplete();
     return dwA;
@@ -82,7 +82,7 @@ public:
   {
     Epetra_MultiVector* dwx = new Epetra_Vector(DownwindRowMap(),false);
     Permute(xorig,dwx);
-    return rcp(dwx);
+    return Teuchos::rcp(dwx);
   }
 
   /*!

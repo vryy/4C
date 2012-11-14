@@ -235,12 +235,12 @@ public:
   Example:
   \code
     // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(pair<string,int>("Owner",1));
+    names.insert(std::pair<string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(pair<string,int>("StressesXYZ",6));
+    names.insert(std::pair<string,int>("StressesXYZ",6));
   \endcode*/
 
-  virtual void VisNames(map<string,int>& names); ///< to be filled with key names of data to visualize and with int dimensions
+  virtual void VisNames(std::map<string,int>& names); ///< to be filled with key names of data to visualize and with int dimensions
 
   /*!
   \brief Query data to be visualized using BINIO of a given name

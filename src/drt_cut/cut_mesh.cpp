@@ -1261,7 +1261,7 @@ bool GEO::CUT::Mesh::CheckForUndecidedNodePositions( std::map<int, int> & undeci
         throw std::runtime_error( "node with node-Id <0 found" );
       }
       // insert pair of nid and undecided PointPosition
-      undecided_nodes.insert(pair<int,int>(n->Id(), pos));
+      undecided_nodes.insert(std::pair<int,int>(n->Id(), pos));
 
       // set undecided_node_positions to true
       undecided_node_positions = true;

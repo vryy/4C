@@ -144,7 +144,7 @@ std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) co
   for (int j = 0; j < indent; j ++)
     stream << ' ';
 
-  stream << setw(13) << " (";
+  stream << std::setw(13) << " (";
 
   if (scaleType_ == Scaled)
     stream << "Length-Scaled";

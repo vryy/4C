@@ -946,7 +946,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
       }
 
       //------------------------------- put condition in map of conditions
-      cmap.insert(pair<int,Teuchos::RCP<DRT::Condition> >(dobjid,condition));
+      cmap.insert(std::pair<int,Teuchos::RCP<DRT::Condition> >(dobjid,condition));
     }
   }
 }

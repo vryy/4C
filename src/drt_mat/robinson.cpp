@@ -1105,7 +1105,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
   // CCARAT: if (mat_robin->kind == vp_robinson_kind_arya_narloyz)
   if (*(params_->kind_) == "Arya_NarloyZ")
   {
-    hh *= pow(6.896,1.0+beta) / (3.0*kk0sq);
+    hh *= std::pow(6.896,1.0+beta) / (3.0*kk0sq);
   }
   // CCARAT: else if (mat_robin->kind == vp_robinson_kind_arya_crmosteel)
   if (*(params_->kind_) == "Arya_CrMoSteel")
@@ -1129,7 +1129,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
   {
     // pressure unit scale : cN/cm^2 = 10^-4 MPa
     const double pus = 1.0e-4;
-    rr0 *= pow(6.896,1.0+beta+mm) * pow(3.0*kk0sq*pus*pus,mm-beta);
+    rr0 *= std::pow(6.896,1.0+beta+mm) * pow(3.0*kk0sq*pus*pus,mm-beta);
   }
   else  // (*(params_->kind_) == "Butler", "Arya", "Arya_NarloyZ")
   {

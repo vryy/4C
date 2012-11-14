@@ -183,7 +183,7 @@ private:
   /// calculate objective value - main computation function
   virtual void Values(
     const int eid,
-    map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
+    std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
     LINALG::Matrix<nen_,1>& edens,
     double& objective,
     Teuchos::RCP<Epetra_SerialDenseVector> constraints,

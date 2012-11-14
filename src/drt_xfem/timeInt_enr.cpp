@@ -198,7 +198,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
       } // end loop over vectorfield size
 
       //      cout << "in bisected " << *ele << " final old jumps and kinks are " << eleJumpAndKinks[0];
-      eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
+      eleJumpsAndKinks_.insert(std::make_pair(ele->Id(),eleJumpAndKinks));
     } // end if element bisected
     else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
     {
@@ -233,7 +233,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
       } // end loop over vectorfield size
 
       //      cout << "final old jumps and kinks at touched " << *ele << " are " << eleJumpAndKinks[0];
-      eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
+      eleJumpsAndKinks_.insert(std::make_pair(ele->Id(),eleJumpAndKinks));
     } // end if element touchedminus
   }
   else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
@@ -297,7 +297,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
       } // end loop over vectorfield size
 
 //      cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[0] << endl;
-      eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
+      eleJumpsAndKinks_.insert(std::make_pair(ele->Id(),eleJumpAndKinks));
     } // end if element bisected
     else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
     {
@@ -343,7 +343,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
         eleJumpAndKinks.push_back(currentJumpsAndKinks);
       } // end loop over vectorfield size
       //      cout << "final old jumps and kinks at touched " << *ele << " are " << eleJumpAndKinks[0] << endl;
-      eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
+      eleJumpsAndKinks_.insert(std::make_pair(ele->Id(),eleJumpAndKinks));
     } // end if element touchedminus
   }
 }
@@ -387,7 +387,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
         eleKinks.push_back(currKinks);
       } // end loop over vectorfield size
       //      cout << "final old kink values at bisected " << *ele << " are " << eleKinks[0];
-      eleKinks_.insert(make_pair(ele->Id(),eleKinks));
+      eleKinks_.insert(std::make_pair(ele->Id(),eleKinks));
     } // end if element bisected
     else
     {
@@ -397,7 +397,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
       for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
         eleKinks.push_back(currKinks);
 
-      eleKinks_.insert(make_pair(ele->Id(),eleKinks));
+      eleKinks_.insert(std::make_pair(ele->Id(),eleKinks));
     }
   }
   else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
@@ -435,7 +435,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
         eleKinks.push_back(currKinks);
       } // end loop over vectorfield size
       //      cout << "final old kink values at bisected element are " << eleKinks[0];
-      eleKinks_.insert(make_pair(ele->Id(),eleKinks));
+      eleKinks_.insert(std::make_pair(ele->Id(),eleKinks));
     } // end if element bisected
     else
     {
@@ -446,7 +446,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
         eleKinks.push_back(currKinks);
 
       //      cout << "final old kink values at touched " << *ele << " are " << eleKinks[0];
-      eleKinks_.insert(make_pair(ele->Id(),eleKinks));
+      eleKinks_.insert(std::make_pair(ele->Id(),eleKinks));
     } // end if element touched
   }
 }

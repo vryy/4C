@@ -44,9 +44,6 @@ Maintainer: Michael Gee
 
 #include "Teuchos_RefCountPtr.hpp"
 
-using namespace std;
-using namespace Teuchos;
-
 #include "drt_parobject.H"
 #include "drt_condition.H"
 #include "drt_parobjectfactory.H"
@@ -237,8 +234,8 @@ public:
            NOT be overwritten but stored twice in the element
 
   */
-  virtual void SetCondition(const string& name,RefCountPtr<Condition> cond)
-  { condition_.insert(pair<string,RefCountPtr<Condition> >(name,cond)); return; }
+  virtual void SetCondition(const string& name,Teuchos::RCP<Condition> cond)
+  { condition_.insert(std::pair<string,Teuchos::RCP<Condition> >(name,cond)); return; }
 
   /*!
   \brief Get all conditions with a certain name
@@ -251,7 +248,7 @@ public:
   \param out  (out): vector of pointers to all conditions with that name
 
   */
-  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out) const;
+  virtual void GetCondition(const string& name, std::vector<DRT::Condition*>& out) const;
 
   /*!
   \brief Get a condition with a certain name
@@ -275,7 +272,7 @@ public:
   /*!
   \brief Change position reference
   */
-  virtual void ChangePos(vector<double> nvector);
+  virtual void ChangePos(std::vector<double> nvector);
 
   //@}
 
@@ -307,9 +304,9 @@ protected:
   //! nodal coords
   double                                   x_[3];
   //! pointers to adjacent elements
-  vector<Element*>                         element_;
+  std::vector<Element*>                    element_;
   //! some conditions e.g. BCs
-  multimap<string,RefCountPtr<Condition> > condition_;
+  std::multimap<string,Teuchos::RCP<Condition> > condition_;
 
 }; // class Node
 } // namespace DRT

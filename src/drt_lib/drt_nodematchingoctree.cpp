@@ -109,7 +109,7 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
     // all other layers are generated down here by recursive calls
     int initlayer = 0;
 
-    octreeroot_ = rcp(new OctreeElement(discret_,
+    octreeroot_ = Teuchos::rcp(new OctreeElement(discret_,
                                                        masternodesonthisproc,
                                                        initialboundingbox,
                                                        initlayer,
@@ -577,7 +577,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
           // we are interested in the closest match
           if (found==coupling.end() or coupling[gid].second > dist)
           {
-            coupling[gid] = make_pair(actnode->Id(), dist);
+            coupling[gid] = std::make_pair(actnode->Id(), dist);
           }
         }
       }
@@ -848,13 +848,13 @@ DRT::UTILS::OctreeElement::OctreeElement(
     nodeidstoadd.clear();
 
     // append children to parent
-    octreechild1_ = rcp(new OctreeElement(discret_,
+    octreechild1_ = Teuchos::rcp(new OctreeElement(discret_,
                                                          childnodeids1,
                                                          childboundingbox1,
                                                          layer_+1,
                                                          maxnodeperleaf,
                                                          tol));
-    octreechild2_ = rcp(new OctreeElement(discret_,
+    octreechild2_ = Teuchos::rcp(new OctreeElement(discret_,
                                                          childnodeids2,
                                                          childboundingbox2,
                                                          layer_+1,

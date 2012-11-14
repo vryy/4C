@@ -67,7 +67,7 @@ namespace MueLu {
     blockVectorColMapData->doImport(*blockVectorSlave,*importer,Xpetra::INSERT);
 
     // create new empty Operator
-    RCP<CrsOOperator> Aout = rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
+    RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
 
     // loop over local rows
     for(size_t row=0; row<Ain->getNodeNumRows(); row++) {
@@ -186,7 +186,7 @@ namespace MueLu {
     blockVectorColMap->doImport(*blockVectorRowMap,*importer,Xpetra::INSERT);
 
     // create new empty Operator
-    RCP<CrsOOperator> Aout = rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
+    RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
 
     // loop over local rows
     for(size_t row=0; row<Ain->getNodeNumRows(); row++) {

@@ -41,7 +41,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebtorType::Create(const string el
 {
   if ( eletype=="BEAM3EBTOR" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3ebtor(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3ebtor(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::Beam3ebtor::Unpack(const vector<char>& data)
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3ebtor::Lines()
 {
   vector<RCP<Element> > lines(1);
-  lines[0]= rcp(this, false);
+  lines[0]= Teuchos::rcp(this, false);
   return lines;
 }
 

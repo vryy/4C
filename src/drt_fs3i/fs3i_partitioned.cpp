@@ -259,7 +259,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       if (!infperm_)
       {
         double myperm = (coupcond[iter])->GetDouble("permeability coefficient");
-        PermCoeffs[i].insert(pair<int,double>(myID,myperm));
+        PermCoeffs[i].insert(std::pair<int,double>(myID,myperm));
       }
     }
   }
@@ -331,9 +331,9 @@ void FS3I::PartFS3I::SetupSystem()
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
     Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField().Discretization();
-    Teuchos::RCP<LINALG::MultiMapExtractor> mapex = rcp(new LINALG::MultiMapExtractor());
+    Teuchos::RCP<LINALG::MultiMapExtractor> mapex = Teuchos::rcp(new LINALG::MultiMapExtractor());
     DRT::UTILS::MultiConditionSelector mcs;
-    mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,ndim)));
+    mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,ndim)));
     mcs.SetupExtractor(*currdis,*currdis->DofRowMap(),*mapex);
     scatrafieldexvec_.push_back(mapex);
   }
@@ -398,10 +398,10 @@ void FS3I::PartFS3I::SetupSystem()
                                                                                    true));
 
   // create scatra rhs vector
-  scatrarhs_ = rcp(new Epetra_Vector(*scatraglobalex_->FullMap(),true));
+  scatrarhs_ = Teuchos::rcp(new Epetra_Vector(*scatraglobalex_->FullMap(),true));
 
   // create scatra increment vector
-  scatraincrement_ = rcp(new Epetra_Vector(*scatraglobalex_->FullMap(),true));
+  scatraincrement_ = Teuchos::rcp(new Epetra_Vector(*scatraglobalex_->FullMap(),true));
 
   // check whether potential Dirichlet conditions at scatra interface are
   // defined for both discretizations
@@ -410,9 +410,9 @@ void FS3I::PartFS3I::SetupSystem()
   // scatra solver
   Teuchos::RCP<DRT::Discretization> firstscatradis = (scatravec_[0])->ScaTraField().Discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
-  Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = rcp(new Teuchos::ParameterList);
+  Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   scatrasolvparams->set("solver","umfpack");
-  scatrasolver_ = rcp(new LINALG::Solver(scatrasolvparams,
+  scatrasolver_ = Teuchos::rcp(new LINALG::Solver(scatrasolvparams,
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
@@ -435,7 +435,7 @@ void FS3I::PartFS3I::SetupSystem()
     dserror("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ = rcp(new LINALG::Solver(coupledscatrasolvparams,
+  scatrasolver_ = Teuchos::rcp(new LINALG::Solver(coupledscatrasolvparams,
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 

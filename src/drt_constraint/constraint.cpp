@@ -49,13 +49,13 @@ actdisc_(discr)
       const std::vector<double>* myinittime = constrcond_[i]->Get<vector<double> >("activTime");
       if (myinittime->size())
       {
-        inittimes_.insert(pair<int,double>(condID,(*myinittime)[0]));
-        activecons_.insert(pair<int,bool>(condID,false));
+        inittimes_.insert(std::pair<int,double>(condID,(*myinittime)[0]));
+        activecons_.insert(std::pair<int,bool>(condID,false));
       }
       else
       {
-        inittimes_.insert(pair<int,double>(condID,0.0));
-        activecons_.insert(pair<int,bool>(condID,false));
+        inittimes_.insert(std::pair<int,double>(condID,0.0));
+        activecons_.insert(std::pair<int,bool>(condID,false));
       }
     }
   }
@@ -83,13 +83,13 @@ actdisc_(discr)
       int condID=constrcond_[i]->GetInt("ConditionID");
       if (myinittime->size())
       {
-        inittimes_.insert(pair<int,double>(condID,(*myinittime)[0]));
-        activecons_.insert(pair<int,bool>(condID,false));
+        inittimes_.insert(std::pair<int,double>(condID,(*myinittime)[0]));
+        activecons_.insert(std::pair<int,bool>(condID,false));
       }
       else
       {
-        inittimes_.insert(pair<int,double>(condID,0.0));
-        activecons_.insert(pair<int,bool>(condID,false));
+        inittimes_.insert(std::pair<int,double>(condID,0.0));
+        activecons_.insert(std::pair<int,bool>(condID,false));
       }
     }
   }
@@ -285,7 +285,7 @@ void UTILS::Constraint::EvaluateConstraint(
       const double lagraval = (*lagramul)[lindex];
 
       // elements might need condition
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -384,7 +384,7 @@ void UTILS::Constraint::InitializeConstraint(
     // if current time is larger than initialization time of the condition, start computing
     if((inittimes_.find(condID)->second<=time) && (!(activecons_.find(condID)->second)))
     {
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;

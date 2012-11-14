@@ -2229,9 +2229,10 @@ void MAT::ConstraintMixtureOutputToGmsh
   const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
   // file for stress
   std::stringstream filename;
-  filename << filebase << "_visual" << std::setw(3) << setfill('0') << timestep << std::setw(2) << setfill('0') << iter << ".pos";
+  filename << filebase << "_visual" << std::setw(3) << std::setfill('0') << timestep
+      << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system(filename.str().c_str());
-  stringstream gmshfilecontent;
+  std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
 
 
@@ -2306,10 +2307,10 @@ void MAT::ConstraintMixtureOutputToGmsh
 
       // write mandel stress
       LINALG::Matrix<3,1> mandelgp = grow->GetVis(gp);
-      gmshfilecontent << "SP(" << scientific << point(0,0) << ",";
-      gmshfilecontent << scientific << point(0,1) << ",";
-      gmshfilecontent << scientific << point(0,2) << ")";
-      gmshfilecontent << "{" << scientific
+      gmshfilecontent << "SP(" << std::scientific << point(0,0) << ",";
+      gmshfilecontent << std::scientific << point(0,1) << ",";
+      gmshfilecontent << std::scientific << point(0,2) << ")";
+      gmshfilecontent << "{" << std::scientific
       << mandelgp(0)
       << "};" << endl;
 

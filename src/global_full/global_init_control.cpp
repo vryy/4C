@@ -74,9 +74,9 @@ void ntaini_ccadiscret(
   // number of input/output arguments specified by the user
   int inoutargs = int(inout.size());
 
-  stringstream infilename;
-  stringstream outfilekenner;
-  stringstream restartfilekenner;
+  std::stringstream infilename;
+  std::stringstream outfilekenner;
+  std::stringstream restartfilekenner;
   // set input file name in each group
   switch(npType)
   {

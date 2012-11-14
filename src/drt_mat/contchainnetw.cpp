@@ -75,12 +75,12 @@ MAT::ContChainNetw::ContChainNetw()
 {
   isinit_=false;
   //mytime_=0.0;
-  li_ = rcp(new vector<vector<double> >);
-  li0_ = rcp(new vector<vector<double> >);
-  lambda_ = rcp(new vector<vector<double> >);
-  ni_ = rcp(new vector<LINALG::Matrix<3,3> >);
-  stresses_ = rcp(new vector<LINALG::Matrix<3,3> >);
-  mytime_ = rcp(new vector<double>);
+  li_ = Teuchos::rcp(new vector<vector<double> >);
+  li0_ = Teuchos::rcp(new vector<vector<double> >);
+  lambda_ = Teuchos::rcp(new vector<vector<double> >);
+  ni_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
+  stresses_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
+  mytime_ = Teuchos::rcp(new vector<double>);
 }
 
 
@@ -163,11 +163,11 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,histsize);
 
   if (histsize == 0) isinit_=false;
-  li_ = rcp(new vector<vector<double> >);
-  li0_ = rcp(new vector<vector<double> >);
-  ni_ = rcp(new vector<LINALG::Matrix<3,3> >);
-  stresses_ = rcp(new vector<LINALG::Matrix<3,3> >);
-  mytime_ = rcp(new vector<double>);
+  li_ = Teuchos::rcp(new vector<vector<double> >);
+  li0_ = Teuchos::rcp(new vector<vector<double> >);
+  ni_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
+  stresses_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
+  mytime_ = Teuchos::rcp(new vector<double>);
   for (int var = 0; var < histsize; ++var) {
     vector<double> li;
     vector<double> li0;
@@ -201,12 +201,12 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
   const double isotropy  = 1/sqrt(3.0) * r0;
   srand ( time(NULL) + 5 + eleid*numgp );
 
-  li0_ = rcp(new vector<vector<double> > (numgp));
-  li_ = rcp(new vector<vector<double> > (numgp));
-  lambda_ = rcp(new vector<vector<double> > (numgp));
-  ni_ = rcp(new vector<LINALG::Matrix<3,3> >);
-  stresses_ = rcp(new vector<LINALG::Matrix<3,3> >);
-  mytime_ = rcp(new vector<double>);
+  li0_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  li_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  lambda_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  ni_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
+  stresses_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
+  mytime_ = Teuchos::rcp(new vector<double>);
   // initial basis is identity
   LINALG::Matrix<3,3> id(true);
   for (int i=0; i<3; ++i) id(i,i) = 1.0;
@@ -825,7 +825,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 {
   std::stringstream filename;
   const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-  filename << filebase << "_ContChainMat" << std::setw(3) << setfill('0') << time << std::setw(2) << setfill('0') << iter << ".pos";
+  filename << filebase << "_ContChainMat" << std::setw(3) << std::setfill('0') << time << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system(filename.str().c_str());
 
   stringstream gmshfilecontent;
@@ -869,10 +869,10 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 //    // material plot at element center
 //    const int dim=3;
 //    for (int k=0; k<dim; ++k){
-//      gmshfilecontent << "VP(" << scientific << elecenter[0] << ",";
-//      gmshfilecontent << scientific << elecenter[1] << ",";
-//      gmshfilecontent << scientific << elecenter[2] << ")";
-//      gmshfilecontent << "{" << scientific <<
+//      gmshfilecontent << "VP(" << std::scientific << elecenter[0] << ",";
+//      gmshfilecontent << std::scientific << elecenter[1] << ",";
+//      gmshfilecontent << std::scientific << elecenter[2] << ")";
+//      gmshfilecontent << "{" << std::scientific <<
 //      ni0(0,k) * lamb0[k]
 //      << "," << ni0(1,k) * lamb0[k] << "," << ni0(2,k) * lamb0[k] << "};" << endl;
 //    }
@@ -901,10 +901,10 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 
       for (int k=0; k<3; ++k){
 //        // draw eigenvectors
-//        gmshfilecontent << "VP(" << scientific << point[0] << ",";
-//        gmshfilecontent << scientific << point[1] << ",";
-//        gmshfilecontent << scientific << point[2] << ")";
-//        gmshfilecontent << "{" << scientific
+//        gmshfilecontent << "VP(" << std::scientific << point[0] << ",";
+//        gmshfilecontent << std::scientific << point[1] << ",";
+//        gmshfilecontent << std::scientific << point[2] << ")";
+//        gmshfilecontent << "{" << std::scientific
 //        << ((chain->Getni())->at(gp))(0,k)
 //        << "," << ((chain->Getni())->at(gp))(1,k)
 //        << "," << ((chain->Getni())->at(gp))(2,k) << "};" << endl;
@@ -913,10 +913,10 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
         LINALG::Matrix<3,1> e(false);
         e(k) = gpli[k];
         glo.Multiply(gpnis->at(gp),e);
-        gmshfilecontent << "VP(" << scientific << point[0] << ",";
-        gmshfilecontent << scientific << point[1] << ",";
-        gmshfilecontent << scientific << point[2] << ")";
-        gmshfilecontent << "{" << scientific
+        gmshfilecontent << "VP(" << std::scientific << point[0] << ",";
+        gmshfilecontent << std::scientific << point[1] << ",";
+        gmshfilecontent << std::scientific << point[2] << ")";
+        gmshfilecontent << "{" << std::scientific
         <<        glo(0)
         << "," << glo(1)
         << "," << glo(2)

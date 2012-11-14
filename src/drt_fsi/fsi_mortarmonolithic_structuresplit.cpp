@@ -231,7 +231,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     {
       // set up sliding ale utils
       StructureField()->Discretization()->FillComplete(false,true,true);
-      slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
+      slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
                                                     FluidField().Discretization(),
                                                     *coupsfm_,
                                                     false,
@@ -431,7 +431,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   mat.Assign(0,0,View,s->Matrix(0,0));
 
   RCP<LINALG::SparseMatrix> sig = MLMultiply(s->Matrix(0,1),false,*mortar,false,false,false,true);
-  RCP<LINALG::SparseMatrix> lsig = rcp(new LINALG::SparseMatrix(sig->RowMap(),81,false));
+  RCP<LINALG::SparseMatrix> lsig = Teuchos::rcp(new LINALG::SparseMatrix(sig->RowMap(),81,false));
 
   lsig->Add(*sig,false,1./timescale,0.0);
   lsig->Complete(f->DomainMap(),sig->RangeMap());
@@ -441,7 +441,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   mat.Assign(0,1,View,*lsig);
 
   RCP<LINALG::SparseMatrix> sgi = MLMultiply(*mortar,true,s->Matrix(1,0),false,false,false,true);
-  RCP<LINALG::SparseMatrix> lsgi = rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
+  RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
 
   lsgi->Add(*sgi,false,1./scale,0.0);
   lsgi->Complete(sgi->DomainMap(),f->RangeMap());
@@ -567,7 +567,7 @@ void FSI::MortarMonolithicStructureSplit::Update()
     slideale_->EvaluateMortar(StructureField()->ExtractInterfaceDispnp(), iprojdisp_, *coupsfm_);
     slideale_->EvaluateFluidMortar(idispale,iprojdisp_);
 
-    RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*iprojdisp_));
+    RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*iprojdisp_));
     temp->ReplaceMap(idispale->Map());
     Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(temp);
     AleField().ApplyInterfaceDisplacements(acx);
@@ -610,8 +610,8 @@ void FSI::MortarMonolithicStructureSplit::ScaleSystem(LINALG::BlockSparseMatrixB
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
-    srowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    scolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*srowsum_);
     A->InvColSums(*scolsum_);
     if (A->LeftScale(*srowsum_) or
@@ -623,8 +623,8 @@ void FSI::MortarMonolithicStructureSplit::ScaleSystem(LINALG::BlockSparseMatrixB
       dserror("structure scaling failed");
 
     A = mat.Matrix(2,2).EpetraMatrix();
-    arowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    acolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*arowsum_);
     A->InvColSums(*acolsum_);
     if (A->LeftScale(*arowsum_) or

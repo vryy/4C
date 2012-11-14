@@ -221,7 +221,7 @@ void STR::TimIntStatMech::InitializeBeamContact()
       buildoctree_ = true;
 //        // store integration parameter alphaf into beamcman_ as well
 //      double alphaf = 1.0-theta_; // = 0.0 in statmech case
-//      beamcman_ = rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
+//      beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
       // decide wether the tangent field should be smoothed or not
       if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->ContactDynamicParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
       {
@@ -777,7 +777,7 @@ void STR::TimIntStatMech::FullNewton()
 //
 //    //creating complete file name dependent on step number with 5 digits and leading zeros
 //    if (numiter<100000)
-//      filename << "./GmshOutput/konvergenz"<< std::setw(5) << setfill('0') << numiter <<".pos";
+//      filename << "./GmshOutput/konvergenz"<< std::setw(5) << std::setfill('0') << numiter <<".pos";
 //    else
 //      dserror("Gmsh output implemented for a maximum of 99999 steps");
 //
@@ -913,7 +913,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
  *----------------------------------------------------------------------*/
 //void STR::TimIntStatMech::ReadRestart(int step)
 //{
-//  RCP<DRT::Discretization> rcpdiscret = rcp(&discret_,false);
+//  RCP<DRT::Discretization> Teuchos::rcpdiscret = Teuchos::rcp(&discret_,false);
 //  IO::DiscretizationReader reader(rcpdiscret,step);
 //  double time  = reader.ReadDouble("time");
 //  int    rstep = reader.ReadInt("step");
@@ -1249,12 +1249,12 @@ void STR::TimIntStatMech::PTC()
     std::ostringstream filename;
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"GMSHOUTPUT") && DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
     {
-      filename << "./GmshOutput/network"<< time_ <<"_u"<<std::setw(2) << setfill('0')<<beamcman_->GetUzawaIter()<<"_n"<<std::setw(2) << setfill('0')<<numiter<<".pos";
+      filename << "./GmshOutput/network"<< time_ <<"_u"<<std::setw(2) << std::setfill('0')<<beamcman_->GetUzawaIter()<<"_n"<<std::setw(2) << std::setfill('0')<<numiter<<".pos";
       statmechman_->GmshOutput(*disn_,filename,istep,beamcman_);
     }
     else
     {
-      filename << "./GmshOutput/network"<< time_ <<"_n"<<std::setw(2) << setfill('0')<<numiter<<".pos";
+      filename << "./GmshOutput/network"<< time_ <<"_n"<<std::setw(2) << std::setfill('0')<<numiter<<".pos";
       statmechman_->GmshOutput(*disn_,filename,istep);
     }
 #endif
@@ -1331,8 +1331,8 @@ void STR::TimIntStatMech::PTCStatMechUpdate(double& ctransptc, double& crotptc, 
   fres_->NormInf(&np);
 
   // SER step size control
-  crotptc *= pow((np/nc),alphaptc);
-  ctransptc *= pow((np/nc),alphaptc);
+  crotptc *= std::pow((np/nc),alphaptc);
+  ctransptc *= std::pow((np/nc),alphaptc);
   nc = np;
 
   // modification: turn of ptc once residual is small enough

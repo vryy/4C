@@ -491,12 +491,12 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
             {
               vector<int> nodes( actline->NumNode() );
               transform( actline->Nodes(), actline->Nodes() + actline->NumNode(),
-                         nodes.begin(), mem_fun( &DRT::Node::Id ) );
+                         nodes.begin(), std::mem_fun( &DRT::Node::Id ) );
               sort( nodes.begin(), nodes.end() );
 
               if ( linemap.find( nodes ) == linemap.end() )
               {
-                  RefCountPtr<DRT::Element> line = rcp( actline->Clone() );
+                  RefCountPtr<DRT::Element> line = Teuchos::rcp( actline->Clone() );
                   // Set owning process of line to node with smallest gid.
                   line->SetOwner( gNode( nodes[0] )->Owner() );
                   linemap[nodes] = line;
@@ -617,12 +617,12 @@ void DRT::Discretization::BuildSurfacesinCondition(
             {
               vector<int> nodes( actsurf->NumNode() );
               transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
-                         nodes.begin(), mem_fun( &DRT::Node::Id ) );
+                         nodes.begin(), std::mem_fun( &DRT::Node::Id ) );
               sort( nodes.begin(), nodes.end() );
 
               if ( surfmap.find( nodes ) == surfmap.end() )
               {
-                RefCountPtr<DRT::Element> surf = rcp( actsurf->Clone() );
+                RefCountPtr<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
                 // Set owning process of surface to node with smallest gid.
                 surf->SetOwner( gNode( nodes[0] )->Owner() );
                 surfmap[nodes] = surf;

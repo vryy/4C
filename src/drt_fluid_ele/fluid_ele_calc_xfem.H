@@ -135,7 +135,7 @@ public:
         std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
         Teuchos::ParameterList&                                             params,            ///< parameter list
         const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
-        map<int,int> &                                                      boundary_emb_gid_map
+        std::map<int,int> &                                                 boundary_emb_gid_map
       );
 
     /// add mixed/stress/hybrid (MSH) interface condition to element matrix and rhs
@@ -183,7 +183,7 @@ public:
         std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,
         Teuchos::ParameterList&                                             params,
         DRT::Discretization &                                               alediscret,
-        map<int,int> &                                                      boundary_emb_gid_map,
+        std::map<int,int> &                                                 boundary_emb_gid_map,
         Epetra_SerialDenseMatrix&                                           elemat1_epetra,
         Epetra_SerialDenseVector&                                           elevec1_epetra,
         Epetra_SerialDenseMatrix&                                           Cuiui,
@@ -261,7 +261,7 @@ private:
         std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
         std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
         std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-        map<int,int> &                                          boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
+        std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
         string                                                  coupl_method             ///< coupling method
     );
 

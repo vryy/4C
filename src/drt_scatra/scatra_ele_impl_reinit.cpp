@@ -1254,8 +1254,8 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     const double epe1 = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
     // respective "switching" parameters
-    const double xi  = max(epe,1.0);
-    const double xi1 = max(epe1,1.0);
+    const double xi  = std::max(epe,1.0);
+    const double xi1 = std::max(epe1,1.0);
 
     tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*sigma_tot*xi1 + 2.0*diffus*xi/mk);
 
@@ -1321,8 +1321,8 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     if (is_reactive_) epe1 = 2.0*diffus/(mk*densnp_[k]*reacoeff_[k]*DSQR(h));
 
     // respective "switching" parameters
-    const double xi  = max(epe,1.0);
-    const double xi1 = max(epe1,1.0);
+    const double xi  = std::max(epe,1.0);
+    const double xi1 = std::max(epe1,1.0);
 
     tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*reacoeff_[k]*xi1 + 2.0*diffus*xi/mk);
 
@@ -1466,14 +1466,14 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     //    element length (3-/2-/1-D)
     // cast dimension to a double variable -> pow()
     const double dim = (double) nsd_;
-    const double h = pow(vol,1/dim);
+    const double h = std::pow(vol,1/dim);
 
 
     // parameter relating reactive to diffusive part
     const double epe = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
     // respective "switching" parameter
-    const double xi = max(epe,1.0);
+    const double xi = std::max(epe,1.0);
 
     // constant c_u as suggested in Badia and Codina (2010), method A
     // is set to be 1.0 here as in Franca et al. (2005)
@@ -1490,7 +1490,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     const double dim = (double) nsd_;
 
     // get characteristic element length
-    double h = pow(vol,(1.0/dim)); // equals streamlength in 1D
+    double h = std::pow(vol,(1.0/dim)); // equals streamlength in 1D
 
     // get Euclidean norm of (weighted) velocity at element center
     double vel_norm(0.0);
@@ -1576,12 +1576,12 @@ double DRT::ELEMENTS::ReInitImpl<distype>::CalcCharEleLength(
   const double hk = 2.0/val; // h=streamlength
 
   // b) volume-equivalent diameter (warning: 3-D formula!)
-  //hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+  //hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
   // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
   // cast dimension to a double varibale -> pow()
   //const double dim = (double) nsd_;
-  //hk = pow(vol,1/dim);
+  //hk = std::pow(vol,1/dim);
 
   return hk;
 } // ReInitImpl<distype>::CalcCharEleLength()

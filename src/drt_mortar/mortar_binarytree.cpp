@@ -619,15 +619,15 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
 
     for (int i=0;i<(kdop_-1);i++)
     {
-      gmshfilecontent <<"SL(" << scientific << position(i,0) << "," << position(i,1) << ","
+      gmshfilecontent <<"SL(" << std::scientific << position(i,0) << "," << position(i,1) << ","
                               << position(i,2) << "," << position(i+1,0) << "," << position(i+1,1) << ","
                               << position(i+1,2) << ")";
-      gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+      gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
     }
-    gmshfilecontent << "SL(" << scientific << position(7,0) << "," << position(7,1) << ","
+    gmshfilecontent << "SL(" << std::scientific << position(7,0) << "," << position(7,1) << ","
                   << position(7,2) << "," << position(0,0) << "," << position(0,1) << ","
                   << position(0,2) << ")";
-    gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+    gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
     fprintf(fp,gmshfilecontent.str().c_str());
     fclose(fp);
   }
@@ -823,12 +823,12 @@ void MORTAR::BinaryTreeNode::PlotGmshPoint(  std::string filename, double* posit
   std::stringstream gmshfilecontent;
 
   // plot quadrangle 0,1,2,3
-  gmshfilecontent << "SP(" << scientific << position0[0] << "," << position0[1] << ","
+  gmshfilecontent << "SP(" << std::scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] <<  ")";
-  gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
+  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
 
   //plots nr of point
-  gmshfilecontent << "T3(" << scientific << position0[0] << "," << position0[1] << ","
+  gmshfilecontent << "T3(" << std::scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] << "," << 17 << ")";
   gmshfilecontent << "{" << "SK" << nr << "};" << endl;
   fprintf(fp,gmshfilecontent.str().c_str());
@@ -849,12 +849,12 @@ void MORTAR::BinaryTreeNode::PlotGmshQuadrangle( std::string filename, double* p
   std::stringstream gmshfilecontent;
 
   // plot quadrangle 0,1,2,3
-  gmshfilecontent << "SQ(" << scientific << position0[0] << "," << position0[1] << ","
+  gmshfilecontent << "SQ(" << std::scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] << "," << position1[0] << "," << position1[1] << ","
                   << position1[2] << "," << position2[0] << "," << position2[1] << ","
                   << position2[2] << "," << position3[0] << "," << position3[1] << ","
                   << position3[2] << ")";
-  gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
+  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
 
@@ -872,11 +872,11 @@ void MORTAR::BinaryTreeNode::PlotGmshTriangle( std::string filename, double* pos
   std::stringstream gmshfilecontent;
 
   // plot triangle 0,1,2
-  gmshfilecontent << "ST(" << scientific << position0[0] << "," << position0[1] << ","
+  gmshfilecontent << "ST(" << std::scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] << "," << position1[0] << "," << position1[1] << ","
                   << position1[2] << "," << position2[0] << "," << position2[1] << ","
                   << position2[2] << ")";
-  gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
+  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
 

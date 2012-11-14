@@ -40,9 +40,9 @@ namespace XFEM
       //! standard constructor
       explicit ElementDofManager(
           const DRT::Element& ele,
-          const map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet,
+          const std::map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet,
           const std::set<XFEM::FieldEnr>& enrfieldset,
-          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
+          const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
       );
 
       //! for a given element, collect all information about Dofs for this element and return it
@@ -153,9 +153,9 @@ namespace XFEM
       //! used in constructor
       void ComputeDependentInfo(
           const DRT::Element& ele,
-          const map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet, ///< map<NodeGid,set<FieldEnr>>
+          const std::map<int, const std::set<XFEM::FieldEnr> >&  nodalDofSet, ///< map<NodeGid,set<FieldEnr>>
           const std::set<XFEM::FieldEnr>& enrfieldset,
-          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
+          const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
       );
 
       /// no copy of this object is allowed

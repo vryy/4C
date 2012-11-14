@@ -285,7 +285,7 @@ private:
       vector<int> nids;
       nids.reserve(sourceele->NumNode());
       transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
-                back_inserter(nids), mem_fun(&DRT::Node::Id));
+                back_inserter(nids), std::mem_fun(&DRT::Node::Id));
 
       // set the same global node ids to the new element
       newele->SetNodeIds(nids.size(), &nids[0]);

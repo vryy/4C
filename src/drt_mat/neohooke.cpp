@@ -175,7 +175,7 @@ void MAT::NeoHooke::Evaluate(
 
   // Second Piola-Kirchhoff stress tensor
   // S = -2 c1 I3^{-beta} C^{-1} + 2 c1 Identity
-  const double fac = pow(I3,-beta);
+  const double fac = std::pow(I3,-beta);
   stress = invc;
   stress.Scale(-2.0*c1*fac); // volumetric part
   const double iso = 2.0*c1; // isochoric part

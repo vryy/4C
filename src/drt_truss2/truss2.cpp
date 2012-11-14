@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss2Type::Create( const std::string 
 {
   if ( eletype=="TRUSS2" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss2(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss2(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss2Type::Create( const std::string 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Truss2Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Truss2(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Truss2(id,owner));
   return ele;
 }
 
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::Truss2::Unpack(const std::vector<char>& data)
 std::vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss2::Lines()
 {
   std::vector<RCP<Element> > lines(1);
-  lines[0]= rcp(this, false);
+  lines[0]= Teuchos::rcp(this, false);
   return lines;
 }
 
@@ -250,7 +250,7 @@ void DRT::ELEMENTS::Truss2::SetUpReferenceGeometry(const LINALG::Matrix<4,1>& xr
     X_ = xrefe;
 
     //length in reference configuration
-    lrefe_ = pow(pow(X_(2)-X_(0),2)+pow(X_(3)-X_(1),2),0.5);
+    lrefe_ = std::pow(pow(X_(2)-X_(0),2)+pow(X_(3)-X_(1),2),0.5);
   }
 
   return;

@@ -276,7 +276,7 @@ void THR::TimInt:: PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman
 {
 
   // thermo contact manager
-  thermcontman_ = rcp(new THR::ThermoContactMan(cmtman,discretstruct,discret_));
+  thermcontman_ = Teuchos::rcp(new THR::ThermoContactMan(cmtman,discretstruct,discret_));
   return;
 }
 

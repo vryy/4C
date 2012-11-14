@@ -251,7 +251,7 @@ namespace COMBUST
     }
 
     /// compares the second entry of a pair<int,double>. To be passed to the sorting algo
-    static bool MyComparePairs (const pair<int,double>& first, const pair<int,double>& second)
+    static bool MyComparePairs (const std::pair<int,double>& first, const std::pair<int,double>& second)
     {
       if (fabs(first.second) < fabs(second.second))
         return true;

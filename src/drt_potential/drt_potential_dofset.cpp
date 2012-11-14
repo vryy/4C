@@ -57,8 +57,8 @@ void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
 
     // build local dofrowmap from source discretization with identical ids
     int countrowdof = 0;
-    Teuchos::RCP< Epetra_IntVector > localrowdofs = rcp(new Epetra_IntVector(*newdis.DofRowMap()));
-    Teuchos::RCP< Epetra_IntVector > localcoldofs = rcp(new Epetra_IntVector(*newdis.DofColMap()));
+    Teuchos::RCP< Epetra_IntVector > localrowdofs = Teuchos::rcp(new Epetra_IntVector(*newdis.DofRowMap()));
+    Teuchos::RCP< Epetra_IntVector > localcoldofs = Teuchos::rcp(new Epetra_IntVector(*newdis.DofColMap()));
 
     Epetra_IntVector idxrownodes(*newdis.NodeRowMap());
 
@@ -96,10 +96,10 @@ void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
     err = localcoldofs->Import((*localrowdofs),importer,Insert);
     if (err) dserror("Import using importer returned err=%d",err);
 
-    dofrowmap_ = rcp(new Epetra_Map(-1,(*localrowdofs).MyLength(),&(*localrowdofs)[0],0,newdis.Comm()));
+    dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,(*localrowdofs).MyLength(),&(*localrowdofs)[0],0,newdis.Comm()));
     if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
 
-    dofcolmap_ = rcp(new Epetra_Map(-1,(*localcoldofs).MyLength(),&(*localcoldofs)[0],0,newdis.Comm()));
+    dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1,(*localcoldofs).MyLength(),&(*localcoldofs)[0],0,newdis.Comm()));
 
 }
 

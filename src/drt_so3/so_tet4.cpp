@@ -54,7 +54,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4Type::Create( const string elet
 {
   if ( eletype=="SOLIDT4" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet4(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet4(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -63,7 +63,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4Type::Create( const string elet
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet4(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet4(id,owner));
   return ele;
 }
 
@@ -122,10 +122,10 @@ time_(0.0)
   }
 
   if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
 
   if (pstype_==INPAR::STR::prestress_id)
-    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
 
   return;
 }
@@ -145,10 +145,10 @@ time_(old.time_)
 {
 
   if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   if (pstype_==INPAR::STR::prestress_id)
-    invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
   return;
 }
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
     vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
     prestress_->Unpack(tmpprestress);
   }
 
@@ -266,7 +266,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
     vector<char> tmpinvdesign(0);
     ExtractfromPack(position,data,tmpinvdesign);
     if (invdesign_ == Teuchos::null)
-      invdesign_ = rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
+      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
     invdesign_->Unpack(tmpinvdesign);
   }
 
@@ -373,7 +373,7 @@ void DRT::ELEMENTS::So_tet4::Print(ostream& os) const
 vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 
@@ -437,7 +437,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Lines()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                 st 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::So_tet4::VisNames(std::map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);

@@ -589,7 +589,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
 #endif  
     
     // build identity matrix for slave dofs
-    Teuchos::RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(*gsdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     ones->PutScalar(1.0);
     Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
     onesdiag->Complete();

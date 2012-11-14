@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const string elety
 {
   if ( eletype=="NSTET5" )
   {
-    RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NStet5(id,owner));
+    RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -54,7 +54,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const string elety
 //-----------------------------------------------------------------------
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const int id, const int owner )
 {
-  RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NStet5(id,owner));
+  RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id,owner));
   return ele;
 }
 
@@ -305,7 +305,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Volumes()
 {
   dserror("volume not impl. yet");
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 

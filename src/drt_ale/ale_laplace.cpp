@@ -78,8 +78,8 @@ void ALE::AleLaplace::BuildSystemMatrix(bool full)
 
       if (scaling_infnorm)
       {
-        arowsum = rcp(new Epetra_Vector(A->RowMap(),false));
-        acolsum = rcp(new Epetra_Vector(A->RowMap(),false));
+        arowsum = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+        acolsum = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
         A->InvRowSums(*arowsum);
         A->InvColSums(*acolsum);
         if (A->LeftScale(*arowsum) or

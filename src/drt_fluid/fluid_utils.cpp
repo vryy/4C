@@ -261,7 +261,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   veldofmapvec.reserve(veldofset.size());
   veldofmapvec.assign(veldofset.begin(), veldofset.end());
   veldofset.clear();
-  RCP<Epetra_Map> velrowmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> velrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                   veldofmapvec.size(),&veldofmapvec[0],0,
                                   fluiddis.Comm()));
   veldofmapvec.clear();
@@ -270,7 +270,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   presdofmapvec.reserve(presdofset.size());
   presdofmapvec.assign(presdofset.begin(), presdofset.end());
   presdofset.clear();
-  RCP<Epetra_Map> presrowmap = rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> presrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                   presdofmapvec.size(),&presdofmapvec[0],0,
                                   alefluiddis.Comm()));
   extractor.Setup(*fullmap, presrowmap, velrowmap);
@@ -311,14 +311,14 @@ void FLD::UTILS::LiftDrag(
     {
 
       // vector with lift&drag forces after communication
-      liftdragvals = rcp(new std::map<int,std::vector<double> >);
+      liftdragvals = Teuchos::rcp(new std::map<int,std::vector<double> >);
 
       for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
       {
         /* get label of present LiftDrag condition  */
         const int label = ldconds[i]->GetInt("label");
 
-        ((*liftdragvals)).insert(pair<int,vector<double> >(label,vector<double> (6,0.0)));
+        ((*liftdragvals)).insert(std::pair<int,vector<double> >(label,vector<double> (6,0.0)));
       }
 
       // prepare output
@@ -531,15 +531,15 @@ void FLD::UTILS::WriteLiftDragToFile(
   for (map<int,vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
   {
     std::ostringstream s;
-    s << right << std::setw(16) << scientific << time
-      << right << std::setw(10) << scientific << step
-      << right << std::setw(10) << scientific << liftdragval->first
-      << right << std::setw(16) << scientific << liftdragval->second[0]
-      << right << std::setw(16) << scientific << liftdragval->second[1]
-      << right << std::setw(16) << scientific << liftdragval->second[2];
+    s << right << std::setw(16) << std::scientific << time
+      << right << std::setw(10) << std::scientific << step
+      << right << std::setw(10) << std::scientific << liftdragval->first
+      << right << std::setw(16) << std::scientific << liftdragval->second[0]
+      << right << std::setw(16) << std::scientific << liftdragval->second[1]
+      << right << std::setw(16) << std::scientific << liftdragval->second[2];
 
     std::ostringstream slabel;
-    slabel << std::setw(3) << setfill('0') << liftdragval->first;
+    slabel << std::setw(3) << std::setfill('0') << liftdragval->first;
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                             + ".liftdrag_label_"+slabel.str()+".txt";
@@ -672,7 +672,7 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
     if (volumeflowratepersurface.find(condID) == volumeflowratepersurface.end())
     {
       LINALG::Matrix<3,1> tmp(true);
-      volumeflowratepersurface.insert(make_pair(condID,tmp));
+      volumeflowratepersurface.insert(std::make_pair(condID,tmp));
     }
     LINALG::Matrix<3,1> tmp = volumeflowratepersurface[condID];
     tmp += locflowrate;
@@ -704,13 +704,13 @@ void FLD::UTILS::WriteFlowRatesToFile(
   for(map<int,double >::const_iterator flowrate = flowrates.begin(); flowrate != flowrates.end(); ++flowrate)
   {
     std::ostringstream s;
-    s << right << std::setw(16) << scientific << time
-      << right << std::setw(10) << scientific << step
-      << right << std::setw(10) << scientific << flowrate->first
-      << right << std::setw(16) << scientific << flowrate->second;
+    s << right << std::setw(16) << std::scientific << time
+      << right << std::setw(10) << std::scientific << step
+      << right << std::setw(10) << std::scientific << flowrate->first
+      << right << std::setw(16) << std::scientific << flowrate->second;
 
     std::ostringstream slabel;
-    slabel << std::setw(3) << setfill('0') << flowrate->first;
+    slabel << std::setw(3) << std::setfill('0') << flowrate->first;
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
                             + ".flowrate_ID_"+slabel.str()+".txt";

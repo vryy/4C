@@ -36,7 +36,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create( const strin
 {
   if ( eletype=="SOLIDH8SCATRA" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>
                                                                     (id,owner));
     return ele;
   }
@@ -45,7 +45,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create( const strin
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>
                                                                         (id,owner));
   return ele;
 }
@@ -106,7 +106,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create( const strin
 {
   if ( eletype=="SOLIDT4SCATRA" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>
                                                                     (id,owner));
     return ele;
   }
@@ -115,7 +115,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create( const strin
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>
                                                                         (id,owner));
   return ele;
 }
@@ -176,7 +176,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create( const strin
 {
   if ( eletype=="SOLIDW6SCATRA" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>
                                                                     (id,owner));
     return ele;
   }
@@ -185,7 +185,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create( const strin
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>
                                                                         (id,owner));
   return ele;
 }

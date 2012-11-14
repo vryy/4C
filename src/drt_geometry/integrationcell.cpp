@@ -188,9 +188,9 @@ GEO::DomainIntCell::~DomainIntCell()
 static string PosToString(double x, double y, double z)
 {
   std::ostringstream s;
-  s << "(" << std::setw(14) << scientific << x <<
-       "," << std::setw(14) << scientific << y <<
-       "," << std::setw(14) << scientific << z << ")";
+  s << "(" << std::setw(14) << std::scientific << x <<
+       "," << std::setw(14) << std::scientific << y <<
+       "," << std::setw(14) << std::scientific << z << ")";
   return s.str();
 }
 

@@ -26,12 +26,12 @@ Maintainer: Peter Gamnitzer
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
-DRT::PBCDofSet::PBCDofSet(RefCountPtr<map<int,vector<int> > >  couplednodes)
+DRT::PBCDofSet::PBCDofSet(RefCountPtr<std::map<int,vector<int> > >  couplednodes)
   :DofSet(), perbndcouples_(couplednodes), myMaxGID_(-1)
 {
-  slavenodeids_ = rcp(new std::set<int>);
+  slavenodeids_ = Teuchos::rcp(new std::set<int>);
 
-  for( map<int,vector<int> >::iterator curr = perbndcouples_->begin();
+  for( std::map<int,vector<int> >::iterator curr = perbndcouples_->begin();
        curr != perbndcouples_->end();
        ++curr )
   {
@@ -70,7 +70,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const
 {
   // temporarily store the slave node set
   RCP<std::set<int> > tempset = slavenodeids_;
-  slavenodeids_ = rcp(new std::set<int>);
+  slavenodeids_ = Teuchos::rcp(new std::set<int>);
 
   // assign dofs using the empty slave node set. This way the dofrowmap_
   // contains exactly the entries as in a regular dofset
@@ -137,7 +137,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const
 void DRT::PBCDofSet::SetCoupledNodes(RefCountPtr<map<int,vector<int> > >  couplednodes)
 {
   perbndcouples_=couplednodes;
-  slavenodeids_ = rcp(new std::set<int>);
+  slavenodeids_ = Teuchos::rcp(new std::set<int>);
 
   for( map<int,vector<int> >::iterator curr = perbndcouples_->begin();
        curr != perbndcouples_->end();

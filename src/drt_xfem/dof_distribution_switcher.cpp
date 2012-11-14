@@ -198,7 +198,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
 ) const
 {
   // create new vector with new number of dofs
-  const Teuchos::RCP<Epetra_Vector> newVector = rcp(new Epetra_Vector(newdofrowmap_,true));
+  const Teuchos::RCP<Epetra_Vector> newVector = Teuchos::rcp(new Epetra_Vector(newdofrowmap_,true));
 
   if (vector == null)
   {

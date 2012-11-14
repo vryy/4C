@@ -74,9 +74,9 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(const LINALG::MultiM
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
   prec_ = DRT::INPUT::IntegralValue<INPAR::FSI::PrecConstr>(fsidyn.sublist("CONSTRAINT"),"PRECONDITIONER");
 
-  RCP<Teuchos::ParameterList> constrsolvparams = rcp(new Teuchos::ParameterList);
+  RCP<Teuchos::ParameterList> constrsolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   constrsolvparams->set("solver","umfpack");
-  constraintsolver_ = rcp(new LINALG::Solver(constrsolvparams,
+  constraintsolver_ = Teuchos::rcp(new LINALG::Solver(constrsolvparams,
                                              maps.Map(0)->Comm(),
                                              DRT::Problem::Instance()->ErrorFile()->Handle()));
 }
@@ -101,8 +101,8 @@ void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
 
-  RCP<LINALG::MapExtractor> fsidofmapex = null;
-  RCP<Epetra_Map>           irownodes = null;
+  RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  RCP<Epetra_Map>           irownodes = Teuchos::null;
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
@@ -364,7 +364,7 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
     interconA->Complete(StructConOp.DomainMap(),ConStructOp.RangeMap());
     interconA->Scale(-1.0);
 
-    Teuchos::RCP<Epetra_Vector> interconsol = rcp(new Epetra_Vector(ConStructOp.RangeMap()));
+    Teuchos::RCP<Epetra_Vector> interconsol = Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));
     constraintsolver_->Solve(interconA->EpetraOperator(),interconsol,cx,true,true);
 
     // -------------------------------------------------------------------
@@ -379,15 +379,15 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
     Teuchos::RCP<Epetra_Vector> temp1;
     Teuchos::RCP<Epetra_Vector> temp2;
 
-    temp1 = rcp(new Epetra_Vector(sy->Map()));
-    temp2 = rcp(new Epetra_Vector(sy->Map()));
+    temp1 = Teuchos::rcp(new Epetra_Vector(sy->Map()));
+    temp2 = Teuchos::rcp(new Epetra_Vector(sy->Map()));
     StructConOp.Multiply(false,*interconsol, *temp1);
     temp1->Scale(alpha_);
     invDiag.Matrix(0,0).Multiply(false,*temp1, *temp2);
     sy->Update(-1.0, *temp2, 1.0);
 
-    temp1 = rcp(new Epetra_Vector(fy->Map()));
-    temp2 = rcp(new Epetra_Vector(fy->Map()));
+    temp1 = Teuchos::rcp(new Epetra_Vector(fy->Map()));
+    temp2 = Teuchos::rcp(new Epetra_Vector(fy->Map()));
     FluidConOp.Multiply(false,*interconsol, *temp1);
     temp1->Scale(alpha_);
     invDiag.Matrix(1,1).Multiply(false,*temp1, *temp2);

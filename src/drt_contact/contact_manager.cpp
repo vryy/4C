@@ -266,13 +266,13 @@ discret_(discret)
       // add COF locally to contact parameter list of this interface
       if (fric == INPAR::CONTACT::friction_tresca)
       {
-        icparams.setEntry("FRBOUND",static_cast<ParameterEntry>(frcoeff[0]));
-        icparams.setEntry("FRCOEFF",static_cast<ParameterEntry>(-1.0));
+        icparams.setEntry("FRBOUND",static_cast<Teuchos::ParameterEntry>(frcoeff[0]));
+        icparams.setEntry("FRCOEFF",static_cast<Teuchos::ParameterEntry>(-1.0));
       }
       else if (fric == INPAR::CONTACT::friction_coulomb)
       {
-        icparams.setEntry("FRCOEFF",static_cast<ParameterEntry>(frcoeff[0]));
-        icparams.setEntry("FRBOUND",static_cast<ParameterEntry>(-1.0));
+        icparams.setEntry("FRCOEFF",static_cast<Teuchos::ParameterEntry>(frcoeff[0]));
+        icparams.setEntry("FRBOUND",static_cast<Teuchos::ParameterEntry>(-1.0));
       }
     }
 

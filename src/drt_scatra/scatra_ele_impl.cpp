@@ -937,14 +937,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
         if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
         {
-          // reference to rcp not possible here, since the material is required to be
+          // reference to Teuchos::rcp not possible here, since the material is required to be
           // not const for this application
           updatemat.push_back(Teuchos::rcp_dynamic_cast<MAT::Myocard>(singlemat));
         }
       }
     }
     if (material->MaterialType() == INPAR::MAT::m_myocard)
-    {      // reference to rcp not possible here, since the material is required to be
+    {      // reference to Teuchos::rcp not possible here, since the material is required to be
       // not const for this application
       updatemat.push_back(Teuchos::rcp_dynamic_cast<MAT::Myocard>(material));
     }
@@ -3636,24 +3636,24 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
   // if only SGFEM terms should be considered
   if (onlySGFEM)
   {
-    setStringToIntegralParameter<int>("STABTYPE",
+    Teuchos::setStringToIntegralParameter<int>("STABTYPE",
         "no_stabilization",
         "type of stabilization (if any)",
-        tuple<std::string>("no_stabilization"),
-        tuple<std::string>("Do not use any stabilization"),
-        tuple<int>(
+        Teuchos::tuple<std::string>("no_stabilization"),
+        Teuchos::tuple<std::string>("Do not use any stabilization"),
+        Teuchos::tuple<int>(
             INPAR::SCATRA::stabtype_no_stabilization),
             &eparams.sublist("STABILIZATION"));
   }
 
   // no turbulence modeling for the following Evaluate() call
-  setStringToIntegralParameter<int>(
+  Teuchos::setStringToIntegralParameter<int>(
     "PHYSICAL_MODEL",
     "no_model",
     "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
-    tuple<std::string>("no_model"),
-    tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and should cause a dserror."),
-    tuple<int>(0),
+    Teuchos::tuple<std::string>("no_model"),
+    Teuchos::tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and should cause a dserror."),
+    Teuchos::tuple<int>(0),
     &eparams.sublist("TURBULENCE MODEL"));
 
   // dummy matrix + vectors required for Evaluate() call (zero size)
@@ -4954,8 +4954,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const double epe1 = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
     // respective "switching" parameters
-    const double xi  = max(epe,1.0);
-    const double xi1 = max(epe1,1.0);
+    const double xi  = std::max(epe,1.0);
+    const double xi1 = std::max(epe1,1.0);
 
     tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*sigma_tot*xi1 + 2.0*diffus*xi/mk);
 
@@ -5022,8 +5022,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     if (is_reactive_) epe1 = 2.0*diffus/(mk*densnp_[k]*reacoeff_[k]*DSQR(h));
 
     // respective "switching" parameters
-    const double xi  = max(epe,1.0);
-    const double xi1 = max(epe1,1.0);
+    const double xi  = std::max(epe,1.0);
+    const double xi1 = std::max(epe1,1.0);
 
     tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*reacoeff_[k]*xi1 + 2.0*diffus*xi/mk);
 
@@ -5168,14 +5168,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     //    element length (3-/2-/1-D)
     // cast dimension to a double variable -> pow()
     const double dim = (double) nsd_;
-    const double h = pow(vol,1/dim);
+    const double h = std::pow(vol,1/dim);
 
 
     // parameter relating reactive to diffusive part
     const double epe = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
     // respective "switching" parameter
-    const double xi = max(epe,1.0);
+    const double xi = std::max(epe,1.0);
 
     // constant c_u as suggested in Badia and Codina (2010), method A
     // is set to be 1.0 here as in Franca et al. (2005)
@@ -5192,7 +5192,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const double dim = (double) nsd_;
 
     // get characteristic element length
-    double h = pow(vol,(1.0/dim)); // equals streamlength in 1D
+    double h = std::pow(vol,(1.0/dim)); // equals streamlength in 1D
 
     // get Euclidean norm of (weighted) velocity at element center
     double vel_norm(0.0);
@@ -5284,12 +5284,12 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalcCharEleLength(
   const double hk = 2.0/val; // h=streamlength
 
   // b) volume-equivalent diameter (warning: 3-D formula!)
-  //hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+  //hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
   // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
   // cast dimension to a double varibale -> pow()
   //const double dim = (double) nsd_;
-  //hk = pow(vol,1/dim);
+  //hk = std::pow(vol,1/dim);
 
   return hk;
 }

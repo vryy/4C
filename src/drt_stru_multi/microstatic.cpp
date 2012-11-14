@@ -79,7 +79,7 @@ V0_(V0)
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
-  solver_ = Teuchos::rcp (new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber),
+  solver_ = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber),
                                     discret_->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
@@ -1150,7 +1150,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
     const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
     // create solver
-    Teuchos::RCP<LINALG::Solver> solver = rcp(new LINALG::Solver(
+    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(
                            solverparams,
                            discret_->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()

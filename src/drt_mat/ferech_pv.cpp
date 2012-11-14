@@ -178,7 +178,7 @@ double MAT::FerEchPV::ComputeViscosity(const double temp) const
     visc *= temp/RefTemp();
   // modified version by Hartmann et al. (2010): Sutherland law
   else if (Mod() > (1.0+EPS15))
-    visc *= pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()));
+    visc *= std::pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()));
 
   return visc;
 }
@@ -195,7 +195,7 @@ double MAT::FerEchPV::ComputeDiffusivity(const double temp) const
     diffus *= temp/RefTemp();
   // modified version by Hartmann et al. (2010): Sutherland law
   else if (Mod() > (1.0+EPS15))
-    diffus *= pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()));
+    diffus *= std::pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()));
 
   return diffus;
 }

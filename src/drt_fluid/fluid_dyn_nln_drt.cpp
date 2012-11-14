@@ -71,7 +71,7 @@ void dyn_fluid_drt(const int restart)
     }
 
     // create instance of fluid turbulent flow algorithm
-    Teuchos::RCP<FLD::TurbulentFlowAlgorithm> turbfluidalgo = rcp(new FLD::TurbulentFlowAlgorithm(comm,fdyn));
+    Teuchos::RCP<FLD::TurbulentFlowAlgorithm> turbfluidalgo = Teuchos::rcp(new FLD::TurbulentFlowAlgorithm(comm,fdyn));
 
     // read the restart information, set vectors and variables
     if (restart) turbfluidalgo->ReadRestart(restart);
@@ -91,7 +91,7 @@ void dyn_fluid_drt(const int restart)
   else
   {
     // create instance of fluid basis algorithm
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
     // read the restart information, set vectors and variables
     if (restart) fluidalgo->FluidField().ReadRestart(restart);
@@ -134,11 +134,11 @@ void fluid_fluid_drt(const int restart)
   {
     DRT::Element* ele = bgfluiddis->lColElement(i);
     const DRT::Node*const* elenodes = ele->Nodes();
-    RCP<DRT::Element> newele = rcp(ele->Clone());
+    RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
     embfluiddis->AddElement(newele);
     for (int inode=0; inode < ele->NumNode(); ++inode)
     {
-      RCP<DRT::Node> newnode = rcp(elenodes[inode]->Clone());
+      RCP<DRT::Node> newnode = Teuchos::rcp(elenodes[inode]->Clone());
       embfluiddis->AddNode(newnode);
     }
   }
@@ -178,7 +178,7 @@ void fluid_fluid_drt(const int restart)
      for (unsigned i=0; i<conds.size(); ++i)
      {
        // We use the same nodal ids and therefore we can just copy the conditions.
-       embfluiddis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
+       embfluiddis->SetCondition(*conditername, Teuchos::rcp(new DRT::Condition(*conds[i])));
      }
   }
 
@@ -263,7 +263,7 @@ void fluid_fluid_drt(const int restart)
   }
 
   // Background discretization redistribution..
-  RCP<Epetra_Map> bgroweles =  rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
+  RCP<Epetra_Map> bgroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
   RCP<Epetra_Map> bgrownodes = Teuchos::null;
   RCP<Epetra_Map> bgcolnodes = Teuchos::null;
 
@@ -311,7 +311,7 @@ void fluid_fluid_drt(const int restart)
   }
 
   // Embedded discretization redistribution..
-  RCP<Epetra_Map> embroweles =  rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
+  RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
   RCP<Epetra_Map> embrownodes = Teuchos::null;
   RCP<Epetra_Map> embcolnodes = Teuchos::null;
 
@@ -337,7 +337,7 @@ void fluid_fluid_drt(const int restart)
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   // create instance of fluid basis algorithm
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
   // read the restart information, set vectors and variables
   if (restart) fluidalgo->FluidField().ReadRestart(restart);

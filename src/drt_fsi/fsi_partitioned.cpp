@@ -368,7 +368,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     linsolvcount_.resize(0);
 
     // start time measurement
-    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
+    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
 
     /*----------------- CSD - predictor for itnum==0 --------------------*/
 
@@ -788,12 +788,12 @@ FSI::Partitioned::InterfaceVelocity(Teuchos::RCP<const Epetra_Vector> idispnp) c
 
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER") == 1)
   {
-    ivel = rcp(new Epetra_Vector(*iveln_));
+    ivel = Teuchos::rcp(new Epetra_Vector(*iveln_));
     ivel->Update(2./Dt(), *idispnp, -2./Dt(), *idispn_, -1.);
   }
   else
   {
-    ivel = rcp(new Epetra_Vector(*idispn_));
+    ivel = Teuchos::rcp(new Epetra_Vector(*idispn_));
     ivel->Update(1./Dt(), *idispnp, -1./Dt());
   }
   return ivel;
@@ -829,7 +829,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_
   {
     // Translate consistent nodal forces to interface loads
     const Teuchos::RCP<Epetra_Vector> ishape = MBFluidField().IntegrateInterfaceShape();
-    const Teuchos::RCP<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
+    const Teuchos::RCP<Epetra_Vector> iforce = Teuchos::rcp(new Epetra_Vector(iv->Map()));
 
     if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
       dserror("ReciprocalMultiply failed");

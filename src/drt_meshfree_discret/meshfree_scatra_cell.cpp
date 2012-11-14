@@ -44,7 +44,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create( const s
 {
   if (eletype=="METRANSP")
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -53,7 +53,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create( const s
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
   return ele;
 }
 
@@ -306,7 +306,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines()
   {
     // 1D (we return the element itself)
     vector<RCP<Element> > lines(1);
-    lines[0]= rcp(this, false);
+    lines[0]= Teuchos::rcp(this, false);
     return lines;
   }
 
@@ -331,7 +331,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfaces()
   {
     // 2D (we return the element itself)
     vector<RCP<Element> > surfaces(1);
-    surfaces[0]= rcp(this, false);
+    surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
   else
@@ -351,7 +351,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Volumes()
   if (NumVolume() == 1)
   {
     vector<RCP<Element> > volumes(1);
-    volumes[0]= rcp(this, false);
+    volumes[0]= Teuchos::rcp(this, false);
     return volumes;
   }
   else
@@ -418,7 +418,7 @@ void DRT::ELEMENTS::MeshfreeTransport::Unpack(const vector<char>& data)
 /*--------------------------------------------------------------------------*
  |  Return names of visualization data                   (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::ELEMENTS::MeshfreeTransport::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::MeshfreeTransport::VisNames(std::map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
@@ -432,22 +432,22 @@ void DRT::ELEMENTS::MeshfreeTransport::VisNames(map<string,int>& names)
     // element Peclet number
     string name = "Pe_"+temp.str();
     const vector<double>* Pe = data_.Get<vector<double> >(name);
-    if (Pe) names.insert(pair<string,int>(name,1));
+    if (Pe) names.insert(std::pair<string,int>(name,1));
 
     // element Peclet number (only migration term)
     name = "Pe_mig_"+temp.str();
     const vector<double>* Pe_mig = data_.Get<vector<double> >(name);
-    if (Pe_mig) names.insert(pair<string,int>(name,1));
+    if (Pe_mig) names.insert(std::pair<string,int>(name,1));
 
     //characteristic element length
     name = "hk_"+temp.str();
     const vector<double>* hk = data_.Get<vector<double> >(name);
-    if (hk) names.insert(pair<string,int>(name,1));
+    if (hk) names.insert(std::pair<string,int>(name,1));
 
     // Stabilization parameter at element center
     name = "tau_"+temp.str();
     const vector<double>* tau = data_.Get<vector<double> >(name);
-    if (tau) names.insert(pair<string,int>(name,1));
+    if (tau) names.insert(std::pair<string,int>(name,1));
 
   } // loop over transported scalars
 

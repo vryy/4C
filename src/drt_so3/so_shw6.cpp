@@ -37,7 +37,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create( const string elet
 {
   if ( eletype=="SOLIDSHW6" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_shw6(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -46,7 +46,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create( const string elet
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_shw6(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id,owner));
   return ele;
 }
 

@@ -62,12 +62,12 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     // since we apply the equilibrium concentration gradually, thus we
     // do not need these history variables needed for the dynamic model
     // in the beginning.
-    A_current_       = rcp(new Epetra_Vector(*surfcolmap,true));
-    A_last_          = rcp(new Epetra_Vector(*surfcolmap,true));
-    con_current_     = rcp(new Epetra_Vector(*surfcolmap,true));
-    con_last_        = rcp(new Epetra_Vector(*surfcolmap,true));
-    gamma_current_   = rcp(new Epetra_Vector(*surfcolmap,true));
-    gamma_last_      = rcp(new Epetra_Vector(*surfcolmap,true));
+    A_current_       = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
+    A_last_          = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
+    con_current_     = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
+    con_last_        = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
+    gamma_current_   = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
+    gamma_last_      = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
 
 
     std::vector<string> conditions_to_copy;
@@ -134,7 +134,7 @@ void UTILS::SurfStressManager::ReadRestart(const int step,
   std::string condname = "SurfaceStress";
   std::string restartname = file_prefix + "_" + condname;
 
-  Teuchos::RCP<IO::InputControl> surfinpcontrol = rcp(new IO::InputControl(restartname, serial));
+  Teuchos::RCP<IO::InputControl> surfinpcontrol = Teuchos::rcp(new IO::InputControl(restartname, serial));
 
   IO::DiscretizationReader reader(surfdiscret_, surfinpcontrol, step);
   int    rstep = reader.ReadInt("step");

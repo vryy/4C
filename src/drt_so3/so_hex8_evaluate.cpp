@@ -1137,7 +1137,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // add stresses to global map
       //get EleID Id()
       int gid = Id();
-      RCP<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
+      RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
       gpstress->Shape(NUMGPT_SOH8,NUMSTR_SOH8);
 
       //move stresses to serial dense matrix
@@ -1150,7 +1150,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       }
 
       //strains
-      RCP<Epetra_SerialDenseMatrix> gpstrain = rcp(new Epetra_SerialDenseMatrix);
+      RCP<Epetra_SerialDenseMatrix> gpstrain = Teuchos::rcp(new Epetra_SerialDenseMatrix);
       gpstrain->Shape(NUMGPT_SOH8,NUMSTR_SOH8);
 
       //move stresses to serial dense matrix

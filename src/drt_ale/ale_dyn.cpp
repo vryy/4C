@@ -47,7 +47,7 @@ void dyn_ale_drt()
   // context for output and restart
   // -------------------------------------------------------------------
   RefCountPtr<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
+    Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------

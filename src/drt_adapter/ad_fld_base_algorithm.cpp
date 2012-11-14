@@ -136,7 +136,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // context for output and restart
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
+    Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   if (probtype != prb_fsi_xfem and
       probtype != prb_fluid_xfem and
       //probtype != prb_fluid_xfem2 and
@@ -226,7 +226,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
       // create solver objects
       solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
+        Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -251,7 +251,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         dserror("no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
+        Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
     }
@@ -266,7 +266,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       if (linsolvernumber == (-1))
         dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
       solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+        Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
@@ -310,7 +310,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // set parameters in list
   // -------------------------------------------------------------------
-  RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
+  RCP<ParameterList> fluidtimeparams = Teuchos::rcp(new ParameterList());
 
   // provide info about periodic boundary conditions
   fluidtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);
@@ -653,9 +653,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // velocity degrees of freedom
     //------------------------------------------------------------------
     RCP<Fluid> tmpfluid;
-    tmpfluid = rcp(new FLD::FluidGenAlphaIntegration(actdis, solver, fluidtimeparams, output, isale , pbcmapmastertoslave));
+    tmpfluid = Teuchos::rcp(new FLD::FluidGenAlphaIntegration(actdis, solver, fluidtimeparams, output, isale , pbcmapmastertoslave));
 //    if (probtype == prb_fsi_lung)
-//      fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
+//      fluid_ = Teuchos::rcp(new FluidLung(Teuchos::rcp(new FluidWrapper(tmpfluid))));
 //    else
     fluid_ = tmpfluid;
   }
@@ -717,7 +717,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(discret));
+  RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(discret));
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -735,7 +735,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                            discret->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -747,7 +747,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
+  RCP<ParameterList> fluidtimeparams = Teuchos::rcp(new ParameterList());
 
   // --------------------provide info about periodic boundary conditions
   fluidtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);

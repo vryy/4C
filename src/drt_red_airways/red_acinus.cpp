@@ -37,7 +37,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAcinusType::Create( const string el
 {
   if ( eletype=="RED_ACINUS" )
   {
-    Teuchos::RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::RedAcinus(id,owner));
+    Teuchos::RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::RedAcinus(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -46,7 +46,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAcinusType::Create( const string el
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAcinusType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele =  rcp(new DRT::ELEMENTS::RedAcinus(id,owner));
+  Teuchos::RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::RedAcinus(id,owner));
   return ele;
 }
 
@@ -214,7 +214,7 @@ void DRT::ELEMENTS::RedAcinus::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::RedAcinus::VisNames(std::map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
@@ -226,11 +226,11 @@ void DRT::ELEMENTS::RedAcinus::VisNames(map<string,int>& names)
 
   // in flow of volumetric flow profile
   string name = "flow_in";
-  names.insert(pair<string,int>(name,1));
+  names.insert(std::pair<string,int>(name,1));
 
   // out flow of volumetric flow profile
   name = "flow_out";
-  names.insert(pair<string,int>(name,1));
+  names.insert(std::pair<string,int>(name,1));
 #endif
 
   return;

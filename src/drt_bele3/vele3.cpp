@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3Type::Create( const string eletyp
 {
   if ( eletype=="VELE3" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Vele3(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Vele3(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3Type::Create( const string eletyp
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Vele3(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Vele3(id,owner));
   return ele;
 }
 
@@ -213,7 +213,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Vele3::Surfaces()
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Vele3::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 

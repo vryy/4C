@@ -46,42 +46,42 @@ max_outer_iter_(params.get<int>("MAX_GRAD_ITER")),
 m_(numConstraints),
 n_loc_(x->MyLength()),
 n_(x->GlobalLength()),
-x_(rcp(new Epetra_Vector(*x))),
-x_old_(rcp(new Epetra_Vector(*x))),
-x_old2_(rcp(new Epetra_Vector(*x))),
-x_mma_(rcp(new Epetra_Vector(*x))),
+x_(Teuchos::rcp(new Epetra_Vector(*x))),
+x_old_(Teuchos::rcp(new Epetra_Vector(*x))),
+x_old2_(Teuchos::rcp(new Epetra_Vector(*x))),
+x_mma_(Teuchos::rcp(new Epetra_Vector(*x))),
 x_diff_min_(params.get<double>("X_DIFF_MIN")),
 obj_(0.0),
-obj_deriv_(rcp(new Epetra_Vector(x->Map()))),
+obj_deriv_(Teuchos::rcp(new Epetra_Vector(x->Map()))),
 obj_appr_(0.0),
-constr_(rcp(new Epetra_SerialDenseVector(m_))),
-constr_deriv_(rcp(new Epetra_MultiVector(x->Map(),m_))),
-constr_appr_(rcp(new Epetra_SerialDenseVector(m_))),
-p0_(rcp(new Epetra_Vector(x->Map()))),
-q0_(rcp(new Epetra_Vector(x->Map()))),
+constr_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
+constr_deriv_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
+constr_appr_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
+p0_(Teuchos::rcp(new Epetra_Vector(x->Map()))),
+q0_(Teuchos::rcp(new Epetra_Vector(x->Map()))),
 r0_(0.0),
-P_(rcp(new Epetra_MultiVector(x->Map(),m_))),
-Q_(rcp(new Epetra_MultiVector(x->Map(),m_))),
-b_(rcp(new Epetra_SerialDenseVector(m_))),
+P_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
+Q_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
+b_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 rho0_(0.01),
-rho_(rcp(new Epetra_SerialDenseVector(m_))),
+rho_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 rho0min_(params.get<double>("RHOMIN")),
-rhomin_(rcp(new Epetra_SerialDenseVector(m_))),
-y_mma_(rcp(new Epetra_SerialDenseVector(m_))),
+rhomin_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
+y_mma_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 z_mma_(0.0),
-xsi_(rcp(new Epetra_Vector(x->Map()))),
-eta_(rcp(new Epetra_Vector(x->Map()))),
-lam_(rcp(new Epetra_SerialDenseVector(m_))),
-mu_(rcp(new Epetra_SerialDenseVector(m_))),
+xsi_(Teuchos::rcp(new Epetra_Vector(x->Map()))),
+eta_(Teuchos::rcp(new Epetra_Vector(x->Map()))),
+lam_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
+mu_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 zet_(1.0),
 a0_(1.0),
-a_(rcp(new Epetra_SerialDenseVector(m_))),
-c_(rcp(new Epetra_SerialDenseVector(m_))),
-d_(rcp(new Epetra_SerialDenseVector(m_))),
+a_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
+c_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
+d_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 tol_sub_(params.get<double>("TOL_SUB")),
 tol_kkt_(params.get<double>("TOL_KKT")),
 facmin_(params.get<double>("FACMIN")),
-s_(rcp(new Epetra_SerialDenseVector(m_))),
+s_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 upres_(params_.get<int>("UPRES")),
 output_(output)
 {
@@ -96,7 +96,7 @@ output_(output)
       printf("WARNING: Initialized lower boundary for optimization variables with zeros\n");
   }
   else
-    x_min_ = rcp(new Epetra_Vector(*x_min));
+    x_min_ = Teuchos::rcp(new Epetra_Vector(*x_min));
 
   if (x_max==Teuchos::null)
   {
@@ -107,7 +107,7 @@ output_(output)
       printf("WARNING: Initialized upper boundary for optimization variables with ones\n");
   }
   else
-    x_max_ = rcp(new Epetra_Vector(*x_max));
+    x_max_ = Teuchos::rcp(new Epetra_Vector(*x_max));
 
   // test case modification
   if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
@@ -379,12 +379,12 @@ void OPTI::GCMMA::Asymptotes()
      * componentwise:
      *
      * asy_min = x - fac*(x_old-asy_min)
-     * asy_min = max(asy_min, x-10*x_diff)
+     * asy_min = std::max(asy_min, x-10*x_diff)
      * asy_min = min(asy_min, x-0.01*x_diff)
      *
      * asy_max = x + fac*(asy_max-x_old)
      * asy_max = min(asy_max, x+10*x_diff)
-     * asy_max = max(asy_max, x+0.01*x_diff)
+     * asy_max = std::max(asy_max, x+0.01*x_diff)
      *
      * fac = 1.0 / 0.7 / 1.2 depending on sign of (x-x_old)(x_old-x_old2)
      */
@@ -408,11 +408,11 @@ void OPTI::GCMMA::Asymptotes()
       *asy_min = *xval - fac*(*xold-*asy_min);
       *asy_max = *xval + fac*(*asy_max-*xold);
 
-      *asy_min = max(*asy_min,*xval-10**xdiff);
-      *asy_min = min(*asy_min,*xval-0.01**xdiff);
+      *asy_min = std::max(*asy_min,*xval-10**xdiff);
+      *asy_min = std::min(*asy_min,*xval-0.01**xdiff);
 
-      *asy_max = min(*asy_max,*xval+10**xdiff);
-      *asy_max = max(*asy_max,*xval+0.01**xdiff);
+      *asy_max = std::min(*asy_max,*xval+10**xdiff);
+      *asy_max = std::max(*asy_max,*xval+0.01**xdiff);
 
       xval++;
       xold++;
@@ -434,10 +434,10 @@ void OPTI::GCMMA::InitRho()
   /*
    * in matrix form:
    *
-   * rho0 = max(rho0min,(abs(dJ/dx)^T * xdiff)/(10*size(x)))
+   * rho0 = std::max(rho0min,(abs(dJ/dx)^T * xdiff)/(10*size(x)))
    * J: Objective function
    *
-   * rho = max(rhomin,(abs(dF/dx)^T * xdiff)/(10*size(x)))
+   * rho = std::max(rhomin,(abs(dF/dx)^T * xdiff)/(10*size(x)))
    * F: Constraint function(s)
    *
    */
@@ -459,7 +459,7 @@ void OPTI::GCMMA::InitRho()
   discret_->Comm().SumAll(&rho0loc,&rho0_,1);
 
   // apply minimal value
-  rho0_ = max(rho0min_,rho0_/(10*n_));
+  rho0_ = std::max(rho0min_,rho0_/(10*n_));
 
 
   // set rho of constraints
@@ -493,7 +493,7 @@ void OPTI::GCMMA::InitRho()
 
   for (int j=0;j<m_;j++)
   {
-    *rho = max(*rhomin,*rho/(10*n_));
+    *rho = std::max(*rhomin,*rho/(10*n_));
 
     rho++;
     rhomin++;
@@ -513,8 +513,8 @@ void OPTI::GCMMA::UpdateRho(
   /*
    * fac = (x_mma-x)^2*(asy_max-asy_min)/ ((asy_max-x_mma)*(x_mma-asy_min)*max(x_diff_min,xdiff))
    *
-   * rho0 = min(1.1*(rho0+(J-J_app)/fac, 10*rho0)
-   * rho = min(1.1*(rho+(F-F_app)/fac, 10*rho)
+   * rho0 = std::min(1.1*(rho0+(J-J_app)/fac, 10*rho0)
+   * rho = std::min(1.1*(rho+(F-F_app)/fac, 10*rho)
    *
    * J/F_app Approximation of J/F
    */
@@ -530,7 +530,7 @@ void OPTI::GCMMA::UpdateRho(
 
   for (int i=0;i<n_loc_;i++)
   {
-    facloc += (*xmma-*x)/(*asy_max-*xmma) * (*xmma-*x)/(*xmma-*asy_min) * (*asy_max-*asy_min)/max(x_diff_min_,*xdiff);
+    facloc += (*xmma-*x)/(*asy_max-*xmma) * (*xmma-*x)/(*xmma-*asy_min) * (*asy_max-*asy_min)/std::max(x_diff_min_,*xdiff);
 
     x++;
     xmma++;
@@ -542,11 +542,11 @@ void OPTI::GCMMA::UpdateRho(
   // communicate values
   discret_->Comm().SumAll(&facloc,&fac,1);
 
-  fac = max(fac,facmin_);
+  fac = std::max(fac,facmin_);
 
   if (objective > obj_appr_ + 0.5*tol_sub_)
   {
-    rho0_ = min(1.1*(rho0_ + (objective-obj_appr_)/fac),10*rho0_);
+    rho0_ = std::min(1.1*(rho0_ + (objective-obj_appr_)/fac),10*rho0_);
   }
 
   double* constr = constraints->Values();
@@ -557,7 +557,7 @@ void OPTI::GCMMA::UpdateRho(
   {
     if (*constr > *constr_appr + 0.5*tol_sub_)
     {
-      *rho = min(1.1*((*rho) + (*constr-*constr_appr)/fac),10*(*rho));
+      *rho = std::min(1.1*((*rho) + (*constr-*constr_appr)/fac),10*(*rho));
     }
 
     constr++;
@@ -1059,8 +1059,8 @@ void OPTI::GCMMA::InitSubSolve()
 
   for (int i=0;i<n_loc_;i++)
   {
-    *alpha = max(*alpha,*xmin);
-    *beta = min(*beta,*xmax);
+    *alpha = std::max(*alpha,*xmin);
+    *beta = std::min(*beta,*xmax);
 
     alpha++;
     beta++;
@@ -1135,10 +1135,10 @@ void OPTI::GCMMA::InitSubSolve()
 
   for (int i=0;i<n_loc_;i++)
   {
-    *p0 = max(*obj_deriv,0.0);
-    *q0 = max(-*obj_deriv,0.0);
+    *p0 = std::max(*obj_deriv,0.0);
+    *q0 = std::max(-*obj_deriv,0.0);
 
-    xdiffinv = 1.0/max(*xdiff,x_diff_min_);
+    xdiffinv = 1.0/std::max(*xdiff,x_diff_min_);
 
     p0q0 = *p0 + *q0;
     *p0 = (*p0 + fac*p0q0 + rho0_*xdiffinv)**ux2ptr;
@@ -1195,10 +1195,10 @@ void OPTI::GCMMA::InitSubSolve()
 
     for (int j=0;j<n_loc_;j++)
     {
-      *p = max(*constr_der,0.0);
-      *q = max(-*constr_der,0.0);
+      *p = std::max(*constr_der,0.0);
+      *q = std::max(-*constr_der,0.0);
 
-      xdiffinv = 1.0/max(*xdiff,x_diff_min_);
+      xdiffinv = 1.0/std::max(*xdiff,x_diff_min_);
 
       pq = *p + *q;
       *p = (*p + fac*pq + *rho*xdiffinv)**ux2ptr;
@@ -1258,11 +1258,11 @@ void OPTI::GCMMA::SubSolve()
    * x_mma = 0.5*(alpha+beta)
    * y = ones
    * lam = ones
-   * mu = max(ones,0.5*c)
+   * mu = std::max(ones,0.5*c)
    * s = ones
    * z_mma = 1.0
-   * xsi = max(ones,ones/(x-alpha))
-   * eta = max(ones,ones/(beta-x))
+   * xsi = std::max(ones,ones/(x-alpha))
+   * eta = std::max(ones,ones/(beta-x))
    */
   x_mma_->Update(0.5,*alpha_,0.0);
   x_mma_->Update(0.5,*beta_,1.0);
@@ -1277,7 +1277,7 @@ void OPTI::GCMMA::SubSolve()
   {
     *y = 1.0;
     *lam = 1.0;
-    *mu = max(1.0, *c/2.0);
+    *mu = std::max(1.0, *c/2.0);
     *s = 1.0;
 
     y++;
@@ -1298,8 +1298,8 @@ void OPTI::GCMMA::SubSolve()
   double* beta = beta_->Values();
   for (int i=0;i<n_loc_;i++)
   {
-    *xsi = max(1.0, 1.0/(*x-*alpha));
-    *eta = max(1.0, 1.0/(*beta-*x));
+    *xsi = std::max(1.0, 1.0/(*x-*alpha));
+    *eta = std::max(1.0, 1.0/(*beta-*x));
 
     xsi++;
     eta++;
@@ -1786,7 +1786,7 @@ void OPTI::GCMMA::SubSolve()
       double dzet = -zet_ + tol_sub/z_mma_ - zet_*dz/z_mma_;
 
 
-      double val = min(dz/z_mma_, dzet/zet_);
+      double val = std::min(dz/z_mma_, dzet/zet_);
 
       y = y_mma_->Values();
       dyptr = dy.Values();
@@ -1799,10 +1799,10 @@ void OPTI::GCMMA::SubSolve()
 
       for (int i=0;i<m_;i++)
       {
-        val = min(val, *dyptr/(*y));
-        val = min(val, *dlamptr/(*lam));
-        val = min(val, *dmuptr/(*mu));
-        val = min(val, *dsptr/(*s));
+        val = std::min(val, *dyptr/(*y));
+        val = std::min(val, *dlamptr/(*lam));
+        val = std::min(val, *dmuptr/(*mu));
+        val = std::min(val, *dsptr/(*s));
 
         y++;
         dyptr++;
@@ -1825,10 +1825,10 @@ void OPTI::GCMMA::SubSolve()
 
       for (int i=0;i<n_loc_;i++)
       {
-        val = min(val, *dxsiptr/(*xsi));
-        val = min(val, *detaptr/(*eta));
-        val = min(val, *dxptr/(*x-*alpha));
-        val = min(val, *dxptr/(*x-*beta));
+        val = std::min(val, *dxsiptr/(*xsi));
+        val = std::min(val, *detaptr/(*eta));
+        val = std::min(val, *dxptr/(*x-*alpha));
+        val = std::min(val, *dxptr/(*x-*beta));
 
         xsi++;
         dxsiptr++;
@@ -1844,7 +1844,7 @@ void OPTI::GCMMA::SubSolve()
       if (fac>-1.0) dserror("unsensible factor");
 
       // min becomes max since fac<0
-      val = max(1.0,fac*val);
+      val = std::max(1.0,fac*val);
       double steg = 0.0;
       discret_->Comm().MaxAll(&val,&steg,1);
       steg = 1.0/steg;
@@ -2154,7 +2154,7 @@ double OPTI::GCMMA::Res2Norm(
 )
 {
   double resnorm = *res8**res8 + *res9**res9;
-  resnorm += pow(res4->Norm2(),2) + pow(res5->Norm2(),2) + pow(res6->Norm2(),2) + pow(res7->Norm2(),2);
+  resnorm += std::pow(res4->Norm2(),2) + pow(res5->Norm2(),2) + pow(res6->Norm2(),2) + pow(res7->Norm2(),2);
 
   double locnorm = 0.0;
   res1->Norm2(&locnorm);
@@ -2181,19 +2181,19 @@ double OPTI::GCMMA::ResInfNorm(
 )
 {
   double locnorm = 0.0;
-  double resinf = max(abs(*res8),abs(*res9));
+  double resinf = std::max(abs(*res8),abs(*res9));
 
-  resinf = max(resinf,res4->NormInf());
-  resinf = max(resinf,res5->NormInf());
-  resinf = max(resinf,res6->NormInf());
-  resinf = max(resinf,res7->NormInf());
+  resinf = std::max(resinf,res4->NormInf());
+  resinf = std::max(resinf,res5->NormInf());
+  resinf = std::max(resinf,res6->NormInf());
+  resinf = std::max(resinf,res7->NormInf());
 
   res1->NormInf(&locnorm);
-  resinf = max(locnorm,resinf);
+  resinf = std::max(locnorm,resinf);
   res2->NormInf(&locnorm);
-  resinf = max(locnorm,resinf);
+  resinf = std::max(locnorm,resinf);
   res3->NormInf(&locnorm);
-  resinf = max(locnorm,resinf);
+  resinf = std::max(locnorm,resinf);
 
   return resinf;
 }

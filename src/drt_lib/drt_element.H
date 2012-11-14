@@ -44,10 +44,20 @@ Maintainer: Michael Gee
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-using namespace std;
-using namespace Teuchos;
+
 #include "drt_parobject.H"
 #include "drt_condition.H"
+
+
+// ToDo These using statements have to go away!
+// This is an intermediate solution to still use these objects without
+// an explicit specification of the namespace std or Teuchos in front.
+
+// note, we do not include a whole namespace!
+using std::vector;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
+
 
 // forward declarations
 namespace MAT
@@ -150,16 +160,16 @@ public:
     int Size() const { return lm_.size(); }
 
     /// global dof numbers of elemental dofs
-    vector<int> lm_;
+    std::vector<int> lm_;
 
     /// Dirichlet on/off flags
-    vector<int> lmdirich_;
+    std::vector<int> lmdirich_;
 
     /// Owner of dof (that is owner of node or element the dof belongs to)
-    vector<int> lmowner_;
+    std::vector<int> lmowner_;
 
     /// Nodal stride (that is, how many dofs are guaranteed to be contigous in the system matrix)
-    vector<int> stride_;
+    std::vector<int> stride_;
   };
 
 
@@ -314,7 +324,7 @@ public:
   /*!
     \brief Return Element center coordinates
     */
-  virtual vector<double> ElementCenterRefeCoords();
+  virtual std::vector<double> ElementCenterRefeCoords();
 
   /*!
   \brief Get vector of ptrs to nodes
@@ -367,9 +377,9 @@ public:
        Neumann boundary conditions on a line itself.
 
   */
-  virtual vector<RCP<DRT::Element> > Lines()
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines()
   {
-   vector<RCP<DRT::Element> > lines(0);
+    std::vector<Teuchos::RCP<DRT::Element> > lines(0);
    return lines;
   }
   //virtual const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
@@ -389,9 +399,9 @@ public:
        Neumann boundary conditions on a surface itself.
 
   */
-  virtual vector<RCP<DRT::Element> > Surfaces()
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces()
   {
-   vector<RCP<DRT::Element> > surfaces(0);
+    std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
    return surfaces;
   }
   //virtual const Element*const* Surfaces() const { dserror("unexpected base method called."); return NULL; }
@@ -411,9 +421,9 @@ public:
        In this case, the element itself must be able to evaluate the
        Neumann boundary conditions on a volume itself.
   */
-  virtual vector<RCP<DRT::Element> > Volumes()
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes()
   {
-   vector<RCP<DRT::Element> > volumes(0);
+    std::vector<Teuchos::RCP<DRT::Element> > volumes(0);
    return volumes;
   }
 
@@ -428,14 +438,14 @@ public:
 
   \author schott 03/12
   */
-  virtual RCP<DRT::Element> CreateInternalFaces( DRT::Element* parent_slave, //!< parent slave element
+  virtual Teuchos::RCP<DRT::Element> CreateInternalFaces( DRT::Element* parent_slave, //!< parent slave element
                                                  int nnode,                  //!< number of nodes
                                                  const int* nodeids,         //!< node ids
                                                  DRT::Node** nodes,          //!< nodeids
                                                  const int lsurface_master   //!< local index of surface w.r.t master element
                                                  )
   {
-   RCP<DRT::Element> intface;
+   Teuchos::RCP<DRT::Element> intface;
    return intface;
   }
 
@@ -537,7 +547,7 @@ public:
   \brief Return the material of this element
 
   */
-  RCP<MAT::Material> Material() const { return mat_; }
+  Teuchos::RCP<MAT::Material> Material() const { return mat_; }
 
   /*!
   \brief Query names of element data to be visualized using BINIO
@@ -554,17 +564,17 @@ public:
   Example:
   \code
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(pair<string,int>("StressesXYZ",6));
+    names.insert(std::pair<string,int>("StressesXYZ",6));
   \endcode
 
   \param names (out): On return, the derived class has filled names with
                       key names of data it wants to visualize and with int dimensions
                       of that data.
   */
-  virtual void VisNames(map<string,int>& names)
+  virtual void VisNames(std::map<string,int>& names)
   {
-    names.insert(pair<string,int>("Owner",1));
-    //names.insert(pair<string,int>("EleGId",1));
+    names.insert(std::pair<string,int>("Owner",1));
+    //names.insert(std::pair<string,int>("EleGId",1));
     return; }
 
   /*!
@@ -582,7 +592,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if it recognizes the name
   */
-  virtual bool VisData(const string& name, vector<double>& data)
+  virtual bool VisData(const string& name, std::vector<double>& data)
   {
     if (name=="Owner")
     {
@@ -688,8 +698,8 @@ public:
            NOT be overwritten but stored twice in the element
 
   */
-  virtual void SetCondition(const string& name,RCP<Condition> cond)
-  { condition_.insert(pair<string,RCP<Condition> >(name,cond)); return; }
+  virtual void SetCondition(const string& name,Teuchos::RCP<Condition> cond)
+  { condition_.insert(std::pair<string,Teuchos::RCP<Condition> >(name,cond)); return; }
 
   /*!
   \brief Get all conditions with a certain name
@@ -702,7 +712,7 @@ public:
   \param out  (out): vector of pointers to all conditions with that name
 
   */
-  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out) const;
+  virtual void GetCondition(const string& name, std::vector<DRT::Condition*>& out) const;
 
   /*!
   \brief Get a condition with a certain name
@@ -812,8 +822,8 @@ public:
                          matches dofs in lm.
 
   */
-  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmdirich,
-                              vector<int>& lmowner, vector<int>& lmstride) const;
+  virtual void LocationVector(const Discretization& dis, std::vector<int>& lm, std::vector<int>& lmdirich,
+                              std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
   /*!
   \brief Return the location vector of this element
@@ -841,8 +851,8 @@ public:
                          matches dofs in lm.
 
   */
-  virtual void LocationVector(const Discretization& dis, vector<int>& lm,
-                              vector<int>& lmowner, vector<int>& lmstride) const;
+  virtual void LocationVector(const Discretization& dis, std::vector<int>& lm,
+      std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
   /*!
   \brief Evaluate an element
@@ -907,7 +917,7 @@ public:
   */
   virtual int Evaluate(ParameterList&            params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -957,7 +967,7 @@ public:
 
   \param nodes (in): A map of all nodes of a discretization
   */
-  virtual bool BuildNodalPointers(map<int,RCP<DRT::Node> >& nodes);
+  virtual bool BuildNodalPointers(std::map<int,Teuchos::RCP<DRT::Node> >& nodes);
 
   /*!
   \brief Build pointer vector from vector of nodal pointers
@@ -986,7 +996,7 @@ public:
 
   \param elements (in): A map of all elements of a discretization
   */
-  virtual bool BuildElementPointers(map<int,RCP<DRT::Element> >& elements) {return true;}
+  virtual bool BuildElementPointers(std::map<int,Teuchos::RCP<DRT::Element> >& elements) {return true;}
 
   //@}
 
@@ -1008,10 +1018,10 @@ private:
   vector<DRT::Node*> node_;
 
   //! \brief Some conditions e.g. BCs
-  multimap<string,RCP<Condition> > condition_;
+  std::multimap<string,Teuchos::RCP<Condition> > condition_;
 
   //! material object of element
-  RCP<MAT::Material> mat_;
+  Teuchos::RCP<MAT::Material> mat_;
 
 }; // class Element
 

@@ -18,7 +18,6 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Teuchos_ParameterList.hpp>
 
-using namespace Teuchos;
 
 namespace MAT
 {
@@ -188,10 +187,10 @@ private:
       { return isinit_&&(histstresscurr_!=Teuchos::null);}
 
     /// return a1s
-    RCP<std::vector<std::vector<double> > > Geta1() const {return ca1_;}
+    Teuchos::RCP<std::vector<std::vector<double> > > Geta1() const {return ca1_;}
 
     /// return a2s
-    RCP<std::vector<std::vector<double> > > Geta2() const {return ca2_;}
+    Teuchos::RCP<std::vector<std::vector<double> > > Geta2() const {return ca2_;}
 
 
     /// Return quick accessible material parameter data
@@ -203,16 +202,16 @@ private:
     MAT::PAR::ViscoAnisotropic* params_;
 
     // internal variables for fibers
-    RCP<std::vector<std::vector<double> > > a1_; ///< first fiber vector per gp (reference)
-    RCP<std::vector<std::vector<double> > > a2_; ///< second fiber vector per gp (reference)
-    RCP<std::vector<std::vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
-    RCP<std::vector<std::vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
+    Teuchos::RCP<std::vector<std::vector<double> > > a1_; ///< first fiber vector per gp (reference)
+    Teuchos::RCP<std::vector<std::vector<double> > > a2_; ///< second fiber vector per gp (reference)
+    Teuchos::RCP<std::vector<std::vector<double> > > ca1_; ///< first fiber vector per gp (spatial config)
+    Teuchos::RCP<std::vector<std::vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
 
     // visco history stresses for every gausspoint and every stress type
-    RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
-    RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
-    RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
-    RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresslast_; ///< stress of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresscurr_;  ///< current artificial stress
+    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > artstresslast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if material is initialized
 

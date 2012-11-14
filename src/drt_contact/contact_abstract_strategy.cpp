@@ -789,12 +789,12 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
   if (Comm().MyPID()==0)
   {
     std::cout << "--------------------------------------------------------------------------------" << endl;
-    std::cout << setw(10) << "proc ID" << setw(16) << "# s/m pairs"
-         << setw(16) << "# s/m intpairs" << setw(16) << "# intcells" << endl;
+    std::cout << std::setw(10) << "proc ID" << std::setw(16) << "# s/m pairs"
+         << std::setw(16) << "# s/m intpairs" << std::setw(16) << "# intcells" << endl;
     for (int i=0; i<numproc; ++i)
     {
-      std::cout << setw(10) << i << setw(16) << gsmpairs[i] << setw(16)
-           << gsmintpairs[i] << setw(16) << gintcells[i] << endl;
+      std::cout << std::setw(10) << i << std::setw(16) << gsmpairs[i] << std::setw(16)
+           << gsmintpairs[i] << std::setw(16) << gintcells[i] << endl;
     }
     std::cout << "--------------------------------------------------------------------------------" << endl;
   }

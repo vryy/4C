@@ -160,7 +160,7 @@ void MAT::Yeoh::Evaluate(
         - C(0)*C(4)*C(4);    // 3rd invariant, determinant
 
   const double J = sqrt(I3);
-  const double incJ = pow(I3,-1.0/3.0);  // J^{-2/3}
+  const double incJ = std::pow(I3,-1.0/3.0);  // J^{-2/3}
 
   const double I1bar= incJ*I1; //first invariant of modified right Cauchy-Green
 

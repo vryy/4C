@@ -95,10 +95,10 @@ private:
   static NStetType                        instance_;
 
   // map of row nodes adjacent to NStet elements
-  map<int,DRT::Node*>                     noderids_;
+  std::map<int,DRT::Node*>                noderids_;
 
   // map of column NStet elements
-  map<int,DRT::ELEMENTS::NStet*>          elecids_;
+  std::map<int,DRT::ELEMENTS::NStet*>     elecids_;
   Teuchos::RCP<Epetra_Map>                elecmap_;
   Teuchos::RCP<Epetra_Map>                elermap_;
 
@@ -107,32 +107,32 @@ private:
   Teuchos::RCP<Epetra_MultiVector>        nstrain_;
 
   // vector of elements adjacent to each row node
-  map<int,vector<DRT::ELEMENTS::NStet*> > adjele_;
+  std::map<int,vector<DRT::ELEMENTS::NStet*> > adjele_;
 
   // map of nodes forming a patch around a node
-  map<int,map<int,DRT::Node*> >           adjnode_;
+  std::map<int,std::map<int,DRT::Node*> >      adjnode_;
 
   // map of location vectors for patch around a node
-  map<int,vector<int> >                   adjlm_;
+  std::map<int,vector<int> >                   adjlm_;
 
   // vector of elements associated with an MIS node
   // key: mis node number
-  map<int,vector<DRT::ELEMENTS::NStet*> > pstab_adjele_;
+  std::map<int,vector<DRT::ELEMENTS::NStet*> > pstab_adjele_;
 
   // map indicating the weight of the mis node on an element
   // key: mis node number
   // values: weights for all elements on patch in pstab_adjele_
-  map<int,vector<double> >                pstab_adjele_weight_;
+  std::map<int,vector<double> >                pstab_adjele_weight_;
 
   // adjnode and adjlm for mis patches
-  map<int,map<int,DRT::Node*> >           pstab_adjnode_;
-  map<int,vector<int> >                   pstab_adjlm_;
+  std::map<int,std::map<int,DRT::Node*> >      pstab_adjnode_;
+  std::map<int,vector<int> >                   pstab_adjlm_;
 
   // map indicating which element is associated with which MIS noderids
   // key is column element gid
   // value is MIS nodes this element is associated with
-  map<int,vector<int> >                   pstab_cid_mis_;
-  map<int,vector<double> >                pstab_cid_mis_weight_;
+  std::map<int,vector<int> >                   pstab_cid_mis_;
+  std::map<int,vector<double> >                pstab_cid_mis_weight_;
 
   RCP<Epetra_Map>                         pstab_misstressout_;
 
@@ -140,76 +140,76 @@ private:
   Teuchos::RCP<Epetra_MultiVector>        pstab_nstress_;
   Teuchos::RCP<Epetra_MultiVector>        pstab_nstrain_;
 
-  void InitElementsandMaps(map<int,DRT::ELEMENTS::NStet*>& elecids,
-                           map<int,DRT::Node*>&            noderids,
+  void InitElementsandMaps(std::map<int,DRT::ELEMENTS::NStet*>& elecids,
+                           std::map<int,DRT::Node*>&            noderids,
                            const int                       myrank,
                            const int                       numproc,
                            DRT::Discretization&            dis);
 
-  void InitAdjacency(map<int,DRT::ELEMENTS::NStet*>&          elecids,
-                     map<int,DRT::Node*>&                     noderids,
-                     map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
-                     map<int,map<int,DRT::Node*> >&           adjnode,
-                     map<int,vector<int> >&                   adjlm,
-                     DRT::Discretization&                     dis);
+  void InitAdjacency(std::map<int,DRT::ELEMENTS::NStet*>&          elecids,
+                     std::map<int,DRT::Node*>&                     noderids,
+                     std::map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
+                     std::map<int,std::map<int,DRT::Node*> >&      adjnode,
+                     std::map<int,vector<int> >&                   adjlm,
+                     DRT::Discretization&                          dis);
 
-  void InitMISnode(map<int,int>&                   misnodesmap,
-                   map<int,DRT::Node*>&            rnodes,
+  void InitMISnode(std::map<int,int>&              misnodesmap,
+                   std::map<int,DRT::Node*>&       rnodes,
                    const int                       myrank,
                    const int                       numproc,
                    DRT::Discretization&            dis);
 
   void InitMISpatchesGreedyI(
-                           map<int,int>&                            misnodesmap,
-                           map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
-                           map<int,vector<int> >&                   pstab_cid_mis,
-                           map<int,vector<double> >&                pstab_cid_mis_weight,
-                           map<int,DRT::ELEMENTS::NStet*>&          elecids,
-                           map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
-                           map<int,DRT::Node*>&                     noderids,
+                           std::map<int,int>&                            misnodesmap,
+                           std::map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
+                           std::map<int,vector<int> >&                   pstab_cid_mis,
+                           std::map<int,vector<double> >&                pstab_cid_mis_weight,
+                           std::map<int,DRT::ELEMENTS::NStet*>&          elecids,
+                           std::map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
+                           std::map<int,DRT::Node*>&                     noderids,
                            const int                                myrank,
                            const int                                numproc,
                            DRT::Discretization&                     dis);
 
   void InitMISpatchesGreedyII(
-                           map<int,int>&                            misnodesmap,
-                           map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
-                           map<int,vector<double> >&                pstab_adjele_weight,
-                           map<int,vector<int> >&                   pstab_cid_mis,
-                           map<int,vector<double> >&                pstab_cid_mis_weight,
-                           map<int,DRT::ELEMENTS::NStet*>&          elecids,
-                           map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
-                           map<int,DRT::Node*>&                     noderids,
+                           std::map<int,int>&                            misnodesmap,
+                           std::map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
+                           std::map<int,vector<double> >&                pstab_adjele_weight,
+                           std::map<int,vector<int> >&                   pstab_cid_mis,
+                           std::map<int,vector<double> >&                pstab_cid_mis_weight,
+                           std::map<int,DRT::ELEMENTS::NStet*>&          elecids,
+                           std::map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
+                           std::map<int,DRT::Node*>&                     noderids,
                            const int                                myrank,
                            const int                                numproc,
                            DRT::Discretization&                     dis);
 
   void InitMISpatchesGreedyIII(
-                           map<int,int>&                            misnodesmap,
-                           map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
-                           map<int,vector<double> >&                pstab_adjele_weight,
-                           map<int,vector<int> >&                   pstab_cid_mis,
-                           map<int,vector<double> >&                pstab_cid_mis_weight,
-                           map<int,DRT::ELEMENTS::NStet*>&          elecids,
-                           map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
-                           map<int,DRT::Node*>&                     noderids,
+                           std::map<int,int>&                            misnodesmap,
+                           std::map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
+                           std::map<int,vector<double> >&                pstab_adjele_weight,
+                           std::map<int,vector<int> >&                   pstab_cid_mis,
+                           std::map<int,vector<double> >&                pstab_cid_mis_weight,
+                           std::map<int,DRT::ELEMENTS::NStet*>&          elecids,
+                           std::map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
+                           std::map<int,DRT::Node*>&                     noderids,
                            const int                                myrank,
                            const int                                numproc,
                            DRT::Discretization&                     dis);
 
 
   void InitMISAdjacency(
-                        map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
-                        map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
-                        map<int,map<int,DRT::Node*> >&           pstab_adjnode,
-                        map<int,map<int,DRT::Node*> >&           adjnode,
-                        map<int,vector<int> >&                   pstab_adjlm,
-                        map<int,vector<int> >&                   adjlm,
+                        std::map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
+                        std::map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
+                        std::map<int,std::map<int,DRT::Node*> >&      pstab_adjnode,
+                        std::map<int,std::map<int,DRT::Node*> >&      adjnode,
+                        std::map<int,vector<int> >&                   pstab_adjlm,
+                        std::map<int,vector<int> >&                   adjlm,
                         const int                                myrank,
                         const int                                numproc,
                         DRT::Discretization&                     dis);
 
-  Teuchos::RCP<Epetra_Map> InitMISStressMap(map<int,vector<int> >& pstab_cid_mis,
+  Teuchos::RCP<Epetra_Map> InitMISStressMap(std::map<int,vector<int> >& pstab_cid_mis,
                                             DRT::Discretization& dis);
 
 
@@ -217,7 +217,7 @@ private:
 
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
-                        map<int,DRT::Node*>&            adjnode,
+                        std::map<int,DRT::Node*>&       adjnode,
                         vector<DRT::ELEMENTS::NStet*>&  adjele,
                         vector<int>&                    lm,
                         const Epetra_Vector&            disp,
@@ -230,7 +230,7 @@ private:
 
   void MISNodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                            Epetra_SerialDenseVector*       force,
-                           map<int,DRT::Node*>&            adjnode,
+                           std::map<int,DRT::Node*>&       adjnode,
                            vector<DRT::ELEMENTS::NStet*>&  adjele,
                            vector<double>&                 weight,
                            vector<int>&                    lm,

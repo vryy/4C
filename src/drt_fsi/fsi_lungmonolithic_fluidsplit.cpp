@@ -179,10 +179,10 @@ void FSI::LungMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupRHS");
 
-  Teuchos::RCP<Epetra_Vector> structureRHS = rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap()));
+  Teuchos::RCP<Epetra_Vector> structureRHS = Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap()));
   structureRHS->Update(1.0, *StructureField()->RHS(), 1.0, *AddStructRHS_, 0.0);
 
-  Teuchos::RCP<Epetra_Vector> fluidRHS = rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap()));
+  Teuchos::RCP<Epetra_Vector> fluidRHS = Teuchos::rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap()));
   fluidRHS->Update(1.0, *FluidField().RHS(), 1.0, *AddFluidRHS_, 0.0);
 
   double scale = FluidField().ResidualScaling();
@@ -568,7 +568,7 @@ void FSI::LungMonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::InitialGuess");
 
-  Teuchos::RCP<Epetra_Vector> ConstraintInitialGuess = rcp(new Epetra_Vector(*ConstrMap_,true));
+  Teuchos::RCP<Epetra_Vector> ConstraintInitialGuess = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
 
   SetupVector(*ig,
               StructureField()->InitialGuess(),

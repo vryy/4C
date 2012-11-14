@@ -94,7 +94,7 @@ LINALG::Solver::Solver(Teuchos::RCP<Teuchos::ParameterList> params,
  *----------------------------------------------------------------------*/
 LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile) :
     comm_(comm),
-    params_(rcp(new Teuchos::ParameterList())),
+    params_(Teuchos::rcp(new Teuchos::ParameterList())),
     outfile_(outfile)
 {
   // set the default solver
@@ -114,7 +114,7 @@ LINALG::Solver::Solver(const Teuchos::ParameterList& inparams,
     const Epetra_Comm& comm,
     FILE* outfile) :
     comm_(comm),
-    params_(rcp(new Teuchos::ParameterList())),
+    params_(Teuchos::rcp(new Teuchos::ParameterList())),
     outfile_(outfile)
 {
   // set solver parameters

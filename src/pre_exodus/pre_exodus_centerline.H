@@ -10,7 +10,6 @@
 #include <fstream>
 #include <iostream>
 #include "pre_exodus_reader.H" //contains class Mesh (necessary for method - element_cosys)
-using namespace std;
 
 // Helper function to sort list of pairs according to second entry of the pair
 bool MyDataSortPredicate(pair<int, double> lhs,pair<int, double> rhs);
@@ -20,13 +19,13 @@ namespace EXODUS
 
 map<int,map<int,vector<vector<double> > > > EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh, const vector<double>coordcorr);
 
-map<int,double> NdCenterlineThickness(string cline,const set<int>& nodes, const map<int,vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr);
+map<int,double> NdCenterlineThickness(string cline,const std::set<int>& nodes, const map<int,vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const vector<double> coordcorr);
 
 class Centerline
 {
 private:
-  RCP<map<int,vector<double> > > points_; /// centerline points
-  RCP<map<int,double> > diam_; /// diameter of the best fit circle in centerline point
+  RCP<std::map<int,vector<double> > > points_; /// centerline points
+  RCP<std::map<int,double> > diam_; /// diameter of the best fit circle in centerline point
 
 public:
   //ctor
@@ -61,7 +60,7 @@ void normalize3d(vector<double>&);
 map<int,map<int,vector<vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const vector<int>&);
 /// creates local coordinate systems for each element and returns resulting map 
 ///different calculation method for element normals applied in this function
-map<int,map<int,vector<vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const vector<int>&, set<int>& );
+map<int,map<int,vector<vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const vector<int>&, std::set<int>& );
 
 /*! creates degenerated local coordinate system in case of given centerpoint for each element and returns resulting map.
  * CoSys contains only three copies of the same vector!  */

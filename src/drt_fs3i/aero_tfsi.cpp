@@ -93,7 +93,7 @@ FS3I::AeroTFSI::AeroTFSI(
   }
 
   // setup of the helper class
-  aerocoupling_ = rcp(new FS3I::UTILS::AeroCouplingUtils(tsi_->StructureField()->Discretization(),
+  aerocoupling_ = Teuchos::rcp(new FS3I::UTILS::AeroCouplingUtils(tsi_->StructureField()->Discretization(),
                             tsi_->ThermoField()->Discretization()));
 
 }
@@ -243,12 +243,12 @@ void FS3I::AeroTFSI::SolveTSIstep()
   {
   case INPAR::TSI::Monolithic:
   {
-    rcp_dynamic_cast<TSI::Monolithic>(tsi_,true)->NewtonFull();
+    Teuchos::rcp_dynamic_cast<TSI::Monolithic>(tsi_,true)->NewtonFull();
     break;
   }
   case INPAR::TSI::IterStagg:
   {
-    rcp_dynamic_cast<TSI::Partitioned>(tsi_,true)->TimeLoopFull();
+    Teuchos::rcp_dynamic_cast<TSI::Partitioned>(tsi_,true)->TimeLoopFull();
     break;
   }
   default:

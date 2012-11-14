@@ -927,7 +927,7 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    return max(parent_master_->NumDofPerNode(node),parent_slave_->NumDofPerNode(node));
+    return std::max(parent_master_->NumDofPerNode(node),parent_slave_->NumDofPerNode(node));
   }
 
   /*!
@@ -942,7 +942,7 @@ public:
   */
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
   {
-    return max(parent_master_->NumDofPerNode(nds,node),parent_slave_->NumDofPerNode(nds,node));
+    return std::max(parent_master_->NumDofPerNode(nds,node),parent_slave_->NumDofPerNode(nds,node));
   }
 
   /*!

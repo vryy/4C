@@ -18,7 +18,6 @@ Maintainer: Thomas Kloeppel
 #include "drt_exporter.H"
 #include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_discret.H"
-using namespace std;
 
 
 namespace DRT

@@ -937,10 +937,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
                  re12 = mk * dens * fluidvel_norm * hk / (2.0 * visc);
 
     // respective "switching" parameters
-    const double xi01 = max(re01,1.0);
-    const double xi11 = max(re11,1.0);
-    const double xi02 = max(re02,1.0);
-    const double xi12 = max(re12,1.0);
+    const double xi01 = std::max(re01,1.0);
+    const double xi11 = std::max(re11,1.0);
+    const double xi02 = std::max(re02,1.0);
+    const double xi12 = std::max(re12,1.0);
 
     tau_(0) = DSQR(strle)/(DSQR(strle)*dens*sigma_tot*xi01+(4.0*visc/mk)*xi02);
     tau_(1) = DSQR(hk)/(DSQR(hk)*dens*sigma_tot*xi11+(4.0*visc/mk)*xi12);
@@ -970,10 +970,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
                  re12 = mk * dens * fluidvel_norm * hk / (2.0 * visc);
 
     // respective "switching" parameters
-    const double xi01 = max(re01,1.0);
-    const double xi11 = max(re11,1.0);
-    const double xi02 = max(re02,1.0);
-    const double xi12 = max(re12,1.0);
+    const double xi01 = std::max(re01,1.0);
+    const double xi11 = std::max(re11,1.0);
+    const double xi02 = std::max(re02,1.0);
+    const double xi12 = std::max(re12,1.0);
 
     tau_(0) = DSQR(strle)/(DSQR(strle)*dens*reacoeff_*xi01+(4.0*visc/mk)*xi02);
     tau_(1) = DSQR(hk)/(DSQR(hk)*dens*reacoeff_*xi11+(4.0*visc/mk)*xi12);
@@ -1182,7 +1182,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcStabParameter(const double v
     const double reG = std::sqrt(Gnormu/Gvisc);
 
     // "switching" parameter
-    const double xi_tau_c = min(reG,1.0);
+    const double xi_tau_c = std::min(reG,1.0);
 
     tau_(2) = xi_tau_c*sqrt(Gnormu)/traceG;
   }
@@ -1282,20 +1282,20 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::CalcCharEleLength(
   strle = 2.0/val;
 
   // b) volume-equivalent diameter (warning: 3-D formula!)
-  //strle = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+  //strle = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
   // c) cubic/square root of element volume/area
-  //strle = pow(vol,1/dim);
+  //strle = std::pow(vol,1/dim);
 
   //---------------------------------------------------------------------
   // various definitions for characteristic element length for tau_Mp
   //---------------------------------------------------------------------
   // a) volume-equivalent diameter -> default for 3-D computations
-  if (nsd_==3) hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+  if (nsd_==3) hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
   // b) square root of element area -> default for 2-D computations,
   // may also alternatively be used for 3-D computations
-  else if (nsd_==2) hk = pow(vol,1/dim);
+  else if (nsd_==2) hk = std::pow(vol,1/dim);
   // check for potential 1-D computations
   else dserror("element length calculation not implemented for 1-D computation!");
 

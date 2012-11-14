@@ -61,7 +61,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
                  0,
                  bmap.Comm());
 
-  RefCountPtr<Epetra_CrsMatrix> jacobian = rcp(new Epetra_CrsMatrix(Copy, map, map.NumGlobalElements()));
+  RefCountPtr<Epetra_CrsMatrix> jacobian = Teuchos::rcp(new Epetra_CrsMatrix(Copy, map, map.NumGlobalElements()));
 
   int nummyelements = map.NumMyElements();
   int mypos = LINALG::FindMyPos(nummyelements, map.Comm());
@@ -174,8 +174,8 @@ bool FSI::UTILS::FluidAleNodesDisjoint( Teuchos::RCP<DRT::Discretization> fluidd
   else // do a more sophisticated check
   {
     // get node row maps
-    Teuchos::RCP<const Epetra_Map> fluidmap = rcp(new const Epetra_Map(*fluiddis->NodeRowMap()));
-    Teuchos::RCP<const Epetra_Map> alemap = rcp(new const Epetra_Map(*aledis->NodeRowMap()));
+    Teuchos::RCP<const Epetra_Map> fluidmap = Teuchos::rcp(new const Epetra_Map(*fluiddis->NodeRowMap()));
+    Teuchos::RCP<const Epetra_Map> alemap = Teuchos::rcp(new const Epetra_Map(*aledis->NodeRowMap()));
 
     // Create intersection of fluid and ALE map
     std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
@@ -377,8 +377,8 @@ void FSI::UTILS::SlideAleUtils::Remeshing
   idispms_->Scale(0.0);
 
   Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*structdofrowmap_,*fluiddofrowmap_, true);
-  Teuchos::RCP<Epetra_Import> msimpo = rcp (new Epetra_Import(*dofrowmap,*structdofrowmap_));
-  Teuchos::RCP<Epetra_Import> slimpo = rcp (new Epetra_Import(*dofrowmap,*fluiddofrowmap_));
+  Teuchos::RCP<Epetra_Import> msimpo = Teuchos::rcp(new Epetra_Import(*dofrowmap,*structdofrowmap_));
+  Teuchos::RCP<Epetra_Import> slimpo = Teuchos::rcp(new Epetra_Import(*dofrowmap,*fluiddofrowmap_));
 
   idispms_ -> Import(*idisptotal,*msimpo,Add);
   idispms_ -> Import(*iprojdispale,*slimpo,Add);
@@ -402,8 +402,8 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar
   idispms_->Scale(0.0);
 
   Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*structdofrowmap_,*fluiddofrowmap_, true);
-  Teuchos::RCP<Epetra_Import> msimpo = rcp (new Epetra_Import(*dofrowmap,*structdofrowmap_));
-  Teuchos::RCP<Epetra_Import> slimpo = rcp (new Epetra_Import(*dofrowmap,*fluiddofrowmap_));
+  Teuchos::RCP<Epetra_Import> msimpo = Teuchos::rcp(new Epetra_Import(*dofrowmap,*structdofrowmap_));
+  Teuchos::RCP<Epetra_Import> slimpo = Teuchos::rcp(new Epetra_Import(*dofrowmap,*fluiddofrowmap_));
 
   idispms_ -> Import(*idisptotal,*msimpo,Add);
   idispms_ -> Import(*ifluid,*slimpo,Add);
@@ -591,7 +591,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
   Teuchos::RCP<Epetra_Vector> idispnp = structure.ExtractInterfaceDispnp();
 
   // Redistribute displacement of structnodes on the interface to all processors.
-  Teuchos::RCP<Epetra_Import> interimpo = rcp (new Epetra_Import(*structfullnodemap_,*structdofrowmap_));
+  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*structfullnodemap_,*structdofrowmap_));
   Teuchos::RCP<Epetra_Vector> reddisp = LINALG::CreateVector(*structfullnodemap_,true);
   reddisp -> Import(*idispnp,*interimpo,Add);
 
@@ -621,7 +621,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 
       // Project fluid nodes onto the struct interface
       //init of search tree
-      Teuchos::RCP<GEO::SearchTree> searchTree = rcp(new GEO::SearchTree(0));
+      Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(0));
       const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofEles(structreduelements_[mnit->first], currentpositions);
 
       if(dim==2)
@@ -688,14 +688,14 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
       LINALG::Matrix<3,1> minDistCoords;
       if(dim == 2)
       {
-        GEO::nearest2DObjectInNode(rcp(&interfacedis,false), structreduelements_[mnit->first], currentpositions,
+        GEO::nearest2DObjectInNode(Teuchos::rcp(&interfacedis,false), structreduelements_[mnit->first], currentpositions,
             closeeles, alenodecurr, minDistCoords);
         finaldxyz[0] = minDistCoords(0,0) - node->X()[0];
         finaldxyz[1] = minDistCoords(1,0) - node->X()[1];
       }
       else
       {
-        GEO::nearest3DObjectInNode(rcp(&interfacedis,false), structreduelements_[mnit->first], currentpositions,
+        GEO::nearest3DObjectInNode(Teuchos::rcp(&interfacedis,false), structreduelements_[mnit->first], currentpositions,
             closeeles, alenodecurr, minDistCoords);
         finaldxyz[0] = minDistCoords(0,0) - node->X()[0];
         finaldxyz[1] = minDistCoords(1,0) - node->X()[1];
@@ -774,12 +774,12 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
         DRT::Element* tmpele = interfacedis.gElement(redmstruslideleids.GID(eleind)+soffset);
         if (dim == 3)
         {
-          structreduelements_[i][tmpele->Id()]= rcp(new DRT::ELEMENTS::StructuralSurface(
+          structreduelements_[i][tmpele->Id()]= Teuchos::rcp(new DRT::ELEMENTS::StructuralSurface(
               tmpele->Id(),tmpele->Owner(),tmpele->NumNode(),tmpele->NodeIds(),tmpele->Nodes(),&(*tmpele),0));
         }
         else if (dim == 2)
         {
-          structreduelements_[i][tmpele->Id()]= rcp(new DRT::ELEMENTS::StructuralLine(
+          structreduelements_[i][tmpele->Id()]= Teuchos::rcp(new DRT::ELEMENTS::StructuralLine(
               tmpele->Id(),tmpele->Owner(),tmpele->NumNode(),tmpele->NodeIds(),tmpele->Nodes(),&(*tmpele),0));
         }
       }
@@ -792,12 +792,12 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
         DRT::Element* tmpele = interfacedis.gElement(eit->first+foffset);
         if (dim == 3)
         {
-          ifluidslidstructeles_[i][tmpele->Id()]= rcp(new DRT::ELEMENTS::StructuralSurface(
+          ifluidslidstructeles_[i][tmpele->Id()]= Teuchos::rcp(new DRT::ELEMENTS::StructuralSurface(
               tmpele->Id(),tmpele->Owner(),tmpele->NumNode(),tmpele->NodeIds(),tmpele->Nodes(),&(*tmpele),0));
         }
         else if (dim == 2)
         {
-          ifluidslidstructeles_[i][tmpele->Id()]= rcp(new DRT::ELEMENTS::StructuralLine(
+          ifluidslidstructeles_[i][tmpele->Id()]= Teuchos::rcp(new DRT::ELEMENTS::StructuralLine(
               tmpele->Id(),tmpele->Owner(),tmpele->NumNode(),tmpele->NodeIds(),tmpele->Nodes(),&(*tmpele),0));
         }
       }

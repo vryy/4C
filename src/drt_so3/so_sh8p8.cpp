@@ -41,7 +41,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8p8Type::Create( const string ele
 {
   if ( eletype=="SOLIDSH8P8" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_sh8p8(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh8p8(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -50,7 +50,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8p8Type::Create( const string ele
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8p8Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_sh8p8(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh8p8(id,owner));
   return ele;
 }
 

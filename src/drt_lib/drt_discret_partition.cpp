@@ -226,7 +226,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
       DRT::Element* ele = dynamic_cast<DRT::Element*>(object);
       if (!ele) dserror("Received object is not an element");
       ele->SetOwner(myrank);
-      RCP<DRT::Element> rcpele = rcp(ele);
+      RCP<DRT::Element> rcpele = Teuchos::rcp(ele);
       AddElement(rcpele);
       //printf("proc %d index %d\n",myrank,index); fflush(stdout);
     }
@@ -373,7 +373,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       DRT::Node* node = dynamic_cast<DRT::Node*>(object);
       if (!node) dserror("Received object is not a node");
       node->SetOwner(myrank);
-      RCP<DRT::Node> rcpnode = rcp(node);
+      RCP<DRT::Node> rcpnode = Teuchos::rcp(node);
       AddNode(rcpnode);
     }
   }
@@ -493,7 +493,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 
   // allocate graph
   RefCountPtr<Epetra_CrsGraph> graph =
-                     rcp( new Epetra_CrsGraph(Copy,*noderowmap,108,false));
+                     Teuchos::rcp( new Epetra_CrsGraph(Copy,*noderowmap,108,false));
 
   // iterate all elements on this proc including ghosted ones
   // Note:
@@ -675,7 +675,7 @@ void DRT::Discretization::BuildElementRowColumn(
   // allreduced nummyele must match the total no. of elements in this
   // discretization, otherwise we lost some
   // build the rowmap of elements
-  elerowmap = rcp(new Epetra_Map(-1,nummyele,&myele[0],0,Comm()));
+  elerowmap = Teuchos::rcp(new Epetra_Map(-1,nummyele,&myele[0],0,Comm()));
   if (!elerowmap->UniqueGIDs())
     dserror("Element row map is not unique");
 
@@ -683,7 +683,7 @@ void DRT::Discretization::BuildElementRowColumn(
   vector<int> elecol(nummyele+nummyghostele);
   for (int i=0; i<nummyele; ++i) elecol[i] = myele[i];
   for (int i=0; i<nummyghostele; ++i) elecol[nummyele+i] = myghostele[i];
-  elecolmap = rcp(new Epetra_Map(-1,nummyghostele+nummyele,
+  elecolmap = Teuchos::rcp(new Epetra_Map(-1,nummyghostele+nummyele,
                                  &elecol[0],0,Comm()));
 
   return;
@@ -770,7 +770,7 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
   // Construct FE graph. This graph allows processor off-rows to be inserted
   // as well. The communication issue is solved.
 
-  Teuchos::RCP<Epetra_FECrsGraph> graph = rcp(new Epetra_FECrsGraph(Copy,rownodes,&entriesperrow[0],false));
+  Teuchos::RCP<Epetra_FECrsGraph> graph = Teuchos::rcp(new Epetra_FECrsGraph(Copy,rownodes,&entriesperrow[0],false));
 
   gids.clear();
   entriesperrow.clear();
@@ -809,12 +809,12 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
   // do stupid conversion from Epetra_BlockMap to Epetra_Map
   const Epetra_BlockMap& brow = gr->RowMap();
   const Epetra_BlockMap& bcol = gr->ColMap();
-  RCP<Epetra_Map> noderowmap = rcp(new Epetra_Map(brow.NumGlobalElements(),
+  RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(brow.NumGlobalElements(),
                                                   brow.NumMyElements(),
                                                   brow.MyGlobalElements(),
                                                   0,
                                                   *comm_));
-  RCP<Epetra_Map> nodecolmap = rcp(new Epetra_Map(bcol.NumGlobalElements(),
+  RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(bcol.NumGlobalElements(),
                                                   bcol.NumMyElements(),
                                                   bcol.MyGlobalElements(),
                                                   0,

@@ -246,7 +246,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
 
   //vector<int> lmowner;
   vector<int> lmstride;
-  RCP<vector<int> > lmowner = rcp(new vector<int>);
+  RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   //--------------------------------------------------------------------

@@ -1173,7 +1173,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
       {
         // not found -> generate new Data
         // add the faces information to the map (key is the sorted vector of nodeids)
-        surfmapdata.insert(pair<vector<int>, InternalFacesData >(nodeids, InternalFacesData(ele->Id(),nodes, iele)));
+        surfmapdata.insert(std::pair<vector<int>, InternalFacesData >(nodeids, InternalFacesData(ele->Id(),nodes, iele)));
       }
       else
       {
@@ -1221,7 +1221,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
 
       // get corresponding nodeids
       vector<int> nodeids(nodes.size());
-      transform( nodes.begin(), nodes.end(), nodeids.begin(), mem_fun( &DRT::Node::Id ) );
+      transform( nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fun( &DRT::Node::Id ) );
 
       // create the internal face element
       RCP<DRT::Element> surf = parent_master->CreateInternalFaces(parent_slave,
@@ -1231,7 +1231,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
                                                                   face_it->second.GetLSurfaceMaster() );
 
       // create a clone (the internally created element does not exist anymore when all RCP's finished)
-      RCP<DRT::Element> surf_clone = rcp( surf->Clone() );
+      RCP<DRT::Element> surf_clone = Teuchos::rcp( surf->Clone() );
 
       // Set owning process of surface to node with smallest gid
       // REMARK: see below
@@ -1242,7 +1242,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
       surf_clone->SetOwner( owner );
 
       // insert the newly created element
-      faces.insert(pair<vector<int>, RCP<DRT::Element> >(face_it->first, surf_clone));
+      faces.insert(std::pair<vector<int>, RCP<DRT::Element> >(face_it->first, surf_clone));
 
     }
   }
@@ -1276,7 +1276,7 @@ void DRT::DiscretizationXFEM::BuildIntFaceRowMap()
       ++count;
     }
   if (count != nummyeles) dserror("Mismatch in no. of internal faces");
-  intfacerowmap_ = rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  intfacerowmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
   return;
 }
 
@@ -1299,7 +1299,7 @@ void DRT::DiscretizationXFEM::BuildIntFaceColMap()
     ++count;
   }
   if (count != nummyeles) dserror("Mismatch in no. of elements");
-  intfacecolmap_ = rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  intfacecolmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
   return;
 }
 

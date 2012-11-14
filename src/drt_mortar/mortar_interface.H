@@ -424,7 +424,7 @@ public:
   /*!
   \brief Add a MORTAR::MortarNode to the interface (Filled()==true NOT prerequisite)
 
-  \param mrtrnode (in): rcp to a mortar node
+  \param mrtrnode (in): Teuchos::rcp to a mortar node
 
   \return Filled()==false
 
@@ -434,7 +434,7 @@ public:
   /*!
   \brief Add a MORTAR::MortarElement to the interface (Filled()==true is prerequisite)
 
-  \param mrtrele (in): rcp to a mortar element
+  \param mrtrele (in): Teuchos::rcp to a mortar element
 
   \return Filled()==false
 

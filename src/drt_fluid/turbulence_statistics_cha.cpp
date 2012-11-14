@@ -220,13 +220,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   // available planes of element nodes (polynomial)/corners
   // (Nurbs) of elements
-  nodeplanes_ = rcp(new vector<double> );
+  nodeplanes_ = Teuchos::rcp(new vector<double> );
 
 
   // available homogeneous (sampling) planes --- there are
   // numsubdivisions layers per element layer between two
   // nodes (Polynomial)/per element layer (Nurbs)
-  planecoordinates_ = rcp(new vector<double> );
+  planecoordinates_ = Teuchos::rcp(new vector<double> );
 
   const int numsubdivisions=5;
 
@@ -246,7 +246,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   //      max |     |     |
   //
   //
-  boundingbox_ = rcp(new Epetra_SerialDenseMatrix(2,3));
+  boundingbox_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(2,3));
   for (int row = 0;row<3;++row)
   {
     (*boundingbox_)(0,row) = +10e+19;
@@ -257,7 +257,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   {
     // create set of available homogeneous planes. The normal direction
     // is read from the parameter list
-    planecoordinates_ = rcp(new vector<double> );
+    planecoordinates_ = Teuchos::rcp(new vector<double> );
 
     // the criterion allows differences in coordinates by 1e-9
     set<double,PlaneSortCriterion> availablecoords;
@@ -398,7 +398,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // push coordinates of planes in a vector
 
     {
-      nodeplanes_ = rcp(new vector<double> );
+      nodeplanes_ = Teuchos::rcp(new vector<double> );
 
 
       for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
@@ -704,65 +704,65 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // --------------------------------------
 
   // first order moments
-  sumu_ =  rcp(new vector<double> );
+  sumu_ =  Teuchos::rcp(new vector<double> );
   sumu_->resize(size,0.0);
 
-  sumv_ =  rcp(new vector<double> );
+  sumv_ =  Teuchos::rcp(new vector<double> );
   sumv_->resize(size,0.0);
 
-  sumw_ =  rcp(new vector<double> );
+  sumw_ =  Teuchos::rcp(new vector<double> );
   sumw_->resize(size,0.0);
 
-  sump_ =  rcp(new vector<double> );
+  sump_ =  Teuchos::rcp(new vector<double> );
   sump_->resize(size,0.0);
 
-  sumrho_ =  rcp(new vector<double> );
+  sumrho_ =  Teuchos::rcp(new vector<double> );
   sumrho_->resize(size,0.0);
 
-  sumT_ =  rcp(new vector<double> );
+  sumT_ =  Teuchos::rcp(new vector<double> );
   sumT_->resize(size,0.0);
 
-  sumrhou_ =  rcp(new vector<double> );
+  sumrhou_ =  Teuchos::rcp(new vector<double> );
   sumrhou_->resize(size,0.0);
 
-  sumrhouT_ =  rcp(new vector<double> );
+  sumrhouT_ =  Teuchos::rcp(new vector<double> );
   sumrhouT_->resize(size,0.0);
 
   // now the second order moments
-  sumsqu_ =  rcp(new vector<double> );
+  sumsqu_ =  Teuchos::rcp(new vector<double> );
   sumsqu_->resize(size,0.0);
 
-  sumsqv_ =  rcp(new vector<double> );
+  sumsqv_ =  Teuchos::rcp(new vector<double> );
   sumsqv_->resize(size,0.0);
 
-  sumsqw_ =  rcp(new vector<double> );
+  sumsqw_ =  Teuchos::rcp(new vector<double> );
   sumsqw_->resize(size,0.0);
 
-  sumsqp_ =  rcp(new vector<double> );
+  sumsqp_ =  Teuchos::rcp(new vector<double> );
   sumsqp_->resize(size,0.0);
 
-  sumsqrho_ =  rcp(new vector<double> );
+  sumsqrho_ =  Teuchos::rcp(new vector<double> );
   sumsqrho_->resize(size,0.0);
 
-  sumsqT_ =  rcp(new vector<double> );
+  sumsqT_ =  Teuchos::rcp(new vector<double> );
   sumsqT_->resize(size,0.0);
 
-  sumuv_ =  rcp(new vector<double> );
+  sumuv_ =  Teuchos::rcp(new vector<double> );
   sumuv_->resize(size,0.0);
 
-  sumuw_ =  rcp(new vector<double> );
+  sumuw_ =  Teuchos::rcp(new vector<double> );
   sumuw_->resize(size,0.0);
 
-  sumvw_ =  rcp(new vector<double> );
+  sumvw_ =  Teuchos::rcp(new vector<double> );
   sumvw_->resize(size,0.0);
 
-  sumuT_ =  rcp(new vector<double> );
+  sumuT_ =  Teuchos::rcp(new vector<double> );
   sumuT_->resize(size,0.0);
 
-  sumvT_ =  rcp(new vector<double> );
+  sumvT_ =  Teuchos::rcp(new vector<double> );
   sumvT_->resize(size,0.0);
 
-  sumwT_ =  rcp(new vector<double> );
+  sumwT_ =  Teuchos::rcp(new vector<double> );
   sumwT_->resize(size,0.0);
 
   // arrays for point based averaging
@@ -771,29 +771,29 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   pointsquaredvelnp_  = LINALG::CreateVector(*dofrowmap,true);
 
   // first order moments
-  pointsumu_ =  rcp(new vector<double> );
+  pointsumu_ =  Teuchos::rcp(new vector<double> );
   pointsumu_->resize(size,0.0);
 
-  pointsumv_ =  rcp(new vector<double> );
+  pointsumv_ =  Teuchos::rcp(new vector<double> );
   pointsumv_->resize(size,0.0);
 
-  pointsumw_ =  rcp(new vector<double> );
+  pointsumw_ =  Teuchos::rcp(new vector<double> );
   pointsumw_->resize(size,0.0);
 
-  pointsump_ =  rcp(new vector<double> );
+  pointsump_ =  Teuchos::rcp(new vector<double> );
   pointsump_->resize(size,0.0);
 
   // now the second order moments
-  pointsumsqu_ =  rcp(new vector<double> );
+  pointsumsqu_ =  Teuchos::rcp(new vector<double> );
   pointsumsqu_->resize(size,0.0);
 
-  pointsumsqv_ =  rcp(new vector<double> );
+  pointsumsqv_ =  Teuchos::rcp(new vector<double> );
   pointsumsqv_->resize(size,0.0);
 
-  pointsumsqw_ =  rcp(new vector<double> );
+  pointsumsqw_ =  Teuchos::rcp(new vector<double> );
   pointsumsqw_->resize(size,0.0);
 
-  pointsumsqp_ =  rcp(new vector<double> );
+  pointsumsqp_ =  Teuchos::rcp(new vector<double> );
   pointsumsqp_->resize(size,0.0);
 
   //----------------------------------------------------------------------
@@ -812,14 +812,14 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     // vectors containing processor local values to sum element
     // contributions on this proc
-    RefCountPtr<vector<double> > local_Cs_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RefCountPtr<vector<double> > local_Cs_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RefCountPtr<vector<double> > local_visceff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RefCountPtr<vector<double> > local_Prt_sum         =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RefCountPtr<vector<double> > local_Cs_delta_sq_Prt_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RefCountPtr<vector<double> > local_diffeff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RefCountPtr<vector<double> > local_Ci_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RefCountPtr<vector<double> > local_Ci_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Cs_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Cs_delta_sq_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_visceff_sum     =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Prt_sum         =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Cs_delta_sq_Prt_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_diffeff_sum     =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Ci_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RefCountPtr<vector<double> > local_Ci_delta_sq_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
     // store them in parameterlist for access on the element
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
@@ -839,59 +839,59 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // ----------------------------------
 
     // means for the Smagorinsky constant
-    sumCs_  =  rcp(new vector<double> );
+    sumCs_  =  Teuchos::rcp(new vector<double> );
     sumCs_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCs_  =  rcp(new vector<double> );
+    incrsumCs_  =  Teuchos::rcp(new vector<double> );
     incrsumCs_->resize(nodeplanes_->size()-1,0.0);
 
     // means for (Cs*delta)^2
-    sumCs_delta_sq_  =  rcp(new vector<double> );
+    sumCs_delta_sq_  =  Teuchos::rcp(new vector<double> );
     sumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCs_delta_sq_  =  rcp(new vector<double> );
+    incrsumCs_delta_sq_  =  Teuchos::rcp(new vector<double> );
     incrsumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
 
     // means for the effective viscosity
-    sumvisceff_  =  rcp(new vector<double> );
+    sumvisceff_  =  Teuchos::rcp(new vector<double> );
     sumvisceff_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumvisceff_  =  rcp(new vector<double> );
+    incrsumvisceff_  =  Teuchos::rcp(new vector<double> );
     incrsumvisceff_->resize(nodeplanes_->size()-1,0.0);
 
     // means for Prt
-    sumPrt_  =  rcp(new vector<double> );
+    sumPrt_  =  Teuchos::rcp(new vector<double> );
     sumPrt_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumPrt_  =  rcp(new vector<double> );
+    incrsumPrt_  =  Teuchos::rcp(new vector<double> );
     incrsumPrt_->resize(nodeplanes_->size()-1,0.0);
 
     // means for (Cs*delta)^2/Prt
-    sumCs_delta_sq_Prt_  =  rcp(new vector<double> );
+    sumCs_delta_sq_Prt_  =  Teuchos::rcp(new vector<double> );
     sumCs_delta_sq_Prt_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCs_delta_sq_Prt_  =  rcp(new vector<double> );
+    incrsumCs_delta_sq_Prt_  =  Teuchos::rcp(new vector<double> );
     incrsumCs_delta_sq_Prt_->resize(nodeplanes_->size()-1,0.0);
 
     // means for the effective diffusivity
-    sumdiffeff_  =  rcp(new vector<double> );
+    sumdiffeff_  =  Teuchos::rcp(new vector<double> );
     sumdiffeff_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumdiffeff_  =  rcp(new vector<double> );
+    incrsumdiffeff_  =  Teuchos::rcp(new vector<double> );
     incrsumdiffeff_->resize(nodeplanes_->size()-1,0.0);
 
     // means for Ci
-    sumCi_  =  rcp(new vector<double> );
+    sumCi_  =  Teuchos::rcp(new vector<double> );
     sumCi_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCi_  =  rcp(new vector<double> );
+    incrsumCi_  =  Teuchos::rcp(new vector<double> );
     incrsumCi_->resize(nodeplanes_->size()-1,0.0);
 
     // means for (Ci*delta)^2
-    sumCi_delta_sq_  =  rcp(new vector<double> );
+    sumCi_delta_sq_  =  Teuchos::rcp(new vector<double> );
     sumCi_delta_sq_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCi_delta_sq_  =  rcp(new vector<double> );
+    incrsumCi_delta_sq_  =  Teuchos::rcp(new vector<double> );
     incrsumCi_delta_sq_->resize(nodeplanes_->size()-1,0.0);
   }
 
@@ -903,10 +903,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   if (scalesimilarity_)
   {
     // means for subfilter stress
-    sumstress12_  =  rcp(new vector<double> );
+    sumstress12_  =  Teuchos::rcp(new vector<double> );
     sumstress12_->resize(nodeplanes_->size(),0.0);
 
-    incrsumstress12_  =  rcp(new vector<double> );
+    incrsumstress12_  =  Teuchos::rcp(new vector<double> );
     incrsumstress12_->resize(nodeplanes_->size(),0.0);
   }
 
@@ -919,70 +919,70 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   {
     // vectors for statistics computation (sums and increments)
     // means for N
-    sumN_stream_  =  rcp(new vector<double> );
+    sumN_stream_  =  Teuchos::rcp(new vector<double> );
     sumN_stream_->resize(nodeplanes_->size()-1,0.0);
-    sumN_normal_  =  rcp(new vector<double> );
+    sumN_normal_  =  Teuchos::rcp(new vector<double> );
     sumN_normal_->resize(nodeplanes_->size()-1,0.0);
-    sumN_span_  =  rcp(new vector<double> );
+    sumN_span_  =  Teuchos::rcp(new vector<double> );
     sumN_span_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumN_stream_  =  rcp(new vector<double> );
+    incrsumN_stream_  =  Teuchos::rcp(new vector<double> );
     incrsumN_stream_->resize(nodeplanes_->size()-1,0.0);
-    incrsumN_normal_  =  rcp(new vector<double> );
+    incrsumN_normal_  =  Teuchos::rcp(new vector<double> );
     incrsumN_normal_->resize(nodeplanes_->size()-1,0.0);
-    incrsumN_span_  =  rcp(new vector<double> );
+    incrsumN_span_  =  Teuchos::rcp(new vector<double> );
     incrsumN_span_->resize(nodeplanes_->size()-1,0.0);
 
     // means for B
-    sumB_stream_  =  rcp(new vector<double> );
+    sumB_stream_  =  Teuchos::rcp(new vector<double> );
     sumB_stream_->resize(nodeplanes_->size()-1,0.0);
-    sumB_normal_  =  rcp(new vector<double> );
+    sumB_normal_  =  Teuchos::rcp(new vector<double> );
     sumB_normal_->resize(nodeplanes_->size()-1,0.0);
-    sumB_span_  =  rcp(new vector<double> );
+    sumB_span_  =  Teuchos::rcp(new vector<double> );
     sumB_span_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumB_stream_  =  rcp(new vector<double> );
+    incrsumB_stream_  =  Teuchos::rcp(new vector<double> );
     incrsumB_stream_->resize(nodeplanes_->size()-1,0.0);
-    incrsumB_normal_  =  rcp(new vector<double> );
+    incrsumB_normal_  =  Teuchos::rcp(new vector<double> );
     incrsumB_normal_->resize(nodeplanes_->size()-1,0.0);
-    incrsumB_span_  =  rcp(new vector<double> );
+    incrsumB_span_  =  Teuchos::rcp(new vector<double> );
     incrsumB_span_->resize(nodeplanes_->size()-1,0.0);
 
     // means for C_sgs
-    sumCsgs_  =  rcp(new vector<double> );
+    sumCsgs_  =  Teuchos::rcp(new vector<double> );
     sumCsgs_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCsgs_  =  rcp(new vector<double> );
+    incrsumCsgs_  =  Teuchos::rcp(new vector<double> );
     incrsumCsgs_->resize(nodeplanes_->size()-1,0.0);
 
     // means for subgrid viscosity
     // if used in combination with eddy viscosity model
-    sumsgvisc_  =  rcp(new vector<double> );
+    sumsgvisc_  =  Teuchos::rcp(new vector<double> );
     sumsgvisc_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumsgvisc_  =  rcp(new vector<double> );
+    incrsumsgvisc_  =  Teuchos::rcp(new vector<double> );
     incrsumsgvisc_->resize(nodeplanes_->size()-1,0.0);
 
     // vectors for statistics computation (sums and increments)
     // means for Nphi
-    sumNphi_  =  rcp(new vector<double> );
+    sumNphi_  =  Teuchos::rcp(new vector<double> );
     sumNphi_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumNphi_  =  rcp(new vector<double> );
+    incrsumNphi_  =  Teuchos::rcp(new vector<double> );
     incrsumNphi_->resize(nodeplanes_->size()-1,0.0);
 
     // means for D
-    sumDphi_  =  rcp(new vector<double> );
+    sumDphi_  =  Teuchos::rcp(new vector<double> );
     sumDphi_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumDphi_  =  rcp(new vector<double> );
+    incrsumDphi_  =  Teuchos::rcp(new vector<double> );
     incrsumDphi_->resize(nodeplanes_->size()-1,0.0);
 
     // means for C_sgs_phi
-    sumCsgs_phi_  =  rcp(new vector<double> );
+    sumCsgs_phi_  =  Teuchos::rcp(new vector<double> );
     sumCsgs_phi_->resize(nodeplanes_->size()-1,0.0);
     
-    incrsumCsgs_phi_  =  rcp(new vector<double> );
+    incrsumCsgs_phi_  =  Teuchos::rcp(new vector<double> );
     incrsumCsgs_phi_->resize(nodeplanes_->size()-1,0.0);
   }
 
@@ -1001,45 +1001,45 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // local_incrresC(_sq)       (in plane) averaged values of resC (^2)
     // local_incrspressnp(_sq)   (in plane) averaged values of spressnp (^2)
     //--------------------------------------------------
-    RefCountPtr<vector<double> > local_incrvol           = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incrhk            = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incrhbazilevs     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incrstrle         = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incrgradle        = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrvol           = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrhk            = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrhbazilevs     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrstrle         = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrgradle        = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RefCountPtr<vector<double> > local_incrtauC          = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incrtauM          = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrtauC          = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrtauM          = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RefCountPtr<vector<double> > local_incrres           = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
-    RefCountPtr<vector<double> > local_incrres_sq        = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
-    RefCountPtr<vector<double> > local_incrabsres        = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrres           = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrres_sq        = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrabsres        = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RefCountPtr<vector<double> > local_incrtauinvsvel    = rcp(new vector<double> (3*(nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrtauinvsvel    = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1)  ,0.0));
 
-    RefCountPtr<vector<double> > local_incrsvelaf        = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
-    RefCountPtr<vector<double> > local_incrsvelaf_sq     = rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
-    RefCountPtr<vector<double> > local_incrabssvelaf     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrsvelaf        = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrsvelaf_sq     = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrabssvelaf     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RefCountPtr<vector<double> > local_incrresC          = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incrresC_sq       = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incrspressnp      = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incrspressnp_sq   = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrresC          = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrresC_sq       = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrspressnp      = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incrspressnp_sq   = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RefCountPtr<vector<double> > local_incr_eps_pspg     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_supg     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_cross    = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_rey      = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_cstab    = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_eddyvisc = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_visc     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_conv     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_mfs      = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_mfscross = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_mfsrey   = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RefCountPtr<vector<double> > local_incr_eps_avm3     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_pspg     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_supg     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_cross    = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_rey      = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_cstab    = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_eddyvisc = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_visc     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_conv     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_mfs      = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_mfscross = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_mfsrey   = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_avm3     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RefCountPtr<vector<double> > local_incrcrossstress   = rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
-    RefCountPtr<vector<double> > local_incrreystress     = rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrcrossstress   = Teuchos::rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
+    RefCountPtr<vector<double> > local_incrreystress     = Teuchos::rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
 
     // pass pointers to local sum vectors to the element
     eleparams_.set<RefCountPtr<vector<double> > >("incrvol"          ,local_incrvol         );
@@ -1081,73 +1081,73 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     // means for comparison of of residual and subscale acceleration
 
-    sumres_    =  rcp(new vector<double> );
+    sumres_    =  Teuchos::rcp(new vector<double> );
     sumres_->resize(3*(nodeplanes_->size()-1),0.0);
-    sumres_sq_ =  rcp(new vector<double> );
+    sumres_sq_ =  Teuchos::rcp(new vector<double> );
     sumres_sq_->resize(3*(nodeplanes_->size()-1),0.0);
-    sumabsres_ =  rcp(new vector<double> );
+    sumabsres_ =  Teuchos::rcp(new vector<double> );
     sumabsres_->resize((nodeplanes_->size()-1),0.0);
-    sumtauinvsvel_ =  rcp(new vector<double> );
+    sumtauinvsvel_ =  Teuchos::rcp(new vector<double> );
     sumtauinvsvel_->resize(3*(nodeplanes_->size()-1),0.0);
 
-    sumsvelaf_=  rcp(new vector<double> );
+    sumsvelaf_=  Teuchos::rcp(new vector<double> );
     sumsvelaf_->resize(3*(nodeplanes_->size()-1),0.0);
-    sumsvelaf_sq_=  rcp(new vector<double> );
+    sumsvelaf_sq_=  Teuchos::rcp(new vector<double> );
     sumsvelaf_sq_->resize(3*(nodeplanes_->size()-1),0.0);
-    sumabssvelaf_=  rcp(new vector<double> );
+    sumabssvelaf_=  Teuchos::rcp(new vector<double> );
     sumabssvelaf_->resize((nodeplanes_->size()-1),0.0);
 
-    sumresC_       =  rcp(new vector<double> );
+    sumresC_       =  Teuchos::rcp(new vector<double> );
     sumresC_->resize(nodeplanes_->size()-1,0.0);
-    sumresC_sq_    =  rcp(new vector<double> );
+    sumresC_sq_    =  Teuchos::rcp(new vector<double> );
     sumresC_sq_->resize(nodeplanes_->size()-1,0.0);
 
-    sumspressnp_   =  rcp(new vector<double> );
+    sumspressnp_   =  Teuchos::rcp(new vector<double> );
     sumspressnp_->resize(nodeplanes_->size()-1,0.0);
-    sumspressnp_sq_=  rcp(new vector<double> );
+    sumspressnp_sq_=  Teuchos::rcp(new vector<double> );
     sumspressnp_sq_->resize(nodeplanes_->size()-1,0.0);
 
-    sumhk_         =  rcp(new vector<double> );
+    sumhk_         =  Teuchos::rcp(new vector<double> );
     sumhk_->resize(nodeplanes_->size()-1,0.0);
-    sumhbazilevs_  =  rcp(new vector<double> );
+    sumhbazilevs_  =  Teuchos::rcp(new vector<double> );
     sumhbazilevs_->resize(nodeplanes_->size()-1,0.0);
-    sumstrle_      =  rcp(new vector<double> );
+    sumstrle_      =  Teuchos::rcp(new vector<double> );
     sumstrle_->resize(nodeplanes_->size()-1,0.0);
-    sumgradle_     =  rcp(new vector<double> );
+    sumgradle_     =  Teuchos::rcp(new vector<double> );
     sumgradle_->resize(nodeplanes_->size()-1,0.0);
-    sumtauM_       =  rcp(new vector<double> );
+    sumtauM_       =  Teuchos::rcp(new vector<double> );
     sumtauM_->resize(nodeplanes_->size()-1,0.0);
-    sumtauC_       =  rcp(new vector<double> );
+    sumtauC_       =  Teuchos::rcp(new vector<double> );
     sumtauC_->resize(nodeplanes_->size()-1,0.0);
 
-    sum_eps_pspg_=  rcp(new vector<double> );
+    sum_eps_pspg_=  Teuchos::rcp(new vector<double> );
     sum_eps_pspg_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_supg_=  rcp(new vector<double> );
+    sum_eps_supg_=  Teuchos::rcp(new vector<double> );
     sum_eps_supg_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_cross_=  rcp(new vector<double> );
+    sum_eps_cross_=  Teuchos::rcp(new vector<double> );
     sum_eps_cross_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_rey_=  rcp(new vector<double> );
+    sum_eps_rey_=  Teuchos::rcp(new vector<double> );
     sum_eps_rey_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_cstab_=  rcp(new vector<double> );
+    sum_eps_cstab_=  Teuchos::rcp(new vector<double> );
     sum_eps_cstab_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_eddyvisc_=  rcp(new vector<double> );
+    sum_eps_eddyvisc_=  Teuchos::rcp(new vector<double> );
     sum_eps_eddyvisc_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_visc_=  rcp(new vector<double> );
+    sum_eps_visc_=  Teuchos::rcp(new vector<double> );
     sum_eps_visc_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_conv_=  rcp(new vector<double> );
+    sum_eps_conv_=  Teuchos::rcp(new vector<double> );
     sum_eps_conv_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_mfs_=  rcp(new vector<double> );
+    sum_eps_mfs_=  Teuchos::rcp(new vector<double> );
     sum_eps_mfs_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_mfscross_=  rcp(new vector<double> );
+    sum_eps_mfscross_=  Teuchos::rcp(new vector<double> );
     sum_eps_mfscross_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_mfsrey_=  rcp(new vector<double> );
+    sum_eps_mfsrey_=  Teuchos::rcp(new vector<double> );
     sum_eps_mfsrey_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_avm3_=  rcp(new vector<double> );
+    sum_eps_avm3_=  Teuchos::rcp(new vector<double> );
     sum_eps_avm3_->resize(nodeplanes_->size()-1,0.0);
 
-    sum_crossstress_=  rcp(new vector<double> );
+    sum_crossstress_=  Teuchos::rcp(new vector<double> );
     sum_crossstress_->resize(6*(nodeplanes_->size()-1),0.0);
-    sum_reystress_  =  rcp(new vector<double> );
+    sum_reystress_  =  Teuchos::rcp(new vector<double> );
     sum_reystress_  ->resize(6*(nodeplanes_->size()-1),0.0);
   }
 
@@ -1173,7 +1173,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       else
         s.append(".loma_statistics");
 
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
       (*log) << "# Statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)\n\n";
 
       log->flush();
@@ -1184,7 +1184,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
         s_smag.append(".Cs_statistics");
 
-        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
         (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
       }
     }
@@ -1195,7 +1195,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       else
         s.append(".flow_statistics");
 
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
       (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)\n\n";
 
       log->flush();
@@ -1206,7 +1206,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
         s_ssm.append(".SSM_statistics");
 
-        log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),ios::out));
+        log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),std::ios::out));
         (*log_SSM) << "# Statistics for turbulent incompressible channel flow (subfilter stresses)\n\n";
       }
 
@@ -1216,7 +1216,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
         s_mf.append(".MF_statistics");
 
-        log_MF = Teuchos::rcp(new std::ofstream(s_mf.c_str(),ios::out));
+        log_MF = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::out));
         (*log_MF) << "# Statistics for turbulent incompressible channel flow (parameter multifractal subgrid scales)\n\n";
       }
     }
@@ -1227,7 +1227,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_res.append(".res_statistics");
 
-      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
       (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
       (*log_res) << "# All values are first averaged over the integration points in an element \n";
       (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
@@ -1777,76 +1777,76 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   int size = sumu_->size();
 
   // generate processor local result vectors
-  RefCountPtr<vector<double> > locarea =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locarea =  Teuchos::rcp(new vector<double> );
   locarea->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumu =  Teuchos::rcp(new vector<double> );
   locsumu->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumv =  Teuchos::rcp(new vector<double> );
   locsumv->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumw =  Teuchos::rcp(new vector<double> );
   locsumw->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsump =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsump =  Teuchos::rcp(new vector<double> );
   locsump->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumsqu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqu =  Teuchos::rcp(new vector<double> );
   locsumsqu->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumsqv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqv =  Teuchos::rcp(new vector<double> );
   locsumsqv->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumsqw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqw =  Teuchos::rcp(new vector<double> );
   locsumsqw->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumuv  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumuv  =  Teuchos::rcp(new vector<double> );
   locsumuv->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumuw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumuw  =  Teuchos::rcp(new vector<double> );
   locsumuw->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumvw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumvw  =  Teuchos::rcp(new vector<double> );
   locsumvw->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqp =  Teuchos::rcp(new vector<double> );
   locsumsqp->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globarea =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globarea =  Teuchos::rcp(new vector<double> );
   globarea->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumu =  Teuchos::rcp(new vector<double> );
   globsumu->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumv =  Teuchos::rcp(new vector<double> );
   globsumv->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumw =  Teuchos::rcp(new vector<double> );
   globsumw->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsump =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsump =  Teuchos::rcp(new vector<double> );
   globsump->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumsqu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqu =  Teuchos::rcp(new vector<double> );
   globsumsqu->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumsqv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqv =  Teuchos::rcp(new vector<double> );
   globsumsqv->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumsqw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqw =  Teuchos::rcp(new vector<double> );
   globsumsqw->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumuv  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumuv  =  Teuchos::rcp(new vector<double> );
   globsumuv->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumuw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumuw  =  Teuchos::rcp(new vector<double> );
   globsumuw->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumvw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumvw  =  Teuchos::rcp(new vector<double> );
   globsumvw->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumsqp =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqp =  Teuchos::rcp(new vector<double> );
   globsumsqp->resize(size,0.0);
 
   // communicate pointers to the result vectors to the element
@@ -1979,96 +1979,96 @@ const double eosfac)
   int size = sumu_->size();
 
   // generate processor local result vectors
-  RefCountPtr<vector<double> > locarea =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locarea =  Teuchos::rcp(new vector<double> );
   locarea->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumu =  Teuchos::rcp(new vector<double> );
   locsumu->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumv =  Teuchos::rcp(new vector<double> );
   locsumv->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumw =  Teuchos::rcp(new vector<double> );
   locsumw->resize(size,0.0);
-  RefCountPtr<vector<double> > locsump =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsump =  Teuchos::rcp(new vector<double> );
   locsump->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumrho = rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumrho = Teuchos::rcp(new vector<double> );
   locsumrho->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumT =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumT =  Teuchos::rcp(new vector<double> );
   locsumT->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumrhou =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumrhou =  Teuchos::rcp(new vector<double> );
   locsumrhou->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumrhouT =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumrhouT =  Teuchos::rcp(new vector<double> );
   locsumrhouT->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumsqu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqu =  Teuchos::rcp(new vector<double> );
   locsumsqu->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqv =  Teuchos::rcp(new vector<double> );
   locsumsqv->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqw =  Teuchos::rcp(new vector<double> );
   locsumsqw->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqp =  Teuchos::rcp(new vector<double> );
   locsumsqp->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqrho = rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqrho = Teuchos::rcp(new vector<double> );
   locsumsqrho->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqT =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqT =  Teuchos::rcp(new vector<double> );
   locsumsqT->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumuv  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumuv  =  Teuchos::rcp(new vector<double> );
   locsumuv->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumuw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumuw  =  Teuchos::rcp(new vector<double> );
   locsumuw->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumvw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumvw  =  Teuchos::rcp(new vector<double> );
   locsumvw->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumuT  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumuT  =  Teuchos::rcp(new vector<double> );
   locsumuT->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumvT  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumvT  =  Teuchos::rcp(new vector<double> );
   locsumvT->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumwT  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumwT  =  Teuchos::rcp(new vector<double> );
   locsumwT->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globarea =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globarea =  Teuchos::rcp(new vector<double> );
   globarea->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumu =  Teuchos::rcp(new vector<double> );
   globsumu->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumv =  Teuchos::rcp(new vector<double> );
   globsumv->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumw =  Teuchos::rcp(new vector<double> );
   globsumw->resize(size,0.0);
-  RefCountPtr<vector<double> > globsump =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsump =  Teuchos::rcp(new vector<double> );
   globsump->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumrho = rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumrho = Teuchos::rcp(new vector<double> );
   globsumrho->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumT =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumT =  Teuchos::rcp(new vector<double> );
   globsumT->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumrhou =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumrhou =  Teuchos::rcp(new vector<double> );
   globsumrhou->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumrhouT =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumrhouT =  Teuchos::rcp(new vector<double> );
   globsumrhouT->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumsqu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqu =  Teuchos::rcp(new vector<double> );
   globsumsqu->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqv =  Teuchos::rcp(new vector<double> );
   globsumsqv->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqw =  Teuchos::rcp(new vector<double> );
   globsumsqw->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqp =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqp =  Teuchos::rcp(new vector<double> );
   globsumsqp->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqrho = rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqrho = Teuchos::rcp(new vector<double> );
   globsumsqrho->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqT =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqT =  Teuchos::rcp(new vector<double> );
   globsumsqT->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumuv  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumuv  =  Teuchos::rcp(new vector<double> );
   globsumuv->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumuw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumuw  =  Teuchos::rcp(new vector<double> );
   globsumuw->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumvw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumvw  =  Teuchos::rcp(new vector<double> );
   globsumvw->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumuT  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumuT  =  Teuchos::rcp(new vector<double> );
   globsumuT->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumvT  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumvT  =  Teuchos::rcp(new vector<double> );
   globsumvT->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumwT  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumwT  =  Teuchos::rcp(new vector<double> );
   globsumwT->resize(size,0.0);
 
   // communicate pointers to the result vectors to the element
@@ -2217,80 +2217,80 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
   int size = sumu_->size();
 
   // generate processor local result vectors
-  RefCountPtr<vector<double> > locarea =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locarea =  Teuchos::rcp(new vector<double> );
   locarea->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumu =  Teuchos::rcp(new vector<double> );
   locsumu->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumv =  Teuchos::rcp(new vector<double> );
   locsumv->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumw =  Teuchos::rcp(new vector<double> );
   locsumw->resize(size,0.0);
-  RefCountPtr<vector<double> > locsump =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsump =  Teuchos::rcp(new vector<double> );
   locsump->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumphi =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumphi =  Teuchos::rcp(new vector<double> );
   locsumphi->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumsqu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqu =  Teuchos::rcp(new vector<double> );
   locsumsqu->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqv =  Teuchos::rcp(new vector<double> );
   locsumsqv->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqw =  Teuchos::rcp(new vector<double> );
   locsumsqw->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqp =  Teuchos::rcp(new vector<double> );
   locsumsqp->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumsqphi =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumsqphi =  Teuchos::rcp(new vector<double> );
   locsumsqphi->resize(size,0.0);
 
-  RefCountPtr<vector<double> > locsumuv  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumuv  =  Teuchos::rcp(new vector<double> );
   locsumuv->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumuw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumuw  =  Teuchos::rcp(new vector<double> );
   locsumuw->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumvw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumvw  =  Teuchos::rcp(new vector<double> );
   locsumvw->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumuphi  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumuphi  =  Teuchos::rcp(new vector<double> );
   locsumuphi->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumvphi  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumvphi  =  Teuchos::rcp(new vector<double> );
   locsumvphi->resize(size,0.0);
-  RefCountPtr<vector<double> > locsumwphi  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > locsumwphi  =  Teuchos::rcp(new vector<double> );
   locsumwphi->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globarea =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globarea =  Teuchos::rcp(new vector<double> );
   globarea->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumu =  Teuchos::rcp(new vector<double> );
   globsumu->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumv =  Teuchos::rcp(new vector<double> );
   globsumv->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumw =  Teuchos::rcp(new vector<double> );
   globsumw->resize(size,0.0);
-  RefCountPtr<vector<double> > globsump =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsump =  Teuchos::rcp(new vector<double> );
   globsump->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumphi =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumphi =  Teuchos::rcp(new vector<double> );
   globsumphi->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumsqu =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqu =  Teuchos::rcp(new vector<double> );
   globsumsqu->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqv =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqv =  Teuchos::rcp(new vector<double> );
   globsumsqv->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqw =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqw =  Teuchos::rcp(new vector<double> );
   globsumsqw->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqp =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqp =  Teuchos::rcp(new vector<double> );
   globsumsqp->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumsqphi =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumsqphi =  Teuchos::rcp(new vector<double> );
   globsumsqphi->resize(size,0.0);
 
-  RefCountPtr<vector<double> > globsumuv  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumuv  =  Teuchos::rcp(new vector<double> );
   globsumuv->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumuw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumuw  =  Teuchos::rcp(new vector<double> );
   globsumuw->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumvw  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumvw  =  Teuchos::rcp(new vector<double> );
   globsumvw->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumuphi  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumuphi  =  Teuchos::rcp(new vector<double> );
   globsumuphi->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumvphi  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumvphi  =  Teuchos::rcp(new vector<double> );
   globsumvphi->resize(size,0.0);
-  RefCountPtr<vector<double> > globsumwphi  =  rcp(new vector<double> );
+  RefCountPtr<vector<double> > globsumwphi  =  Teuchos::rcp(new vector<double> );
   globsumwphi->resize(size,0.0);
 
   // communicate pointers to the result vectors to the element
@@ -2597,56 +2597,56 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   // one element layer
   RefCountPtr<vector<double> > global_incr_Cs_sum;
   RefCountPtr<vector<double> > local_Cs_sum;
-  global_incr_Cs_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Cs_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Cs_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_sum"         ,Teuchos::null);
   if(local_Cs_sum==Teuchos::null)
     dserror("local_Cs_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_Cs_delta_sq_sum;
   RefCountPtr<vector<double> > local_Cs_delta_sq_sum;
-  global_incr_Cs_delta_sq_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Cs_delta_sq_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Cs_delta_sq_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",Teuchos::null);
   if(local_Cs_delta_sq_sum==Teuchos::null)
     dserror("local_Cs_delta_sq_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_visceff_sum;
   RefCountPtr<vector<double> > local_visceff_sum;
-  global_incr_visceff_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_visceff_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_visceff_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_visceff_sum"    ,Teuchos::null);
   if(local_visceff_sum==Teuchos::null)
       dserror("local_visceff_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_Prt_sum;
   RefCountPtr<vector<double> > local_Prt_sum;
-  global_incr_Prt_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Prt_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Prt_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Prt_sum",Teuchos::null);
   if(local_Prt_sum==Teuchos::null)
     dserror("local_Prt_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_Cs_delta_sq_Prt_sum;
   RefCountPtr<vector<double> > local_Cs_delta_sq_Prt_sum;
-  global_incr_Cs_delta_sq_Prt_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Cs_delta_sq_Prt_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Cs_delta_sq_Prt_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_Prt_sum",Teuchos::null);
   if(local_Cs_delta_sq_Prt_sum==Teuchos::null)
     dserror("local_Cs_delta_sq_Prt_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_diffeff_sum;
   RefCountPtr<vector<double> > local_diffeff_sum;
-  global_incr_diffeff_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_diffeff_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_diffeff_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_diffeff_sum"    ,Teuchos::null);
   if(local_diffeff_sum==Teuchos::null)
       dserror("local_diffeff_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_Ci_sum;
   RefCountPtr<vector<double> > local_Ci_sum;
-  global_incr_Ci_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Ci_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Ci_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_Ci_sum"         ,Teuchos::null);
   if(local_Ci_sum==Teuchos::null)
     dserror("local_Ci_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_Ci_delta_sq_sum;
   RefCountPtr<vector<double> > local_Ci_delta_sq_sum;
-  global_incr_Ci_delta_sq_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Ci_delta_sq_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Ci_delta_sq_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_Ci_delta_sq_sum",Teuchos::null);
   if(local_Ci_delta_sq_sum==Teuchos::null)
     dserror("local_Ci_delta_sq_sum==null from parameterlist");
@@ -2692,14 +2692,14 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   }
 
   // reinitialise to zero for next element call
-  local_Cs_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_visceff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Prt_sum         =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_delta_sq_Prt_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_diffeff_sum     =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Ci_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Ci_delta_sq_sum =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_delta_sq_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_visceff_sum     =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Prt_sum         =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_delta_sq_Prt_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_diffeff_sum     =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_delta_sq_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
   modelparams->set<RefCountPtr<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
   modelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
@@ -2724,8 +2724,8 @@ void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<const Epetra_V
 {
   RefCountPtr<vector<double> > global_incr_stress12_sum;
   RefCountPtr<vector<double> > local_stress12_sum;
-  global_incr_stress12_sum = rcp(new vector<double> (nodeplanes_->size(),0.0));
-  local_stress12_sum = rcp(new vector<double> (nodeplanes_->size(),0.0));
+  global_incr_stress12_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size(),0.0));
+  local_stress12_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size(),0.0));
 
   for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
   {
@@ -2810,17 +2810,17 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
 
   // vectors containing processor local values to sum element
   // contributions on this proc
-  RefCountPtr<vector<double> > local_N_stream_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_N_normal_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_N_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_B_stream_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_B_normal_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_B_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_Csgs_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_sgvisc_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_Nphi_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_Dphi_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RefCountPtr<vector<double> > local_Csgs_phi_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_N_stream_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_N_normal_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_N_span_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_B_stream_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_B_normal_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_B_span_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_Csgs_sum              =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_sgvisc_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_Nphi_sum              =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_Dphi_sum              =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_Csgs_phi_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
 
   // store them in parameterlist for access on the element
@@ -2858,57 +2858,57 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   // the values are stored in vectors --- each component corresponds to
   // one element layer
   RefCountPtr<vector<double> > global_incr_N_stream_sum;
-  global_incr_N_stream_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_N_stream_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_N_stream_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_N_stream_sum",Teuchos::null);
   if(local_N_stream_sum==Teuchos::null)
     dserror("local_N_stream_sum==null from parameterlist");
   RefCountPtr<vector<double> > global_incr_N_normal_sum;
-  global_incr_N_normal_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_N_normal_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_N_normal_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_N_normal_sum",Teuchos::null);
   if(local_N_normal_sum==Teuchos::null)
     dserror("local_N_normal_sum==null from parameterlist");
   RefCountPtr<vector<double> > global_incr_N_span_sum;
-  global_incr_N_span_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_N_span_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_N_span_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_N_span_sum",Teuchos::null);
   if(local_N_span_sum==Teuchos::null)
     dserror("local_N_span_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_B_stream_sum;
-  global_incr_B_stream_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_B_stream_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_B_stream_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_B_stream_sum",Teuchos::null);
   if(local_B_stream_sum==Teuchos::null)
     dserror("local_B_stream_sum==null from parameterlist");
   RefCountPtr<vector<double> > global_incr_B_normal_sum;
-  global_incr_B_normal_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_B_normal_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_B_normal_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_B_normal_sum",Teuchos::null);
   if(local_B_normal_sum==Teuchos::null)
     dserror("local_B_normal_sum==null from parameterlist");
   RefCountPtr<vector<double> > global_incr_B_span_sum;
-  global_incr_B_span_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_B_span_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_B_span_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_B_span_sum",Teuchos::null);
   if(local_B_span_sum==Teuchos::null)
     dserror("local_B_span_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_Csgs_sum;
-  global_incr_Csgs_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Csgs_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_Csgs_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_Csgs_sum",Teuchos::null);
   if(local_Csgs_sum==Teuchos::null)
       dserror("local_Csgs_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_sgvisc_sum;
-  global_incr_sgvisc_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_sgvisc_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   local_sgvisc_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_sgvisc_sum",Teuchos::null);
   if(local_sgvisc_sum==Teuchos::null)
       dserror("local_sgvsic_sum==null from parameterlist");
 
   RefCountPtr<vector<double> > global_incr_Nphi_sum;
-  global_incr_Nphi_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Nphi_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
   RefCountPtr<vector<double> > global_incr_Dphi_sum;
-  global_incr_Dphi_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));;
+  global_incr_Dphi_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));;
 
   RefCountPtr<vector<double> > global_incr_Csgs_phi_sum;
-  global_incr_Csgs_phi_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  global_incr_Csgs_phi_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
   if (withscatra)
   {
@@ -2984,20 +2984,20 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   }
 
   // reinitialize to zero for next element call
-  local_N_stream_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_N_normal_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_N_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_stream_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_normal_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Csgs_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_sgvisc_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_stream_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_normal_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_span_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_stream_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_normal_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_span_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Csgs_sum              =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_sgvisc_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
 
   if (withscatra)
   {
-    local_Nphi_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    local_Dphi_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    local_Csgs_phi_sum      =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    local_Nphi_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    local_Dphi_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    local_Csgs_phi_sum      =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
   }
 
   modelparams->set<RefCountPtr<vector<double> > >("local_N_stream_sum"     ,local_N_stream_sum);
@@ -3138,132 +3138,132 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     // volume of element layers
     RefCountPtr<vector<double> > global_vol;
-    global_vol           =  rcp(new vector<double> (presize,0.0));
+    global_vol           =  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // element sizes of element layers
     RefCountPtr<vector<double> > global_incrhk;
-    global_incrhk        =  rcp(new vector<double> (presize,0.0));
+    global_incrhk        =  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // element sizes in Bazilevs parameter, viscous regime in element layers
     RefCountPtr<vector<double> > global_incrhbazilevs;
-    global_incrhbazilevs =  rcp(new vector<double> (presize,0.0));
+    global_incrhbazilevs =  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // element sizes of element stream length
     RefCountPtr<vector<double> > global_incrstrle;
-    global_incrstrle     =  rcp(new vector<double> (presize,0.0));
+    global_incrstrle     =  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // element sizes based on gradient length
     RefCountPtr<vector<double> > global_incrgradle;
-    global_incrgradle     =  rcp(new vector<double> (presize,0.0));
+    global_incrgradle     =  Teuchos::rcp(new vector<double> (presize,0.0));
 
 
     // (in plane) averaged values of tauM/tauC
 
     RefCountPtr<vector<double> > global_incrtauM;
-    global_incrtauM=  rcp(new vector<double> (presize,0.0));
+    global_incrtauM=  Teuchos::rcp(new vector<double> (presize,0.0));
 
     RefCountPtr<vector<double> > global_incrtauC;
-    global_incrtauC=  rcp(new vector<double> (presize,0.0));
+    global_incrtauC=  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of resM (^2) (abs)
 
     RefCountPtr<vector<double> > global_incrres;
-    global_incrres=  rcp(new vector<double> (velsize,0.0));
+    global_incrres=  Teuchos::rcp(new vector<double> (velsize,0.0));
 
     RefCountPtr<vector<double> > global_incrres_sq;
-    global_incrres_sq=  rcp(new vector<double> (velsize,0.0));
+    global_incrres_sq=  Teuchos::rcp(new vector<double> (velsize,0.0));
 
     RefCountPtr<vector<double> > global_incrtauinvsvel;
-    global_incrtauinvsvel=  rcp(new vector<double> (velsize,0.0));
+    global_incrtauinvsvel=  Teuchos::rcp(new vector<double> (velsize,0.0));
 
     RefCountPtr<vector<double> > global_incrabsres;
-    global_incrabsres=  rcp(new vector<double> (presize,0.0));
+    global_incrabsres=  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of svelaf (^2) (abs)
 
     RefCountPtr<vector<double> > global_incrsvelaf;
-    global_incrsvelaf=  rcp(new vector<double> (velsize,0.0));
+    global_incrsvelaf=  Teuchos::rcp(new vector<double> (velsize,0.0));
 
     RefCountPtr<vector<double> > global_incrsvelaf_sq;
-    global_incrsvelaf_sq=  rcp(new vector<double> (velsize,0.0));
+    global_incrsvelaf_sq=  Teuchos::rcp(new vector<double> (velsize,0.0));
 
     RefCountPtr<vector<double> > global_incrabssvelaf;
-    global_incrabssvelaf=  rcp(new vector<double> (presize,0.0));
+    global_incrabssvelaf=  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of resC (^2)
 
     RefCountPtr<vector<double> > global_incrresC;
-    global_incrresC=  rcp(new vector<double> (presize,0.0));
+    global_incrresC=  Teuchos::rcp(new vector<double> (presize,0.0));
 
     RefCountPtr<vector<double> > global_incrresC_sq;
-    global_incrresC_sq=  rcp(new vector<double> (presize,0.0));
+    global_incrresC_sq=  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of spressnp (^2)
 
     RefCountPtr<vector<double> > global_incrspressnp;
-    global_incrspressnp=  rcp(new vector<double> (presize,0.0));
+    global_incrspressnp=  Teuchos::rcp(new vector<double> (presize,0.0));
 
     RefCountPtr<vector<double> > global_incrspressnp_sq;
-    global_incrspressnp_sq=  rcp(new vector<double> (presize,0.0));
+    global_incrspressnp_sq=  Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by pspg term
 
     RefCountPtr<vector<double> > global_incr_eps_pspg;
-    global_incr_eps_pspg  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_pspg  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by supg term
 
     RefCountPtr<vector<double> > global_incr_eps_supg;
-    global_incr_eps_supg  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_supg  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by cross term
 
     RefCountPtr<vector<double> > global_incr_eps_cross;
-    global_incr_eps_cross  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_cross  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by reynolds term
 
     RefCountPtr<vector<double> > global_incr_eps_rey;
-    global_incr_eps_rey  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_rey  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by continuity stabilisation
 
     RefCountPtr<vector<double> > global_incr_eps_cstab;
-    global_incr_eps_cstab  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_cstab  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by eddy viscosity
 
     RefCountPtr<vector<double> > global_incr_eps_eddyvisc;
-    global_incr_eps_eddyvisc  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_eddyvisc  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     RefCountPtr<vector<double> > global_incr_eps_avm3;
-    global_incr_eps_avm3  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_avm3  = Teuchos::rcp(new vector<double> (presize,0.0));
     // (in plane) averaged values of dissipation by scale similarity model
     RefCountPtr<vector<double> > global_incr_eps_mfs;
-    global_incr_eps_mfs  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_mfs  = Teuchos::rcp(new vector<double> (presize,0.0));
     RefCountPtr<vector<double> > global_incr_eps_mfscross;
-    global_incr_eps_mfscross  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_mfscross  = Teuchos::rcp(new vector<double> (presize,0.0));
     RefCountPtr<vector<double> > global_incr_eps_mfsrey;
-    global_incr_eps_mfsrey  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_mfsrey  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by viscous forces
 
     RefCountPtr<vector<double> > global_incr_eps_visc;
-    global_incr_eps_visc  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_visc  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation/production by convection
 
     RefCountPtr<vector<double> > global_incr_eps_conv;
-    global_incr_eps_conv  = rcp(new vector<double> (presize,0.0));
+    global_incr_eps_conv  = Teuchos::rcp(new vector<double> (presize,0.0));
 
     // (in plane) averaged values of subgrid stresses resulting from supg and cross term
 
     RefCountPtr<vector<double> > global_incrcrossstress;
-    global_incrcrossstress = rcp(new vector<double> (stresssize,0.0));
+    global_incrcrossstress = Teuchos::rcp(new vector<double> (stresssize,0.0));
 
     // (in plane) averaged values of subgrid stresses resulting from reynolds stresses
     RefCountPtr<vector<double> > global_incrreystress;
-    global_incrreystress   = rcp(new vector<double> (stresssize,0.0));
+    global_incrreystress   = Teuchos::rcp(new vector<double> (stresssize,0.0));
 
 
     //--------------------------------------------------
@@ -3438,45 +3438,45 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     }
 
     // reset working arrays
-    local_vol               = rcp(new vector<double> (presize,0.0));
+    local_vol               = Teuchos::rcp(new vector<double> (presize,0.0));
 
-    local_incrhk            = rcp(new vector<double> (presize,0.0));
-    local_incrhbazilevs     = rcp(new vector<double> (presize,0.0));
-    local_incrstrle         = rcp(new vector<double> (presize,0.0));
-    local_incrgradle        = rcp(new vector<double> (presize,0.0));
+    local_incrhk            = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrhbazilevs     = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrstrle         = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrgradle        = Teuchos::rcp(new vector<double> (presize,0.0));
 
-    local_incrtauC          = rcp(new vector<double> (presize,0.0));
-    local_incrtauM          = rcp(new vector<double> (presize,0.0));
+    local_incrtauC          = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrtauM          = Teuchos::rcp(new vector<double> (presize,0.0));
 
-    local_incrres           = rcp(new vector<double> (velsize,0.0));
-    local_incrres_sq        = rcp(new vector<double> (velsize,0.0));
-    local_incrsvelaf        = rcp(new vector<double> (velsize,0.0));
-    local_incrsvelaf_sq     = rcp(new vector<double> (velsize,0.0));
-    local_incrtauinvsvel    = rcp(new vector<double> (velsize,0.0));
+    local_incrres           = Teuchos::rcp(new vector<double> (velsize,0.0));
+    local_incrres_sq        = Teuchos::rcp(new vector<double> (velsize,0.0));
+    local_incrsvelaf        = Teuchos::rcp(new vector<double> (velsize,0.0));
+    local_incrsvelaf_sq     = Teuchos::rcp(new vector<double> (velsize,0.0));
+    local_incrtauinvsvel    = Teuchos::rcp(new vector<double> (velsize,0.0));
 
-    local_incrabsres        = rcp(new vector<double> (presize,0.0));
-    local_incrabssvelaf     = rcp(new vector<double> (presize,0.0));
+    local_incrabsres        = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrabssvelaf     = Teuchos::rcp(new vector<double> (presize,0.0));
 
-    local_incrresC          = rcp(new vector<double> (presize,0.0));
-    local_incrresC_sq       = rcp(new vector<double> (presize,0.0));
-    local_incrspressnp      = rcp(new vector<double> (presize,0.0));
-    local_incrspressnp_sq   = rcp(new vector<double> (presize,0.0));
+    local_incrresC          = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrresC_sq       = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrspressnp      = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrspressnp_sq   = Teuchos::rcp(new vector<double> (presize,0.0));
 
-    local_incr_eps_pspg     = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_supg     = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_cross    = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_rey      = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_cstab    = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_eddyvisc = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_visc     = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_conv     = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_avm3     = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_mfs      = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_mfscross = rcp(new vector<double> (presize,0.0));
-    local_incr_eps_mfsrey   = rcp(new vector<double> (presize,0.0));
+    local_incr_eps_pspg     = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_supg     = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_cross    = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_rey      = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_cstab    = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_eddyvisc = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_visc     = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_conv     = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_avm3     = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_mfs      = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_mfscross = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_mfsrey   = Teuchos::rcp(new vector<double> (presize,0.0));
 
-    local_incrcrossstress   = rcp(new vector<double> (stresssize,0.0));
-    local_incrreystress     = rcp(new vector<double> (stresssize,0.0));
+    local_incrcrossstress   = Teuchos::rcp(new vector<double> (stresssize,0.0));
+    local_incrreystress     = Teuchos::rcp(new vector<double> (stresssize,0.0));
 
     eleparams_.set<RefCountPtr<vector<double> > >("incrvol"          ,local_vol              );
     eleparams_.set<RefCountPtr<vector<double> > >("incrhk"           ,local_incrhk           );
@@ -3635,15 +3635,15 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
     else
       s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
     (*log) << "\n\n\n";
     (*log) << "# Statistics record " << countrecord_;
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# (u_tau)^2 = tau_W/rho : ";
-    (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/dens_/area;
-    (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/dens_/area;
-    (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/dens_/area;
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/dens_/area;
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/dens_/area;
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/dens_/area;
     (*log) << &endl;
 
 
@@ -3662,35 +3662,35 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
     (*log) << "       umean         vmean         wmean         pmean";
     (*log) << "        mean u^2      mean v^2      mean w^2";
     (*log) << "       mean p^2 \n";
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
     {
       // y and y+
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*planecoordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltau;
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*planecoordinates_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*planecoordinates_)[i]/ltau;
 
       // integral mean values
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_  )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_  )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_  )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sump_  )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqu_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqv_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqw_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumuv_ )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumuw_ )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumvw_ )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqp_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumu_  )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumv_  )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumw_  )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sump_  )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumsqu_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumsqv_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumsqw_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumuv_ )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumuw_ )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumvw_ )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumsqp_)[i];
 
       // pointwise means
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumu_  )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumv_  )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumw_  )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsump_  )[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqu_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqv_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqw_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqp_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*pointsumu_  )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*pointsumv_  )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*pointsumw_  )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*pointsump_  )[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*pointsumsqu_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*pointsumsqv_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*pointsumsqw_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*pointsumsqp_)[i];
       (*log) << "   \n";
     }
     log->flush();
@@ -3705,7 +3705,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_smag.append(".Cs_statistics");
 
-      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::app));
+      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::app));
 
       (*log_Cs) << "\n\n\n";
       (*log_Cs) << "# Statistics record " << countrecord_;
@@ -3722,21 +3722,21 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_Cs) << "     Ci      ";
       (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &endl;
-      (*log_Cs) << scientific;
+      (*log_Cs) << std::scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
         // we associate the value with the midpoint of the element layer
-        (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
         // the five values to be visualized
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
       }
       log_Cs->flush();
     } // end smagorinsky_
@@ -3751,7 +3751,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_ssm.append(".SSM_statistics");
 
-      log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),ios::app));
+      log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),std::ios::app));
 
       (*log_SSM) << "\n\n\n";
       (*log_SSM) << "# Statistics record " << countrecord_;
@@ -3761,14 +3761,14 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_SSM) << "#     y      ";
       (*log_SSM) << "  tauSFS 12  ";
       (*log_SSM) << &endl;
-      (*log_SSM) << scientific;
+      (*log_SSM) << std::scientific;
       for (unsigned rr=0;rr<sumstress12_->size();++rr)
       {
         // we associate the value with the midpoint of the element layer
-        (*log_SSM) << setw(11) << setprecision(4) << (*nodeplanes_)[rr] << "  " ;
+        (*log_SSM) << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[rr] << "  " ;
 
         // the values to be visualised
-        (*log_SSM) << setw(11) << setprecision(4) << ((*sumstress12_         )[rr])/(numele_*numsamp_)   << &endl;
+        (*log_SSM) << std::setw(11) << std::setprecision(4) << ((*sumstress12_         )[rr])/(numele_*numsamp_)   << &endl;
       }
       log_SSM->flush();
     } // end scalesimilarity_
@@ -3783,7 +3783,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_mf.append(".MF_statistics");
 
-      log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),ios::app));
+      log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::app));
 
       (*log_mf) << "\n\n\n";
       (*log_mf) << "# Statistics record " << countrecord_;
@@ -3800,21 +3800,21 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_mf) << "    Csgs     ";
       (*log_mf) << "    sgvisc   ";
       (*log_mf) << &endl;
-      (*log_mf) << scientific;
+      (*log_mf) << std::scientific;
       for (unsigned rr=0;rr<sumN_stream_->size();++rr)
       {
         // we associate the value with the midpoint of the element layer
-        (*log_mf) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_mf) << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
         // the three values to be visualised
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_stream_     )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_normal_     )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_span_     )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_stream_     )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_normal_     )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_span_     )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumCsgs_     )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumsgvisc_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_stream_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_normal_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_span_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_stream_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_normal_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_span_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumCsgs_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumsgvisc_)[rr])/(numele_*numsamp_)   << &endl;
       }
       log_mf->flush();
     } // end multifractal_
@@ -3827,7 +3827,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_res.append(".res_statistics");
 
-      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::app));
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::app));
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
@@ -3897,75 +3897,75 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_res) << " tau_rey_31  ";
       (*log_res) << "\n";
 
-      (*log_res) << scientific;
+      (*log_res) << std::scientific;
       for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
       {
-        (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_res)  << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
 
         (*log_res)  << &endl;
@@ -4046,16 +4046,16 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
     else
       s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
     (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# (u_tau)^2 = tau_W/rho : ";
-    (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/(area*numsamp_);
-    (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/(area*numsamp_);
-    (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/(area*numsamp_);
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/(area*numsamp_);
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/(area*numsamp_);
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_);
     (*log) << &endl;
 
     (*log) << "#     y            y+";
@@ -4063,22 +4063,22 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
     (*log) << "        mean u^2      mean v^2      mean w^2     mean p^2";
     (*log) << "      mean u*v      mean u*w      mean v*w\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
     {
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*planecoordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltau;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_       )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_       )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_       )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sump_       )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqu_     )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqv_     )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqw_     )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqp_     )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumuv_      )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumuw_      )[i]/aux;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumvw_      )[i]/aux;
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*planecoordinates_)[i];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*planecoordinates_)[i]/ltau;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumu_       )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumv_       )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumw_       )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sump_       )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumsqu_     )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumsqv_     )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumsqw_     )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumsqp_     )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumuv_      )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumuw_      )[i]/aux;
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << (*sumvw_      )[i]/aux;
       (*log) << "\n";
     }
     log->flush();
@@ -4097,7 +4097,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_smag.append(".Cs_statistics");
 
-      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
       (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
 
       (*log_Cs) << "\n\n\n";
@@ -4115,21 +4115,21 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       (*log_Cs) << "     Ci      ";
       (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &endl;
-      (*log_Cs) << scientific;
+      (*log_Cs) << std::scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
         // we associate the value with the midpoint of the element layer
-        (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
         // the five values to be visualized
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
       }
       log_Cs->flush();
     } // end smagorinsky_
@@ -4142,7 +4142,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_res.append(".res_statistics");
 
-      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
@@ -4212,75 +4212,75 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       (*log_res) << " tau_rey_31  ";
       (*log_res) << "\n";
 
-      (*log_res) << scientific;
+      (*log_res) << std::scientific;
       for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
       {
-        (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_res)  << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
 
         (*log_res)  << &endl;
@@ -4369,26 +4369,26 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
     else
       s.append(".loma_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
     (*log) << "# Statistics for turbulent variable-density channel flow at low Mach number (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# bottom wall: tauwb, rhowb, u_taub, qwb, Ttaub : ";
-    (*log) << "   " << setw(17) << setprecision(10) << tauwb;
-    (*log) << "   " << setw(17) << setprecision(10) << rhowb;
-    (*log) << "   " << setw(17) << setprecision(10) << utaub;
-    (*log) << "   " << setw(17) << setprecision(10) << qwb;
-    (*log) << "   " << setw(17) << setprecision(10) << Ttaub;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << tauwb;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << rhowb;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << utaub;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << qwb;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << Ttaub;
     (*log) << &endl;
 
     (*log) << "# top wall:    tauwt, rhowt, u_taut, qwt, Ttaut : ";
-    (*log) << "   " << setw(17) << setprecision(10) << tauwt;
-    (*log) << "   " << setw(17) << setprecision(10) << rhowt;
-    (*log) << "   " << setw(17) << setprecision(10) << utaut;
-    (*log) << "   " << setw(17) << setprecision(10) << qwt;
-    (*log) << "   " << setw(17) << setprecision(10) << Ttaut;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << tauwt;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << rhowt;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << utaut;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << qwt;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << Ttaut;
     (*log) << &endl;
 
     (*log) << "#        y";
@@ -4396,30 +4396,30 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
     (*log) << "              mean u^2            mean v^2            mean w^2            mean p^2          mean rho^2            mean T^2";
     (*log) << "            mean u*v            mean u*w            mean v*w            mean u*T            mean v*T            mean w*T\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
     {
-      (*log) <<  " "  << setw(17) << setprecision(10) << (*planecoordinates_)[i];
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumu_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumv_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumw_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sump_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumrho_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumT_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumrhou_         )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumrhouT_        )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqu_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqv_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqw_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqp_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqrho_        )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqT_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumuv_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumuw_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumvw_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumuT_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumvT_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumwT_           )[i]/aux;
+      (*log) <<  " "  << std::setw(17) << std::setprecision(10) << (*planecoordinates_)[i];
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumu_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumv_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumw_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sump_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumrho_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumT_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumrhou_         )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumrhouT_        )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqu_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqv_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqw_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqp_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqrho_        )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqT_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuv_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuw_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumvw_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuT_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumvT_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumwT_           )[i]/aux;
       (*log) << "\n";
     }
     log->flush();
@@ -4432,7 +4432,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_res.append(".res_statistics");
 
-      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
@@ -4502,75 +4502,75 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       (*log_res) << " tau_rey_31  ";
       (*log_res) << "\n";
 
-      (*log_res) << scientific;
+      (*log_res) << std::scientific;
       for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
       {
-        (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_res)  << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
 
         (*log_res)  << &endl;
@@ -4588,7 +4588,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_smag.append(".Cs_statistics");
 
-      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
       (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
 
       (*log_Cs) << "\n\n\n";
@@ -4606,21 +4606,21 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       (*log_Cs) << "     Ci      ";
       (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &endl;
-      (*log_Cs) << scientific;
+      (*log_Cs) << std::scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
         // we associate the value with the midpoint of the element layer
-        (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
         // the five values to be visualized
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
       }
       log_Cs->flush();
     } // end smagorinsky_
@@ -4704,24 +4704,24 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
     else
       s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
     (*log) << "# Statistics for turbulent passiv scalar transport in channel (first- and second-order moments)";
     (*log) << "\n\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# bottom wall: tauwb, u_taub, qwb, Ttaub : ";
-    (*log) << "   " << setw(17) << setprecision(10) << tauwb;
-    (*log) << "   " << setw(17) << setprecision(10) << utaub;
-    (*log) << "   " << setw(17) << setprecision(10) << qwb;
-    (*log) << "   " << setw(17) << setprecision(10) << Ttaub;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << tauwb;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << utaub;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << qwb;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << Ttaub;
     (*log) << &endl;
 
     (*log) << "# top wall:    tauwt, u_taut, qwt, Ttaut : ";
-    (*log) << "   " << setw(17) << setprecision(10) << tauwt;
-    (*log) << "   " << setw(17) << setprecision(10) << utaut;
-    (*log) << "   " << setw(17) << setprecision(10) << qwt;
-    (*log) << "   " << setw(17) << setprecision(10) << Ttaut;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << tauwt;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << utaut;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << qwt;
+    (*log) << "   " << std::setw(17) << std::setprecision(10) << Ttaut;
     (*log) << &endl;
 
     (*log) << "#        y";
@@ -4729,26 +4729,26 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
     (*log) << "              mean u^2            mean v^2            mean w^2            mean p^2            mean T^2";
     (*log) << "            mean u*v            mean u*w            mean v*w            mean u*T            mean v*T            mean w*T\n";
 
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
     {
-      (*log) <<  " "  << setw(17) << setprecision(10) << (*planecoordinates_)[i];
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumu_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumv_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumw_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sump_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumT_            )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqu_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqv_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqw_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqp_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumsqT_          )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumuv_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumuw_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumvw_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumuT_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumvT_           )[i]/aux;
-      (*log) << "   " << setw(17) << setprecision(10) << (*sumwT_           )[i]/aux;
+      (*log) <<  " "  << std::setw(17) << std::setprecision(10) << (*planecoordinates_)[i];
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumu_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumv_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumw_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sump_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumT_            )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqu_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqv_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqw_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqp_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqT_          )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuv_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuw_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumvw_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuT_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumvT_           )[i]/aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumwT_           )[i]/aux;
       (*log) << "\n";
     }
     log->flush();
@@ -4763,7 +4763,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_mf.append(".MF_statistics");
 
-      log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),ios::out));
+      log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::out));
 
       (*log_mf) << "# Statistics for turbulent passiv scalar transport in channel (multifractal subgrid-scales parameters)";
       (*log_mf) << "\n\n\n";
@@ -4784,24 +4784,24 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_mf) << "  Csgs_phi   ";
       (*log_mf) << "    sgvisc   ";
       (*log_mf) << &endl;
-      (*log_mf) << scientific;
+      (*log_mf) << std::scientific;
       for (unsigned rr=0;rr<sumN_stream_->size();++rr)
       {
         // we associate the value with the midpoint of the element layer
-        (*log_mf) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_mf) << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
         // the values to be visualised
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_stream_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_normal_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_span_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_stream_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_normal_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_span_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumCsgs_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumNphi_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumDphi_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumCsgs_phi_     )[rr])/aux   << "  ";
-        (*log_mf) << setw(11) << setprecision(4) << ((*sumsgvisc_)[rr])/aux   << &endl;
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_stream_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_normal_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_span_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_stream_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_normal_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_span_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumCsgs_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumNphi_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumDphi_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumCsgs_phi_     )[rr])/aux   << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumsgvisc_)[rr])/aux   << &endl;
       }
       log_mf->flush();
     } // end multifractal_
@@ -4816,7 +4816,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       s_smag.append(".Cs_statistics");
 
-      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+      log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
       (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
 
       (*log_Cs) << "\n\n\n";
@@ -4834,21 +4834,21 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_Cs) << "     Ci      ";
       (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &endl;
-      (*log_Cs) << scientific;
+      (*log_Cs) << std::scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
         // we associate the value with the midpoint of the element layer
-        (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
         // the five values to be visualized
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << setw(11) << setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumvisceff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumPrt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
       }
       log_Cs->flush();
     } // end smagorinsky_

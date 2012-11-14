@@ -111,7 +111,7 @@ RCP<LINALG::AggregationMethod> LINALG::AggregationMethodFactory::Create(const st
     else
       dserror("error");
 
-    return rcp(aggm);
+    return Teuchos::rcp(aggm);
   }
   catch(string str)
   {

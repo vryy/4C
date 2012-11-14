@@ -50,7 +50,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   // initialise displacement field needed for Output()
   // (get noderowmap of discretisation for creating this multivector)
-  dispnp_ = rcp(new Epetra_MultiVector(*(ThermoField()->Discretization()->NodeRowMap()),3,true));
+  dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*(ThermoField()->Discretization()->NodeRowMap()),3,true));
 
   return;
 }
@@ -181,7 +181,7 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = rcp(new Epetra_Vector( *(StructureField()->ExtractDispn()) ) );
+  vel = Teuchos::rcp(new Epetra_Vector( *(StructureField()->ExtractDispn()) ) );
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1./Dt(), *dispnp, -1./Dt());

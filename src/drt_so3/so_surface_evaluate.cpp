@@ -944,9 +944,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     SpatialConfiguration(xscurr,mydisp);
     double volumeele;
     // first partial derivatives
-    RCP<Epetra_SerialDenseVector> Vdiff1 = rcp(new Epetra_SerialDenseVector);
+    RCP<Epetra_SerialDenseVector> Vdiff1 = Teuchos::rcp(new Epetra_SerialDenseVector);
     // second partial derivatives
-    RCP<Epetra_SerialDenseMatrix> Vdiff2 = rcp(new Epetra_SerialDenseMatrix);
+    RCP<Epetra_SerialDenseMatrix> Vdiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     //get projection method
     RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -1095,9 +1095,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     int ndof = 3*numnode;                                     // overall number of surface dofs
     double A;                                                 // interfacial area
     // first partial derivatives
-    RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
+    RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
     // second partial derivatives
-    RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
+    RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
 
@@ -1124,7 +1124,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       // set up matrices and parameters needed for the evaluation of
       // interfacial area and its first derivative w.r.t. the displacements at (n+1)
       double Anew = 0.;                                            // interfacial area
-      RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector);
+      RCP<Epetra_SerialDenseVector> Adiffnew = Teuchos::rcp(new Epetra_SerialDenseVector);
 
       ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
 
@@ -1270,9 +1270,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     // initialize variables
     double elearea;
     // first partial derivatives
-    RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
+    RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
     // second partial derivatives
-    RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
+    RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     //call submethod
     ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
@@ -1294,9 +1294,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     // initialize variables
     double elearea;
     // first partial derivatives
-    RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
+    RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
     // second partial derivatives
-    RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
+    RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     //call submethod
     ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);

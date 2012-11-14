@@ -37,7 +37,7 @@ TOPOPT::Algorithm::Algorithm(
   doGradient_(true)
 {
   // initialize system vector (without values)
-  poro_ = rcp(new Epetra_Vector(*optimizer_->OptiDis()->NodeColMap(),false));
+  poro_ = Teuchos::rcp(new Epetra_Vector(*optimizer_->OptiDis()->NodeColMap(),false));
 
   return;
 }

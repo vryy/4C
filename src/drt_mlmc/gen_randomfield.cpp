@@ -306,7 +306,7 @@ void GenRandomField::CalcDiscretePSD()
   if (myrank_ == 0)
     {
       ofstream File;
-      File.open("DiscretePSD.txt",ios::out);
+      File.open("DiscretePSD.txt",std::ios::out);
       int size = int (pow(N_,2.0));
       for(int i=0;i<size;i++)
       {
@@ -360,7 +360,7 @@ void GenRandomField::CalcDiscretePSD3D()
 //  if (myrank_ == 0)
 //  {
 //    ofstream File;
-//    File.open("DiscretePSD.txt",ios::out);
+//    File.open("DiscretePSD.txt",std::ios::out);
 //    int size = int (pow(N_,3.0));
 //    for(int i=0;i<size;i++)
 //    {
@@ -398,11 +398,11 @@ void GenRandomField::SimGaussRandomFieldFFT()
 {
   double A; // store some stuff
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > b1=  Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > b2=  Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > b1=  Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > b2=  Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d2= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d2= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
 
 
   complex<double> i_comp (0,1);
@@ -498,17 +498,17 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
 {
   double A; // store some stuff
   // store coefficients
-  Teuchos::RCP<Teuchos::Array <complex<double> > > b1= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > b2= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > b3= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > b4= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d2= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d3= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d4= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d5= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d6= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d7= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > b1= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > b2= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > b3= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > b4= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d2= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d3= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d4= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d5= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d6= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d7= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
 
   complex<double> i_comp (0,1);
   for (int j=0;j<M_;j++)
@@ -786,9 +786,9 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
     if (writetofile && myrank_==0 )
     {
       ofstream File;
-      File.open("RFatPoint.txt",ios::app);
+      File.open("RFatPoint.txt",std::ios::app);
       // use at() to get an error massage just in case
-      File << setprecision (9) << values_[index_x+M_*index_y]<< endl;
+      File << std::setprecision (9) << values_[index_x+M_*index_y]<< endl;
       File.close();
     }
     if (dim_==2)
@@ -808,8 +808,8 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
      if (writetofile && myrank_==0 )
          {
            ofstream File;
-           File.open("RFatPoint.txt",ios::app);
-           File << setprecision (9) << value<< endl;
+           File.open("RFatPoint.txt",std::ios::app);
+           File << std::setprecision (9) << value<< endl;
            File.close();
          }
      return value;
@@ -924,13 +924,13 @@ void GenRandomField::SpectralMatching()
   PSD_ng_target[0]=0.0;
 
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >( N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > almost_autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >( N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > autocorr_ng= Teuchos::rcp( new Teuchos::Array<complex<double> >( N_*2*N_*2));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > autocorr= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > almost_autocorr= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > autocorr_ng= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( N_*2*N_*2));
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > PSD_ul_g_complex= Teuchos::rcp( new Teuchos::Array<complex<double> >( N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > almost_PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<complex<double> >( N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<complex<double> >( N_*2*N_*2));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > PSD_ul_g_complex= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > almost_PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( N_*2*N_*2));
 
   for (int j=0;j<N_*2;j++)
   {
@@ -1136,7 +1136,7 @@ void GenRandomField::SpectralMatching()
    if (myrank_ == 0 && !reduced_output_)
      {
        ofstream File;
-       File.open("DiscretePSDTranslated.txt",ios::out);
+       File.open("DiscretePSDTranslated.txt",std::ios::out);
        int size = int (pow(N_,2.0));
        for(int i=0;i<size;i++)
        {
@@ -1144,7 +1144,7 @@ void GenRandomField::SpectralMatching()
        }
        File.close();
        ofstream File2;
-       File2.open("PSD_ng.txt",ios::out);
+       File2.open("PSD_ng.txt",std::ios::out);
          for(int i=0;i<size;i++)
          {
            File2 << PSD_ng[i]<< endl;
@@ -1171,16 +1171,16 @@ void GenRandomField::SpectralMatching3D()
   PSD_ng_target[0]=0.0;
 
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >               ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > almost_autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >        ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > almost_autocorr2= Teuchos::rcp( new Teuchos::Array<complex<double> >       ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > autocorr_ng= Teuchos::rcp( new Teuchos::Array<complex<double> >            ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > autocorr= Teuchos::rcp( new Teuchos::Array<std::complex<double> >               ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > almost_autocorr= Teuchos::rcp( new Teuchos::Array<std::complex<double> >        ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > almost_autocorr2= Teuchos::rcp( new Teuchos::Array<std::complex<double> >       ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > autocorr_ng= Teuchos::rcp( new Teuchos::Array<std::complex<double> >            ( N_*2*N_*2*N_*2,0.0));
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > PSD_ul_g_complex= Teuchos::rcp( new Teuchos::Array<complex<double> >       ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > almost_PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<complex<double> >  ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > almost_PSD_ng_complex2= Teuchos::rcp( new Teuchos::Array<complex<double> > ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<complex<double> >         ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > temp= Teuchos::rcp( new Teuchos::Array<complex<double> >         ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > PSD_ul_g_complex= Teuchos::rcp( new Teuchos::Array<std::complex<double> >       ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > almost_PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<std::complex<double> >  ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > almost_PSD_ng_complex2= Teuchos::rcp( new Teuchos::Array<std::complex<double> > ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<std::complex<double> >         ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > temp= Teuchos::rcp( new Teuchos::Array<std::complex<double> >         ( N_*2*N_*2*N_*2,0.0));
 
   for (int j=0;j<N_*2;j++)
   {
@@ -1478,11 +1478,11 @@ void GenRandomField::SpectralMatching3D3D()
   PSD_ng_target[0]=0.0;
   // calc sigma form discrete PSD
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > autocorr= Teuchos::rcp( new Teuchos::Array<complex<double> >               ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > autocorr_ng= Teuchos::rcp( new Teuchos::Array<complex<double> >            ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > autocorr= Teuchos::rcp( new Teuchos::Array<std::complex<double> >               ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > autocorr_ng= Teuchos::rcp( new Teuchos::Array<std::complex<double> >            ( N_*2*N_*2*N_*2,0.0));
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > PSD_ul_g_complex= Teuchos::rcp( new Teuchos::Array<complex<double> >       ( N_*2*N_*2*N_*2,0.0));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<complex<double> >         ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > PSD_ul_g_complex= Teuchos::rcp( new Teuchos::Array<std::complex<double> >       ( N_*2*N_*2*N_*2,0.0));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > PSD_ng_complex= Teuchos::rcp( new Teuchos::Array<std::complex<double> >         ( N_*2*N_*2*N_*2,0.0));
 
   for (int j=0;j<N_*2;j++)
   {
@@ -1680,7 +1680,7 @@ void GenRandomField::WriteRandomFieldToFile()
   if (myrank_ == 0)
   {
     ofstream File;
-    File.open("RandomField.txt",ios::out);
+    File.open("RandomField.txt",std::ios::out);
    int size = int (pow(M_,double(dim_)));
     for(int i=0;i<size;i++)
     {
@@ -1696,8 +1696,8 @@ void GenRandomField::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sam
   if(sample_psd->length()!=M_*M_)
     dserror("Sizemismatch");
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > b1=
-        Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > b1=
+        Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
 
   // define complex i
   complex<double> i_comp (0,1);
@@ -1708,10 +1708,10 @@ void GenRandomField::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sam
     ((*b1)[j]).imag(0.0);
   }
   // allocate output arrays
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d1=
-        Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d2=
-         Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d1=
+        Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d2=
+         Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
 
   fftw_plan fft_of_rows;
   fftw_plan fft_of_collums;
@@ -1763,9 +1763,9 @@ void GenRandomField::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > s
   if(sample_psd->length()!=M_*M_*M_)
     dserror("Sizemismatch");
 
-  Teuchos::RCP<Teuchos::Array <complex<double> > > b1=Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > b1=Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
   // allocate output arrays
-  Teuchos::RCP<Teuchos::Array <complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<complex<double> >( M_*M_*M_));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
   // define complex i
   complex<double> i_comp (0,1);
 
@@ -1795,7 +1795,7 @@ void GenRandomField::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> >
   if (myrank_ == 0)
   {
     ofstream File;
-    File.open("SamplePSD.txt",ios::out);
+    File.open("SamplePSD.txt",std::ios::out);
    int size = int (pow(M_,double(dim_)));
     for(int i=0;i<size;i++)
     {

@@ -1764,7 +1764,7 @@ else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
 
   // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-  const double tmp = pow(lambda*rateofstrain,b);
+  const double tmp = std::pow(lambda*rateofstrain,b);
   // kinematic viscosity
   visc_ = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
   // dynamic viscosity
@@ -2702,20 +2702,20 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcCharEleLength(
   strle = 2.0/val;
 
   // b) volume-equivalent diameter (warning: 3-D formula!)
-  //strle = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+  //strle = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
   // c) cubic/square root of element volume/area
-  //strle = pow(vol,1/dim);
+  //strle = std::pow(vol,1/dim);
 
   //---------------------------------------------------------------------
   // various definitions for characteristic element length for tau_Mp
   //---------------------------------------------------------------------
   // a) volume-equivalent diameter -> default for 3-D computations
-  if (nsd_==3) hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+  if (nsd_==3) hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
   // b) square root of element area -> default for 2-D computations,
   // may also alternatively be used for 3-D computations
-  else if (nsd_==2) hk = pow(vol,1/dim);
+  else if (nsd_==2) hk = std::pow(vol,1/dim);
   // check for potential 1-D computations
   else dserror("element length calculation not implemented for 1-D computation!");
 

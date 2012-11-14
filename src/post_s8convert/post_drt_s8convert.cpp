@@ -102,7 +102,7 @@ Converter::Converter(PostField* field)
     x[0] = coords(lid, 0);
     x[1] = coords(lid, 1);
     x[2] = coords(lid, 2);
-    h8dis_->AddNode(rcp(new DRT::Node(gid, x, 0)));
+    h8dis_->AddNode(Teuchos::rcp(new DRT::Node(gid, x, 0)));
   }
   for (map<int, int>::iterator i=nodeids_.begin();
        i!=nodeids_.end();
@@ -114,7 +114,7 @@ Converter::Converter(PostField* field)
     x[0] = coords(numnodes+lid, 0);
     x[1] = coords(numnodes+lid, 1);
     x[2] = coords(numnodes+lid, 2);
-    h8dis_->AddNode(rcp(new DRT::Node(maxgid_+gid+1, x, 0)));
+    h8dis_->AddNode(Teuchos::rcp(new DRT::Node(maxgid_+gid+1, x, 0)));
   }
 
   // create elements
@@ -131,15 +131,15 @@ Converter::Converter(PostField* field)
     {
       h8nodeids.push_back(h8nodeids[j]+numnodes);
     }
-    Teuchos::RCP<DRT::ELEMENTS::So_hex8> h8 = rcp(new DRT::ELEMENTS::So_hex8(actshell->Id(), 0));
+    Teuchos::RCP<DRT::ELEMENTS::So_hex8> h8 = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(actshell->Id(), 0));
     h8->SetNodeIds(8, &h8nodeids[0]);
     h8dis_->AddElement(h8);
   }
 
   h8dis_->FillComplete();
 
-  control_ = rcp(new IO::OutputControl(h8dis_->Comm(), "structure", "Polynomial", "generated", "s8convert", 3, 0, 1000));
-  writer_ = rcp(new IO::DiscretizationWriter(h8dis_, control_));
+  control_ = Teuchos::rcp(new IO::OutputControl(h8dis_->Comm(), "structure", "Polynomial", "generated", "s8convert", 3, 0, 1000));
+  writer_ = Teuchos::rcp(new IO::DiscretizationWriter(h8dis_, control_));
   writer_->WriteMesh(0, 0);
 }
 
@@ -178,7 +178,7 @@ void Converter::write_vector_result(string result_name,
   RCP<Epetra_Vector> s8data = result->read_result(result_name);
   const Epetra_BlockMap& s8map = s8data->Map();
 
-  RCP<Epetra_Vector> h8data = rcp(new Epetra_Vector(*h8dis_->DofRowMap()));
+  RCP<Epetra_Vector> h8data = Teuchos::rcp(new Epetra_Vector(*h8dis_->DofRowMap()));
   const Epetra_BlockMap& h8map = h8data->Map();
 
   int numnodes = s8dis_->NumGlobalNodes();

@@ -388,7 +388,7 @@ public:
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
 
-  virtual bool BuildKnotPointers(map<int,RCP<DRT::MESHFREE::MeshfreeNode> >& knots //!< (in): A map of all knots of a discretization
+  virtual bool BuildKnotPointers(std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >& knots //!< (in): A map of all knots of a discretization
     );
 
   /*------------------------------------------------------------------------*/

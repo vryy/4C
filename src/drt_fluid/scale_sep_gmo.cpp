@@ -324,11 +324,11 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   //----------------------------------------------------------------------
 
   RCP<vector<double> > x1coordinates;
-  x1coordinates = rcp(new vector<double> );
+  x1coordinates = Teuchos::rcp(new vector<double> );
   RCP<vector<double> > x2coordinates;
-  x2coordinates = rcp(new vector<double> );
+  x2coordinates = Teuchos::rcp(new vector<double> );
   RCP<vector<double> > x3coordinates;
-  x3coordinates = rcp(new vector<double> );
+  x3coordinates = Teuchos::rcp(new vector<double> );
 
   for(set<double,LineSortCriterion>::iterator coord1=x1coords.begin();
       coord1!=x1coords.end();
@@ -360,11 +360,11 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
 
   // start with first coordinate and take ever other
   RCP<vector<double> > x1coarsecoordinates;
-  x1coarsecoordinates = rcp(new vector<double> );
+  x1coarsecoordinates = Teuchos::rcp(new vector<double> );
   RCP<vector<double> > x2coarsecoordinates;
-  x2coarsecoordinates = rcp(new vector<double> );
+  x2coarsecoordinates = Teuchos::rcp(new vector<double> );
   RCP<vector<double> > x3coarsecoordinates;
-  x3coarsecoordinates = rcp(new vector<double> );
+  x3coarsecoordinates = Teuchos::rcp(new vector<double> );
 
   if ((x1coordinates->size()%2==0) or (x3coordinates->size()%2==0) or (x3coordinates->size()%2==0))
     dserror("Even number of elements expected!");
@@ -792,7 +792,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   crsPRmat->FillComplete();
 
   // store matrix
-  Sep_ = rcp(new LINALG::SparseMatrix(crsPRmat));
+  Sep_ = Teuchos::rcp(new LINALG::SparseMatrix(crsPRmat));
   //complete scale-separation matrix and check maps
   Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());
 
@@ -825,7 +825,7 @@ void FLD::LESScaleSeparation::ApplyScaleSeparation(
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     RCP<Epetra_Vector> tmp;
-    tmp = rcp(new Epetra_Vector(*dofrowmap,true));
+    tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
     // get the coarse velocity
     Sep_->Multiply(false,*vel,*tmp);
     // and calculate the fine-scale velocity

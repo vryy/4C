@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const string eletyp
 {
   if ( eletype=="NSTET4" )
   {
-    RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NStet(id,owner));
+    RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -54,7 +54,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const string eletyp
 //-----------------------------------------------------------------------
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const int id, const int owner )
 {
-  RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NStet(id,owner));
+  RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet(id,owner));
   return ele;
 }
 
@@ -236,7 +236,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Volumes()
 {
   dserror("volume not impl. yet");
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 
@@ -314,8 +314,8 @@ void DRT::ELEMENTS::NStetType::InitElementsandMaps(
     }
   } // i
 
-  elecmap_ = rcp(new Epetra_Map(-1,(int)ctmp.size(),&ctmp[0],0,dis.Comm()));
-  elermap_ = rcp(new Epetra_Map(-1,(int)rtmp.size(),&rtmp[0],0,dis.Comm()));
+  elecmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)ctmp.size(),&ctmp[0],0,dis.Comm()));
+  elermap_ = Teuchos::rcp(new Epetra_Map(-1,(int)rtmp.size(),&rtmp[0],0,dis.Comm()));
 
   return;
 }
@@ -1009,7 +1009,7 @@ Teuchos::RCP<Epetra_Map> DRT::ELEMENTS::NStetType::InitMISStressMap(
   for (fool2=ngidmap.begin(); fool2 != ngidmap.end(); ++fool2)
     ngid.push_back(fool2->first);
 
-  return(rcp(new Epetra_Map(-1,(int)ngid.size(),&ngid[0],0,dis.Comm())));
+  return(Teuchos::rcp(new Epetra_Map(-1,(int)ngid.size(),&ngid[0],0,dis.Comm())));
 }
 
 

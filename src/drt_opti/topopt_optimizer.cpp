@@ -43,16 +43,16 @@ params_(params)
   const Teuchos::ParameterList& optimizer_params = params_.sublist("TOPOLOGY OPTIMIZER");
 
   // fluid fields for optimization
-  fluidvel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
-  adjointvel_ = rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
+  fluidvel_ = Teuchos::rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
+  adjointvel_ = Teuchos::rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
 
   // topology density fields
-  dens_ = rcp(new Epetra_Vector(*optidis_->NodeRowMap(),false));
+  dens_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap(),false));
 
   // value of the objective function
   obj_value_ = 0.0;
   // gradient of the objective function
-  obj_grad_ = rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
+  obj_grad_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
 
   /// number of constraints
   switch (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(optimizer_params,"TESTCASE"))
@@ -71,15 +71,15 @@ params_(params)
   }
 
   // value of the constraint(s);
-  constr_ = rcp(new Epetra_SerialDenseVector(num_constr_));
+  constr_ = Teuchos::rcp(new Epetra_SerialDenseVector(num_constr_));
   // gradient of the constraint(s)
-  constr_deriv_ = rcp(new Epetra_MultiVector(*optidis_->NodeRowMap(),num_constr_,false));
+  constr_deriv_ = Teuchos::rcp(new Epetra_MultiVector(*optidis_->NodeRowMap(),num_constr_,false));
 
   // set initial density field if present
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
       optimizer_params.get<int>("INITFUNCNO"));
 
-  optimizer_ = rcp(new OPTI::GCMMA(
+  optimizer_ = Teuchos::rcp(new OPTI::GCMMA(
       optidis_,
       optimizer_params,
       dens_,
@@ -299,7 +299,7 @@ void TOPOPT::Optimizer::ImportFluidData(
   else
   {
     // a copy is required here, otherwise the values are changed within the fluid time integration
-    RCP<Epetra_Vector> new_vel = rcp(new Epetra_Vector(*vel)); // copy
+    RCP<Epetra_Vector> new_vel = Teuchos::rcp(new Epetra_Vector(*vel)); // copy
     fluidvel_->insert(pair<int,RCP<Epetra_Vector> >(step,new_vel));
   }
 }
@@ -317,7 +317,7 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
   else
   {
     // a copy is required here, otherwise the values are changed within the adjoint time integration
-    RCP<Epetra_Vector> new_vel = rcp(new Epetra_Vector(*vel));
+    RCP<Epetra_Vector> new_vel = Teuchos::rcp(new Epetra_Vector(*vel));
     adjointvel_->insert(pair<int,RCP<Epetra_Vector> >(step,new_vel));
   }
 }
@@ -434,7 +434,7 @@ void TOPOPT::Optimizer::TransformFlowFields()
   // if maps have been mapped before, dont change them
   if (fluidvel_->begin()->second->Map().PointSameAs(*colmap)) return;
 
-  RCP<Epetra_Vector> vec = rcp(new Epetra_Vector(*colmap,false));
+  RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*colmap,false));
 
   for (map<int,RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
       i!=fluidvel_->end();i++)

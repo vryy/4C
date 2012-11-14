@@ -2304,7 +2304,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
        };
 
        // take the longest surface diameter
-       patch_hk = max(patch_hk, h_e);
+       patch_hk = std::max(patch_hk, h_e);
 
     }
 
@@ -2333,7 +2333,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
       };
 
       // take the longest surface diameter
-      patch_hk = max(patch_hk, h_e);
+      patch_hk = std::max(patch_hk, h_e);
     }
 
   }
@@ -2360,7 +2360,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
         };
 
         // take the longest line diameter
-        patch_hk = max(patch_hk, h_e);
+        patch_hk = std::max(patch_hk, h_e);
 
      }
 
@@ -2387,7 +2387,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
        };
 
        // take the longest line diameter
-       patch_hk = max(patch_hk, h_e);
+       patch_hk = std::max(patch_hk, h_e);
      }
   }
 
@@ -2613,7 +2613,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     double mk = 1.0/3.0;
     double Re_K = mk*max_vel_L2_norm*p_hk_/ (2.0*kinvisc);
 
-    double xi = max(1.0, Re_K);
+    double xi = std::max(1.0, Re_K);
 
     gamma_p = 1.0/30.0;
 

@@ -2634,14 +2634,14 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
     case INPAR::FLUID::sphere_diameter:
     {
       // b) volume-equivalent diameter
-      hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+      hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
       break;
     }
     case INPAR::FLUID::cube_edge:
     {
       // c) qubic element length
-      hk = pow(vol,(1.0/NSD));
+      hk = std::pow(vol,(1.0/NSD));
       break;
     }
     case INPAR::FLUID::metric_tensor:
@@ -2683,7 +2683,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
             normG+=G(nn,rr)*G(nn,rr);
           }
         }
-        hk = pow(normG,-0.25);
+        hk = std::pow(normG,-0.25);
 
       break;
     }
@@ -2874,7 +2874,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   //  ---------  ~ Re^(3/4)
   //  lambda_nu
   //
-  scale_ratio = pow(Re_ele,3.0/4.0);
+  scale_ratio = std::pow(Re_ele,3.0/4.0);
   scale_ratio = turbmodelparamsmfs->get<double>("C_NU") * pow(Re_ele,3.0/4.0);
   // scale_ration < 1.0 leads to N < 0
   // therefore, we clip once more
@@ -3094,7 +3094,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   if (params.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No") != "No")
   {
     // get filter width and Smagorinsky-coefficient
-    const double hk_sgvisc = pow(vol,(1.0/NSD));
+    const double hk_sgvisc = std::pow(vol,(1.0/NSD));
     const double Cs = params.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
 
     // compute rate of strain
@@ -3374,14 +3374,14 @@ void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
       case INPAR::FLUID::sphere_diameter:
       {
         // b) volume-equivalent diameter
-        hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+        hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
         break;
       }
       case INPAR::FLUID::cube_edge:
       {
         // c) qubic element length
-        hk = pow(vol,(1.0/NSD));
+        hk = std::pow(vol,(1.0/NSD));
         break;
       }
       case INPAR::FLUID::metric_tensor:
@@ -3423,7 +3423,7 @@ void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
              normG+=G(nn,rr)*G(nn,rr);
            }
          }
-         hk = pow(normG,-0.25);
+         hk = std::pow(normG,-0.25);
 
         break;
       }

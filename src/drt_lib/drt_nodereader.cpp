@@ -81,7 +81,7 @@ void NodeReader::Read()
   // so the number of blocks is numproc
   // determine a rough blocksize
   int nblock = numproc;
-  int bsize = max(numnodes/nblock, 1);
+  int bsize = std::max(numnodes/nblock, 1);
 
   // an upper limit for bsize
   int maxblocksize = 200000;
@@ -97,7 +97,7 @@ void NodeReader::Read()
 
   // open input file at the right position
   // note that stream is valid on proc 0 only!
-  ifstream file;
+  std::ifstream file;
   if (myrank==0)
   {
     file.open(inputfile_name.c_str());
@@ -140,7 +140,7 @@ void NodeReader::Read()
           for (unsigned i=0; i<diss.size(); ++i)
           {
             // create node and add to discretization
-            Teuchos::RCP<DRT::Node> node = rcp(new DRT::Node(nodeid,coords,myrank));
+            Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid,coords,myrank));
             diss[i]->AddNode(node);
           }
           ++bcount;
@@ -163,11 +163,11 @@ void NodeReader::Read()
           for (unsigned i=0; i<diss.size(); ++i)
           {
             // create node and add to discretization
-            Teuchos::RCP<DRT::Node> node = rcp(new DRT::Node(nodeid,coords,myrank));
-            Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> knot = rcp(new DRT::MESHFREE::MeshfreeNode(nodeid,coords,myrank));
+            Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid,coords,myrank));
+            Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> knot = Teuchos::rcp(new DRT::MESHFREE::MeshfreeNode(nodeid,coords,myrank));
             diss[i]->AddNode(node);
             // hyper hack ?
-            rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(diss[i])->AddKnot(knot);
+            Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(diss[i])->AddKnot(knot);
           }
           ++bcount;
           if (block != nblock-1) // last block takes all the rest
@@ -196,7 +196,7 @@ void NodeReader::Read()
           {
             Teuchos::RCP<DRT::Discretization> dis = diss[i];
             // create node/control point and add to discretization
-            Teuchos::RCP<DRT::NURBS::ControlPoint> node = rcp(new DRT::NURBS::ControlPoint(cpid,coords,weight,myrank));
+            Teuchos::RCP<DRT::NURBS::ControlPoint> node = Teuchos::rcp(new DRT::NURBS::ControlPoint(cpid,coords,weight,myrank));
             dis->AddNode(node);
           }
           ++bcount;
@@ -218,7 +218,7 @@ void NodeReader::Read()
           Teuchos::RCP<DRT::Discretization> diss = DRT::Problem::Instance()->GetDis("particle");
 
           // create particle and add to discretization
-          Teuchos::RCP<DRT::Node> particle = rcp(new DRT::Node(nodeid,coords,myrank));
+          Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new DRT::Node(nodeid,coords,myrank));
           diss->AddNode(particle);
 
           ++bcount;

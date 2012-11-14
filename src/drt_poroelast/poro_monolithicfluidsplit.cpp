@@ -93,7 +93,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::SetupRHS");
 
   // create full monolithic rhs vector
-  rhs_ = rcp(new Epetra_Vector(*DofRowMap(), true));
+  rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
   SetupVector(*rhs_,
               StructureField()->RHS(),
@@ -343,10 +343,10 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   //fggpre_ = fggcur_;
   //cgipre_ = cgicur_;
   //cggpre_ = cggcur_;
-  fgicur_ = rcp(new LINALG::SparseMatrix(f->Matrix(1,0)));
-  fggcur_ = rcp(new LINALG::SparseMatrix(f->Matrix(1,1)));
-  cgicur_ = rcp(new LINALG::SparseMatrix(k_fs->Matrix(1,0)));
-  cggcur_ = rcp(new LINALG::SparseMatrix(k_fs->Matrix(1,1)));
+  fgicur_ = Teuchos::rcp(new LINALG::SparseMatrix(f->Matrix(1,0)));
+  fggcur_ = Teuchos::rcp(new LINALG::SparseMatrix(f->Matrix(1,1)));
+  cgicur_ = Teuchos::rcp(new LINALG::SparseMatrix(k_fs->Matrix(1,0)));
+  cggcur_ = Teuchos::rcp(new LINALG::SparseMatrix(k_fs->Matrix(1,1)));
 }
 
 /*----------------------------------------------------------------------*/
@@ -439,21 +439,21 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(
     if (solipre_ != Teuchos::null)
       ddiinc_->Update(1.0, *sox, -1.0, *solipre_, 0.0);  // compute current iteration increment
     else
-      ddiinc_ = rcp(new Epetra_Vector(*sox));           // first iteration increment
+      ddiinc_ = Teuchos::rcp(new Epetra_Vector(*sox));           // first iteration increment
 
     solipre_ = sox;                                      // store current step increment
 
     if (solgvelpre_ != Teuchos::null)
       duginc_->Update(1.0, *fcx, -1.0, *solgvelpre_, 0.0);  // compute current iteration increment
     else
-      duginc_ = rcp(new Epetra_Vector(*fcx));           // first iteration increment
+      duginc_ = Teuchos::rcp(new Epetra_Vector(*fcx));           // first iteration increment
 
     solgvelpre_ = fcx;                                      // store current step increment
 
     if (solivelpre_ != Teuchos::null)
       duiinc_->Update(1.0, *fox, -1.0, *solivelpre_, 0.0);  // compute current iteration increment
     else
-      duiinc_ = rcp(new Epetra_Vector(*fox));           // first iteration increment
+      duiinc_ = Teuchos::rcp(new Epetra_Vector(*fox));           // first iteration increment
 
     solivelpre_ = fox;                                      // store current step increment
   }

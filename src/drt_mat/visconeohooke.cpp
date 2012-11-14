@@ -57,10 +57,10 @@ MAT::ViscoNeoHooke::ViscoNeoHooke()
   : params_(NULL)
 {
   isinit_=false;
-  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 }
 
 
@@ -143,10 +143,10 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
 
   if (twicehistsize == 0) isinit_=false;
 
-  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   for (int var=0; var<twicehistsize; var+=2)
   {
     LINALG::Matrix<NUM_STRESS_3D,1> tmp(true);
@@ -169,10 +169,10 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::ViscoNeoHooke::Setup(const int numgp)
 {
-  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresslast_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
   histstresscurr_->resize(numgp);
   histstresslast_->resize(numgp);
@@ -205,8 +205,8 @@ void MAT::ViscoNeoHooke::Update()
   histstresslast_=histstresscurr_;
   artstresslast_=artstresscurr_;
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
-  histstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstresscurr_=rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   const int numgp=histstresslast_->size();
   histstresscurr_->resize(numgp);
   artstresscurr_->resize(numgp);
@@ -336,7 +336,7 @@ void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
         - 0.25 * C(2)*C(3)*C(3)
         - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
   const double J = sqrt(I3);
-  const double I3invcubroot = pow(I3,-1.0/3.0);
+  const double I3invcubroot = std::pow(I3,-1.0/3.0);
 
   // invert C
   LINALG::Matrix<NUM_STRESS_3D,1> Cinv;

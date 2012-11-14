@@ -469,7 +469,7 @@ void DatFileReader::ReadKnots(
   //--------------------------------------------------------------------
 
   // allocate knotvector for this dis
-  disknots=Teuchos::rcp (new DRT::NURBS::Knotvector(dim,npatches));
+  disknots=Teuchos::rcp(new DRT::NURBS::Knotvector(dim,npatches));
 
   // make sure that we have some Knotvector object to fill
   if (disknots==Teuchos::null)
@@ -583,7 +583,7 @@ void DatFileReader::ReadKnots(
           // create vectors for knots in this patch
           for(int rr=0;rr<dim;++rr)
           {
-            patch_knots[rr]=rcp(new std::vector<double>);
+            patch_knots[rr]=Teuchos::rcp(new std::vector<double>);
             (*(patch_knots[rr])).clear();
           }
 

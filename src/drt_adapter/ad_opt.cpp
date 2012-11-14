@@ -62,13 +62,13 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
       )
   );
   
-  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(optidis, optioutput));
+  RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(optidis, optioutput));
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // create instance of the optimization class (call the constructor)
   // -------------------------------------------------------------------
-  optimizer_ = rcp(new TOPOPT::Optimizer(
+  optimizer_ = Teuchos::rcp(new TOPOPT::Optimizer(
       optidis,
       fluiddis,
       prbdyn,

@@ -169,17 +169,17 @@ double DRT::ELEMENTS::So_sh8::sosh8_calcaspectratio()
   // return an averaged aspect ratio
   if (r_stretch>=s_stretch and r_stretch>=t_stretch) 
   {
-    return min(r_stretch/s_stretch,r_stretch/s_stretch);
+    return std::min(r_stretch/s_stretch,r_stretch/s_stretch);
 //    return 0.5*(r_stretch/s_stretch+r_stretch/t_stretch);
   }
   else if (s_stretch>r_stretch and s_stretch>=t_stretch) 
   {
-    return min(s_stretch/r_stretch,s_stretch/t_stretch);
+    return std::min(s_stretch/r_stretch,s_stretch/t_stretch);
 //    return 0.5*(s_stretch/r_stretch+s_stretch/t_stretch);
   }
   else if (t_stretch>r_stretch and t_stretch>s_stretch) 
   {
-    return min(t_stretch/s_stretch,t_stretch/r_stretch);
+    return std::min(t_stretch/s_stretch,t_stretch/r_stretch);
 //    return 0.5*(t_stretch/s_stretch+t_stretch/r_stretch);
   }
 
@@ -299,10 +299,10 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_enfthickd
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
 {
-  stringstream filename;
+  std::stringstream filename;
   filename << "solidelement" << this->Id() << ".gmsh";
-  ofstream f_system("solidelement.gmsh");
-  stringstream gmshfilecontent;
+  std::ofstream f_system("solidelement.gmsh");
+  std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" One Solid Element \" {" << endl;
   gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(this->thickdir_, this) << endl;
   // plot vector from 1st node to 5th node which is parametric t-dir
@@ -310,24 +310,24 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
   X15[0] = this->Nodes()[4]->X()[0] - this->Nodes()[0]->X()[0];
   X15[1] = this->Nodes()[4]->X()[1] - this->Nodes()[0]->X()[1];
   X15[2] = this->Nodes()[4]->X()[2] - this->Nodes()[0]->X()[2];
-  gmshfilecontent << "VP(" << scientific << this->Nodes()[0]->X()[0] << ",";
-  gmshfilecontent << scientific << this->Nodes()[0]->X()[1] << ",";
-  gmshfilecontent << scientific << this->Nodes()[0]->X()[2] << ")";
-  gmshfilecontent << "{" << scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};" << endl;
+  gmshfilecontent << "VP(" << std::scientific << this->Nodes()[0]->X()[0] << ",";
+  gmshfilecontent << std::scientific << this->Nodes()[0]->X()[1] << ",";
+  gmshfilecontent << std::scientific << this->Nodes()[0]->X()[2] << ")";
+  gmshfilecontent << "{" << std::scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};" << endl;
   gmshfilecontent << "};" << endl;
   gmshfilecontent << "View \" LabelIds \" {" << endl;
   for (int i=0; i<NUMNOD_SOH8; ++i) {
-    gmshfilecontent << "SP(" << scientific << this->Nodes()[i]->X()[0] << ",";
-    gmshfilecontent << scientific << this->Nodes()[i]->X()[1] << ",";
-    gmshfilecontent << scientific << this->Nodes()[i]->X()[2] << ")";
+    gmshfilecontent << "SP(" << std::scientific << this->Nodes()[i]->X()[0] << ",";
+    gmshfilecontent << std::scientific << this->Nodes()[i]->X()[1] << ",";
+    gmshfilecontent << std::scientific << this->Nodes()[i]->X()[2] << ")";
     gmshfilecontent << "{" << LabelIds[i] << "};" << endl;
   }
   gmshfilecontent << "};" << endl;
   gmshfilecontent << "View \" I order \" {" << endl;
   for (int i=0; i<NUMNOD_SOH8; ++i) {
-    gmshfilecontent << "SP(" << scientific << this->Nodes()[i]->X()[0] << ",";
-    gmshfilecontent << scientific << this->Nodes()[i]->X()[1] << ",";
-    gmshfilecontent << scientific << this->Nodes()[i]->X()[2] << ")";
+    gmshfilecontent << "SP(" << std::scientific << this->Nodes()[i]->X()[0] << ",";
+    gmshfilecontent << std::scientific << this->Nodes()[i]->X()[1] << ",";
+    gmshfilecontent << std::scientific << this->Nodes()[i]->X()[2] << ")";
     gmshfilecontent << "{" << i << "};" << endl;
   }
   gmshfilecontent << "};" << endl;
@@ -338,8 +338,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
 
 void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis)
 {
-  ofstream f_system("solidelements.gmsh");
-  stringstream gmshfilecontent;
+  std::ofstream f_system("solidelements.gmsh");
+  std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" Solid Elements thickdir_ \" {" << endl;
   // plot elements
   for (int i=0; i<dis.NumMyColElements(); ++i)
@@ -354,10 +354,10 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
     X15[0] = actele->Nodes()[4]->X()[0] - actele->Nodes()[0]->X()[0];
     X15[1] = actele->Nodes()[4]->X()[1] - actele->Nodes()[0]->X()[1];
     X15[2] = actele->Nodes()[4]->X()[2] - actele->Nodes()[0]->X()[2];
-    gmshfilecontent << "VP(" << scientific << actele->Nodes()[0]->X()[0] << ",";
-    gmshfilecontent << scientific << actele->Nodes()[0]->X()[1] << ",";
-    gmshfilecontent << scientific << actele->Nodes()[0]->X()[2] << ")";
-    gmshfilecontent << "{" << scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};" << endl;
+    gmshfilecontent << "VP(" << std::scientific << actele->Nodes()[0]->X()[0] << ",";
+    gmshfilecontent << std::scientific << actele->Nodes()[0]->X()[1] << ",";
+    gmshfilecontent << std::scientific << actele->Nodes()[0]->X()[2] << ")";
+    gmshfilecontent << "{" << std::scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};" << endl;
   }
   gmshfilecontent << "};" << endl;
   gmshfilecontent << "View \" Solid Elements Id \" {" << endl;
@@ -382,8 +382,8 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
     const vector<double> pv = actele->GetThickvec();
     vector<double> ec = actele->soh8_ElementCenterRefeCoords();
     //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;
-    gmshfilecontent << "VP(" << scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
-    gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl;
+    gmshfilecontent << "VP(" << std::scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
+    gmshfilecontent << "{" << std::scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl;
   }
   gmshfilecontent << "};" << endl;
   // plot vectors
@@ -406,8 +406,8 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
     }
 
     //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;
-    gmshfilecontent << "VP(" << scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
-    gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl;
+    gmshfilecontent << "VP(" << std::scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
+    gmshfilecontent << "{" << std::scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl;
   }
   gmshfilecontent << "};" << endl;
   f_system << gmshfilecontent.str();

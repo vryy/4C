@@ -157,7 +157,7 @@ void DRT::UTILS::UnpackLocalConnectivity(
     }
 
     // add this node connectivity to local connectivity map
-    lcon.insert(pair<int,set<int> >(gid,neighbourset));
+    lcon.insert(std::pair<int,set<int> >(gid,neighbourset));
   }
 
   // trash receive block
@@ -274,7 +274,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       mynsize = numnodes-(numproc-1)*nbsize;
 
     // construct the initial linear node rowmap
-    RCP<Epetra_Map> lin_noderowmap = rcp(new Epetra_Map(-1,mynsize,&nids[myrank*nbsize],0,*comm));
+    RCP<Epetra_Map> lin_noderowmap = Teuchos::rcp(new Epetra_Map(-1,mynsize,&nids[myrank*nbsize],0,*comm));
 
     // remember my vertex distribution for the later parmetis call
     vector<int> vtxdist(numproc+1);
@@ -329,7 +329,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     for(procnode=procnodes.begin();procnode!=procnodes.end();++procnode)
     {
-      lcon.insert(pair<int, set<int> >(*procnode,set<int> ()));
+      lcon.insert(std::pair<int, set<int> >(*procnode,set<int> ()));
     }
 
     // loop all eles on this proc and construct the local
@@ -381,7 +381,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     {
       int gid=lin_noderowmap->GID(j);
 
-      gcon.insert(pair<int, set<int> >(gid,set<int> ()));
+      gcon.insert(std::pair<int, set<int> >(gid,set<int> ()));
     }
 
     {
@@ -702,7 +702,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     // the part array.
 
     // construct epetra graph on linear noderowmap
-    Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*lin_noderowmap,108,false));
+    Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*lin_noderowmap,108,false));
 
     for (map<int,set<int> >::iterator gid=gcon.begin();
          gid!=gcon.end();
@@ -773,7 +773,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     // create the output graph and export to it
     RCP<Epetra_CrsGraph> outgraph =
-      rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
+      Teuchos::rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
     Epetra_Export exporter(graph->RowMap(),newmap);
     int err = outgraph->Export(*graph,exporter,Add);
     if (err<0) dserror("Graph export returned err=%d",err);
@@ -789,12 +789,12 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     // do stupid conversion from Epetra_BlockMap to Epetra_Map
     const Epetra_BlockMap& brow = outgraph->RowMap();
     const Epetra_BlockMap& bcol = outgraph->ColMap();
-    rownodes = rcp(new Epetra_Map(brow.NumGlobalElements(),
+    rownodes = Teuchos::rcp(new Epetra_Map(brow.NumGlobalElements(),
                                    brow.NumMyElements(),
                                    brow.MyGlobalElements(),
                                    0,
                                    *comm));
-    colnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),
+    colnodes = Teuchos::rcp(new Epetra_Map(bcol.NumGlobalElements(),
                                    bcol.NumMyElements(),
                                    bcol.MyGlobalElements(),
                                    0,
@@ -876,7 +876,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       nodes.push_back(*fool);
     mynodes.clear();
     // create a non-overlapping row map
-    rownodes = rcp(new Epetra_Map(-1,(int)nodes.size(),&nodes[0],0,*comm));
+    rownodes = Teuchos::rcp(new Epetra_Map(-1,(int)nodes.size(),&nodes[0],0,*comm));
   }
 
 
@@ -926,7 +926,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     fflush(stdout);
   }
 
-  Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,maxband,false));
+  Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*rownodes,maxband,false));
 
   comm->Barrier();
 
@@ -1112,7 +1112,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       }
       comm->Barrier();
     }
-    rownodes = rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,*comm));
+    rownodes = Teuchos::rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,*comm));
   }
 
   // export the graph to the new row map to obtain the new column map
@@ -1125,7 +1125,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     graph = null;
     finalgraph.FillComplete();
     finalgraph.OptimizeStorage();
-    colnodes = rcp(new Epetra_Map(-1,//finalgraph.ColMap().NumGlobalElements(),
+    colnodes = Teuchos::rcp(new Epetra_Map(-1,//finalgraph.ColMap().NumGlobalElements(),
                                   finalgraph.ColMap().NumMyElements(),
                                   finalgraph.ColMap().MyGlobalElements(),0,*comm));
   }

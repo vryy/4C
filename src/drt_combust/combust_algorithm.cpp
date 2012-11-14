@@ -137,9 +137,9 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 
 
   // FGI vectors are initialized
-  velnpi_ = rcp(new Epetra_Vector(FluidField().StdVelnp()->Map()),true);//*fluiddis->DofRowMap()),true);
+  velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField().StdVelnp()->Map()),true);//*fluiddis->DofRowMap()),true);
   velnpi_->Update(1.0,*FluidField().StdVelnp(),0.0);
-  phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
+  phinpi_ = Teuchos::rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
   phinpi_->Update(1.0,*ScaTraField().Phinp(),0.0);
 
   /*----------------------------------------------------------------------------------------------*
@@ -150,7 +150,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
    * - ...
    *----------------------------------------------------------------------------------------------*/
   // construct initial flame front
-  flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,ScaTraField().PBCmap()));
+  flamefront_ = Teuchos::rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,ScaTraField().PBCmap()));
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
   flamefront_->UpdateOldInterfaceHandle();
 
@@ -196,7 +196,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   }
   if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
   {
-    reinit_pde_ = rcp(new COMBUST::ReinitializationPDE());
+    reinit_pde_ = Teuchos::rcp(new COMBUST::ReinitializationPDE());
   }
 
   //---------------------------------------------------
@@ -262,7 +262,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 //  {
 //    std::string outfile = "/home/henke/simulations/results/study_timeint/2d_64_neumann_visc-3_theta05/radius";
 //    //outfile.append(".oracles.-5h.flow_statistics");
-//    std::ofstream title(outfile.c_str(),ios::out);
+//    std::ofstream title(outfile.c_str(),std::ios::out);
 //    title << "# radius of circular flame\n";
 //    title << "# reinitialized radius  original radius\n";
 //    title << "# initial radius 0.025";
@@ -1196,11 +1196,11 @@ bool COMBUST::Algorithm::NotConvergedFGI()
     double fggfuncnormL2 = 1.0;
 
     // compute increment and L2-norm of increment
-    RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip->Map()),true);
+    RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(velnpip->Map()),true);
     incvel->Update(1.0,*velnpip,-1.0,*velnpi_,0.0);
     incvel->Norm2(&fgvelnormL2);
 
-    RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(phinpip->Map(),true));//*ScaTraField().Discretization()->DofRowMap()),true);
+    RCP<Epetra_Vector> incgfunc = Teuchos::rcp(new Epetra_Vector(phinpip->Map(),true));//*ScaTraField().Discretization()->DofRowMap()),true);
     incgfunc->Update(1.0,*phinpip,-1.0,*phinpi_,0.0);
     incgfunc->Norm2(&fggfuncnormL2);
 
@@ -1839,8 +1839,8 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
 
 
     // these sets contain the element/node GIDs that have been collected
-    Teuchos::RCP<set<int> > allcollectednodes    = rcp(new set<int>);
-    Teuchos::RCP<set<int> > allcollectedelements = rcp(new set<int>);
+    Teuchos::RCP<set<int> > allcollectednodes    = Teuchos::rcp(new set<int>);
+    Teuchos::RCP<set<int> > allcollectedelements = Teuchos::rcp(new set<int>);
 
     // this loop determines how many layers around the cut elements will be collected
     for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
@@ -1956,7 +1956,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
       // with all nodes collected it is time to communicate them to all other procs
       // which then eliminate all but their row nodes
       {
-        Teuchos::RCP<set<int> > globalcollectednodes = rcp(new set<int>);
+        Teuchos::RCP<set<int> > globalcollectednodes = Teuchos::rcp(new set<int>);
         //TODO Ursula: patch gfunctionConvelManipulation
         //             linalg_utils.H, drt_exporter.H
         LINALG::Gather<int>(*allcollectednodes,*globalcollectednodes,numproc,allproc,fluiddis->Comm());
@@ -1978,7 +1978,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
     // and therefore gets added to the surfacenodes set. This set is redundantly available and
     // mereley knows a node's position and velocities
     //-----------------------------------------------------------------------------------------------
-    Teuchos::RCP<vector<LINALG::Matrix<3,2> > > surfacenodes = rcp(new vector<LINALG::Matrix<3,2> >);
+    Teuchos::RCP<vector<LINALG::Matrix<3,2> > > surfacenodes = Teuchos::rcp(new vector<LINALG::Matrix<3,2> >);
 
     set<int>::const_iterator nodeit;
     for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
@@ -2015,7 +2015,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
     // Now the surfacenodes must be gathered to all procs
     {
       Teuchos::RCP<vector<LINALG::Matrix<3,2> > > mysurfacenodes = surfacenodes;
-      surfacenodes = rcp(new vector<LINALG::Matrix<3,2> >);
+      surfacenodes = Teuchos::rcp(new vector<LINALG::Matrix<3,2> >);
 
       LINALG::Gather<LINALG::Matrix<3,2> >(*mysurfacenodes,*surfacenodes,numproc,allproc,fluiddis->Comm());
     }
@@ -2189,12 +2189,12 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   Teuchos::RCP<Epetra_Vector> oldphinp   = Teuchos::null;
   if (restartscatrainput)
   {
-    oldphin  = rcp(new Epetra_Vector(*(ScaTraField().Phin())));
-    oldphinp = rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
+    oldphin  = Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phin())));
+    oldphinp = Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
     if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
-      oldphidtn= rcp(new Epetra_Vector(*(ScaTraField().Phidtn())));
+      oldphidtn= Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phidtn())));
     else
-      oldphinm = rcp(new Epetra_Vector(*(ScaTraField().Phinm())));
+      oldphinm = Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phinm())));
   }
 
   // restart of scalar transport (G-function) field
@@ -2495,7 +2495,7 @@ void COMBUST::Algorithm::Redistribute()
 
 
       // allocate graph
-      RefCountPtr<Epetra_CrsGraph> nodegraph = rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
+      RefCountPtr<Epetra_CrsGraph> nodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
 
       // -------------------------------------------------------------
       // iterate all elements on this proc including ghosted ones
@@ -2921,7 +2921,7 @@ void COMBUST::Algorithm::Redistribute()
       // create the new graph and export to it
       RefCountPtr<Epetra_CrsGraph> newnodegraph;
 
-      newnodegraph = rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
+      newnodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
       Epetra_Export exporter2(nodegraph->RowMap(),newmap);
       err = newnodegraph->Export(*nodegraph,exporter2,Add);
       if (err<0)
@@ -3004,14 +3004,14 @@ void COMBUST::Algorithm::Redistribute()
       if (velnpi_ != Teuchos::null)
       {
         old = velnpi_;
-        velnpi_ = rcp(new Epetra_Vector(FluidField().StdVelnp()->Map()),true);
+        velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField().StdVelnp()->Map()),true);
         LINALG::Export(*old, *velnpi_);
       }
 
       if (phinpi_ != Teuchos::null)
       {
         old = phinpi_;
-        phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
+        phinpi_ = Teuchos::rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
         LINALG::Export(*old, *phinpi_);
       }
 

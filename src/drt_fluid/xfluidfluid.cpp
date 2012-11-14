@@ -175,8 +175,8 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   // merge the fluid and alefluid maps
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   // std::vector<const Epetra_Map*> maps;
-  RCP<Epetra_Map> fluiddofrowmap = rcp(new Epetra_Map(*xfluid.bgdis_->DofRowMap()));
-  RCP<Epetra_Map> alefluiddofrowmap = rcp(new Epetra_Map(*xfluid.embdis_->DofRowMap()));
+  RCP<Epetra_Map> fluiddofrowmap = Teuchos::rcp(new Epetra_Map(*xfluid.bgdis_->DofRowMap()));
+  RCP<Epetra_Map> alefluiddofrowmap = Teuchos::rcp(new Epetra_Map(*xfluid.embdis_->DofRowMap()));
   maps.push_back(fluiddofrowmap);
   maps.push_back(alefluiddofrowmap);
   fluidfluiddofrowmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
@@ -980,7 +980,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     {
       rmap = &(xfluid_.alesysmat_->OperatorRangeMap());
       dmap = rmap;
-      sysmat_FE = rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
+      sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
     }
     else dserror("alesysmat is NULL!");
 
@@ -1073,7 +1073,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel.str(), step, step_diff, screen_out, discret.Comm().MyPID());
   cout << endl;
   std::ofstream gmshfilecontent_vel(filename_vel.c_str());
-  gmshfilecontent_vel.setf(ios::scientific,ios::floatfield);
+  gmshfilecontent_vel.setf(std::ios::scientific,std::ios::floatfield);
   gmshfilecontent_vel.precision(16);
 
   std::ostringstream filename_base_press;
@@ -1082,7 +1082,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press.str(), step, step_diff, screen_out, discret.Comm().MyPID());
   cout << endl;
   std::ofstream gmshfilecontent_press(filename_press.c_str());
-  gmshfilecontent_press.setf(ios::scientific,ios::floatfield);
+  gmshfilecontent_press.setf(std::ios::scientific,std::ios::floatfield);
   gmshfilecontent_press.precision(16);
 
   if(countiter > -1) // for residual output
@@ -1900,7 +1900,7 @@ FLD::XFluidFluid::XFluidFluid(
   // form of convective term
   convform_ = params_->get<string>("form of convective term","convective");
 
-  emboutput_ = rcp(new IO::DiscretizationWriter(embdis_));
+  emboutput_ = Teuchos::rcp(new IO::DiscretizationWriter(embdis_));
   emboutput_->WriteMesh(0,0.0);
 
   bool twoDFlow = false;
@@ -2043,7 +2043,7 @@ FLD::XFluidFluid::XFluidFluid(
   // make the dofset of boundarydis be a subset of the embedded dis
   RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(embdis_,boundarydis_);
   embdis_->Redistribute(*(embdis_->NodeRowMap()), *newcolnodemap);
-  RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentIndependentDofSet(embdis_,false,Teuchos::null));
+  RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(embdis_,false,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset); // do not call this with true!!
   boundarydis_->FillComplete();
 
@@ -2060,7 +2060,7 @@ FLD::XFluidFluid::XFluidFluid(
 
 
   // store a dofset with the complete fluid unknowns
-  dofset_out_ = rcp(new DRT::IndependentDofSet());
+  dofset_out_ = Teuchos::rcp(new DRT::IndependentDofSet());
   dofset_out_->Reset();
   dofset_out_->AssignDegreesOfFreedom(*bgdis_,0,0);
   // split based on complete fluid field (standard splitter that handles one dofset)
@@ -2070,7 +2070,7 @@ FLD::XFluidFluid::XFluidFluid(
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
 
   // create fluid output object
-  output_ = (rcp(new IO::DiscretizationWriter(bgdis_)));
+  output_ = (Teuchos::rcp(new IO::DiscretizationWriter(bgdis_)));
   output_->WriteMesh(0,0.0);
 
   //-------------------------------------------------------------------
@@ -2086,7 +2086,7 @@ FLD::XFluidFluid::XFluidFluid(
   //-------------------------------------------------------------------
 
 
-//   output_ = rcp(new IO::DiscretizationWriter(bgdis_));
+//   output_ = Teuchos::rcp(new IO::DiscretizationWriter(bgdis_));
 //   output_->WriteMesh(0,0.0);
 
   // embedded fluid state vectors
@@ -2271,8 +2271,8 @@ void FLD::XFluidFluid::PrepareEmbeddedDistribution()
 
   // create node and element distribution of outer layer elements and nodes
   // of the embedded discretization ghosted on all processors
-  Teuchos::RCP<const Epetra_Map> embnodeoutermap = rcp(new Epetra_Map(-1, embnode_outer_all.size(), &embnode_outer_all[0], 0, embdis_->Comm()));
-  Teuchos::RCP<const Epetra_Map> embeleoutermap = rcp(new Epetra_Map(-1, embele_outer_all.size(), &embele_outer_all[0], 0, embdis_->Comm()));
+  Teuchos::RCP<const Epetra_Map> embnodeoutermap = Teuchos::rcp(new Epetra_Map(-1, embnode_outer_all.size(), &embnode_outer_all[0], 0, embdis_->Comm()));
+  Teuchos::RCP<const Epetra_Map> embeleoutermap = Teuchos::rcp(new Epetra_Map(-1, embele_outer_all.size(), &embele_outer_all[0], 0, embdis_->Comm()));
 
   const Epetra_Map embnodeoutercolmap = *LINALG::AllreduceOverlappingEMap(*embnodeoutermap);
   const Epetra_Map embelemoutercolmap = *LINALG::AllreduceOverlappingEMap(*embeleoutermap);
@@ -2335,7 +2335,7 @@ void FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
 
       if(bele_found==true)
       {
-        boundary_emb_gid_map_.insert(pair<int,int>(bele->Id(),ele->Id()));
+        boundary_emb_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
         break;
       }
 
@@ -2402,7 +2402,7 @@ void FLD::XFluidFluid::IntegrateFluidFluid()
     TimeLoop();
 
   // print the results of time measurements
-  TimeMonitor::summarize();
+  Teuchos::TimeMonitor::summarize();
 
 }
 
@@ -3594,9 +3594,9 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution()
     }
   }
 
-  fixedfsidofmap_ = rcp(new Epetra_Map(-1, conddofs.size(), &conddofs[0], 0, embdis_->Comm()));
+  fixedfsidofmap_ = Teuchos::rcp(new Epetra_Map(-1, conddofs.size(), &conddofs[0], 0, embdis_->Comm()));
 
-  Teuchos::RCP<Epetra_Vector> tmpvec = rcp(new Epetra_Vector(*fixedfsidofmap_));
+  Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*fixedfsidofmap_));
   tmpvec->PutScalar(1.0);
 
   // the toggle vector with values 1 and 0
@@ -4185,7 +4185,7 @@ void FLD::XFluidFluid::XFluidFluidState::GenAlphaIntermediateValues()
     Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
     Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
 
-    Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
+    Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
 
     onlyaccam->Update((xfluid_.alphaM_),*onlyaccnp,(1.0-xfluid_.alphaM_),*onlyaccn,0.0);
 
@@ -4229,7 +4229,7 @@ void FLD::XFluidFluid::XFluidFluidState::GenAlphaUpdateAcceleration()
   Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
   Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
 
-  Teuchos::RCP<Epetra_Vector> onlyaccnp = rcp(new Epetra_Vector(onlyaccn->Map()));
+  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
 
   const double fact1 = 1.0/(xfluid_.gamma_*xfluid_.dta_);
   const double fact2 = 1.0 - (1.0/xfluid_.gamma_);
@@ -5129,7 +5129,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidFluid::ExtrapolateEndPoint
   Teuchos::RCP<Epetra_Vector> vecm
 )
 {
-  Teuchos::RCP<Epetra_Vector> vecnp = rcp(new Epetra_Vector(*vecm));
+  Teuchos::RCP<Epetra_Vector> vecnp = Teuchos::rcp(new Epetra_Vector(*vecm));
 
 //   // For gen-alpha extrapolate mid-point quantities to end-point.
 //   // Otherwise, equilibrium time level is already end-point.

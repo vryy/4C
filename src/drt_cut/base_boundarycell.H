@@ -328,9 +328,9 @@ double base_func_surfX(const LINALG::Matrix<2,1>& pt, int inte_num,std::vector<d
   if(inte_num==57) //f(x,y,z) = x^6
   {
     if(fabs(a1)>0.00000001)
-      basef_surf = pow((a2*z+a1*y+a0),7)/7.0/a1;
+      basef_surf = std::pow((a2*z+a1*y+a0),7)/7.0/a1;
     else
-      basef_surf = pow((a0+a2*z),6)*y;
+      basef_surf = std::pow((a0+a2*z),6)*y;
     return basef_surf;
   }
   if(inte_num==58) //f(x,y,z) = x^5*y
@@ -927,9 +927,9 @@ double base_func_surfY(const LINALG::Matrix<2,1>& pt, int inte_num,std::vector<d
   if(inte_num==78) //f(x,y,z) = y^6
   {
     if(fabs(a1)>0.00000001)
-      basef_surf = pow((a0+a2*x+a1*z),7)/7.0/a1;
+      basef_surf = std::pow((a0+a2*x+a1*z),7)/7.0/a1;
     else
-      basef_surf = pow((a0+a1*x),6)*z;
+      basef_surf = std::pow((a0+a1*x),6)*z;
     return basef_surf;
   }
   if(inte_num==79) //f(x,y,z) = y^5*z
@@ -1447,9 +1447,9 @@ double base_func_surfZ(const LINALG::Matrix<2,1>& pt, int inte_num,std::vector<d
   if(inte_num==84) //f(x,y,z) = z^6
   {
     if(fabs(a1)>0.00000001)
-      basef_surf = pow((a0+a1*x+a2*y),7)/7.0/a1;
+      basef_surf = std::pow((a0+a1*x+a2*y),7)/7.0/a1;
     else
-      basef_surf = pow((a0+a2*y),6)*x;
+      basef_surf = std::pow((a0+a2*y),6)*x;
     return basef_surf;
   }
   dserror("The base function for boundarycell integration undefined");

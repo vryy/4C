@@ -102,7 +102,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
       )
   );
 
-  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(actdis, adjointoutput));
+  RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis, adjointoutput));
   output->WriteMesh(0,0.0);
 
 
@@ -123,7 +123,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(problem->SolverParams(linsolvernumber),
+    Teuchos::rcp(new LINALG::Solver(problem->SolverParams(linsolvernumber),
                            actdis->Comm(),
                            problem->ErrorFile()->Handle()));
 
@@ -154,7 +154,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  RCP<ParameterList> fluidadjointtimeparams = rcp(new ParameterList());
+  RCP<ParameterList> fluidadjointtimeparams = Teuchos::rcp(new ParameterList());
 
   // --------------------provide info about periodic boundary conditions
   fluidadjointtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);

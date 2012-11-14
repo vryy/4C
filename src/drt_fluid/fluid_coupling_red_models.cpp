@@ -82,10 +82,10 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RefCountPtr<DRT
 
   if (numcondlines > 0) // if there is at least one coupling bc
   {
-      map3_Dnp_   = rcp(new map<string, double >);
-      map3_Dn_    = rcp(new map<string, double >);
-      mapRed_Dnp_ = rcp(new map<string, double >);
-      mapRed_Dn_  = rcp(new map<string, double >);
+      map3_Dnp_   = Teuchos::rcp(new map<string, double >);
+      map3_Dn_    = Teuchos::rcp(new map<string, double >);
+      mapRed_Dnp_ = Teuchos::rcp(new map<string, double >);
+      mapRed_Dn_  = Teuchos::rcp(new map<string, double >);
     // -------------------------------------------------------------------
     // get the maximum allowable number of iterations at the boundary
     // which should be the same!
@@ -143,7 +143,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RefCountPtr<DRT
       // ------------------------------------------------------------------
       // allocate the coupling bc class members for every case
       // ------------------------------------------------------------------
-      RCP<Fluid_couplingBc > couplingbc = rcp(new Fluid_couplingBc(discret3D_, discret_redD_, output_, dt_f3_, dt_rm_, condid, i, j) );
+      RCP<Fluid_couplingBc > couplingbc = Teuchos::rcp(new Fluid_couplingBc(discret3D_, discret_redD_, output_, dt_f3_, dt_rm_, condid, i, j) );
 
       // -----------------------------------------------------------------
       // sort coupling bc's in map and test, if one condition ID appears
@@ -183,8 +183,8 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RefCountPtr<DRT
 
       // Build the map
 
-      map3_Dnp_->insert(make_pair(VariableWithId.str(),value));
-      map3_Dn_->insert(make_pair(VariableWithId.str(),value));
+      map3_Dnp_->insert(std::make_pair(VariableWithId.str(),value));
+      map3_Dn_->insert(std::make_pair(VariableWithId.str(),value));
 
     }
 
@@ -205,8 +205,8 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RefCountPtr<DRT
       double value = 0.0;
 
       // Build the map
-      mapRed_Dnp_->insert(make_pair(VariableWithId.str(),value));
-      mapRed_Dn_->insert(make_pair(VariableWithId.str(),value));
+      mapRed_Dnp_->insert(std::make_pair(VariableWithId.str(),value));
+      mapRed_Dn_->insert(std::make_pair(VariableWithId.str(),value));
     }
 
   } // end if there were conditions
@@ -419,7 +419,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     // Define a map that will have the interpolated values at the
     // reduced-D time subscale
     // -----------------------------------------------------------------
-    RCP<map<string, double > >  map3D_inter_to_Red = rcp(new map<string, double >);
+    RCP<map<string, double > >  map3D_inter_to_Red = Teuchos::rcp(new map<string, double >);
     double dstep = 1.0/double(NumOfSteps);
 
     // -----------------------------------------------------------------
@@ -464,14 +464,14 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
       (*map3D_inter_to_Red)[var_str] = var;
     }
 
-    RCP<Teuchos::ParameterList> params = rcp( new Teuchos::ParameterList);
+    RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);
     //    params->set("3D map of values", map3_Dnp_);
     params->set("3D map of values",map3D_inter_to_Red);
     params->set("reducedD map of values", mapRed_Dnp_);
     params->set("time",time);
 //#endif
 
-//    RCP<Teuchos::ParameterList> params = rcp( new Teuchos::ParameterList);
+//    RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);
 //    params->set("3D map of values", map3_Dnp_);
 //    params->set("reducedD map of values", mapRed_Dnp_);
 
@@ -953,7 +953,7 @@ double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta
   const Epetra_Map* dofrowmap = discret_3D_->DofRowMap();
 
   // get elemental flowrates ...
-  RCP<Epetra_Vector> myStoredPressures=rcp(new Epetra_Vector(*dofrowmap,100));
+  RCP<Epetra_Vector> myStoredPressures=Teuchos::rcp(new Epetra_Vector(*dofrowmap,100));
   const string condstring("Art_3D_redD_CouplingCond");
   discret_3D_->EvaluateCondition(eleparams,myStoredPressures,condstring,condid);
 

@@ -89,10 +89,10 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
   }
 
   masterdofmap_ = mastercondmap;
-  masterexport_ = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
+  masterexport_ = Teuchos::rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
 
   slavedofmap_ = slavecondmap;
-  slaveexport_ = rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
+  slaveexport_ = Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
 }
 
 
@@ -171,10 +171,10 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
     dserror("slave dof map mismatch");
 
   masterdofmap_ = mastercondmap;
-  masterexport_ = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
+  masterexport_ = Teuchos::rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
 
   slavedofmap_ = slavecondmap;
-  slaveexport_ = rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
+  slaveexport_ = Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
 }
 
 
@@ -194,13 +194,13 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
   // Epetra maps in original distribution
 
   Teuchos::RCP<Epetra_Map> masternodemap =
-    rcp(new Epetra_Map(-1, patchedmasternodes.size(), &patchedmasternodes[0], 0, masterdis.Comm()));
+    Teuchos::rcp(new Epetra_Map(-1, patchedmasternodes.size(), &patchedmasternodes[0], 0, masterdis.Comm()));
 
   Teuchos::RCP<Epetra_Map> slavenodemap =
-    rcp(new Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm()));
+    Teuchos::rcp(new Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm()));
 
   Teuchos::RCP<Epetra_Map> permslavenodemap =
-    rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
+    Teuchos::rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof);
 }
@@ -231,13 +231,13 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
   // Epetra maps in original distribution
 
   Teuchos::RCP<Epetra_Map> masternodemap =
-    rcp(new Epetra_Map(-1, mastervect.size(), &mastervect[0], 0, masterdis.Comm()));
+    Teuchos::rcp(new Epetra_Map(-1, mastervect.size(), &mastervect[0], 0, masterdis.Comm()));
 
   Teuchos::RCP<Epetra_Map> slavenodemap =
-    rcp(new Epetra_Map(slavenodes));
+    Teuchos::rcp(new Epetra_Map(slavenodes));
 
   Teuchos::RCP<Epetra_Map> permslavenodemap =
-    rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
+    Teuchos::rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof);
 }
@@ -317,10 +317,10 @@ void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
   // maps, assigned to the slave maps. On the master side we actually
   // create just a view on the map! This vector must not be changed!
   Teuchos::RCP<Epetra_IntVector> masternodevec =
-    rcp(new Epetra_IntVector(View, *permslavenodemap, masternodemap->MyGlobalElements()));
+    Teuchos::rcp(new Epetra_IntVector(View, *permslavenodemap, masternodemap->MyGlobalElements()));
 
   Teuchos::RCP<Epetra_IntVector> permmasternodevec =
-    rcp(new Epetra_IntVector(*slavenodemap));
+    Teuchos::rcp(new Epetra_IntVector(*slavenodemap));
 
   Epetra_Export masternodeexport(*permslavenodemap, *slavenodemap);
   const int err = permmasternodevec->Export(*masternodevec, masternodeexport, Insert);
@@ -328,7 +328,7 @@ void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
     dserror("failed to export master nodes");
 
   Teuchos::RCP<const Epetra_Map> permmasternodemap =
-    rcp(new Epetra_Map(-1, permmasternodevec->MyLength(), permmasternodevec->Values(), 0, masterdis.Comm()));
+    Teuchos::rcp(new Epetra_Map(-1, permmasternodevec->MyLength(), permmasternodevec->Values(), 0, masterdis.Comm()));
 
   if (not slavenodemap->PointSameAs(*permmasternodemap))
     dserror("slave and permutated master node maps do not match");
@@ -410,7 +410,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
     dserror("illegal dof number %d", *pos);
 
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, dis.Comm()));
+  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, dis.Comm()));
 
   dofmapvec.clear();
 
@@ -429,11 +429,11 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
   dofs.clear();
 
   // permutated dof map according to a given permutated node map
-  permdofmap = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, dis.Comm()));
+  permdofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, dis.Comm()));
 
   // prepare communication plan to create a dofmap out of a permutated
   // dof map
-  exporter = rcp(new Epetra_Export(*permdofmap, *dofmap));
+  exporter = Teuchos::rcp(new Epetra_Export(*permdofmap, *dofmap));
 }
 
 
@@ -573,7 +573,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::MasterToPermMaster(const L
 #if 0
   int err = permsm->Import(*sm.EpetraMatrix(),*masterexport_,Insert);
 #else
-  Teuchos::RCP<Epetra_Export> exporter = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
+  Teuchos::RCP<Epetra_Export> exporter = Teuchos::rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
   int err = permsm->Import(*sm.EpetraMatrix(),*exporter,Insert);
 #endif
 
@@ -606,7 +606,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::SlaveToPermSlave(const LIN
 #if 0
   int err = permsm->Import(*sm.EpetraMatrix(),*slaveexport_,Insert);
 #else
-  Teuchos::RCP<Epetra_Export> exporter = rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
+  Teuchos::RCP<Epetra_Export> exporter = Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
   int err = permsm->Import(*sm.EpetraMatrix(),*exporter,Insert);
 #endif
 
@@ -668,7 +668,7 @@ void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap
 
   Teuchos::RCP<Epetra_CrsMatrix> tmp = Teuchos::rcp(new Epetra_CrsMatrix(Copy,slavedomainmap,1));
 
-  Teuchos::RCP<Epetra_Import> exporter = rcp(new Epetra_Import(slavedomainmap, *PermSlaveDofMap()));
+  Teuchos::RCP<Epetra_Import> exporter = Teuchos::rcp(new Epetra_Import(slavedomainmap, *PermSlaveDofMap()));
   int err = tmp->Import(*matsm_trans_,*exporter,Insert);
   if (err)
     dserror("Import failed with err=%d",err);

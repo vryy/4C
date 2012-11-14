@@ -556,7 +556,7 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
       res = lhs/rhs;
       break;
     case '^':
-      res = pow(lhs,rhs);
+      res = std::pow(lhs,rhs);
       break;
     default:
       dserror("unsupported operator '%c'", node->v_.op);

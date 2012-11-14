@@ -39,7 +39,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const string eletyp
   {
     if ( eledistype!="NURBS4" and eledistype!="NURBS9" )
     {
-      return rcp(new DRT::ELEMENTS::Wall1(id,owner));
+      return Teuchos::rcp(new DRT::ELEMENTS::Wall1(id,owner));
     }
   }
   return Teuchos::null;
@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const string eletyp
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const int id, const int owner )
 {
-  return rcp(new DRT::ELEMENTS::Wall1(id,owner));
+  return Teuchos::rcp(new DRT::ELEMENTS::Wall1(id,owner));
 }
 
 
@@ -342,7 +342,7 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
 vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
 {
   vector<RCP<Element> > surfaces(1);
-  surfaces[0]= rcp(this, false);
+  surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }
 

@@ -578,7 +578,7 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::Shell8::VisNames(std::map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);

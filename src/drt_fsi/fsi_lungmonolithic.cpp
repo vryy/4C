@@ -50,7 +50,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   // needed).
 
   ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
-  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
 
   // consistency check: all dofs contained in ale(fluid)-structure coupling need to
   // be part of the structure volume constraint, too. this needs to be checked because during
@@ -83,7 +83,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
 
   NumConstrID_ = FluidLungVolConIDs.size();
 
-  ConstrDofSet_ = rcp(new ::UTILS::ConstraintDofSet());
+  ConstrDofSet_ = Teuchos::rcp(new ::UTILS::ConstraintDofSet());
   ConstrDofSet_->AssignDegreesOfFreedom(FluidField().Discretization(),NumConstrID_,0);
 
   // The "OffsetID" is used during the evaluation of constraints on
@@ -101,14 +101,14 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   // value here.
 
   OffsetID_ = FluidMinLungVolConID - ConstrDofSet_->FirstGID();
-  ConstrMap_ = rcp(new Epetra_Map(*(ConstrDofSet_->DofRowMap())));
+  ConstrMap_ = Teuchos::rcp(new Epetra_Map(*(ConstrDofSet_->DofRowMap())));
 
   // build an all reduced version of the constraintmap, since sometimes all processors
   // have to know all values of the constraints and Lagrange multipliers
   RedConstrMap_ = LINALG::AllreduceEMap(*ConstrMap_);
 
   // create importer
-  ConstrImport_ = rcp (new Epetra_Export(*RedConstrMap_,*ConstrMap_));
+  ConstrImport_ = Teuchos::rcp(new Epetra_Export(*RedConstrMap_,*ConstrMap_));
 
   // initialize associated matrices and vectors
 
@@ -117,9 +117,9 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   // Corresponding matrices then need to be transformed to the ale
   // dofmap using corresponding matrix transformators.
 
-  LagrMultVec_    = rcp(new Epetra_Vector(*ConstrMap_,true));
-  LagrMultVecOld_ = rcp(new Epetra_Vector(*ConstrMap_,true));
-  IncLagrMultVec_ = rcp(new Epetra_Vector(*ConstrMap_,true));
+  LagrMultVec_    = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
+  LagrMultVecOld_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
+  IncLagrMultVec_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
 
   // build merged structure dof map
   Teuchos::RCP<Epetra_Map> FullStructDofMap = LINALG::MergeMap(*StructureField()->DofRowMap(),
@@ -127,37 +127,37 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
                                                                false);
   LINALG::MapExtractor StructConstrExtractor(*FullStructDofMap, ConstrMap_, StructureField()->DofRowMap());
 
-  AddStructConstrMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(StructConstrExtractor,StructConstrExtractor,81,false,true));
+  AddStructConstrMatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(StructConstrExtractor,StructConstrExtractor,81,false,true));
 
-  AddFluidShapeDerivMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*FluidField().Interface(),*FluidField().Interface(),108,false,true));
-  FluidConstrMatrix_ = rcp(new LINALG::SparseMatrix(*FluidField().Discretization()->DofRowMap(), NumConstrID_, false, true));
-  ConstrFluidMatrix_ = rcp(new LINALG::SparseMatrix(*ConstrMap_, FluidField().Discretization()->DofRowMap()->NumGlobalElements(),false,true));
+  AddFluidShapeDerivMatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*FluidField().Interface(),*FluidField().Interface(),108,false,true));
+  FluidConstrMatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*FluidField().Discretization()->DofRowMap(), NumConstrID_, false, true));
+  ConstrFluidMatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*ConstrMap_, FluidField().Discretization()->DofRowMap()->NumGlobalElements(),false,true));
 
   // additional "ale" matrices filled in the fluid elements
   Teuchos::RCP<Epetra_Map> emptymap = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,FluidField().Discretization()->Comm()));
   LINALG::MapExtractor constrextractor;
   constrextractor.Setup(*ConstrMap_,emptymap,ConstrMap_);
-  AleConstrMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(constrextractor, *FluidField().Interface(),108,false, true));
-  ConstrAleMatrix_ = rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*FluidField().Interface(),constrextractor,108,false, true));
+  AleConstrMatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(constrextractor, *FluidField().Interface(),108,false, true));
+  ConstrAleMatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*FluidField().Interface(),constrextractor,108,false, true));
 
-  AddStructRHS_ = rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap(),true));
-  AddFluidRHS_ = rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap(),true));
-  ConstrRHS_ = rcp(new Epetra_Vector(*ConstrMap_,true));
+  AddStructRHS_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap(),true));
+  AddFluidRHS_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap(),true));
+  ConstrRHS_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
 
-  OldVols_ = rcp(new Epetra_Vector(*ConstrMap_,true));
-  CurrVols_ = rcp(new Epetra_Vector(*ConstrMap_,true));
-  SignVolsRed_ = rcp(new Epetra_Vector(*RedConstrMap_,true));
-  dVstruct_ = rcp(new Epetra_Vector(*ConstrMap_,true));
+  OldVols_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
+  CurrVols_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
+  SignVolsRed_ = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_,true));
+  dVstruct_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
 
-  OldFlowRates_ = rcp(new Epetra_Vector(*ConstrMap_,true));
-  CurrFlowRates_ = rcp(new Epetra_Vector(*ConstrMap_,true));
-  dVfluid_ = rcp(new Epetra_Vector(*ConstrMap_,true));
+  OldFlowRates_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
+  CurrFlowRates_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
+  dVfluid_ = Teuchos::rcp(new Epetra_Vector(*ConstrMap_,true));
 
   // time integration factor for flow rates
   theta_ = 0.5;
 
   // determine initial volumes of parenchyma balloons
-  Teuchos::RCP<Epetra_Vector> OldVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
   structfield->InitializeVolCon(OldVolsRed, SignVolsRed_, OffsetID_);
 
@@ -165,7 +165,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   OldVols_->Export(*OldVolsRed,*ConstrImport_,Add);
 
   // determine initial flow rates at outlets
-  Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
   fluidfield.InitializeVolCon(OldFlowRatesRed, OffsetID_);
 
@@ -373,11 +373,11 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   // structure part
 
   // create redundant vectors
-  Teuchos::RCP<Epetra_Vector> LagrMultVecRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> LagrMultVecRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   LINALG::Export(*LagrMultVec_,*LagrMultVecRed);
-  Teuchos::RCP<Epetra_Vector> CurrVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> CurrVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
-  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
   CurrVolsRed->PutScalar(0.0);
   AddStructRHS_->PutScalar(0.0);
   AddStructConstrMatrix_->Zero();
@@ -400,7 +400,7 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
 
   // create redundant vector
-  Teuchos::RCP<Epetra_Vector> CurrFlowRatesRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> CurrFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
   CurrFlowRatesRed->PutScalar(0.0);
   AddFluidRHS_->PutScalar(0.0);
@@ -445,8 +445,8 @@ void FSI::LungMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat,
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
-    srowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    scolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*srowsum_);
     A->InvColSums(*scolsum_);
     if (A->LeftScale(*srowsum_) or
@@ -460,8 +460,8 @@ void FSI::LungMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat,
       dserror("structure scaling failed");
 
     A = mat.Matrix(2,2).EpetraMatrix();
-    arowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
-    acolsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     A->InvRowSums(*arowsum_);
     A->InvColSums(*acolsum_);
     if (A->LeftScale(*arowsum_) or
@@ -842,12 +842,12 @@ void FSI::LungMonolithic::Output()
   // is placed in between the output of the single fields.
   if ( writerestartevery_ and (Step() % writerestartevery_ == 0) )
   {
-    const Teuchos::RCP<ADAPTER::StructureLung>& structfield = rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
-    Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = rcp(new Epetra_Vector(*RedConstrMap_));
+    const Teuchos::RCP<ADAPTER::StructureLung>& structfield = Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+    Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
     LINALG::Export(*OldFlowRates_,*OldFlowRatesRed);
-    Teuchos::RCP<Epetra_Vector> OldVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
+    Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
     LINALG::Export(*OldVols_,*OldVolsRed);
-    Teuchos::RCP<Epetra_Vector> LagrMultVecOldRed = rcp(new Epetra_Vector(*RedConstrMap_));
+    Teuchos::RCP<Epetra_Vector> LagrMultVecOldRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
     LINALG::Export(*LagrMultVecOld_,*LagrMultVecOldRed);
     structfield->WriteVolConRestart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
   }
@@ -864,7 +864,7 @@ void FSI::LungMonolithic::Output()
 
   // output of volumes for visualization (e.g. gnuplot)
 
-  Teuchos::RCP<Epetra_Vector> dVfluidRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> dVfluidRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   LINALG::Export(*dVfluid_,*dVfluidRed);
 
   if (Comm().MyPID()==0)
@@ -877,7 +877,7 @@ void FSI::LungMonolithic::Output()
     outfluiddvol_ << "\n" << std::flush;
   }
 
-  Teuchos::RCP<Epetra_Vector> dVstructRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> dVstructRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   LINALG::Export(*dVstruct_,*dVstructRed);
 
   if (Comm().MyPID()==0)
@@ -890,7 +890,7 @@ void FSI::LungMonolithic::Output()
     outstructdvol_ << "\n" << std::flush;
   }
 
-  Teuchos::RCP<Epetra_Vector> VstructRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> VstructRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   LINALG::Export(*CurrVols_,*VstructRed);
 
   if (Comm().MyPID()==0)
@@ -911,11 +911,11 @@ void FSI::LungMonolithic::ReadRestart(int step)
 {
   FSI::Monolithic::ReadRestart(step);
 
-  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
+  const Teuchos::RCP<ADAPTER::StructureLung>& structfield = Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
 
-  Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = rcp(new Epetra_Vector(*RedConstrMap_));
-  Teuchos::RCP<Epetra_Vector> OldVolsRed = rcp(new Epetra_Vector(*RedConstrMap_));
-  Teuchos::RCP<Epetra_Vector> OldLagrMultRed = rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
+  Teuchos::RCP<Epetra_Vector> OldLagrMultRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
   structfield->ReadVolConRestart(step, OldFlowRatesRed, OldVolsRed, OldLagrMultRed);
 

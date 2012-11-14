@@ -982,10 +982,10 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
 //
 //        // output to log-file
 //        Teuchos::RCP<std::ofstream> log;
-//        log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+//        log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
 //        //(*log) << "\n";
-//        (*log) <<  " "  << setw(12) << setprecision(8) << eledistance.front().second;
-//        (*log) <<  " "  << setw(12) << setprecision(8) << (*phivector)[doflid];
+//        (*log) <<  " "  << std::setw(12) << std::setprecision(8) << eledistance.front().second;
+//        (*log) <<  " "  << std::setw(12) << std::setprecision(8) << (*phivector)[doflid];
 //        (*log) << &endl;
 //        log->flush();
 //        cout << "wrote reinitialized radius at center to file" << endl;

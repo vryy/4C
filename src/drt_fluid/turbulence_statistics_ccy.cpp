@@ -81,11 +81,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   // compute all planes for sampling
 
   // available shells of element corners (Nurbs) of elements
-  nodeshells_ = rcp(new vector<double> );
+  nodeshells_ = Teuchos::rcp(new vector<double> );
 
   // available homogeneous (sampling) shells --- there are
   // numsubdivisions layers per element layer
-  shellcoordinates_ = rcp(new vector<double> );
+  shellcoordinates_ = Teuchos::rcp(new vector<double> );
 
   const int numsubdivisions=5;
 
@@ -413,46 +413,46 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   // --------------------------------
 
   // first order moments
-  pointsumu_ =  rcp(new vector<double> );
+  pointsumu_ =  Teuchos::rcp(new vector<double> );
   pointsumu_->resize(size,0.0);
 
-  pointsumv_ =  rcp(new vector<double> );
+  pointsumv_ =  Teuchos::rcp(new vector<double> );
   pointsumv_->resize(size,0.0);
 
-  pointsumw_ =  rcp(new vector<double> );
+  pointsumw_ =  Teuchos::rcp(new vector<double> );
   pointsumw_->resize(size,0.0);
 
-  pointsump_ =  rcp(new vector<double> );
+  pointsump_ =  Teuchos::rcp(new vector<double> );
   pointsump_->resize(size,0.0);
 
   // now the second order moments
-  pointsumuu_ =  rcp(new vector<double> );
+  pointsumuu_ =  Teuchos::rcp(new vector<double> );
   pointsumuu_->resize(size,0.0);
 
-  pointsumvv_ =  rcp(new vector<double> );
+  pointsumvv_ =  Teuchos::rcp(new vector<double> );
   pointsumvv_->resize(size,0.0);
 
-  pointsumww_ =  rcp(new vector<double> );
+  pointsumww_ =  Teuchos::rcp(new vector<double> );
   pointsumww_->resize(size,0.0);
 
-  pointsumpp_ =  rcp(new vector<double> );
+  pointsumpp_ =  Teuchos::rcp(new vector<double> );
   pointsumpp_->resize(size,0.0);
 
-  pointsumuv_  =  rcp(new vector<double> );
+  pointsumuv_  =  Teuchos::rcp(new vector<double> );
   pointsumuv_->resize(size,0.0);
 
-  pointsumuw_  =  rcp(new vector<double> );
+  pointsumuw_  =  Teuchos::rcp(new vector<double> );
   pointsumuw_->resize(size,0.0);
 
-  pointsumvw_  =  rcp(new vector<double> );
+  pointsumvw_  =  Teuchos::rcp(new vector<double> );
   pointsumvw_->resize(size,0.0);
 
   if (withscatra_)
   {
-    pointsumc_ =  rcp(new vector<double> );
+    pointsumc_ =  Teuchos::rcp(new vector<double> );
     pointsumc_->resize(size,0.0);
 
-    pointsumcc_ = rcp(new vector<double> );
+    pointsumcc_ = Teuchos::rcp(new vector<double> );
     pointsumcc_->resize(size,0.0);
 
   // pointsumphi_/pointsumphiphi_ are allocated in ApplyScatraResults()
@@ -468,7 +468,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
     (*log) << "# Statistics for turbulent incompressible flow in a rotating cylinder (first- and second-order moments)\n\n";
 
     log->flush();
@@ -570,30 +570,30 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   {
     double r=*coord;
 
-    meanu.insert(pair<double,double>(r,0.0));
-    meanv.insert(pair<double,double>(r,0.0));
-    meanw.insert(pair<double,double>(r,0.0));
-    meanp.insert(pair<double,double>(r,0.0));
+    meanu.insert(std::pair<double,double>(r,0.0));
+    meanv.insert(std::pair<double,double>(r,0.0));
+    meanw.insert(std::pair<double,double>(r,0.0));
+    meanp.insert(std::pair<double,double>(r,0.0));
 
-    meanuu.insert(pair<double,double>(r,0.0));
-    meanvv.insert(pair<double,double>(r,0.0));
-    meanww.insert(pair<double,double>(r,0.0));
-    meanpp.insert(pair<double,double>(r,0.0));
-    meanuv.insert(pair<double,double>(r,0.0));
-    meanuw.insert(pair<double,double>(r,0.0));
-    meanvw.insert(pair<double,double>(r,0.0));
+    meanuu.insert(std::pair<double,double>(r,0.0));
+    meanvv.insert(std::pair<double,double>(r,0.0));
+    meanww.insert(std::pair<double,double>(r,0.0));
+    meanpp.insert(std::pair<double,double>(r,0.0));
+    meanuv.insert(std::pair<double,double>(r,0.0));
+    meanuw.insert(std::pair<double,double>(r,0.0));
+    meanvw.insert(std::pair<double,double>(r,0.0));
 
-    countpoints.insert(pair<double,int>(r,0));
+    countpoints.insert(std::pair<double,int>(r,0));
 
     if(withscatra_)
     {
-      meanc.insert(pair<double,double>(r,0.0));
-      meancc.insert(pair<double,double>(r,0.0));
+      meanc.insert(std::pair<double,double>(r,0.0));
+      meancc.insert(std::pair<double,double>(r,0.0));
 
       for (int k=0; k < numscatradofpernode_; ++k)
       {
-        meanphi[k].insert(pair<double,double>(r,0.0));
-        meanphiphi[k].insert(pair<double,double>(r,0.0));
+        meanphi[k].insert(std::pair<double,double>(r,0.0));
+        meanphiphi[k].insert(std::pair<double,double>(r,0.0));
       }
     }
   }
@@ -1404,7 +1404,7 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
     (*log) << "\n\n\n";
     (*log) << "# Statistics record " << countrecord_;
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
@@ -1439,33 +1439,33 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
       }
     }
     (*log) << "\n";
-    (*log) << scientific;
+    (*log) << std::scientific;
     for(unsigned i=0; i<shellcoordinates_->size(); ++i)
     {
       // y and y+
-      (*log) <<  " "  << setw(14) << setprecision(7) << (*shellcoordinates_)[i];
+      (*log) <<  " "  << std::setw(14) << std::setprecision(7) << (*shellcoordinates_)[i];
 
       // pointwise means
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumu_ )[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumv_ )[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumw_ )[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsump_ )[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumuu_)[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumvv_)[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumww_)[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumpp_)[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumuv_)[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumuw_)[i]/numsamp_;
-      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumvw_)[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumu_ )[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumv_ )[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumw_ )[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsump_ )[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumuu_)[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumvv_)[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumww_)[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumpp_)[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumuv_)[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumuw_)[i]/numsamp_;
+      (*log) << "    " << std::setw(13) << std::setprecision(6) << (*pointsumvw_)[i]/numsamp_;
       if (withscatra_)
       {
-        (*log) << "    " << setw(17) << setprecision(10) << (*pointsumc_ )[i]/numsamp_;
-        (*log) << "    " << setw(17) << setprecision(10) << (*pointsumcc_)[i]/numsamp_;
+        (*log) << "    " << std::setw(17) << std::setprecision(10) << (*pointsumc_ )[i]/numsamp_;
+        (*log) << "    " << std::setw(17) << std::setprecision(10) << (*pointsumcc_)[i]/numsamp_;
 
         for(int k=0; k< numscatradofpernode_; k++)
         {
-          (*log) << "    " << setw(17) << setprecision(10) << ((*pointsumphi_ )(i,k))/numsamp_;
-          (*log) << "    " << setw(17) << setprecision(10) << ((*pointsumphiphi_)(i,k))/numsamp_;
+          (*log) << "    " << std::setw(17) << std::setprecision(10) << ((*pointsumphi_ )(i,k))/numsamp_;
+          (*log) << "    " << std::setw(17) << std::setprecision(10) << ((*pointsumphiphi_)(i,k))/numsamp_;
         }
       }
       (*log) << "\n";
@@ -1565,8 +1565,8 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
 
     // now we know about the number of scatra dofs and can allocate:
     int size = shellcoordinates_->size();
-    pointsumphi_   = rcp(new Epetra_SerialDenseMatrix(size,numscatradofpernode_));
-    pointsumphiphi_= rcp(new Epetra_SerialDenseMatrix(size,numscatradofpernode_));
+    pointsumphi_   = Teuchos::rcp(new Epetra_SerialDenseMatrix(size,numscatradofpernode_));
+    pointsumphiphi_= Teuchos::rcp(new Epetra_SerialDenseMatrix(size,numscatradofpernode_));
 
     if(discret_->Comm().MyPID()==0)
     {

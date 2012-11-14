@@ -34,7 +34,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const s
   {
     if(eledistype=="NURBS4" || eledistype=="NURBS9")
     {
-      return rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
+      return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
     }
   }
   return Teuchos::null;
@@ -43,7 +43,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const s
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const int id, const int owner )
 {
-  return rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
+  return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
 }
 
 void DRT::ELEMENTS::NURBS::Wall1NurbsType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
@@ -150,7 +150,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
 vector<RCP<DRT::Element> >  DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
 {
   vector<RCP<Element> > surfaces(1);
-  surfaces[0]= rcp(this, false);
+  surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }
 

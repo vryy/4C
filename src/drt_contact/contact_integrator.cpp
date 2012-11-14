@@ -1659,8 +1659,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
     jacnp1 = sele.Jacobian(sxi);
     fdres[1] = (jacnp1-jacslave)/inc;
     sxi[1] -= inc;
-    std::cout << "DJacDXi: " << scientific << djacdxi[0] << " " << djacdxi[1] << endl;
-    std::cout << "FD-DJacDXi: " << scientific << fdres[0] << " " << fdres[1] << endl << endl;*/
+    std::cout << "DJacDXi: " << std::scientific << djacdxi[0] << " " << djacdxi[1] << endl;
+    std::cout << "FD-DJacDXi: " << std::scientific << fdres[0] << " " << fdres[1] << endl << endl;*/
 
     // evaluate the slave Jacobian derivative
     std::map<int,double> jacslavemap;

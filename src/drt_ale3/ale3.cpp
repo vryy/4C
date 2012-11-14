@@ -42,7 +42,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create( const string eletype
   {
     if(eledistype!="NURBS27")
     {
-      ele = rcp(new DRT::ELEMENTS::Ale3(id,owner));
+      ele = Teuchos::rcp(new DRT::ELEMENTS::Ale3(id,owner));
     }
   }
 
@@ -237,7 +237,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Surfaces()
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Volumes()
 {
   vector<RCP<Element> > volumes(1);
-  volumes[0]= rcp(this, false);
+  volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
 

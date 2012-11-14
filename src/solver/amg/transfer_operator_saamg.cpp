@@ -48,14 +48,14 @@ RCP<Epetra_MultiVector>  LINALG::SAAMGTransferOperator::buildTransferOperators(c
   double maxeig = MaxEigCG(*A_,true);
 
   ////////////////// extract diagonal of A
-  RCP<Epetra_Vector> diagA = rcp(new Epetra_Vector(A_->RowMap(),true));
+  RCP<Epetra_Vector> diagA = Teuchos::rcp(new Epetra_Vector(A_->RowMap(),true));
   A_->ExtractDiagonalCopy(*diagA);
 
   int err = diagA->Reciprocal(*diagA);
   if(err) dserror("SaddlePointPreconditioner::SA_AMG: diagonal entries of A are 0");
 
   /////////////////// setup smoothed aggregation prolongator
-  RCP<SparseMatrix> Ascaled = rcp(new SparseMatrix(*A_,Copy)); // ok, not the best but just works
+  RCP<SparseMatrix> Ascaled = Teuchos::rcp(new SparseMatrix(*A_,Copy)); // ok, not the best but just works
   diagA->Scale(dampingFactor/maxeig);
   Ascaled->LeftScale(*diagA);                               // Ascaled = damping/maxeig(D^{-1} A) * D^{-1} * A
   prolongator_ = LINALG::MLMultiply(*Ascaled,*prolongator_tent,false);  // Psmoothed = damping/maxeig(D^{-1} A) * D^{-1} * A * Ptent

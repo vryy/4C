@@ -39,7 +39,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3Type::Create( const std::string e
 {
   if ( eletype=="BEAM3" )
   {
-    Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3Type::Create( const std::string e
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3(id,owner));
   return ele;
 }
 
@@ -347,7 +347,7 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
 vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
 {
   vector<RCP<Element> > lines(1);
-  lines[0]= rcp(this, false);
+  lines[0]= Teuchos::rcp(this, false);
   return lines;
 }
 

@@ -105,15 +105,15 @@ void DRT::NURBS::ControlPoint::Pack(DRT::PackBuffer& data) const
 
   Pack and Unpack are used to communicate this control point
 */
-void DRT::NURBS::ControlPoint::Unpack(const vector<char>& data)
+void DRT::NURBS::ControlPoint::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Node
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::Node::Unpack(basedata);
   // extract weight

@@ -162,7 +162,7 @@ namespace UTILS
       }
 
       // allocate a new boundary element
-      boundaryeles[iele] = rcp(new BoundaryEle(iele          ,
+      boundaryeles[iele] = Teuchos::rcp(new BoundaryEle(iele          ,
                                                ele->Owner()  ,
                                                nodeids.size(),
                                                &nodeids[0]   ,
@@ -208,7 +208,7 @@ namespace UTILS
   {
 
     // create a new internal face element
-    return rcp(new IntFaceEle(id,
+    return Teuchos::rcp(new IntFaceEle(id,
                               owner,
                               nnode,
                               nodeids,

@@ -548,12 +548,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     dserror("Fluid element %i not on local processor", id);
 
   //get fluid material
-  Teuchos::RCP< MAT::FluidPoro > fluidmat = rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
+  Teuchos::RCP< MAT::FluidPoro > fluidmat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
   if(fluidmat->MaterialType() != INPAR::MAT::m_fluidporo)
     dserror("invalid fluid material for poroelasticity");
 
   //get structure material
-  Teuchos::RCP< MAT::StructPoro > structmat = rcp_dynamic_cast<MAT::StructPoro>(Material());
+  Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
     dserror("invalid structure material for poroelasticity");
 
@@ -1573,12 +1573,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     dserror("Fluid element %i not on local processor", id);
 
   //get fluid material
-  Teuchos::RCP< MAT::FluidPoro > fluidmat = rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
+  Teuchos::RCP< MAT::FluidPoro > fluidmat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
   if(fluidmat->MaterialType() != INPAR::MAT::m_fluidporo)
     dserror("invalid fluid material for poroelasticity");
 
   //get structure material
-  Teuchos::RCP< MAT::StructPoro > structmat = rcp_dynamic_cast<MAT::StructPoro>(Material());
+  Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
     dserror("invalid structure material for poroelasticity");
 

@@ -180,7 +180,7 @@ namespace GEO
    */
   LINALG::SerialDenseMatrix getCurrentNodalPositions(
       const DRT::Element* const               ele,                   ///< element with nodal pointers
-      const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions ///< current positions of all cutter nodes
+      const std::map<int,LINALG::Matrix<3,1> >&    currentcutterpositions ///< current positions of all cutter nodes
       );
   
   
@@ -196,7 +196,7 @@ namespace GEO
    */
   LINALG::SerialDenseMatrix getCurrentNodalPositions(
 	  const RCP<const DRT::Element>         ele,					      ///< pointer on element
-	  const map<int,LINALG::Matrix<3,1> >&  currentpositions		///< current positions of all cutter nodes
+	  const std::map<int,LINALG::Matrix<3,1> >&  currentpositions		///< current positions of all cutter nodes
       );
   
   
@@ -211,7 +211,7 @@ namespace GEO
   template<class M>
   void fillCurrentNodalPositions(
       const DRT::Element* const             ele,                ///< element with nodal pointers
-      const map<int,LINALG::Matrix<3,1> >&  currentpositions,   ///< current positions of all cutter nodes
+      const std::map<int,LINALG::Matrix<3,1> >&  currentpositions,   ///< current positions of all cutter nodes
       M&                                    xyze                ///< position array (3,numnode) to be filled
       )
   {
