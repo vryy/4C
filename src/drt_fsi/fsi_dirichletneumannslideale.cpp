@@ -148,7 +148,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 		if (DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR")!=1)
 		{
 			dserror("unknown interface force predictor '%s'",
-					fsidyn.get<string>("PREDICTOR").c_str());
+					fsidyn.get<std::string>("PREDICTOR").c_str());
 		}
 		return InterfaceForce();
 	}

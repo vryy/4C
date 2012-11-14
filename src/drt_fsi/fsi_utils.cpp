@@ -214,14 +214,14 @@ aletype_(aleproj)
   coupff_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
   // declare struct objects in interface
-  map<int, map<int, RCP<DRT::Element> > > structelements;
-  map<int, RCP<DRT::Element> > structmelements;
-  map<int, RCP<DRT::Element> > structdelements;
-  map<int, DRT::Node*> dummy1; // dummy map
-  map<int, map<int, DRT::Node*> > dummy2;  // dummy map
-  map<int, DRT::Node*> structmnodes; // partial map of sticking structure nodes
-  map<int, DRT::Node*> structdnodes; // partial map of centerdisp structure nodes
-  map<int, map<int, DRT::Node*> > structgnodes; // complete map of strucutre nodes
+  std::map<int, std::map<int, RCP<DRT::Element> > > structelements;
+  std::map<int, RCP<DRT::Element> > structmelements;
+  std::map<int, RCP<DRT::Element> > structdelements;
+  std::map<int, DRT::Node*> dummy1; // dummy map
+  std::map<int, std::map<int, DRT::Node*> > dummy2;  // dummy map
+  std::map<int, DRT::Node*> structmnodes; // partial map of sticking structure nodes
+  std::map<int, DRT::Node*> structdnodes; // partial map of centerdisp structure nodes
+  std::map<int, std::map<int, DRT::Node*> > structgnodes; // complete map of strucutre nodes
 
   //initialize struct objects in interface
   DRT::UTILS::FindConditionObjects(*structdis, dummy2, structgnodes, structelements,"FSICoupling");
@@ -231,10 +231,10 @@ aletype_(aleproj)
   istructdispeles_ = structdelements;
   istructslideles_ = structelements;
 
-  vector<int> slideeleidvector;
+  std::vector<int> slideeleidvector;
 
-  map<int, RCP<DRT::Element> >::iterator eit;
-  map<int, map<int, RCP<DRT::Element> > >::iterator meit;
+  std::map<int, RCP<DRT::Element> >::iterator eit;
+  std::map<int, std::map<int, RCP<DRT::Element> > >::iterator meit;
 
   for ( eit=structmelements.begin() ; eit != structmelements.end(); eit++ )
   {
@@ -264,10 +264,10 @@ aletype_(aleproj)
   structdis->Comm().MaxAll(&max_id, &maxid_, 1);
 
   // declare fluid objects in interface
-  map<int, map<int, Teuchos::RCP<DRT::Element> > > fluidelements;
-  map<int, RCP<DRT::Element> > fluidmelements;
-  map<int, map<int, DRT::Node*> > fluidnodes;  // complete map of fluid nodes
-  map<int, DRT::Node*> fluidmnodes; // partial map of sticking fluid nodes
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > fluidelements;
+  std::map<int, RCP<DRT::Element> > fluidmelements;
+  std::map<int, std::map<int, DRT::Node*> > fluidnodes;  // complete map of fluid nodes
+  std::map<int, DRT::Node*> fluidmnodes; // partial map of sticking fluid nodes
 
   //initialize struct objects in interface
   DRT::UTILS::FindConditionObjects(*fluiddis, fluidnodes, dummy2, fluidelements,"FSICoupling");
@@ -285,8 +285,8 @@ aletype_(aleproj)
       dserror("Non sliding interface has to be a subset of FSI-interface or empty");
   }
 
-  map<int, DRT::Node*>::iterator nit;
-  map<int, map<int, DRT::Node*> >::iterator mnit;
+  std::map<int, DRT::Node*>::iterator nit;
+  std::map<int, std::map<int, DRT::Node*> >::iterator mnit;
   for ( nit=ifluidconfnodes_.begin() ; nit != ifluidconfnodes_.end(); nit++ )
   {
     int err = 0;
@@ -353,17 +353,17 @@ void FSI::UTILS::SlideAleUtils::Remeshing
 
   //For the NON sliding ALE Nodes, use standard ALE displacements
 
-  map<int, DRT::Node*>::const_iterator nodeiter;
+  std::map<int, DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = ifluidconfnodes_.begin(); nodeiter != ifluidconfnodes_.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
-    vector<int> lids(dim);
+    std::vector<int> lids(dim);
     for(int p=0; p<dim; p++)
       //lids of gids of node
       lids[p] = fluiddofrowmap_->LID((fluiddis->Dof(node))[p]);
 
     // current coord of ale node = ref coord + ifluid_
-    vector <double> finaldxyz(dim);
+    std::vector <double> finaldxyz(dim);
 
     for(int p=0; p<dim; p++)
       finaldxyz[p] =   (*idispale)[(lids[p])];
@@ -473,25 +473,25 @@ vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
   Epetra_SerialDenseVector elevector3;
 
   //prepare variables for length (2D) or area (3D) of the interface
-  vector<double> mycenterdisp(dim);
-  vector<double> centerdisp(dim);
+  std::vector<double> mycenterdisp(dim);
+  std::vector<double> centerdisp(dim);
   double mylengthcirc = 0.0;
   double lengthcirc = 0.0;
 
   //calculating the center displacement by evaluating structure interface elements
-  map<int, RCP<DRT::Element> >::const_iterator elemiter;
+  std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = istructdispeles_.begin(); elemiter != istructdispeles_.end(); ++elemiter)
   {
 
     RCP<DRT::Element> iele = elemiter->second;
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     iele->LocationVector(*structdis,lm,lmowner,lmstride);
     elevector2.Size(1);   //length of circ with gaussinteg
     elevector3.Size(dim);   //centerdisp part of ele
 
-    params.set<string>("action","calc_struct_centerdisp");
+    params.set<std::string>("action","calc_struct_centerdisp");
     int err = iele->Evaluate(params,*structdis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
     if (err) dserror("error while evaluating elements");
     mylengthcirc += elevector2[0];
@@ -527,12 +527,12 @@ std::map<int,LINALG::Matrix<3,1> > FSI::UTILS::SlideAleUtils::CurrentStructPos
 (
     Teuchos::RCP<Epetra_Vector> reddisp,
     DRT::Discretization& interfacedis,
-    map<int, double>& maxcoord
+    std::map<int, double>& maxcoord
 )
 {
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
-  map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleiter;
-  map<int, map<int, Teuchos::RCP<DRT::Element> > >::const_iterator meleiter;
+  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleiter;
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::const_iterator meleiter;
 
   // map with fully reduced struct element distribution
   for (meleiter = structreduelements_.begin(); meleiter != structreduelements_.end(); meleiter++)
@@ -549,11 +549,11 @@ std::map<int,LINALG::Matrix<3,1> > FSI::UTILS::SlideAleUtils::CurrentStructPos
       {
         const int gid = n[j];
         const DRT::Node* node = interfacedis.gNode(gid);
-        vector<int> lm;
+        std::vector<int> lm;
         lm.reserve(3);
         // extract global dof ids
         interfacedis.Dof(node, lm);
-        vector<double> mydisp(3);
+        std::vector<double> mydisp(3);
         LINALG::Matrix<3,1> currpos;
 
         DRT::UTILS::ExtractMyValues(*reddisp,mydisp,lm);
@@ -596,13 +596,13 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
   reddisp -> Import(*idispnp,*interimpo,Add);
 
   DRT::Discretization& interfacedis = coupsf.Interface()->Discret();
-  map<int,double> rotrat;
+  std::map<int,double> rotrat;
   //currentpositions of struct nodes for the search tree (always 3 coordinates)
   std::map<int,LINALG::Matrix<3,1> > currentpositions =
       CurrentStructPos(reddisp, interfacedis, rotrat);
 
   //calculate structural interface center of gravity
-  vector<double> centerdisp = Centerdisp(structure, comm);
+  std::vector<double> centerdisp = Centerdisp(structure, comm);
 
   Teuchos::RCP<Epetra_Vector> frotfull = LINALG::CreateVector(*fluiddofrowmap_,true);
   if (aletype_==INPAR::FSI::ALEprojection_rot_z || aletype_==INPAR::FSI::ALEprojection_rot_zsphere)
@@ -611,11 +611,11 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
   }
 
 
-  map<int, map<int,DRT::Node*> >::iterator mnit;
+  std::map<int, std::map<int,DRT::Node*> >::iterator mnit;
   for (mnit = ifluidslidnodes_.begin(); mnit != ifluidslidnodes_.end(); ++mnit)
   {
     // translation + projection
-    map<int, DRT::Node*>::const_iterator nodeiter;
+    std::map<int, DRT::Node*>::const_iterator nodeiter;
     for (nodeiter = mnit->second.begin(); nodeiter != mnit->second.end(); ++nodeiter)
     {
 
@@ -632,7 +632,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 
 
       DRT::Node* node = nodeiter->second;
-      vector<int> lids(dim);
+      std::vector<int> lids(dim);
       for(int p=0; p<dim; p++)
       //lids of gids of node
       lids[p] = (fluiddofrowmap_)->LID((fluiddis->Dof(node))[p]);
@@ -668,7 +668,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 
 
       // final displacement of projection
-      vector <double> finaldxyz(dim);
+      std::vector <double> finaldxyz(dim);
 
       //search for near elements next to the query point (ie within a radius of 2x maxmindist)
       std::map<int,std::set<int> >  closeeles =
@@ -743,14 +743,14 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
 
   DRT::Discretization& interfacedis = coupsf.Interface()->Discret();
 
-  map<int, map<int, Teuchos::RCP<DRT::Element> > >::iterator mapit;
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator mapit;
   // build redundant version istructslideles_;
-  map<int, Teuchos::RCP<DRT::Element> >::iterator eit;
+  std::map<int, Teuchos::RCP<DRT::Element> >::iterator eit;
   int dim = DRT::Problem::Instance()->NDim();
 
   for (int i = 0; i<= maxid_; ++i)
   {
-    vector<int> vstruslideleids; // vector for ele ids
+    std::vector<int> vstruslideleids; // vector for ele ids
     if (istructslideles_.find(i) != istructslideles_.end())
     {
       for (eit = istructslideles_[i].begin(); eit != istructslideles_[i].end(); eit++)
@@ -812,7 +812,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
     DRT::Discretization& mtrdis,      ///< fluid discretization
     Teuchos::RCP<Epetra_Vector> idispale,            ///< vector of ALE displacements
     const Epetra_Comm& comm,                         ///< communicator
-    map<int, double>& rotrat,                                  ///< rotation ratio of tangential displacements
+    std::map<int, double>& rotrat,                                  ///< rotation ratio of tangential displacements
     Teuchos::RCP<Epetra_Vector> rotfull              ///< vector of full displacements in tangential directions
 )
 {
@@ -829,7 +829,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
   mtrdis.SetState("displacementnp",idispnpcol);
   mtrdis.SetState("displacementincr",idispstepcol);
 
-  map<int, map<int,RCP<DRT::Element> > >::iterator melit;
+  std::map<int, std::map<int,RCP<DRT::Element> > >::iterator melit;
   for (int i = 0; i<= maxid_; ++i)
   {
     //prepare variables for length (2D) or area (3D) of the interface
@@ -841,7 +841,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
     if (ifluidslidstructeles_.find(i) != ifluidslidstructeles_.end())
       maxcoord=rotrat[i];
 
-    map<int, RCP<DRT::Element> >::const_iterator elemiter;
+    std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
     for (elemiter = ifluidslidstructeles_[i].begin(); elemiter != ifluidslidstructeles_[i].end(); elemiter++)
     {
       //define stuff needed by the elements
@@ -853,14 +853,14 @@ void FSI::UTILS::SlideAleUtils::Rotation
       Teuchos::ParameterList params;
 
       RCP<DRT::Element> iele = elemiter->second;
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       iele->LocationVector(mtrdis,lm,lmowner,lmstride);
       elevector2.Size(1);   //circumference (2D) or surface area (3D) of the considered elements
       elevector3.Size(1);   //normalized displacement in tangential direction ('rotation')
 
-      params.set<string>("action","calc_struct_rotation");
+      params.set<std::string>("action","calc_struct_rotation");
       params.set<double>("maxcoord",maxcoord);
       params.set<INPAR::FSI::SlideALEProj>("aletype",aletype_);
       int err = iele->Evaluate(params,mtrdis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
@@ -895,13 +895,13 @@ void FSI::UTILS::SlideAleUtils::Rotation
       Teuchos::ParameterList params;
 
       RCP<DRT::Element> iele = elemiter->second;
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       iele->LocationVector(mtrdis,lm,lmowner,lmstride);
       elevector1.Size(lm.size());
 
-      params.set<string>("action","calc_undo_struct_rotation");
+      params.set<std::string>("action","calc_undo_struct_rotation");
       params.set<double>("maxcoord",maxcoord);
       params.set<INPAR::FSI::SlideALEProj>("aletype",aletype_);
       int err = iele->Evaluate(params,mtrdis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);

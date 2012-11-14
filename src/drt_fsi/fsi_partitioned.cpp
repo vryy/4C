@@ -284,7 +284,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     break;
   }
   default:
-    dserror("coupling method type '%s' unsupported", fsidyn.get<string>("COUPALGO").c_str());
+    dserror("coupling method type '%s' unsupported", fsidyn.get<std::string>("COUPALGO").c_str());
   }
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
