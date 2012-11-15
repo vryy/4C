@@ -44,8 +44,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -295,14 +295,14 @@ private:
     Epetra_SerialDenseMatrix*  sys_mat,
     Epetra_SerialDenseVector*  residual,
     Teuchos::RCP<MAT::Material> material,
-    ParameterList&             params);
+    Teuchos::ParameterList&    params);
   void static_ke_laplace(
     DRT::Discretization&       dis,
     vector<int>&               lm,
     Epetra_SerialDenseMatrix*  sys_mat,
     Epetra_SerialDenseVector*  residual,
     Teuchos::RCP<MAT::Material> material,
-    ParameterList&             params);
+    Teuchos::ParameterList&    params);
   void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat, vector<double>& displacements);
   void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
                      double* length, double* sin_alpha, double* cos_alpha);

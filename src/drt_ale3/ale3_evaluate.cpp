@@ -122,7 +122,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
   DRT::ELEMENTS::Ale3::ActionType act = Ale3::none;
 
   // get the action required
-  string action = params.get<string>("action","none");
+  std::string action = params.get<string>("action","none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_ale_laplace")
@@ -139,7 +139,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
     dserror("Unknown type of action for Ale3");
 
   // get the material
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   switch (act)
   {
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
 
   case calc_ale_spring:
   {
-    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
@@ -211,7 +211,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
 
   case calc_ale_node_normal:
   {
-    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
@@ -1339,8 +1339,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   Epetra_SerialDenseVector&  /*residual*/,
   bool                       incremental,
   std::vector<double>&       my_dispnp,
-  RCP<MAT::Material> material,
-  ParameterList&             params)
+  Teuchos::RCP<MAT::Material> material,
+  Teuchos::ParameterList&    params)
 {
   const int nd  = 3 * iel;
   // A view to sys_mat_epetra
@@ -1789,8 +1789,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
     Epetra_SerialDenseVector&  residual,
     bool                       incremental,
     std::vector<double>&        my_dispnp,
-    RCP<MAT::Material>  material,
-    ParameterList&              params  )
+    Teuchos::RCP<MAT::Material>  material,
+    Teuchos::ParameterList&    params  )
     {
   // ******************************************************
   // this method was copied from the ALE2 element and extended to 3D

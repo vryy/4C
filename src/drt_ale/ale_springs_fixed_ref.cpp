@@ -137,7 +137,7 @@ void ALE::AleSpringsFixedRef::Solve()
   EvaluateElements();
 
   // set fixed nodes
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
   // the DOFs with Dirchlet BCs are not rebuild, they are assumed to be correct
@@ -185,7 +185,7 @@ void ALE::AleSpringsFixedRef::EvaluateElements()
   residual_->PutScalar(0.0);
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // set vector values needed by elements
   discret_->ClearState();

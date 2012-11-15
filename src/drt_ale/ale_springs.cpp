@@ -83,7 +83,7 @@ void ALE::AleSprings::Solve()
   EvaluateElements();
 
   // set fixed nodes
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
   // the DOFs with Dirchlet BCs are not rebuild, they are assumed to be correct
@@ -194,7 +194,7 @@ void ALE::AleSprings::EvaluateElements()
     // Note: ndnorm0 stores the heightfunction later on.
 
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // set action for elements
     eleparams.set("action","calc_ale_node_normal");
@@ -291,7 +291,7 @@ void ALE::AleSprings::EvaluateElements()
         for (int jEle = 0; jEle < NumElement; jEle++)
         {
           DRT::Element* Element = ElementsPtr[jEle];
-          vector< RCP< DRT::Element > > Surfaces = Element->Surfaces();
+          std::vector< Teuchos::RCP< DRT::Element > > Surfaces = Element->Surfaces();
 
           //which surfaces are adjacent to this node? These surfaces influenced
           //this node's node normal.
@@ -475,7 +475,7 @@ void ALE::AleSprings::EvaluateElements()
     residual_->PutScalar(0.0);
 
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // set vector values needed by elements
     discret_->ClearState();

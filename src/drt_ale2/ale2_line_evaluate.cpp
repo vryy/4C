@@ -18,7 +18,7 @@
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale2Line::EvaluateNeumann(
-    ParameterList& params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     vector<int>&              lm,

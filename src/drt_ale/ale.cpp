@@ -146,7 +146,7 @@ void ALE::Ale::PrepareTimeStep()
 void ALE::Ale::SetupDBCMapEx(bool dirichletcond)
 {
   // set fixed nodes (conditions != 0 are not supported right now)
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
@@ -240,7 +240,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
+  Teuchos::RCP<DRT::Discretization> actdis = null;
 
   if (disnum == 0)
   {
@@ -269,7 +269,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
+  Teuchos::RCP<IO::DiscretizationWriter> output =
     Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 
@@ -287,13 +287,13 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
     if (linsolvernumber == (-1))
       dserror("no linear solver defined for ALE problems. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
-  RCP<LINALG::Solver> solver =
+  Teuchos::RCP<LINALG::Solver> solver =
     Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  RCP<ParameterList> params = Teuchos::rcp(new ParameterList());
+  Teuchos::RCP<ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList());
   params->set<int>("numstep",    prbdyn.get<int>("NUMSTEP"));
   params->set<double>("maxtime", prbdyn.get<double>("MAXTIME"));
   params->set<double>("dt",      prbdyn.get<double>("TIMESTEP"));

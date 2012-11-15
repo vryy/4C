@@ -38,7 +38,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
   DRT::ELEMENTS::Ale2::ActionType act = Ale2::none;
 
   // get the action required
-  string action = params.get<string>("action","none");
+  std::string action = params.get<string>("action","none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_ale_lin_stiff")
@@ -53,7 +53,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
     dserror("Unknown type of action for Ale2");
 
   // get the material
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   switch (act)
   {
@@ -79,7 +79,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
   }
   case calc_ale_spring:
   {
-    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
     vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
@@ -505,8 +505,8 @@ void DRT::ELEMENTS::Ale2::static_ke(
   vector<int>               &lm      ,
   Epetra_SerialDenseMatrix  *sys_mat ,
   Epetra_SerialDenseVector  *residual,
-  RCP<MAT::Material> material,
-  ParameterList             &params  )
+  Teuchos::RCP<MAT::Material> material,
+  Teuchos::ParameterList    &params  )
 {
   const int iel = NumNode();
   const int nd  = 2 * iel;
@@ -736,8 +736,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
   vector<int>                &lm      ,
   Epetra_SerialDenseMatrix   *sys_mat ,
   Epetra_SerialDenseVector   *residual,
-  RCP<MAT::Material>  material,
-  ParameterList              &params  )
+  Teuchos::RCP<MAT::Material>  material,
+  Teuchos::ParameterList     &params  )
 {
   const int iel = NumNode();
 //  const int nd  = 2 * iel;

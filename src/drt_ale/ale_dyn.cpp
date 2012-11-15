@@ -35,7 +35,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
+  Teuchos::RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
@@ -46,7 +46,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
+  Teuchos::RCP<IO::DiscretizationWriter> output =
     Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 
@@ -71,7 +71,7 @@ void dyn_ale_drt()
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  Teuchos::RCP<ParameterList> params = Teuchos::rcp(new ParameterList());
+  Teuchos::RCP<ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList());
   params->set<int>("numstep", adyn.get<int>("NUMSTEP"));
   params->set<double>("maxtime", adyn.get<double>("MAXTIME"));
   params->set<double>("dt", adyn.get<double>("TIMESTEP"));

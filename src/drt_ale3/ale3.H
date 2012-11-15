@@ -62,8 +62,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -374,7 +374,7 @@ public:
                          bool                       incremental,
                          std::vector<double>&       my_dispnp,
                          Teuchos::RCP<MAT::Material> material,
-                         ParameterList& 	    params) = 0;
+                         Teuchos::ParameterList& 	  params) = 0;
   virtual void static_ke_laplace(
   Ale3*                      ele,
   DRT::Discretization&       dis,
@@ -383,7 +383,7 @@ public:
   bool                       incremental,
   std::vector<double>&       my_dispnp,
   Teuchos::RCP<MAT::Material> material,
-  ParameterList&             params) = 0;
+  Teuchos::ParameterList&    params) = 0;
 
     virtual void ElementNodeNormal(Ale3*                      ele,
                                    Epetra_SerialDenseVector&  elevec1,
@@ -416,7 +416,7 @@ public:
     bool                       incremental,
     std::vector<double>&       my_dispnp,
     Teuchos::RCP<MAT::Material> material,
-    ParameterList&             params);
+    Teuchos::ParameterList&    params);
 
   void static_ke_spring(Ale3*                     ele,
                         Epetra_SerialDenseMatrix& sys_mat,
@@ -429,7 +429,7 @@ public:
                  bool                       incremental,
                  std::vector<double>&       my_dispnp,
                  Teuchos::RCP<MAT::Material> material,
-                 ParameterList& 	    params);
+                 Teuchos::ParameterList& 	  params);
   void ElementNodeNormal(Ale3*                      ele,
                               Epetra_SerialDenseVector&  elevec1,
                               std::vector<double>&       my_dispnp
