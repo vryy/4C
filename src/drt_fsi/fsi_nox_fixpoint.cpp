@@ -49,8 +49,8 @@ bool NOX::FSI::FixPoint::compute(NOX::Abstract::Vector& dir,
 }
 
 
-void NOX::FSI::FixPoint::throwError(const string& functionName,
-                                    const string& errorMsg)
+void NOX::FSI::FixPoint::throwError(const std::string& functionName,
+                                    const std::string& errorMsg)
 {
     if (utils_->isPrintType(NOX::Utils::Error))
       utils_->err() << "FixPoint::" << functionName

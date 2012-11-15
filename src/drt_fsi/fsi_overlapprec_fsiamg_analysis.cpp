@@ -23,16 +23,16 @@ void FSI::OverlappingBlockMatrixFSIAMG::AnalyzeFSIAMG(
                        Teuchos::ParameterList& sparams,
                        Teuchos::ParameterList& fparams,
                        Teuchos::ParameterList& aparams,
-                       vector<MLAPI::Operator>& Ass,
-                       vector<MLAPI::Operator>& Aff,
-                       vector<MLAPI::Operator>& Aaa,
-                       vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                       vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                       vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
-                       vector<MLAPI::Operator>& Asf,
-                       vector<MLAPI::Operator>& Afs,
-                       vector<MLAPI::Operator>& Afa,
-                       vector<MLAPI::Operator>& Aaf,
+                       std::vector<MLAPI::Operator>& Ass,
+                       std::vector<MLAPI::Operator>& Aff,
+                       std::vector<MLAPI::Operator>& Aaa,
+                       std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                       std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                       std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                       std::vector<MLAPI::Operator>& Asf,
+                       std::vector<MLAPI::Operator>& Afs,
+                       std::vector<MLAPI::Operator>& Afa,
+                       std::vector<MLAPI::Operator>& Aaf,
                        ML* sml,
                        ML* fml,
                        ML* aml)
@@ -104,21 +104,21 @@ void FSI::OverlappingBlockMatrixFSIAMG::AnalyzeFSIAMG(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
-                            const string fieldname,
+                            const std::string fieldname,
                             const int myrank,
-                            string field,
+                            std::string field,
                             const int nlevel,
                             Teuchos::ParameterList& params,
-                            vector<MLAPI::Operator>& A,
-                            vector<MLAPI::Operator>& P, 
-                            vector<MLAPI::Operator>& R,
+                            std::vector<MLAPI::Operator>& A,
+                            std::vector<MLAPI::Operator>& P,
+                            std::vector<MLAPI::Operator>& R,
                             AnalyzeBest& best)
 {
   Teuchos::RCP<MLAPI::InverseOperator> S;
   //RCP<MLAPI::LoadBalanceInverseOperator> lbS;
 
   // measure r_l2 decrease per time in bestrate
-  vector<double> bestrate(nlevel-1,10.0);
+  std::vector<double> bestrate(nlevel-1,10.0);
 
   // loop levels in single field and test smoothers
   for (int level=0; level<nlevel-1; ++level)
@@ -144,7 +144,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
     MLAPI::MultiVector f(rspace,true);
     
     double localrate = 10.0;
-    string localtype = "";
+    std::string localtype = "";
     double localdamp = 1.0;
     int    localpoly = 1;
     Teuchos::RCP<MLAPI::InverseOperator> localS;
@@ -164,7 +164,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
     for (int i=0; i<99; ++i)
     {
       double damp = 1.0 - i * 0.01; // reduce damping factor in steps of 0.01;
-      string type = "";
+      std::string type = "";
       subp.set("smoother: type","symmetric Gauss-Seidel");
       subp.set("smoother: sweeps",1);
       subp.set("smoother: damping factor",damp);
@@ -223,7 +223,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
         fflush(stdout);
       }
       double damp = 1.0; 
-      string type = "";
+      std::string type = "";
       subp.set("smoother: type","MLS");
       subp.set("smoother: sweeps",1);
       subp.set("smoother: MLS polynomial order",poly);
@@ -280,7 +280,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
         printf("--------------------------------------------\n");
         fflush(stdout);
       }
-      string type = "";
+      std::string type = "";
       subp.set("smoother: type","IFPACK");
       subp.set("smoother: ifpack type","ILU");
       subp.set("smoother: ifpack level-of-fill",fill*1.0);
@@ -352,8 +352,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
   MLAPI::MultiVector f(rspace,true);
   
   // number of sweeps per level
-  vector<int> localVsweeps(6,1);
-  vector<int> loops(6,1); for (int i=0; i<nlevel-1; ++i) loops[i] = 5;
+  std::vector<int> localVsweeps(6,1);
+  std::vector<int> loops(6,1); for (int i=0; i<nlevel-1; ++i) loops[i] = 5;
   double bestVrate = 10.0;
   
   for (int i=1; i<=loops[0]; ++i)
@@ -424,16 +424,16 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_BGSAMG(
                        AnalyzeBest& sbest,
                        AnalyzeBest& fbest,
                        AnalyzeBest& abest,  
-                       vector<MLAPI::Operator>& Ass,
-                       vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                       vector<MLAPI::Operator>& Aff,
-                       vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                       vector<MLAPI::Operator>& Aaa,
-                       vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
-                       vector<MLAPI::Operator>& Asf,
-                       vector<MLAPI::Operator>& Afs,
-                       vector<MLAPI::Operator>& Afa,
-                       vector<MLAPI::Operator>& Aaf
+                       std::vector<MLAPI::Operator>& Ass,
+                       std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                       std::vector<MLAPI::Operator>& Aff,
+                       std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                       std::vector<MLAPI::Operator>& Aaa,
+                       std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                       std::vector<MLAPI::Operator>& Asf,
+                       std::vector<MLAPI::Operator>& Afs,
+                       std::vector<MLAPI::Operator>& Afa,
+                       std::vector<MLAPI::Operator>& Aaf
                        )
 {
   // determine: sweeps and damping of Vcycle of individual field
@@ -471,10 +471,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_BGSAMG(
     printf("--------------------------------------------\n");
     fflush(stdout);
   }
-  vector<int>    bestsweeps(3,1);
-  vector<double> bestdamps(3,1.0);
-  vector<int>    localsweeps(3,1);
-  vector<double> localdamps(3,1.0);
+  std::vector<int>    bestsweeps(3,1);
+  std::vector<double> bestdamps(3,1.0);
+  std::vector<int>    localsweeps(3,1);
+  std::vector<double> localdamps(3,1.0);
   double bestrate = 100.0;
   for (int sweeps=1; sweeps<=5; ++sweeps)
     for (int fweeps=1; fweeps<=5; ++fweeps)
@@ -611,16 +611,16 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
                        AnalyzeBest& sbest,
                        AnalyzeBest& fbest,
                        AnalyzeBest& abest,  
-                       vector<MLAPI::Operator>& Ass,
-                       vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                       vector<MLAPI::Operator>& Aff,
-                       vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                       vector<MLAPI::Operator>& Aaa,
-                       vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
-                       vector<MLAPI::Operator>& Asf,
-                       vector<MLAPI::Operator>& Afs,
-                       vector<MLAPI::Operator>& Afa,
-                       vector<MLAPI::Operator>& Aaf
+                       std::vector<MLAPI::Operator>& Ass,
+                       std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                       std::vector<MLAPI::Operator>& Aff,
+                       std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                       std::vector<MLAPI::Operator>& Aaa,
+                       std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                       std::vector<MLAPI::Operator>& Asf,
+                       std::vector<MLAPI::Operator>& Afs,
+                       std::vector<MLAPI::Operator>& Afa,
+                       std::vector<MLAPI::Operator>& Aaf
                        )
 {
   // determine: sweeps and damping of Vcycle of individual field
@@ -632,16 +632,16 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_AMGBGS(
     printf("--------------------------------------------\n");
     fflush(stdout);
   }
-  vector<int> bestsweeps[3];   for (int i=0; i<3; ++i) bestsweeps[i].resize(minnlevel_,1);
-  vector<double> bestdamps[3]; for (int i=0; i<3; ++i) bestdamps[i].resize(minnlevel_,1);
-  vector<int> localsweeps[3];   for (int i=0; i<3; ++i) localsweeps[i].resize(minnlevel_,1);
-  vector<double> localdamps[3]; for (int i=0; i<3; ++i) localdamps[i].resize(minnlevel_,1.0);
-  vector<double> bestrate(minnlevel_,100.0);
-  vector<int> bestVsweeps(6,1);
-  vector<int> localVsweeps(6,1);
-  vector<double> bestVdamps(6,1.0);
-  vector<double> localVdamps(6,1.0);
-  vector<int> loops(6,1); for (int i=0; i<minnlevel_; ++i) loops[i] = 5;
+  std::vector<int> bestsweeps[3];   for (int i=0; i<3; ++i) bestsweeps[i].resize(minnlevel_,1);
+  std::vector<double> bestdamps[3]; for (int i=0; i<3; ++i) bestdamps[i].resize(minnlevel_,1);
+  std::vector<int> localsweeps[3];   for (int i=0; i<3; ++i) localsweeps[i].resize(minnlevel_,1);
+  std::vector<double> localdamps[3]; for (int i=0; i<3; ++i) localdamps[i].resize(minnlevel_,1.0);
+  std::vector<double> bestrate(minnlevel_,100.0);
+  std::vector<int> bestVsweeps(6,1);
+  std::vector<int> localVsweeps(6,1);
+  std::vector<double> bestVdamps(6,1.0);
+  std::vector<double> localVdamps(6,1.0);
+  std::vector<int> loops(6,1); for (int i=0; i<minnlevel_; ++i) loops[i] = 5;
   double bestVrate = 10.0;
 
 

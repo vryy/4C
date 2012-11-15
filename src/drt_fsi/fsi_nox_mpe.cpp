@@ -230,8 +230,8 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
 }
 
 
-void NOX::FSI::MinimalPolynomial::throwError(const string& functionName,
-                                             const string& errorMsg)
+void NOX::FSI::MinimalPolynomial::throwError(const std::string& functionName,
+                                             const std::string& errorMsg)
 {
     if (utils_->isPrintType(NOX::Utils::Error))
       utils_->err() << "MinimalPolynomial::" << functionName

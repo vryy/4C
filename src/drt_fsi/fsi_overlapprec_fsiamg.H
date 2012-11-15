@@ -29,16 +29,16 @@ namespace FSI
                                  ALE::Ale& ale,
                                  bool structuresplit,
                                  int symmetric,
-                                 vector<string>& blocksmoother,
-                                 vector<double>& schuromega,
-                                 vector<double>& omega,
-                                 vector<int>& iterations,
-                                 vector<double>& somega,
-                                 vector<int>& siterations,
-                                 vector<double>& fomega,
-                                 vector<int>& fiterations,
-                                 vector<double>& aomega,
-                                 vector<int>& aiterations,
+                                 std::vector<std::string>& blocksmoother,
+                                 std::vector<double>& schuromega,
+                                 std::vector<double>& omega,
+                                 std::vector<int>& iterations,
+                                 std::vector<double>& somega,
+                                 std::vector<int>& siterations,
+                                 std::vector<double>& fomega,
+                                 std::vector<int>& fiterations,
+                                 std::vector<double>& aomega,
+                                 std::vector<int>& aiterations,
                                  int analyze,
                                  INPAR::FSI::LinearBlockSolver strategy,
                                  FILE* err=NULL);
@@ -78,10 +78,10 @@ namespace FSI
                      const int nlevel,
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
-                     const vector<MLAPI::Operator>& A,
-                     const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
-                     const vector<MLAPI::Operator>& P,
-                     const vector<MLAPI::Operator>& R,
+                     const std::vector<MLAPI::Operator>& A,
+                     const std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
+                     const std::vector<MLAPI::Operator>& P,
+                     const std::vector<MLAPI::Operator>& R,
                      const bool trigger = false) const;
 
 
@@ -117,10 +117,10 @@ namespace FSI
                      const int nlevel,
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
-                     const vector<MLAPI::Operator>& A,
-                     const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
-                     const vector<MLAPI::Operator>& P,
-                     const vector<MLAPI::Operator>& R
+                     const std::vector<MLAPI::Operator>& A,
+                     const std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
+                     const std::vector<MLAPI::Operator>& P,
+                     const std::vector<MLAPI::Operator>& R
                      ) const;
 
 
@@ -169,18 +169,18 @@ namespace FSI
          if (nlevel-1>6) dserror("Can only analyze V cycles upto 7 levels");
        }
        inline int             Nlevel() { return nlevel_; }
-       inline vector<string>& Type()   { return besttype_; }
-       inline vector<double>& Damp()   { return bestdamp_; }
-       inline vector<int>&    Poly()   { return bestpoly_; }
-       inline vector<int>&    Sweeps() { return bestsweeps_; }
-       inline vector<Teuchos::RCP<MLAPI::InverseOperator> >& S() { return S_; }
+       inline std::vector<std::string>& Type()   { return besttype_; }
+       inline std::vector<double>& Damp()   { return bestdamp_; }
+       inline std::vector<int>&    Poly()   { return bestpoly_; }
+       inline std::vector<int>&    Sweeps() { return bestsweeps_; }
+       inline std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S() { return S_; }
      private:
-       int                                  nlevel_;
-       vector<string>                       besttype_;
-       vector<double>                       bestdamp_;
-       vector<int>                          bestpoly_;
-       vector<int>                          bestsweeps_;
-       vector<Teuchos::RCP<MLAPI::InverseOperator> > S_;
+       int                                       nlevel_;
+       std::vector<std::string>                  besttype_;
+       std::vector<double>                       bestdamp_;
+       std::vector<int>                          bestpoly_;
+       std::vector<int>                          bestsweeps_;
+       std::vector<Teuchos::RCP<MLAPI::InverseOperator> > S_;
     };
     
     // main routine analysis of FSIAMG
@@ -191,30 +191,30 @@ namespace FSI
                        Teuchos::ParameterList& sparams,
                        Teuchos::ParameterList& fparams,
                        Teuchos::ParameterList& aparams,
-                       vector<MLAPI::Operator>& Ass,
-                       vector<MLAPI::Operator>& Aff,
-                       vector<MLAPI::Operator>& Aaa,
-                       vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                       vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                       vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
-                       vector<MLAPI::Operator>& Asf,
-                       vector<MLAPI::Operator>& Afs,
-                       vector<MLAPI::Operator>& Afa,
-                       vector<MLAPI::Operator>& Aaf,
+                       std::vector<MLAPI::Operator>& Ass,
+                       std::vector<MLAPI::Operator>& Aff,
+                       std::vector<MLAPI::Operator>& Aaa,
+                       std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                       std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                       std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                       std::vector<MLAPI::Operator>& Asf,
+                       std::vector<MLAPI::Operator>& Afs,
+                       std::vector<MLAPI::Operator>& Afa,
+                       std::vector<MLAPI::Operator>& Aaf,
                        ML* sml,
                        ML* fml,
                        ML* aml);
                        
     // analyze a single field
     void Analyse_SingleField(
-                             const string fieldname,
+                             const std::string fieldname,
                              const int myrank,
-                             string field,
+                             std::string field,
                              const int nlevel,
                              Teuchos::ParameterList& params,
-                             vector<MLAPI::Operator>& A,
-                             vector<MLAPI::Operator>& P, 
-                             vector<MLAPI::Operator>& R,
+                             std::vector<MLAPI::Operator>& A,
+                             std::vector<MLAPI::Operator>& P,
+                             std::vector<MLAPI::Operator>& R,
                              AnalyzeBest& best);
                             
     // analyse BGS(AMG)
@@ -223,16 +223,16 @@ namespace FSI
                        AnalyzeBest& sbest,
                        AnalyzeBest& fbest,
                        AnalyzeBest& abest,  
-                       vector<MLAPI::Operator>& Ass,
-                       vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                       vector<MLAPI::Operator>& Aff,
-                       vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                       vector<MLAPI::Operator>& Aaa,
-                       vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
-                       vector<MLAPI::Operator>& Asf,
-                       vector<MLAPI::Operator>& Afs,
-                       vector<MLAPI::Operator>& Afa,
-                       vector<MLAPI::Operator>& Aaf
+                       std::vector<MLAPI::Operator>& Ass,
+                       std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                       std::vector<MLAPI::Operator>& Aff,
+                       std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                       std::vector<MLAPI::Operator>& Aaa,
+                       std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                       std::vector<MLAPI::Operator>& Asf,
+                       std::vector<MLAPI::Operator>& Afs,
+                       std::vector<MLAPI::Operator>& Afa,
+                       std::vector<MLAPI::Operator>& Aaf
                        );
                        
     // analyse AMG(BGS)
@@ -241,16 +241,16 @@ namespace FSI
                        AnalyzeBest& sbest,
                        AnalyzeBest& fbest,
                        AnalyzeBest& abest,  
-                       vector<MLAPI::Operator>& Ass,
-                       vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                       vector<MLAPI::Operator>& Aff,
-                       vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                       vector<MLAPI::Operator>& Aaa,
-                       vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
-                       vector<MLAPI::Operator>& Asf,
-                       vector<MLAPI::Operator>& Afs,
-                       vector<MLAPI::Operator>& Afa,
-                       vector<MLAPI::Operator>& Aaf
+                       std::vector<MLAPI::Operator>& Ass,
+                       std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                       std::vector<MLAPI::Operator>& Aff,
+                       std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                       std::vector<MLAPI::Operator>& Aaa,
+                       std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                       std::vector<MLAPI::Operator>& Asf,
+                       std::vector<MLAPI::Operator>& Afs,
+                       std::vector<MLAPI::Operator>& Afa,
+                       std::vector<MLAPI::Operator>& Aaf
                        );
 
     
@@ -273,7 +273,7 @@ namespace FSI
     
     // a single field single level Richardson iteration with smoother
     double RichardsonS( 
-                    const string field,
+                    const std::string field,
                     const int myrank,
                     const int level,
                     const int sweeps,
@@ -288,7 +288,7 @@ namespace FSI
 
     // a non-Trilinos preconditioner Richardson
     double RichardsonMixed( 
-                    const string field,
+                    const std::string field,
                     const int myrank,
                     const int level,
                     const int sweeps,
@@ -306,16 +306,16 @@ namespace FSI
 
     // a single field V cycle analysis Richardson iteration
     double RichardsonV(
-                    const string field,
+                    const std::string field,
                     const int myrank,
                     int sweeps,
                     const double damp,
-                    vector<int>& levelsweeps,
-                    vector<double>& leveldamps,
-                    vector<MLAPI::Operator>& A,
-                    vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
-                    vector<MLAPI::Operator>& P, 
-                    vector<MLAPI::Operator>& R,
+                    std::vector<int>& levelsweeps,
+                    std::vector<double>& leveldamps,
+                    std::vector<MLAPI::Operator>& A,
+                    std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
+                    std::vector<MLAPI::Operator>& P,
+                    std::vector<MLAPI::Operator>& R,
                     const int level,
                     const int nlevel,
                     MLAPI::MultiVector& x,
@@ -326,18 +326,18 @@ namespace FSI
                     
     // a single field V cycle
     void Vcycle(
-                const string field,
+                const std::string field,
                 const int myrank,
-                vector<int>& sweeps,
-                vector<double>& damps,
+                std::vector<int>& sweeps,
+                std::vector<double>& damps,
                 const int level,
                 const int nlevel,
                 MLAPI::MultiVector& z,
                 const MLAPI::MultiVector& b,
-                const vector<MLAPI::Operator>& A,
-                const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
-                const vector<MLAPI::Operator>& P,
-                const vector<MLAPI::Operator>& R) const;
+                const std::vector<MLAPI::Operator>& A,
+                const std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
+                const std::vector<MLAPI::Operator>& P,
+                const std::vector<MLAPI::Operator>& R) const;
 
 
 
@@ -347,8 +347,8 @@ namespace FSI
                           const int myrank,
                           const int sweeps,
                           const double damp,
-                          vector<int>& blocksweeps,
-                          vector<double>& blockdamps,
+                          std::vector<int>& blocksweeps,
+                          std::vector<double>& blockdamps,
                           AnalyzeBest& sbest,
                           AnalyzeBest& fbest,
                           AnalyzeBest& abest,
@@ -358,16 +358,16 @@ namespace FSI
                           const MLAPI::MultiVector& sf,
                           const MLAPI::MultiVector& ff,
                           const MLAPI::MultiVector& af,  
-                          vector<MLAPI::Operator>& Ass,
-                          vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                          vector<MLAPI::Operator>& Aff,
-                          vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                          vector<MLAPI::Operator>& Aaa,
-                          vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
-                          vector<MLAPI::Operator>& Asf,
-                          vector<MLAPI::Operator>& Afs,
-                          vector<MLAPI::Operator>& Afa,
-                          vector<MLAPI::Operator>& Aaf,
+                          std::vector<MLAPI::Operator>& Ass,
+                          std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                          std::vector<MLAPI::Operator>& Aff,
+                          std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                          std::vector<MLAPI::Operator>& Aaa,
+                          std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                          std::vector<MLAPI::Operator>& Asf,
+                          std::vector<MLAPI::Operator>& Afs,
+                          std::vector<MLAPI::Operator>& Afa,
+                          std::vector<MLAPI::Operator>& Aaf,
                           bool initiguesszero=false,
                           bool analysis=false,
                           bool silent=false
@@ -379,8 +379,8 @@ namespace FSI
                           const int myrank,
                           const int sweeps,
                           const double damp,
-                          vector<int>& blocksweeps,
-                          vector<double>& blockdamps,
+                          std::vector<int>& blocksweeps,
+                          std::vector<double>& blockdamps,
                           const bool sisamg,
                           const bool fisamg,
                           const bool aisamg,
@@ -393,16 +393,16 @@ namespace FSI
                           const MLAPI::MultiVector& sf,
                           const MLAPI::MultiVector& ff,
                           const MLAPI::MultiVector& af,  
-                          vector<MLAPI::Operator>& Ass,
-                          vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                          vector<MLAPI::Operator>& Aff,
-                          vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                          vector<MLAPI::Operator>& Aaa,
-                          vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
-                          vector<MLAPI::Operator>& Asf,
-                          vector<MLAPI::Operator>& Afs,
-                          vector<MLAPI::Operator>& Afa,
-                          vector<MLAPI::Operator>& Aaf,
+                          std::vector<MLAPI::Operator>& Ass,
+                          std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                          std::vector<MLAPI::Operator>& Aff,
+                          std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                          std::vector<MLAPI::Operator>& Aaa,
+                          std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
+                          std::vector<MLAPI::Operator>& Asf,
+                          std::vector<MLAPI::Operator>& Afs,
+                          std::vector<MLAPI::Operator>& Afa,
+                          std::vector<MLAPI::Operator>& Aaf,
                           bool initiguesszero=false,
                           bool analysis=false,
                           bool silent=false
@@ -414,8 +414,8 @@ namespace FSI
                             const int myrank,
                             const int sweeps,
                             const double damp,
-                            vector<int>* blocksweeps,
-                            vector<double>* blockdamps,
+                            std::vector<int>* blocksweeps,
+                            std::vector<double>* blockdamps,
                             const int level,
                             AnalyzeBest& sbest,
                             AnalyzeBest& fbest,
@@ -426,12 +426,12 @@ namespace FSI
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
                             const MLAPI::MultiVector& af,  
-                            vector<MLAPI::Operator>& Ass,
-                            vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                            vector<MLAPI::Operator>& Aff,
-                            vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                            vector<MLAPI::Operator>& Aaa,
-                            vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
+                            std::vector<MLAPI::Operator>& Ass,
+                            std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                            std::vector<MLAPI::Operator>& Aff,
+                            std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                            std::vector<MLAPI::Operator>& Aaa,
+                            std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
                             MLAPI::Operator& Asf,
                             MLAPI::Operator& Afs,
                             MLAPI::Operator& Afa,
@@ -447,8 +447,8 @@ namespace FSI
                             const int myrank,
                             const int sweeps,
                             const double damp,
-                            vector<int>* blocksweeps,
-                            vector<double>* blockdamps,
+                            std::vector<int>* blocksweeps,
+                            std::vector<double>* blockdamps,
                             const int level,
                             AnalyzeBest& sbest,
                             AnalyzeBest& fbest,
@@ -459,12 +459,12 @@ namespace FSI
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
                             const MLAPI::MultiVector& af,  
-                            vector<MLAPI::Operator>& Ass,
-                            vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                            vector<MLAPI::Operator>& Aff,
-                            vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                            vector<MLAPI::Operator>& Aaa,
-                            vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
+                            std::vector<MLAPI::Operator>& Ass,
+                            std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                            std::vector<MLAPI::Operator>& Aff,
+                            std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                            std::vector<MLAPI::Operator>& Aaa,
+                            std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
                             MLAPI::Operator& Asf,
                             MLAPI::Operator& Afs,
                             MLAPI::Operator& Afa,
@@ -480,8 +480,8 @@ namespace FSI
                             const int myrank,
                             const int sweeps,
                             const double damp,
-                            vector<int>* blocksweeps,
-                            vector<double>* blockdamps,
+                            std::vector<int>* blocksweeps,
+                            std::vector<double>* blockdamps,
                             const int level,
                             AnalyzeBest& sbest,
                             AnalyzeBest& fbest,
@@ -492,12 +492,12 @@ namespace FSI
                             const MLAPI::MultiVector& sf,
                             const MLAPI::MultiVector& ff,
                             const MLAPI::MultiVector& af,  
-                            vector<MLAPI::Operator>& Ass,
-                            vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
-                            vector<MLAPI::Operator>& Aff,
-                            vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
-                            vector<MLAPI::Operator>& Aaa,
-                            vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
+                            std::vector<MLAPI::Operator>& Ass,
+                            std::vector<MLAPI::Operator>& Pss, std::vector<MLAPI::Operator>& Rss,
+                            std::vector<MLAPI::Operator>& Aff,
+                            std::vector<MLAPI::Operator>& Pff, std::vector<MLAPI::Operator>& Rff,
+                            std::vector<MLAPI::Operator>& Aaa,
+                            std::vector<MLAPI::Operator>& Paa, std::vector<MLAPI::Operator>& Raa,
                             MLAPI::Operator& Asf,
                             MLAPI::Operator& Afs,
                             MLAPI::Operator& Afa,
@@ -512,11 +512,11 @@ namespace FSI
                              const int myrank,
                              const int sweeps,
                              const double damp, 
-                             vector<int>& Vsweeps,
-                             vector<double>& Vdamps,
-                             vector<int>* blocksweeps,
-                             vector<double>* blockdamps,
-                             const vector<string>& blocksmoother,
+                             std::vector<int>& Vsweeps,
+                             std::vector<double>& Vdamps,
+                             std::vector<int>* blocksweeps,
+                             std::vector<double>* blockdamps,
+                             const std::vector<std::string>& blocksmoother,
                              AnalyzeBest& sbest,
                              AnalyzeBest& fbest,
                              AnalyzeBest& abest,
@@ -526,19 +526,19 @@ namespace FSI
                              const MLAPI::MultiVector& sf,
                              const MLAPI::MultiVector& ff,
                              const MLAPI::MultiVector& af,  
-                             vector<MLAPI::Operator>& Ass,
-                             vector<MLAPI::Operator>& Pss, 
-                             vector<MLAPI::Operator>& Rss,
-                             vector<MLAPI::Operator>& Aff,
-                             vector<MLAPI::Operator>& Pff, 
-                             vector<MLAPI::Operator>& Rff,
-                             vector<MLAPI::Operator>& Aaa,
-                             vector<MLAPI::Operator>& Paa, 
-                             vector<MLAPI::Operator>& Raa,
-                             vector<MLAPI::Operator>& Asf,
-                             vector<MLAPI::Operator>& Afs,
-                             vector<MLAPI::Operator>& Afa,
-                             vector<MLAPI::Operator>& Aaf,
+                             std::vector<MLAPI::Operator>& Ass,
+                             std::vector<MLAPI::Operator>& Pss,
+                             std::vector<MLAPI::Operator>& Rss,
+                             std::vector<MLAPI::Operator>& Aff,
+                             std::vector<MLAPI::Operator>& Pff,
+                             std::vector<MLAPI::Operator>& Rff,
+                             std::vector<MLAPI::Operator>& Aaa,
+                             std::vector<MLAPI::Operator>& Paa,
+                             std::vector<MLAPI::Operator>& Raa,
+                             std::vector<MLAPI::Operator>& Asf,
+                             std::vector<MLAPI::Operator>& Afs,
+                             std::vector<MLAPI::Operator>& Afa,
+                             std::vector<MLAPI::Operator>& Aaf,
                              bool initiguesszero=false,
                              bool analysis=false,
                              bool silent=false) const;
@@ -546,11 +546,11 @@ namespace FSI
     // AMG(BGS) block V cycle for FSI
     void BlockVcycle(
                      const int myrank,
-                     vector<int>& Vsweeps,
-                     vector<double>& Vdamps,
-                     vector<int>* blocksweeps,
-                     vector<double>* blockdamps,
-                     const vector<string>& blocksmoother,
+                     std::vector<int>& Vsweeps,
+                     std::vector<double>& Vdamps,
+                     std::vector<int>* blocksweeps,
+                     std::vector<double>* blockdamps,
+                     const std::vector<std::string>& blocksmoother,
                      const int level,
                      const int minnlevel,
                      AnalyzeBest& sbest,
@@ -562,19 +562,19 @@ namespace FSI
                      const MLAPI::MultiVector& sf,
                      const MLAPI::MultiVector& ff,
                      const MLAPI::MultiVector& af,  
-                     vector<MLAPI::Operator>& Ass,
-                     vector<MLAPI::Operator>& Pss, 
-                     vector<MLAPI::Operator>& Rss,
-                     vector<MLAPI::Operator>& Aff,
-                     vector<MLAPI::Operator>& Pff, 
-                     vector<MLAPI::Operator>& Rff,
-                     vector<MLAPI::Operator>& Aaa,
-                     vector<MLAPI::Operator>& Paa, 
-                     vector<MLAPI::Operator>& Raa,
-                     vector<MLAPI::Operator>& Asf,
-                     vector<MLAPI::Operator>& Afs,
-                     vector<MLAPI::Operator>& Afa,
-                     vector<MLAPI::Operator>& Aaf) const;
+                     std::vector<MLAPI::Operator>& Ass,
+                     std::vector<MLAPI::Operator>& Pss,
+                     std::vector<MLAPI::Operator>& Rss,
+                     std::vector<MLAPI::Operator>& Aff,
+                     std::vector<MLAPI::Operator>& Pff,
+                     std::vector<MLAPI::Operator>& Rff,
+                     std::vector<MLAPI::Operator>& Aaa,
+                     std::vector<MLAPI::Operator>& Paa,
+                     std::vector<MLAPI::Operator>& Raa,
+                     std::vector<MLAPI::Operator>& Asf,
+                     std::vector<MLAPI::Operator>& Afs,
+                     std::vector<MLAPI::Operator>& Afa,
+                     std::vector<MLAPI::Operator>& Aaf) const;
     
     inline const bool& SisAMG() const { return sisml_; }
     inline const bool& FisAMG() const { return fisml_; }
@@ -591,38 +591,38 @@ namespace FSI
     int                                  maxnlevel_; /// max of the below nlevel_
     int                                  analyze_;   /// run analysis of FSIAMG
     INPAR::FSI::LinearBlockSolver        strategy_; /// type of preocnidtioner  to run: BGS(AMG) or AMG(BGS)
-    vector<string>                       blocksmoother_; /// type of inter-field block smoother
-    vector<double>                       schuromega_; /// damping factor for construction of Schur complement
-    vector<double>                       pcomega_;
-    vector<int>                          pciter_;
-    vector<double>                       somega_;
-    vector<int>                          siterations_;
-    vector<double>                       fomega_;
-    vector<int>                          fiterations_;
-    vector<double>                       aomega_;
-    vector<int>                          aiterations_;
+    std::vector<std::string>             blocksmoother_; /// type of inter-field block smoother
+    std::vector<double>                  schuromega_; /// damping factor for construction of Schur complement
+    std::vector<double>                  pcomega_;
+    std::vector<int>                     pciter_;
+    std::vector<double>                  somega_;
+    std::vector<int>                     siterations_;
+    std::vector<double>                  fomega_;
+    std::vector<int>                     fiterations_;
+    std::vector<double>                  aomega_;
+    std::vector<int>                     aiterations_;
 
     int                                  snlevel_;   /// num level in structure AMG
     Teuchos::ParameterList               sparams_;
-    mutable vector<MLAPI::Operator>      Ass_;
-    vector<Teuchos::RCP<MLAPI::InverseOperator> > Sss_;
-    vector<MLAPI::Operator>              Pss_;
-    vector<MLAPI::Operator>              Rss_;
+    mutable std::vector<MLAPI::Operator> Ass_;
+    std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Sss_;
+    std::vector<MLAPI::Operator>         Pss_;
+    std::vector<MLAPI::Operator>         Rss_;
 
     int                                  fnlevel_;   /// num level in fluid AMG
     Teuchos::ParameterList               fparams_;
-    mutable vector<MLAPI::Operator>      Aff_;
-    vector<Teuchos::RCP<MLAPI::InverseOperator> > Sff_;
+    mutable std::vector<MLAPI::Operator> Aff_;
+    std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Sff_;
     mutable vector<MLAPI::Operator>      Schurff_;
-    vector<MLAPI::Operator>              Pff_;
-    vector<MLAPI::Operator>              Rff_;
+    std::vector<MLAPI::Operator>         Pff_;
+    std::vector<MLAPI::Operator>         Rff_;
 
     int                                  anlevel_;   /// num level in ale AMG
     Teuchos::ParameterList               aparams_;
-    mutable vector<MLAPI::Operator>      Aaa_;
-    vector<Teuchos::RCP<MLAPI::InverseOperator> > Saa_;
-    vector<MLAPI::Operator>              Paa_;
-    vector<MLAPI::Operator>              Raa_;
+    mutable std::vector<MLAPI::Operator> Aaa_;
+    std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Saa_;
+    std::vector<MLAPI::Operator>         Paa_;
+    std::vector<MLAPI::Operator>         Raa_;
 
     // these are for implicit off-diagonal in block smoother
     mutable MLAPI::Operator              Asf_;
@@ -631,10 +631,10 @@ namespace FSI
     mutable MLAPI::Operator              Aaf_;
 
     // these are for explicit coarse off-diagonals in block smoother
-    mutable vector<MLAPI::Operator>      ASF_;
-    mutable vector<MLAPI::Operator>      AFS_;
-    mutable vector<MLAPI::Operator>      AFA_;
-    mutable vector<MLAPI::Operator>      AAF_;
+    mutable std::vector<MLAPI::Operator> ASF_;
+    mutable std::vector<MLAPI::Operator> AFS_;
+    mutable std::vector<MLAPI::Operator> AFA_;
+    mutable std::vector<MLAPI::Operator> AAF_;
 
   };
 

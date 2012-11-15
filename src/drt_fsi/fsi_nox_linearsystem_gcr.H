@@ -239,8 +239,8 @@ namespace FSI {
     /// helper for GMRES
     void GeneratePlaneRotation(double &dx, double &dy, double &cs, double &sn);
 
-    virtual void throwError(const string& functionName,
-                            const string& errorMsg) const;
+    virtual void throwError(const std::string& functionName,
+                            const std::string& errorMsg) const;
 
   protected:
 

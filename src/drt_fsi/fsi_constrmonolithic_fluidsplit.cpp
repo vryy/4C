@@ -72,14 +72,14 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystem()
   AleField().BuildSystemMatrix(false);
 
   // get the PCITER from inputfile
-  vector<int> pciter;
-  vector<double> pcomega;
-  vector<int> spciter;
-  vector<double> spcomega;
-  vector<int> fpciter;
-  vector<double> fpcomega;
-  vector<int> apciter;
-  vector<double> apcomega;
+  std::vector<int> pciter;
+  std::vector<double> pcomega;
+  std::vector<int> spciter;
+  std::vector<double> spcomega;
+  std::vector<int> fpciter;
+  std::vector<double> fpcomega;
+  std::vector<int> apciter;
+  std::vector<double> apcomega;
   {
     int    word1;
     double word2;
@@ -249,7 +249,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   /*----------------------------------------------------------------------*/
   // structure constraint part
-  RCP<LINALG::SparseOperator> tmp = conman_->GetConstrMatrix();
+  Teuchos::RCP<LINALG::SparseOperator> tmp = conman_->GetConstrMatrix();
   LINALG::SparseMatrix scon = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmp));
 
   scon.Complete(*conman_->GetConstraintMap(),s->RangeMap());

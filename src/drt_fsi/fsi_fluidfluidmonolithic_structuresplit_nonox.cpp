@@ -76,7 +76,7 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
 
   // const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
   const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
-  RCP<ParameterList> fluidtimeparams = Teuchos::rcp(new ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
   monolithic_approach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
                          (xfluiddyn.sublist("GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
@@ -546,7 +546,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
                    true,
                    true);
 
-  RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
+  Teuchos::RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
   (*sgitransform_)(s->Matrix(1,0),
                    ((1.0-ftiparam)/(1.0-stiparam))*(1./scale),
                    ADAPTER::CouplingMasterConverter(coupsf),
@@ -580,7 +580,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
     systemmatrix_->Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
     systemmatrix_->Matrix(1,1).Add(fmig,false,1./timescale,1.0);
 
-    RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
+    Teuchos::RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
     (*fmgitransform_)(mmm->FullRowMap(),
                       mmm->FullColMap(),
                       fmgi,

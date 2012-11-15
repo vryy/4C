@@ -501,14 +501,14 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
   // build ale system matrix in splitted (at the free surface) system
   AleField().BuildSystemMatrix(false);
 
-  vector<int> pciter;
-  vector<double> pcomega;
-  vector<int> spciter;
-  vector<double> spcomega;
-  vector<int> fpciter;
-  vector<double> fpcomega;
-  vector<int> apciter;
-  vector<double> apcomega;
+  std::vector<int> pciter;
+  std::vector<double> pcomega;
+  std::vector<int> spciter;
+  std::vector<double> spcomega;
+  std::vector<int> fpciter;
+  std::vector<double> fpcomega;
+  std::vector<int> apciter;
+  std::vector<double> apcomega;
   {
     int    word1;
     double word2;
@@ -1244,8 +1244,8 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(0,0);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(1,1);
 
-  RCP<LINALG::MapExtractor> fsidofmapex = null;
-  RCP<Epetra_Map>           irownodes = null;
+  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = null;
+  Teuchos::RCP<Epetra_Map>           irownodes = null;
 
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
                       fsidofmapex,

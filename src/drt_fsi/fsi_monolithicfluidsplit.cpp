@@ -620,7 +620,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
                     true,
                     true);
 
-  RCP<LINALG::SparseMatrix> lfgi = Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
+  Teuchos::RCP<LINALG::SparseMatrix> lfgi = Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
   (*fgitransform_)(fgi,
                    (1.0-stiparam)/(1.0-ftiparam)*scale,
                    ADAPTER::CouplingSlaveConverter(coupsf),
@@ -641,7 +641,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
   if (stcalgo == INPAR::STR::stc_none)
   {
-    RCP<LINALG::SparseMatrix> lfig = Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(),81,false));
+    Teuchos::RCP<LINALG::SparseMatrix> lfig = Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(),81,false));
     (*figtransform_)(f->FullRowMap(),
                      f->FullColMap(),
                      fig,
@@ -651,7 +651,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   }
   else
   {
-    RCP<LINALG::SparseMatrix> lfig = Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(),81,false));
+    Teuchos::RCP<LINALG::SparseMatrix> lfig = Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(),81,false));
     (*figtransform_)(f->FullRowMap(),
                      f->FullColMap(),
                      fig,
@@ -690,7 +690,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   }
   else
   {
-    RCP<LINALG::SparseMatrix> laig = Teuchos::rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
+    Teuchos::RCP<LINALG::SparseMatrix> laig = Teuchos::rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
     (*aigtransform_)( a->FullRowMap(),
                       a->FullColMap(),
                       aig,
@@ -738,7 +738,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
     }
     else
     {
-      RCP<LINALG::SparseMatrix> lfmig = Teuchos::rcp(new LINALG::SparseMatrix(fmig.RowMap(),81,false));
+      Teuchos::RCP<LINALG::SparseMatrix> lfmig = Teuchos::rcp(new LINALG::SparseMatrix(fmig.RowMap(),81,false));
       (*figtransform_)(f->FullRowMap(),
                        f->FullColMap(),
                        fmig,
@@ -780,7 +780,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
                       false);
 
     {
-      RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
+      Teuchos::RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
       (*fmgitransform_)(fmgi,
                         (1.0-stiparam)/(1.0-ftiparam)*scale,
                         ADAPTER::CouplingSlaveConverter(coupsf),

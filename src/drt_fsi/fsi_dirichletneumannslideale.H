@@ -111,7 +111,7 @@ protected:
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
   
 //  /// compute Displacement of structural center of gravity
-//  vector<double> Centerdisp
+//  std::vector<double> Centerdisp
 //  (
 //      Teuchos::RCP<Epetra_Vector> idisptotal,
 //      Teuchos::RCP<Epetra_Vector>idispstep
@@ -122,15 +122,15 @@ protected:
 //      Teuchos::RCP<Epetra_Vector> idisptotal,
 //      Teuchos::RCP<Epetra_Vector> reddisp,
 //      DRT::Discretization& interfacedis,
-//      RCP<Epetra_Map> msfullelemap
+//      Teuchos::RCP<Epetra_Map> msfullelemap
 //  );
 //  
 //  void SlideProjection
 //  (
 //      Teuchos::RCP<Epetra_Vector> islavestep,
 //      DRT::Discretization& interfacedis,
-//      vector<double> centerdisp,
-//      std::map<int, RCP<DRT::Element> > masterreduelements,
+//      std::vector<double> centerdisp,
+//      std::map<int, Teuchos::RCP<DRT::Element> > masterreduelements,
 //      std::map<int,LINALG::Matrix<3,1> > currentpositions
 //  );
   

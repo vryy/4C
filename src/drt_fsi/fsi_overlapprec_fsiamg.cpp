@@ -25,16 +25,16 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     ALE::Ale& ale,
                                                     bool structuresplit,
                                                     int symmetric,
-                                                    vector<string>& blocksmoother,
-                                                    vector<double>& schuromega,
-                                                    vector<double>& omega,
-                                                    vector<int>& iterations,
-                                                    vector<double>& somega,
-                                                    vector<int>& siterations,
-                                                    vector<double>& fomega,
-                                                    vector<int>& fiterations,
-                                                    vector<double>& aomega,
-                                                    vector<int>& aiterations,
+                                                    std::vector<std::string>& blocksmoother,
+                                                    std::vector<double>& schuromega,
+                                                    std::vector<double>& omega,
+                                                    std::vector<int>& iterations,
+                                                    std::vector<double>& somega,
+                                                    std::vector<int>& siterations,
+                                                    std::vector<double>& fomega,
+                                                    std::vector<int>& fiterations,
+                                                    std::vector<double>& aomega,
+                                                    std::vector<int>& aiterations,
                                                     int analyze,
                                                     INPAR::FSI::LinearBlockSolver strategy,
                                                     FILE* err)
@@ -469,7 +469,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       char levelstr[11];
       sprintf(levelstr,"(level %d)",i);
       Teuchos::ParameterList& subp = sparams_.sublist("smoother: list "+(string)levelstr);
-      string type = "";
+      std::string type = "";
       SelectMLAPISmoother(type,i,subp,p,pushlist);
       if (type=="ILU")
       {
@@ -516,7 +516,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       char levelstr[11];
       sprintf(levelstr,"(level %d)",i);
       Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+(string)levelstr);
-      string type = "";
+      std::string type = "";
       SelectMLAPISmoother(type,i,subp,p,pushlist);
       if (blocksmoother_[i] == "Schur") // Schur Complement block smoother
       {
@@ -587,7 +587,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       char levelstr[11];
       sprintf(levelstr,"(level %d)",i);
       Teuchos::ParameterList& subp = aparams_.sublist("smoother: list "+(string)levelstr);
-      string type = "";
+      std::string type = "";
       SelectMLAPISmoother(type,i,subp,p,pushlist);
       if (type=="ILU")
       {
@@ -1110,10 +1110,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
                      const int nlevel,
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
-                     const vector<MLAPI::Operator>& A,
-                     const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
-                     const vector<MLAPI::Operator>& P,
-                     const vector<MLAPI::Operator>& R
+                     const std::vector<MLAPI::Operator>& A,
+                     const std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
+                     const std::vector<MLAPI::Operator>& P,
+                     const std::vector<MLAPI::Operator>& R
                      ) const
 {
   // do one iteration in any case (start counting iterations from zero)
@@ -1234,10 +1234,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   if (strategy_==INPAR::FSI::FSIAMG)
   {
     int myrank = X.Comm().MyPID();
-    vector<int> Vsweeps(minnlevel_,1);
-    vector<double> Vdamps(minnlevel_,1.0);
-    vector<int> blocksweeps[3];
-    vector<double> blockdamps[3];
+    std::vector<int> Vsweeps(minnlevel_,1);
+    std::vector<double> Vdamps(minnlevel_,1.0);
+    std::vector<int> blocksweeps[3];
+    std::vector<double> blockdamps[3];
     for (int i=0; i<3; ++i)
     {
       blocksweeps[i].resize(minnlevel_,1);
@@ -1303,16 +1303,16 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     mlay = 0.0;
     Richardson_BlockV(myrank,1,1.0,Vsweeps,Vdamps,blocksweeps,blockdamps,blocksmoother_,
                       shierachy,fhierachy,ahierachy,mlsy,mlfy,mlay,mlsx,mlfx,mlax,
-                      Ass_,const_cast<vector<MLAPI::Operator>& >(Pss_),const_cast<vector<MLAPI::Operator>& >(Rss_),
-                      Aff_,const_cast<vector<MLAPI::Operator>& >(Pff_),const_cast<vector<MLAPI::Operator>& >(Rff_),
-                      Aaa_,const_cast<vector<MLAPI::Operator>& >(Paa_),const_cast<vector<MLAPI::Operator>& >(Raa_),
+                      Ass_,const_cast<std::vector<MLAPI::Operator>& >(Pss_),const_cast<std::vector<MLAPI::Operator>& >(Rss_),
+                      Aff_,const_cast<std::vector<MLAPI::Operator>& >(Pff_),const_cast<std::vector<MLAPI::Operator>& >(Rff_),
+                      Aaa_,const_cast<std::vector<MLAPI::Operator>& >(Paa_),const_cast<std::vector<MLAPI::Operator>& >(Raa_),
                       ASF_,AFS_,AFA_,AAF_,true,false,true);
   }
   else if (strategy_==INPAR::FSI::PreconditionedKrylov)
   {
     int myrank = X.Comm().MyPID();
-    vector<int> Vsweeps(3,1);
-    vector<double> Vdamps(3,1.0);
+    std::vector<int> Vsweeps(3,1);
+    std::vector<double> Vdamps(3,1.0);
     Vsweeps[0] = pciter_[0];
     Vdamps[0] = pcomega_[0];
     Vsweeps[1] = pciter_[1];
@@ -1378,10 +1378,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
                                                const int nlevel,
                                                MLAPI::MultiVector& z,
                                                const MLAPI::MultiVector& b,
-                                               const vector<MLAPI::Operator>& A,
-                                               const vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
-                                               const vector<MLAPI::Operator>& P,
-                                               const vector<MLAPI::Operator>& R,
+                                               const std::vector<MLAPI::Operator>& A,
+                                               const std::vector<Teuchos::RCP<MLAPI::InverseOperator> >& S,
+                                               const std::vector<MLAPI::Operator>& P,
+                                               const std::vector<MLAPI::Operator>& R,
                                                const bool trigger) const
 {
   // in presmoothing, the initial guess has to be zero, we do this manually here.
@@ -1434,7 +1434,7 @@ const char* FSI::OverlappingBlockMatrixFSIAMG::Label() const
 {
   if (strategy_==INPAR::FSI::FSIAMG)
   {
-    string blocksmooth = blocksmoother_[0];
+    std::string blocksmooth = blocksmoother_[0];
     bool equal = true;
     for (int i=0; i<(int)blocksmoother_.size(); ++i)
       if (blocksmooth==blocksmoother_[i]) continue;

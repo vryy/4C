@@ -61,7 +61,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
                  0,
                  bmap.Comm());
 
-  RCP<Epetra_CrsMatrix> jacobian = Teuchos::rcp(new Epetra_CrsMatrix(Copy, map, map.NumGlobalElements()));
+  Teuchos::RCP<Epetra_CrsMatrix> jacobian = Teuchos::rcp(new Epetra_CrsMatrix(Copy, map, map.NumGlobalElements()));
 
   int nummyelements = map.NumMyElements();
   int mypos = LINALG::FindMyPos(nummyelements, map.Comm());
@@ -214,9 +214,9 @@ aletype_(aleproj)
   coupff_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
   // declare struct objects in interface
-  std::map<int, std::map<int, RCP<DRT::Element> > > structelements;
-  std::map<int, RCP<DRT::Element> > structmelements;
-  std::map<int, RCP<DRT::Element> > structdelements;
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structelements;
+  std::map<int, Teuchos::RCP<DRT::Element> > structmelements;
+  std::map<int, Teuchos::RCP<DRT::Element> > structdelements;
   std::map<int, DRT::Node*> dummy1; // dummy map
   std::map<int, std::map<int, DRT::Node*> > dummy2;  // dummy map
   std::map<int, DRT::Node*> structmnodes; // partial map of sticking structure nodes
@@ -233,8 +233,8 @@ aletype_(aleproj)
 
   std::vector<int> slideeleidvector;
 
-  std::map<int, RCP<DRT::Element> >::iterator eit;
-  std::map<int, std::map<int, RCP<DRT::Element> > >::iterator meit;
+  std::map<int, Teuchos::RCP<DRT::Element> >::iterator eit;
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator meit;
 
   for ( eit=structmelements.begin() ; eit != structmelements.end(); eit++ )
   {
@@ -265,7 +265,7 @@ aletype_(aleproj)
 
   // declare fluid objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > fluidelements;
-  std::map<int, RCP<DRT::Element> > fluidmelements;
+  std::map<int, Teuchos::RCP<DRT::Element> > fluidmelements;
   std::map<int, std::map<int, DRT::Node*> > fluidnodes;  // complete map of fluid nodes
   std::map<int, DRT::Node*> fluidmnodes; // partial map of sticking fluid nodes
 
@@ -479,11 +479,11 @@ vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
   double lengthcirc = 0.0;
 
   //calculating the center displacement by evaluating structure interface elements
-  std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = istructdispeles_.begin(); elemiter != istructdispeles_.end(); ++elemiter)
   {
 
-    RCP<DRT::Element> iele = elemiter->second;
+    Teuchos::RCP<DRT::Element> iele = elemiter->second;
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
@@ -841,7 +841,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
     if (ifluidslidstructeles_.find(i) != ifluidslidstructeles_.end())
       maxcoord=rotrat[i];
 
-    std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
+    std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
     for (elemiter = ifluidslidstructeles_[i].begin(); elemiter != ifluidslidstructeles_[i].end(); elemiter++)
     {
       //define stuff needed by the elements
@@ -852,7 +852,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
       Epetra_SerialDenseVector elevector3;
       Teuchos::ParameterList params;
 
-      RCP<DRT::Element> iele = elemiter->second;
+      Teuchos::RCP<DRT::Element> iele = elemiter->second;
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
@@ -894,7 +894,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
       Epetra_SerialDenseVector elevector3;
       Teuchos::ParameterList params;
 
-      RCP<DRT::Element> iele = elemiter->second;
+      Teuchos::RCP<DRT::Element> iele = elemiter->second;
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;

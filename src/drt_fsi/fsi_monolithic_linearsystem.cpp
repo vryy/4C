@@ -226,7 +226,7 @@ void FSI::MonolithicLinearSystem::softreset(
   //destroyPreconditioner();
 
   // Set the requested preconditioning.
-  string prec = linearSolverParams.get("Preconditioner", "None");
+  std::string prec = linearSolverParams.get("Preconditioner", "None");
   if (prec == "AztecOO")
     precAlgorithm = AztecOO_;
   else if (prec == "Ifpack")
@@ -242,7 +242,7 @@ void FSI::MonolithicLinearSystem::softreset(
   else if (prec == "None")
     precAlgorithm = None_;
   else {
-    string errorMessage = "Option for \"Preconditioner\" is invalid!";
+    std::string errorMessage = "Option for \"Preconditioner\" is invalid!";
     throwError("reset()", errorMessage);
   }
 
@@ -299,7 +299,7 @@ void FSI::MonolithicLinearSystem::softreset(
   else if (preReusePolicyName == "Reuse")
     precReusePolicy = PRPT_REUSE;
   else {
-    string errorMessage = "Option for \"Preconditioner Reuse Policy\" is invalid! \nPossible options are \"Reuse\", \"Rebuild\", and \"Recompute\".";
+    std::string errorMessage = "Option for \"Preconditioner Reuse Policy\" is invalid! \nPossible options are \"Reuse\", \"Rebuild\", and \"Recompute\".";
     throwError("reset()", errorMessage);
   }
   maxAgeOfPrec = linearSolverParams.get("Max Age Of Prec", 1);

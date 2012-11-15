@@ -103,7 +103,7 @@ public:
 protected:
 
   //! Label for matrix
-  string label;
+  std::string label;
 
   //! User provided interface function
   Teuchos::RCP<NOX::Epetra::Interface::Required> interface;

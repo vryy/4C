@@ -149,8 +149,8 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
 }
 
 
-void NOX::FSI::EpsilonExtrapolation::throwError(const string& functionName,
-                                                const string& errorMsg)
+void NOX::FSI::EpsilonExtrapolation::throwError(const std::string& functionName,
+                                                const std::string& errorMsg)
 {
     if (utils_->isPrintType(NOX::Utils::Error))
       utils_->err() << "EpsilonExtrapolation::" << functionName

@@ -621,7 +621,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    true,
                    true);
 
-  RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
+  Teuchos::RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
   (*sgitransform_)(s->Matrix(1,0),
                    (1.0-ftiparam)/((1.0-stiparam)*scale),
                    ADAPTER::CouplingMasterConverter(coupsf),
@@ -654,7 +654,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     f->Add(fmgg,false,1./timescale,1.0);
     f->Add(fmig,false,1./timescale,1.0);
 
-    RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
+    Teuchos::RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
     (*fmgitransform_)(mmm->FullRowMap(),
                       mmm->FullColMap(),
                       fmgi,
@@ -1211,7 +1211,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   if (velgprev_ != Teuchos::null)
     duginc_->Update(1.0, *fcx, -1.0, *velgprev_, 0.0);  // compute current iteration increment
   else
-    duginc_ = rcp(new Epetra_Vector(*fcx));             // first iteration increment
+    duginc_ = Teuchos::rcp(new Epetra_Vector(*fcx));    // first iteration increment
 
   velgprev_ = fcx;                                      // store current step increment
 }
@@ -1321,7 +1321,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
 
   // ---------Addressing term (3)
   Teuchos::RCP<Epetra_Vector> structureresidual = StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
-  tmpvec = rcp(new Epetra_Vector(*structureresidual));
+  tmpvec = Teuchos::rcp(new Epetra_Vector(*structureresidual));
   // ---------End of term (3)
 
   /* Commented out terms (4) to (6) since they tend to introduce oscillations
@@ -1329,7 +1329,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
    * structure
    *                                                    Matthias Mayr 11/2012
   // ---------Addressing term (4)
-  auxvec = rcp(new Epetra_Vector(sgiprev_->RangeMap(),true));
+  auxvec = Teuchos::rcp(new Epetra_Vector(sgiprev_->RangeMap(),true));
   err = sgiprev_->Apply(*ddiinc_,*auxvec);
   if (err!=0) { dserror("Failed!"); }
   err = tmpvec->Update(-1.0,*auxvec,1.0);
@@ -1337,7 +1337,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
   // ---------End of term (4)
 
   // ---------Addressing term (5)
-  auxvec = rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
+  auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
   err = sggprev_->Apply(*FluidToStruct(duginc_),*auxvec);
   if (err!=0) { dserror("Failed!"); }
   err = tmpvec->Update(-1.0/timescale,*auxvec,1.0);
@@ -1347,7 +1347,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
   //---------Addressing term (6)
   if (firstcall_)
   {
-    auxvec = rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
+    auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
     err = sggprev_->Apply(*FluidToStruct(FluidField().ExtractInterfaceVeln()),*auxvec);
     if (err!=0) { dserror("Failed!"); }
     err = tmpvec->Update(-Dt(),*auxvec,1.0);

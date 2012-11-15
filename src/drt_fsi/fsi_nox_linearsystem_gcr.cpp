@@ -123,7 +123,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
   int status = -1;
 
   // solve using GCR
-  string linearSolver = p.get("Solver", "GMRES");
+  std::string linearSolver = p.get("Solver", "GMRES");
   if (linearSolver == "GMRES")
     status = SolveGMRES(input, result, maxit, tol,
                         p.get("Size of Krylov Subspace", 300));
@@ -511,7 +511,7 @@ void NOX::FSI::LinearSystemGCR::setPrecOperatorForSolve(const Teuchos::RCP<const
 }
 
 
-void NOX::FSI::LinearSystemGCR::throwError(const string& functionName, const string& errorMsg) const
+void NOX::FSI::LinearSystemGCR::throwError(const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils.isPrintType(NOX::Utils::Error))
   {
