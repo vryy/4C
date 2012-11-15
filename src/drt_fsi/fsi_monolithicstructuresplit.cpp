@@ -911,7 +911,7 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
                                                 Teuchos::RCP<const Epetra_Vector> sv,
                                                 Teuchos::RCP<const Epetra_Vector> fv,
                                                 Teuchos::RCP<const Epetra_Vector> av,
-                                                double fluidscale)
+                                                const double fluidscale)
 {
   // get time integration parameters of structure an fluid time integrators
   // to enable consistent time integration among the fields
@@ -932,15 +932,13 @@ void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface()->InsertFSICondVector(StructToFluid(scv));
 
     // add structure rhs on condensed structural interface DOFs to fluid DOFs
-    int err = modfv->Update(1.0, *fv, (1.0-ftiparam)/((1.0-stiparam)*fluidscale));
-    if (err != 0) { dserror("modfv->Update() returned err = %i.",err); }
+    modfv->Update(1.0, *fv, (1.0-ftiparam)/((1.0-stiparam)*fluidscale));
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> lambdaglobal = FluidField().Interface()->InsertFSICondVector(StructToFluid(lambda_));
-      err = modfv->Update((-ftiparam+(stiparam*(1.0-ftiparam))/(1.0-stiparam))/fluidscale, *lambdaglobal, 1.0);
-      if (err != 0) { dserror("modfv->Update() returned err = %i.",err); }
+      modfv->Update((-ftiparam+(stiparam*(1.0-ftiparam))/(1.0-stiparam))/fluidscale, *lambdaglobal, 1.0);
     }
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modfv->Map(),true));

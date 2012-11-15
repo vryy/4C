@@ -1025,7 +1025,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
                                          Teuchos::RCP<const Epetra_Vector> sv,
                                          Teuchos::RCP<const Epetra_Vector> fv,
                                          Teuchos::RCP<const Epetra_Vector> av,
-                                         double fluidscale)
+                                         const double fluidscale)
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields

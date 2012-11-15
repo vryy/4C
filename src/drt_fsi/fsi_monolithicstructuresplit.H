@@ -147,7 +147,7 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector> sv,   ///< structural displacements
         Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocties and pressure
         Teuchos::RCP<const Epetra_Vector> av,   ///< ale displacements
-        double fluidscale                       ///< residual scaling for fluid
+        const double fluidscale                 ///< residual scaling for fluid
     );
 
     /// block system matrix
