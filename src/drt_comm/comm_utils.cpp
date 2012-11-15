@@ -115,10 +115,13 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
         {
           printf("\n\n\nINFO: Group layout is not specified. Default is equal size of the groups.\n");
         }
-        if ((size % ngroup) != 0 and myrank == (size-1))
+        if ((size % ngroup) != 0)
         {
-          printf("\n\nNumber of processors (%d) cannot be divided by the number of groups (%d)!\n",size,ngroup);
-          printf("Try again!\n");
+          if(myrank == (size-1))
+          {
+            printf("\n\nNumber of processors (%d) cannot be divided by the number of groups (%d)!\n",size,ngroup);
+            printf("Try again!\n");
+          }
           MPI_Finalize();
           exit(1);
         }
