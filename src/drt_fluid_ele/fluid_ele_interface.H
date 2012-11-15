@@ -18,7 +18,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 
 #include <vector>
 #include <map>
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
@@ -153,7 +153,7 @@ namespace ELEMENTS
                                 Teuchos::ParameterList&     params,
                                 DRT::Discretization&        discretization,
                                 std::vector<int>&           lm,
-                                RefCountPtr<MAT::Material>  mat) = 0;
+                                Teuchos::RCP<MAT::Material> mat) = 0;
 
     virtual int ComputeErrorInterface(
         DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element

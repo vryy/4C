@@ -446,8 +446,8 @@ private:
                                     double const & range,
                                     const int & numeles,
                                     DRT::Element** ele,
-                                    set<int>& elegid,
-                                    set<int>& knotgid,
+                                    std::set<int>& elegid,
+                                    std::set<int>& knotgid,
                                     int& init_knot
   );
 
@@ -462,10 +462,10 @@ private:
                                 double const & range,
                                 const int & numele,               //!< (const): number of elements for this recursion
                                 DRT::Element** eles,              //!< (in): pointer to element pointers for this recursion
-                                set<int>& elegid,                 //!< (in/out): global id of elements already busy
+                                std::set<int>& elegid,                 //!< (in/out): global id of elements already busy
                                                                   //!        dealing or even dealt with (continuously
                                                                   //!        updated and common to all recursion states)
-                                set<int>& knotgid,                //!< (in/out): global id of knots already busy
+                                std::set<int>& knotgid,                //!< (in/out): global id of knots already busy
                                                                   //!        dealing or even dealt with (continuously
                                                                   //!        updated and common to all recursion states)
                                 const int & myrank,               //!< (const): rank of proc

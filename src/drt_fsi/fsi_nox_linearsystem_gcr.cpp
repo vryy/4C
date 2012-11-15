@@ -19,11 +19,11 @@
 NOX::FSI::LinearSystemGCR::LinearSystemGCR(
   Teuchos::ParameterList& printParams,
   Teuchos::ParameterList& linearSolverParams,
-  const Teuchos::RefCountPtr< NOX::Epetra::Interface::Required>& iReq,
-  const Teuchos::RefCountPtr< NOX::Epetra::Interface::Jacobian>& iJac,
-  const Teuchos::RefCountPtr<Epetra_Operator>& jacobian,
+  const Teuchos::RCP< NOX::Epetra::Interface::Required>& iReq,
+  const Teuchos::RCP< NOX::Epetra::Interface::Jacobian>& iJac,
+  const Teuchos::RCP<Epetra_Operator>& jacobian,
   const NOX::Epetra::Vector& cloneVector,
-  const Teuchos::RefCountPtr< NOX::Epetra::Scaling> s)
+  const Teuchos::RCP< NOX::Epetra::Scaling> s)
   : utils(printParams),
     jacInterfacePtr(iJac),
     jacType(EpetraOperator),
@@ -186,8 +186,8 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
   double normb = b.norm();
   double error0 = r.norm() / normb;
 
-  std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > >& u = u_;
-  std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > >& c = c_;
+  std::vector<Teuchos::RCP< NOX::Epetra::Vector > >& u = u_;
+  std::vector<Teuchos::RCP< NOX::Epetra::Vector > >& c = c_;
 
 #if 1
   // reset krylov space
@@ -285,7 +285,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
     return 0;
   }
 
-  std::vector<Teuchos::RefCountPtr<NOX::Epetra::Vector> > v;
+  std::vector<Teuchos::RCP<NOX::Epetra::Vector> > v;
   v.reserve(m+1);
 
   int j = 1;
@@ -415,13 +415,13 @@ bool NOX::FSI::LinearSystemGCR::applyRightPreconditioning(bool useTranspose,
 }
 
 
-Teuchos::RefCountPtr< NOX::Epetra::Scaling> NOX::FSI::LinearSystemGCR::getScaling()
+Teuchos::RCP< NOX::Epetra::Scaling> NOX::FSI::LinearSystemGCR::getScaling()
 {
   return scaling;
 }
 
 
-void NOX::FSI::LinearSystemGCR::resetScaling(const Teuchos::RefCountPtr< NOX::Epetra::Scaling>& scalingObject)
+void NOX::FSI::LinearSystemGCR::resetScaling(const Teuchos::RCP< NOX::Epetra::Scaling>& scalingObject)
 {
   scaling = scalingObject;
 }
@@ -474,38 +474,38 @@ bool NOX::FSI::LinearSystemGCR::hasPreconditioner() const
 }
 
 
-Teuchos::RefCountPtr<const Epetra_Operator> NOX::FSI::LinearSystemGCR::getJacobianOperator() const
+Teuchos::RCP<const Epetra_Operator> NOX::FSI::LinearSystemGCR::getJacobianOperator() const
 {
   return jacPtr;
 }
 
 
-Teuchos::RefCountPtr<Epetra_Operator> NOX::FSI::LinearSystemGCR::getJacobianOperator()
+Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystemGCR::getJacobianOperator()
 {
   return jacPtr;
 }
 
 
-Teuchos::RefCountPtr<const Epetra_Operator> NOX::FSI::LinearSystemGCR::getGeneratedPrecOperator() const
+Teuchos::RCP<const Epetra_Operator> NOX::FSI::LinearSystemGCR::getGeneratedPrecOperator() const
 {
   return Teuchos::null;
 }
 
 
-Teuchos::RefCountPtr<Epetra_Operator> NOX::FSI::LinearSystemGCR::getGeneratedPrecOperator()
+Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystemGCR::getGeneratedPrecOperator()
 {
   return Teuchos::null;
 }
 
 
-void NOX::FSI::LinearSystemGCR::setJacobianOperatorForSolve(const Teuchos::RefCountPtr<const Epetra_Operator>& solveJacOp)
+void NOX::FSI::LinearSystemGCR::setJacobianOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
   jacPtr = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
   jacType = getOperatorType(*solveJacOp);
 }
 
 
-void NOX::FSI::LinearSystemGCR::setPrecOperatorForSolve(const Teuchos::RefCountPtr<const Epetra_Operator>& solvePrecOp)
+void NOX::FSI::LinearSystemGCR::setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
 {
   throwError("setPrecOperatorForSolve", "no preconditioner supported");
 }

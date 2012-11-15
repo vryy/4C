@@ -685,7 +685,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
     // the distance is based on the distance between the current node and the closest node of
     // the cut element. This guarantees an estimated distance <= the real distance
     //=======================================================================================
-    list< pair< int, double > > eledistance;
+    std::list< std::pair< int, double > > eledistance;
 
     {
       // loop all cut elements
@@ -720,7 +720,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
             distance = thisdistance;
         }
 
-        pair< int, double> thispair;
+        std::pair< int, double> thispair;
         thispair.first  = allcuteleids[ieleid];
         thispair.second = distance;
         eledistance.push_back( thispair );
@@ -932,8 +932,8 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
         // sort the the vector in ascending order by the distance
         //==============================================================
         // here we use the fact, that everything is already sorted but the first list item
-        pair<int,double> tmppair = eledistance.front();
-        list<pair<int,double> >::iterator insertiter = eledistance.begin();
+        std::pair<int,double> tmppair = eledistance.front();
+        std::list<std::pair<int,double> >::iterator insertiter = eledistance.begin();
         ++insertiter;
 
         int loopcount = 0;

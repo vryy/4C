@@ -256,7 +256,7 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   // hurt that much. It just means we will have to test more nodes.
   DRT::UTILS::NodeMatchingOctree tree(masterdis, masternodes, 150, 1e-3);
 
-  map<int,pair<int,double> > coupling;
+  map<int,std::pair<int,double> > coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);
 
 #if 1
@@ -280,7 +280,7 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
     // sure all nodes were used.
     if (coupling.find(gid) != coupling.end())
     {
-      pair<int,double>& coupled = coupling[gid];
+      std::pair<int,double>& coupled = coupling[gid];
 #if 0
       if (coupled.second > 1e-7)
         dserror("Coupled nodes (%d,%d) do not match. difference=%e", gid, coupled.first, coupled.second);

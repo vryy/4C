@@ -18,7 +18,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #ifndef PARTFS3I_H
 #define PARTFS3I_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 #include "fs3i.H"

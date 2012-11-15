@@ -179,7 +179,7 @@ std::string DRT::Problem::SpatialApproximation() const
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 {
-  RCP<ParameterList> list = Teuchos::rcp(new ParameterList("DAT FILE"));
+  Teuchos::RCP<ParameterList> list = Teuchos::rcp(new ParameterList("DAT FILE"));
 
   reader.ReadGidSection("--DISCRETISATION", *list);
   reader.ReadGidSection("--PROBLEM SIZE", *list);
@@ -439,7 +439,7 @@ void DRT::Problem::ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader)
     std::pair<string,string> fields(src_field,tar_field);
 
     // enter the material pairing into the map
-    pair<int,int> matmap(src_matid,tar_matid);
+    std::pair<int,int> matmap(src_matid,tar_matid);
     clonefieldmatmap_[fields].insert(matmap);
   }
   return;

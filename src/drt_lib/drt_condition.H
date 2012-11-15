@@ -43,7 +43,7 @@ Maintainer: Michael Gee
 
 
 #include "Epetra_Comm.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 #include "drt_container.H"
 #include "drt_parobjectfactory.H"
@@ -414,7 +414,7 @@ protected:
                     A deep copy of the map is made and stored.
                     Normally though, these elements are a line, surface or
                     volume elements produced by and shared with the discretization.
-                    Do not mess with their RefCountPtr!
+                    Do not mess with their RCP!
 
   */
   virtual void AddGeometry(std::map<int,Teuchos::RCP<DRT::Element> >& geom)

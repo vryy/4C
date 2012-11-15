@@ -13,7 +13,7 @@
 #ifndef ALE2_H
 #define ALE2_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 #include "../drt_lib/drt_element.H"
@@ -128,16 +128,16 @@ public:
   virtual int NumVolume() const {return -1;}
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of RefCountPtrs to the surfaces of this element
+  \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -294,14 +294,14 @@ private:
     vector<int>&               lm,
     Epetra_SerialDenseMatrix*  sys_mat,
     Epetra_SerialDenseVector*  residual,
-    RefCountPtr<MAT::Material> material,
+    Teuchos::RCP<MAT::Material> material,
     ParameterList&             params);
   void static_ke_laplace(
     DRT::Discretization&       dis,
     vector<int>&               lm,
     Epetra_SerialDenseMatrix*  sys_mat,
     Epetra_SerialDenseVector*  residual,
-    RefCountPtr<MAT::Material> material,
+    Teuchos::RCP<MAT::Material> material,
     ParameterList&             params);
   void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat, vector<double>& displacements);
   void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,

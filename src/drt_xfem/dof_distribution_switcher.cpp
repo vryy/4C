@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 
 
 void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
-    std::map<int, set<XFEM::FieldEnr> >& unknownFieldEnr
+    std::map<int, std::set<XFEM::FieldEnr> >& unknownFieldEnr
 ) const
 {
   unknownFieldEnr.clear();
@@ -122,7 +122,7 @@ void XFEM::DofDistributionSwitcher::GmshOutput(
   {
     const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
     const LINALG::Matrix<3,1> pos(actnode->X());
-    map<int,set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
+    map<int,std::set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
     int unknown = 0;
     if (iter != unknownFieldEnr_.end()) unknown = 1;
     IO::GMSH::cellWithScalarToStream(DRT::Element::point1, unknown, pos, gmshfilecontent);
@@ -134,7 +134,7 @@ void XFEM::DofDistributionSwitcher::GmshOutput(
   {
     const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
     const LINALG::Matrix<3,1> pos(actnode->X());
-    map<int,set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
+    map<int,std::set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
     int id = -1;
     if (iter != unknownFieldEnr_.end()) id = actnode->Id();
     IO::GMSH::cellWithScalarToStream(DRT::Element::point1, id, pos, gmshfilecontent);

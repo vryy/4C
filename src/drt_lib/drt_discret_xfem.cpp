@@ -949,8 +949,8 @@ int DRT::DiscretizationXFEM::FillCompleteXFEM(bool assigndegreesoffreedom,
  *  h.kue 09/07
  */
 static void AssignGlobalIDs( const Epetra_Comm& comm,
-                             const map< vector<int>, RefCountPtr<DRT::Element> >& elementmap,
-                             map< int, RefCountPtr<DRT::Element> >& finalelements )
+                             const map< vector<int>, RCP<DRT::Element> >& elementmap,
+                             map< int, RCP<DRT::Element> >& finalelements )
 {
 
   // The point here is to make sure the element gid are the same on any
@@ -1261,7 +1261,7 @@ void DRT::DiscretizationXFEM::BuildIntFaceRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  map<int,RefCountPtr<DRT::Element> >::iterator curr;
+  map<int,RCP<DRT::Element> >::iterator curr;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
@@ -1289,7 +1289,7 @@ void DRT::DiscretizationXFEM::BuildIntFaceColMap()
   int nummyeles = (int)faces_.size();
   vector<int> eleids(nummyeles);
   intfacecolptr_.resize(nummyeles);
-  map<int,RefCountPtr<DRT::Element> >::iterator curr;
+  map<int,RCP<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
   {

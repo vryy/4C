@@ -43,9 +43,9 @@ void scatra_dyn(int restart)
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
   // access the fluid discretization
-  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   // access the scatra discretization
-  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
+  RCP<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra dof

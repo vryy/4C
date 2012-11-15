@@ -137,7 +137,7 @@ void DRT::Node::Print(ostream& os) const
   if (numcond)
   {
     os << endl << numcond << " Conditions:\n";
-    map<string,RefCountPtr<Condition> >::const_iterator curr;
+    map<string,RCP<Condition> >::const_iterator curr;
     for (curr=condition_.begin(); curr != condition_.end(); ++curr)
     {
       os << curr->first << " ";

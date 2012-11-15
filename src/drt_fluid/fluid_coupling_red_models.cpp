@@ -28,9 +28,9 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RefCountPtr<DRT::Discretization> dis_3D,
-                                                         RefCountPtr<DRT::Discretization> dis_redD,
-                                                         //                                                         RefCountPtr<red_D_time_int>      RedD_Time_integ,
+FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discretization> dis_3D,
+                                                         RCP<DRT::Discretization> dis_redD,
+                                                         //                                                         RCP<red_D_time_int>      RedD_Time_integ,
                                                          IO::DiscretizationWriter& output,
                                                          double dt_3D,
                                                          double dt_redD) :
@@ -627,8 +627,8 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ReadRestart( IO::DiscretizationReade
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RefCountPtr<DRT::Discretization> dis_3D,
-                                                               RefCountPtr<DRT::Discretization> dis_redD,
+FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RCP<DRT::Discretization> dis_3D,
+                                                               RCP<DRT::Discretization> dis_redD,
                                                                IO::DiscretizationWriter& output,
                                                                double dt_3d,
                                                                double dt_rm,

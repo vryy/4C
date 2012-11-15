@@ -144,7 +144,7 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
 
   // open file
   const string filename = filename_ + "_"+ field_->name() + "."+ name;
-  ofstream file;
+  std::ofstream file;
   int startfilepos = 0;
   if (myrank_==0)
   {
@@ -205,7 +205,7 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
+void StructureEnsightWriter::WriteNodalStressStep(std::ofstream& file,
                                                   PostResult& result,
                                                   map<string, vector<ofstream::pos_type> >& resultfilepos,
                                                   const string groupname,
@@ -322,7 +322,7 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
 
   // open file
   const string filename = filename_ + "_"+ field_->name() + "."+ name;
-  ofstream file;
+  std::ofstream file;
   int startfilepos = 0;
   if (myrank_==0)
   {
@@ -383,7 +383,7 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
+void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
                                                           PostResult& result,
                                                           map<string, vector<ofstream::pos_type> >& resultfilepos,
                                                           const string groupname,
@@ -393,8 +393,8 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   // calculate element center stresses from gauss point stresses
   //--------------------------------------------------------------------
 
-  const RefCountPtr<DRT::Discretization> dis = field_->discretization();
-  const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > data =
+  const RCP<DRT::Discretization> dis = field_->discretization();
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
   ParameterList p;
   p.set("action","postprocess_stress");
@@ -422,14 +422,14 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   const Epetra_BlockMap& datamap = elestress->Map();
 
   // do stupid conversion into Epetra map
-  RefCountPtr<Epetra_Map> epetradatamap;
+  RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
                                      0,
                                      datamap.Comm()));
 
-  RefCountPtr<Epetra_Map> proc0datamap;
+  RCP<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
   // sort proc0datamap so that we can loop it and get nodes in ascending order.
   std::vector<int> sortmap;
@@ -439,7 +439,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
+  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
   Epetra_Import proc0dofimporter(*proc0datamap,datamap);
   int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -696,10 +696,10 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   // calculate nodal stresses from gauss point stresses
   //--------------------------------------------------------------------
 
-  const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > data =
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
 
-  const RefCountPtr<DRT::Discretization> dis = field_->discretization();
+  const RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
 
   ParameterList p;
@@ -1050,10 +1050,10 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   // calculate nodal stresses from gauss point stresses
   //--------------------------------------------------------------------
 
-  const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > data =
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
 
-  const RefCountPtr<DRT::Discretization> dis = field_->discretization();
+  const RCP<DRT::Discretization> dis = field_->discretization();
 
   ParameterList p;
   p.set("action","postprocess_stress");
@@ -1070,14 +1070,14 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   const Epetra_BlockMap& datamap = elestress->Map();
 
   // do stupid conversion into Epetra map
-  RefCountPtr<Epetra_Map> epetradatamap;
+  RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
                                      0,
                                      datamap.Comm()));
 
-  RefCountPtr<Epetra_Map> proc0datamap;
+  RCP<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
   // sort proc0datamap so that we can loop it and get nodes in acending order.
   std::vector<int> sortmap;
@@ -1087,7 +1087,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
+  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
   Epetra_Import proc0dofimporter(*proc0datamap,datamap);
   int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);

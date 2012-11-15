@@ -453,7 +453,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if(this->Owner() == discretization.Comm().MyPID())
       {
         // need current velocity and history vector
-        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+        RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
         if (vel_pre_np==null)
           dserror("Cannot get state vectors 'velnp'");
 

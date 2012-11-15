@@ -40,7 +40,7 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
-  RefCountPtr<DRT::Discretization> actdis,
+  RCP<DRT::Discretization> actdis,
   ParameterList&                   params)
   :
   discret_(actdis),
@@ -194,14 +194,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator x1cline=x1cavcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x1cline=x1cavcoords.begin();
            x1cline!=x1cavcoords.end();
            ++x1cline)
       {
         DRT::ParObject::AddtoPack(data,*x1cline);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator x1cline=x1cavcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x1cline=x1cavcoords.begin();
            x1cline!=x1cavcoords.end();
            ++x1cline)
       {
@@ -268,14 +268,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator x2cline=x2cavcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x2cline=x2cavcoords.begin();
            x2cline!=x2cavcoords.end();
            ++x2cline)
       {
         DRT::ParObject::AddtoPack(data,*x2cline);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator x2cline=x2cavcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x2cline=x2cavcoords.begin();
            x2cline!=x2cavcoords.end();
            ++x2cline)
       {
@@ -342,14 +342,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator x2wline=x2wavcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x2wline=x2wavcoords.begin();
            x2wline!=x2wavcoords.end();
            ++x2wline)
       {
         DRT::ParObject::AddtoPack(data,*x2wline);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator x2wline=x2wavcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x2wline=x2wavcoords.begin();
            x2wline!=x2wavcoords.end();
            ++x2wline)
       {
@@ -416,14 +416,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator clrline=clravcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator clrline=clravcoords.begin();
            clrline!=clravcoords.end();
            ++clrline)
       {
         DRT::ParObject::AddtoPack(data,*clrline);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator clrline=clravcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator clrline=clravcoords.begin();
            clrline!=clravcoords.end();
            ++clrline)
       {
@@ -489,14 +489,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       // export set to sendbuffer
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator ctbline=ctbavcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator ctbline=ctbavcoords.begin();
            ctbline!=ctbavcoords.end();
            ++ctbline)
       {
         DRT::ParObject::AddtoPack(data,*ctbline);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator ctbline=ctbavcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator ctbline=ctbavcoords.begin();
            ctbline!=ctbavcoords.end();
            ++ctbline)
       {
@@ -569,14 +569,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
           // export set to sendbuffer
           DRT::PackBuffer data;
 
-          for (set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
+          for (std::set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
                x1line!=x1avcoords.end();
                ++x1line)
           {
             DRT::ParObject::AddtoPack(data,*x1line);
           }
           data.StartPacking();
-          for (set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
+          for (std::set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
                x1line!=x1avcoords.end();
                ++x1line)
           {
@@ -643,14 +643,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
           // export set to sendbuffer
           DRT::PackBuffer data;
 
-          for (set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
+          for (std::set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
                x2line!=x2avcoords.end();
                ++x2line)
           {
             DRT::ParObject::AddtoPack(data,*x2line);
           }
           data.StartPacking();
-          for (set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
+          for (std::set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
                x2line!=x2avcoords.end();
                ++x2line)
           {
@@ -724,35 +724,35 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     clrcoordinates_ = Teuchos::rcp(new vector<double> );
     ctbcoordinates_ = Teuchos::rcp(new vector<double> );
 
-    for(set<double,LineSortCriterion>::iterator coord1c=x1cavcoords.begin();
+    for(std::set<double,LineSortCriterion>::iterator coord1c=x1cavcoords.begin();
         coord1c!=x1cavcoords.end();
         ++coord1c)
     {
       x1ccoordinates_->push_back(*coord1c);
     }
 
-    for(set<double,LineSortCriterion>::iterator coord2c=x2cavcoords.begin();
+    for(std::set<double,LineSortCriterion>::iterator coord2c=x2cavcoords.begin();
         coord2c!=x2cavcoords.end();
         ++coord2c)
     {
       x2ccoordinates_->push_back(*coord2c);
     }
 
-    for(set<double,LineSortCriterion>::iterator coord2w=x2wavcoords.begin();
+    for(std::set<double,LineSortCriterion>::iterator coord2w=x2wavcoords.begin();
         coord2w!=x2wavcoords.end();
         ++coord2w)
     {
       x2wcoordinates_->push_back(*coord2w);
     }
 
-    for(set<double,LineSortCriterion>::iterator coordlr=clravcoords.begin();
+    for(std::set<double,LineSortCriterion>::iterator coordlr=clravcoords.begin();
         coordlr!=clravcoords.end();
         ++coordlr)
     {
       clrcoordinates_->push_back(*coordlr);
     }
 
-    for(set<double,LineSortCriterion>::iterator coordtb=ctbavcoords.begin();
+    for(std::set<double,LineSortCriterion>::iterator coordtb=ctbavcoords.begin();
         coordtb!=ctbavcoords.end();
         ++coordtb)
     {
@@ -768,14 +768,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
         x1coordinates_ = Teuchos::rcp(new vector<double> );
         x2coordinates_ = Teuchos::rcp(new vector<double> );
 
-        for(set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
+        for(std::set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
             coord1!=x1avcoords.end();
             ++coord1)
         {
           x1coordinates_->push_back(*coord1);
         }
 
-        for(set<double,LineSortCriterion>::iterator coord2=x2avcoords.begin();
+        for(std::set<double,LineSortCriterion>::iterator coord2=x2avcoords.begin();
             coord2!=x2avcoords.end();
             ++coord2)
         {
@@ -993,15 +993,15 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     if (homdir_ == "z")
     {
       // store them in parameterlist for access on the element
-      modelparams->set<RefCountPtr<vector<double> > >("dir1coords_",x1coordinates_);
-      modelparams->set<RefCountPtr<vector<double> > >("dir2coords_",x2coordinates_);
+      modelparams->set<RCP<vector<double> > >("dir1coords_",x1coordinates_);
+      modelparams->set<RCP<vector<double> > >("dir2coords_",x2coordinates_);
     }
   }
 
   //----------------------------------------------------------------------
   // initialize output and initially open respective statistics output file
 
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
 
   if (discret_->Comm().MyPID()==0)
   {
@@ -1053,7 +1053,7 @@ void FLD::TurbulenceStatisticsSqc::DoLiftDragTimeSample(double dragforce,
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsSqc::DoTimeSample(
-Teuchos::RefCountPtr<Epetra_Vector> velnp
+Teuchos::RCP<Epetra_Vector> velnp
   )
 {
   // compute squared values of velocity
@@ -2021,7 +2021,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");

@@ -26,12 +26,12 @@ Maintainer: Peter Gamnitzer
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
-DRT::PBCDofSet::PBCDofSet(RefCountPtr<std::map<int,vector<int> > >  couplednodes)
+DRT::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int,vector<int> > >  couplednodes)
   :DofSet(), perbndcouples_(couplednodes), myMaxGID_(-1)
 {
   slavenodeids_ = Teuchos::rcp(new std::set<int>);
 
-  for( std::map<int,vector<int> >::iterator curr = perbndcouples_->begin();
+  for( std::map<int,std::vector<int> >::iterator curr = perbndcouples_->begin();
        curr != perbndcouples_->end();
        ++curr )
   {
@@ -69,7 +69,7 @@ int DRT::PBCDofSet::MinAllGID() const
 int DRT::PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // temporarily store the slave node set
-  RCP<std::set<int> > tempset = slavenodeids_;
+  Teuchos::RCP<std::set<int> > tempset = slavenodeids_;
   slavenodeids_ = Teuchos::rcp(new std::set<int>);
 
   // assign dofs using the empty slave node set. This way the dofrowmap_
@@ -89,7 +89,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const
 
   // loop all master nodes and set the dofs of the slaves to the dofs of the master
   // remark: the previously assigned dofs of slave nodes are overwritten here
-  for(map<int,vector<int> >::iterator master = perbndcouples_->begin();
+  for(std::map<int,std::vector<int> >::iterator master = perbndcouples_->begin();
       master != perbndcouples_->end();
       ++master )
   {
@@ -103,7 +103,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const
               master->second[0]);
     }
 
-    for (vector<int>::iterator slave=master->second.begin();
+    for (std::vector<int>::iterator slave=master->second.begin();
          slave!=master->second.end();
          ++slave)
     {
@@ -134,12 +134,12 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const
  |  update coupled nodes map                             rasthofer 07/11|
  |                                                       DA wichmann    |
  *----------------------------------------------------------------------*/
-void DRT::PBCDofSet::SetCoupledNodes(RefCountPtr<map<int,vector<int> > >  couplednodes)
+void DRT::PBCDofSet::SetCoupledNodes(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes)
 {
   perbndcouples_=couplednodes;
   slavenodeids_ = Teuchos::rcp(new std::set<int>);
 
-  for( map<int,vector<int> >::iterator curr = perbndcouples_->begin();
+  for( std::map<int,std::vector<int> >::iterator curr = perbndcouples_->begin();
        curr != perbndcouples_->end();
        ++curr )
   {

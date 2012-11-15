@@ -63,12 +63,6 @@ using Teuchos::RCP;
 using Teuchos::null;
 
 using std::map;
-using std::set;
-using std::list;
-using std::pair;
-using std::stringstream;
-using std::ostringstream;
-using std::ofstream;
 using std::cout;
 
 namespace LINALG
@@ -1878,7 +1872,7 @@ private:
   volume coupling condition -> this is special since an associated volume
   conditions also needs to be considered
   */
-  void FindAssociatedEleIDs(RefCountPtr<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name);
+  void FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name);
 
 
 protected:

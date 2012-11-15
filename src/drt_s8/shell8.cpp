@@ -331,7 +331,7 @@ void DRT::ELEMENTS::Shell8::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mwgee 01/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -346,7 +346,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mwgee 01/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Surfaces()
 {
   vector<RCP<Element> > surfaces(1);
   surfaces[0]= Teuchos::rcp(this, false);

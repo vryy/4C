@@ -162,7 +162,7 @@ void DRT::ELEMENTS::Bele3::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -178,9 +178,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Surfaces()
 {
-  vector<RCP<DRT::Element> > surfaces(1);
+  vector<Teuchos::RCP<DRT::Element> > surfaces(1);
   surfaces[0]=Teuchos::rcp(this,false);
   return surfaces;
 }

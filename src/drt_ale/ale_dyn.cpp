@@ -27,7 +27,7 @@ Maintainer: Ulrich Kuettler
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 void dyn_ale_drt()
@@ -35,7 +35,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
@@ -46,7 +46,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RefCountPtr<IO::DiscretizationWriter> output =
+  RCP<IO::DiscretizationWriter> output =
     Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 

@@ -986,9 +986,9 @@ void THR::ThermoContactMan::AssembleB(LINALG::SparseMatrix& bmatrix)
         rowtemp = discretstruct_->Dof(1,nodeges)[0];
 
       /************************************************** B-matrix ******/
-      set<int> bnodes;
+      std::set<int> bnodes;
       int mastergid=0;
-      set<int>::iterator mcurr;
+      std::set<int>::iterator mcurr;
       int size = 0;
       vector<map<int,double> > bmap;
 

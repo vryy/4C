@@ -1350,10 +1350,10 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
 
   //------------------------------------------------
   //  check if all projected nodes are included
-  for(set<int>::iterator iter = projectednodeids_.begin(); iter!= projectednodeids_.end();
+  for(std::set<int>::iterator iter = projectednodeids_.begin(); iter!= projectednodeids_.end();
       iter++)
   {
-    set<int>::const_iterator iterpatchnodes = incompnodeids_set_.find(*iter);
+    std::set<int>::const_iterator iterpatchnodes = incompnodeids_set_.find(*iter);
 
     if (iterpatchnodes == incompnodeids_set_.end())
     {
@@ -1407,10 +1407,10 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
 
   //------------------------------------------
   //check it again..
-  for(set<int>::iterator iter = projectednodeids_.begin(); iter!= projectednodeids_.end();
+  for(std::set<int>::iterator iter = projectednodeids_.begin(); iter!= projectednodeids_.end();
       iter++)
   {
-    set<int>::const_iterator iterpatchnodes = incompnodeids_set_.find(*iter);
+    std::set<int>::const_iterator iterpatchnodes = incompnodeids_set_.find(*iter);
 
     if (iterpatchnodes == incompnodeids_set_.end())
       dserror("BUG!! Nodes found which were in projected set but not in incompressibility patch!",*iter);
@@ -1418,10 +1418,10 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
 
 
 //  debug output
-//     for(set<int>::iterator iter = incompelementids_set_.begin(); iter!= incompelementids_set_.end();
+//     for(std::set<int>::iterator iter = incompelementids_set_.begin(); iter!= incompelementids_set_.end();
 //         iter++)
 //     {
-//       set<int>::const_iterator iterpatchele = incompelementids_set_.find(*iter);
+//       std::set<int>::const_iterator iterpatchele = incompelementids_set_.find(*iter);
 //       cout << "all eles" << *iter << endl;
 //       DRT::Node ** elenodes = bgdis->gElement(*iter)->Nodes();
 //       for(int inode=0; inode<bgdis->gElement(*iter)->NumNode(); ++inode)
@@ -1444,7 +1444,7 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
       {
         DRT::Element* actele = bgdis->lColElement(i);
 //         GEO::CUT::ElementHandle * e = wizard_n->GetElement( actele );
-        set<int>::const_iterator iter = incompelementids_set_.find(actele->Id());
+        std::set<int>::const_iterator iter = incompelementids_set_.find(actele->Id());
         if ( iter != incompelementids_set_.end())
           IO::GMSH::elementAtInitialPositionToStream(1.0, actele, gmshfilecontent);
         else
@@ -1484,8 +1484,8 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
 
 
   // determine sets of col und row nodes
-  set<int> adjacent_row;
-  set<int> adjacent_col;
+  std::set<int> adjacent_row;
+  std::set<int> adjacent_col;
 
 
   // loop all column elements and label all row nodes next to a MHD node
@@ -1499,7 +1499,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
 
     bool found=false;
 
-    set<int>::const_iterator iter = incompelementids_set_all.find(actele->Id());
+    std::set<int>::const_iterator iter = incompelementids_set_all.find(actele->Id());
     if ( iter != incompelementids_set_all.end()) found=true;
 
     if(found==true)
@@ -1538,7 +1538,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
     bool found=false;
 
     // check if incompressibility element
-    set<int>::const_iterator iter = incompelementids_set_all.find(actele->Id());
+    std::set<int>::const_iterator iter = incompelementids_set_all.find(actele->Id());
     if ( iter != incompelementids_set_all.end()) found=true;
 
     // yes, we have a MHD condition
@@ -1551,13 +1551,13 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
   }
 
   //incompelementids_set_ needs a full NodeRowMap and a NodeColMap
-  RefCountPtr<Epetra_Map> newrownodemap;
-  RefCountPtr<Epetra_Map> newcolnodemap;
+  RCP<Epetra_Map> newrownodemap;
+  RCP<Epetra_Map> newcolnodemap;
 
   vector<int> rownodes;
 
   // convert std::set to std::vector
-  for(set<int>::iterator id = adjacent_row.begin();
+  for(std::set<int>::iterator id = adjacent_row.begin();
       id!=adjacent_row.end();
       ++id)
   {
@@ -1573,7 +1573,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
 
 
   vector<int> colnodes;
-  for(set<int>::iterator id = adjacent_col.begin();
+  for(std::set<int>::iterator id = adjacent_col.begin();
       id!=adjacent_col.end();
       ++id)
   {
@@ -1739,7 +1739,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
   }
 
   // build dofrowmap for velocity dofs
-  RefCountPtr<Epetra_Map> veldofrowmap = Teuchos::rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> veldofrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                             C_vel_dofids.size(),
                                                             &C_vel_dofids[0],
                                                             0,
@@ -1885,7 +1885,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
                       &allproc[0],incompdis_->Comm());
 
   // build dofrowmap of last entries
-  RefCountPtr<Epetra_Map> lastdofrowmap = Teuchos::rcp(new Epetra_Map(-1,
+  RCP<Epetra_Map> lastdofrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              C_vellast_All.size(),
                                                              &C_vellast_All[0],
                                                              0,

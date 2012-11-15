@@ -24,7 +24,7 @@ Maintainer: Peter Gamnitzer
 #include <map>
 
 #include <Epetra_IntVector.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
@@ -66,7 +66,7 @@ public:
   \return void
 
   */
-  PBCDofSet(RefCountPtr<std::map<int,vector<int> > >  couplednodes);
+  PBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes);
 
   /*!
   \brief Destructor
@@ -87,7 +87,7 @@ public:
   virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
 
   /// Update the coupled nodes map of dofset
-  virtual void SetCoupledNodes(RefCountPtr<std::map<int,vector<int> > >  couplednodes);
+  virtual void SetCoupledNodes(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes);
 
 protected:
 
@@ -102,7 +102,7 @@ protected:
   }
 
   //!\brief master and slave node connectivity for periodic boundary conditions
-  RefCountPtr<std::map<int,vector<int> > >           perbndcouples_;
+  Teuchos::RCP<std::map<int,std::vector<int> > >           perbndcouples_;
 
   //!\brief the largest original GID, to stop the dofset from 'shrinking'
   int myMaxGID_;
@@ -112,7 +112,7 @@ protected:
 
 private:
 
-  RefCountPtr<std::set<int> > slavenodeids_;
+  Teuchos::RCP<std::set<int> > slavenodeids_;
 
 }; // class PBCDofSet
 

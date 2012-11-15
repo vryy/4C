@@ -20,7 +20,7 @@ Maintainer: Lena Yoshiahra
 #define AD_STR_REDAIRWAY_H
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include "Epetra_Vector.h"
 
 #include "ad_str_wrapper.H"

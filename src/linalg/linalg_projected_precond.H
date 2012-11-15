@@ -25,7 +25,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseMatrix.h"
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_dserror.H"
 #include "linalg_krylov_projector.H"

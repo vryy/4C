@@ -37,7 +37,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   const Teuchos::RCP<ParameterList>&            params,
   const Teuchos::RCP<IO::DiscretizationWriter>& output,
   bool                                          alefluid,
-  RefCountPtr<map<int,vector<int> > > pbcmapmastertoslave
+  RCP<map<int,vector<int> > > pbcmapmastertoslave
 ):TimInt(actdis, solver, params, output),
   dis_   (discret_),
   alefluid_(alefluid),
@@ -1161,7 +1161,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-      RefCountPtr<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
+      RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
 
       DynSmag_->OutputofAveragedVel(filteredvel);
       output_->WriteVector("filteredvel",filteredvel);
@@ -1171,7 +1171,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     RCP<Epetra_Vector> traction = CalcStresses();
      output_->WriteVector("traction",traction);
     }
 
@@ -1225,7 +1225,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     RCP<Epetra_Vector> traction = CalcStresses();
      output_->WriteVector("traction",traction);
     }
 
@@ -1287,7 +1287,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // performance reasons
   // start time measurement for generation of sparsity pattern
   {
-    RefCountPtr<TimeMonitor> timesparsitypattern_ref_
+    RCP<TimeMonitor> timesparsitypattern_ref_
       =
       Teuchos::rcp(new TimeMonitor(*timesparsitypattern_));
 
@@ -1458,7 +1458,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   {
     // vector containing weak dirichlet loads
 
-    RefCountPtr<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    RCP<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
     ParameterList weakdbcparams;
 
@@ -1603,7 +1603,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // start time measurement for generation of sparsity pattern
   {
-    RefCountPtr<TimeMonitor> timesparsitypattern_ref_ = Teuchos::rcp(new TimeMonitor(*timesparsitypattern_));
+    RCP<TimeMonitor> timesparsitypattern_ref_ = Teuchos::rcp(new TimeMonitor(*timesparsitypattern_));
     // finalize the system matrix
     sysmat_->Complete();
 

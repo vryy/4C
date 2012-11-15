@@ -480,7 +480,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // print out results to file as well (only if really desired)
       if ((myrank_ == 0) and (writetofile==true))
       {
-        ostringstream temp;
+        std::ostringstream temp;
         temp << condid;
         const std::string fname
         = DRT::Problem::Instance()->OutputControlFile()->FileName()+".boundaryflux_"+condnames[i]+"_"+temp.str()+".txt";
@@ -1206,7 +1206,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
 
     if (printtofile)// write results to file
     {
-      ostringstream temp;
+      std::ostringstream temp;
       temp << condid;
       const std::string fname
       = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
@@ -1591,7 +1591,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
   Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
   for(int k=0;k<numscal_;++k)
   {
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "flux_phi_"+temp.str();
     for (int i = 0;i<fluxk->MyLength();++i)
@@ -1820,7 +1820,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
   {
     int k=(*it);
 
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "flux_phi_"+temp.str();
     for (int i = 0;i<fluxk->MyLength();++i)
@@ -1910,7 +1910,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
       //initialization of the densification coefficient vector
       densific_.resize(numscal_);
       DRT::Element*   element = discret_->lRowElement(0);
-      RefCountPtr<MAT::Material>  mat = element->Material();
+      RCP<MAT::Material>  mat = element->Material();
 
       if (mat->MaterialType() == INPAR::MAT::m_matlist)
       {
@@ -2409,7 +2409,7 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
 
     vector<int> numfound(numscal_,0);
 #if 0
-    stringstream myerrormessage;
+    std::stringstream myerrormessage;
 #endif
     for (int i = 0; i < discret_->NumMyRowNodes(); i++)
     {

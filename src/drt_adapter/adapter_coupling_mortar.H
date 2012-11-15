@@ -16,7 +16,7 @@ Maintainer: Thomas Kloeppel
 #ifndef FSI_COUPLING_MORTAR_H
 #define FSI_COUPLING_MORTAR_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include "../drt_lib/drt_discret.H"
 
@@ -89,40 +89,40 @@ namespace ADAPTER
     ///filling matrices (case of transferring same dofs on two different meshes)
     void Evaluate(RCP<Epetra_Vector> idispma, RCP<Epetra_Vector> idispsl);
 
-    RefCountPtr<Epetra_Vector> MasterToSlave
+    RCP<Epetra_Vector> MasterToSlave
     (
-        RefCountPtr<Epetra_Vector> mv ///< structural interface displacements
+        RCP<Epetra_Vector> mv ///< structural interface displacements
     ) const;
 
     /// const version
-    RefCountPtr<Epetra_Vector> MasterToSlave
+    RCP<Epetra_Vector> MasterToSlave
     (
-        RefCountPtr<const Epetra_Vector> mv ///< structural interface displacements
+        RCP<const Epetra_Vector> mv ///< structural interface displacements
     ) const;
 
     /// transfer a dof vector from slave to master
-    RefCountPtr<Epetra_Vector> SlaveToMaster
+    RCP<Epetra_Vector> SlaveToMaster
     (
-        RefCountPtr<Epetra_Vector> sv   ///< fluid interface loads
+        RCP<Epetra_Vector> sv   ///< fluid interface loads
     ) const;
 
     /// const version
-    RefCountPtr<Epetra_Vector> SlaveToMaster
+    RCP<Epetra_Vector> SlaveToMaster
     (
-        RefCountPtr<const Epetra_Vector> sv   ///< fluid interface loads
+        RCP<const Epetra_Vector> sv   ///< fluid interface loads
     ) const;
 
     /// the mortar interface
     RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
 
     /// the interface dof map of the master side
-    RefCountPtr<Epetra_Map> MasterDofRowMap() const { return masterdofrowmap_; }
+    RCP<Epetra_Map> MasterDofRowMap() const { return masterdofrowmap_; }
 
     /// the interface dof map of the slave side
-    RefCountPtr<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
+    RCP<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
 
     /// the interface dof map of the lagrainge multiplier
-    RefCountPtr<Epetra_Map> LmDofRowMap()  const { return glmdofrowmap_; }
+    RCP<Epetra_Map> LmDofRowMap()  const { return glmdofrowmap_; }
 
     /// the mortar projection operator
     RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
@@ -146,15 +146,15 @@ namespace ADAPTER
     void Evaluate();
 
     RCP<MORTAR::MortarInterface>  interface_;        ///< interface
-    RefCountPtr<Epetra_Map>       masterdofrowmap_;  ///< map of master row dofs
-    RefCountPtr<Epetra_Map>       slavedofrowmap_;   ///< map of slave row dofs
-    RefCountPtr<Epetra_Map>       glmdofrowmap_;   ///< map of slave row dofs
+    RCP<Epetra_Map>       masterdofrowmap_;  ///< map of master row dofs
+    RCP<Epetra_Map>       slavedofrowmap_;   ///< map of slave row dofs
+    RCP<Epetra_Map>       glmdofrowmap_;   ///< map of slave row dofs
     RCP<LINALG::SparseMatrix>     conmatrix_ ;
 
-    RefCountPtr<LINALG::SparseMatrix> D_;            ///< mortar matrix
-    RefCountPtr<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
-    RefCountPtr<LINALG::SparseMatrix> M_;            ///< mortar matrix
-    RefCountPtr<LINALG::SparseMatrix> DinvM_;        ///< product of Dinv_ \times M_
+    RCP<LINALG::SparseMatrix> D_;            ///< mortar matrix
+    RCP<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
+    RCP<LINALG::SparseMatrix> M_;            ///< mortar matrix
+    RCP<LINALG::SparseMatrix> DinvM_;        ///< product of Dinv_ \times M_
   };
 }
 

@@ -42,7 +42,7 @@ Maintainer: Michael Gee
 #define NODE_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 #include "drt_parobject.H"
 #include "drt_condition.H"
@@ -225,7 +225,7 @@ public:
 
   \note Normally, This method would be called by the Discretization to
         set references to a Condition in the nodes. As the Condition is
-        RefCountPtr, one can not say who actually owns the underlying object.
+        RCP, one can not say who actually owns the underlying object.
         The node does not communicate any conditions through Pack/Unpack,
         Conditions are therefore more of a reference here that will be
         recreated after communications of nodes have been done.

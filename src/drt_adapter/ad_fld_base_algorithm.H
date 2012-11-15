@@ -18,7 +18,7 @@ Maintainer: Ulrich Kuettler
 #ifndef ADAPTER_FLUID_BASE_ALGORITHM_H
 #define ADAPTER_FLUID_BASE_ALGORITHM_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Vector.h>

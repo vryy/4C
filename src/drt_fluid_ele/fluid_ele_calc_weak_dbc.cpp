@@ -149,9 +149,9 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   //--------------------------------------------------
   // get the condition information
-  RefCountPtr<DRT::Condition> wdbc_cond
+  RCP<DRT::Condition> wdbc_cond
     =
-    params.get<RefCountPtr<DRT::Condition> >("condition");
+    params.get<RCP<DRT::Condition> >("condition");
 
   // default is adjoint consistent
   const string* consistency
@@ -333,7 +333,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // extract velocities from global distributed vectors
 
   // velocities (intermediate time step, n+alpha_F)
-  RefCountPtr<const Epetra_Vector> velaf
+  RCP<const Epetra_Vector> velaf
     =
     discretization.GetState("velaf");
   if (velaf==null)
@@ -349,7 +349,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
   {
     // velocities (intermediate time step, n+1)
-    RefCountPtr<const Epetra_Vector> velnp
+    RCP<const Epetra_Vector> velnp
       =
       discretization.GetState("velnp");
     if (velnp==null)
@@ -366,7 +366,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if (surfele->ParentElement()->IsAle())
   {
     // mesh displacements, new time step, n+1
-    RefCountPtr<const Epetra_Vector> dispnp
+    RCP<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
     if (dispnp==null)
@@ -555,7 +555,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-    RefCountPtr<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+    RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
     bool zero_sized_parent
       =knots->GetBoundaryEleAndParentKnots(mypknots              ,
@@ -2097,9 +2097,9 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 {
   //--------------------------------------------------
   // get the condition information
-  RefCountPtr<DRT::Condition> wdbc_cond
+  RCP<DRT::Condition> wdbc_cond
     =
-    params.get<RefCountPtr<DRT::Condition> >("condition");
+    params.get<RCP<DRT::Condition> >("condition");
 
   // default is adjoint consistent
   const string* consistency
@@ -2251,7 +2251,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // extract velocities from global distributed vectors
 
   // velocities (intermediate time step, n+alpha_F)
-  RefCountPtr<const Epetra_Vector> velaf
+  RCP<const Epetra_Vector> velaf
     =
     discretization.GetState("velaf");
   if (velaf==null)
@@ -2267,7 +2267,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
   {
     // velocities (intermediate time step, n+1)
-    RefCountPtr<const Epetra_Vector> velnp
+    RCP<const Epetra_Vector> velnp
       =
       discretization.GetState("velnp");
     if (velnp==null)
@@ -2284,7 +2284,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if (lineele->ParentElement()->IsAle())
   {
     // mesh displacements, new time step, n+1
-    RefCountPtr<const Epetra_Vector> dispnp
+    RCP<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
     if (dispnp==null)
@@ -2466,7 +2466,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-    RefCountPtr<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+    RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
     bool zero_sized_parent
       =knots->GetBoundaryEleAndParentKnots(mypknots              ,

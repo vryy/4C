@@ -159,7 +159,7 @@ protected:
             );
 
     template<class T> void Write(
-            ofstream& os,
+            std::ofstream& os,
             T i) const
     {
     	// only processor 0 does the writing !!
@@ -168,7 +168,7 @@ protected:
     }
 
     void Write(
-            ofstream& os,
+            std::ofstream& os,
             const string s) const
     {
     	// only processor 0 does the writing !!
@@ -177,7 +177,7 @@ protected:
     }
 
     void Write(
-            ofstream& os,
+            std::ofstream& os,
             const char* s) const
     {
     	// only processor 0 does the writing !!
@@ -186,19 +186,19 @@ protected:
     }
 
     void WriteString(
-            ofstream& stream,  ///< filestream we are writing to
+            std::ofstream& stream,  ///< filestream we are writing to
             const string str   ///< string to be written to file
             ) const;
     void WriteGeoFile(
             const string& geofilename);
     void WriteGeoFileOneTimeStep(
-            ofstream& file,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            std::ofstream& file,
+            std::map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string name);
 
-    RefCountPtr<Epetra_Map> WriteCoordinates(
-            ofstream& geofile,                         ///< filestream for the geometry
-            const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
+    Teuchos::RCP<Epetra_Map> WriteCoordinates(
+            std::ofstream& geofile,                         ///< filestream for the geometry
+            const Teuchos::RCP<DRT::Discretization> dis ///< discretization where the nodal positions are take from
             ) ;
 
   /*! \brief Write the coordinates for a Polynomial discretization
@@ -207,9 +207,9 @@ protected:
     coordinates of the nodes in the discretization.
   */
     void WriteCoordinatesForPolynomialShapefunctions(
-      ofstream&                              geofile ,
-      const RefCountPtr<DRT::Discretization> dis     ,
-      RefCountPtr<Epetra_Map>&               proc0map
+      std::ofstream&                              geofile ,
+      const Teuchos::RCP<DRT::Discretization> dis     ,
+      Teuchos::RCP<Epetra_Map>&               proc0map
       );
 
   /*! \brief Write the coordinates for a Nurbs discretization
@@ -219,16 +219,16 @@ protected:
     knot values are mapped to.
   */
     void WriteCoordinatesForNurbsShapefunctions(
-      ofstream&                              geofile ,
-      const RefCountPtr<DRT::Discretization> dis     ,
-      RefCountPtr<Epetra_Map>&               proc0map
+      std::ofstream&                              geofile ,
+      const Teuchos::RCP<DRT::Discretization> dis     ,
+      Teuchos::RCP<Epetra_Map>&               proc0map
       );
 
 
     void WriteCells(
-            ofstream& geofile,///< filestream for the geometry
-            const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
-            const RefCountPtr<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar
+            std::ofstream& geofile,///< filestream for the geometry
+            const Teuchos::RCP<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
+            const Teuchos::RCP<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar
             ) const;
 
 
@@ -243,16 +243,16 @@ protected:
     \param int                              (i)          global element id
     \param ofstream                         (used for o) direct print to file
     \param vector<int>                      (o)          remember node values for parallel IO
-    \param RefCountPtr<DRT::Discretization> (i)          the discretisation holding knots etc
-    \param RefCountPtr<Epetra_Map>          (i)          an allreduced nodemap
+    \param Teuchos::RCP<DRT::Discretization> (i)          the discretisation holding knots etc
+    \param Teuchos::RCP<Epetra_Map>          (i)          an allreduced nodemap
 
   */
     void WriteNurbsCell(const DRT::Element::DiscretizationType distype   ,
                         const int                              gid       ,
-                        ofstream&                              geofile   ,
+                        std::ofstream&                              geofile   ,
                         vector<int>&                           nodevector,
-                        const RefCountPtr<DRT::Discretization> dis       ,
-                        const RefCountPtr<Epetra_Map>&         proc0map  ) const;
+                        const Teuchos::RCP<DRT::Discretization> dis       ,
+                        const Teuchos::RCP<Epetra_Map>&         proc0map  ) const;
 
   /*! \brief Quadratic nurbs split one nurbs27 element
     in knot space into eight(3d) cells. The global
@@ -305,15 +305,15 @@ protected:
 
 
     void WriteNodeConnectivityPar(
-            ofstream& geofile,
-            const RefCountPtr<DRT::Discretization> dis,
+            std::ofstream& geofile,
+            const Teuchos::RCP<DRT::Discretization> dis,
             const vector<int>& nodevector,
-            const RefCountPtr<Epetra_Map> proc0map
+            const Teuchos::RCP<Epetra_Map> proc0map
             ) const;
     void WriteDofResultStep(
-            ofstream& file,
+            std::ofstream& file,
             PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            std::map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
             const string name,
             const int numdf,
@@ -343,23 +343,23 @@ protected:
 
     \param ofstream                         (used for o) direct print to file
     \param int                              (i)          number of degrees of freedom
-    \param RefCountPtr<Epetra_Vector>       (i)          the result data read from the baci output
+    \param Teuchos::RCP<Epetra_Vector>       (i)          the result data read from the baci output
     \param string                           (i)          name of the thing we are writing
                                                          (velocity, pressure etc.)
     \param int                              (i)          potential offset in dof numbering
 
   */
   void WriteDofResultStepForNurbs(
-    ofstream&                        file ,
+    std::ofstream&                        file ,
     const int                        numdf,
-    const RefCountPtr<Epetra_Vector> data ,
+    const Teuchos::RCP<Epetra_Vector> data ,
     const string                     name ,
     const int                      offset
     ) const;
 
   //! perform interpolation of result data to visualization points.
   void InterpolateNurbsResultToVizPoints(
-      Teuchos::RefCountPtr<Epetra_MultiVector> idata,
+      Teuchos::RCP<Epetra_MultiVector> idata,
       const int dim,
       const int npatch,
       const vector<int>& vpoff,
@@ -373,39 +373,39 @@ protected:
   ) const;
 
   void WriteNodalResultStepForNurbs(
-    ofstream&                        file ,
+    std::ofstream&                        file ,
     const int                        numdf,
-    const RefCountPtr<Epetra_MultiVector> data ,
+    const Teuchos::RCP<Epetra_MultiVector> data ,
     const string                     name ,
     const int                      offset
     ) const;
 
 
     void WriteNodalResultStep(
-            ofstream& file,
+            std::ofstream& file,
             PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            std::map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
             const string name,
             const int numdf) const;
     void WriteElementDOFResultStep(
-            ofstream& file,
+            std::ofstream& file,
             PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            std::map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
             const string name,
             const int numdf,
             const int from) const;
     void WriteElementResultStep(
-            ofstream& file,
+            std::ofstream& file,
             PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            std::map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
             const string name,
             const int numdf,
             const int from) const;
     void WriteIndexTable(
-            ofstream& file,
+            std::ofstream& file,
             const vector<ofstream::pos_type>& filepos) const;
     /*!
      * \brief create string for the VARIABLE section
@@ -423,9 +423,9 @@ protected:
      *        for all fields in the variablemap
      */
     string GetVariableSection(
-            map<string,vector<int> > filesetmap,
-            map<string,int>          variablenumdfmap,
-            map<string,string>       variablefilenamemap
+            std::map<string,vector<int> > filesetmap,
+            std::map<string,int>          variablenumdfmap,
+            std::map<string,string>       variablefilenamemap
             ) const;
 
 
@@ -434,7 +434,7 @@ protected:
      * \return map between distype and number of elements to be written
      */
     NumElePerDisType GetNumElePerDisType(
-            const RefCountPtr<DRT::Discretization> dis) const;
+            const Teuchos::RCP<DRT::Discretization> dis) const;
 
     string GetEnsightString(
             const DRT::Element::DiscretizationType distype) const;
@@ -443,10 +443,10 @@ protected:
      * \brief if files become to big, this routine switches to a new file
      */
     void FileSwitcher(
-            ofstream& file,                                          ///< filestream that is switched
+            std::ofstream& file,                                          ///< filestream that is switched
             bool& multiple_files,                                    ///< ???
-            map<string,vector<int> >& filesetmap,                    ///< ???
-            map<string, vector<ofstream::pos_type> >& resultfilepos, ///< ???
+            std::map<string,vector<int> >& filesetmap,                    ///< ???
+            std::map<string, vector<ofstream::pos_type> >& resultfilepos, ///< ???
             const int stepsize,                                      ///< ???
             const string name,                                       ///< ???
             const string filename                                    ///< constant part of the filename
@@ -464,7 +464,7 @@ protected:
      * \return map between distype and vector containing the global ids of th corresponding elements
      */
     EleGidPerDisType GetEleGidPerDisType(
-            const RefCountPtr<DRT::Discretization> dis,
+            const Teuchos::RCP<DRT::Discretization> dis,
             NumElePerDisType numeleperdistype
             ) const;
 
@@ -492,22 +492,22 @@ protected:
     NumElePerDisType numElePerDisType_; ///< number of elements per element discretization type
     EleGidPerDisType eleGidPerDisType_; ///< global ids of corresponding elements per element discretization type
 
-    RCP<Epetra_Map> proc0map_; ///< allreduced node row map for proc 0, empty on other procs
+    Teuchos::RCP<Epetra_Map> proc0map_; ///< allreduced node row map for proc 0, empty on other procs
 
     Teuchos::RCP<Epetra_Map> vispointmap_; ///< map for all visualisation points
 
-    map<string,vector<int> > filesetmap_;
-    map<string,vector<double> > timesetmap_;
+    std::map<string,vector<int> > filesetmap_;
+    std::map<string,vector<double> > timesetmap_;
 
-    map<string,int>          variablenumdfmap_;
-    map<string,string>       variablefilenamemap_;
-    map<string,string>       variableresulttypemap_; ///< STL map for storing the result-type per variable name
+    std::map<string,int>          variablenumdfmap_;
+    std::map<string,string>       variablefilenamemap_;
+    std::map<string,string>       variableresulttypemap_; ///< STL map for storing the result-type per variable name
 
-    map<string,int> timesetnumbermap_;
-    map<string,int> filesetnumbermap_;
+    std::map<string,int> timesetnumbermap_;
+    std::map<string,int> filesetnumbermap_;
 
     //! maps a distype to the corresponding Ensight cell type
-    map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
+    std::map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
 
     //! maximum file size
     static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB

@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 #include <EpetraExt_Reindex_CrsMatrix.h>
 #include <EpetraExt_Reindex_LinearProblem.h>
 #include <EpetraExt_Reindex_MultiVector.h>
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Time.h"
 #include "Epetra_IntVector.h"

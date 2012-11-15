@@ -122,7 +122,7 @@ void DRT::ELEMENTS::Combust3Surface::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3Surface::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3Surface::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.

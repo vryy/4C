@@ -181,7 +181,7 @@ public:
                         On output, the map has a distribution of
                         TargetMap().
   */
-  template<typename T> void Export(map<int,set<T> >& data);
+  template<typename T> void Export(map<int,std::set<T> >& data);
 
   // 																														nagler 07/2012
   /*!
@@ -459,13 +459,13 @@ private:
   /*!
   \brief Get sendplan_
   */
-  inline vector<set<int> > & SendPlan() { return sendplan_; }
+  inline vector<std::set<int> > & SendPlan() { return sendplan_; }
 
 #if 0
   /*!
   \brief Get recvplan_
   */
-  inline vector<set<int> > & RecvPlan() { return recvplan_; }
+  inline vector<std::set<int> > & RecvPlan() { return recvplan_; }
 #endif
 
   /*!
@@ -488,10 +488,10 @@ private:
   //! no. of processors
   int                      numproc_;
   //! sending information
-  vector<set<int> >        sendplan_;
+  vector<std::set<int> >        sendplan_;
 #if 0
   //! receiving information
-  vector<set<int> >        recvplan_;
+  vector<std::set<int> >        recvplan_;
 #endif
 
   /// Internal helper class for Exporter that encapsulates packing and unpacking
@@ -750,7 +750,7 @@ private:
   {
   public:
 
-    explicit PODSetExporterHelper(map<int,set<T> >& objects)
+    explicit PODSetExporterHelper(map<int,std::set<T> >& objects)
       : objects_(objects) {}
 
     virtual void PreExportTest(Exporter* exporter)
@@ -760,7 +760,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename map<int,set<T> >::const_iterator curr = objects_.find(gid);
+      typename map<int,std::set<T> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
         ParObject::AddtoPack(sendblock,curr->second);
@@ -777,8 +777,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      map<int,set<T> > newmap;
-      typename map<int,set<T> >::iterator fool;
+      map<int,std::set<T> > newmap;
+      typename map<int,std::set<T> >::iterator fool;
       for (fool=objects_.begin(); fool != objects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
          swap(newmap[fool->first], fool->second);
@@ -786,7 +786,7 @@ private:
     }
 
   private:
-    map<int,set<T> >& objects_;
+    map<int,std::set<T> >& objects_;
   };
 
 /// Concrete helper class that handles maps of plain old data (POD) objects
@@ -860,7 +860,7 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                                   07/11|
  *----------------------------------------------------------------------*/
-template<typename T> void DRT::Exporter::Export(map<int,set<T> >& data)
+template<typename T> void DRT::Exporter::Export(map<int,std::set<T> >& data)
 {
   PODSetExporterHelper<T> helper(data);
   GenericExport(helper);

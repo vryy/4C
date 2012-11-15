@@ -58,14 +58,14 @@ void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(ParameterList&  params)
 {
   if (eastype_ != soh8_easnone)
   {
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldalpha =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldfeas =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKaainv =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKda =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKda", null);
 
     if (oldalpha==null || oldfeas==null || oldKaainv==null || oldKda==null)
       dserror("Cannot get EAS internal data from parameter list for multi-scale problems");
@@ -86,16 +86,16 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
 {
   if (eastype_ != soh8_easnone)
   {
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("lastalpha", null);
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
-    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
-      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("lastalpha", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldalpha =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldfeas =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKaainv =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
+    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKda =
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKda", null);
 
     (*lastalpha)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
     (*oldalpha)[Id()]  = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
@@ -112,7 +112,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi()
 {
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
 
   if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
   {

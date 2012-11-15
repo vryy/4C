@@ -32,7 +32,7 @@
 #include "../drt_adapter/ad_fld_poro.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

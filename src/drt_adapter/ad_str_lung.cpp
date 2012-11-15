@@ -175,7 +175,7 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
       // Get ConditionID of current condition if defined and write value in parameterlist
       int condID=cond.GetInt("coupling id");
       params.set("ConditionID",condID);
-      params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+      params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -184,11 +184,11 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
 
-      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+      map<int,RCP<DRT::Element> >::iterator curr;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -281,7 +281,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
     params.set("ConditionID",condID);
 
     // elements might need condition
-    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // global and local ID of this bc in the redundant vectors
     const int gindex = condID-offsetID;
@@ -302,11 +302,11 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // there might be processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+    map<int,RCP<DRT::Element> >::iterator curr;
 
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {

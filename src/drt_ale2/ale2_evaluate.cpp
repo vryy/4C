@@ -53,13 +53,13 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
     dserror("Unknown type of action for Ale2");
 
   // get the material
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
 
   switch (act)
   {
   case calc_ale_lin_stiff:
   {
-    //RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    //RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     //vector<double> my_dispnp(lm.size());
     //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
@@ -69,7 +69,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
   }
   case calc_ale_laplace:
   {
-    //RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    //RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     //vector<double> my_dispnp(lm.size());
     //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
@@ -79,7 +79,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
   }
   case calc_ale_spring:
   {
-    RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
+    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
     vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
@@ -505,7 +505,7 @@ void DRT::ELEMENTS::Ale2::static_ke(
   vector<int>               &lm      ,
   Epetra_SerialDenseMatrix  *sys_mat ,
   Epetra_SerialDenseVector  *residual,
-  RefCountPtr<MAT::Material> material,
+  RCP<MAT::Material> material,
   ParameterList             &params  )
 {
   const int iel = NumNode();
@@ -736,7 +736,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
   vector<int>                &lm      ,
   Epetra_SerialDenseMatrix   *sys_mat ,
   Epetra_SerialDenseVector   *residual,
-  RefCountPtr<MAT::Material>  material,
+  RCP<MAT::Material>  material,
   ParameterList              &params  )
 {
   const int iel = NumNode();

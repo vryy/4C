@@ -324,7 +324,7 @@ void TOPOPT::Optimizer::ImportFluidData(
   {
     // a copy is required here, otherwise the values are changed within the fluid time integration
     RCP<Epetra_Vector> new_vel = Teuchos::rcp(new Epetra_Vector(*vel)); // copy
-    fluidvel_->insert(pair<int,RCP<Epetra_Vector> >(step,new_vel));
+    fluidvel_->insert(std::pair<int,RCP<Epetra_Vector> >(step,new_vel));
   }
 }
 
@@ -342,7 +342,7 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
   {
     // a copy is required here, otherwise the values are changed within the adjoint time integration
     RCP<Epetra_Vector> new_vel = Teuchos::rcp(new Epetra_Vector(*vel));
-    adjointvel_->insert(pair<int,RCP<Epetra_Vector> >(step,new_vel));
+    adjointvel_->insert(std::pair<int,RCP<Epetra_Vector> >(step,new_vel));
   }
 }
 

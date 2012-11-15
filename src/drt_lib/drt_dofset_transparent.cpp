@@ -60,7 +60,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
     if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
 
     //build dofrowmap
-    set<int> dofrowset;
+    std::set<int> dofrowset;
     vector<int> dofrowvec;
     dofrowvec.reserve(dofrowmap_->NumMyElements());
     for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
@@ -82,7 +82,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
       }
     }
 
-    for(set<int>::iterator idof=dofrowset.begin();
+    for(std::set<int>::iterator idof=dofrowset.begin();
         idof!=dofrowset.end();++idof)
     {
       dofrowvec.push_back(*idof);
@@ -91,7 +91,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
     dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
 
     //build dofcolvec
-    set<int> dofcolset;
+    std::set<int> dofcolset;
     vector<int> dofcolvec;
     dofcolvec.reserve(dofcolmap_->NumMyElements());
     for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
@@ -121,7 +121,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
       }
     }
 
-    for(set<int>::iterator idof=dofcolset.begin();
+    for(std::set<int>::iterator idof=dofcolset.begin();
         idof!=dofcolset.end();++idof)
     {
       dofcolvec.push_back(*idof);
@@ -224,7 +224,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     }
   }
 
-  set<int> slaveset;
+  std::set<int> slaveset;
   std::vector<DRT::Condition*> mypbcs;
 
   // get periodic surface boundary conditions
@@ -257,7 +257,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   }
 
   //build dofrowmap
-  set<int> dofrowset;
+  std::set<int> dofrowset;
   vector<int> dofrowvec;
   dofrowvec.reserve(dofrowmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
@@ -297,7 +297,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     }
   }
 
-  for(set<int>::iterator idof=dofrowset.begin();
+  for(std::set<int>::iterator idof=dofrowset.begin();
       idof!=dofrowset.end();++idof)
   {
     dofrowvec.push_back(*idof);
@@ -306,7 +306,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
 
   //build dofcolvec
-  set<int> dofcolset;
+  std::set<int> dofcolset;
   vector<int> dofcolvec;
   dofcolvec.reserve(dofcolmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
@@ -331,7 +331,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     }
   }
 
-  for(set<int>::iterator idof=dofcolset.begin();
+  for(std::set<int>::iterator idof=dofcolset.begin();
       idof!=dofcolset.end();++idof)
   {
     dofcolvec.push_back(*idof);

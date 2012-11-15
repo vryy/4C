@@ -12,7 +12,7 @@ Created on: Jul 4, 2011
 #ifndef SOLVER_BELOSSOLVER_H_
 #define SOLVER_BELOSSOLVER_H_
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
 #include "solver_krylovsolver.H"

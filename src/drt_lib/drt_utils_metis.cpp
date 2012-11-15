@@ -338,7 +338,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
     // No need to test for myrank==0 as elementnodes is filled on proc 0 only.
 
     // build the graph ourselves
-    vector<set<int> > localgraph(rownodes->NumMyElements());
+    vector<std::set<int> > localgraph(rownodes->NumMyElements());
     for (list<vector<int> >::iterator i=elementnodes.begin();
          i!=elementnodes.end();
          ++i)
@@ -377,7 +377,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
 
     for (unsigned i = 0; i<localgraph.size(); ++i)
     {
-      set<int>& rowset = localgraph[i];
+      std::set<int>& rowset = localgraph[i];
       vector<int> row;
       row.reserve(rowset.size());
       row.assign(rowset.begin(),rowset.end());

@@ -20,7 +20,7 @@ Maintainer: Ursula Rasthofer
 #include <map>
 
 #include <Epetra_IntVector.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
@@ -55,7 +55,7 @@ public:
   \return void
 
   */
-  FixedSizePBCDofSet(RefCountPtr<map<int,vector<int> > >  couplednodes, int numreservedof)
+  FixedSizePBCDofSet(RCP<map<int,vector<int> > >  couplednodes, int numreservedof)
     :FixedSizeDofSet(numreservedof), PBCDofSet(couplednodes)
   {
     return;

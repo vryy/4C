@@ -47,7 +47,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
     {
     case integrate_Shapefunction:
     {
-      RefCountPtr<const Epetra_Vector> dispnp;
+      RCP<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
 
 //      if (parent_->IsMoving())

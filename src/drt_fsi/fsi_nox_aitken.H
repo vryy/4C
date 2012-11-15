@@ -5,7 +5,7 @@
 #include <NOX_LineSearch_UserDefinedFactory.H>
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace NOX {
   namespace FSI {
@@ -22,14 +22,14 @@ class AitkenRelaxation : public NOX::LineSearch::Generic
 public:
 
   //! Constructor
-  AitkenRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+  AitkenRelaxation(const Teuchos::RCP<NOX::Utils>& utils,
                    Teuchos::ParameterList& params);
 
   //! Destructor
   ~AitkenRelaxation();
 
   // derived
-  bool reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+  bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
 	     Teuchos::ParameterList& params);
 
   // derived
@@ -40,16 +40,16 @@ public:
 private:
 
   //! difference of last two solutions
-  Teuchos::RefCountPtr<NOX::Abstract::Vector> del_;
+  Teuchos::RCP<NOX::Abstract::Vector> del_;
 
   //! difference of difference of last two pair of solutions
-  Teuchos::RefCountPtr<NOX::Abstract::Vector> del2_;
+  Teuchos::RCP<NOX::Abstract::Vector> del2_;
 
   //! aitken factor
   double nu_;
 
   //! Printing utilities
-  Teuchos::RefCountPtr<NOX::Utils> utils_;
+  Teuchos::RCP<NOX::Utils> utils_;
 };
 
 

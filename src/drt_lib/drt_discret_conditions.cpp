@@ -66,7 +66,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
 
   // now we delete all old geometries that are attached to any conditions
   // and set a communicator to the condition
-  multimap<string,RefCountPtr<DRT::Condition> >::iterator fool;
+  multimap<string,RCP<DRT::Condition> >::iterator fool;
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
     fool->second->ClearGeometry();
@@ -117,7 +117,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
       // determine the local number of created elements associated with
       // the active condition
       int localcount=0;
-      for (map<int,RefCountPtr<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
+      for (map<int,RCP<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
            iter!=fool->second->Geometry().end();
            ++iter)
       {
@@ -168,14 +168,14 @@ void DRT::Discretization::BoundaryConditionsGeometry()
  *  h.kue 09/07
  */
 static void AssignGlobalIDs( const Epetra_Comm& comm,
-                             const map< vector<int>, RefCountPtr<DRT::Element> >& elementmap,
-                             map< int, RefCountPtr<DRT::Element> >& finalelements )
+                             const map< vector<int>, RCP<DRT::Element> >& elementmap,
+                             map< int, RCP<DRT::Element> >& finalelements )
 {
 #if 0
   // First, give own elements a local id and find out
   // which ids we need to get from other processes.
 
-  vector< RefCountPtr<DRT::Element> > ownelements;
+  vector< RCP<DRT::Element> > ownelements;
 
   // ghostelementnodes, the vector we are going to communicate.
   // Layout:
@@ -188,12 +188,12 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   //  ]
   vector< vector<int> > ghostelementnodes( comm.NumProc() );
   // corresponding elements objects
-  vector< vector< RefCountPtr<DRT::Element> > > ghostelements( comm.NumProc() );
+  vector< vector< RCP<DRT::Element> > > ghostelements( comm.NumProc() );
 
-  map< vector<int>, RefCountPtr<DRT::Element> >::const_iterator elemsiter;
+  map< vector<int>, RCP<DRT::Element> >::const_iterator elemsiter;
   for( elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter )
   {
-      const RefCountPtr<DRT::Element> element = elemsiter->second;
+      const RCP<DRT::Element> element = elemsiter->second;
       if ( element->Owner() == comm.MyPID() )
       {
           ownelements.push_back( element );
@@ -413,7 +413,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
 void DRT::Discretization::BuildLinesinCondition( const string name,
-                                                 RefCountPtr<DRT::Condition> cond )
+                                                 RCP<DRT::Condition> cond )
 {
   /* First: Create the line objects that belong to the condition. */
 
@@ -448,7 +448,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   }
 
   // map of lines in our cloud: (node_ids) -> line
-  map< vector<int>, RefCountPtr<DRT::Element> > linemap;
+  map< vector<int>, RCP<DRT::Element> > linemap;
   // loop these nodes and build all lines attached to them
   map<int,DRT::Node*>::iterator fool;
   for( fool = rownodes.begin(); fool != rownodes.end(); ++fool )
@@ -462,7 +462,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
       // loop all lines of all elements attached to actnode
       const int numlines = elements[i]->NumLine();
       if( !numlines ) continue;
-      vector<RCP<DRT::Element> >  lines = elements[i]->Lines();
+      vector<Teuchos::RCP<DRT::Element> >  lines = elements[i]->Lines();
       if(lines.size()==0) dserror("Element returned no lines");
       for( int j = 0; j < numlines; ++j )
       {
@@ -496,7 +496,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
 
               if ( linemap.find( nodes ) == linemap.end() )
               {
-                  RefCountPtr<DRT::Element> line = Teuchos::rcp( actline->Clone() );
+                  RCP<DRT::Element> line = Teuchos::rcp( actline->Clone() );
                   // Set owning process of line to node with smallest gid.
                   line->SetOwner( gNode( nodes[0] )->Owner() );
                   linemap[nodes] = line;
@@ -510,7 +510,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
 
 
   // Lines be added to the condition: (line_id) -> (line).
-  map< int, RefCountPtr<DRT::Element> > finallines;
+  map< int, RCP<DRT::Element> > finallines;
 
   AssignGlobalIDs( Comm(), linemap, finallines );
   cond->AddGeometry( finallines );
@@ -523,7 +523,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
 /* Hopefully improved by Heiner (h.kue 09/07) */
 void DRT::Discretization::BuildSurfacesinCondition(
                                         const string name,
-                                        RefCountPtr<DRT::Condition> cond)
+                                        RCP<DRT::Condition> cond)
 {
   // these conditions are special since associated volume conditions also need
   // to be considered
@@ -567,7 +567,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
   }
 
   // map of surfaces in this cloud: (node_ids) -> (surface)
-  map< vector<int>, RefCountPtr<DRT::Element> > surfmap;
+  map< vector<int>, RCP<DRT::Element> > surfmap;
 
   // loop these row nodes and build all surfs attached to them
   map<int,DRT::Node*>::iterator fool;
@@ -587,7 +587,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
       // loop all surfaces of all elements attached to actnode
       const int numsurfs = elements[i]->NumSurface();
       if (!numsurfs) continue;
-      vector<RCP<DRT::Element> >  surfs = elements[i]->Surfaces();
+      vector<Teuchos::RCP<DRT::Element> >  surfs = elements[i]->Surfaces();
       if (surfs.size()==0) dserror("Element does not return any surfaces");
       for (int j=0; j<numsurfs; ++j)
       {
@@ -622,7 +622,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
 
               if ( surfmap.find( nodes ) == surfmap.end() )
               {
-                RefCountPtr<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
+                RCP<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
                 // Set owning process of surface to node with smallest gid.
                 surf->SetOwner( gNode( nodes[0] )->Owner() );
                 surfmap[nodes] = surf;
@@ -640,7 +640,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
   }
 
   // Surfaces be added to the condition: (line_id) -> (surface).
-  map< int, RefCountPtr<DRT::Element> > finalsurfs;
+  map< int, RCP<DRT::Element> > finalsurfs;
 
   AssignGlobalIDs( Comm(), surfmap, finalsurfs );
   cond->AddGeometry( finalsurfs );
@@ -652,7 +652,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildVolumesinCondition(
                                         const string name,
-                                        RefCountPtr<DRT::Condition> cond)
+                                        RCP<DRT::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
   const vector<int>* nodeids = cond->Nodes();
@@ -703,7 +703,7 @@ void DRT::Discretization::BuildVolumesinCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::FindAssociatedEleIDs(RefCountPtr<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name)
+void DRT::Discretization::FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name)
 {
   // determine constraint number
   int condID = cond->GetInt("coupling id");

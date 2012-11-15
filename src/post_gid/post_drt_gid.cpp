@@ -43,10 +43,10 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
   //double time = map_read_real(result->group(), "time");
   int step = map_read_int(result->group(), "step");
 
-  ostringstream buf;
+  std::ostringstream buf;
   buf << field->name() << "_" << result_name;
 
-  RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
+  RCP<Epetra_Vector> data = result->read_result(result_name);
   const Epetra_BlockMap& datamap = data->Map();
 
   GiD_BeginResult(buf.str().c_str(), "ccarat", step, GiD_Vector,
@@ -87,10 +87,10 @@ void write_scalar_result(string result_name, PostField* field, PostResult* resul
   //double time = map_read_real(result->group(), "time");
   int step = map_read_int(result->group(), "step");
 
-  ostringstream buf;
+  std::ostringstream buf;
   buf << field->name() << "_" << result_name;
 
-  RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
+  RCP<Epetra_Vector> data = result->read_result(result_name);
   const Epetra_BlockMap& datamap = data->Map();
 
   const char* name = result_name.c_str();
@@ -135,7 +135,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   // This implementation depends (like the rest of this GiD-filter) on
   // the assumption that there are only elements of one type in the mesh
 
-  RefCountPtr<DRT::Discretization> dis = field->discretization();
+  RCP<DRT::Discretization> dis = field->discretization();
   const Epetra_Map* elementmap = dis->ElementRowMap();
   DRT::Element* actele = dis->gElement(elementmap->GID(0));
   switch (actele->Shape())
@@ -210,10 +210,10 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   //double time = map_read_real(result->group(), "time");
   int step = map_read_int(result->group(), "step");
 
-  ostringstream buf;
+  std::ostringstream buf;
   buf << field->name() << "_" << result_name;
 
-  const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > map
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > map
     = result->read_result_serialdensematrix(result_name);
 
   if (numdim==3) numstress=6;
@@ -228,7 +228,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   for (int k = 0; k < field->num_elements(); ++k)
   {
     DRT::Element* n = field->discretization()->lRowElement(k);
-    RefCountPtr<Epetra_SerialDenseMatrix> data = (*map)[n->Id()];
+    RCP<Epetra_SerialDenseMatrix> data = (*map)[n->Id()];
 
     for (int gp = 0; gp < data->M(); ++gp)
     {

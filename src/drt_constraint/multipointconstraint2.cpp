@@ -183,8 +183,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   if(constrcondvec.size()==0)
       dserror("number of multi point constraint conditions = 0 --> cannot create constraint discretization");
 
-  set<int> rownodeset;
-  set<int> colnodeset;
+  std::set<int> rownodeset;
+  std::set<int> colnodeset;
   const Epetra_Map* actnoderowmap = actdisc->NodeRowMap();
 
   // Loop all conditions in constrcondvec
@@ -361,7 +361,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (assemblevec3) elevector3.Size(1); // elevector3 always contains a scalar
 
       params.set("ConditionID",condID);
-      params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+      params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
       // call the element evaluate method
       int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                  elevector1,elevector2,elevector3);

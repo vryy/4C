@@ -29,7 +29,7 @@ Maintainer: Mahmoud Ismail
 #endif /* PARALLEL */
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_solver.H"
@@ -275,7 +275,7 @@ protected:
   RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// rhs: right hand side vector
-  RefCountPtr<Epetra_Vector>    rhs_;
+  RCP<Epetra_Vector>    rhs_;
 
   //! @name Volumetric Flow rate and Cross-Sectional area at time n+1, n and n-1
   RCP<Epetra_Vector>    qanp_;

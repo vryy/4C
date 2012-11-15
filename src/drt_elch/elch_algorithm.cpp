@@ -434,7 +434,7 @@ void ELCH::Algorithm::OuterIterationConvection()
   // Output after each Outer Iteration step
   const int numdim = 3;
   //create output file name
-  stringstream temp;
+  std::stringstream temp;
   temp << DRT::Problem::Instance()->OutputControlFile()->FileName()<<"_nonliniter_step"<<Step();
   string outname = temp.str();
   string probtype = DRT::Problem::Instance()->ProblemName();

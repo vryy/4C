@@ -67,10 +67,10 @@ namespace STRU_ALE
     void TimeLoop();
 
     /// Interface displacements (frictional contact)
-    void InterfaceDisp (RCP<Epetra_Vector>& disinterface);
+    void InterfaceDisp (Teuchos::RCP<Epetra_Vector>& disinterface);
     
     /// Application of mesh displacements (frictional contact)
-    void ApplyMeshDisplacement(RCP<Epetra_Vector>& disale);
+    void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector>& disale);
     
     /// material coordinates evaluated from spatial ones
     void AdvectionMap(double* XMat1,
@@ -89,7 +89,7 @@ namespace STRU_ALE
 
   private:
     
- RCP<MORTAR::ManagerBase> cmtman_; // contact manager
+  Teuchos::RCP<MORTAR::ManagerBase> cmtman_; // contact manager
  
  };  // Algorithm
 }  // namespace STRU_ALE

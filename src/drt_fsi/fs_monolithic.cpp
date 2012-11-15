@@ -157,7 +157,7 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
   // Create printing utilities
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID()==0)
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -177,7 +177,7 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     PrepareTimeStep();
 
     // start time measurement
-    Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
+    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
 
     // calculate initial linear system at current position
     // (no increment)

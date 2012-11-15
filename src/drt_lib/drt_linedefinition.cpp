@@ -265,7 +265,7 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(std::istream& stream)
 template <class type>
 bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(DRT::INPUT::LineDefinition& definition, std::istream& stream)
 {
-  // Find expexted vector on line. It has to be read already!
+  // Find expected vector on line. It has to be read already!
 
   int length=0;
   definition.ExtractInt(lengthdef_,length);

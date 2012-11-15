@@ -195,7 +195,7 @@ void DRT::ELEMENTS::MeshfreeTransport::SetMaterial(int matnum)
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
   if(mat->MaterialType() == INPAR::MAT::m_scatra or
      mat->MaterialType() == INPAR::MAT::m_mixfrac or
      mat->MaterialType() == INPAR::MAT::m_sutherland or
@@ -291,7 +291,7 @@ void DRT::ELEMENTS::MeshfreeTransport::Print(ostream& os) const
 /*--------------------------------------------------------------------------*
  |  get vector of lines                                  (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -316,7 +316,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines()
 /*--------------------------------------------------------------------------*
  |  get vector of surfaces                               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -346,7 +346,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfaces()
 /*--------------------------------------------------------------------------*
  |  get vector of volumes (length 1)                     (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Volumes()
 {
   if (NumVolume() == 1)
   {
@@ -426,7 +426,7 @@ void DRT::ELEMENTS::MeshfreeTransport::VisNames(std::map<string,int>& names)
   // see whether we have additional data for visualization in our container
   for (int k = 0 ;k<numdofpernode_; k++)
   {
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
 
     // element Peclet number
@@ -466,7 +466,7 @@ bool DRT::ELEMENTS::MeshfreeTransport::VisData(const string& name, vector<double
 
   for (int k = 0 ;k<numdofpernode_; k++)
   {
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     if (   (name == "Pe_"+temp.str()    )
         || (name == "Pe_mig_"+temp.str())
@@ -599,7 +599,7 @@ inline int DRT::ELEMENTS::MeshfreeTransportBoundary::NumSurface() const
 /*---------------------------------------------------------------------------*
  |  get vector of lines                                   (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -609,14 +609,14 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Lines()
 
   // so we have to allocate new line elements:
   dserror("Lines of MeshfreeTransportBoundary not implemented");
-  vector<RCP<DRT::Element> > lines(0);
+  vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
 
 /*---------------------------------------------------------------------------*
  |  get vector of lines                                   (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -626,7 +626,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Surfaces()
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of MeshfreeTransportBoundary not implemented");
-  vector<RCP<DRT::Element> > surfaces(0);
+  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 

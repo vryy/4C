@@ -5,7 +5,7 @@
 #include <NOX_Abstract_Group.H>
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Vector.H>
@@ -23,7 +23,7 @@
 #include "../linalg/linalg_serialdensematrix.H"
 
 
-NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RCP<NOX::Utils>& utils,
                                                Teuchos::ParameterList& params)
   : utils_(utils)
 {
@@ -40,7 +40,7 @@ NOX::FSI::MinimalPolynomial::~MinimalPolynomial()
 }
 
 
-bool NOX::FSI::MinimalPolynomial::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+bool NOX::FSI::MinimalPolynomial::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
                                         Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
@@ -59,7 +59,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   const NOX::Abstract::Vector& x = soln.getX();
   const NOX::Epetra::Vector& ex = dynamic_cast<const NOX::Epetra::Vector&>(x);
 
-  std::vector<Teuchos::RefCountPtr<NOX::Epetra::Vector> > q;
+  std::vector<Teuchos::RCP<NOX::Epetra::Vector> > q;
   LINALG::SerialDenseMatrix r(kmax_+1,kmax_+1,true);
   LINALG::SerialDenseVector c(kmax_+1, true);
   LINALG::SerialDenseVector gamma(kmax_+1, true);
@@ -79,7 +79,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
     const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
 
     // We have to work on the scaled residual here.
-    Teuchos::RefCountPtr<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
+    Teuchos::RCP<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
     y->scale(omega_);
 
     // modified Gram-Schmidt

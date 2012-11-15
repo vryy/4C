@@ -315,7 +315,7 @@ void DRT::ELEMENTS::Combust3::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                  gjb 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -331,7 +331,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -347,7 +347,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);

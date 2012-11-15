@@ -36,14 +36,14 @@ using namespace std;
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
 (
-  ofstream&                              geofile ,
-  const RefCountPtr<DRT::Discretization> dis     ,
-  RefCountPtr<Epetra_Map>&               proc0map
+  std::ofstream&                              geofile ,
+  const RCP<DRT::Discretization> dis     ,
+  RCP<Epetra_Map>&               proc0map
   )
 {
   // refcountpointer to vector of all coordinates
   // distributed among all procs
-  RefCountPtr<Epetra_MultiVector> nodecoords;
+  RCP<Epetra_MultiVector> nodecoords;
 
   // the ids of the visualisation points on this proc
   vector<int> local_vis_point_ids;
@@ -68,7 +68,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
   int dim = (nurbsdis->Return_nele_x_mele_x_lele(0)).size();
 
   // get the knotvector itself
-  RefCountPtr<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
+  RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // determine number of patches from knotvector
   int npatches=knotvec->ReturnNP();
@@ -1493,7 +1493,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map,*vispointmap_);
-  RefCountPtr<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
+  RCP<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
   int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -1535,10 +1535,10 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
 void EnsightWriter::WriteNurbsCell(
   const DRT::Element::DiscretizationType distype   ,
   const int                              gid       ,
-  ofstream&                              geofile   ,
+  std::ofstream&                              geofile   ,
   vector<int>&                           nodevector,
-  const RefCountPtr<DRT::Discretization> dis       ,
-  const RefCountPtr<Epetra_Map>&         proc0map
+  const RCP<DRT::Discretization> dis       ,
+  const RCP<Epetra_Map>&         proc0map
 ) const
 {
   // cast dis to NurbsDiscretisation
@@ -1552,7 +1552,7 @@ void EnsightWriter::WriteNurbsCell(
   }
 
   // get the knotvector itself
-  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+  RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
   // determine number of patches from knotvector
   int npatches=knots->ReturnNP();
@@ -1586,7 +1586,7 @@ void EnsightWriter::WriteNurbsCell(
     const int dim = 2;
 
     // get the knotvector itself
-    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+    RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // get location in the patch and the number of the patch
     int npatch  =-1;
@@ -1798,15 +1798,15 @@ void EnsightWriter::WriteNurbsCell(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteDofResultStepForNurbs(
-  ofstream&                        file ,
+  std::ofstream&                        file ,
   const int                        numdf,
-  const RefCountPtr<Epetra_Vector> data ,
+  const RCP<Epetra_Vector> data ,
   const string                     name ,
   const int                      offset
   ) const
 {
   // a multivector for the interpolated data
-  Teuchos::RefCountPtr<Epetra_MultiVector> idata;
+  Teuchos::RCP<Epetra_MultiVector> idata;
   idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_,numdf));
 
   DRT::NURBS::NurbsDiscretization* nurbsdis
@@ -1846,7 +1846,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   } // end loop over patches
 
     // get the knotvector itself
-  RefCountPtr<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
+  RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // get vispoint offsets among patches
   vector<int> vpoff(npatches);
@@ -1982,7 +1982,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   coldofmapvec.clear();
 
   const Epetra_Map* fulldofmap = &(*coldofmap);
-  const RefCountPtr<Epetra_Vector> coldata
+  const RCP<Epetra_Vector> coldata
     = Teuchos::rcp(new Epetra_Vector(*fulldofmap,true));
 
   // create an importer and import the data
@@ -2159,7 +2159,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_,*vispointmap_);
-  RefCountPtr<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  RCP<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
   int err = allsols->Import(*idata,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -2199,7 +2199,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::InterpolateNurbsResultToVizPoints(
-    Teuchos::RefCountPtr<Epetra_MultiVector> idata,
+    Teuchos::RCP<Epetra_MultiVector> idata,
     const int dim,
     const int npatch,
     const vector<int>& vpoff,
@@ -3485,15 +3485,15 @@ return;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteNodalResultStepForNurbs(
-    ofstream&                             file ,
+    std::ofstream&                             file ,
     const int                             numdf,
-    const RefCountPtr<Epetra_MultiVector> data ,
+    const RCP<Epetra_MultiVector> data ,
     const string                          name ,
     const int                             offset
 ) const
 {
   // a multivector for the interpolated data
-  Teuchos::RefCountPtr<Epetra_MultiVector> idata;
+  Teuchos::RCP<Epetra_MultiVector> idata;
   idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_,numdf));
 
   DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -3532,7 +3532,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
   } // end loop over patches
 
   // get the knotvector itself
-  RefCountPtr<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
+  RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // get vispoint offsets among patches
   vector<int> vpoff(npatches);
@@ -3595,7 +3595,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
   colnodemapvec.clear();
 
   const Epetra_Map* fullnodemap = &(*colnodemap);
-  const RefCountPtr<Epetra_MultiVector> coldata
+  const RCP<Epetra_MultiVector> coldata
   = Teuchos::rcp(new Epetra_MultiVector(*fullnodemap,3,true));
 
   // create an importer and import the data
@@ -3680,7 +3680,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_,*vispointmap_);
-  RefCountPtr<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  RCP<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
   int err = allsols->Import(*idata,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 

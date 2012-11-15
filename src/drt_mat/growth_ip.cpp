@@ -549,14 +549,14 @@ void MAT::GrowthOutputToGmsh
   std::stringstream filename_mandel;
   filename_mandel << filebase << "_mandel" << std::setw(3) << std::setfill('0') << timestep << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system_mandel(filename_mandel.str().c_str());
-  stringstream gmshfilecontent_mandel;
+  std::stringstream gmshfilecontent_mandel;
   gmshfilecontent_mandel << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
 
   // file for theta
   std::stringstream filename_theta;
   filename_theta << filebase << "_theta" << std::setw(3) << std::setfill('0') << timestep << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system_theta(filename_theta.str().c_str());
-  stringstream gmshfilecontent_theta;
+  std::stringstream gmshfilecontent_theta;
   gmshfilecontent_theta << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
 
   for (int iele=0; iele<dis->NumMyColElements(); ++iele)
@@ -572,7 +572,7 @@ void MAT::GrowthOutputToGmsh
     vector<double> mydisp(lm.size(),0);
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-    RefCountPtr<MAT::Material> mat = actele->Material();
+    RCP<MAT::Material> mat = actele->Material();
     MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
     Teuchos::RCP<vector<double> > mandel = grow->Getmandel();
     Teuchos::RCP<vector<double> > theta = grow->Gettheta();

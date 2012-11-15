@@ -301,7 +301,7 @@ void DRT::ELEMENTS::NStet5::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  gee 03/12|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Volumes()
 {
   dserror("volume not impl. yet");
   vector<RCP<Element> > volumes(1);
@@ -313,7 +313,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Volumes()
  /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                             gee 03/12|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -328,7 +328,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gee 03/12|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.

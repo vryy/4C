@@ -45,14 +45,14 @@ protected:
   void PostStress(const string groupname, const string stresstype);
   void WriteNodalStress(const string groupname,
                         PostResult& result);
-  void WriteNodalStressStep(ofstream& file,
+  void WriteNodalStressStep(std::ofstream& file,
                             PostResult& result,
                             map<string, vector<ofstream::pos_type> >& resultfilepos,
                             const string groupname,
                             const string name) const;
   void WriteElementCenterStress(const string groupname,
                                 PostResult& result);
-  void WriteElementCenterStressStep(ofstream& file,
+  void WriteElementCenterStressStep(std::ofstream& file,
                                     PostResult& result,
                                     map<string, vector<ofstream::pos_type> >& resultfilepos,
                                     const string groupname,

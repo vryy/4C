@@ -52,7 +52,7 @@ Maintainer: Volker Gravemeier
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
@@ -78,7 +78,7 @@ public:
   </pre>
 
   */
-  TurbulenceStatisticsSqc(RefCountPtr<DRT::Discretization> actdis,
+  TurbulenceStatisticsSqc(RCP<DRT::Discretization> actdis,
                           ParameterList&                   params);
 
   /*!
@@ -102,7 +102,7 @@ public:
   global vectors. This method allows to do the time average of the
   nodal values after a certain amount of timesteps.
   */
-  void DoTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp);
+  void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
 
   /*!
   \brief Dump the result to file.
@@ -160,130 +160,130 @@ private:
   double                           dragsq_;
 
   //! The discretisation (required for nodes, dofs etc;)
-  RefCountPtr<DRT::Discretization> discret_;
+  RCP<DRT::Discretization> discret_;
 
   //! parameter list
   ParameterList&                   params_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
-  RefCountPtr<Epetra_Vector>       squaredvelnp_;
+  RCP<Epetra_Vector>       squaredvelnp_;
 
   //! toogle vectors: sums are computed by scalarproducts
-  RefCountPtr<Epetra_Vector>       toggleu_;
-  RefCountPtr<Epetra_Vector>       togglev_;
-  RefCountPtr<Epetra_Vector>       togglew_;
-  RefCountPtr<Epetra_Vector>       togglep_;
+  RCP<Epetra_Vector>       toggleu_;
+  RCP<Epetra_Vector>       togglev_;
+  RCP<Epetra_Vector>       togglew_;
+  RCP<Epetra_Vector>       togglep_;
 
   //! the coordinates of various lines
-  RefCountPtr<vector<double> >     x1ccoordinates_;
-  RefCountPtr<vector<double> >     x2ccoordinates_;
-  RefCountPtr<vector<double> >     x2wcoordinates_;
-  RefCountPtr<vector<double> >     clrcoordinates_;
-  RefCountPtr<vector<double> >     ctbcoordinates_;
+  RCP<vector<double> >     x1ccoordinates_;
+  RCP<vector<double> >     x2ccoordinates_;
+  RCP<vector<double> >     x2wcoordinates_;
+  RCP<vector<double> >     clrcoordinates_;
+  RCP<vector<double> >     ctbcoordinates_;
   //! all coordinates in x1- and x2-direction (required for averaging of Smagorinsky constant)
-  RefCountPtr<vector<double> >     x1coordinates_;
-  RefCountPtr<vector<double> >     x2coordinates_;
+  RCP<vector<double> >     x1coordinates_;
+  RCP<vector<double> >     x2coordinates_;
 
   //! sum over u
-  RefCountPtr<vector<double> >     x1csumu_;
-  RefCountPtr<vector<double> >     x2csumu_;
-  RefCountPtr<vector<double> >     x2w1sumu_;
-  RefCountPtr<vector<double> >     x2w2sumu_;
-  RefCountPtr<vector<double> >     cyllsumu_;
-  RefCountPtr<vector<double> >     cyltsumu_;
-  RefCountPtr<vector<double> >     cylrsumu_;
-  RefCountPtr<vector<double> >     cylbsumu_;
+  RCP<vector<double> >     x1csumu_;
+  RCP<vector<double> >     x2csumu_;
+  RCP<vector<double> >     x2w1sumu_;
+  RCP<vector<double> >     x2w2sumu_;
+  RCP<vector<double> >     cyllsumu_;
+  RCP<vector<double> >     cyltsumu_;
+  RCP<vector<double> >     cylrsumu_;
+  RCP<vector<double> >     cylbsumu_;
   //! sum over v
-  RefCountPtr<vector<double> >     x1csumv_;
-  RefCountPtr<vector<double> >     x2csumv_;
-  RefCountPtr<vector<double> >     x2w1sumv_;
-  RefCountPtr<vector<double> >     x2w2sumv_;
-  RefCountPtr<vector<double> >     cyllsumv_;
-  RefCountPtr<vector<double> >     cyltsumv_;
-  RefCountPtr<vector<double> >     cylrsumv_;
-  RefCountPtr<vector<double> >     cylbsumv_;
+  RCP<vector<double> >     x1csumv_;
+  RCP<vector<double> >     x2csumv_;
+  RCP<vector<double> >     x2w1sumv_;
+  RCP<vector<double> >     x2w2sumv_;
+  RCP<vector<double> >     cyllsumv_;
+  RCP<vector<double> >     cyltsumv_;
+  RCP<vector<double> >     cylrsumv_;
+  RCP<vector<double> >     cylbsumv_;
   //! sum over w
-  RefCountPtr<vector<double> >     x1csumw_;
-  RefCountPtr<vector<double> >     x2csumw_;
-  RefCountPtr<vector<double> >     x2w1sumw_;
-  RefCountPtr<vector<double> >     x2w2sumw_;
-  RefCountPtr<vector<double> >     cyllsumw_;
-  RefCountPtr<vector<double> >     cyltsumw_;
-  RefCountPtr<vector<double> >     cylrsumw_;
-  RefCountPtr<vector<double> >     cylbsumw_;
+  RCP<vector<double> >     x1csumw_;
+  RCP<vector<double> >     x2csumw_;
+  RCP<vector<double> >     x2w1sumw_;
+  RCP<vector<double> >     x2w2sumw_;
+  RCP<vector<double> >     cyllsumw_;
+  RCP<vector<double> >     cyltsumw_;
+  RCP<vector<double> >     cylrsumw_;
+  RCP<vector<double> >     cylbsumw_;
   //! sum over p
-  RefCountPtr<vector<double> >     x1csump_;
-  RefCountPtr<vector<double> >     x2csump_;
-  RefCountPtr<vector<double> >     x2w1sump_;
-  RefCountPtr<vector<double> >     x2w2sump_;
-  RefCountPtr<vector<double> >     cyllsump_;
-  RefCountPtr<vector<double> >     cyltsump_;
-  RefCountPtr<vector<double> >     cylrsump_;
-  RefCountPtr<vector<double> >     cylbsump_;
+  RCP<vector<double> >     x1csump_;
+  RCP<vector<double> >     x2csump_;
+  RCP<vector<double> >     x2w1sump_;
+  RCP<vector<double> >     x2w2sump_;
+  RCP<vector<double> >     cyllsump_;
+  RCP<vector<double> >     cyltsump_;
+  RCP<vector<double> >     cylrsump_;
+  RCP<vector<double> >     cylbsump_;
 
   //! sum over u^2
-  RefCountPtr<vector<double> >     x1csumsqu_;
-  RefCountPtr<vector<double> >     x2csumsqu_;
-  RefCountPtr<vector<double> >     x2w1sumsqu_;
-  RefCountPtr<vector<double> >     x2w2sumsqu_;
-  RefCountPtr<vector<double> >     cyllsumsqu_;
-  RefCountPtr<vector<double> >     cyltsumsqu_;
-  RefCountPtr<vector<double> >     cylrsumsqu_;
-  RefCountPtr<vector<double> >     cylbsumsqu_;
+  RCP<vector<double> >     x1csumsqu_;
+  RCP<vector<double> >     x2csumsqu_;
+  RCP<vector<double> >     x2w1sumsqu_;
+  RCP<vector<double> >     x2w2sumsqu_;
+  RCP<vector<double> >     cyllsumsqu_;
+  RCP<vector<double> >     cyltsumsqu_;
+  RCP<vector<double> >     cylrsumsqu_;
+  RCP<vector<double> >     cylbsumsqu_;
   //! sum over v^2
-  RefCountPtr<vector<double> >     x1csumsqv_;
-  RefCountPtr<vector<double> >     x2csumsqv_;
-  RefCountPtr<vector<double> >     x2w1sumsqv_;
-  RefCountPtr<vector<double> >     x2w2sumsqv_;
-  RefCountPtr<vector<double> >     cyllsumsqv_;
-  RefCountPtr<vector<double> >     cyltsumsqv_;
-  RefCountPtr<vector<double> >     cylrsumsqv_;
-  RefCountPtr<vector<double> >     cylbsumsqv_;
+  RCP<vector<double> >     x1csumsqv_;
+  RCP<vector<double> >     x2csumsqv_;
+  RCP<vector<double> >     x2w1sumsqv_;
+  RCP<vector<double> >     x2w2sumsqv_;
+  RCP<vector<double> >     cyllsumsqv_;
+  RCP<vector<double> >     cyltsumsqv_;
+  RCP<vector<double> >     cylrsumsqv_;
+  RCP<vector<double> >     cylbsumsqv_;
   //! sum over w^2
-  RefCountPtr<vector<double> >     x1csumsqw_;
-  RefCountPtr<vector<double> >     x2csumsqw_;
-  RefCountPtr<vector<double> >     x2w1sumsqw_;
-  RefCountPtr<vector<double> >     x2w2sumsqw_;
-  RefCountPtr<vector<double> >     cyllsumsqw_;
-  RefCountPtr<vector<double> >     cyltsumsqw_;
-  RefCountPtr<vector<double> >     cylrsumsqw_;
-  RefCountPtr<vector<double> >     cylbsumsqw_;
+  RCP<vector<double> >     x1csumsqw_;
+  RCP<vector<double> >     x2csumsqw_;
+  RCP<vector<double> >     x2w1sumsqw_;
+  RCP<vector<double> >     x2w2sumsqw_;
+  RCP<vector<double> >     cyllsumsqw_;
+  RCP<vector<double> >     cyltsumsqw_;
+  RCP<vector<double> >     cylrsumsqw_;
+  RCP<vector<double> >     cylbsumsqw_;
   //! sum over uv
-  RefCountPtr<vector<double> >     x1csumuv_;
-  RefCountPtr<vector<double> >     x2csumuv_;
-  RefCountPtr<vector<double> >     x2w1sumuv_;
-  RefCountPtr<vector<double> >     x2w2sumuv_;
-  RefCountPtr<vector<double> >     cyllsumuv_;
-  RefCountPtr<vector<double> >     cyltsumuv_;
-  RefCountPtr<vector<double> >     cylrsumuv_;
-  RefCountPtr<vector<double> >     cylbsumuv_;
+  RCP<vector<double> >     x1csumuv_;
+  RCP<vector<double> >     x2csumuv_;
+  RCP<vector<double> >     x2w1sumuv_;
+  RCP<vector<double> >     x2w2sumuv_;
+  RCP<vector<double> >     cyllsumuv_;
+  RCP<vector<double> >     cyltsumuv_;
+  RCP<vector<double> >     cylrsumuv_;
+  RCP<vector<double> >     cylbsumuv_;
   //! sum over uw
-  RefCountPtr<vector<double> >     x1csumuw_;
-  RefCountPtr<vector<double> >     x2csumuw_;
-  RefCountPtr<vector<double> >     x2w1sumuw_;
-  RefCountPtr<vector<double> >     x2w2sumuw_;
-  RefCountPtr<vector<double> >     cyllsumuw_;
-  RefCountPtr<vector<double> >     cyltsumuw_;
-  RefCountPtr<vector<double> >     cylrsumuw_;
-  RefCountPtr<vector<double> >     cylbsumuw_;
+  RCP<vector<double> >     x1csumuw_;
+  RCP<vector<double> >     x2csumuw_;
+  RCP<vector<double> >     x2w1sumuw_;
+  RCP<vector<double> >     x2w2sumuw_;
+  RCP<vector<double> >     cyllsumuw_;
+  RCP<vector<double> >     cyltsumuw_;
+  RCP<vector<double> >     cylrsumuw_;
+  RCP<vector<double> >     cylbsumuw_;
   //! sum over vw
-  RefCountPtr<vector<double> >     x1csumvw_;
-  RefCountPtr<vector<double> >     x2csumvw_;
-  RefCountPtr<vector<double> >     x2w1sumvw_;
-  RefCountPtr<vector<double> >     x2w2sumvw_;
-  RefCountPtr<vector<double> >     cyllsumvw_;
-  RefCountPtr<vector<double> >     cyltsumvw_;
-  RefCountPtr<vector<double> >     cylrsumvw_;
-  RefCountPtr<vector<double> >     cylbsumvw_;
+  RCP<vector<double> >     x1csumvw_;
+  RCP<vector<double> >     x2csumvw_;
+  RCP<vector<double> >     x2w1sumvw_;
+  RCP<vector<double> >     x2w2sumvw_;
+  RCP<vector<double> >     cyllsumvw_;
+  RCP<vector<double> >     cyltsumvw_;
+  RCP<vector<double> >     cylrsumvw_;
+  RCP<vector<double> >     cylbsumvw_;
   //! sum over p^2
-  RefCountPtr<vector<double> >     x1csumsqp_;
-  RefCountPtr<vector<double> >     x2csumsqp_;
-  RefCountPtr<vector<double> >     x2w1sumsqp_;
-  RefCountPtr<vector<double> >     x2w2sumsqp_;
-  RefCountPtr<vector<double> >     cyllsumsqp_;
-  RefCountPtr<vector<double> >     cyltsumsqp_;
-  RefCountPtr<vector<double> >     cylrsumsqp_;
-  RefCountPtr<vector<double> >     cylbsumsqp_;
+  RCP<vector<double> >     x1csumsqp_;
+  RCP<vector<double> >     x2csumsqp_;
+  RCP<vector<double> >     x2w1sumsqp_;
+  RCP<vector<double> >     x2w2sumsqp_;
+  RCP<vector<double> >     cyllsumsqp_;
+  RCP<vector<double> >     cyltsumsqp_;
+  RCP<vector<double> >     cylrsumsqp_;
+  RCP<vector<double> >     cylbsumsqp_;
 
 };
 

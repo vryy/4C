@@ -226,9 +226,9 @@ namespace FSI
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
 
     /// output of changes in volumes in text file
-    ofstream outfluiddvol_;
-    ofstream outstructdvol_;
-    ofstream outstructabsvol_;
+    std::ofstream outfluiddvol_;
+    std::ofstream outstructdvol_;
+    std::ofstream outstructabsvol_;
   };
 }
 

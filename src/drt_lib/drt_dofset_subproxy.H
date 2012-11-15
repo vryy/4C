@@ -16,7 +16,7 @@
 #ifndef DRT_DOFSET_SUBSET_H_
 #define DRT_DOFSET_SUBSET_H_
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
 #include "drt_dofset_proxy.H"

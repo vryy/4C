@@ -92,10 +92,10 @@ namespace UTILS
    */
   void ExtractMyNodeBasedValues
   (
-    const DRT::Element* ele,                ///< pointer to current element
-    Epetra_SerialDenseVector& local,        ///< local vector on element-level
-    const RCP<Epetra_MultiVector>& global,  ///< global vector
-    const int nsd                           ///< number of space dimensions
+    const DRT::Element* ele,                         ///< pointer to current element
+    Epetra_SerialDenseVector& local,                 ///< local vector on element-level
+    const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
+    const int nsd                                    ///< number of space dimensions
     );
 
 
@@ -106,10 +106,10 @@ namespace UTILS
    */
   template <class M>
   void ExtractMyNodeBasedValues(
-      const DRT::Element* ele,              ///< pointer to current element
-      M& localmatrix,                       ///< local matrix on element-level
-      const RCP<Epetra_MultiVector>& global,///< global vector
-      const int nsd                         ///< number of space dimensions
+      const DRT::Element* ele,                       ///< pointer to current element
+      M& localmatrix,                                ///< local matrix on element-level
+      const Teuchos::RCP<Epetra_MultiVector>& global,///< global vector
+      const int nsd                                  ///< number of space dimensions
       )
   {
     if (global==Teuchos::null) dserror("received a TEUCHOS::null pointer");

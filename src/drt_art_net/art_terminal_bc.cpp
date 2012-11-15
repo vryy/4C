@@ -35,7 +35,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actdis,
+void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
                                            const DRT::Condition *condition,
                                            ParameterList & params)
 {
@@ -537,7 +537,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolveReflectiveTerminal(RefCountPtr<DRT::Discretization> actdis,
+void ART::UTILS::SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
                                          const DRT::Condition *condition,
                                          ParameterList & params)
 {
@@ -614,7 +614,7 @@ void ART::UTILS::SolveReflectiveTerminal(RefCountPtr<DRT::Discretization> actdis
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
+void ART::UTILS::SolveExplWindkesselBC(RCP<DRT::Discretization> actdis,
                                        const DRT::Condition *condition,
                                        ParameterList & params)
 {

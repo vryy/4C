@@ -104,12 +104,12 @@ protected:
 
   virtual void FieldError(int node) = 0;
 
-  virtual void WriteHeader(ofstream& outfile) = 0;
+  virtual void WriteHeader(std::ofstream& outfile) = 0;
 
-  virtual void WriteTableHead(ofstream& outfile, int dim) = 0;
+  virtual void WriteTableHead(std::ofstream& outfile, int dim) = 0;
 
   virtual void WriteResult(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostResult& result,
     std::vector<int>& gdof,
     int dim
@@ -126,7 +126,7 @@ protected:
     );
 
   virtual void WriteStrTableHead(
-    ofstream& outfile,
+    std::ofstream& outfile,
     const string strname,
     const string strtype,
     const int dim
@@ -136,7 +136,7 @@ protected:
   }
 
   virtual void WriteStrResults(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostProblem& problem,
     PostResult& result,
     std::vector<int>& gdof,
@@ -159,7 +159,7 @@ protected:
     );
 
   virtual void WriteThrTableHead(
-    ofstream& outfile,
+    std::ofstream& outfile,
     const string thrname,
     const string thrtype,
     const int dim
@@ -169,7 +169,7 @@ protected:
   }
 
   virtual void WriteThrResults(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostProblem& problem,
     PostResult& result,
     std::vector<int>& gdof,
@@ -246,12 +246,12 @@ protected:
 
   void FieldError(int node);
 
-  virtual void WriteHeader(ofstream& outfile);
+  virtual void WriteHeader(std::ofstream& outfile);
 
-  void WriteTableHead(ofstream& outfile, int dim);
+  void WriteTableHead(std::ofstream& outfile, int dim);
 
   virtual void WriteResult(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostResult& result,
     std::vector<int>& gdof,
     int dim
@@ -286,12 +286,12 @@ protected:
 
   void FieldError(int node);
 
-  virtual void WriteHeader(ofstream& outfile);
+  virtual void WriteHeader(std::ofstream& outfile);
 
-  void WriteTableHead(ofstream& outfile, int dim);
+  void WriteTableHead(std::ofstream& outfile, int dim);
 
   virtual void WriteResult(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostResult& result,
     std::vector<int>& gdof,
     int dim
@@ -327,26 +327,26 @@ protected:
 
   void FieldError(int node);
 
-  virtual void WriteHeader(ofstream& outfile);
+  virtual void WriteHeader(std::ofstream& outfile);
 
-  void WriteTableHead(ofstream& outfile, int dim);
+  void WriteTableHead(std::ofstream& outfile, int dim);
 
   void WriteResult(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostResult& result,
     std::vector<int>& gdof,
     int dim
     );
 
   virtual void WriteStrTableHead(
-    ofstream& outfile,
+    std::ofstream& outfile,
     const string strname,
     const string strtype,
     const int dim
     );
 
   virtual void WriteStrResults(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostProblem& problem,
     PostResult& result,
     std::vector<int>& gdof,
@@ -396,12 +396,12 @@ protected:
 
   void FieldError(int node);
 
-  void WriteHeader(ofstream& outfile);
+  void WriteHeader(std::ofstream& outfile);
 
-  void WriteTableHead(ofstream& outfile, int dim);
+  void WriteTableHead(std::ofstream& outfile, int dim);
 
   void WriteResult(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostResult& result,
     std::vector<int>& gdof,
     int dim
@@ -436,14 +436,14 @@ protected:
 
   void FieldError(int node);
 
-  void WriteHeader(ofstream& outfile);
+  void WriteHeader(std::ofstream& outfile);
 
-  void WriteTableHead(ofstream& outfile, int dim);
+  void WriteTableHead(std::ofstream& outfile, int dim);
 
   PostField* GetFieldPtr(PostProblem& problem);
 
   void WriteResult(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostResult& result,
     std::vector<int>& gdof,
     int dim
@@ -478,26 +478,26 @@ protected:
 
   void FieldError(int node);
 
-  virtual void WriteHeader(ofstream& outfile);
+  virtual void WriteHeader(std::ofstream& outfile);
 
-  void WriteTableHead(ofstream& outfile, int dim);
+  void WriteTableHead(std::ofstream& outfile, int dim);
 
   void WriteResult(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostResult& result,
     std::vector<int>& gdof,
     int dim
     );
 
   virtual void WriteThrTableHead(
-    ofstream& outfile,
+    std::ofstream& outfile,
     const string thrname,
     const string thrtype,
     const int dim
     );
 
   virtual void WriteThrResults(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostProblem& problem,
     PostResult& result,
     std::vector<int>& gdof,
@@ -547,12 +547,12 @@ protected:
 
   PostField* GetFieldPtr(PostProblem& problem);
 
-  void WriteHeader(ofstream& outfile);
+  void WriteHeader(std::ofstream& outfile);
 
-  void WriteTableHead(ofstream& outfile, int dim);
+  void WriteTableHead(std::ofstream& outfile, int dim);
 
   void WriteResult(
-    ofstream& outfile,
+    std::ofstream& outfile,
     PostResult& result,
     std::vector<int>& gdof,
     int dim
@@ -588,7 +588,7 @@ protected:
 
   PostField* GetFieldPtr(PostProblem& problem);
 
-  void WriteHeader(ofstream& outfile);
+  void WriteHeader(std::ofstream& outfile);
 
 private:
 }; // end of class FsiStructMonWriter
@@ -620,7 +620,7 @@ protected:
 
   PostField* GetFieldPtr(PostProblem& problem);
 
-  void WriteHeader(ofstream& outfile);
+  void WriteHeader(std::ofstream& outfile);
 
 private:
 }; // end of class FsiAleMonWriter
@@ -653,7 +653,7 @@ protected:
 
   PostField* GetFieldPtr(PostProblem& problem);
 
-  void WriteHeader(ofstream& outfile);
+  void WriteHeader(std::ofstream& outfile);
 
 private:
 }; // end of class TsiStructMonWriter
@@ -684,7 +684,7 @@ protected:
 
   PostField* GetFieldPtr(PostProblem& problem);
 
-  void WriteHeader(ofstream& outfile);
+  void WriteHeader(std::ofstream& outfile);
 
 private:
 }; // end of class TsiThermoMonWriter

@@ -73,7 +73,7 @@ LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
 \return array with element nodal positions (3,numnode)
 */
 LINALG::SerialDenseMatrix GEO::getCurrentNodalPositions(
-    const RCP<const DRT::Element>             ele,			         ///< pointer on element
+    const Teuchos::RCP<const DRT::Element>         ele,			         ///< pointer on element
     const std::map<int,LINALG::Matrix<3,1> >&      currentpositions	 ///< current positions of all cutter nodes
     )
 {

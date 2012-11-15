@@ -2249,7 +2249,7 @@ void MAT::ConstraintMixtureOutputToGmsh
     vector<double> mydisp(lm.size(),0);
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-    Teuchos::RefCountPtr<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<MAT::Material> mat = actele->Material();
     MAT::ConstraintMixture* grow = static_cast <MAT::ConstraintMixture*>(mat.get());
 
     // material plot at gauss points

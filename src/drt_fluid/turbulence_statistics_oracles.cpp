@@ -26,7 +26,7 @@ Maintainer: Florian Henke
  | constructor                                                                        henke 06/11 |
  *------------------------------------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
-  RefCountPtr<DRT::Discretization> discret,
+  RCP<DRT::Discretization> discret,
   ParameterList&                   params,
   const string&                    geotype,
   const bool                       withscatra)
@@ -298,22 +298,22 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     x2_2h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x = 2h
     x2_3h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x > 3h
 
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x1_midupperchannel.begin(); coorditer!=x1_midupperchannel.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_midupperchannel.begin(); coorditer!=x1_midupperchannel.end(); ++coorditer)
       x1_midupperchannel_->push_back(*coorditer);
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x1_midlowerchannel.begin(); coorditer!=x1_midlowerchannel.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_midlowerchannel.begin(); coorditer!=x1_midlowerchannel.end(); ++coorditer)
       x1_midlowerchannel_->push_back(*coorditer);
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x1_midchamber.begin(); coorditer!=x1_midchamber.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_midchamber.begin(); coorditer!=x1_midchamber.end(); ++coorditer)
       x1_midchamber_->push_back(*coorditer);
 
     //if (x1_walltopchamber.size() != x1_wallbottomchamber.size()) dserror("grid mismatch between top and bottom wall");
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x1_walltopchamber.begin(); coorditer!=x1_walltopchamber.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_walltopchamber.begin(); coorditer!=x1_walltopchamber.end(); ++coorditer)
       x1_wallchamber_->push_back(*coorditer);
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x1_wallinflowchannel.begin(); coorditer!=x1_wallinflowchannel.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_wallinflowchannel.begin(); coorditer!=x1_wallinflowchannel.end(); ++coorditer)
       x1_wallinflowchannel_->push_back(*coorditer);
 
     Teuchos::RCP<vector<double> > x1_wallchamberbottom;
     x1_wallchamberbottom = Teuchos::rcp(new vector<double> );
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x1_wallbottomchamber.begin(); coorditer!=x1_wallbottomchamber.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_wallbottomchamber.begin(); coorditer!=x1_wallbottomchamber.end(); ++coorditer)
       x1_wallchamberbottom->push_back(*coorditer);
     if ((*x1_wallchamber_).size() != (*x1_wallchamberbottom).size()) dserror("grid mismatch between top and bottom wall");
     for (size_t ipos=0; ipos<(*x1_wallchamber_).size(); ++ipos)
@@ -322,15 +322,15 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     }
 
 
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x2_inflow.begin(); coorditer!=x2_inflow.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x2_inflow.begin(); coorditer!=x2_inflow.end(); ++coorditer)
       x2_inflow_->push_back(*coorditer);
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x2_0h.begin(); coorditer!=x2_0h.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x2_0h.begin(); coorditer!=x2_0h.end(); ++coorditer)
       x2_0h_->push_back(*coorditer);
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x2_1h.begin(); coorditer!=x2_1h.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x2_1h.begin(); coorditer!=x2_1h.end(); ++coorditer)
       x2_1h_->push_back(*coorditer);
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x2_2h.begin(); coorditer!=x2_2h.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x2_2h.begin(); coorditer!=x2_2h.end(); ++coorditer)
       x2_2h_->push_back(*coorditer);
-    for(set<double,LineSortCriterion>::const_iterator coorditer=x2_3h.begin(); coorditer!=x2_3h.end(); ++coorditer)
+    for(std::set<double,LineSortCriterion>::const_iterator coorditer=x2_3h.begin(); coorditer!=x2_3h.end(); ++coorditer)
       x2_3h_->push_back(*coorditer);
   }
 
@@ -1797,14 +1797,14 @@ void COMBUST::TurbulenceStatisticsORACLES::ExportLocation(std::set<double,LineSo
   {
     DRT::PackBuffer data;
 
-    for (set<double,LineSortCriterion>::iterator line=locations.begin();
+    for (std::set<double,LineSortCriterion>::iterator line=locations.begin();
         line!=locations.end();
         ++line)
     {
       DRT::ParObject::AddtoPack(data,*line);
     }
     data.StartPacking();
-    for (set<double,LineSortCriterion>::iterator line=locations.begin();
+    for (std::set<double,LineSortCriterion>::iterator line=locations.begin();
         line!=locations.end();
         ++line)
     {

@@ -245,8 +245,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
     RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
     RCP<DRT::Discretization> newdis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
     const int myrank = newdis->Comm().MyPID();
-    set<int> rownodeset;
-    set<int> colnodeset;
+    std::set<int> rownodeset;
+    std::set<int> colnodeset;
     const Epetra_Map* actnoderowmap = actdisc->NodeRowMap();
     //get node IDs, this vector will only contain FREE nodes in the end
     vector<int> ngid=*((*conditer)->Nodes());
@@ -269,8 +269,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
     break;
     default: dserror ("not good!");
     }
-    set<int> defns (defnv.begin(),defnv.end());
-    set<int>::iterator nsit;
+    std::set<int> defns (defnv.begin(),defnv.end());
+    std::set<int>::iterator nsit;
     // safe gids of definition nodes in a vector
     vector<int> defnodeIDs;
 

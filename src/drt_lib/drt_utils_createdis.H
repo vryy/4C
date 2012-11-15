@@ -58,15 +58,15 @@ protected:
   void CreateNodes(
       Teuchos::RCP<DRT::Discretization> sourcedis,
       Teuchos::RCP<DRT::Discretization> targetdis,
-      set<int>& rownodeset,
-      set<int>& colnodeset,
+      std::set<int>& rownodeset,
+      std::set<int>& colnodeset,
       const bool isnurbsdis);
 
   RCP<Epetra_Map> CreateNodeRowMap(
-      set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis);
+      std::set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis);
 
   RCP<Epetra_Map> CreateNodeColMap(
-      set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis);
+      std::set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis);
 
   void InitialChecks(
       Teuchos::RCP<DRT::Discretization> sourcedis,
@@ -84,8 +84,8 @@ protected:
 
 protected:
 
-  RefCountPtr<Epetra_Map> targetnoderowmap_;
-  RefCountPtr<Epetra_Map> targetnodecolmap_;
+  RCP<Epetra_Map> targetnoderowmap_;
+  RCP<Epetra_Map> targetnodecolmap_;
   //! local number of skipped elements during cloning
   int numeleskips_;
 
@@ -179,11 +179,11 @@ private:
 
   /// get element type strings and global id's and nodes from source discretization
   void AnalyzeSourceDis(
-      Teuchos::RefCountPtr<DRT::Discretization> sourcedis,
+      Teuchos::RCP<DRT::Discretization> sourcedis,
       vector<string>& eletype,
       vector<int>& egid,
-      set<int>& rownodeset,
-      set<int>& colnodeset
+      std::set<int>& rownodeset,
+      std::set<int>& colnodeset
       )
   {
     const Epetra_Map* noderowmap = sourcedis->NodeRowMap();
@@ -318,9 +318,9 @@ private:
   }
 
   //! set of row nodes
-  set<int> rownodeset_;
+  std::set<int> rownodeset_;
   //! set of column nodes
-  set<int> colnodeset_;
+  std::set<int> colnodeset_;
   //! vector for holding global element ids
   vector<int> egid_;
   //! vector for holding each (desired) element type string

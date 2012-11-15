@@ -23,7 +23,7 @@ Maintainer: Ursula Rasthofer
 #include <map>
 
 #include <Epetra_IntVector.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 

@@ -76,8 +76,8 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff: {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -90,8 +90,8 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
     // internal force vector only
     case calc_struct_internalforce: {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -111,8 +111,8 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass: {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
     break;
 
     case calc_struct_update_istep: {
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
       {
         MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
@@ -147,7 +147,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
     break;
 
     case calc_struct_update_imrlike: {
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
       {
         MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());

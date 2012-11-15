@@ -196,21 +196,21 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RefCountPtrs to the lines of this cell
+   * \brief Get vector of RCPs to the lines of this cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RefCountPtrs to the surfaces of this cell
+   * \brief Get vector of RCPs to the surfaces of this cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RefCountPtrs to the volume of this cell
+   * \brief Get vector of RCPs to the volume of this cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
@@ -615,7 +615,7 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RefCountPtrs to the lines of this cell
+   * \brief Get vector of RCPs to the lines of this cell
    *        Dummy - not provided.
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
@@ -623,7 +623,7 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RefCountPtrs to the surfaces of this cell
+   * \brief Get vector of RCPs to the surfaces of this cell
    *        Dummy - not provided.
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/

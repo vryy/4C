@@ -305,7 +305,7 @@ void GenRandomField::CalcDiscretePSD()
   // Write to file
   if (myrank_ == 0)
     {
-      ofstream File;
+      std::ofstream File;
       File.open("DiscretePSD.txt",std::ios::out);
       int size = int (pow(N_,2.0));
       for(int i=0;i<size;i++)
@@ -359,7 +359,7 @@ void GenRandomField::CalcDiscretePSD3D()
 //  // Write to file
 //  if (myrank_ == 0)
 //  {
-//    ofstream File;
+//    std::ofstream File;
 //    File.open("DiscretePSD.txt",std::ios::out);
 //    int size = int (pow(N_,3.0));
 //    for(int i=0;i<size;i++)
@@ -785,7 +785,7 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
       dserror("Index out of bounds");
     if (writetofile && myrank_==0 )
     {
-      ofstream File;
+      std::ofstream File;
       File.open("RFatPoint.txt",std::ios::app);
       // use at() to get an error massage just in case
       File << std::setprecision (9) << values_[index_x+M_*index_y]<< endl;
@@ -807,7 +807,7 @@ double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writeto
      TranslateToNonGaussian( &value);
      if (writetofile && myrank_==0 )
          {
-           ofstream File;
+           std::ofstream File;
            File.open("RFatPoint.txt",std::ios::app);
            File << std::setprecision (9) << value<< endl;
            File.close();
@@ -1135,7 +1135,7 @@ void GenRandomField::SpectralMatching()
   // Write to file
    if (myrank_ == 0 && !reduced_output_)
      {
-       ofstream File;
+       std::ofstream File;
        File.open("DiscretePSDTranslated.txt",std::ios::out);
        int size = int (pow(N_,2.0));
        for(int i=0;i<size;i++)
@@ -1143,7 +1143,7 @@ void GenRandomField::SpectralMatching()
          File << discrete_PSD_[i]<< endl;
        }
        File.close();
-       ofstream File2;
+       std::ofstream File2;
        File2.open("PSD_ng.txt",std::ios::out);
          for(int i=0;i<size;i++)
          {
@@ -1679,7 +1679,7 @@ void GenRandomField::WriteRandomFieldToFile()
 {
   if (myrank_ == 0)
   {
-    ofstream File;
+    std::ofstream File;
     File.open("RandomField.txt",std::ios::out);
    int size = int (pow(M_,double(dim_)));
     for(int i=0;i<size;i++)
@@ -1794,7 +1794,7 @@ void GenRandomField::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> >
 {
   if (myrank_ == 0)
   {
-    ofstream File;
+    std::ofstream File;
     File.open("SamplePSD.txt",std::ios::out);
    int size = int (pow(M_,double(dim_)));
     for(int i=0;i<size;i++)

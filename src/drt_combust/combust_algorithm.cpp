@@ -1839,8 +1839,8 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
 
 
     // these sets contain the element/node GIDs that have been collected
-    Teuchos::RCP<set<int> > allcollectednodes    = Teuchos::rcp(new set<int>);
-    Teuchos::RCP<set<int> > allcollectedelements = Teuchos::rcp(new set<int>);
+    Teuchos::RCP<std::set<int> > allcollectednodes    = Teuchos::rcp(new set<int>);
+    Teuchos::RCP<std::set<int> > allcollectedelements = Teuchos::rcp(new set<int>);
 
     // this loop determines how many layers around the cut elements will be collected
     for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
@@ -1880,7 +1880,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
         //------------------------------------------------------------------------------------------
         // now, that we have collected all row nodes for this proc. Its time to get the adjacent elements
         //------------------------------------------------------------------------------------------
-        set<int>::const_iterator nodeit;
+        std::set<int>::const_iterator nodeit;
         for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
         {
           const int nodelid       = fluiddis->NodeRowMap()->LID(*nodeit);
@@ -1898,7 +1898,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
       // now that we have collected all elements on this proc, its time to get the adjacent nodes.
       // Afterwards the nodes are communicated in order to obtain the collected row nodes on every proc.
       //------------------------------------------------------------------------------------------------
-      set<int>::const_iterator eleit;
+      std::set<int>::const_iterator eleit;
       for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
       {
         const int elelid  = fluiddis->ElementColMap()->LID(*eleit);
@@ -1956,13 +1956,13 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
       // with all nodes collected it is time to communicate them to all other procs
       // which then eliminate all but their row nodes
       {
-        Teuchos::RCP<set<int> > globalcollectednodes = Teuchos::rcp(new set<int>);
+        Teuchos::RCP<std::set<int> > globalcollectednodes = Teuchos::rcp(new set<int>);
         //TODO Ursula: patch gfunctionConvelManipulation
         //             linalg_utils.H, drt_exporter.H
         LINALG::Gather<int>(*allcollectednodes,*globalcollectednodes,numproc,allproc,fluiddis->Comm());
 
         allcollectednodes->clear();
-        set<int>::const_iterator gnodesit;
+        std::set<int>::const_iterator gnodesit;
         for (gnodesit = globalcollectednodes->begin(); gnodesit != globalcollectednodes->end(); ++gnodesit)
         {
           const int nodegid = (*gnodesit);
@@ -1980,7 +1980,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
     //-----------------------------------------------------------------------------------------------
     Teuchos::RCP<vector<LINALG::Matrix<3,2> > > surfacenodes = Teuchos::rcp(new vector<LINALG::Matrix<3,2> >);
 
-    set<int>::const_iterator nodeit;
+    std::set<int>::const_iterator nodeit;
     for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
     {
       const int nodelid   = fluiddis->NodeRowMap()->LID(*nodeit);
@@ -1990,7 +1990,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
       for (int iele = 0; iele < node->NumElement(); ++iele)
       {
         DRT::Element* ele = eles[iele];
-        set<int>::const_iterator foundit = allcollectedelements->find(ele->Id());
+        std::set<int>::const_iterator foundit = allcollectedelements->find(ele->Id());
         if (foundit != allcollectedelements->end())
           elementcount++;
       }
@@ -2041,7 +2041,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
         fluidvel(i) = (*convel)[lid];
       }
 
-      set<int>::const_iterator foundit = allcollectednodes->find(lnode->Id());
+      std::set<int>::const_iterator foundit = allcollectednodes->find(lnode->Id());
       if (foundit == allcollectednodes->end())
       {
         // find closest node in surfacenodes
@@ -2495,7 +2495,7 @@ void COMBUST::Algorithm::Redistribute()
 
 
       // allocate graph
-      RefCountPtr<Epetra_CrsGraph> nodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
+      RCP<Epetra_CrsGraph> nodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
 
       // -------------------------------------------------------------
       // iterate all elements on this proc including ghosted ones
@@ -2919,7 +2919,7 @@ void COMBUST::Algorithm::Redistribute()
       Epetra_Map newmap(size,count,&part[0],0,nodegraph->Comm());
 
       // create the new graph and export to it
-      RefCountPtr<Epetra_CrsGraph> newnodegraph;
+      RCP<Epetra_CrsGraph> newnodegraph;
 
       newnodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
       Epetra_Export exporter2(nodegraph->RowMap(),newmap);

@@ -172,10 +172,10 @@ public:
   void CreateNodalDofSetNEW ( bool include_inner, DRT::Discretization & dis);
 
   /// fill parallel DofSetData with information that has to be communicated
-  void FillParallelDofSetData(RCP<std::vector<DofSetData> > parallel_dofSetData, DRT::Discretization& dis);
+  void FillParallelDofSetData(Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData, DRT::Discretization& dis);
 
   /// create parallel DofSetData for a volumecell that has to be communicated
-  void CreateParallelDofSetDataVC( RCP<std::vector<DofSetData> > parallel_dofSetData , int eid, int set_index, bool inside, VolumeCell * cell, std::map<int,int>& node_dofset_map);
+  void CreateParallelDofSetDataVC(Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData , int eid, int set_index, bool inside, VolumeCell * cell, std::map<int,int>& node_dofset_map);
 
   /// find cell sets around each node (especially for quadratic elements)
   void FindNodalCellSets( bool include_inner,

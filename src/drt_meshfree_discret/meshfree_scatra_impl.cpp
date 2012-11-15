@@ -253,8 +253,8 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // extract local values from the global vectors
-    RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (hist==null || phinp==null)
       dserror("Cannot get state vector 'hist' and/or 'phinp'");
     vector<double> myhist(lm.size());
@@ -283,7 +283,7 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
     if (is_genalpha_ and not is_incremental_)
     {
       // extract additional local values from global vector
-      RefCountPtr<const Epetra_Vector> phin = discretization.GetState("phin");
+      RCP<const Epetra_Vector> phin = discretization.GetState("phin");
       if (phin==null) dserror("Cannot get state vector 'phin'");
       vector<double> myphin(lm.size());
       DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
@@ -352,7 +352,7 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
   case SCATRA::get_material_parameters:
   {
     // get the material
-    RefCountPtr<MAT::Material> material = ele->Material();
+    RCP<MAT::Material> material = ele->Material();
     params.set("thermodynamic pressure",0.0);
 
     break;
@@ -575,7 +575,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::GetMaterialParams(
   )
 {
 // get the material
-  RefCountPtr<MAT::Material> material = ele->Material();
+  RCP<MAT::Material> material = ele->Material();
 
 // get diffusivity / diffusivities
   if (material->MaterialType() == INPAR::MAT::m_scatra)

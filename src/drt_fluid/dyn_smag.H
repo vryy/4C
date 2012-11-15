@@ -47,7 +47,7 @@ Maintainer: Ursula Rasthofer
 
 #include "Epetra_Vector.h"
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_TimeMonitor.hpp"
 #include "Teuchos_ParameterList.hpp"
 

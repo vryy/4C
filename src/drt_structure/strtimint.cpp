@@ -320,7 +320,7 @@ STR::TimInt::TimInt
   for (int i=0; i<discret_->NumMyColElements(); i++)
   {
     DRT::Element* actele = discret_->lColElement(i);
-    RefCountPtr<MAT::Material> mat = actele->Material();
+    RCP<MAT::Material> mat = actele->Material();
     if (mat != Teuchos::null && mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       havemicromat_ = true;
@@ -1641,7 +1641,7 @@ void STR::TimInt::OutputMicro()
   for (int i=0; i<discret_->NumMyRowElements(); i++)
   {
     DRT::Element* actele = discret_->lRowElement(i);
-    RefCountPtr<MAT::Material> mat = actele->Material();
+    RCP<MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
@@ -1658,7 +1658,7 @@ void STR::TimInt::PrepareOutputMicro()
   {
     DRT::Element* actele = discret_->lRowElement(i);
 
-    RefCountPtr<MAT::Material> mat = actele->Material();
+    RCP<MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());

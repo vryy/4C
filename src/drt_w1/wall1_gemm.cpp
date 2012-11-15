@@ -16,7 +16,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"

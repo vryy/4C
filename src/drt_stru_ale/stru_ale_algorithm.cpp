@@ -122,7 +122,7 @@ void STRU_ALE::Algorithm::TimeLoop()
 /*----------------------------------------------------------------------*
  | Vector of interface displacements in ALE dofs              mgit 07/11 |
  *----------------------------------------------------------------------*/
-void STRU_ALE::Algorithm::InterfaceDisp(RCP<Epetra_Vector>& disinterface)
+void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterface)
 {
   // FIXGIT: From global slave vector
   // FIXGIT: Perhaps master nodes
@@ -209,7 +209,7 @@ void STRU_ALE::Algorithm::InterfaceDisp(RCP<Epetra_Vector>& disinterface)
 /*----------------------------------------------------------------------*
  | Application of mesh displacement                           mgit 07/11 |
  *----------------------------------------------------------------------*/
-void STRU_ALE::Algorithm::ApplyMeshDisplacement(RCP<Epetra_Vector>& disale)
+void STRU_ALE::Algorithm::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector>& disale)
 {
   // vector of current spatial displacements
   RCP<Epetra_Vector> dispn = StructureField().ExtractDispn();
@@ -292,8 +292,8 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
     actele->LocationVector(*(StructureField().Discretization()),la,false);
 
     // get state
-    RefCountPtr<const Epetra_Vector> disp = (StructureField().Discretization())->GetState("displacement");
-    RefCountPtr<const Epetra_Vector> dispmat = (StructureField().Discretization())->GetState("material displacement");
+    RCP<const Epetra_Vector> disp = (StructureField().Discretization())->GetState("displacement");
+    RCP<const Epetra_Vector> dispmat = (StructureField().Discretization())->GetState("material displacement");
 
 //#ifdef D_WALL1
     // structure with ale only for wall element so far

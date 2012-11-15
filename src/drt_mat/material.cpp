@@ -79,7 +79,7 @@ Maintainer: Lena Wiechert
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
+Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
 {
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();

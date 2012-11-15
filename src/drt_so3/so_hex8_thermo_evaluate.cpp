@@ -377,7 +377,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   case calc_struct_update_istep:
   {
     // Update of history for visco material if they exist
-    RefCountPtr<MAT::Material> mat = Material();
+    RCP<MAT::Material> mat = Material();
     // incremental update of internal variables/history
     if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
     {

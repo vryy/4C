@@ -323,7 +323,7 @@ void DRT::ELEMENTS::Wall1::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
+vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -339,7 +339,7 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
+vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
 {
   vector<RCP<Element> > surfaces(1);
   surfaces[0]= Teuchos::rcp(this, false);

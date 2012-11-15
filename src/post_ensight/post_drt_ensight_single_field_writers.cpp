@@ -237,7 +237,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   {
     for(int k = 1; k <= numdofpernode; k++)
     {
-      ostringstream temp;
+      std::ostringstream temp;
       temp << k;
       string name = "phi_"+temp.str();
       EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
@@ -290,7 +290,7 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
     // do the ion concentrations first
     for(int k = 1; k < numdofpernode; k++)
     {
-      ostringstream temp;
+      std::ostringstream temp;
       temp << k;
       string name = "c_"+temp.str();
       EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);

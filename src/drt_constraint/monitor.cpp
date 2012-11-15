@@ -121,7 +121,7 @@ void UTILS::Monitor::EvaluateMonitor
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     const int condID=(*CondIDVec)[0];
     const int offsetID=params.get("OffsetID",0);
-    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;
@@ -130,11 +130,11 @@ void UTILS::Monitor::EvaluateMonitor
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+    map<int,RCP<DRT::Element> >::iterator curr;
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships

@@ -63,8 +63,8 @@ public:
                        std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
                        ParameterList&                       params,          ///< parameter list
                        DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
-                       RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
-                       RCP<Epetra_Vector>                   systemvector     ///< systemvector
+                       Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
+                       Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
                        ) = 0;
 
   virtual int EvaluateInternalFaces(
@@ -133,8 +133,8 @@ public:
                               std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
                               ParameterList&                       params,          ///< parameter list
                               DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
-                              RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
-                              RCP<Epetra_Vector>                   systemvector     ///< systemvector
+                              Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
+                              Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
                               );
 
   //! Evaluate internal faces

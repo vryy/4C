@@ -21,7 +21,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 
 #include "../drt_inpar/inpar_thermo.H"

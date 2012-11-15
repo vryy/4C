@@ -63,9 +63,9 @@ POTENTIAL::VolumePotential::VolumePotential(
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& 						p,
-                                                    RefCountPtr<Epetra_Vector> 			disp,
-                                                    RefCountPtr<Epetra_Vector> 			fint,
-                                                    RefCountPtr<LINALG::SparseMatrix> 	stiff)
+                                                    RCP<Epetra_Vector> 			disp,
+                                                    RCP<Epetra_Vector> 			fint,
+                                                    RCP<LINALG::SparseMatrix> 	stiff)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
@@ -90,9 +90,9 @@ void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& 						p,
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
     ParameterList&                          params,
-    RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
-    RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
-    RefCountPtr<Epetra_Vector>              systemvector1,
+    RCP<LINALG::SparseMatrix>       systemmatrix1,
+    RCP<LINALG::SparseMatrix>       systemmatrix2,
+    RCP<Epetra_Vector>              systemvector1,
     Teuchos::RCP<Epetra_Vector>             systemvector2,
     Teuchos::RCP<Epetra_Vector>             systemvector3,
     const string&                           condstring)
@@ -121,7 +121,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
    int num_local_ele = 0;
    for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
    {
-     map<int,RefCountPtr<DRT::Element> >& geom = (*condIter)->Geometry();
+     map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
      num_local_ele += (int) geom.size();
    }
 
@@ -134,12 +134,12 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
   //----------------------------------------------------------------------
    for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
    {
-     map<int,RefCountPtr<DRT::Element> >& geom = (*condIter)->Geometry();
+     map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
      // no check for empty geometry here since in parallel computations
      // can exist processors which do not own a portion of the elements belonging
      // to the condition geometry
-     map<int,RefCountPtr<DRT::Element> >::iterator curr;
+     map<int,RCP<DRT::Element> >::iterator curr;
 
      // Evaluate Loadcurve if defined. Put current load factor in parameterlist
      const vector<int>*    curve  = (*condIter)->Get<vector<int> >("curve");
@@ -151,7 +151,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
 
      params.set("LoadCurveFactor",curvefac);
 
-     params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
+     params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
 
      // define element matrices and vectors
      Epetra_SerialDenseMatrix elematrix1;
@@ -238,7 +238,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize Lennard Jones potential constant variables
-  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
 
   // initialize time variables
   double curvefac = GetTimeCurveFactor(params);
@@ -268,7 +268,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize potential condition variables
-  RefCountPtr<DRT::Condition> cond      = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond      = params.get<RCP<DRT::Condition> >("condition",null);
 
   // initialize time variables
   double curvefac = GetTimeCurveFactor(params);
@@ -585,7 +585,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
    vector<int>&                                           lm,
    Epetra_SerialDenseMatrix&                              K_stiff,
    Epetra_SerialDenseVector&                              F_int,
-   RefCountPtr<DRT::Condition>                            cond,
+   RCP<DRT::Condition>                            cond,
    const double                                           curvefac)
 {
 
@@ -769,7 +769,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
     vector<int>&                                                lm,
     Epetra_SerialDenseMatrix&                                   K_stiff,
     Epetra_SerialDenseVector&                                   F_int,
-    RefCountPtr<DRT::Condition>                                 cond,
+    RCP<DRT::Condition>                                 cond,
     const double                                                curvefac)
 {
   // determine global row indices (lmrow) and global colum indices (lm)
@@ -1180,9 +1180,9 @@ void POTENTIAL::VolumePotential::GetGaussRule2D(
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::TestEvaluatePotential(
   ParameterList&                      p,
-  RefCountPtr<Epetra_Vector>          disp,
-  RefCountPtr<Epetra_Vector>          fint,
-  RefCountPtr<LINALG::SparseMatrix>   stiff,
+  RCP<Epetra_Vector>          disp,
+  RCP<Epetra_Vector>          fint,
+  RCP<LINALG::SparseMatrix>   stiff,
   const double                        time,
   const int                           step)
 {
@@ -1194,7 +1194,7 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
 
   EvaluateVolumePotentialCondition(p,stiff,null,fint,null,null,"Potential");
 
-  RefCountPtr<const Epetra_Vector>        disp_col = discret_.GetState("displacement");
+  RCP<const Epetra_Vector>        disp_col = discret_.GetState("displacement");
   // compute test results
   std::map<int, std::set<int> > empty_set;
 

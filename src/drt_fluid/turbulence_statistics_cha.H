@@ -64,7 +64,7 @@ Maintainer: Ursula Rasthofer
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -101,9 +101,9 @@ public:
   </pre>
 
   */
-  TurbulenceStatisticsCha(RefCountPtr<DRT::Discretization> actdis             ,
+  TurbulenceStatisticsCha(RCP<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
-                          RefCountPtr<Epetra_Vector>       dispnp             ,
+                          RCP<Epetra_Vector>       dispnp             ,
                           ParameterList&                   params             ,
                           bool                             subgrid_dissipation);
 
@@ -129,8 +129,8 @@ public:
   moments for velocities, pressure and Cs are added to global
   'sum' vectors.
   */
-  void DoTimeSample(const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
-                    const Teuchos::RefCountPtr<const Epetra_Vector> force);
+  void DoTimeSample(const Teuchos::RCP<const Epetra_Vector> velnp,
+                    const Teuchos::RCP<const Epetra_Vector> force);
 
 
   /*!
@@ -138,9 +138,9 @@ public:
   values are added to global vectors. This method allows to do the time
   average of the nodal values after a certain amount of timesteps.
   */
-  void DoLomaTimeSample(const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
-                        const Teuchos::RefCountPtr<const Epetra_Vector> scanp,
-                        const Teuchos::RefCountPtr<const Epetra_Vector> force,
+  void DoLomaTimeSample(const Teuchos::RCP<const Epetra_Vector> velnp,
+                        const Teuchos::RCP<const Epetra_Vector> scanp,
+                        const Teuchos::RCP<const Epetra_Vector> force,
                         const double                        eosfac);
 
 
@@ -149,9 +149,9 @@ public:
   values are added to global vectors. This method allows to do the time
   average of the nodal values after a certain amount of timesteps.
   */
-  void DoScatraTimeSample(const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
-                          const Teuchos::RefCountPtr<const Epetra_Vector> scanp,
-                          const Teuchos::RefCountPtr<const Epetra_Vector> force);
+  void DoScatraTimeSample(const Teuchos::RCP<const Epetra_Vector> velnp,
+                          const Teuchos::RCP<const Epetra_Vector> scanp,
+                          const Teuchos::RCP<const Epetra_Vector> force);
 
 
   /*!
@@ -229,8 +229,8 @@ public:
            subgrid-scales model
   */
 
-  void AddModelParamsMultifractal(const Teuchos::RefCountPtr<const Epetra_Vector> velnp,
-                                  const Teuchos::RefCountPtr<const Epetra_Vector> fsvelnp,
+  void AddModelParamsMultifractal(const Teuchos::RCP<const Epetra_Vector> velnp,
+                                  const Teuchos::RCP<const Epetra_Vector> fsvelnp,
                                   const bool                                withscatra);
 
   /*!
@@ -347,7 +347,7 @@ private:
   INPAR::FLUID::PhysicalType       physicaltype_;
 
   //! The discretization (required for nodes, dofs etc;)
-  RefCountPtr<DRT::Discretization> discret_;
+  RCP<DRT::Discretization> discret_;
 
   //! scatra discretization (required for additional multifractal subgrid-scale output in case on passive scalar transport)
   RCP<DRT::Discretization> scatradiscret_;
@@ -356,7 +356,7 @@ private:
   bool                             alefluid_;
 
   //! node displacements due to mesh motion
-  RefCountPtr<Epetra_Vector>       dispnp_;
+  RCP<Epetra_Vector>       dispnp_;
 
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
@@ -386,28 +386,28 @@ private:
   ParameterList                    eleparams_;
 
   //! pointer to mean vel/pres and scalar field
-  RefCountPtr<Epetra_Vector>       meanvelnp_;
-  RefCountPtr<Epetra_Vector>       meanscanp_;
+  RCP<Epetra_Vector>       meanvelnp_;
+  RCP<Epetra_Vector>       meanscanp_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
-  RefCountPtr<Epetra_Vector>       squaredvelnp_;
+  RCP<Epetra_Vector>       squaredvelnp_;
 
   //! toogle vectors --- sums are computed by scalarproducts
   //  with these toggle vectors
-  RefCountPtr<Epetra_Vector>       toggleu_;
-  RefCountPtr<Epetra_Vector>       togglev_;
-  RefCountPtr<Epetra_Vector>       togglew_;
-  RefCountPtr<Epetra_Vector>       togglep_;
+  RCP<Epetra_Vector>       toggleu_;
+  RCP<Epetra_Vector>       togglev_;
+  RCP<Epetra_Vector>       togglew_;
+  RCP<Epetra_Vector>       togglep_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
-  RefCountPtr<vector<double> >     nodeplanes_;
+  RCP<vector<double> >     nodeplanes_;
 
   //! the dim_-coordinates of the homogeneous planes --- including
   //additional sampling planes
-  RefCountPtr<vector<double> >     planecoordinates_;
+  RCP<vector<double> >     planecoordinates_;
 
   //! a bounding box for the channel
-  RefCountPtr<Epetra_SerialDenseMatrix> boundingbox_;
+  RCP<Epetra_SerialDenseMatrix> boundingbox_;
 
   //! viscosity to calculate l_tau, y+ etc.
   double dens_;
@@ -422,76 +422,76 @@ private:
   //!--------------------------------------------------
   //
   //! sum over u (over one plane in each component)
-  RefCountPtr<vector<double> >     sumu_;
+  RCP<vector<double> >     sumu_;
   //! sum over v (over one plane in each component)
-  RefCountPtr<vector<double> >     sumv_;
+  RCP<vector<double> >     sumv_;
   //! sum over w (over one plane in each component)
-  RefCountPtr<vector<double> >     sumw_;
+  RCP<vector<double> >     sumw_;
   //! sum over p (over one plane in each component)
-  RefCountPtr<vector<double> >     sump_;
+  RCP<vector<double> >     sump_;
   //! sum over density (over one plane in each component)
-  RefCountPtr<vector<double> >     sumrho_;
+  RCP<vector<double> >     sumrho_;
   //! sum over T (over one plane in each component)
-  RefCountPtr<vector<double> >     sumT_;
+  RCP<vector<double> >     sumT_;
   //! sum over density*u (over one plane in each component)
-  RefCountPtr<vector<double> >     sumrhou_;
+  RCP<vector<double> >     sumrhou_;
   //! sum over density*u*T (over one plane in each component)
-  RefCountPtr<vector<double> >     sumrhouT_;
+  RCP<vector<double> >     sumrhouT_;
 
   //! sum over u^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsqu_;
+  RCP<vector<double> >     sumsqu_;
   //! sum over v^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsqv_;
+  RCP<vector<double> >     sumsqv_;
   //! sum over w^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsqw_;
+  RCP<vector<double> >     sumsqw_;
   //! sum over p^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsqp_;
+  RCP<vector<double> >     sumsqp_;
   //! sum over density^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsqrho_;
+  RCP<vector<double> >     sumsqrho_;
   //! sum over T^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     sumsqT_;
+  RCP<vector<double> >     sumsqT_;
 
   //! sum over uv (over one plane in each component)
-  RefCountPtr<vector<double> >     sumuv_;
+  RCP<vector<double> >     sumuv_;
   //! sum over uw (over one plane in each component)
-  RefCountPtr<vector<double> >     sumuw_;
+  RCP<vector<double> >     sumuw_;
   //! sum over vw (over one plane in each component)
-  RefCountPtr<vector<double> >     sumvw_;
+  RCP<vector<double> >     sumvw_;
   //! sum over uv (over one plane in each component)
-  RefCountPtr<vector<double> >     sumuT_;
+  RCP<vector<double> >     sumuT_;
   //! sum over uw (over one plane in each component)
-  RefCountPtr<vector<double> >     sumvT_;
+  RCP<vector<double> >     sumvT_;
   //! sum over vw (over one plane in each component)
-  RefCountPtr<vector<double> >     sumwT_;
+  RCP<vector<double> >     sumwT_;
 
   //!--------------------------------------------------
   //!       the pointwise averaged stuff
   //!--------------------------------------------------
   //
   //! vector of squared velocities and pressures
-  RefCountPtr<Epetra_Vector>       pointsquaredvelnp_;
+  RCP<Epetra_Vector>       pointsquaredvelnp_;
 
   //! sum over u (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumu_;
+  RCP<vector<double> >     pointsumu_;
   //! sum over v (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumv_;
+  RCP<vector<double> >     pointsumv_;
   //! sum over w (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumw_;
+  RCP<vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsump_;
+  RCP<vector<double> >     pointsump_;
   //! sum over T (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumT_;
+  RCP<vector<double> >     pointsumT_;
 
   //! sum over u^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumsqu_;
+  RCP<vector<double> >     pointsumsqu_;
   //! sum over v^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumsqv_;
+  RCP<vector<double> >     pointsumsqv_;
   //! sum over w^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumsqw_;
+  RCP<vector<double> >     pointsumsqw_;
   //! sum over p^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumsqp_;
+  RCP<vector<double> >     pointsumsqp_;
   //! sum over T^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumsqT_;
+  RCP<vector<double> >     pointsumsqT_;
 
   //!--------------------------------------------------
   //!   averaged forces (mean, bottom and top)
@@ -527,160 +527,160 @@ private:
   //!--------------------------------------------------
 
   //! sum over Cs --- used only for dynamic Smagorinsky model
-  RefCountPtr<vector<double> >     sumCs_;
+  RCP<vector<double> >     sumCs_;
   //! sum over (Cs*delta)^2 --- used only for dynamic Smagorinsky model
-  RefCountPtr<vector<double> >     sumCs_delta_sq_;
+  RCP<vector<double> >     sumCs_delta_sq_;
   //! sum over effective viscosity --- used only for dynamic Smagorinsky model
-  RefCountPtr<vector<double> >     sumvisceff_;
+  RCP<vector<double> >     sumvisceff_;
   //! increment of sumCs over in one timestep
-  RefCountPtr<vector<double> >     incrsumCs_;
+  RCP<vector<double> >     incrsumCs_;
   //! increment of sumCs_delta_sq over in one timestep
-  RefCountPtr<vector<double> >     incrsumCs_delta_sq_;
+  RCP<vector<double> >     incrsumCs_delta_sq_;
   //! increment of sumvisceff over in one timestep
-  RefCountPtr<vector<double> >     incrsumvisceff_;
+  RCP<vector<double> >     incrsumvisceff_;
   //! sum over Prt --- used only for dynamic Smagorinsky model
-  RefCountPtr<vector<double> >     sumPrt_;
+  RCP<vector<double> >     sumPrt_;
   //! sum over (Cs*delta)^2/Prt --- used only for dynamic Smagorinsky model
-  RefCountPtr<vector<double> >     sumCs_delta_sq_Prt_;
+  RCP<vector<double> >     sumCs_delta_sq_Prt_;
   //! sum over effective diffusivity --- used only for dynamic Smagorinsky model
-  RefCountPtr<vector<double> >     sumdiffeff_;
+  RCP<vector<double> >     sumdiffeff_;
   //! increment of sumCs_delta_sq_Prt over in one timestep
-  RefCountPtr<vector<double> >     incrsumCs_delta_sq_Prt_;
+  RCP<vector<double> >     incrsumCs_delta_sq_Prt_;
   //! increment of sumPrt over in one timestep
-  RefCountPtr<vector<double> >     incrsumPrt_;
+  RCP<vector<double> >     incrsumPrt_;
   //! increment of sumdiffeff over in one timestep
-  RefCountPtr<vector<double> >     incrsumdiffeff_;
+  RCP<vector<double> >     incrsumdiffeff_;
   //! sum over Ci --- used only for dynamic Smagorinsky model for loma
-  RefCountPtr<vector<double> >     sumCi_;
+  RCP<vector<double> >     sumCi_;
   //! sum over (Ci*delta)^2 --- used only for dynamic Smagorinsky model for loma
-  RefCountPtr<vector<double> >     sumCi_delta_sq_;
+  RCP<vector<double> >     sumCi_delta_sq_;
   //! increment of sumCi over in one timestep
-  RefCountPtr<vector<double> >     incrsumCi_;
+  RCP<vector<double> >     incrsumCi_;
   //! increment of sumCi_delta_sq over in one timestep
-  RefCountPtr<vector<double> >     incrsumCi_delta_sq_;
+  RCP<vector<double> >     incrsumCi_delta_sq_;
 
   //!--------------------------------------------------
   //!  averaged quantities from scale similarity model
   //!--------------------------------------------------
 
   //! sum over subfilter stress 12 --- used only for scale similarity model
-  RefCountPtr<vector<double> >     sumstress12_;
+  RCP<vector<double> >     sumstress12_;
   //! increment of sumstress12 over in one time step
-  RefCountPtr<vector<double> >     incrsumstress12_;
+  RCP<vector<double> >     incrsumstress12_;
 
   //!--------------------------------------------------
   //!  averaged quantities from multifractal subgid-scales
   //!--------------------------------------------------
 
   //! sum over parameter N --- used only for multifractal subgid-scale model
-  RefCountPtr<vector<double> >     sumN_stream_;
-  RefCountPtr<vector<double> >     sumN_normal_;
-  RefCountPtr<vector<double> >     sumN_span_;
+  RCP<vector<double> >     sumN_stream_;
+  RCP<vector<double> >     sumN_normal_;
+  RCP<vector<double> >     sumN_span_;
   //! increment of parameter N over in one time step
-  RefCountPtr<vector<double> >     incrsumN_stream_;
-  RefCountPtr<vector<double> >     incrsumN_normal_;
-  RefCountPtr<vector<double> >     incrsumN_span_;
+  RCP<vector<double> >     incrsumN_stream_;
+  RCP<vector<double> >     incrsumN_normal_;
+  RCP<vector<double> >     incrsumN_span_;
   //! sum over parameter B --- used only for multifractal subgid-scale model
-  RefCountPtr<vector<double> >     sumB_stream_;
-  RefCountPtr<vector<double> >     sumB_normal_;
-  RefCountPtr<vector<double> >     sumB_span_;
+  RCP<vector<double> >     sumB_stream_;
+  RCP<vector<double> >     sumB_normal_;
+  RCP<vector<double> >     sumB_span_;
   //! increment of parameter B over in one time step
-  RefCountPtr<vector<double> >     incrsumB_stream_;
-  RefCountPtr<vector<double> >     incrsumB_normal_;
-  RefCountPtr<vector<double> >     incrsumB_span_;
+  RCP<vector<double> >     incrsumB_stream_;
+  RCP<vector<double> >     incrsumB_normal_;
+  RCP<vector<double> >     incrsumB_span_;
   //! sum over parameter Csgs --- used only for multifractal subgid-scale model
-  RefCountPtr<vector<double> >     sumCsgs_;
+  RCP<vector<double> >     sumCsgs_;
   //! increment of Csgs over in one time step
-  RefCountPtr<vector<double> >     incrsumCsgs_;
+  RCP<vector<double> >     incrsumCsgs_;
   //! sum over subgrid viscosity --- used only for multifractal subgid-scale model in combination with eddy viscosity model
-  RefCountPtr<vector<double> >     sumsgvisc_;
+  RCP<vector<double> >     sumsgvisc_;
   //! increment of subgrid viscosity over in one time step
-  RefCountPtr<vector<double> >     incrsumsgvisc_;
+  RCP<vector<double> >     incrsumsgvisc_;
   //! sum over parameter Nphi --- used only for multifractal subgid-scale model
-  RefCountPtr<vector<double> >     sumNphi_;
+  RCP<vector<double> >     sumNphi_;
   //! increment of parameter Nphi over in one time step
-  RefCountPtr<vector<double> >     incrsumNphi_;
+  RCP<vector<double> >     incrsumNphi_;
   //! sum over parameter Dphi --- used only for multifractal subgid-scale model
-  RefCountPtr<vector<double> >     sumDphi_;
+  RCP<vector<double> >     sumDphi_;
   //! increment of parameter Dphi over in one time step
-  RefCountPtr<vector<double> >     incrsumDphi_;
+  RCP<vector<double> >     incrsumDphi_;
   //! sum over parameter Csgs_phi --- used only for multifractal subgid-scale model
-  RefCountPtr<vector<double> >     sumCsgs_phi_;
+  RCP<vector<double> >     sumCsgs_phi_;
   //! increment of Csgs_phi over in one time step
-  RefCountPtr<vector<double> >     incrsumCsgs_phi_;
+  RCP<vector<double> >     incrsumCsgs_phi_;
 
   //!--------------------------------------------------
   //!  averaged resudiuals and subscale quantities
   //!--------------------------------------------------
 
   //! sum over all in plane element sizes
-  RefCountPtr<vector<double> >     sumhk_;
+  RCP<vector<double> >     sumhk_;
   //! sum over all in plane element sizes for the Bazilevs
   //! parameter in the viscous regime
-  RefCountPtr<vector<double> >     sumhbazilevs_;
+  RCP<vector<double> >     sumhbazilevs_;
   //! sum over all in plane stream lengths
-  RefCountPtr<vector<double> >     sumstrle_;
+  RCP<vector<double> >     sumstrle_;
   //! sum over all in plane stream lengths
-  RefCountPtr<vector<double> >     sumgradle_;
+  RCP<vector<double> >     sumgradle_;
 
   //! sum over all in plane residuals
-  RefCountPtr<vector<double> >     sumtauM_;
+  RCP<vector<double> >     sumtauM_;
   //! sum over all in plane squared residuals
-  RefCountPtr<vector<double> >     sumtauC_;
+  RCP<vector<double> >     sumtauC_;
 
   //! sum over all in plane residuals
-  RefCountPtr<vector<double> >     sumres_;
+  RCP<vector<double> >     sumres_;
   //! sum over all in plane squared residuals
-  RefCountPtr<vector<double> >     sumres_sq_;
+  RCP<vector<double> >     sumres_sq_;
   //! sum over all in plane residuals norms
-  RefCountPtr<vector<double> >     sumabsres_;
+  RCP<vector<double> >     sumabsres_;
   //! sum over all in plane values of svel/tau
-  RefCountPtr<vector<double> >     sumtauinvsvel_;
+  RCP<vector<double> >     sumtauinvsvel_;
   //! sum over all in plane subscale velocities
-  RefCountPtr<vector<double> >     sumsvelaf_;
+  RCP<vector<double> >     sumsvelaf_;
   //! sum over all in plane squared subscale velocities
-  RefCountPtr<vector<double> >     sumsvelaf_sq_;
+  RCP<vector<double> >     sumsvelaf_sq_;
   //! sum over all in plane subscale velocities norms
-  RefCountPtr<vector<double> >     sumabssvelaf_;
+  RCP<vector<double> >     sumabssvelaf_;
 
   //! sum over all in plane residuals of the continuity equation
-  RefCountPtr<vector<double> >     sumresC_;
+  RCP<vector<double> >     sumresC_;
   //! sum over all in plane squared residuals of the continuity equation
-  RefCountPtr<vector<double> >     sumresC_sq_;
+  RCP<vector<double> >     sumresC_sq_;
   //! sum over all in plane subscale pressure values at current timestep
-  RefCountPtr<vector<double> >     sumspressnp_   ;
+  RCP<vector<double> >     sumspressnp_   ;
   //! sum over all in plane squared subscale pressure values at current timestep
-  RefCountPtr<vector<double> >     sumspressnp_sq_;
+  RCP<vector<double> >     sumspressnp_sq_;
 
   //! sum over all in plane averaged dissipation rates from pspg stabilisation
-  RefCountPtr<vector<double> >     sum_eps_pspg_;
+  RCP<vector<double> >     sum_eps_pspg_;
   //! sum over all in plane averaged dissipation rates from supg stabilisation
-  RefCountPtr<vector<double> >     sum_eps_supg_;
+  RCP<vector<double> >     sum_eps_supg_;
   //! sum over all in plane averaged dissipation rates from cross term
-  RefCountPtr<vector<double> >     sum_eps_cross_;
+  RCP<vector<double> >     sum_eps_cross_;
   //! sum over all in plane averaged dissipation rates from reynolds term
-  RefCountPtr<vector<double> >     sum_eps_rey_;
+  RCP<vector<double> >     sum_eps_rey_;
   //! sum over all in plane averaged dissipation rates from least squares continuity term
-  RefCountPtr<vector<double> >     sum_eps_cstab_;
+  RCP<vector<double> >     sum_eps_cstab_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
-  RefCountPtr<vector<double> >     sum_eps_eddyvisc_;
+  RCP<vector<double> >     sum_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
-  RefCountPtr<vector<double> >     sum_eps_avm3_;
+  RCP<vector<double> >     sum_eps_avm3_;
   //! sum over all in plane averaged dissipation rates from scale similarity model
-  RefCountPtr<vector<double> >     sum_eps_mfs_;
+  RCP<vector<double> >     sum_eps_mfs_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
-  RefCountPtr<vector<double> >     sum_eps_mfscross_;
+  RCP<vector<double> >     sum_eps_mfscross_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
-  RefCountPtr<vector<double> >     sum_eps_mfsrey_;
+  RCP<vector<double> >     sum_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
-  RefCountPtr<vector<double> >     sum_eps_visc_;
+  RCP<vector<double> >     sum_eps_visc_;
   //! sum over all in plane averaged dissipation rates from Galerkin convective term
-  RefCountPtr<vector<double> >     sum_eps_conv_;
+  RCP<vector<double> >     sum_eps_conv_;
 
   //! sum over all in plane averaged supg+cross stress
-  RefCountPtr<vector<double> >     sum_crossstress_;
+  RCP<vector<double> >     sum_crossstress_;
   //! sum over all in plane averaged reynolds stress
-  RefCountPtr<vector<double> >     sum_reystress_;
+  RCP<vector<double> >     sum_reystress_;
 
 };
 

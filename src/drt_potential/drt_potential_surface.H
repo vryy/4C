@@ -69,17 +69,17 @@ public:
     \param stiff (out): stiffness matrix
    */
   void EvaluatePotential(   ParameterList&                    p,
-                            RefCountPtr<Epetra_Vector>        disp,
-                            RefCountPtr<Epetra_Vector>        fint,
-                            RefCountPtr<LINALG::SparseMatrix> stiff);
+                            RCP<Epetra_Vector>        disp,
+                            RCP<Epetra_Vector>        fint,
+                            RCP<LINALG::SparseMatrix> stiff);
   
   
   
   void EvaluateSurfacePotentialCondition(
       ParameterList&                          params,
-      RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
-      RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
-      RefCountPtr<Epetra_Vector>              systemvector1,
+      RCP<LINALG::SparseMatrix>       systemmatrix1,
+      RCP<LINALG::SparseMatrix>       systemmatrix2,
+      RCP<Epetra_Vector>              systemvector1,
       Teuchos::RCP<Epetra_Vector>             systemvector2,
       Teuchos::RCP<Epetra_Vector>             systemvector3,
       const string&                           condstring);
@@ -152,9 +152,9 @@ public:
    */
   void TestEvaluatePotential(
       ParameterList&                    p,
-      RefCountPtr<Epetra_Vector>        disp,
-      RefCountPtr<Epetra_Vector>        fint,
-      RefCountPtr<LINALG::SparseMatrix> stiff,
+      RCP<Epetra_Vector>        disp,
+      RCP<Epetra_Vector>        fint,
+      RCP<LINALG::SparseMatrix> stiff,
       const double                      time,
       const int                         step
   );
@@ -186,7 +186,7 @@ private:
       vector<int>&                     lm,
       Epetra_SerialDenseMatrix&        K_surf,
       Epetra_SerialDenseVector&        F_int,
-      RefCountPtr<DRT::Condition>      cond,
+      RCP<DRT::Condition>      cond,
       const int                        label,
       const double                     curvefac
       );
@@ -198,7 +198,7 @@ private:
         vector<int>&                     lm,
         Epetra_SerialDenseMatrix&        K_surf,
         Epetra_SerialDenseVector&        F_int,
-        RefCountPtr<DRT::Condition>      cond,
+        RCP<DRT::Condition>      cond,
         const int                        label,
         const double                     curvefac);
   
@@ -210,7 +210,7 @@ private:
      vector<int>&                     lm,
      Epetra_SerialDenseMatrix&        K_surf,
      Epetra_SerialDenseVector&        F_int,
-     RefCountPtr<DRT::Condition>      cond,
+     RCP<DRT::Condition>      cond,
      const int                        label,
      const double                     curvefac);
   
@@ -222,7 +222,7 @@ private:
       vector<int>&                                                lm,
       Epetra_SerialDenseMatrix&                                   K_surf,
       Epetra_SerialDenseVector&                                   F_int,
-      RefCountPtr<DRT::Condition>                                 cond,
+      RCP<DRT::Condition>                                 cond,
       const int                                                   label,
       const double                                                curvefac
   );
@@ -235,7 +235,7 @@ private:
      vector<int>&                                               lm,
      Epetra_SerialDenseMatrix&                                  K_surf,
      Epetra_SerialDenseVector&                                  F_int,
-     RefCountPtr<DRT::Condition>                                cond,
+     RCP<DRT::Condition>                                cond,
      const int                                                  label,
      const double                                               curvefac
      );
@@ -252,7 +252,7 @@ private:
         vector<int>&                     lm,
         Epetra_SerialDenseMatrix&        K_surf,
         Epetra_SerialDenseVector&        F_int,
-        RefCountPtr<DRT::Condition>      cond,
+        RCP<DRT::Condition>      cond,
         const int                        label,
         const double                     curvefac
         );
@@ -374,7 +374,7 @@ private:
   
   //! TEST compute element by label vol list
   std::map<int, std::set<int> > computeEleByLabelVol(
-    RefCountPtr<const Epetra_Vector>    disp,
+    RCP<const Epetra_Vector>    disp,
     std::map<int, std::set<int> >       elementList
     );
   
@@ -383,8 +383,8 @@ private:
   void FintSumAndCenterOfGravityVector(  
       LINALG::Matrix<3,1>&        fint_sum_Body,
       LINALG::Matrix<3,1>&        Schwerpunkt_Body,
-      RefCountPtr<Epetra_Vector>  fint,
-      RefCountPtr<Epetra_Vector>  disp,
+      RCP<Epetra_Vector>  fint,
+      RCP<Epetra_Vector>  disp,
       int                         gidBegin,
       int                         gidEnd,
       int                         dofBegin,

@@ -22,7 +22,7 @@ Maintainer: Thomas Klöppel
 #include <iostream>
 #include <fstream>
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_Vector.h>

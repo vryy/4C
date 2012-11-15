@@ -54,9 +54,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
     center/=nen_;
 
     // node coordinates of plane to the element layer
-    RefCountPtr<vector<double> > planecoords
+    Teuchos::RCP<vector<double> > planecoords
       =
-      turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
+      turbmodelparams.get<Teuchos::RCP<vector<double> > >("planecoords_");
 
     bool found = false;
     for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
@@ -86,14 +86,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
             !=
             "not_specified")
     {
-      RCP<vector<double> > averaged_LijMij = turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
-      RCP<vector<double> > averaged_MijMij = turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
-      RCP<vector<double> > averaged_CI_numerator = Teuchos::null;
-      RCP<vector<double> > averaged_CI_denominator = Teuchos::null;
+      Teuchos::RCP<vector<double> > averaged_LijMij = turbmodelparams.get<Teuchos::RCP<vector<double> > >("averaged_LijMij_");
+      Teuchos::RCP<vector<double> > averaged_MijMij = turbmodelparams.get<Teuchos::RCP<vector<double> > >("averaged_MijMij_");
+      Teuchos::RCP<vector<double> > averaged_CI_numerator = Teuchos::null;
+      Teuchos::RCP<vector<double> > averaged_CI_denominator = Teuchos::null;
       if (fldpara_->PhysicalType()==INPAR::FLUID::loma)
       {
-        averaged_CI_numerator = turbmodelparams.get<RCP<vector<double> > >("averaged_CI_numerator_");
-        averaged_CI_denominator = turbmodelparams.get<RCP<vector<double> > >("averaged_CI_denominator_");
+        averaged_CI_numerator = turbmodelparams.get<Teuchos::RCP<vector<double> > >("averaged_CI_numerator_");
+        averaged_CI_denominator = turbmodelparams.get<Teuchos::RCP<vector<double> > >("averaged_CI_denominator_");
       }
 
       // get homogeneous direction
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
 
       if (homdir == "xy" or homdir == "xz" or homdir == "yz")
       {
-        RCP<vector<double> > planecoords = turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+        Teuchos::RCP<vector<double> > planecoords = turbmodelparams.get<Teuchos::RCP<vector<double> > >("planecoords_");
         // get center
         double center = 0.0;
         if (homdir == "xy")
@@ -143,8 +143,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
       }
       else if (homdir == "x" or homdir == "y" or homdir == "z")
       {
-        RCP<vector<double> > dir1coords = turbmodelparams.get<RCP<vector<double> > >("dir1coords_");
-        RCP<vector<double> > dir2coords = turbmodelparams.get<RCP<vector<double> > >("dir2coords_");
+        Teuchos::RCP<vector<double> > dir1coords = turbmodelparams.get<Teuchos::RCP<vector<double> > >("dir1coords_");
+        Teuchos::RCP<vector<double> > dir2coords = turbmodelparams.get<Teuchos::RCP<vector<double> > >("dir2coords_");
         // get center
         double dim1_center = 0.0;
         double dim2_center = 0.0;
@@ -1463,15 +1463,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
         {
           // Cs was changed in Sysmat (Cs->sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0)))
           // to compare it with the standard Smagorinsky Cs
-          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs_;
-          (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
-          (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
+          (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs_;
+          (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
+          (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
           if (turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2")
           {
             // recompute delta = std::pow((vol),(1.0/3.0))
             EvalShapeFuncAndDerivsAtEleCenter(eid);
-            (*(turbmodelparams.get<RCP<vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((fac_),(1.0/3.0));
-            (*(turbmodelparams.get<RCP<vector<double> > >("local_Ci_delta_sq_sum")))[nlayer]+=Ci_delta_sq;
+            (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((fac_),(1.0/3.0));
+            (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_Ci_delta_sq_sum")))[nlayer]+=Ci_delta_sq;
           }
         }
       }

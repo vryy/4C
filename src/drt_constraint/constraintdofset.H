@@ -46,7 +46,7 @@ Maintainer: Thomas Kloeppel
 #include <list>
 
 #include <Epetra_IntVector.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
 using namespace std;

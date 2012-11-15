@@ -89,7 +89,7 @@ if ((mtype != INPAR::MAT::m_scatra) &&
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SCATRA::ScatraFluidCloneStrategy::SetElementData(
-    RCP<DRT::Element> newele,
+    Teuchos::RCP<DRT::Element> newele,
     DRT::Element* oldele,
     const int matid,
     const bool isnurbsdis)

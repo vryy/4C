@@ -13,7 +13,7 @@
 #ifndef ALE3_H
 #define ALE3_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 #include "../drt_lib/drt_element.H"
@@ -160,16 +160,16 @@ public:
   virtual inline int NumVolume() const {return 1;}
 
   /*!
-  \brief Get vector of RefCountPtrs to the surfaces of this element
+  \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of RefCountPtrs to the volume of this element
+  \brief Get vector of RCPs to the volume of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Volumes();
+  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -373,7 +373,7 @@ public:
                          Epetra_SerialDenseVector&  residual,
                          bool                       incremental,
                          std::vector<double>&       my_dispnp,
-                         RefCountPtr<MAT::Material> material,
+                         Teuchos::RCP<MAT::Material> material,
                          ParameterList& 	    params) = 0;
   virtual void static_ke_laplace(
   Ale3*                      ele,
@@ -382,7 +382,7 @@ public:
   Epetra_SerialDenseVector&  residual,
   bool                       incremental,
   std::vector<double>&       my_dispnp,
-  RefCountPtr<MAT::Material> material,
+  Teuchos::RCP<MAT::Material> material,
   ParameterList&             params) = 0;
 
     virtual void ElementNodeNormal(Ale3*                      ele,
@@ -415,7 +415,7 @@ public:
     Epetra_SerialDenseVector&  residual,
     bool                       incremental,
     std::vector<double>&       my_dispnp,
-    RefCountPtr<MAT::Material> material,
+    Teuchos::RCP<MAT::Material> material,
     ParameterList&             params);
 
   void static_ke_spring(Ale3*                     ele,
@@ -428,7 +428,7 @@ public:
                  Epetra_SerialDenseVector&  residual,
                  bool                       incremental,
                  std::vector<double>&       my_dispnp,
-                 RefCountPtr<MAT::Material> material,
+                 Teuchos::RCP<MAT::Material> material,
                  ParameterList& 	    params);
   void ElementNodeNormal(Ale3*                      ele,
                               Epetra_SerialDenseVector&  elevec1,

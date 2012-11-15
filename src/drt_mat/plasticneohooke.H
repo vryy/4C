@@ -27,7 +27,7 @@ Maintainer: Alexander Popp
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 

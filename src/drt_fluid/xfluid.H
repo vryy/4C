@@ -138,7 +138,7 @@ namespace FLD
       void GradientPenalty( Teuchos::ParameterList & eleparams, ///< element parameters
                      DRT::Discretization & discret,      ///< background fluid discretization
                      DRT::Discretization & cutdiscret,   ///< cutter surface discretization
-                     RCP<Epetra_Vector> vec,
+                     Teuchos::RCP<Epetra_Vector> vec,
                      int itnum                           ///< iteration number
                      );
 
@@ -323,8 +323,8 @@ namespace FLD
     void NonlinearSolve();
 
     /// reconstruct ghost values using ghost penalty approach
-    void ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
-                                RCP<Epetra_Vector> vec,
+    void ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
+                                Teuchos::RCP<Epetra_Vector> vec,
                                 const bool screen_out
                                 );
 
@@ -536,7 +536,7 @@ namespace FLD
 
     //-------------------------------------------------------------------------------
     // possible inf-norm scaling of linear system / fluid matrix
-    RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
+    Teuchos::RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
 
     //--------------- discretization and general algorithm parameters----------------
 
@@ -626,7 +626,7 @@ namespace FLD
     //@}
 
     // dofset for fluid output
-    RCP<DRT::IndependentDofSet>    dofset_out_;
+    Teuchos::RCP<DRT::IndependentDofSet>    dofset_out_;
 
     // velocity pressure splitter for fluid output
     LINALG::MapExtractor      velpressplitterForOutput_;

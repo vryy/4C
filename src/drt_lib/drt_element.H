@@ -55,7 +55,6 @@ Maintainer: Michael Gee
 
 // note, we do not include a whole namespace!
 using std::vector;
-using Teuchos::RCP;
 using Teuchos::ParameterList;
 
 

@@ -18,7 +18,7 @@ Maintainer: Thomas Klöppel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <vector>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 

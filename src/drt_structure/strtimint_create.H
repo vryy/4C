@@ -22,7 +22,7 @@ Maintainer: Thomas Klöppel
 #include "Epetra_SerialComm.h"
 #endif
 #include "Epetra_Time.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
 

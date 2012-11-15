@@ -4,7 +4,7 @@
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <NOX_Direction_UserDefinedFactory.H>
 
 
@@ -42,14 +42,14 @@ class FixPoint : public NOX::Direction::Generic
 public:
 
   //! Constructor
-  FixPoint(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+  FixPoint(const Teuchos::RCP<NOX::Utils>& utils,
            Teuchos::ParameterList& params);
 
   //! Destructor
   ~FixPoint();
 
   // derived
-  bool reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+  bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
 	     Teuchos::ParameterList& params);
 
   // derived
@@ -68,7 +68,7 @@ private:
 private:
 
   //! Printing Utils
-  Teuchos::RefCountPtr<NOX::Utils> utils_;
+  Teuchos::RCP<NOX::Utils> utils_;
 };
 
     /// simple factory that creates fix point direction object

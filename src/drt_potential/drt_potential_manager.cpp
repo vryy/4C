@@ -165,9 +165,9 @@ void POTENTIAL::PotentialManager::ReadParameter()
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 void POTENTIAL::PotentialManager::EvaluatePotential(  ParameterList&                    p,
-                                                      RefCountPtr<Epetra_Vector>        disp,
-                                                      RefCountPtr<Epetra_Vector>        fint,
-                                                      RefCountPtr<LINALG::SparseMatrix> stiff)
+                                                      RCP<Epetra_Vector>        disp,
+                                                      RCP<Epetra_Vector>        fint,
+                                                      RCP<LINALG::SparseMatrix> stiff)
 {
   if(surface_)
     surfacePotential_->EvaluatePotential(p, disp, fint, stiff);
@@ -184,9 +184,9 @@ void POTENTIAL::PotentialManager::EvaluatePotential(  ParameterList&            
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&                    p,
-                                                          RefCountPtr<Epetra_Vector>        disp,
-                                                          RefCountPtr<Epetra_Vector>        fint,
-                                                          RefCountPtr<LINALG::SparseMatrix> stiff,
+                                                          RCP<Epetra_Vector>        disp,
+                                                          RCP<Epetra_Vector>        fint,
+                                                          RCP<LINALG::SparseMatrix> stiff,
                                                           const double                      time,
                                                           const int                         step)
 {

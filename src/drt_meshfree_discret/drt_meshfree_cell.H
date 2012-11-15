@@ -388,7 +388,7 @@ public:
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
 
-  virtual bool BuildKnotPointers(std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >& knots //!< (in): A map of all knots of a discretization
+  virtual bool BuildKnotPointers(std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >& knots //!< (in): A map of all knots of a discretization
     );
 
   /*------------------------------------------------------------------------*/
@@ -423,7 +423,7 @@ private:
   vector<MeshfreeNode*> knot_;
 
   //! meshfree parameter settings
-  RCP<Teuchos::ParameterList> params_;
+  Teuchos::RCP<Teuchos::ParameterList> params_;
 
 }; // class Cell
 

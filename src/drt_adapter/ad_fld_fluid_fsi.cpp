@@ -364,7 +364,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
   // create a map with all DOFs that have either a Dirichlet boundary condition
   // or are located on the fsi interface
-  Teuchos::RefCountPtr<Epetra_Map> dbcfsimap = LINALG::MultiMapExtractor::MergeMaps(dbcfsimaps);
+  Teuchos::RCP<Epetra_Map> dbcfsimap = LINALG::MultiMapExtractor::MergeMaps(dbcfsimaps);
 
   // create an element map with offset
   const int numallele = fluidimpl_->Discretization()->NumGlobalElements();
@@ -375,7 +375,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   std::vector<Teuchos::RCP<const Epetra_Map> > domainmaps;
   domainmaps.push_back(dbcfsimap);
   domainmaps.push_back(elemap);
-  Teuchos::RefCountPtr<Epetra_Map> domainmap = LINALG::MultiMapExtractor::MergeMaps(domainmaps);
+  Teuchos::RCP<Epetra_Map> domainmap = LINALG::MultiMapExtractor::MergeMaps(domainmaps);
 
   Teuchos::RCP<LINALG::MapExtractor> domainmapex = Teuchos::rcp(new LINALG::MapExtractor(*domainmap, dbcfsimap));
 

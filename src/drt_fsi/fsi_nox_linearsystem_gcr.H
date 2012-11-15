@@ -18,7 +18,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 namespace NOX {
@@ -52,11 +52,11 @@ namespace FSI {
     LinearSystemGCR(
       Teuchos::ParameterList& printingParams,
       Teuchos::ParameterList& linearSolverParams,
-      const Teuchos::RefCountPtr< NOX::Epetra::Interface::Required>& iReq,
-      const Teuchos::RefCountPtr< NOX::Epetra::Interface::Jacobian>& iJac,
-      const Teuchos::RefCountPtr<Epetra_Operator>& J,
+      const Teuchos::RCP< NOX::Epetra::Interface::Required>& iReq,
+      const Teuchos::RCP< NOX::Epetra::Interface::Jacobian>& iJac,
+      const Teuchos::RCP<Epetra_Operator>& J,
       const NOX::Epetra::Vector& cloneVector,
-      const Teuchos::RefCountPtr< NOX::Epetra::Scaling> scalingObject = Teuchos::null);
+      const Teuchos::RCP< NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
     //! Reset the linear solver parameters.
     virtual void reset(Teuchos::ParameterList& linearSolverParams);
@@ -123,7 +123,7 @@ namespace FSI {
                                            NOX::Epetra::Vector& result) const;
 
     //! Get the scaling object
-    virtual Teuchos::RefCountPtr< NOX::Epetra::Scaling> getScaling();
+    virtual Teuchos::RCP< NOX::Epetra::Scaling> getScaling();
 
     /*!
       \brief Sets the diagonal scaling vector(s) used in scaling the linear system.
@@ -131,7 +131,7 @@ namespace FSI {
       See NOX::Epetra::Scaling for details on how to specify scaling
       of the linear system.
     */
-    virtual void resetScaling(const Teuchos::RefCountPtr< NOX::Epetra::Scaling>& s);
+    virtual void resetScaling(const Teuchos::RCP< NOX::Epetra::Scaling>& s);
 
     //! Evaluates the Jacobian based on the solution vector x.
     virtual bool computeJacobian(const NOX::Epetra::Vector& x);
@@ -178,28 +178,28 @@ namespace FSI {
     virtual bool hasPreconditioner() const;
 
     //! Return Jacobian operator
-    virtual Teuchos::RefCountPtr<const Epetra_Operator> getJacobianOperator() const;
+    virtual Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const;
 
     //! Return Jacobian operator
-    virtual Teuchos::RefCountPtr<Epetra_Operator> getJacobianOperator();
+    virtual Teuchos::RCP<Epetra_Operator> getJacobianOperator();
 
     //! Return preconditioner operator
     /*!
      * Note:  This should only be called if hasPreconditioner() returns true.
      */
-    virtual Teuchos::RefCountPtr<const Epetra_Operator> getGeneratedPrecOperator() const;
+    virtual Teuchos::RCP<const Epetra_Operator> getGeneratedPrecOperator() const;
 
     //! Return preconditioner operator
-    virtual Teuchos::RefCountPtr<Epetra_Operator> getGeneratedPrecOperator();
+    virtual Teuchos::RCP<Epetra_Operator> getGeneratedPrecOperator();
 
     //! Set Jacobian operator for solve
-    virtual void setJacobianOperatorForSolve(const Teuchos::RefCountPtr<const Epetra_Operator>& solveJacOp);
+    virtual void setJacobianOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solveJacOp);
 
     //! Set preconditioner operator for solve
     /*!
      * Note:  This should only be called if hasPreconditioner() returns true.
      */
-    virtual void setPrecOperatorForSolve(const Teuchos::RefCountPtr<const Epetra_Operator>& solvePrecOp);
+    virtual void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp);
 
     //! Returns the type of operator that is passed into the group constructors.
     /*! Uses dynamic casting to identify the underlying object type. */
@@ -248,19 +248,19 @@ namespace FSI {
     NOX::Utils utils;
 
     //! Reference to the user supplied Jacobian interface functions
-    Teuchos::RefCountPtr< NOX::Epetra::Interface::Jacobian> jacInterfacePtr;
+    Teuchos::RCP< NOX::Epetra::Interface::Jacobian> jacInterfacePtr;
 
     //! Type of operator for the Jacobian.
     OperatorType jacType;
 
     //! Pointer to the Jacobian operator.
-    mutable Teuchos::RefCountPtr<Epetra_Operator> jacPtr;
+    mutable Teuchos::RCP<Epetra_Operator> jacPtr;
 
     //! Scaling object supplied by the user
-    Teuchos::RefCountPtr< NOX::Epetra::Scaling> scaling;
+    Teuchos::RCP< NOX::Epetra::Scaling> scaling;
 
     //! An extra temporary vector, only allocated if needed.
-    mutable Teuchos::RefCountPtr< NOX::Epetra::Vector> tmpVectorPtr;
+    mutable Teuchos::RCP< NOX::Epetra::Vector> tmpVectorPtr;
 
     mutable double conditionNumberEstimate;
 
@@ -279,9 +279,9 @@ namespace FSI {
     //! Total time spent in applyJacobianInverse (sec.).
     mutable double timeApplyJacbianInverse;
 
-    std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > > u_;
+    std::vector<Teuchos::RCP< NOX::Epetra::Vector > > u_;
 
-    std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > > c_;
+    std::vector<Teuchos::RCP< NOX::Epetra::Vector > > c_;
   };
 
 }

@@ -187,7 +187,7 @@ void DRT::ELEMENTS::Ale2::Print(ostream& os) const
 //
 // get vector of lines
 //
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -200,7 +200,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
 }
 
 
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Surfaces()
 {
   vector<RCP<Element> > surfaces(1);
   surfaces[0]= Teuchos::rcp(this, false);

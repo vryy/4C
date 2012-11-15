@@ -18,7 +18,7 @@ Maintainer: Lena Wiechert
 
 
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseVector.h>
 #include "../linalg/linalg_fixedsizematrix.H"
 

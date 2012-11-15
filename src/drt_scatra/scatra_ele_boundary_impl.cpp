@@ -278,7 +278,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   case SCATRA::bd_calc_elch_electrode_kinetics:
   {
     // get actual values of transported scalars
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
@@ -386,7 +386,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       if(ele->Owner() == discretization.Comm().MyPID())
       {
         // get actual values of transported scalars
-        RefCountPtr<const Epetra_Vector> phidtnp = discretization.GetState("timederivative");
+        RCP<const Epetra_Vector> phidtnp = discretization.GetState("timederivative");
         if (phidtnp==null) dserror("Cannot get state vector 'ephidtnp'");
         // extract local values from the global vector
         vector<double> ephidtnp(lm.size());
@@ -440,7 +440,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
     // get values of scalar
-    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vectors for the parent(!) element
@@ -458,7 +458,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     LINALG::SerialDenseMatrix eflux(3,nenparent);
     DRT::Element* peleptr = (DRT::Element*) parentele;
     int k=numscal_-1;     // temperature is always last degree of freedom!!
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "flux_phi_"+temp.str();
     // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
@@ -530,7 +530,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       thermpress_ = params.get<double>("thermodynamic pressure");
 
     // get values of scalar
-    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
@@ -597,7 +597,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     }
 
     // get values of scalar
-    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
@@ -692,7 +692,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     }
 
     // get values of scalar
-    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
@@ -837,7 +837,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     //       it would be wrong to suppress results for a ghosted boundary!
 
     // get actual values of transported scalars
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector

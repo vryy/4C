@@ -15,7 +15,7 @@ Maintainer: Lena Yoshihara
 #define REDAIRWAYTISSUE_H
 
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include "Epetra_Vector.h"
 
 

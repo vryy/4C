@@ -262,7 +262,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->GetDis("red_airway");
 
   // -------------------------------------------------------------------

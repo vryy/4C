@@ -36,10 +36,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
   double&                    dens_hat,
   double&                    temp_hat,
   double&                    dens_temp_hat,
-  RCP<vector<double> >       vel_hat,
-  RCP<vector<double> >       densvel_hat,
-  RCP<vector<double> >       densveltemp_hat,
-  RCP<vector<double> >       densstraintemp_hat,
+  Teuchos::RCP<vector<double> >       vel_hat,
+  Teuchos::RCP<vector<double> >       densvel_hat,
+  Teuchos::RCP<vector<double> >       densveltemp_hat,
+  Teuchos::RCP<vector<double> >       densstraintemp_hat,
   double&                    volume,
   const DRT::Element*        ele)
 {
@@ -55,7 +55,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
   phi_[0] = funct_.Dot(ephinp_[0]);
 
   // get material
-  RefCountPtr<MAT::Material> material = ele->Material();
+  RCP<MAT::Material> material = ele->Material();
   if (material->MaterialType() == INPAR::MAT::m_scatra)
   {
     //access fluid discretization

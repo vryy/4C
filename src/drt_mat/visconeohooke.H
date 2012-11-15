@@ -15,7 +15,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include "material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 

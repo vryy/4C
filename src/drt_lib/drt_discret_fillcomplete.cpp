@@ -152,7 +152,7 @@ void DRT::Discretization::BuildNodeRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummynodes     = 0;
-  map<int,RefCountPtr<DRT::Node> >::iterator curr;
+  map<int,RCP<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->Owner() == myrank)
       ++nummynodes;
@@ -182,7 +182,7 @@ void DRT::Discretization::BuildNodeColMap()
   nodecolptr_.resize(nummynodes);
 
   int count=0;
-  map<int,RefCountPtr<DRT::Node> >::iterator curr;
+  map<int,RCP<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
   {
     nodeids[count] = curr->second->Id();
@@ -203,7 +203,7 @@ void DRT::Discretization::BuildElementRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  map<int,RefCountPtr<DRT::Element> >::iterator curr;
+  map<int,RCP<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
@@ -230,7 +230,7 @@ void DRT::Discretization::BuildElementColMap()
   int nummyeles = (int)element_.size();
   vector<int> eleids(nummyeles);
   elecolptr_.resize(nummyeles);
-  map<int,RefCountPtr<DRT::Element> >::iterator curr;
+  map<int,RCP<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
   {
@@ -249,7 +249,7 @@ void DRT::Discretization::BuildElementColMap()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementToNodePointers()
 {
-  map<int,RefCountPtr<DRT::Element> >::iterator elecurr;
+  map<int,RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildNodalPointers(node_);
@@ -264,7 +264,7 @@ void DRT::Discretization::BuildElementToNodePointers()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementToElementPointers()
 {
-  map<int,RefCountPtr<DRT::Element> >::iterator elecurr;
+  map<int,RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildElementPointers(element_);
@@ -279,11 +279,11 @@ void DRT::Discretization::BuildElementToElementPointers()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildNodeToElementPointers()
 {
-  map<int,RefCountPtr<DRT::Node> >::iterator nodecurr;
+  map<int,RCP<DRT::Node> >::iterator nodecurr;
   for (nodecurr=node_.begin(); nodecurr != node_.end(); ++nodecurr)
     nodecurr->second->ClearMyElementTopology();
 
-  map<int,RefCountPtr<DRT::Element> >::iterator elecurr;
+  map<int,RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     const int  nnode = elecurr->second->NumNode();

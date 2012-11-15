@@ -77,10 +77,10 @@ LINALG::Matrix<3,2> GEO::getXAABBofEles(
   if (elements.begin() == elements.end())
     return XAABB;
 
-  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
+  map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
-    RefCountPtr<DRT::Element> currelement = elemiter->second;
+    RCP<DRT::Element> currelement = elemiter->second;
     const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(currelement,currentpositions));
     GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
     GEO::checkRoughGeoType(currelement, xyze_element, eleGeoType);

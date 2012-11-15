@@ -42,7 +42,7 @@ Maintainer: Michael Gee
 #define ELEMENTTYPE_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 #include "drt_parobject.H"
 #include "drt_element.H"

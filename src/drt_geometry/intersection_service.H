@@ -170,11 +170,11 @@ namespace GEO
       if(eleDim == 3)
       {
         const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(DISTYPE);
-        const vector< RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
+        const vector< Teuchos::RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
         for(int i = 0; i < element->NumSurface(); i++)
         {
           CartesianCount = 0;
-          const RCP<DRT::Element>& surfaceP = surfaces[i];
+          const Teuchos::RCP<DRT::Element>& surfaceP = surfaces[i];
 
           for(int k = 0; k < dimCoord; k++)
           {

@@ -416,7 +416,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
            (mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
            (mat->MaterialType() == INPAR::MAT::m_elasthyper)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -515,7 +515,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
            (mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
            (mat->MaterialType() == INPAR::MAT::m_elasthyper)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

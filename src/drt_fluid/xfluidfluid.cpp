@@ -4724,7 +4724,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
       // append error of the last time step to the error file
       if ((step_==stepmax_) or (time_==maxtime_))// write results to file
       {
-        ostringstream temp;
+        std::ostringstream temp;
         const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation+".xfem_abserror";
 
@@ -4774,7 +4774,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         f.flush();
         f.close();
         }
-      ostringstream temp;
+      std::ostringstream temp;
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation+"_time.xfem_abserror";
 

@@ -842,7 +842,7 @@ public:
     {
       // get nodal velocities and pressures with help of the field set of node
       const std::set<XFEM::FieldEnr>& fieldEnrSet(dofman->getNodeDofSet(elenodeids[nodeid]));
-      for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+      for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
           fieldenr != fieldEnrSet.end();++fieldenr)
       {
         const DofKey dofkey(elenodeids[nodeid], *fieldenr);
@@ -1074,7 +1074,7 @@ protected:
 
   // data
   RCP<Epetra_Vector> veln_; // velocity at old time t^n in column map
-  set<int> oldEnrNodes_; // global ids of column nodes intersected by old interface at time n
+  std::set<int> oldEnrNodes_; // global ids of column nodes intersected by old interface at time n
   const double dt_; // time step size
 
 //  RCP<COMBUST::FlameFront> flamefront_;

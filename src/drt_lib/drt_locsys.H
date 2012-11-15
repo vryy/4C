@@ -13,7 +13,7 @@ Maintainer: Alexander Popp
 #ifndef DRT_LOCSYS_H
 #define DRT_LOCSYS_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_discret.H"
 
 namespace LINALG {

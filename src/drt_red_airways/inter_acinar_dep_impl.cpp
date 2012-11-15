@@ -79,7 +79,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RefCountPtr<MAT::Material> mat)
+  RCP<MAT::Material> mat)
 {
 
 #if 0
@@ -140,7 +140,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   cout<<"sysmat: "<<elemat1_epetra<<endl;
   fflush(stdout);
 #else
-  RefCountPtr<const Epetra_Vector> sysmat_iad  = discretization.GetState("sysmat_iad");
+  RCP<const Epetra_Vector> sysmat_iad  = discretization.GetState("sysmat_iad");
   // extract local values from the global vectors
   vector<double> my_sysmat_iad(lm.size());
   DRT::UTILS::ExtractMyValues(*sysmat_iad,my_sysmat_iad,lm);
@@ -213,7 +213,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
   DRT::Discretization&         discretization,
   vector<int>&                 lm,
   Epetra_SerialDenseVector&    rhs,
-  RefCountPtr<MAT::Material>   material)
+  RCP<MAT::Material>   material)
 {
 
 }
@@ -231,7 +231,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(
   Epetra_SerialDenseVector&    elevec1, //a_volumenp,
   Epetra_SerialDenseVector&    elevec2, //a_volume_strain_np,
   vector<int>&                 lm,
-  RefCountPtr<MAT::Material>   material)
+  RCP<MAT::Material>   material)
 
 {
 
@@ -247,7 +247,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::GetCoupledValues(
   ParameterList&               params,
   DRT::Discretization&         discretization,
   vector<int>&                 lm,
-  RefCountPtr<MAT::Material>   material)
+  RCP<MAT::Material>   material)
 {
 
 }

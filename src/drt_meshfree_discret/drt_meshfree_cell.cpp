@@ -164,14 +164,14 @@ void DRT::MESHFREE::Cell::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Build knot pointers (protected)                           nis Jan12 |
  *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::Cell::BuildKnotPointers(std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >& knots)
+bool DRT::MESHFREE::Cell::BuildKnotPointers(std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >& knots)
 {
   int        nknot   = NumKnot();
   const int* knotids = KnotIds();
   knot_.resize(nknot);
   for (int i=0; i<nknot; ++i)
   {
-    std::map<int,RefCountPtr<DRT::MESHFREE::MeshfreeNode> >::const_iterator curr = knots.find(knotids[i]);
+    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator curr = knots.find(knotids[i]);
     // this knot is not on this proc
     if (curr==knots.end()) dserror("Meshfree cell %d cannot find knot %d",Id(),knotids[i]);
     else

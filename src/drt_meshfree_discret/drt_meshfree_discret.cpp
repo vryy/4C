@@ -26,7 +26,7 @@
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeDiscretization::MeshfreeDiscretization(
   const string             name,
-  RefCountPtr<Epetra_Comm> comm,
+  RCP<Epetra_Comm> comm,
   const Teuchos::ParameterList & params)
   : DRT::Discretization::Discretization(name,comm),
     assigned_(false)
@@ -237,8 +237,8 @@ bool DRT::MESHFREE::MeshfreeDiscretization::InitAssignSingleNode(double const * 
                                                                  double const & range,
                                                                  int const & numele,
                                                                  DRT::Element** eles,
-                                                                 set<int>& elegid,
-                                                                 set<int>& knotgid,
+                                                                 std::set<int>& elegid,
+                                                                 std::set<int>& knotgid,
                                                                  int& init_knot)
 {
   // initialisiation of auxiliary pointers (and variable)
@@ -299,8 +299,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
                                                              double const & range,
                                                              const int & numele,
                                                              DRT::Element** eles,
-                                                             set<int>& elegid,
-                                                             set<int>& knotgid,
+                                                             std::set<int>& elegid,
+                                                             std::set<int>& knotgid,
                                                              const int & myrank,
                                                              map<int, map<int,int> > & procmap)
 {
@@ -380,8 +380,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
   {
   case INPAR::MESHFREE::procwise:
   {
-    set<int> elegid;  // set eof element-gids already handled by this proc
-    set<int> knotgid; // set eof knot-gids already handled by this proc
+    std::set<int> elegid;  // set eof element-gids already handled by this proc
+    std::set<int> knotgid; // set eof knot-gids already handled by this proc
 
     bool init;               // boolean, whether an initial knot was found for recursive search
     int init_knotid;         // id of knot to start recursive search with

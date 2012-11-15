@@ -31,8 +31,8 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
-  RefCountPtr<DRT::Discretization>  dis    ,
-  RefCountPtr<LINALG::MapExtractor> dbcmaps
+  RCP<DRT::Discretization>  dis    ,
+  RCP<LINALG::MapExtractor> dbcmaps
     )
   : dis_(dis),
     dbcmaps_(dbcmaps),

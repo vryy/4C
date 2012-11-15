@@ -43,7 +43,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseMatrix.h"
@@ -77,9 +77,9 @@ public:
   </pre>
 
   */
-  TurbulenceStatisticsCcy(RefCountPtr<DRT::Discretization> actdis             ,
+  TurbulenceStatisticsCcy(RCP<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
-                          RefCountPtr<Epetra_Vector>       dispnp             ,
+                          RCP<Epetra_Vector>       dispnp             ,
                           ParameterList&                   params             ,
                           const bool                       withscatra);
 
@@ -97,9 +97,9 @@ public:
   moments for velocities, pressure (and transported scalar fields).
   */
   void DoTimeSample(
-      Teuchos::RefCountPtr<Epetra_Vector> velnp,
-      Teuchos::RefCountPtr<Epetra_Vector> scanp,
-      Teuchos::RefCountPtr<Epetra_Vector> fullphinp);
+      Teuchos::RCP<Epetra_Vector> velnp,
+      Teuchos::RCP<Epetra_Vector> scanp,
+      Teuchos::RCP<Epetra_Vector> fullphinp);
 
 
   /*!
@@ -191,16 +191,16 @@ private:
   int                              countrecord_;
 
   //! The discretisation (required for nodes, dofs etc;)
-  RefCountPtr<DRT::Discretization> discret_;
+  RCP<DRT::Discretization> discret_;
 
   //! the scatra discretization
-  RefCountPtr<DRT::Discretization> scatradis_;
+  RCP<DRT::Discretization> scatradis_;
 
   //! flag for ale discretisation
   bool                             alefluid_;
 
   //! node displacements due to mesh motion
-  RefCountPtr<Epetra_Vector>       dispnp_;
+  RCP<Epetra_Vector>       dispnp_;
 
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
@@ -212,14 +212,14 @@ private:
   ParameterList                    eleparams_;
 
   //! pointer to mean vel/pres field
-  RefCountPtr<Epetra_Vector>       meanvelnp_;
+  RCP<Epetra_Vector>       meanvelnp_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
-  RefCountPtr<vector<double> >     nodeshells_;
+  RCP<vector<double> >     nodeshells_;
 
   //! the dim_-coordinates of the homogeneous planes --- including
   //additional sampling planes
-  RefCountPtr<vector<double> >     shellcoordinates_;
+  RCP<vector<double> >     shellcoordinates_;
 
   //!--------------------------------------------------
   //!       the pointwise averaged stuff
@@ -227,29 +227,29 @@ private:
   //
 
   //! sum over u (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumu_;
+  RCP<vector<double> >     pointsumu_;
   //! sum over v (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumv_;
+  RCP<vector<double> >     pointsumv_;
   //! sum over w (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumw_;
+  RCP<vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsump_;
+  RCP<vector<double> >     pointsump_;
 
   //! sum over u^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumuu_;
+  RCP<vector<double> >     pointsumuu_;
   //! sum over v^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumvv_;
+  RCP<vector<double> >     pointsumvv_;
   //! sum over w^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumww_;
+  RCP<vector<double> >     pointsumww_;
   //! sum over p^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumpp_;
+  RCP<vector<double> >     pointsumpp_;
 
   //! sum over uv (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumuv_;
+  RCP<vector<double> >     pointsumuv_;
   //! sum over uw (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumuw_;
+  RCP<vector<double> >     pointsumuw_;
   //! sum over vw (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumvw_;
+  RCP<vector<double> >     pointsumvw_;
 
   // for additional scalar transport
 
@@ -260,20 +260,20 @@ private:
   int                              numscatradofpernode_;
 
   //! pointer to mean scalar field
-  RefCountPtr<Epetra_Vector>       meanscanp_;
+  RCP<Epetra_Vector>       meanscanp_;
 
   //! pointer to mean field of all scatra results
-  RefCountPtr<Epetra_Vector>       meanfullphinp_;
+  RCP<Epetra_Vector>       meanfullphinp_;
 
   //! sum over c (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumc_;
+  RCP<vector<double> >     pointsumc_;
   //! sum over c^2 (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumcc_;
+  RCP<vector<double> >     pointsumcc_;
 
   //! sum over c (over one plane in each component)
-  RefCountPtr<Epetra_SerialDenseMatrix>     pointsumphi_;
+  RCP<Epetra_SerialDenseMatrix>     pointsumphi_;
   //! sum over c^2 (over one plane in each component)
-  RefCountPtr<Epetra_SerialDenseMatrix>     pointsumphiphi_;
+  RCP<Epetra_SerialDenseMatrix>     pointsumphiphi_;
 
 };
 

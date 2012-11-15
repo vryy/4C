@@ -21,7 +21,7 @@ Here everything related with solid-shell body extrusion
 #include <string>
 #include <iostream>
 #include <vector>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include "../drt_lib/drt_dserror.H"
 #include "pre_exodus_reader.H"
 

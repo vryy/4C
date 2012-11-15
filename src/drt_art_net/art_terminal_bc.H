@@ -21,7 +21,7 @@ Maintainer: Mahmoud Ismail
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
@@ -55,14 +55,14 @@ namespace ART
     /*
     \brief Standard solver for 1d artery reflective outlet
     */
-    void SolveReflectiveTerminal(RefCountPtr<DRT::Discretization> actdis,
+    void SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
                                  const DRT::Condition *           condition,
                                  ParameterList &                  params);
 
     /*
     \brief Standard solver for 1d artery explicit windkessel BC outlet
     */
-    void SolveExplWindkesselBC(RefCountPtr<DRT::Discretization> actdis,
+    void SolveExplWindkesselBC(RCP<DRT::Discretization> actdis,
                                const DRT::Condition *           condition,
                                ParameterList &                  params);
 

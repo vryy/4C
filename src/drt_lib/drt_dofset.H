@@ -46,7 +46,7 @@ Maintainer: Ulrich Kuettler
 #include <list>
 
 #include <Epetra_IntVector.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
@@ -121,7 +121,7 @@ change. To achieve this we keep a list of dof sets internally.
 Please note that even though Michael does not like it this class
 contains neither copy constructor nor assignment operatior. This is
 intended. It is legal to copy this objects of class. The internal
-variables (all RefCountPtrs) know how to copy themselves. So the
+variables (all RCPs) know how to copy themselves. So the
 default versions will do just fine. (Far better that buggy hand
 written versions.) And due to the two possible states there is no
 reason to deep copy any of the local map and vector variables.
@@ -193,7 +193,7 @@ public:
       if (lid==-1)
         return vector<int>();
       const int idx = (*idxcolnodes_)[lid];
-      vector<int> dof((*numdfcolnodes_)[lid]);
+      std::vector<int> dof((*numdfcolnodes_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
         dof[i] = idx+i;
       return dof;
@@ -206,7 +206,7 @@ public:
       if (lid==-1)
         return vector<int>();
       int idx = (*idxcolelements_)[lid];
-      vector<int> dof((*numdfcolelements_)[lid]);
+      std::vector<int> dof((*numdfcolelements_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
         dof[i] = idx+i;
       return dof;
@@ -343,16 +343,16 @@ protected:
   unsigned dspos_;
 
   /// number of dofs for each node
-  RefCountPtr<Epetra_IntVector>                 numdfcolnodes_;
+  Teuchos::RCP<Epetra_IntVector>                 numdfcolnodes_;
 
   /// number of dofs for each element
-  RefCountPtr<Epetra_IntVector>                 numdfcolelements_;
+  Teuchos::RCP<Epetra_IntVector>                 numdfcolelements_;
 
   /// column map gid of first dof for each node
-  RefCountPtr<Epetra_IntVector>                 idxcolnodes_;
+  Teuchos::RCP<Epetra_IntVector>                 idxcolnodes_;
 
   /// column map gid of first dof for each element
-  RefCountPtr<Epetra_IntVector>                 idxcolelements_;
+  Teuchos::RCP<Epetra_IntVector>                 idxcolelements_;
 
 private:
 

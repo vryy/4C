@@ -211,7 +211,7 @@ namespace ELEMENTS
                                 ParameterList&             params,
                                 DRT::Discretization&       discretization,
                                 vector<int>&               lm,
-                                RefCountPtr<MAT::Material> mat);
+                                Teuchos::RCP<MAT::Material> mat);
 
     /*!
       \brief finite difference check for debugging

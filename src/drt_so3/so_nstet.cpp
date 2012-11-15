@@ -232,7 +232,7 @@ void DRT::ELEMENTS::NStet::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  gee 05/08|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet::Volumes()
 {
   dserror("volume not impl. yet");
   vector<RCP<Element> > volumes(1);
@@ -244,7 +244,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Volumes()
  /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                             gee 05/08|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -259,7 +259,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gee 05/08|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -401,9 +401,9 @@ void DRT::ELEMENTS::NStetType::InitMISnode(
     if (proc==myrank)
     {
       // count how many elements are adjacent to a node and sort this information
-      vector<pair<int,int> > count;
+      std::vector<std::pair<int,int> > count;
       for (node=rnodes.begin(); node != rnodes.end(); node++)
-        count.push_back(pair<int,int>((int)adjele_[node->second->Id()].size(),node->second->Id()));
+        count.push_back(std::pair<int,int>((int)adjele_[node->second->Id()].size(),node->second->Id()));
       // sort in ascending order
       sort(count.begin(),count.end());
       int n = count.size()-1;
@@ -428,7 +428,7 @@ void DRT::ELEMENTS::NStetType::InitMISnode(
         // rebuild the hierarchy of nodes
         count.clear();
         for (node=rnodes.begin(); node != rnodes.end(); node++)
-          count.push_back(pair<int,int>((int)adjele_[node->second->Id()].size(),node->second->Id()));
+          count.push_back(std::pair<int,int>((int)adjele_[node->second->Id()].size(),node->second->Id()));
         sort(count.begin(),count.end());
         n = count.size()-1;
 #if 0

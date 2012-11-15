@@ -146,7 +146,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
     {
       std::string number = microprefix.substr(pos+1);
       std::string prefix = microprefix.substr(0,pos);
-      ostringstream s;
+      std::ostringstream s;
       s << prefix << "_el" << ele_ID_ << "_gp" << gp_;
       microprefix = s.str();
       s << "-" << number;
@@ -154,7 +154,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
     }
     else
     {
-      ostringstream s;
+      std::ostringstream s;
       s << microprefix << "_el" << ele_ID_ << "_gp" << gp_;
       restartname_ = s.str();
     }
@@ -166,13 +166,13 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
     {
       std::string number = micronewprefix.substr(posn+1);
       std::string prefix = micronewprefix.substr(0,posn);
-      ostringstream s;
+      std::ostringstream s;
       s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
       newfilename = s.str();
     }
     else
     {
-      ostringstream s;
+      std::ostringstream s;
       s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
       newfilename = s.str();
     }

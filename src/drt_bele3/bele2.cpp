@@ -151,9 +151,9 @@ void DRT::ELEMENTS::Bele2::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Lines()
 {
-  vector<RCP<DRT::Element> > lines(1);
+  vector<Teuchos::RCP<DRT::Element> > lines(1);
   lines[0]=Teuchos::rcp(this,false);
   return lines;
 }
@@ -162,9 +162,9 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele2::Surfaces()
 {
-  vector<RCP<DRT::Element> > surfaces(0);
+  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 

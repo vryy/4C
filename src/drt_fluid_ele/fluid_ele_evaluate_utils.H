@@ -208,7 +208,7 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     }
 
     // determine the ids of the homogeneous planes intersecting this element
-    set<int> planesinele;
+    std::set<int> planesinele;
     for(unsigned nplane=0;nplane<planes->size();++nplane)
     {
     // get all available wall normal coordinates
@@ -293,14 +293,14 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     }
     vector<int> inplanedirect;
     {
-      set <int> inplanedirectset;
+      std::set <int> inplanedirectset;
       for(int i=0;i<3;++i)
       {
          inplanedirectset.insert(i);
       }
       inplanedirectset.erase(elenormdirect);
 
-      for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
+      for(std::set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
       {
         inplanedirect.push_back(*id);
       }
@@ -321,7 +321,7 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     double layershift=0;
 
     // loop all levels in element
-    for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+    for(std::set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
     {
       // reset temporary values
       double area=0;
@@ -848,7 +848,7 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
     }
 
     // determine the ids of the homogeneous planes intersecting this element
-    set<int> planesinele;
+    std::set<int> planesinele;
     for(unsigned nplane=0;nplane<planes->size();++nplane)
     {
     // get all available wall normal coordinates
@@ -931,14 +931,14 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
     }
     vector<int> inplanedirect;
     {
-      set <int> inplanedirectset;
+      std::set <int> inplanedirectset;
       for(int i=0;i<3;++i)
       {
         inplanedirectset.insert(i);
       }
       inplanedirectset.erase(elenormdirect);
 
-      for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
+      for(std::set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
       {
         inplanedirect.push_back(*id);
       }
@@ -959,7 +959,7 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
     double layershift=0;
 
     // loop all levels in element
-    for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+    for(std::set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
     {
       // reset temporary values
       double area=0;
@@ -1241,7 +1241,7 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
     }
 
     // determine the ids of the homogeneous planes intersecting this element
-    set<int> planesinele;
+    std::set<int> planesinele;
     for(unsigned nplane=0;nplane<planes->size();++nplane)
     {
     // get all available wall normal coordinates
@@ -1324,14 +1324,14 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
     }
     vector<int> inplanedirect;
     {
-      set <int> inplanedirectset;
+      std::set <int> inplanedirectset;
       for(int i=0;i<3;++i)
       {
         inplanedirectset.insert(i);
       }
       inplanedirectset.erase(elenormdirect);
 
-      for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
+      for(std::set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
       {
         inplanedirect.push_back(*id);
       }
@@ -1352,7 +1352,7 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
     double layershift=0;
 
     // loop all levels in element
-    for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+    for(std::set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
     {
       // reset temporary values
       double area=0;

@@ -17,7 +17,7 @@ Maintainer: Lena Yoshihara
 #define MICROMATERIAL_H
 
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include "material.H"
 #include "matpar_parameter.H"

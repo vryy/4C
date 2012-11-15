@@ -81,7 +81,7 @@ namespace UTILS
   \param owner   (in): owner of the new element
 
   */
-  RefCountPtr<DRT::Element> Factory(const string eletype,
+  RCP<DRT::Element> Factory(const string eletype,
                                     const string distype,
                                     const int id        ,
                                     const int owner     );
@@ -114,7 +114,7 @@ namespace UTILS
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
-  vector<RCP<DRT::Element> > ElementBoundaryFactory(
+  vector<Teuchos::RCP<DRT::Element> > ElementBoundaryFactory(
       const BoundaryBuildType  buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
       ParentEle*               ele         ///< pointer on the parent element
       )
@@ -141,7 +141,7 @@ namespace UTILS
       default: dserror("buildNothing case not handled in ElementBoundaryFactory");
     }
     // create vectors that will contain the volume, surface or line elements
-    vector<RCP<DRT::Element> > boundaryeles(nele);
+    vector<Teuchos::RCP<DRT::Element> > boundaryeles(nele);
 
     // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");

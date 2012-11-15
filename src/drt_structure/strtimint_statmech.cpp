@@ -733,7 +733,7 @@ void STR::TimIntStatMech::FullNewton()
 //    // add mid-inertial force
 //
 //
-//    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+//    //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
 //    fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
 //
 //    //**********************************************************************

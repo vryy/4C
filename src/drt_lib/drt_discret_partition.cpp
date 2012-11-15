@@ -94,7 +94,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
 {
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  map<int,RefCountPtr<DRT::Node> >::iterator curr;
+  map<int,RCP<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr!=node_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -446,7 +446,7 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  map<int,RefCountPtr<DRT::Element> >::iterator curr;
+  map<int,RCP<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr!=element_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -484,7 +484,7 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
 /*----------------------------------------------------------------------*
  |  build nodal graph from discretization (public)           mwgee 11/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
+RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 {
   if (!Filled()) dserror("FillComplete() was not called on this discretization");
 
@@ -492,7 +492,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   const Epetra_Map* noderowmap = NodeRowMap();
 
   // allocate graph
-  RefCountPtr<Epetra_CrsGraph> graph =
+  RCP<Epetra_CrsGraph> graph =
                      Teuchos::rcp( new Epetra_CrsGraph(Copy,*noderowmap,108,false));
 
   // iterate all elements on this proc including ghosted ones
@@ -500,7 +500,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   // if a proc stores the appropiate ghosted elements, the resulting
   // graph will be the correct and complete graph of the distributed
   // discretization even if nodes are not ghosted.
-  map<int,RefCountPtr<DRT::Element> >::const_iterator curr;
+  map<int,RCP<DRT::Element> >::const_iterator curr;
   for (curr=element_.begin(); curr!=element_.end(); ++curr)
   {
     const int  nnode   = curr->second->NumNode();
@@ -699,8 +699,8 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
                                        bool doboundaryconditions   )
 {
   // build the overlapping and non-overlapping element maps
-  RefCountPtr<Epetra_Map> elerowmap;
-  RefCountPtr<Epetra_Map> elecolmap;
+  RCP<Epetra_Map> elerowmap;
+  RCP<Epetra_Map> elecolmap;
   BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap);
 
   // export nodes and elements to the new maps
@@ -781,7 +781,7 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
        i!=localgraph.end();
        ++i)
   {
-    set<int>& rowset = i->second;
+    std::set<int>& rowset = i->second;
     vector<int> row;
     row.reserve(rowset.size());
     row.assign(rowset.begin(),rowset.end());

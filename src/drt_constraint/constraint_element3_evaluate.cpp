@@ -99,7 +99,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
     break;
     case calc_MPC_stiff:
     {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       }
       else if (numnod == 2)
       {
-        RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+        RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
         const vector<double>*  direct = condition->Get<vector<double> > ("direction");
 
         //Compute weighted difference between masternode and other node and it's derivative

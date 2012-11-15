@@ -78,7 +78,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RefCountPtr<MAT::Material> mat)
+  RCP<MAT::Material> mat)
 {
   //  const int   myrank  = discretization.Comm().MyPID();
   
@@ -113,23 +113,23 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
-  RefCountPtr<const Epetra_Vector> pnm  = discretization.GetState("pnm");
+  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
+  RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
 
-  RefCountPtr<Epetra_Vector> acinar_vnp  = params.get<RefCountPtr<Epetra_Vector> >("acinar_vnp");
-  RefCountPtr<Epetra_Vector> acinar_vn   = params.get<RefCountPtr<Epetra_Vector> >("acinar_vn");
+  RCP<Epetra_Vector> acinar_vnp  = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  RCP<Epetra_Vector> acinar_vn   = params.get<RCP<Epetra_Vector> >("acinar_vn");
 
 
-  RefCountPtr<Epetra_Vector> qin_nm  = params.get<RefCountPtr<Epetra_Vector> >("qin_nm");
-  RefCountPtr<Epetra_Vector> qin_n   = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
-  RefCountPtr<Epetra_Vector> qin_np  = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
+  RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
+  RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
+  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RefCountPtr<Epetra_Vector> qout_np = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
-  RefCountPtr<Epetra_Vector> qout_n  = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
-  RefCountPtr<Epetra_Vector> qout_nm = params.get<RefCountPtr<Epetra_Vector> >("qout_nm");
+  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
+  RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
   
-  RefCountPtr<Epetra_Vector> sysmat_iad = params.get<RefCountPtr<Epetra_Vector> >("sysmat_iad");
+  RCP<Epetra_Vector> sysmat_iad = params.get<RCP<Epetra_Vector> >("sysmat_iad");
 
  if (pnp==null || pn==null || pnm==null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -667,7 +667,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
   DRT::Discretization&         discretization,
   vector<int>&                 lm,
   Epetra_SerialDenseVector&    rhs,
-  RefCountPtr<MAT::Material>   material)
+  RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
@@ -681,7 +681,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
   const int numnode = lm.size();
   vector<int>::iterator it_vcr;
 
-  RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
   if (pnp==null)
     dserror("Cannot get state vectors 'pnp'");
@@ -874,8 +874,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
 
         if (Bc == "pressure" || Bc == "ExponentialPleuralPressure")
         {
-          RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
           
           if (bcval==null||dbctog==null)
           {
@@ -927,7 +927,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           BCin /= double(numOfElems);
 
           // get rhs
-          //          RefCountPtr<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
+          //          RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
           //          if (rhs==null)
           //          {
           //            dserror("Cannot get state vector 'rhs'");
@@ -957,7 +957,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         #if 0
         int gid;
         double val;
-        RefCountPtr<Epetra_Vector> abc  = params.get<RCP<Epetra_Vector> >("abc");
+        RCP<Epetra_Vector> abc  = params.get<RCP<Epetra_Vector> >("abc");
         gid = lm[i];
         val = 1;
         abc->ReplaceGlobalValues(1,&val,&gid);
@@ -989,8 +989,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
           
-          RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
           
           if (bcval==null||dbctog==null)
           {
@@ -1023,7 +1023,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         // ---------------------------------------------------------------
         if (ele->Nodes()[i]->NumElement() == 1)
         {
-          RefCountPtr<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
+          RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
           if (rhs==null)
           {
             dserror("Cannot get state vector 'rhs'");
@@ -1058,7 +1058,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   Epetra_SerialDenseVector&    elevec1, //a_volumenp,
   Epetra_SerialDenseVector&    elevec2, //a_volume_strain_np,
   vector<int>&                 lm,
-  RefCountPtr<MAT::Material>   material)
+  RCP<MAT::Material>   material)
 
 #if 1
 {
@@ -1089,21 +1089,21 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
-  RefCountPtr<const Epetra_Vector> pnm  = discretization.GetState("pnm");
+  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
+  RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
 
-  RefCountPtr<Epetra_Vector> qin_nm  = params.get<RefCountPtr<Epetra_Vector> >("qin_nm");
-  RefCountPtr<Epetra_Vector> qin_n   = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
-  RefCountPtr<Epetra_Vector> qin_np  = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
+  RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
+  RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
+  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RefCountPtr<Epetra_Vector> qout_np = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
-  RefCountPtr<Epetra_Vector> qout_n  = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
-  RefCountPtr<Epetra_Vector> qout_nm = params.get<RefCountPtr<Epetra_Vector> >("qout_nm");
+  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
+  RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
 
-  RefCountPtr<Epetra_Vector> acinar_vn          = params.get<RefCountPtr<Epetra_Vector> >("acinar_vn");
-  RefCountPtr<Epetra_Vector> acinar_vnp         = params.get<RefCountPtr<Epetra_Vector> >("acinar_vnp");
-  RefCountPtr<Epetra_Vector> a_volume_strain_np = params.get<RefCountPtr<Epetra_Vector> >("acinar_vnp_strain");
+  RCP<Epetra_Vector> acinar_vn          = params.get<RCP<Epetra_Vector> >("acinar_vn");
+  RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  RCP<Epetra_Vector> a_volume_strain_np = params.get<RCP<Epetra_Vector> >("acinar_vnp_strain");
 
 
  if (pnp==null || pn==null || pnm==null )
@@ -1218,14 +1218,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
 
   //  const int numnode = iel;
 
-  RefCountPtr<const Epetra_Vector> pnp   = discretization.GetState("pnp");
-  RefCountPtr<const Epetra_Vector> pn    = discretization.GetState("pn");
-  RefCountPtr<const Epetra_Vector> acinar_vn = discretization.GetState("acinar_vn");
+  RCP<const Epetra_Vector> pnp   = discretization.GetState("pnp");
+  RCP<const Epetra_Vector> pn    = discretization.GetState("pn");
+  RCP<const Epetra_Vector> acinar_vn = discretization.GetState("acinar_vn");
 
-  RefCountPtr<Epetra_Vector> qin_np      = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
-  RefCountPtr<Epetra_Vector> qout_np     = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
-  RefCountPtr<Epetra_Vector> qin_n       = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
-  RefCountPtr<Epetra_Vector> qout_n      = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
+  RCP<Epetra_Vector> qin_np      = params.get<RCP<Epetra_Vector> >("qin_np");
+  RCP<Epetra_Vector> qout_np     = params.get<RCP<Epetra_Vector> >("qout_np");
+  RCP<Epetra_Vector> qin_n       = params.get<RCP<Epetra_Vector> >("qin_n");
+  RCP<Epetra_Vector> qout_n      = params.get<RCP<Epetra_Vector> >("qout_n");
 
   // get time-step size
   const double dt = params.get<double>("time step size");
@@ -1526,7 +1526,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
   ParameterList&               params,
   DRT::Discretization&         discretization,
   vector<int>&                 lm,
-  RefCountPtr<MAT::Material>   material)
+  RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
@@ -1540,7 +1540,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
   const int numnode = lm.size();
   vector<int>::iterator it_vcr;
 
-  RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
   if (pnp==null)
     dserror("Cannot get state vectors 'pnp'");

@@ -13,7 +13,7 @@
 #define BELE3_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_element.H"
@@ -107,8 +107,8 @@ public:
   }
   virtual int NumSurface() const {return 1;}
   virtual int NumVolume() const {return -1;}
-  virtual vector<RCP<DRT::Element> > Lines();
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
   virtual int UniqueParObjectId() const { return Bele3Type::Instance().UniqueParObjectId(); }
   virtual void Pack(DRT::PackBuffer& data) const;
   virtual void Unpack(const std::vector<char>& data);
@@ -190,7 +190,7 @@ private:
     };
 
   //! vector with line elements
-//  vector<RCP<DRT::Element> >                      lines_;
+//  vector<Teuchos::RCP<DRT::Element> >                      lines_;
 
   //! flag for fixed or moving boundary
 //  const bool                                      is_moving_;

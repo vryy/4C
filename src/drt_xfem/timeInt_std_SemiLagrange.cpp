@@ -817,7 +817,7 @@ void XFEM::SemiLagrange::backTracking(
     {
       // get nodal velocities and pressures with help of the field set of node
       const std::set<XFEM::FieldEnr>& fieldEnrSet(olddofman_->getNodeDofSet(elenodeids[nodeid]));
-      for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+      for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
           fieldenr != fieldEnrSet.end();++fieldenr)
       {
         const DofKey olddofkey(elenodeids[nodeid], *fieldenr);
@@ -899,7 +899,7 @@ void XFEM::SemiLagrange::backTracking(
         transportVeln(2) += nodevel(2,inode)*shp.velz.d0.s(inode);
 
         const set<XFEM::FieldEnr>& enrfieldset = olddofman_->getNodeDofSet(elenodeids[inode]);
-        for (set<XFEM::FieldEnr>::const_iterator enrfield =
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
             enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
           if (enrfield->getField() == XFEM::PHYSICS::Veln)
@@ -1131,7 +1131,7 @@ void XFEM::SemiLagrange::newIteration_nodalData(
     // set transport velocity at this node
     const int gid = node.Id();
     const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
       const DofKey newdofkey(gid, *fieldenr);
@@ -1219,7 +1219,7 @@ void XFEM::SemiLagrange::reinitializeData()
         // 2) reset value of old solution
         // get nodal velocities and pressures with help of the field set of node
         const std::set<XFEM::FieldEnr>& fieldEnrSet(newdofman_->getNodeDofSet(nodeid));
-        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+        for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
             fieldenr != fieldEnrSet.end();++fieldenr)
         {
           const DofKey dofkey(nodeid, *fieldenr);

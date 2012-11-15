@@ -47,7 +47,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "Epetra_Comm.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 #include "../drt_lib/drt_container.H"
 #include "../drt_lib/drt_dserror.H"

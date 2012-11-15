@@ -310,7 +310,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   timer.ResetStartTime();
 
   // start building the distance function
-  set<int> allnodes;
+  std::set<int> allnodes;
   for (int i=0; i<(int)conds.size(); ++i)
   {
     const vector<int>* nodes = conds[i]->Nodes();
@@ -323,7 +323,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   const int nnodes = (int)allnodes.size();
   vector<double> lcoords(nnodes*3,0.0);
   vector<double> gcoords(nnodes*3,0.0);
-  set<int>::iterator fool;
+  std::set<int>::iterator fool;
   int count=0;
   for (fool=allnodes.begin(); fool != allnodes.end(); ++fool)
   {

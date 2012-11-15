@@ -12,7 +12,7 @@
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Abstract_Group.H>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include "../drt_lib/drt_discret.H"
@@ -47,7 +47,7 @@ namespace FSI
     void DumpJacobian(NOX::Epetra::Interface::Required& interface,
                       double alpha,
                       double beta,
-                      Teuchos::RefCountPtr<Epetra_Vector> soln,
+                      Teuchos::RCP<Epetra_Vector> soln,
                       std::string filename);
 
     /// shift given map to have no overlap with maps in vector

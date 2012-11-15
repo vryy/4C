@@ -16,7 +16,7 @@ Maintainer: Mahmoud Ismail
 #define ART_NET_DYN_DRT_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 // forward declaration
 namespace ART{

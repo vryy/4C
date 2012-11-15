@@ -14,7 +14,7 @@ Maintainer: Michael Gee
 
 // Trilinos includes
 #include <Epetra_CrsMatrix.h>
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
 #include "ml_common.h"

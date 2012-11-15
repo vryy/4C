@@ -28,9 +28,9 @@ Maintainer: Jonas Biehler
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_LAPACK.h"
 #include "Epetra_Vector.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseVector.h>
 #include <math.h>
 //#include "../drt_adapter/ad_str_structure.H"

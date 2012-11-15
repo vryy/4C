@@ -15,7 +15,7 @@
 #define SMOOTHER_H_
 
 // Trilinos includes
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
 #include "../../drt_lib/drt_dserror.H"

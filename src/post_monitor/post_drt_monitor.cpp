@@ -529,13 +529,13 @@ void FluidMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void FluidMonWriter::WriteHeader(ofstream& outfile)
+void FluidMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# fluid problem, writing nodal data of node ";
 }
 
 /*----------------------------------------------------------------------*/
-void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
+void FluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -553,7 +553,7 @@ void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void FluidMonWriter::WriteResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostResult& result,
   std::vector<int>& gdof,
   int dim
@@ -595,13 +595,13 @@ void CombustMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void CombustMonWriter::WriteHeader(ofstream& outfile)
+void CombustMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# fluid problem, writing nodal data of node ";
 }
 
 /*----------------------------------------------------------------------*/
-void CombustMonWriter::WriteTableHead(ofstream& outfile, int dim)
+void CombustMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -619,7 +619,7 @@ void CombustMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void CombustMonWriter::WriteResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostResult& result,
   std::vector<int>& gdof,
   int dim
@@ -661,13 +661,13 @@ void StructMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteHeader(ofstream& outfile)
+void StructMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# structure problem, writing nodal data of node ";
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
+void StructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -706,7 +706,7 @@ void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void StructMonWriter::WriteResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostResult& result,
   std::vector<int>& gdof,
   int dim
@@ -809,7 +809,7 @@ void StructMonWriter::WriteResult(
 
 /*----------------------------------------------------------------------*/
 void StructMonWriter::WriteStrTableHead(
-  ofstream& outfile,
+  std::ofstream& outfile,
   const string strname,
   const string strtype,
   const int dim
@@ -847,7 +847,7 @@ void StructMonWriter::WriteStrTableHead(
 
 /*----------------------------------------------------------------------*/
 void StructMonWriter::WriteStrResults(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostProblem& problem,
   PostResult& result,
   std::vector<int>& gdof,
@@ -929,7 +929,7 @@ void StructMonWriter::WriteStrResults(
 
 /*----------------------------------------------------------------------*/
 void StructMonWriter::WriteStrResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostField*& field,
   PostResult& result,
   const string groupname,
@@ -986,13 +986,13 @@ void AleMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::WriteHeader(ofstream& outfile)
+void AleMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# ALE problem, writing nodal data of node ";
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::WriteTableHead(ofstream& outfile, int dim)
+void AleMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -1009,7 +1009,7 @@ void AleMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void AleMonWriter::WriteResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostResult& result,
   std::vector<int>& gdof,
   int dim
@@ -1048,13 +1048,13 @@ PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiFluidMonWriter::WriteHeader(ofstream& outfile)
+void FsiFluidMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of fluid node ";
 }
 
 /*----------------------------------------------------------------------*/
-void FsiFluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
+void FsiFluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -1071,7 +1071,7 @@ void FsiFluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void FsiFluidMonWriter::WriteResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostResult& result,
   std::vector<int>& gdof,
   int dim
@@ -1124,7 +1124,7 @@ PostField* FsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiStructMonWriter::WriteHeader(ofstream& outfile)
+void FsiStructMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of structure node ";
 }
@@ -1143,7 +1143,7 @@ PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void FsiAleMonWriter::WriteHeader(ofstream& outfile)
+void FsiAleMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# FSI problem, writing nodal data of ALE node ";
 }
@@ -1165,7 +1165,7 @@ void ScatraMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void ScatraMonWriter::WriteHeader(ofstream& outfile)
+void ScatraMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# SCATRA problem, writing nodal data of node ";
 }
@@ -1181,7 +1181,7 @@ PostField* ScatraMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void ScatraMonWriter::WriteTableHead(ofstream& outfile, int dim)
+void ScatraMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
@@ -1198,7 +1198,7 @@ void ScatraMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void ScatraMonWriter::WriteResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostResult& result,
   std::vector<int>& gdof,
   int dim
@@ -1241,13 +1241,13 @@ void ThermoMonWriter::FieldError(int node)
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteHeader(ofstream& outfile)
+void ThermoMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# thermo problem, writing nodal data of node ";
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteTableHead(ofstream& outfile, int dim)
+void ThermoMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   outfile << "#"
           << std::right << std::setw(9) << "step"
@@ -1259,7 +1259,7 @@ void ThermoMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::WriteResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostResult& result,
   std::vector<int>& gdof,
   int dim
@@ -1310,7 +1310,7 @@ void ThermoMonWriter::WriteResult(
 
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::WriteThrTableHead(
-  ofstream& outfile,
+  std::ofstream& outfile,
   const string thrname,
   const string thrtype,
   const int dim
@@ -1351,7 +1351,7 @@ void ThermoMonWriter::WriteThrTableHead(
 
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::WriteThrResults(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostProblem& problem,
   PostResult& result,
   std::vector<int>& gdof,
@@ -1414,7 +1414,7 @@ void ThermoMonWriter::WriteThrResults(
 
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::WriteThrResult(
-  ofstream& outfile,
+  std::ofstream& outfile,
   PostField*& field,
   PostResult& result,
   const string groupname,
@@ -1507,7 +1507,7 @@ PostField* TsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void TsiStructMonWriter::WriteHeader(ofstream& outfile)
+void TsiStructMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# TSI problem, writing nodal data of structure node ";
 }
@@ -1527,7 +1527,7 @@ PostField* TsiThermoMonWriter::GetFieldPtr(PostProblem& problem)
 }
 
 /*----------------------------------------------------------------------*/
-void TsiThermoMonWriter::WriteHeader(ofstream& outfile)
+void TsiThermoMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# TSI problem, writing nodal data of thermal node ";
 }

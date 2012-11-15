@@ -16,7 +16,7 @@ Maintainer: Georg Hammerl
 #ifndef ADAPTER_STRUCTURE_H
 #define ADAPTER_STRUCTURE_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Vector.h>

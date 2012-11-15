@@ -58,13 +58,13 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
   const DRT::ELEMENTS::TopOpt::ActionType act = convertStringToActionType(action);
 
   // get material
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   switch (act)
   {
   case set_general_optimization_parameter:
   {
-    RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
     optiparam->SetGeneralOptimizationParameter(params);
     break;
   }
@@ -176,13 +176,13 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
   const DRT::ELEMENTS::TopOptBoundary::ActionType act = convertStringToActionType(action);
 
   // get material
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   switch (act)
   {
   case set_general_optimization_parameter:
   {
-    RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
     optiparam->SetGeneralOptimizationParameter(params);
   }
   case compute_values:

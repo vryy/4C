@@ -25,7 +25,7 @@ Maintainer: Mahmoud Ismail
 
 #include "fluid_utils_mapextractor.H"
 #include "fluid_utils.H"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"

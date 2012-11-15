@@ -360,7 +360,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
 /*----------------------------------------------------------------------***
  |  get vector of volumes (length 1) (public)                  			|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
@@ -372,7 +372,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Volumes()
  |  get vector of surfaces (public)                             		|
  |  surface normals always point outward                                |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -387,7 +387,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Surfaces()
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                               			|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.

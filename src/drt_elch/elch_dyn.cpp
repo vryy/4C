@@ -45,9 +45,9 @@ void elch_dyn(int restart)
   if (comm.MyPID()==0) printlogo();
 
   // access the fluid discretization
-  RefCountPtr<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
   // access the scatra discretization
-  RefCountPtr<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra/elch dof
@@ -125,7 +125,7 @@ void elch_dyn(int restart)
     const Teuchos::ParameterList& fdyn = (problem->FluidDynamicParams());
     prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
-    RefCountPtr<DRT::Discretization> aledis = problem->GetDis("ale");
+    RCP<DRT::Discretization> aledis = problem->GetDis("ale");
     if (!aledis->Filled()) aledis->FillComplete();
     // is ALE needed or not?
     const INPAR::ELCH::ElchMovingBoundary withale

@@ -565,8 +565,8 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   map<int, RCP<DRT::Element> >  sourceelements;
   DRT::UTILS::FindConditionObjects(*sourcedis, sourceelements, condname);
 
-  set<int> rownodeset;
-  set<int> colnodeset;
+  std::set<int> rownodeset;
+  std::set<int> colnodeset;
 
   // construct new elements
   for (map<int, RCP<DRT::Element> >::const_iterator sourceele_iter = sourceelements.begin();

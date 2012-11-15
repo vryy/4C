@@ -17,7 +17,7 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifndef TRANSFERTURBINF_H
 #define TRANSFERTURBINF_H
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "../linalg/linalg_utils.H"
 
 /*
@@ -41,8 +41,8 @@ public:
 
   */
   TransferTurbulentInflowCondition(
-    RefCountPtr<DRT::Discretization>  dis,
-    RefCountPtr<LINALG::MapExtractor> dbcmaps
+    RCP<DRT::Discretization>  dis,
+    RCP<LINALG::MapExtractor> dbcmaps
     );
 
   /*!
@@ -116,10 +116,10 @@ private:
   bool                             active_;
 
   //! the discretisation
-  RefCountPtr<DRT::Discretization> dis_;
+  RCP<DRT::Discretization> dis_;
 
   //! info on DIirchlet boundary
-  RefCountPtr<LINALG::MapExtractor> dbcmaps_;
+  RCP<LINALG::MapExtractor> dbcmaps_;
 
   //! the connectivity of the boundary condition
   std::map<int,vector<int> >       midtosid_;

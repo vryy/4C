@@ -85,7 +85,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
     std::ofstream f_system(filename.str().c_str());
     {
       // stringstream for domains
-      stringstream gmshfilecontent;
+      std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
 
       for (int i=0; i<fluiddis_->NumMyRowElements(); ++i)
@@ -146,7 +146,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 //    std::ofstream f_system(filename.str().c_str());
 //    {
 //      // stringstream for domains
-//      stringstream gmshfilecontent;
+//      std::stringstream gmshfilecontent;
 //      gmshfilecontent << "View \" " << "SpaceTime cells \" {" << endl;
 //      LINALG::SerialDenseVector vals(8);
 //      vals(0) = 0.0;vals(1) = 0.0;vals(2) = 0.0;vals(3) = 0.0;
@@ -178,7 +178,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 //    std::ofstream f_systemP(filenameP.str().c_str());
 //    {
 //      // stringstream for cellcenter points
-//      stringstream gmshfilecontentP;
+//      std::stringstream gmshfilecontentP;
 //      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
 //
 //      for (int i=0; i<fluiddis_->NumMyRowElements(); ++i)

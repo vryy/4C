@@ -30,7 +30,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
-  RefCountPtr<DRT::Discretization> actdis,
+  RCP<DRT::Discretization> actdis,
   IO::DiscretizationWriter& output,
   RCP<FLD::UTILS::FluidImpedanceWrapper> ImpWrapper,
   double dta) :

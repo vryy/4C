@@ -503,7 +503,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   ParameterList&             params,
   DRT::Discretization&       discretization,
   vector<int>&               lm,
-  RefCountPtr<MAT::Material> mat)
+  RCP<MAT::Material> mat)
 {
   //----------------------------------------------------------------------
   // get all nodal values
@@ -1524,45 +1524,45 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   eps_cstab /= vol;
   eps_pspg /= vol;
 
-  RefCountPtr<vector<double> > incrvol           = params.get<RefCountPtr<vector<double> > >("incrvol"          );
+  RCP<vector<double> > incrvol           = params.get<RCP<vector<double> > >("incrvol"          );
 
-  RefCountPtr<vector<double> > incr_eps_visc      = params.get<RefCountPtr<vector<double> > >("incr_eps_visc"    );
-  RefCountPtr<vector<double> > incr_eps_conv      = params.get<RefCountPtr<vector<double> > >("incr_eps_conv"    );
-  RefCountPtr<vector<double> > incr_eps_smag      = params.get<RefCountPtr<vector<double> > >("incr_eps_eddyvisc");
-  RefCountPtr<vector<double> > incr_eps_avm3      = params.get<RefCountPtr<vector<double> > >("incr_eps_avm3"    );
-  RefCountPtr<vector<double> > incr_eps_mfs       = params.get<RefCountPtr<vector<double> > >("incr_eps_mfs"     );
-  RefCountPtr<vector<double> > incr_eps_mfscross  = params.get<RefCountPtr<vector<double> > >("incr_eps_mfscross");
-  RefCountPtr<vector<double> > incr_eps_mfsrey    = params.get<RefCountPtr<vector<double> > >("incr_eps_mfsrey"  );
-  RefCountPtr<vector<double> > incr_eps_supg      = params.get<RefCountPtr<vector<double> > >("incr_eps_supg"    );
-  RefCountPtr<vector<double> > incr_eps_cross     = params.get<RefCountPtr<vector<double> > >("incr_eps_cross"   );
-  RefCountPtr<vector<double> > incr_eps_rey       = params.get<RefCountPtr<vector<double> > >("incr_eps_rey"     );
-  RefCountPtr<vector<double> > incr_eps_cstab     = params.get<RefCountPtr<vector<double> > >("incr_eps_cstab"   );
-  RefCountPtr<vector<double> > incr_eps_pspg      = params.get<RefCountPtr<vector<double> > >("incr_eps_pspg"    );
+  RCP<vector<double> > incr_eps_visc      = params.get<RCP<vector<double> > >("incr_eps_visc"    );
+  RCP<vector<double> > incr_eps_conv      = params.get<RCP<vector<double> > >("incr_eps_conv"    );
+  RCP<vector<double> > incr_eps_smag      = params.get<RCP<vector<double> > >("incr_eps_eddyvisc");
+  RCP<vector<double> > incr_eps_avm3      = params.get<RCP<vector<double> > >("incr_eps_avm3"    );
+  RCP<vector<double> > incr_eps_mfs       = params.get<RCP<vector<double> > >("incr_eps_mfs"     );
+  RCP<vector<double> > incr_eps_mfscross  = params.get<RCP<vector<double> > >("incr_eps_mfscross");
+  RCP<vector<double> > incr_eps_mfsrey    = params.get<RCP<vector<double> > >("incr_eps_mfsrey"  );
+  RCP<vector<double> > incr_eps_supg      = params.get<RCP<vector<double> > >("incr_eps_supg"    );
+  RCP<vector<double> > incr_eps_cross     = params.get<RCP<vector<double> > >("incr_eps_cross"   );
+  RCP<vector<double> > incr_eps_rey       = params.get<RCP<vector<double> > >("incr_eps_rey"     );
+  RCP<vector<double> > incr_eps_cstab     = params.get<RCP<vector<double> > >("incr_eps_cstab"   );
+  RCP<vector<double> > incr_eps_pspg      = params.get<RCP<vector<double> > >("incr_eps_pspg"    );
 
-  RefCountPtr<vector<double> > incrhk            = params.get<RefCountPtr<vector<double> > >("incrhk"           );
-  RefCountPtr<vector<double> > incrhbazilevs     = params.get<RefCountPtr<vector<double> > >("incrhbazilevs"    );
-  RefCountPtr<vector<double> > incrstrle         = params.get<RefCountPtr<vector<double> > >("incrstrle"        );
-  RefCountPtr<vector<double> > incrgradle        = params.get<RefCountPtr<vector<double> > >("incrgradle"       );
+  RCP<vector<double> > incrhk            = params.get<RCP<vector<double> > >("incrhk"           );
+  RCP<vector<double> > incrhbazilevs     = params.get<RCP<vector<double> > >("incrhbazilevs"    );
+  RCP<vector<double> > incrstrle         = params.get<RCP<vector<double> > >("incrstrle"        );
+  RCP<vector<double> > incrgradle        = params.get<RCP<vector<double> > >("incrgradle"       );
 
-  RefCountPtr<vector<double> > incrres           = params.get<RefCountPtr<vector<double> > >("incrres"          );
-  RefCountPtr<vector<double> > incrres_sq        = params.get<RefCountPtr<vector<double> > >("incrres_sq"       );
-  RefCountPtr<vector<double> > incrabsres        = params.get<RefCountPtr<vector<double> > >("incrabsres"       );
-  RefCountPtr<vector<double> > incrtauinvsvel    = params.get<RefCountPtr<vector<double> > >("incrtauinvsvel"   );
+  RCP<vector<double> > incrres           = params.get<RCP<vector<double> > >("incrres"          );
+  RCP<vector<double> > incrres_sq        = params.get<RCP<vector<double> > >("incrres_sq"       );
+  RCP<vector<double> > incrabsres        = params.get<RCP<vector<double> > >("incrabsres"       );
+  RCP<vector<double> > incrtauinvsvel    = params.get<RCP<vector<double> > >("incrtauinvsvel"   );
 
-  RefCountPtr<vector<double> > incrsvelaf        = params.get<RefCountPtr<vector<double> > >("incrsvelaf"       );
-  RefCountPtr<vector<double> > incrsvelaf_sq     = params.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"    );
-  RefCountPtr<vector<double> > incrabssvelaf     = params.get<RefCountPtr<vector<double> > >("incrabssvelaf"    );
+  RCP<vector<double> > incrsvelaf        = params.get<RCP<vector<double> > >("incrsvelaf"       );
+  RCP<vector<double> > incrsvelaf_sq     = params.get<RCP<vector<double> > >("incrsvelaf_sq"    );
+  RCP<vector<double> > incrabssvelaf     = params.get<RCP<vector<double> > >("incrabssvelaf"    );
 
-  RefCountPtr<vector<double> > incrresC          = params.get<RefCountPtr<vector<double> > >("incrresC"         );
-  RefCountPtr<vector<double> > incrresC_sq       = params.get<RefCountPtr<vector<double> > >("incrresC_sq"      );
-  RefCountPtr<vector<double> > spressnp          = params.get<RefCountPtr<vector<double> > >("incrspressnp"     );
-  RefCountPtr<vector<double> > spressnp_sq       = params.get<RefCountPtr<vector<double> > >("incrspressnp_sq"  );
+  RCP<vector<double> > incrresC          = params.get<RCP<vector<double> > >("incrresC"         );
+  RCP<vector<double> > incrresC_sq       = params.get<RCP<vector<double> > >("incrresC_sq"      );
+  RCP<vector<double> > spressnp          = params.get<RCP<vector<double> > >("incrspressnp"     );
+  RCP<vector<double> > spressnp_sq       = params.get<RCP<vector<double> > >("incrspressnp_sq"  );
 
-  RefCountPtr<vector<double> > incrtauC          = params.get<RefCountPtr<vector<double> > >("incrtauC"         );
-  RefCountPtr<vector<double> > incrtauM          = params.get<RefCountPtr<vector<double> > >("incrtauM"         );
+  RCP<vector<double> > incrtauC          = params.get<RCP<vector<double> > >("incrtauC"         );
+  RCP<vector<double> > incrtauM          = params.get<RCP<vector<double> > >("incrtauM"         );
 
-  RefCountPtr<vector<double> > incrcrossstress   = params.get<RefCountPtr<vector<double> > >("incrcrossstress"  );
-  RefCountPtr<vector<double> > incrreystress     = params.get<RefCountPtr<vector<double> > >("incrreystress"    );
+  RCP<vector<double> > incrcrossstress   = params.get<RCP<vector<double> > >("incrcrossstress"  );
+  RCP<vector<double> > incrreystress     = params.get<RCP<vector<double> > >("incrreystress"    );
 
   bool found = false;
 

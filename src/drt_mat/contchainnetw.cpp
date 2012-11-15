@@ -776,14 +776,14 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     std::stringstream filename;
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
     filename << filebase << "_rem" << ".txt";
-    ofstream outfile;
+    std::ofstream outfile;
     outfile.open(filename.str().c_str(),ios_base::app);
     //int nele = dis->NumMyColElements();
     int endele = 100; //nele;
     for (int iele=0; iele<endele; iele+=12) //++iele) iele+=10)
     {
       const DRT::Element* actele = dis->lColElement(iele);
-      RefCountPtr<MAT::Material> mat = actele->Material();
+      RCP<MAT::Material> mat = actele->Material();
       if (mat->MaterialType() != INPAR::MAT::m_contchainnetw) return;
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
       //int ngp = chain->Getni()->size();
@@ -828,7 +828,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
   filename << filebase << "_ContChainMat" << std::setw(3) << std::setfill('0') << time << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system(filename.str().c_str());
 
-  stringstream gmshfilecontent;
+  std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" Time: " << time << " Iter: " << iter << " \" {" << endl;
   for (int iele=0; iele<dis->NumMyColElements(); ++iele)
   {
@@ -855,7 +855,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
         1.0, xyze) << endl;
 
     vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
-    RefCountPtr<MAT::Material> mat = actele->Material();
+    RCP<MAT::Material> mat = actele->Material();
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
     LINALG::Matrix<3,3> ni0 = chain->Getni()->at(0);
     vector<double> lamb0 = chain->Getlambdas()->at(0);

@@ -37,7 +37,7 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialComm.h"
 #include "mortar_strategy_base.H"
 #include "mortar_defines.H"

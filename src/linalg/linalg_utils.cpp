@@ -54,7 +54,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix  (public)                      mwgee 12/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, const int npr)
+RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, const int npr)
 {
   if (!rowmap.UniqueGIDs()) dserror("Row map is not unique");
   return Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,npr,false));
@@ -62,7 +62,7 @@ RefCountPtr<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, con
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector  (public)                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> LINALG::CreateVector(const Epetra_Map& rowmap, const bool init)
+RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_Map& rowmap, const bool init)
 {
   return Teuchos::rcp(new Epetra_Vector(rowmap,init));
 }
@@ -1929,7 +1929,7 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
 #endif
   vector<int> rv;
   AllreduceEMap(rv,emap);
-  RefCountPtr<Epetra_Map> rmap;
+  RCP<Epetra_Map> rmap;
 
   if (emap.Comm().MyPID()==pid)
   {
@@ -1960,7 +1960,7 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
 #endif
   vector<int> rv;
   AllreduceEMap(rv,emap);
-  RefCountPtr<Epetra_Map> rmap;
+  RCP<Epetra_Map> rmap;
 
   rmap = Teuchos::rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
   // check the map

@@ -539,8 +539,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
 
     // extract local values from the global vectors
-    RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (hist==Teuchos::null || phinp==Teuchos::null)
       dserror("Cannot get state vector 'hist' and/or 'phinp'");
     vector<double> myhist(lm.size());
@@ -566,7 +566,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if ((scatratype == INPAR::SCATRA::scatratype_loma) and is_genalpha_)
     {
       // extract additional local values from global vector
-      RefCountPtr<const Epetra_Vector> phiam = discretization.GetState("phiam");
+      RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
       if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
       vector<double> myphiam(lm.size());
       DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
@@ -585,7 +585,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (is_genalpha_ and not is_incremental_)
     {
       // extract additional local values from global vector
-      RefCountPtr<const Epetra_Vector> phin = discretization.GetState("phin");
+      RCP<const Epetra_Vector> phin = discretization.GetState("phin");
       if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
       vector<double> myphin(lm.size());
       DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
@@ -624,7 +624,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       {
         if (betterconsistency_)
         {
-          ostringstream temp;
+          std::ostringstream temp;
           temp << k;
           string name = "flux_phi_"+temp.str();
           // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
@@ -878,7 +878,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   case SCATRA::get_material_parameters:
   {
     // get the material
-    RefCountPtr<MAT::Material> material = ele->Material();
+    RCP<MAT::Material> material = ele->Material();
 
     if (material->MaterialType() == INPAR::MAT::m_sutherland)
     {
@@ -958,7 +958,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       const double dt   = params.get<double>("time-step length");
 
       // extract local values from the global vectors
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp==Teuchos::null)
         dserror("Cannot get state vector 'phinp'");
       vector<double> myphinp(lm.size());
@@ -997,7 +997,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // need current values of transported scalar
     // -> extract local values from global vectors
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
@@ -1078,7 +1078,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
       // need current scalar vector
       // -> extract local values from the global vectors
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
       vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
@@ -1094,7 +1094,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
 
     // need current solution
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
@@ -1128,7 +1128,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // calculate conductivity of electrolyte solution
       const double frt = params.get<double>("frt");
       // extract local values from the global vector
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
@@ -1157,7 +1157,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   case SCATRA::calc_elch_initial_potential:
   {
     // need initial field -> extract local values from the global vector
-    RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
+    RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
     if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
     vector<double> myphi0(lm.size());
     DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
@@ -1186,7 +1186,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // extract scalar and velocity values from global vectors
 
       // scalar field
-      RefCountPtr<const Epetra_Vector> scalar = discretization.GetState("scalar");
+      Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
       if (scalar == Teuchos::null)
         dserror("Cannot get scalar!");
       vector<double> myscalar(lm.size());
@@ -1338,7 +1338,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
     // get phi for material parameters
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null)
       dserror("Cannot get state vector 'phinp'");
     vector<double> myphinp(lm.size());
@@ -2074,7 +2074,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   )
 {
 // get the material
-  RefCountPtr<MAT::Material> material = ele->Material();
+  RCP<MAT::Material> material = ele->Material();
 
 // get diffusivity / diffusivities
   if (material->MaterialType() == INPAR::MAT::m_matlist)
@@ -4559,7 +4559,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
   )
 {
 // get material
-  RefCountPtr<MAT::Material> material = ele->Material();
+  RCP<MAT::Material> material = ele->Material();
 
   if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   {
@@ -4926,7 +4926,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
     vector<double> v(1,migepe2);
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "Pe_mig_"+temp.str();
     actele->AddToData(name,v);
@@ -4964,7 +4964,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
     vector<double> v(1,epe);
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "Pe_"+temp.str();
     actele->AddToData(name,v);
@@ -4998,7 +4998,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
     vector<double> v(1,migepe2);
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "Pe_mig_"+temp.str();
     actele->AddToData(name,v);
@@ -5032,7 +5032,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
     vector<double> v(1,epe);
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "Pe_"+temp.str();
     actele->AddToData(name,v);
@@ -5245,7 +5245,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
   if (!actele) dserror("cast to Transport* failed");
   vector<double> v(1,tau_[k]);
-  ostringstream temp;
+  std::ostringstream temp;
   temp << k;
   string name = "tau_"+ temp.str();
   actele->AddToData(name,v);

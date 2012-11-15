@@ -52,7 +52,7 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_LAPACK.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Ifpack_AdditiveSchwarz.h"
 #include "../drt_lib/drt_exporter.H"
 #include "linalg_blocksparsematrix.H"
@@ -78,7 +78,7 @@ namespace LINALG
   \param npr (in): estimated number of entries per row.
                    (need not be exact, better should be too big rather then too small)
   */
-  RefCountPtr<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap, const int npr);
+  RCP<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap, const int npr);
 
   /*!
   \brief Create a new Epetra_Vector and return RefcountPtr to it
@@ -86,7 +86,7 @@ namespace LINALG
   \param rowmap (in): row map of vector
   \param init (in): initializa vector to zero upon construction
   */
-  RefCountPtr<Epetra_Vector> CreateVector(const Epetra_Map& rowmap, const bool init = true);
+  RCP<Epetra_Vector> CreateVector(const Epetra_Map& rowmap, const bool init = true);
 
   /*!
   \brief Export a vector to a different map
@@ -1078,7 +1078,7 @@ namespace LINALG
 
 
   */
-  template<typename T> void Gather(set<T>&      sdata,
+  template<typename T> void Gather(std::set<T>&      sdata,
                                    set<T>&      rdata,
                                    const int    ntargetprocs,
                                    const int*   tprocs,
@@ -1092,7 +1092,7 @@ namespace LINALG
       return; // nothing to do in serial
     }
     // build a map of data
-    map<int,set<T> > datamap;
+    map<int,std::set<T> > datamap;
     datamap[myrank] = sdata;
     // build a source map
     Epetra_Map source(numproc,1,&myrank,0,comm);
@@ -1117,7 +1117,7 @@ namespace LINALG
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
-    typename map<int,set<T> >::const_iterator curr;
+    typename map<int,std::set<T> >::const_iterator curr;
     for (curr=datamap.begin(); curr != datamap.end(); ++curr)
     {
       const set<T>& current = curr->second;
@@ -1222,7 +1222,7 @@ namespace LINALG
   \param comm (in):   communicator to be used.
 
   */
-  template<typename T> void GatherAll(set<T>&      data,
+  template<typename T> void GatherAll(std::set<T>&      data,
                                       const        Epetra_Comm& comm)
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs

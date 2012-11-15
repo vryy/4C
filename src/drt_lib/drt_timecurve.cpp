@@ -1231,7 +1231,7 @@ double DRT::UTILS::TimeCurve::f(double t)
 
   // if the requested time is before the start we use the first
   // available time we have
-  RefCountPtr<TimeSlice> slice = slices_[0];
+  Teuchos::RCP<TimeSlice> slice = slices_[0];
   if (t < slice->begin())
     return slice->f(slice->begin());
 
@@ -1264,7 +1264,7 @@ std::vector<double> DRT::UTILS::TimeCurve::FctDer(const double t,
 
   // if the requested time is before the start we use the first
   // available time we have
-  RefCountPtr<TimeSlice> slice = slices_[0];
+  Teuchos::RCP<TimeSlice> slice = slices_[0];
   if (t < slice->begin())
   {
     return slice->FctDer(slice->begin(), deg);
@@ -1307,7 +1307,7 @@ double DRT::UTILS::TimeCurve::end()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::TimeCurve::AddSlice(Teuchos::RefCountPtr<TimeSlice> slice)
+void DRT::UTILS::TimeCurve::AddSlice(Teuchos::RCP<TimeSlice> slice)
 {
   // Do we need more error checking here?
   slices_.push_back(slice);

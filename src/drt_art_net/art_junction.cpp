@@ -75,7 +75,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RefCountPtr<DRT::Discretization> actdis,
+ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actdis,
                                                    IO::DiscretizationWriter& output,
                                                    ParameterList & params,
                                                    double dta):

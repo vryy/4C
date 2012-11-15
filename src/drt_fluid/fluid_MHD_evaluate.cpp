@@ -46,7 +46,7 @@ FLD::FluidMHDEvaluate::~FluidMHDEvaluate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::FluidMHDEvaluate::FluidMHDEvaluate(
-  RefCountPtr<DRT::Discretization>    actdis
+  RCP<DRT::Discretization>    actdis
   )
   :
   pdiscret_(actdis)
@@ -83,7 +83,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     }
 
     // get set of ids of all MHD nodes
-    set<int> MHDnodeset;
+    std::set<int> MHDnodeset;
     {
 
       for (unsigned numcond=0;numcond<MHDcnd.size();++numcond)
@@ -103,8 +103,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     }
 
     // determine sets of nodes next to MHD nodes
-    set<int> adjacent_row;
-    set<int> adjacent_col;
+    std::set<int> adjacent_row;
+    std::set<int> adjacent_col;
 
     // loop all column elements and label all row nodes next to a MHD node
     for (int i=0; i<pdiscret_->NumMyColElements(); ++i)
@@ -147,7 +147,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     }
 
     // all row nodes next to a MHD node are now contained in the bndydis
-    for(set<int>::iterator id = adjacent_row.begin();
+    for(std::set<int>::iterator id = adjacent_row.begin();
         id!=adjacent_row.end();
         ++id)
     {
@@ -191,15 +191,15 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     }
 
     // bndydis needs a full NodeRowMap and a NodeColMap
-    RefCountPtr<Epetra_Map> newrownodemap;
-    RefCountPtr<Epetra_Map> newcolnodemap;
+    RCP<Epetra_Map> newrownodemap;
+    RCP<Epetra_Map> newcolnodemap;
 
     {
 
       vector<int> rownodes;
       
       // all row nodes next to a MHD node are now contained in the bndydis
-      for(set<int>::iterator id = adjacent_row.begin();
+      for(std::set<int>::iterator id = adjacent_row.begin();
           id!=adjacent_row.end();
           ++id)
       {
@@ -215,7 +215,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
       vector<int> colnodes;
 
-      for(set<int>::iterator id = adjacent_col.begin();
+      for(std::set<int>::iterator id = adjacent_col.begin();
           id!=adjacent_col.end();
           ++id)
       {
@@ -499,7 +499,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     if(insane) dserror("invalid dof col map");
 
     {
-      set<int> testset;
+      std::set<int> testset;
       for(int rr=0;rr<bnd_discret_->DofRowMap()->NumMyElements();++rr)
       {
         int id=bnd_discret_->DofRowMap()->MyGlobalElements()[rr];

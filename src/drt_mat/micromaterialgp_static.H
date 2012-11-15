@@ -19,7 +19,7 @@ Maintainer: Lena Yoshihara
 
 
 #include <Epetra_Vector.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include "../linalg/linalg_fixedsizematrix.H"
 

@@ -287,7 +287,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
   //------------- extract patch velaf velocity---------
   // velocities (intermediate time step, n+alpha_F)
-  RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
   if (velaf==null)
     dserror("Cannot get state vector 'velaf'");
 
@@ -326,7 +326,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
   {
     // velocities (intermediate time step, n+1)
-    RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
+    RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp==null)
       dserror("Cannot get state vector 'velnp'");
 
@@ -370,7 +370,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   if (pele->IsAle())
   {
     // mesh displacements, new time step, n+1
-    RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp==null)
     {
       dserror("Cannot get state vector 'dispnp'");

@@ -53,7 +53,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat) = 0;
+                         RCP<MAT::Material> mat) = 0;
 
     virtual void Initial(Artery*                                  ele,
                          ParameterList&                           params,
@@ -65,13 +65,13 @@ namespace ELEMENTS
                                     ParameterList&                params,
                                     DRT::Discretization&          discretization,
                                     vector<int>&                  lm,
-                                    RefCountPtr<MAT::Material>    mat) = 0;
+                                    RCP<MAT::Material>    mat) = 0;
 
     virtual void CalcPostprocessingValues(Artery*                       ele,
                                           ParameterList&                params,
                                           DRT::Discretization&          discretization,
                                           vector<int>&                  lm,
-                                          RefCountPtr<MAT::Material>    mat) = 0;
+                                          RCP<MAT::Material>    mat) = 0;
 
 
     virtual bool SolveRiemann(Artery*                             ele,
@@ -121,7 +121,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat);
+                         RCP<MAT::Material> mat);
 
     /*!
       \brief calculate element matrix and rhs
@@ -155,13 +155,13 @@ namespace ELEMENTS
                                     ParameterList&               params,
                                     DRT::Discretization&         disctretization,
                                     vector<int>&                 lm,
-                                    RefCountPtr<MAT::Material>   mat);
+                                    RCP<MAT::Material>   mat);
 
     virtual void CalcPostprocessingValues(Artery*                       ele,
                                           ParameterList&                params,
                                           DRT::Discretization&          discretization,
                                           vector<int>&                  lm,
-                                          RefCountPtr<MAT::Material>    mat);
+                                          RCP<MAT::Material>    mat);
 
 
     /*!

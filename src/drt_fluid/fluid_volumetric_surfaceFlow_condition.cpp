@@ -32,7 +32,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper(RefCountPtr<DRT::Discretization> actdis,
+FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper(RCP<DRT::Discretization> actdis,
                                                                                  IO::DiscretizationWriter& output,
                                                                                  double dta) :
   // call constructor for "nontrivial" objects
@@ -2078,7 +2078,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::UpdateResidual(RCP<Epetra_Vector>
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(RefCountPtr<DRT::Discretization> actdis,
+FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(RCP<DRT::Discretization> actdis,
                                                                    IO::DiscretizationWriter& output,
                                                                    double dta) :
   // call constructor for "nontrivial" objects

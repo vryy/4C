@@ -23,7 +23,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  |  headers                                                 bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>

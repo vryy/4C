@@ -18,7 +18,7 @@ Maintainer: Lena Wiechert
 
 
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_inpar/inpar_material.H"
 //#include "material_service.H"
@@ -73,7 +73,7 @@ namespace MAT
     virtual MAT::PAR::Parameter* Parameter() const = 0;
 
     /// create element material object given the number of a material definition
-    static Teuchos::RefCountPtr<Material> Factory(
+    static Teuchos::RCP<Material> Factory(
       int matnum  ///< material ID
       );
 

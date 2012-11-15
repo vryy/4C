@@ -52,8 +52,8 @@ Maintainer: Michael Gee
 namespace DRT {
 namespace UTILS {
 
-void PackLocalConnectivity(map<int,set<int> >& lcon, DRT::PackBuffer& sblock);
-void UnpackLocalConnectivity(map<int,set<int> >& lcon, vector<char>& rblock);
+void PackLocalConnectivity(map<int,std::set<int> >& lcon, DRT::PackBuffer& sblock);
+void UnpackLocalConnectivity(map<int,std::set<int> >& lcon, vector<char>& rblock);
 
 }
 }
@@ -71,12 +71,12 @@ extern "C"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PackLocalConnectivity(
-  map<int,set<int> > & lcon,
+  map<int,std::set<int> > & lcon,
   DRT::PackBuffer    & sblock
   )
 {
-  map<int,set<int> >::iterator gidinlcon;
-  set<int>::iterator           adjacentgid;
+  map<int,std::set<int> >::iterator gidinlcon;
+  std::set<int>::iterator           adjacentgid;
 
   // size (number of nodes we have a connectivity for)
   int size=lcon.size();
@@ -108,7 +108,7 @@ void DRT::UTILS::PackLocalConnectivity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::UnpackLocalConnectivity(
-  map<int,set<int> > & lcon  ,
+  map<int,std::set<int> > & lcon  ,
   vector<char>       & rblock
   )
 {
@@ -146,7 +146,7 @@ void DRT::UTILS::UnpackLocalConnectivity(
       dserror("Everybody should have at least one unpackable neighbour (%d given)",numnb);
     }
 
-    set<int> neighbourset;
+    std::set<int> neighbourset;
 
     // extract all adjacent nodes and feed them into the set
     for(int j=0;j<numnb;++j)
@@ -157,7 +157,7 @@ void DRT::UTILS::UnpackLocalConnectivity(
     }
 
     // add this node connectivity to local connectivity map
-    lcon.insert(std::pair<int,set<int> >(gid,neighbourset));
+    lcon.insert(std::pair<int,std::set<int> >(gid,neighbourset));
   }
 
   // trash receive block
@@ -291,7 +291,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     // this is a set of gids of all nodes for which we have a
     // connectivity information on this proc
-    set<int> procnodes;
+    std::set<int> procnodes;
 
     // loop all eles on this proc and determine all gids for
     // which we have some connectivity information
@@ -322,19 +322,19 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     //                         v
     //    set of all gids of adjacent nodes on this proc
     //
-    map<int,set<int> > lcon;
+    map<int,std::set<int> > lcon;
 
     // construct empty local map
-    set<int>::iterator procnode;
+    std::set<int>::iterator procnode;
 
     for(procnode=procnodes.begin();procnode!=procnodes.end();++procnode)
     {
-      lcon.insert(std::pair<int, set<int> >(*procnode,set<int> ()));
+      lcon.insert(std::pair<int, std::set<int> >(*procnode,std::set<int> ()));
     }
 
     // loop all eles on this proc and construct the local
     // connectivity information
-    map<int,set<int> >::iterator gidinlcon;
+    map<int,std::set<int> >::iterator gidinlcon;
 
     for(int lid=0;lid<roweles->NumMyElements();++lid)
     {
@@ -376,12 +376,12 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     //    set of all gids of adjacent nodes on all procs
 
     // prepare empty map
-    map<int,set<int> > gcon;
+    map<int,std::set<int> > gcon;
     for(int j=0;j<lin_noderowmap->NumMyElements();++j)
     {
       int gid=lin_noderowmap->GID(j);
 
-      gcon.insert(std::pair<int, set<int> >(gid,set<int> ()));
+      gcon.insert(std::pair<int, std::set<int> >(gid,std::set<int> ()));
     }
 
     {
@@ -445,7 +445,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
         // connectivity on this proc
 
         // loop this procs global connectivity
-        map<int,set<int> >::iterator gidingcon;
+        map<int,std::set<int> >::iterator gidingcon;
 
         for(gidingcon=gcon.begin();gidingcon!=gcon.end();++gidingcon)
         {
@@ -537,8 +537,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       // get global node id of rownode
       int  growid =lin_noderowmap->GID(idx);
 
-      map<int,set<int> >::iterator gidingcon;
-      set<int>::iterator           nbgid;
+      map<int,std::set<int> >::iterator gidingcon;
+      std::set<int>::iterator           nbgid;
 
       gidingcon=gcon.find(growid);
 
@@ -704,12 +704,12 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     // construct epetra graph on linear noderowmap
     Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*lin_noderowmap,108,false));
 
-    for (map<int,set<int> >::iterator gid=gcon.begin();
+    for (map<int,std::set<int> >::iterator gid=gcon.begin();
          gid!=gcon.end();
          ++gid
       )
     {
-      set<int>& rowset = gid->second;
+      std::set<int>& rowset = gid->second;
       vector<int> row;
       row.reserve(rowset.size());
       row.assign(rowset.begin(),rowset.end());
@@ -830,7 +830,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   }
 
   // create a set of all nodes that I have
-  set<int> mynodes;
+  std::set<int> mynodes;
   for (int lid=0;lid<roweles->NumMyElements();++lid)
   {
     DRT::Element* ele=dis->gElement(roweles->GID(lid));
@@ -847,7 +847,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     if (proc==myrank)
     {
       recvnodes.clear();
-      set<int>::iterator fool;
+      std::set<int>::iterator fool;
       for (fool = mynodes.begin(); fool != mynodes.end(); ++fool)
         recvnodes.push_back(*fool);
       size=(int)recvnodes.size();
@@ -859,7 +859,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     {
       for (int i=0; i<size; ++i)
       {
-        set<int>::iterator fool = mynodes.find(recvnodes[i]);
+        std::set<int>::iterator fool = mynodes.find(recvnodes[i]);
         if (fool==mynodes.end()) continue;
         else                     mynodes.erase(fool);
       }
@@ -871,7 +871,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   // copy the set to a vector
   {
     vector<int> nodes;
-    set<int>::iterator fool;
+    std::set<int>::iterator fool;
     for (fool = mynodes.begin(); fool != mynodes.end(); ++fool)
       nodes.push_back(*fool);
     mynodes.clear();
@@ -881,8 +881,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
 
   // start building the graph object
-  map<int,set<int> > locals;
-  map<int,set<int> > remotes;
+  map<int,std::set<int> > locals;
+  map<int,std::set<int> > remotes;
   for (int lid=0;lid<roweles->NumMyElements();++lid)
   {
     DRT::Element* ele=dis->gElement(roweles->GID(lid));
@@ -891,20 +891,20 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     for (int i=0; i<numnode; ++i)
     {
       const int lid = rownodes->LID(nodeids[i]); // am I owner of this gid?
-      map<int,set<int> >* insertmap = NULL;
+      map<int,std::set<int> >* insertmap = NULL;
       if (lid != -1) insertmap = &locals;
       else           insertmap = &remotes;
       // see whether we already have an entry for nodeids[i]
-      map<int,set<int> >::iterator fool = (*insertmap).find(nodeids[i]);
+      map<int,std::set<int> >::iterator fool = (*insertmap).find(nodeids[i]);
       if (fool==(*insertmap).end()) // no entry in that row yet
       {
-        set<int> tmp;
+        std::set<int> tmp;
         copy(nodeids,nodeids+numnode,inserter(tmp,tmp.begin()));
         (*insertmap)[nodeids[i]] = tmp;
       }
       else
       {
-        set<int>& imap = fool->second;
+        std::set<int>& imap = fool->second;
         copy(nodeids,nodeids+numnode,inserter(imap,imap.begin()));
       }
     } // for (int i=0; i<numnode; ++i)
@@ -913,7 +913,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   int maxband = 0;
   {
     int smaxband = 0;
-    map<int,set<int> >::iterator fool;
+    map<int,std::set<int> >::iterator fool;
     for (fool = locals.begin(); fool != locals.end(); ++fool)
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
     for (fool = remotes.begin(); fool != remotes.end(); ++fool)
@@ -932,12 +932,12 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
   // fill all local entries into the graph
   {
-    map<int,set<int> >::iterator fool = locals.begin();
+    map<int,std::set<int> >::iterator fool = locals.begin();
     for (; fool != locals.end(); ++fool)
     {
       const int grid = fool->first;
       vector<int> cols(0,0);
-      set<int>::iterator setfool = fool->second.begin();
+      std::set<int>::iterator setfool = fool->second.begin();
       for (; setfool != fool->second.end(); ++setfool) cols.push_back(*setfool);
       int err = graph->InsertGlobalIndices(grid,(int)cols.size(),&cols[0]);
       if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d",err,grid);
@@ -956,12 +956,12 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     if (proc==myrank)
     {
       recvnodes.clear();
-      map<int,set<int> >::iterator mapfool = remotes.begin();
+      map<int,std::set<int> >::iterator mapfool = remotes.begin();
       for (; mapfool != remotes.end(); ++mapfool)
       {
         recvnodes.push_back((int)mapfool->second.size()+1); // length of this entry
         recvnodes.push_back(mapfool->first); // global row id
-        set<int>::iterator fool = mapfool->second.begin();
+        std::set<int>::iterator fool = mapfool->second.begin();
         for (; fool!=mapfool->second.end(); ++fool) // global col ids
           recvnodes.push_back(*fool);
       }

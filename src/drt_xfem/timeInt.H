@@ -1105,7 +1105,7 @@ public:
       const int gid = elenodeids[inode]; // global node id
       const set<XFEM::FieldEnr>& enrfieldset = olddofman_->getNodeDofSet(gid); // field enr set of node
 
-      for (set<XFEM::FieldEnr>::const_iterator enrfield =
+      for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
           enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
       {
         if (enrfield->getField() == XFEM::PHYSICS::Veln)
@@ -1184,7 +1184,7 @@ public:
     {
       // get nodal velocities and pressures with help of the field set of node
       const std::set<XFEM::FieldEnr>& fieldEnrSet(dofman->getNodeDofSet(elenodeids[nodeid]));
-      for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+      for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
           fieldenr != fieldEnrSet.end();++fieldenr)
       {
         const DofKey dofkey(elenodeids[nodeid], *fieldenr);
@@ -1271,7 +1271,7 @@ protected:
 
   // data
   RCP<Epetra_Vector> veln_; // velocity at old time t^n in column map
-  set<int> oldEnrNodes_; // global ids of column nodes intersected by old interface at time n
+  std::set<int> oldEnrNodes_; // global ids of column nodes intersected by old interface at time n
   const double dt_; // time step size
 
   RCP<COMBUST::FlameFront> flamefront_;
@@ -1385,7 +1385,7 @@ protected:
 
         numJumpEnr=0; // number of jump enrichments
         numKinkEnr=0; // number of kink enrichments
-        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+        for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
             fieldenr != fieldenrset.end();++fieldenr)
         {
           const DofKey olddofkey(currnode->Id(), *fieldenr);
@@ -1541,8 +1541,8 @@ protected:
   INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrType_; // computation type of the time integration for standard dofs
 
   const double critTol_; // tolerance for a critical part
-  set<int> critElesPlus_; // set of element with critical small part in Omega^+
-  set<int> critElesMinus_; // set of element with critical small part in Omega^-
+  std::set<int> critElesPlus_; // set of element with critical small part in Omega^+
+  std::set<int> critElesMinus_; // set of element with critical small part in Omega^-
 
   map<int,vector<LINALG::Matrix<2,4> > > eleJumpsAndKinks_; // map for element jump and kink values for an ele gid
   map<int,vector<LINALG::Matrix<1,4> > > eleKinks_; // map for element jump and kink values for an ele gid

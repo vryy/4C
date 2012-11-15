@@ -80,7 +80,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   LINALG::SerialDenseMatrix    deriv(1,numnod);
 
   // element geometry update
-  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+  RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -301,7 +301,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       if(Comm.MyPID()==Owner())
       {
         // element geometry update
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -329,7 +329,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
 	  if(Comm.MyPID()==Owner())
       {
 		  // element geometry update
-        RefCountPtr<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
+        RCP<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
         if (disptotal==null) dserror("Cannot get state vector 'displacementtotal'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disptotal,mydisp,lm);
@@ -357,7 +357,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
        LINALG::SerialDenseVector    funct(numnod);
        LINALG::SerialDenseMatrix    deriv(1,numnod);
       
-       RefCountPtr<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
+       RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
 		vector<double> edispincr(lm.size());
 	    DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
 	    
@@ -401,7 +401,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       {
         dserror("Area Constraint only works for line2 curves!");
       }  // element geometry update
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null)
       {
         dserror("Cannot get state vector 'displacement'");
@@ -432,12 +432,12 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
-      RefCountPtr<PotentialManager> potentialmanager =
-        params.get<RefCountPtr<PotentialManager> >("pot_man_", null);
+      RCP<PotentialManager> potentialmanager =
+        params.get<RCP<PotentialManager> >("pot_man_", null);
       if (potentialmanager==null)
         dserror("No PotentialManager in Wall1 line available");
 
-      RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
       if (cond==null)
         dserror("Condition not available in Wall1 line");
 

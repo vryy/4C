@@ -110,14 +110,14 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
     {
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator x1line=x1coords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x1line=x1coords.begin();
            x1line!=x1coords.end();
            ++x1line)
       {
         DRT::ParObject::AddtoPack(data,*x1line);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator x1line=x1coords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x1line=x1coords.begin();
            x1line!=x1coords.end();
            ++x1line)
       {
@@ -181,14 +181,14 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
     {
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator x2line=x2coords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x2line=x2coords.begin();
            x2line!=x2coords.end();
            ++x2line)
       {
         DRT::ParObject::AddtoPack(data,*x2line);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator x2line=x2coords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x2line=x2coords.begin();
            x2line!=x2coords.end();
            ++x2line)
       {
@@ -252,14 +252,14 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
     {
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator x3line=x3coords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x3line=x3coords.begin();
            x3line!=x3coords.end();
            ++x3line)
       {
         DRT::ParObject::AddtoPack(data,*x3line);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator x3line=x3coords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x3line=x3coords.begin();
            x3line!=x3coords.end();
            ++x3line)
       {
@@ -330,7 +330,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   RCP<vector<double> > x3coordinates;
   x3coordinates = Teuchos::rcp(new vector<double> );
 
-  for(set<double,LineSortCriterion>::iterator coord1=x1coords.begin();
+  for(std::set<double,LineSortCriterion>::iterator coord1=x1coords.begin();
       coord1!=x1coords.end();
       ++coord1)
   {
@@ -338,7 +338,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
     //std::cout << *coord1 << std::endl;
   }
 
-  for(set<double,LineSortCriterion>::iterator coord2=x2coords.begin();
+  for(std::set<double,LineSortCriterion>::iterator coord2=x2coords.begin();
       coord2!=x2coords.end();
       ++coord2)
   {
@@ -346,7 +346,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
     //std::cout << *coord2 << std::endl;
   }
 
-  for(set<double,LineSortCriterion>::iterator coord3=x3coords.begin();
+  for(std::set<double,LineSortCriterion>::iterator coord3=x3coords.begin();
       coord3!=x3coords.end();
       ++coord3)
   {

@@ -291,7 +291,7 @@ void XFEM::ExtrapolationOld::setJump(
 
   // get nodal velocities and pressures with help of the field set of node
   const std::set<XFEM::FieldEnr>& fieldEnrSet(olddofman_->getNodeDofSet(node.Id()));
-  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+  for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
       fieldenr != fieldEnrSet.end();++fieldenr)
   {
     const DofKey olddofkey(gid, *fieldenr);
@@ -716,7 +716,7 @@ void XFEM::ExtrapolationOld::interpolation(
   {
     // get nodal velocities and pressures with help of the field set of node
     const std::set<XFEM::FieldEnr>& fieldEnrSet(olddofman_->getNodeDofSet(elenodeids[nodeid]));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
         fieldenr != fieldEnrSet.end();++fieldenr)
     {
       const DofKey olddofkey(elenodeids[nodeid], *fieldenr);
@@ -1201,7 +1201,7 @@ void XFEM::ExtrapolationNew::interpolation(
   {
     // get nodal velocities and pressures with help of the field set of node
     const std::set<XFEM::FieldEnr>& fieldEnrSet(olddofman_->getNodeDofSet(elenodeids[nodeid]));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
         fieldenr != fieldEnrSet.end();++fieldenr)
     {
       const DofKey olddofkey(elenodeids[nodeid], *fieldenr);

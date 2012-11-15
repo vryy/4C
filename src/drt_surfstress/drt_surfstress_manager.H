@@ -13,7 +13,7 @@ Maintainer: Lena Yoshihara
 #ifndef SURFSTRESS_MANAGER_H
 #define SURFSTRESS_MANAGER_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_SerialDenseMatrix.h>

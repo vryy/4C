@@ -78,7 +78,7 @@ void XFEM::updateNodalDofMap(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::packDofKeys(
-    const set<XFEM::DofKey >&     dofkeyset,
+    const std::set<XFEM::DofKey >&     dofkeyset,
     DRT::PackBuffer&                            dataSend )
 {
   // pack data on all processors
@@ -94,7 +94,7 @@ void XFEM::packDofKeys(
  *----------------------------------------------------------------------*/
 void XFEM::unpackDofKeys(
     const vector<char>&                     dataRecv,
-    set<XFEM::DofKey >&       dofkeyset )
+    std::set<XFEM::DofKey >&       dofkeyset )
 {
 	vector<char>::size_type index = 0;
   while (index < dataRecv.size())
@@ -128,12 +128,12 @@ void XFEM::syncNodalDofs(
   if(myrank == 0)
     source = numproc-1;
 
-  set<XFEM::DofKey >  original_dofkeyset;
+  std::set<XFEM::DofKey >  original_dofkeyset;
   XFEM::fillNodalDofKeySet(ih, nodalDofSet, original_dofkeyset);
 
-  set<XFEM::DofKey >  new_dofkeyset;
+  std::set<XFEM::DofKey >  new_dofkeyset;
   //  new_dofkeyset = original_dofkeyset;
-  for (set<XFEM::DofKey >::const_iterator dofkey = original_dofkeyset.begin(); dofkey != original_dofkeyset.end(); ++dofkey)
+  for (std::set<XFEM::DofKey >::const_iterator dofkey = original_dofkeyset.begin(); dofkey != original_dofkeyset.end(); ++dofkey)
   {
     new_dofkeyset.insert(*dofkey);
   }
@@ -184,14 +184,14 @@ void XFEM::syncNodalDofs(
 
 
     // unpack dofkeys from char array
-    set<XFEM::DofKey >       dofkeyset;
+    std::set<XFEM::DofKey >       dofkeyset;
     XFEM::unpackDofKeys(dataRecv, dofkeyset);
 #ifdef DEBUG
     IO::cout << "proc " << myrank << ": receiving "<< lengthRecv[0] << " bytes from proc " << source << IO::endl;
     IO::cout << "proc " << myrank << ": receiving "<< dofkeyset.size() << " dofkeys from proc " << source << IO::endl;
 #endif
     // get all dofkeys whose nodegid is on this proc in the coloumnmap
-    for (set<XFEM::DofKey >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
+    for (std::set<XFEM::DofKey >::const_iterator dofkey = dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
     {
       const int nodegid = dofkey->getGid();
       if (ih.FluidDis()->HaveGlobalNode(nodegid))

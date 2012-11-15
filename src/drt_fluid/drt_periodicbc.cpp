@@ -969,7 +969,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     // get all node gids of nodes on this proc
     discret_->NodeRowMap()->MyGlobalElements(&nodesonthisproc[0]);
 
-    set<int>    nodeset;
+    std::set<int>    nodeset;
 
     for(std::vector<int>::const_iterator rr=nodesonthisproc.begin();
         rr!=nodesonthisproc.end();

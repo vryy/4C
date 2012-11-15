@@ -75,7 +75,7 @@ FSI::LungMonolithic::LungMonolithic(const Epetra_Comm& comm,
   // coupled to one structural volume. Therefore, merely comparing the
   // overall number and the minimum constraint ID is not sufficient here.
 
-  for (set<int>::iterator iter=FluidLungVolConIDs.begin(); iter!=FluidLungVolConIDs.end(); ++iter)
+  for (std::set<int>::iterator iter=FluidLungVolConIDs.begin(); iter!=FluidLungVolConIDs.end(); ++iter)
   {
     if (StructLungVolConIDs.find(*iter)==StructLungVolConIDs.end())
       dserror("No matching in fluid and structure lung volume constraints");
@@ -303,25 +303,25 @@ void FSI::LungMonolithic::GeneralSetup()
     {
       std::string number = outputprefix.substr(posn+1);
       std::string prefix = outputprefix.substr(0,posn);
-      ostringstream sf;
+      std::ostringstream sf;
       sf << prefix << "_dVfluid" << "-" << number << ".txt";
       dfluidfilename = sf.str();
-      ostringstream ss;
+      std::ostringstream ss;
       ss << prefix << "_dVstruct" << "-" << number << ".txt";
       dstructfilename = ss.str();
-      ostringstream sas;
+      std::ostringstream sas;
       sas << prefix << "_absVstruct" << "-" << number << ".txt";
       absstructfilename = sas.str();
     }
     else
     {
-      ostringstream sf;
+      std::ostringstream sf;
       sf << outputprefix << "_dVfluid.txt";
       dfluidfilename = sf.str();
-      ostringstream ss;
+      std::ostringstream ss;
       ss << outputprefix << "_dVstruct.txt";
       dstructfilename = ss.str();
-      ostringstream sas;
+      std::ostringstream sas;
       sas << outputprefix << "_absVstruct.txt";
       absstructfilename = sas.str();
     }

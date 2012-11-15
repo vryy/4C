@@ -46,7 +46,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   {
   case FLD::integrate_Shapefunction:
   {
-    RefCountPtr<const Epetra_Vector> dispnp;
+    RCP<const Epetra_Vector> dispnp;
     vector<double> mydispnp;
 
     if (isale)
@@ -125,7 +125,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   }
   case FLD::ba_calc_node_normal:
   {
-    RefCountPtr<const Epetra_Vector> dispnp;
+    RCP<const Epetra_Vector> dispnp;
     vector<double> mydispnp;
 
     if (isale)
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   }
   case FLD::calc_node_curvature:
   {
-    RefCountPtr<const Epetra_Vector> dispnp;
+    RCP<const Epetra_Vector> dispnp;
     vector<double> mydispnp;
 
     if (isale)
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
       }
     }
 
-    RefCountPtr<const Epetra_Vector> normals;
+    RCP<const Epetra_Vector> normals;
     vector<double> mynormals;
 
     normals = discretization.GetState("normals");

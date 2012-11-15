@@ -13,7 +13,7 @@ Maintainer: Sophie Rausch
 #ifndef INV_ANALYSIS_H
 #define INV_ANALYSIS_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 

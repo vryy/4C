@@ -57,7 +57,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->GetDis("red_airway");
 
   // -------------------------------------------------------------------
@@ -190,7 +190,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
-  RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
+  RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
   Teuchos::RCP<AIRWAY::RedAirwayTissue> myalgo = Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(),rawdyn));
 
   myalgo->Integrate();

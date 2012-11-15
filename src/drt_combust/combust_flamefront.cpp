@@ -4409,7 +4409,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
     {
       // find line
       //stores all segmentpoints of one line
-      pair<multimap<int,int>::const_iterator,multimap<int,int>::const_iterator> range_intersectionpoint = intersectionpointsids.equal_range(surface[surfaceNo][lineNo]);
+      std::pair<std::multimap<int,int>::const_iterator,multimap<int,int>::const_iterator> range_intersectionpoint = intersectionpointsids.equal_range(surface[surfaceNo][lineNo]);
 
       //iterates over all segmentpoints of the line
       multimap<int,int>::const_iterator it_intersectionpoint;

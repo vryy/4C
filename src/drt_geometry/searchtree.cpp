@@ -115,7 +115,7 @@ void GEO::SearchTree::initializeTreeSlideALE(
   treeRoot_ = Teuchos::null;
   treeRoot_ = Teuchos::rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
-  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
+  map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
     treeRoot_->insertElement(-1,elemiter->first);
@@ -2312,7 +2312,7 @@ void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::printTreeNode(
     const int       max_depth,
-    stringstream&   fc) const
+    std::stringstream&   fc) const
 {
   if(treedepth_== max_depth)
   {

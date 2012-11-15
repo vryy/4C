@@ -65,7 +65,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = null;
 
   actdis = DRT::Problem::Instance()->GetDis("artery");
 

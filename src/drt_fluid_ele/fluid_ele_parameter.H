@@ -21,7 +21,7 @@ Maintainer: Andreas Ehrl
 #define FLUID_ELE_PARAMETER_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_turbulence.H"

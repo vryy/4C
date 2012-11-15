@@ -5,14 +5,14 @@
 #include <NOX_Abstract_Group.H>
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Vector.H>
 
 #include <vector>
 
-NOX::FSI::EpsilonExtrapolation::EpsilonExtrapolation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+NOX::FSI::EpsilonExtrapolation::EpsilonExtrapolation(const Teuchos::RCP<NOX::Utils>& utils,
                                                Teuchos::ParameterList& params)
   : utils_(utils)
 {
@@ -29,7 +29,7 @@ NOX::FSI::EpsilonExtrapolation::~EpsilonExtrapolation()
 }
 
 
-bool NOX::FSI::EpsilonExtrapolation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+bool NOX::FSI::EpsilonExtrapolation::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
                                            Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
@@ -56,13 +56,13 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
 
   const NOX::Abstract::Vector& x = grp.getX();
 
-  std::vector<Teuchos::RefCountPtr<NOX::Epetra::Vector> > epslist(maxcol_+1);
+  std::vector<Teuchos::RCP<NOX::Epetra::Vector> > epslist(maxcol_+1);
   epslist[0] = Teuchos::rcp(new NOX::Epetra::Vector(dynamic_cast<const NOX::Epetra::Vector&>(x)));
 
-  Teuchos::RefCountPtr<NOX::Epetra::Vector> wg1;
-  Teuchos::RefCountPtr<NOX::Epetra::Vector> wg2;
-  Teuchos::RefCountPtr<NOX::Epetra::Vector> wg3;
-  //Teuchos::RefCountPtr<NOX::Epetra::Vector> wg4;
+  Teuchos::RCP<NOX::Epetra::Vector> wg1;
+  Teuchos::RCP<NOX::Epetra::Vector> wg2;
+  Teuchos::RCP<NOX::Epetra::Vector> wg3;
+  //Teuchos::RCP<NOX::Epetra::Vector> wg4;
 
   int indm = 1;
   for (int k=0; k<kmax_; ++k)
@@ -76,7 +76,7 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
     const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
 
     // We have to work on the scaled residual here.
-    Teuchos::RefCountPtr<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
+    Teuchos::RCP<NOX::Epetra::Vector> y = Teuchos::rcp(new NOX::Epetra::Vector(f));
     y->scale(omega_);
 
     indm = k+1;

@@ -16,7 +16,7 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
-DRT::IndependentPBCDofSet::IndependentPBCDofSet(RefCountPtr<std::map<int,vector<int> > >  couplednodes)
+DRT::IndependentPBCDofSet::IndependentPBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes)
   :DRT::PBCDofSet(couplednodes)
 {
 }

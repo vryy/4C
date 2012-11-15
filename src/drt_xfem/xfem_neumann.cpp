@@ -500,7 +500,7 @@ void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* paren
 
 
   // get surfaces of parent element
-  vector<RCP<DRT::Element> > surfaces(parentele->Surfaces());
+  vector<Teuchos::RCP<DRT::Element> > surfaces(parentele->Surfaces());
 
 
   // compare the Neumann surface with the surfaces of the element

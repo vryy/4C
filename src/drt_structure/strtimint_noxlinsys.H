@@ -37,7 +37,7 @@ Maintainer: Thomas Klöppel
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */

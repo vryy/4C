@@ -74,7 +74,7 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(const LINALG::MultiM
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
   prec_ = DRT::INPUT::IntegralValue<INPAR::FSI::PrecConstr>(fsidyn.sublist("CONSTRAINT"),"PRECONDITIONER");
 
-  RCP<Teuchos::ParameterList> constrsolvparams = Teuchos::rcp(new Teuchos::ParameterList);
+  Teuchos::RCP<Teuchos::ParameterList> constrsolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   constrsolvparams->set("solver","umfpack");
   constraintsolver_ = Teuchos::rcp(new LINALG::Solver(constrsolvparams,
                                              maps.Map(0)->Comm(),
@@ -101,8 +101,8 @@ void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
 
-  RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
-  RCP<Epetra_Map>           irownodes = Teuchos::null;
+  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<Epetra_Map>           irownodes = Teuchos::null;
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),

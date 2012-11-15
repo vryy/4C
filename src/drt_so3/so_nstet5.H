@@ -69,11 +69,11 @@ public:
 
   virtual void PreEvaluate(DRT::Discretization& dis,
                            Teuchos::ParameterList& p,
-                           RCP<LINALG::SparseOperator> systemmatrix1,
-                           RCP<LINALG::SparseOperator> systemmatrix2,
-                           RCP<Epetra_Vector>          systemvector1,
-                           RCP<Epetra_Vector>          systemvector2,
-                           RCP<Epetra_Vector>          systemvector3);
+                           Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                           Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                           Teuchos::RCP<Epetra_Vector>          systemvector1,
+                           Teuchos::RCP<Epetra_Vector>          systemvector2,
+                           Teuchos::RCP<Epetra_Vector>          systemvector3);
 
   virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
 
@@ -147,7 +147,7 @@ private:
                         const INPAR::STR::StrainType    iostrain);
 
 
-  void SelectMaterial(RCP<MAT::Material> mat,
+  void SelectMaterial(Teuchos::RCP<MAT::Material> mat,
                       LINALG::Matrix<6,1>& stress,
                       LINALG::Matrix<6,6>& cmat,
                       double& density,
@@ -279,22 +279,22 @@ public:
   virtual int NumLine() const {return 6;}
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of RefCountPtrs to the surfaces of this element
+  \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of RefCountPtrs to the volumes of this element
+  \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Volumes();
+  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -455,7 +455,7 @@ protected:
   int                                                      material_;
 
   //! vector of history variables for each Gauss point
-  vector<RCP<MAT::Material> >                              mat_;
+  std::vector<Teuchos::RCP<MAT::Material> >                mat_;
 
   //! volume of element
   double                                                   V_;

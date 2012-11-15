@@ -711,8 +711,8 @@ void XFEM::STD::startpoints()
             {
               // get nodal velocity of a node
               LINALG::Matrix<nsd,1> nodevel(true);  // velocity of "old" node at time n
-              const set<XFEM::FieldEnr>& fieldenrset(olddofman_->getNodeDofSet(*enrnode));
-              for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+              const std::set<XFEM::FieldEnr>& fieldenrset(olddofman_->getNodeDofSet(*enrnode));
+              for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
                   fieldenr != fieldenrset.end();++fieldenr)
               {
                 const DofKey olddofkey(*enrnode,*fieldenr);
@@ -801,8 +801,8 @@ void XFEM::STD::setFinalData(
       }
 
       // set nodal velocities and pressures with help of the field set of node
-      const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gnodeid));
-      for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+      const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gnodeid));
+      for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
           fieldenr != fieldenrset.end();++fieldenr) // loop over field enr set
       {
         const DofKey newdofkey(gnodeid, *fieldenr);
@@ -1161,8 +1161,8 @@ bool XFEM::ENR::newEnrValueNeeded(
     const int gid = node->Id();
     //  	cout << "here with node " << *node << endl;
 
-    const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
       const DofKey newdofkey(gid, *fieldenr);
@@ -1192,8 +1192,8 @@ bool XFEM::ENR::newEnrValueNeeded(
     const int gid = node->Id();
     //  	cout << "here with node " << *node << endl;
 
-    const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
       const DofKey newdofkey(gid, *fieldenr);
@@ -1256,7 +1256,7 @@ bool XFEM::ENR::critCut(const DRT::Node* node) const
     {
       if (domainPlus) // when node is in plus domain, support of enrichment is the minus part of the element
       {
-        set<int>::const_iterator tmp = critElesMinus_.find(eles[iele]->Id());
+        std::set<int>::const_iterator tmp = critElesMinus_.find(eles[iele]->Id());
         if (tmp == critElesMinus_.end()) // volumes just saved in critical cases
         {
           critCut = false; // one element has a big enough support for the node -> no problem with values
@@ -1267,7 +1267,7 @@ bool XFEM::ENR::critCut(const DRT::Node* node) const
       } // end if node in plus domain
       else
       {
-        set<int>::const_iterator tmp = critElesPlus_.find(eles[iele]->Id());
+        std::set<int>::const_iterator tmp = critElesPlus_.find(eles[iele]->Id());
         if (tmp == critElesPlus_.end()) // volumes just saved in critical cases
         {
           critCut = false; // one element has a big enough support for the node -> no problem with values

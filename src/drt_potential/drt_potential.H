@@ -16,7 +16,7 @@ Maintainer: Ursula Mayer
 #ifndef DRT_POTENTIAL_H_
 #define DRT_POTENTIAL_H_
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Vector.h>
@@ -128,7 +128,7 @@ protected:
   \brief  select correct potential out of condition
    */
   void EvaluatePotentialfromCondition(
-      RefCountPtr<DRT::Condition>   cond,
+      RCP<DRT::Condition>   cond,
       const LINALG::Matrix<3,1>&    x,
       const LINALG::Matrix<3,1>&    y,
       LINALG::Matrix<3,1>&          potderiv1,
@@ -140,7 +140,7 @@ protected:
    \brief  select correct potential out of condition
    */
   void EvaluatePotentialfromCondition(
-      RefCountPtr<DRT::Condition>   cond,
+      RCP<DRT::Condition>   cond,
       const LINALG::Matrix<2,1>&    x,
       const LINALG::Matrix<2,1>&    y,
       LINALG::Matrix<2,1>&          potderiv1,
@@ -152,7 +152,7 @@ protected:
     \brief  select correct potential out of condition
      */
   void EvaluatePotentialfromCondition_Approx1(
-      RefCountPtr<DRT::Condition>   cond,
+      RCP<DRT::Condition>   cond,
       const LINALG::Matrix<3,1>&    x,
       const LINALG::Matrix<3,1>&    y,
       LINALG::Matrix<3,1>&          potderiv1,
@@ -163,7 +163,7 @@ protected:
       \brief  select correct potential out of condition
        */
     void EvaluatePotentialfromCondition_Approx2(
-        RefCountPtr<DRT::Condition>   cond,
+        RCP<DRT::Condition>   cond,
         const LINALG::Matrix<3,1>&    x,
         const LINALG::Matrix<3,1>&    y,
         LINALG::Matrix<3,1>&          Fs,
@@ -421,8 +421,8 @@ protected:
     const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
     const std::map<int,std::set<int> >&     elementsByLabel_Vol,
     const std::map<int,std::set<int> >&     elementsByLabel_Surf,
-    const RefCountPtr<const Epetra_Vector>  disp,
-    const RefCountPtr<Epetra_Vector>        fint,
+    const RCP<const Epetra_Vector>  disp,
+    const RCP<Epetra_Vector>        fint,
     const double                            time,
     const int                               step,
     const double                            vdw_radius,
@@ -434,8 +434,8 @@ protected:
     const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
     const std::map<int,std::set<int> >&     elementsByLabel_Vol,
     const std::map<int,std::set<int> >&     elementsByLabel_Surf,
-    const RefCountPtr<const Epetra_Vector>  disp,
-    const RefCountPtr<Epetra_Vector>        fint,
+    const RCP<const Epetra_Vector>  disp,
+    const RCP<Epetra_Vector>        fint,
     const double                            time,
     const int                               step,
     const double                            vdw_radius,

@@ -306,7 +306,7 @@ void DRT::ELEMENTS::So_hex20::soh20_expol
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                           |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
@@ -317,7 +317,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Volumes()
  |  get vector of surfaces (public)                                      |
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -332,7 +332,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -420,7 +420,7 @@ bool DRT::ELEMENTS::So_hex20::VisData(const string& name, vector<double>& data)
     return true;
 
   if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw){
-    RefCountPtr<MAT::Material> mat = Material();
+    RCP<MAT::Material> mat = Material();
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
     if (!chain->Initialized()){
       data[0] = 0.0; data[1] = 0.0; data[2] = 0.0;

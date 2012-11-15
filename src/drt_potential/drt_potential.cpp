@@ -156,7 +156,7 @@ void POTENTIAL::Potential::treeSearchElementsInCutOffRadius(
 | evaluate potential                                                 |
 *--------------------------------------------------------------------*/
 void POTENTIAL::Potential::EvaluatePotentialfromCondition(
-    RefCountPtr<DRT::Condition>   cond,
+    RCP<DRT::Condition>   cond,
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
     LINALG::Matrix<3,1>&          potderiv1,
@@ -203,7 +203,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
 | evaluate potential 2D                                              |
 *--------------------------------------------------------------------*/
 void POTENTIAL::Potential::EvaluatePotentialfromCondition(
-    RefCountPtr<DRT::Condition>   cond,
+    RCP<DRT::Condition>   cond,
     const LINALG::Matrix<2,1>&    x,
     const LINALG::Matrix<2,1>&    y,
     LINALG::Matrix<2,1>&          potderiv1,
@@ -249,7 +249,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
 | evaluate potential (approximation)                                 |
 *--------------------------------------------------------------------*/
 void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx1(
-    RefCountPtr<DRT::Condition>   cond,
+    RCP<DRT::Condition>   cond,
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
     LINALG::Matrix<3,1>&          potderiv1,
@@ -287,7 +287,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx1(
 | evaluate potential (approximation)                                 |
 *--------------------------------------------------------------------*/
 void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx2(
-    RefCountPtr<DRT::Condition>   cond,
+    RCP<DRT::Condition>   cond,
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
     LINALG::Matrix<3,1>&          Fs,
@@ -1104,7 +1104,7 @@ Epetra_SerialDenseMatrix POTENTIAL::Potential::SpatialConfiguration(
 double POTENTIAL::Potential::GetTimeCurveFactor(
     ParameterList&                  params)
 {
-  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
   const int    curvenum = cond->GetInt("curve");
   const double time     = params.get<double>("total time",-1.0);
   const double t_end    = DRT::Problem::Instance()->Curve(curvenum).end();
@@ -1176,8 +1176,8 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
   const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
   const std::map<int,std::set<int> >&     elementsByLabel_Vol,
   const std::map<int,std::set<int> >&     elementsByLabel_Surf,
-  const RefCountPtr<const Epetra_Vector>  disp,
-  const RefCountPtr<Epetra_Vector>        fint,
+  const RCP<const Epetra_Vector>  disp,
+  const RCP<Epetra_Vector>        fint,
   const double                            time,
   const int                               step,
   const double                            vdw_radius,
@@ -1276,8 +1276,8 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
   const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
   const std::map<int,std::set<int> >&     elementsByLabel_Vol,
   const std::map<int,std::set<int> >&     elementsByLabel_Surf,
-  const RefCountPtr<const Epetra_Vector>  disp,
-  const RefCountPtr<Epetra_Vector>        fint,
+  const RCP<const Epetra_Vector>  disp,
+  const RCP<Epetra_Vector>        fint,
   const double                            time,
   const int                               step,
   const double                            vdw_radius,
@@ -1696,8 +1696,8 @@ void STR::TimIntImpl::TestForceStiffPotential
     p.set("pot_man", potman_);
     p.set("total time", time);    
     
-    Teuchos::RefCountPtr<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
-    Teuchos::RefCountPtr<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RCP<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
     fint_test->PutScalar(0.0);        
     stiff_test->Zero();   
     

@@ -46,7 +46,7 @@ Maintainer: Michael Gee
 #include <EpetraExt_Transpose_RowMatrix.h>
 #include <EpetraExt_MatrixMatrix.h>
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <iterator>
 #include <sstream>
 
@@ -1633,7 +1633,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
     refmap = &A11dmap;
   }
   //-------------------------------------------- create a redundant set
-  set<int> gset;
+  std::set<int> gset;
   {
     vector<int> global(refmap->NumGlobalElements());
     int count=0;
@@ -1687,7 +1687,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
     {
       const int gcid = A->ColMap().GID(cindices[j]);
       // see whether we have gcid as part of gset
-      set<int>::const_iterator curr = gset.find(gcid);
+      std::set<int>::const_iterator curr = gset.find(gcid);
       // column is in A*1
       if ( (doa11 && curr!=gset.end()) || (!doa11 && curr==gset.end()) )
       {

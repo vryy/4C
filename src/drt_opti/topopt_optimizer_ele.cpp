@@ -169,7 +169,7 @@ void DRT::ELEMENTS::TopOpt::SetMaterial(int matnum)
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
   if(mat->MaterialType() != INPAR::MAT::m_opti_dens)
     dserror("Topology optimization element got unsupported material type %d", mat->MaterialType());
 
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::TopOpt::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -312,7 +312,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -342,7 +342,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Volumes()
 {
   if (NumVolume() == 1)
   {
@@ -487,7 +487,7 @@ int DRT::ELEMENTS::TopOptBoundary::NumSurface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -497,14 +497,14 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Lines()
 
   // so we have to allocate new line elements:
   dserror("Lines of TransportBoundary not implemented");
-  vector<RCP<DRT::Element> > lines(0);
+  vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -514,7 +514,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Surfaces()
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of TransportBoundary not implemented");
-  vector<RCP<DRT::Element> > surfaces(0);
+  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 

@@ -213,7 +213,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<string,int>& names)
 
 #if 0
   // see whether we have additional data for visualization in our container
-  ostringstream temp;
+  std::ostringstream temp;
   temp << 1;
 
   // in flow of volumetric flow profile

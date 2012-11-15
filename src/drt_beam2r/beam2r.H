@@ -16,7 +16,7 @@ Maintainer: Christian Cyron
 
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
@@ -154,9 +154,9 @@ public:
 
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
   */
-  virtual std::vector<RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
 
   /*!

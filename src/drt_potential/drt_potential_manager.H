@@ -16,7 +16,7 @@ Maintainer: Ursula Mayer
 #ifndef DRT_POTENTIAL_MANAGER_H_
 #define DRT_POTENTIAL_MANAGER_H_
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include "../drt_potential/drt_potential_surface.H"
@@ -68,9 +68,9 @@ public:
    */
   void EvaluatePotential(
       ParameterList&                      p,
-      RefCountPtr<Epetra_Vector>          disp,
-      RefCountPtr<Epetra_Vector>          fint,
-      RefCountPtr<LINALG::SparseMatrix>   stiff);
+      RCP<Epetra_Vector>          disp,
+      RCP<Epetra_Vector>          fint,
+      RCP<LINALG::SparseMatrix>   stiff);
 
   
   /*!
@@ -83,9 +83,9 @@ public:
    */
   void TestEvaluatePotential( 
       ParameterList&                    p,
-      RefCountPtr<Epetra_Vector>        disp,
-      RefCountPtr<Epetra_Vector>        fint,
-      RefCountPtr<LINALG::SparseMatrix> stiff,
+      RCP<Epetra_Vector>        disp,
+      RCP<Epetra_Vector>        fint,
+      RCP<LINALG::SparseMatrix> stiff,
       const double                      time,
       const int                         step
       );

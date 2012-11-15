@@ -227,7 +227,7 @@ ART::UTILS::ArtWriteGnuplot:: ArtWriteGnuplot(int ArteryNum):
   // Create the file with the following name 
   // artery[ArteryNum]_.art
   // -------------------------------------------------------------------
-  stringstream out;
+  std::stringstream out;
   string str, Numb_str;
   char *cstr;
   out << ArteryNum;
@@ -322,7 +322,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
               + pow(xyze(2,0) - xyze(2,1),2));
 
     // get the degrees of freedom
-    RefCountPtr<const Epetra_Vector> qanp  = discret->GetState("qanp");
+    RCP<const Epetra_Vector> qanp  = discret->GetState("qanp");
     vector<double> myqanp(lm.size());
     DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 

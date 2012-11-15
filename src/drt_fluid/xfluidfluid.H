@@ -437,7 +437,7 @@ namespace FLD
     Teuchos::RCP<LINALG::SparseOperator> alesysmat_;
 
      /// linearization with respect to mesh motion
-    RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
 
     Teuchos::RCP<LINALG::SparseOperator> shapederivativestest_;
 

@@ -101,7 +101,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
   }
 
   // get the knotvector from nurbs discretisation
-  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+  RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
   // get the processor ID from the communicator
   const int myrank  = dis.Comm().MyPID();

@@ -1083,7 +1083,7 @@ void STR::InvAnalysis::MultiInvAnaInit()
   for (int i=0; i<discret_->NumMyColElements(); i++)
   {
     DRT::Element* actele = discret_->lColElement(i);
-    RefCountPtr<MAT::Material> mat = actele->Material();
+    RCP<MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());

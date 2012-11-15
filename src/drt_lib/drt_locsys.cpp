@@ -591,7 +591,7 @@ void DRT::UTILS::LocsysManager::Setup()
   bool sanity_check=false;
 
   // number of nodes subjected to local co-ordinate systems
-  set<int> locsysdofset;
+  std::set<int> locsysdofset;
 
   trafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,3));
 

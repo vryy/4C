@@ -167,7 +167,7 @@ void EnsightWriter::WriteFiles()
   if (myrank_ == 0)
   {
     const string casefilename = filename_ + "_"+ field_->name() + ".case";
-    ofstream casefile;
+    std::ofstream casefile;
     casefile.open(casefilename.c_str());
     casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
 
@@ -194,7 +194,7 @@ void EnsightWriter::WriteFiles()
 void EnsightWriter::WriteGeoFile(const string& geofilename)
 {
   // open file
-  ofstream geofile;
+  std::ofstream geofile;
   if (myrank_ == 0)
   {
     geofile.open(geofilename.c_str());
@@ -230,7 +230,7 @@ void EnsightWriter::WriteGeoFile(const string& geofilename)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteGeoFileOneTimeStep(
-  ofstream& file,
+  std::ofstream& file,
   map<string, vector<ofstream::pos_type> >& resultfilepos,
   const string name)
 {
@@ -315,7 +315,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
-  ofstream& geofile,
+  std::ofstream& geofile,
   const RCP<DRT::Discretization> dis
   )
 {
@@ -356,7 +356,7 @@ RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   | write node connectivity for every element                  gjb 12/07 |
   *----------------------------------------------------------------------*/
 void EnsightWriter::WriteCells(
-  ofstream& geofile,
+  std::ofstream& geofile,
   const RCP<DRT::Discretization> dis,
   const RCP<Epetra_Map>& proc0map
   ) const
@@ -497,7 +497,7 @@ void EnsightWriter::WriteCells(
  \date 12/07
 */
 void EnsightWriter::WriteNodeConnectivityPar(
-  ofstream& geofile,
+  std::ofstream& geofile,
   const RCP<DRT::Discretization> dis,
   const vector<int>& nodevector,
   const RCP<Epetra_Map> proc0map) const
@@ -891,7 +891,7 @@ void EnsightWriter::WriteResult(const string groupname,
 
   // open file
   const string filename = filename_ + "_"+ field_->name() + "."+ name;
-  ofstream file;
+  std::ofstream file;
   int startfilepos = 0;
   if (myrank_==0)
   {
@@ -1063,7 +1063,7 @@ void EnsightWriter::WriteResult(const string groupname,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::FileSwitcher(
-  ofstream& file,
+  std::ofstream& file,
   bool& multiple_files,
   map<string,vector<int> >& filesetmap,
   map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -1074,7 +1074,7 @@ void EnsightWriter::FileSwitcher(
 {
   if (myrank_==0)
   {
-    ostringstream newfilename;
+    std::ostringstream newfilename;
 
     if (multiple_files == false)
     {
@@ -1116,7 +1116,7 @@ void EnsightWriter::FileSwitcher(
   \brief Write nodal values for one timestep for dof-based vectors
   Each node has to have the same number of dofs.
 */
-void EnsightWriter::WriteDofResultStep(ofstream& file,
+void EnsightWriter::WriteDofResultStep(std::ofstream& file,
                                        PostResult& result,
                                        map<string, vector<ofstream::pos_type> >& resultfilepos,
                                        const string groupname,
@@ -1305,7 +1305,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
   \brief Write nodal values for one timestep for node-based vectors
   Each node has to have the same number of dofs.
 */
-void EnsightWriter::WriteNodalResultStep(ofstream& file,
+void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
                                          PostResult& result,
                                          map<string, vector<ofstream::pos_type> >& resultfilepos,
                                          const string groupname,
@@ -1391,7 +1391,7 @@ else
   Each element has to have the same number of dofs.
 */
 void EnsightWriter::WriteElementDOFResultStep(
-  ofstream& file,
+  std::ofstream& file,
   PostResult& result,
   map<string, vector<ofstream::pos_type> >& resultfilepos,
   const string groupname,
@@ -1552,7 +1552,7 @@ void EnsightWriter::WriteElementDOFResultStep(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteElementResultStep(
-  ofstream& file,
+  std::ofstream& file,
   PostResult& result,
   map<string, vector<ofstream::pos_type> >& resultfilepos,
   const string groupname,
@@ -1671,11 +1671,11 @@ void EnsightWriter::WriteElementResultStep(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteIndexTable(
-  ofstream& file,
+  std::ofstream& file,
   const vector<ofstream::pos_type>& filepos
   ) const
 {
-  ofstream::pos_type lastpos = file.tellp();
+  std::ofstream::pos_type lastpos = file.tellp();
   const unsigned steps = filepos.size();
   Write(file, steps);
   for (unsigned i=0; i<steps; ++i)
@@ -1695,7 +1695,7 @@ void EnsightWriter::WriteIndexTable(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteString(
-  ofstream& stream,
+  std::ofstream& stream,
   const string str) const
 {
   // we need to write 80 bytes per string
@@ -1718,7 +1718,7 @@ string EnsightWriter::GetVariableSection(
   map<string,string>        variablefilenamemap
   ) const
 {
-  stringstream str;
+  std::stringstream str;
 
   map<string,int>::const_iterator variable;
 
@@ -1773,7 +1773,7 @@ string EnsightWriter::GetVariableEntryForCaseFile(
   const int timeset
   ) const
 {
-  stringstream str;
+  std::stringstream str;
 
   // determine the type of this result variable (node-/element-based)
   map<string,string>::const_iterator entry = variableresulttypemap_.find(name);
@@ -1814,7 +1814,7 @@ string EnsightWriter::GetTimeSectionString(
   const vector<double>& times
   ) const
 {
-  stringstream s;
+  std::stringstream s;
   s << "time set:\t\t" << timeset << "\n"<< "number of steps:\t"<< times.size() << "\ntime values: ";
   for (unsigned i=0; i<times.size(); ++i)
   {
@@ -1838,9 +1838,9 @@ string EnsightWriter::GetTimeSectionStringFromTimesets(
   const map<string,vector<double> >& timesetmap
   ) const
 {
-  stringstream s;
+  std::stringstream s;
   map<string,vector<double> >::const_iterator timeset;
-  set<int> donetimesets;
+  std::set<int> donetimesets;
 
   for (timeset = timesetmap.begin(); timeset != timesetmap.end(); ++timeset)
   {
@@ -1869,7 +1869,7 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
   const map<string,vector<int> >& filesetmap
   ) const
 {
-  stringstream s;
+  std::stringstream s;
   map<string,vector<int> >::const_iterator fileset;
 
   // print filesets in increasing numbering, starting with "geo"
@@ -1935,7 +1935,7 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
 (
-  ofstream&                      geofile ,
+  std::ofstream&                      geofile ,
   const RCP<DRT::Discretization> dis     ,
   RCP<Epetra_Map>&               proc0map
   )

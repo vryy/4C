@@ -1459,7 +1459,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
       std::vector<std::map<int,double> > dmap = cnode->MoData().GetD();
       std::vector<std::map<int,double> > dmapold = cnode->FriData().GetDOld();
 
-      set <int> snodes = cnode->FriData().GetSNodes();
+      std::set <int> snodes = cnode->FriData().GetSNodes();
 
       // check if there are entries in the old D map
       if(dmapold.size()< 1)
@@ -1492,8 +1492,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
       std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
       std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 
-      set <int> mnodescurrent = cnode->FriData().GetMNodes();
-      set <int> mnodesold = cnode->FriData().GetMNodesOld();
+      std::set <int> mnodescurrent = cnode->FriData().GetMNodes();
+      std::set <int> mnodesold = cnode->FriData().GetMNodesOld();
 
       // check if there are entries in the M map
       if(mmap.size()< 1)
@@ -1506,7 +1506,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
       if(mnodesold.size() <1)
         dserror ("Error in Interface::EvaluateRelMov(): No old M-Set!"); 
       
-      set <int> mnodes;
+      std::set <int> mnodes;
       std::set<int>::iterator mcurr;
 
       for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
@@ -4279,13 +4279,13 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
         // create a set of nodes including nodes according to M entries
         // from current and previous time step
-        set <int> mnodes;
+        std::set <int> mnodes;
 
         // iterator
         std::set<int>::iterator mcurr;
 
-        set <int> mnodescurrent = cnode->FriData().GetMNodes();
-        set <int> mnodesold = cnode->FriData().GetMNodesOld();
+        std::set <int> mnodescurrent = cnode->FriData().GetMNodes();
+        std::set <int> mnodesold = cnode->FriData().GetMNodesOld();
 
         for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
           mnodes.insert(*mcurr);

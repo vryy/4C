@@ -161,7 +161,7 @@ public:
   virtual DRT::ElementType & ElementType() const
   { return StructuralSurfaceType::Instance(); }
 
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
   virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
 
@@ -371,8 +371,8 @@ protected:
     const int numnode, ///< number of nodes
     const int ndof,  ///< number of degrees of freedom
     double& A,  ///< area
-    RCP<Epetra_SerialDenseVector> Adiff, ///< first derivative
-    RCP<Epetra_SerialDenseMatrix> Adiff2 ///< second derivative
+    Teuchos::RCP<Epetra_SerialDenseVector> Adiff, ///< first derivative
+    Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2 ///< second derivative
   );
 
   //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the displacements
@@ -382,8 +382,8 @@ protected:
       const int numnode, ///< number of nodes
       const int ndof,  ///< number of degrees of freedom
       double& V,  ///< volume
-      RCP<Epetra_SerialDenseVector> Vdiff, ///< first derivative
-      RCP<Epetra_SerialDenseMatrix> Vdiff2, ///< second derivative
+      Teuchos::RCP<Epetra_SerialDenseVector> Vdiff, ///< first derivative
+      Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2, ///< second derivative
       const int minind = 0,  ///<minimal index to compute enclosed volume with
       const int maxind = 2   ///<maximal index to compute enclosed volume with
   );

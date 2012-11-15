@@ -15,7 +15,7 @@
 #include "ml_include.h"
 #include "ml_aggregate.h"
 #include "ml_agg_METIS.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_TimeMonitor.hpp"
 #include "MLAPI.h"
 

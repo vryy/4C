@@ -44,7 +44,7 @@ Maintainer: Thomas Kloeppel
 
 #include <list>
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
 namespace DRT

@@ -51,7 +51,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
   std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
   intersectionmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(StructureField()->Interface()->FSICondMap());
-  Teuchos::RefCountPtr<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+  Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
   if (intersectionmap->NumGlobalElements() != 0)
   {

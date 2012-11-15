@@ -56,11 +56,11 @@ public:
     must be defined in TopOptImpl.
    */
   virtual int EvaluateValues(
-      DRT::Element*              ele,
-      ParameterList&             params,
-      DRT::Discretization&       optidis,
-      RCP<MAT::Material>         mat,
-      vector<int>&               lm
+      DRT::Element*               ele,
+      ParameterList&              params,
+      DRT::Discretization&        optidis,
+      Teuchos::RCP<MAT::Material> mat,
+      vector<int>&                lm
   ) = 0;
 
   //! Evaluate the gradient of the objective of element
@@ -72,7 +72,7 @@ public:
       DRT::Element*              ele,
       ParameterList&             params,
       DRT::Discretization&       optidis,
-      RCP<MAT::Material>         mat,
+      Teuchos::RCP<MAT::Material> mat,
       vector<int>&               lm,
       Epetra_SerialDenseVector&  elevec1_epetra
   ) = 0;
@@ -126,11 +126,11 @@ public:
 
   //! Evaluate objective value
   virtual int EvaluateValues(
-      DRT::Element*              ele,            //!< the element we are dealing with
-      ParameterList&             params,         //!< the parameter list
-      DRT::Discretization&       optidis, //!< the discretization the element is part of
-      RCP<MAT::Material>         mat,
-      vector<int>&               lm              //!< location matrix
+      DRT::Element*               ele,            //!< the element we are dealing with
+      ParameterList&              params,         //!< the parameter list
+      DRT::Discretization&        optidis, //!< the discretization the element is part of
+      Teuchos::RCP<MAT::Material> mat,
+      vector<int>&                lm              //!< location matrix
   );
 
   //! Evaluate objective value
@@ -138,7 +138,7 @@ public:
       DRT::Element*                 ele,            //!< the element we are dealing with
       ParameterList&                params,         //!< the parameter list
       DRT::Discretization&          optidis, //!< the discretization the element is part of
-      RCP<MAT::Material>            mat,
+      Teuchos::RCP<MAT::Material>   mat,
       vector<int>&                  lm,             //!< location matrix
       DRT::UTILS::GaussIntegration& intpoints       ///< gauss points
   );
@@ -148,7 +148,7 @@ public:
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
-      RCP<MAT::Material>         mat,
+      Teuchos::RCP<MAT::Material> mat,
       vector<int>&               lm,             //!< location matrix
       Epetra_SerialDenseVector&  elevec1_epetra
   );
@@ -158,7 +158,7 @@ public:
       DRT::Element*                 ele,            //!< the element we are dealing with
       ParameterList&                params,         //!< the parameter list
       DRT::Discretization&          optidis, //!< the discretization the element is part of
-      RCP<MAT::Material>            mat,
+      Teuchos::RCP<MAT::Material>   mat,
       vector<int>&                  lm,             //!< location matrix
       Epetra_SerialDenseVector&     elevec1_epetra,
       DRT::UTILS::GaussIntegration& intpoints       ///< gauss points
@@ -187,7 +187,7 @@ private:
     LINALG::Matrix<nen_,1>& edens,
     double& objective,
     Teuchos::RCP<Epetra_SerialDenseVector> constraints,
-    RCP<MAT::Material> mat,
+    Teuchos::RCP<MAT::Material> mat,
     DRT::UTILS::GaussIntegration& intpoints
   );
 
@@ -199,7 +199,7 @@ private:
     LINALG::Matrix<nen_,1>& edens,
     LINALG::Matrix<nen_,1>& egrad,
     LINALG::Matrix<nen_,1>& econstr_der,
-    RCP<MAT::Material> mat,
+    Teuchos::RCP<MAT::Material> mat,
     DRT::UTILS::GaussIntegration& intpoints
   );
 
@@ -220,7 +220,7 @@ private:
       const vector<int>&           lm,                  ///<
       LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
       LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
-      RCP<Epetra_Vector>&          globalvector         ///< global vector
+      Teuchos::RCP<Epetra_Vector>& globalvector         ///< global vector
   ) const;
 
 
@@ -314,7 +314,7 @@ public:
       DRT::Element*              ele,
       ParameterList&             params,
       DRT::Discretization&       optidis,
-      RCP<MAT::Material>         mat,
+      Teuchos::RCP<MAT::Material> mat,
       vector<int>&               lm
   ) = 0;
 
@@ -327,7 +327,7 @@ public:
       DRT::Element*              ele,
       ParameterList&             params,
       DRT::Discretization&       optidis,
-      RCP<MAT::Material>         mat,
+      Teuchos::RCP<MAT::Material> mat,
       vector<int>&               lm,
       Epetra_SerialDenseVector&  elevec1_epetra
   ) = 0;
@@ -389,7 +389,7 @@ public:
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
-      RCP<MAT::Material>         mat,
+      Teuchos::RCP<MAT::Material> mat,
       vector<int>&               lm              //!< location matrix
   );
 
@@ -398,7 +398,7 @@ public:
       DRT::Element*              ele,            //!< the element we are dealing with
       ParameterList&             params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
-      RCP<MAT::Material>         mat,
+      Teuchos::RCP<MAT::Material> mat,
       vector<int>&               lm,             //!< location matrix
       Epetra_SerialDenseVector&  elevec1_epetra
   );
@@ -427,7 +427,7 @@ private:
       const vector<int>&           lm,                  ///<
       LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
       LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
-      RCP<Epetra_Vector>&          globalvector         ///< global vector
+      Teuchos::RCP<Epetra_Vector>& globalvector         ///< global vector
   ) const;
 
 

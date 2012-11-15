@@ -13,7 +13,7 @@ Created on: Jul 4, 2011
 #ifndef SOLVER_KRYLOVSOLVER_H_
 #define SOLVER_KRYLOVSOLVER_H_
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
 #include "solver_solvertype.H"

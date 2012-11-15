@@ -954,7 +954,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
 //        }
 //        cout << "Run " << i << " of 1000" << endl;
 //      }
-//      ofstream File;
+//      std::ofstream File;
 //      File.open("Psd_average.txt",std::ios::app);
 //      for (int j=0;j<size*size;j++)
 //      {
@@ -1132,7 +1132,7 @@ void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra
   outputfile << filename_ << "_statistics_output_" << start_run_ << ".txt";
   string name = outputfile.str();;
   /// file to write output
-  ofstream File;
+  std::ofstream File;
   if (numb_run_ == 0 || numb_run_ == start_run_)
   {
     File.open(name.c_str(),std::ios::out);
@@ -1157,7 +1157,7 @@ void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Ep
   double disp_mag[5];
   double stress_mag[5];
   //double strain_mag[5];
-  ofstream File;
+  std::ofstream File;
   if (numb_run_ == 0 || numb_run_ == start_run_)
   {
     File.open(name.c_str(),std::ios::out);
@@ -1325,7 +1325,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
 
   if(myrank==0)
   {
-    ofstream File;
+    std::ofstream File;
     if (numb_run_ == 0 || numb_run_ == start_run_)
     {
       File.open(name2.c_str(),std::ios::out);
@@ -1586,7 +1586,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
     outputfile2 << filename_ << "_statistics_output_" << start_run_ << "_stress_" << stresstype << "_strain_" << straintype << "_EleId_"<< myit->first << ".txt";
     string name2 = outputfile2.str();;
     // file to write output
-    ofstream File;
+    std::ofstream File;
     if (numb_run_ == 0 || numb_run_ == start_run_)
     {
       File.open(name2.c_str(),std::ios::out);

@@ -20,7 +20,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_Operator.h"
 #include "Epetra_CrsMatrix.h"
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_dserror.H"
 

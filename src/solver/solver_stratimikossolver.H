@@ -10,7 +10,7 @@
 
 #ifdef HAVE_Stratimikos
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_Comm.hpp"
 

@@ -1805,11 +1805,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
               // compare both fieldenrsets
               const std::set<XFEM::FieldEnr>& backfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(backnode->Id()));
               int i=0;
-              for (set<XFEM::FieldEnr>::const_iterator frontfieldenr = frontfieldEnrSet.begin();
+              for (std::set<XFEM::FieldEnr>::const_iterator frontfieldenr = frontfieldEnrSet.begin();
                   frontfieldenr != frontfieldEnrSet.end();frontfieldenr++)
               {
                 int j=0;
-                for (set<XFEM::FieldEnr>::const_iterator backfieldenr = backfieldEnrSet.begin();
+                for (std::set<XFEM::FieldEnr>::const_iterator backfieldenr = backfieldEnrSet.begin();
                     backfieldenr != backfieldEnrSet.end();backfieldenr++)
                 {
                   if (i==j)
@@ -1823,7 +1823,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
               }
             } // if the compare is successful, all fieldenrichments for this node fit for front and back
 
-            for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
+            for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
                 fieldenr != frontfieldEnrSet.end();fieldenr++)
             {
               const XFEM::DofKey frontdofkey(frontnode->Id(),*fieldenr);
@@ -1934,11 +1934,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
             // compare both fieldenrsets
             const std::set<XFEM::FieldEnr>& backfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(backnode->Id()));
             int i=0;
-            for (set<XFEM::FieldEnr>::const_iterator frontfieldenr = frontfieldEnrSet.begin();
+            for (std::set<XFEM::FieldEnr>::const_iterator frontfieldenr = frontfieldEnrSet.begin();
                 frontfieldenr != frontfieldEnrSet.end();frontfieldenr++)
             {
               int j=0;
-              for (set<XFEM::FieldEnr>::const_iterator backfieldenr = backfieldEnrSet.begin();
+              for (std::set<XFEM::FieldEnr>::const_iterator backfieldenr = backfieldEnrSet.begin();
                   backfieldenr != backfieldEnrSet.end();backfieldenr++)
               {
                 if (i==j)
@@ -1952,7 +1952,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
             }
           } // if the compare is successful, all fieldenrichments for this node fit for front and back
 
-          for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
+          for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
               fieldenr != frontfieldEnrSet.end();fieldenr++)
           {
             const XFEM::DofKey frontdofkey(frontnode->Id(),*fieldenr);
@@ -4702,7 +4702,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
   {
     DRT::Node* lnode = discret_->lRowNode(nodeid);
     const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
       const XFEM::DofKey dofkey(lnode->Id(), *fieldenr);
@@ -4737,7 +4737,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
   {
     DRT::Node* lnode = discret_->lRowNode(nodeid);
     const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
       const XFEM::DofKey dofkey(lnode->Id(), *fieldenr);
@@ -4788,7 +4788,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     const double densu = 1.0;
 
     const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
       const XFEM::DofKey dofkey(lnode->Id(), *fieldenr);
@@ -4903,7 +4903,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     const double gfuncval = (*phinp_)[lid];
 
     const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
       const XFEM::DofKey dofkey(lnode->Id(), *fieldenr);

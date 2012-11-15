@@ -33,7 +33,7 @@ using namespace EXODUS;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile)
+void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const string datfile)
 {
   // read and check the provided header file
   //cout << "checking BACI input file       --> "<<datfile<< endl;
@@ -87,11 +87,11 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 {
   if (mymesh.GetNumDim() != 3) dserror("Element Validation only for 3 Dimensions");
 
-  map<int,RCP<ElementBlock> > myebs = mymesh.GetElementBlocks();
-  map<int,RCP<ElementBlock> >::iterator i_eb;
+  map<int,Teuchos::RCP<ElementBlock> > myebs = mymesh.GetElementBlocks();
+  map<int,Teuchos::RCP<ElementBlock> >::iterator i_eb;
 
   for(i_eb=myebs.begin(); i_eb!=myebs.end(); ++i_eb){
-    RCP<ElementBlock> eb = i_eb->second;
+    Teuchos::RCP<ElementBlock> eb = i_eb->second;
     const DRT::Element::DiscretizationType distype = PreShapeToDrt(eb->GetShape());
     // check and rewind if necessary
     ValidateElementJacobian(mymesh,distype,eb);
@@ -104,7 +104,7 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::DiscretizationType distype, RCP<ElementBlock> eb)
+void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::DiscretizationType distype, Teuchos::RCP<ElementBlock> eb)
 {
   // use one point gauss rule to calculate jacobian at element center
   DRT::UTILS::GaussRule3D integrationrule_1point = DRT::UTILS::intrule3D_undefined;
@@ -175,7 +175,7 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::DiscretizationType distype, RCP<ElementBlock> eb)
+int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::DiscretizationType distype, Teuchos::RCP<ElementBlock> eb)
 {
   DRT::UTILS::GaussRule3D integrationrule = DRT::UTILS::intrule3D_undefined;
   switch(distype)

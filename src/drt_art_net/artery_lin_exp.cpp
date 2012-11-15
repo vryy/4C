@@ -82,7 +82,7 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RefCountPtr<MAT::Material> mat)
+  RCP<MAT::Material> mat)
 {
 
   // the number of nodes
@@ -113,8 +113,8 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::Evaluate(
   // get all general state vectors: flow./area.,
   // ---------------------------------------------------------------------
 
-  RefCountPtr<const Epetra_Vector> qanp  = discretization.GetState("qanp");
-  //  RefCountPtr<Epetra_Vector> Wfnp        = discretization.GetState("Wfnp");
+  RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
+  //  RCP<Epetra_Vector> Wfnp        = discretization.GetState("Wfnp");
 
   if (qanp==null)
     dserror("Cannot get state vectors 'qanp'");
@@ -783,7 +783,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   const int numnode = iel;
   vector<int>::iterator it_vcr;
 
-  RefCountPtr<const Epetra_Vector> qanp  = discretization.GetState("qanp");
+  RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
   RCP<Epetra_Vector>   Wfnp  = params.get<RCP<Epetra_Vector> >("Wfnp");
   RCP<Epetra_Vector>   Wbnp  = params.get<RCP<Epetra_Vector> >("Wbnp");
 
@@ -970,7 +970,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
   ParameterList&               params,
   DRT::Discretization&         discretization,
   vector<int>&                 lm,
-  RefCountPtr<MAT::Material>   material)
+  RCP<MAT::Material>   material)
 {
 
   RCP<Epetra_Vector>   Wfnp  = params.get<RCP<Epetra_Vector> >("Wfnp");
@@ -1040,7 +1040,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
   const int numnode = iel;
   vector<int>::iterator it_vcr;
 
-  RefCountPtr<const Epetra_Vector> qanp  = discretization.GetState("qanp");
+  RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
 
   if (qanp==null)
     dserror("Cannot get state vectors 'qanp'");
@@ -1084,8 +1084,8 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       else
         dserror("Something is severely wrong! In/Out terminal condition should be either \"outlet\" or \"inlet\"");
 
-      RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-      RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+      RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+      RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
       if (bcval==null||dbctog==null)
         dserror("Cannot get state vectors 'bcval' and 'dbctog'");
@@ -1236,8 +1236,8 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals;
       junc_nodal_vals = params.get<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters");
 
-      RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-      RefCountPtr<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+      RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+      RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
       // -------------------------------------------------------------------------------
       // Update the Dirichlet BC vector
@@ -1276,11 +1276,11 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   ParameterList&               params,
   DRT::Discretization&         discretization,
   vector<int>&                 lm,
-  RefCountPtr<MAT::Material>   material)
+  RCP<MAT::Material>   material)
 {
-  RefCountPtr<const Epetra_Vector> qanp  = discretization.GetState("qanp");
-  //  RefCountPtr<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
-  //  RefCountPtr<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
+  RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
+  //  RCP<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
+  //  RCP<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
 
   RCP<Epetra_Vector>   pn  = params.get<RCP<Epetra_Vector> >("pressure");
   RCP<Epetra_Vector>   qn  = params.get<RCP<Epetra_Vector> >("flow"); 
@@ -1418,9 +1418,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
 }
 #if 0
 {
-  RefCountPtr<const Epetra_Vector> qanp  = discretization.GetState("qanp");
-  //  RefCountPtr<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
-  //  RefCountPtr<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
+  RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
+  //  RCP<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
+  //  RCP<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
 
   RCP<Epetra_Vector>   pn  = params.get<RCP<Epetra_Vector> >("pressure");
   RCP<Epetra_Vector>   qn  = params.get<RCP<Epetra_Vector> >("flow");

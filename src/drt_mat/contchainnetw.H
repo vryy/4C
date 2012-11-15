@@ -17,7 +17,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include "../drt_lib/drt_discret.H"

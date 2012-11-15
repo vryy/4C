@@ -1226,11 +1226,11 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
     //------------------------------------
 
     // loop all edges of current side
-    std::vector<RCP<DRT::Element> > lines = side->Lines();
+    std::vector<Teuchos::RCP<DRT::Element> > lines = side->Lines();
 
     int line_count = 0;
 
-    for(std::vector<RCP<DRT::Element> >::iterator line_it = lines.begin(); line_it!= lines.end(); line_it++)
+    for(std::vector<Teuchos::RCP<DRT::Element> >::iterator line_it = lines.begin(); line_it!= lines.end(); line_it++)
     {
 
 #ifdef DEBUG_TIMINT_STD
@@ -1358,7 +1358,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
       // line geometry at initial state t^0
 
-      std::vector<RCP<DRT::Element> > lines = side_1->Lines();
+      std::vector<Teuchos::RCP<DRT::Element> > lines = side_1->Lines();
 
       RCP<DRT::Element> line_ele = lines[local_lineIds[0]];
 //

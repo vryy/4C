@@ -135,7 +135,7 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
 
     ParameterList params;
     params.set("ConditionID",condID);
-    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
     params.set<int>("action",FLD::flowratederiv);
     params.set("flowrateonly", true);
     const double dt = Dt();
@@ -148,11 +148,11 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+    map<int,RCP<DRT::Element> >::iterator curr;
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -227,7 +227,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
     const double lagraval = (*lagrMultVecRed)[lindex];
 
     // elements might need condition
-    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;  // (d^2 Q)/(du dd)
@@ -236,11 +236,11 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
     Epetra_SerialDenseVector elevector2;  // dQ/dd
     Epetra_SerialDenseVector elevector3;  // Q
 
-    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // there might be processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+    map<int,RCP<DRT::Element> >::iterator curr;
 
     // define element action
     params.set<int>("action",FLD::flowratederiv);

@@ -15,7 +15,7 @@ Maintainer: Michael Gee
 #ifndef PATSPEC_H
 #define PATSPEC_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 class Epetra_Vector;

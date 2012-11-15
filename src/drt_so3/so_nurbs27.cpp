@@ -220,7 +220,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                           |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
@@ -231,7 +231,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
  |  get vector of surfaces (public)                                      |
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -247,7 +247,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.

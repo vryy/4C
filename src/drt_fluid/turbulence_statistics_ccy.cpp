@@ -22,9 +22,9 @@
 
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
-  RefCountPtr<DRT::Discretization> actdis             ,
+  RCP<DRT::Discretization> actdis             ,
   bool                             alefluid           ,
-  RefCountPtr<Epetra_Vector>       dispnp             ,
+  RCP<Epetra_Vector>       dispnp             ,
   ParameterList&                   params             ,
   const bool                       withscatra
   )
@@ -120,7 +120,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
     vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
-    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+    RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // resize and initialise to 0
     {
@@ -461,7 +461,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   //----------------------------------------------------------------------
   // initialise output
 
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
 
   if (discret_->Comm().MyPID()==0)
   {
@@ -498,9 +498,9 @@ FLD::TurbulenceStatisticsCcy::~TurbulenceStatisticsCcy()
 
  -----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::DoTimeSample(
-  Teuchos::RefCountPtr<Epetra_Vector> velnp,
-  Teuchos::RefCountPtr<Epetra_Vector> scanp,
-  Teuchos::RefCountPtr<Epetra_Vector> fullphinp
+  Teuchos::RCP<Epetra_Vector> velnp,
+  Teuchos::RCP<Epetra_Vector> scanp,
+  Teuchos::RCP<Epetra_Vector> fullphinp
   )
 {
   // we have an additional sample
@@ -640,7 +640,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
   // get the knotvector itself
-  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+  RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
   // get element map
   const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
@@ -747,7 +747,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
       actscatraele->LocationVector(*scatranurbsdis,scatralm,scatralmowner,scatralmstride);
 
-      RefCountPtr<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
+      RCP<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
       if (phinp==Teuchos::null)
         dserror("Cannot get state vector 'phinp' for statistics");
       vector<double> myphinp(scatralm.size());
@@ -1398,7 +1398,7 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
 
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");

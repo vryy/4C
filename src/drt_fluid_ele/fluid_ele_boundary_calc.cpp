@@ -1663,7 +1663,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
   // get status of Ale
   const bool isale = ele->ParentElement()->IsAle();
 
-  RefCountPtr<const Epetra_Vector> dispnp;
+  RCP<const Epetra_Vector> dispnp;
   vector<double> edispnp;
 
   if (isale)
@@ -1702,7 +1702,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
   }
 
   // get nodal velocities and pressures
-  RefCountPtr<const Epetra_Vector> convelnp = discretization.GetState("convectivevel");
+  RCP<const Epetra_Vector> convelnp = discretization.GetState("convectivevel");
 
   if (convelnp==null)
     dserror("Cannot get state vector 'convectivevel'");
@@ -2348,9 +2348,9 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   //--------------------------------------------------
   // get the condition information
-  RefCountPtr<DRT::Condition> hixhybdbc_cond
+  RCP<DRT::Condition> hixhybdbc_cond
     =
-    params.get<RefCountPtr<DRT::Condition> >("condition");
+    params.get<RCP<DRT::Condition> >("condition");
 
   // get value for boundary condition
   const vector<double>* val = (*hixhybdbc_cond).Get<vector<double> >("val");

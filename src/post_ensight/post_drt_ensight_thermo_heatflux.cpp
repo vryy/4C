@@ -433,7 +433,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatflux(
  |  output at the center                                     dano 11/09 |
  *----------------------------------------------------------------------*/
 void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
-  ofstream& file,
+  std::ofstream& file,
   PostResult& result,
   std::map<std::string,
   std::vector<ofstream::pos_type> >& resultfilepos,

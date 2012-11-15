@@ -18,7 +18,7 @@ flows.
 
   ---------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
-  RefCountPtr<DRT::Discretization>   actdis,
+  RCP<DRT::Discretization>   actdis,
   ParameterList&                     params)
   :
   discret_(actdis),
@@ -189,14 +189,14 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
       {
         DRT::PackBuffer data;
 
-       for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
+       for (std::set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
             plane!=availablecoords.end();
             ++plane)
        {
          DRT::ParObject::AddtoPack(data,*plane);
        }
        data.StartPacking();
-       for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
+       for (std::set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
             plane!=availablecoords.end();
             ++plane)
        {
@@ -261,7 +261,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
     // push coordinates of planes in a vector
 
     {
-      for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
+      for(std::set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
           coord!=availablecoords.end();
           ++coord)
       {
@@ -368,8 +368,8 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   //----------------------------------------------------------------------
   // initialize output and initially open respective statistics output file(s)
 
-  Teuchos::RefCountPtr<std::ofstream> log;
-//  Teuchos::RefCountPtr<std::ofstream> log_res;
+  Teuchos::RCP<std::ofstream> log;
+//  Teuchos::RCP<std::ofstream> log_res;
 
   if (discret_->Comm().MyPID()==0)
   {
@@ -405,11 +405,11 @@ COMBUST::TurbulenceStatisticsBcf::~TurbulenceStatisticsBcf()
        'sum' vectors.
  -----------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
-  Teuchos::RefCountPtr<const Epetra_Vector> stdvelnp,
-  Teuchos::RefCountPtr<const Epetra_Vector> stdforce,
-  Teuchos::RefCountPtr<const DRT::DofSet>   stddofset,
-  Teuchos::RefCountPtr<const Epetra_Vector> discretmatchingvelnp,
-  Teuchos::RefCountPtr<const Epetra_Vector> phinp)
+  Teuchos::RCP<const Epetra_Vector> stdvelnp,
+  Teuchos::RCP<const Epetra_Vector> stdforce,
+  Teuchos::RCP<const DRT::DofSet>   stddofset,
+  Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp,
+  Teuchos::RCP<const Epetra_Vector> phinp)
 {
   // we have an additional sample
   numsamp_++;
@@ -608,8 +608,8 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   const int size = sumvol_[0]->size();
 
   // generate processor local result vectors
-  vector<RefCountPtr<vector<double> > > locvol( numphase_);
-  vector<RefCountPtr<vector<double> > > globvol(numphase_);
+  vector<RCP<vector<double> > > locvol( numphase_);
+  vector<RCP<vector<double> > > globvol(numphase_);
 
   for (size_t i = 0; i < numphase_; i++)
   {
@@ -1001,7 +1001,7 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
 
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
@@ -1136,7 +1136,7 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
 
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");

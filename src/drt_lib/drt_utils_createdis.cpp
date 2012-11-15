@@ -44,8 +44,8 @@ void DRT::UTILS::DiscretizationCreatorBase::InitialChecks(
 void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
     Teuchos::RCP<DRT::Discretization> sourcedis,
     Teuchos::RCP<DRT::Discretization> targetdis,
-    set<int>& rownodeset,
-    set<int>& colnodeset,
+    std::set<int>& rownodeset,
+    std::set<int>& colnodeset,
     const bool isnurbsdis
     )
 {
@@ -91,7 +91,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
-    set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis)
+    std::set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis)
 {
   // we get the node maps almost for free
   vector<int> targetnoderowvec(rownodeset.begin(), rownodeset.end());
@@ -111,7 +111,7 @@ RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
-    set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis)
+    std::set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis)
 {
   // we get the node maps almost for free
   vector<int> targetnodecolvec(colnodeset.begin(), colnodeset.end());

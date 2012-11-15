@@ -176,11 +176,11 @@ private:
 
         virtual int NumVolume() const {return 1;}
 
-        virtual std::vector<RCP<DRT::Element> > Lines();
+        virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
-        virtual std::vector<RCP<DRT::Element> > Surfaces();
+        virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
-        virtual std::vector<RCP<DRT::Element> > Volumes();
+        virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
         virtual int UniqueParObjectId() const { return Combust3Type::Instance().UniqueParObjectId(); }
 
@@ -356,13 +356,13 @@ private:
         {
         public:
           //! Kaa inv of old iteration step
-          RCP<LINALG::SerialDenseMatrix>      oldKaainv_;
+          Teuchos::RCP<LINALG::SerialDenseMatrix>      oldKaainv_;
           //! Kad of old iteration step
-          RCP<LINALG::SerialDenseMatrix>      oldKad_;
+          Teuchos::RCP<LINALG::SerialDenseMatrix>      oldKad_;
           //! fa inv of old iteration step
-          RCP<LINALG::SerialDenseVector>      oldfa_;
+          Teuchos::RCP<LINALG::SerialDenseVector>      oldfa_;
           //! this map stores all element stresses (independent of the xfem label)
-          RCP<LINALG::SerialDenseVector>      stressdofs_;
+          Teuchos::RCP<LINALG::SerialDenseVector>      stressdofs_;
 
           //! constructor
           explicit DLMInfo(const int nd, const int na);
@@ -504,7 +504,7 @@ private:
         }
         }
 
-        virtual std::vector<RCP<DRT::Element> > Lines();
+        virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
         virtual int UniqueParObjectId() const { return Combust3SurfaceType::Instance().UniqueParObjectId(); }
 

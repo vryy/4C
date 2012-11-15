@@ -2782,7 +2782,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       std::map<int,double>::iterator colcurr;
-      set <int> mnodes;
+      std::set <int> mnodes;
 
       for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
         mnodes.insert((colcurr->first)/Dim());
@@ -2890,7 +2890,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
         std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
-        set <int> mnodes;
+        std::set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
@@ -3035,7 +3035,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
         std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
-        set <int> mnodes;
+        std::set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
@@ -3181,7 +3181,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       std::map<int,double>::iterator colcurr;
-      set <int> mnodes;
+      std::set <int> mnodes;
 
       for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
         mnodes.insert((colcurr->first)/Dim());
@@ -3303,7 +3303,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
-        set <int> mnodes;
+        std::set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
@@ -3473,7 +3473,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
-        set <int> mnodes;
+        std::set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());
@@ -3644,7 +3644,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
-        set <int> mnodes;
+        std::set <int> mnodes;
 
         for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
           mnodes.insert((colcurr->first)/Dim());

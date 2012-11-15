@@ -78,7 +78,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
 #include "Epetra_Vector.h"
@@ -940,7 +940,7 @@ public:
   Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
   LINALG::MapExtractor                   meshmap_;
   Teuchos::RCP<DRT::Discretization>      dis_;
-  Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
+  Teuchos::RCP<Epetra_Map>       innervelmap_;
 
 
 

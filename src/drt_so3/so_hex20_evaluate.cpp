@@ -90,8 +90,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -119,8 +119,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -154,8 +154,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -185,8 +185,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -318,7 +318,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
   case calc_struct_update_imrlike:
   {
     // Update of history for visco material
-    RefCountPtr<MAT::Material> mat = Material();
+    RCP<MAT::Material> mat = Material();
     if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -345,7 +345,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
   case calc_struct_reset_istep:
   {
     // Reset of history for visco material
-    RefCountPtr<MAT::Material> mat = Material();
+    RCP<MAT::Material> mat = Material();
     if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
     {
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());

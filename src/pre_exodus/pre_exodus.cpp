@@ -24,7 +24,7 @@ its parameters and conditions.
 #ifdef D_EXODUS
 
 #include "pre_exodus.H"
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
@@ -248,14 +248,14 @@ int main(
     cout << "found no header file           --> creating "<<defaultheadfilename<< endl;
 
     // open default header file
-    ofstream defaulthead(defaultheadfilename.c_str());
+    std::ofstream defaulthead(defaultheadfilename.c_str());
     if (!defaulthead) dserror("failed to open file: %s", defaultheadfilename.c_str());
 
     // get valid input parameters
     Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
 
     // write default .dat header into file
-    stringstream prelimhead;
+    std::stringstream prelimhead;
     DRT::INPUT::PrintDatHeader(prelimhead,*list);
     string headstring = prelimhead.str();
     size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
@@ -283,7 +283,7 @@ int main(
     "-------------------------------------------------------------CURVE3"<<endl<<
     "-------------------------------------------------------------CURVE4"<<endl;
     {
-      stringstream tmp;
+      std::stringstream tmp;
       DRT::UTILS::TimeCurveManager timecurvemanager;
       Teuchos::RCP<DRT::INPUT::Lines> tlines = timecurvemanager.ValidTimeCurveLines();
       tlines->Print(tmp);
@@ -304,7 +304,7 @@ int main(
     "-------------------------------------------------------------FUNCT3"<<endl<<
     "-------------------------------------------------------------FUNCT4"<<endl;
     {
-      stringstream tmp;
+      std::stringstream tmp;
       DRT::UTILS::FunctionManager functionmanager;
       Teuchos::RCP<DRT::INPUT::Lines> flines = functionmanager.ValidFunctionLines();
       flines->Print(tmp);
@@ -435,7 +435,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   cout << "found no BC specification file --> creating " <<defaultbcfilename<< endl;
 
   // open default bc specification file
-  ofstream defaultbc(defaultbcfilename.c_str());
+  std::ofstream defaultbc(defaultbcfilename.c_str());
   if (!defaultbc)
     dserror("failed to open file: %s", defaultbcfilename.c_str());
 

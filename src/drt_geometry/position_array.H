@@ -195,8 +195,8 @@ namespace GEO
    * \date 09/09
    */
   LINALG::SerialDenseMatrix getCurrentNodalPositions(
-	  const RCP<const DRT::Element>         ele,					      ///< pointer on element
-	  const std::map<int,LINALG::Matrix<3,1> >&  currentpositions		///< current positions of all cutter nodes
+      const Teuchos::RCP<const DRT::Element>     ele,              ///< pointer on element
+      const std::map<int,LINALG::Matrix<3,1> >&  currentpositions  ///< current positions of all cutter nodes
       );
   
   

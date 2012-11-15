@@ -306,7 +306,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
   if(mat->MaterialType() == INPAR::MAT::m_scatra or
      mat->MaterialType() == INPAR::MAT::m_myocard or
      mat->MaterialType() == INPAR::MAT::m_mixfrac or
@@ -462,7 +462,7 @@ void DRT::ELEMENTS::Transport::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Transport::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -487,7 +487,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Transport::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -517,7 +517,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
 {
   if (NumVolume() == 1)
   {
@@ -544,7 +544,7 @@ void DRT::ELEMENTS::Transport::VisNames(std::map<string,int>& names)
   // see whether we have additional data for visualization in our container
   for (int k = 0 ;k<numdofpernode_; k++)
   {
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
 
     // element Peclet number
@@ -584,7 +584,7 @@ bool DRT::ELEMENTS::Transport ::VisData(const string& name, vector<double>& data
 
   for (int k = 0 ;k<numdofpernode_; k++)
   {
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     if (   (name == "Pe_"+temp.str()    )
         || (name == "Pe_mig_"+temp.str())
@@ -714,7 +714,7 @@ int DRT::ELEMENTS::TransportBoundary::NumSurface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -724,14 +724,14 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Lines()
 
   // so we have to allocate new line elements:
   dserror("Lines of TransportBoundary not implemented");
-  vector<RCP<DRT::Element> > lines(0);
+  vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -741,7 +741,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::TransportBoundary::Surfaces()
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of TransportBoundary not implemented");
-  vector<RCP<DRT::Element> > surfaces(0);
+  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 

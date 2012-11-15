@@ -117,8 +117,8 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -130,8 +130,8 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
     case calc_struct_internalforce: // do internal force
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -149,8 +149,8 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
     case calc_struct_nlnstifflmass: // do lumped mass, stiffness and internal forces
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       // not match the new stress output framework
       dserror("stress output for shell8 currently not supported");
 
-//       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+//       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
 //       if (disp==null) dserror("Cannot get state vectors 'displacement'");
 //       vector<double> mydisp(lm.size());
 //       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -742,7 +742,7 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(ParameterList& params,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
-  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+  RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

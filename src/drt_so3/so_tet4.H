@@ -136,22 +136,22 @@ public:
   virtual int NumLine() const {return 6;}
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of RefCountPtrs to the surfaces of this element
+  \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of RefCountPtrs to the volumes of this element
+  \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Volumes();
+  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   virtual vector<double> ElementCenterRefeCoords();
 
@@ -402,7 +402,7 @@ protected:
   double                                                                   pstime_;
   double                                                                   time_;
   /// Prestressing object
-  RCP<DRT::ELEMENTS::PreStress>                                            prestress_;
+  Teuchos::RCP<DRT::ELEMENTS::PreStress>                                   prestress_;
   /// compute Jacobian mapping wrt to deformed configuration
   void UpdateJacobianMapping(const vector<double>& disp,
                              DRT::ELEMENTS::PreStress& prestress);
@@ -412,7 +412,7 @@ protected:
                    DRT::ELEMENTS::PreStress& prestress);
 
   friend class DRT::ELEMENTS::InvDesign;
-  RCP<DRT::ELEMENTS::InvDesign>                                            invdesign_;
+  Teuchos::RCP<DRT::ELEMENTS::InvDesign>                                   invdesign_;
 
   // internal calculation methods
 
@@ -468,10 +468,10 @@ protected:
 
   //! remodeling for fibers at the end of time step (st 01/10)
   void so_tet4_remodel(
-        vector<int>&              lm,             // location matrix
-        vector<double>&           disp,           // current displacements
-        ParameterList&            params,         // algorithmic parameters e.g. time
-        RCP<MAT::Material>        mat);            // material
+        vector<int>&                lm,             // location matrix
+        vector<double>&             disp,           // current displacements
+        ParameterList&              params,         // algorithmic parameters e.g. time
+        Teuchos::RCP<MAT::Material> mat);            // material
 
   //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
   const vector<LINALG::Matrix<NUMNOD_SOTET4,1> > so_tet4_1gp_shapefcts();

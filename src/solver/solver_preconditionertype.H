@@ -20,7 +20,7 @@ Created on: Jul 4, 2011
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_Vector.h"
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
 namespace LINALG

@@ -2200,7 +2200,7 @@ void GEO::CUT::Mesh::GetNodeMap( std::map<int, Node *> & nodemap )
     {
         int nid = i->first;
 
-        nodemap.insert( pair< int, Node* >(nid, &*(i->second)) );
+        nodemap.insert(std::pair< int, Node* >(nid, &*(i->second)) );
     }
 
 }

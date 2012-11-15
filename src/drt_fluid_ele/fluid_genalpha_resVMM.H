@@ -76,7 +76,7 @@ namespace DRT
                            Epetra_SerialDenseVector&  elevec1_epetra,
                            Epetra_SerialDenseVector&  elevec2_epetra,
                            Epetra_SerialDenseVector&  elevec3_epetra,
-                           RefCountPtr<MAT::Material> mat) = 0;
+                           Teuchos::RCP<MAT::Material> mat) = 0;
 
       /// Calculate averages for residual, dissipation rates etc for
       /// elements in a turbulent channel flow. The computed values are
@@ -89,7 +89,7 @@ namespace DRT
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
                               vector<int>&               lm,
-                              RefCountPtr<MAT::Material> mat) = 0;
+                              Teuchos::RCP<MAT::Material> mat) = 0;
 
       /// Internal implementation class for fluid element
       static FluidGenalphaResVMMInterface* Impl(DRT::ELEMENTS::Fluid* f3);
@@ -298,7 +298,7 @@ namespace DRT
                            Epetra_SerialDenseVector&  elevec1_epetra,
                            Epetra_SerialDenseVector&  elevec2_epetra,
                            Epetra_SerialDenseVector&  elevec3_epetra,
-                           RefCountPtr<MAT::Material> mat);
+                           Teuchos::RCP<MAT::Material> mat);
 
       //@}
 
@@ -355,7 +355,7 @@ namespace DRT
                               ParameterList&             params,
                               DRT::Discretization&       discretization,
                               vector<int>&               lm,
-                              RefCountPtr<MAT::Material> mat);
+                              Teuchos::RCP<MAT::Material> mat);
       //@}
 
       //! @name routines for calculation of element matrix and rhs

@@ -542,8 +542,8 @@ void STR::TimIntImpl::TestForceStiffPotential
       p.set("pot_man", potman_);
       p.set("total time", time);
 
-      Teuchos::RefCountPtr<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
-      Teuchos::RefCountPtr<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
+      Teuchos::RCP<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+      Teuchos::RCP<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
       fint_test->PutScalar(0.0);
       stiff_test->Zero();
 

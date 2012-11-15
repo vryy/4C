@@ -489,7 +489,7 @@ void DRT::ELEMENTS::Fluid::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -521,7 +521,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -551,7 +551,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                 ehrl 02/10|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
 {
   if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
   {

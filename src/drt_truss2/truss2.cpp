@@ -229,7 +229,7 @@ void DRT::ELEMENTS::Truss2::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
-std::vector<RCP<DRT::Element> > DRT::ELEMENTS::Truss2::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Truss2::Lines()
 {
   std::vector<RCP<Element> > lines(1);
   lines[0]= Teuchos::rcp(this, false);

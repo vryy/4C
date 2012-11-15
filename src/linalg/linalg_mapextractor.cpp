@@ -212,7 +212,7 @@ Teuchos::RCP<Epetra_Vector> LINALG::MultiMapExtractor::ExtractVector(const Epetr
 {
   if (maps_[block]==Teuchos::null)
     dserror("null map at block %d",block);
-  Teuchos::RefCountPtr<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*maps_[block]));
+  Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*maps_[block]));
   ExtractVector(full,block,*vec);
   return vec;
 }
@@ -224,7 +224,7 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::MultiMapExtractor::ExtractVector(const 
 {
   if (maps_[block]==Teuchos::null)
     dserror("null map at block %d",block);
-  Teuchos::RefCountPtr<Epetra_MultiVector> vec = Teuchos::rcp(new Epetra_MultiVector(*maps_[block],full.NumVectors()));
+  Teuchos::RCP<Epetra_MultiVector> vec = Teuchos::rcp(new Epetra_MultiVector(*maps_[block],full.NumVectors()));
   ExtractVector(full,block,*vec);
   return vec;
 }

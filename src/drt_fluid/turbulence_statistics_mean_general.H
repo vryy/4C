@@ -28,7 +28,7 @@ Maintainer: Ursula Rasthofer
 #define TURBULENCE_STATISTICS_MEAN_GENERAL_H
 
 #include "Epetra_Vector.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 namespace LINALG
 {

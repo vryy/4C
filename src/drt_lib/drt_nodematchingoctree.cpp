@@ -30,7 +30,7 @@ Maintainer: Peter Gamnitzer
 
 <pre>
 
-\param    RefCountPtr<DRT::Discretization> (i) discretisation
+\param    RCP<DRT::Discretization> (i) discretisation
 \param    const vector <int> &             (i) list of masternodeids
 \param    int                              (i) parameter for octree
 \param    double                           (i) tolerance for octree
@@ -418,7 +418,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 
 void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
                                    const vector<int>& slavenodeids,
-                                   map<int,pair<int,double> >& coupling)
+                                   map<int,std::pair<int,double> >& coupling)
 {
   int numprocs = discret_.Comm().NumProc();
 
@@ -572,7 +572,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
         // matching a point in the box. We do nothing.
         if (SearchClosestNodeOnThisProc(x, gid, dist))
         {
-          map<int,pair<int,double> >::iterator found = coupling.find(gid);
+          map<int,std::pair<int,double> >::iterator found = coupling.find(gid);
 
           // we are interested in the closest match
           if (found==coupling.end() or coupling[gid].second > dist)
@@ -626,7 +626,7 @@ bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
       dserror("No root for octree on proc");
     }
 
-    RefCountPtr<OctreeElement> octreeele = octreeroot_;
+    RCP<OctreeElement> octreeele = octreeroot_;
 
     while(octreeele->IsLeaf()==false)
     {
@@ -916,11 +916,11 @@ bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-RefCountPtr<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
+RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
   const vector <double> &x
   )
 {
-  RefCountPtr<OctreeElement> nextelement;
+  RCP<OctreeElement> nextelement;
 
   if (this->octreechild1_ == null || this->octreechild2_ == null)
   {

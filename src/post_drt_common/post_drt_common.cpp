@@ -649,7 +649,7 @@ void PostProblem::read_meshes()
           }
         }
 
-        RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
+        RCP<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
 
         knots->Unpack(*packed_knots);
 

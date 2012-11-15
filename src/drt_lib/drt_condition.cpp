@@ -255,15 +255,15 @@ void DRT::Condition::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Condition::Unpack(const vector<char>& data)
+void DRT::Condition::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Container
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Container::Unpack(basedata);
   // id_
@@ -289,8 +289,8 @@ void DRT::Condition::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void DRT::Condition::AdjustId(const int shift)
 {
-  std::map<int,RefCountPtr<DRT::Element> > geometry;
-  std::map<int,RefCountPtr<DRT::Element> >::iterator iter;
+  std::map<int,Teuchos::RCP<DRT::Element> > geometry;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator iter;
 
   for (iter=geometry_.begin();iter!=geometry_.end();++iter)
   {

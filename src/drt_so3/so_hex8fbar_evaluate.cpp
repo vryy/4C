@@ -91,8 +91,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -110,8 +110,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -134,8 +134,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -396,7 +396,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     // read restart of microscale
     case multi_readrestart:
     {
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi();

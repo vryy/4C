@@ -3,7 +3,7 @@
 #include <NOX_GlobalData.H>
 #include <NOX_Abstract_Group.H>
 
-NOX::FSI::FixPoint::FixPoint(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+NOX::FSI::FixPoint::FixPoint(const Teuchos::RCP<NOX::Utils>& utils,
                              Teuchos::ParameterList& params)
   : utils_(utils)
 {
@@ -15,7 +15,7 @@ NOX::FSI::FixPoint::~FixPoint()
 }
 
 
-bool NOX::FSI::FixPoint::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+bool NOX::FSI::FixPoint::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
                                Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();

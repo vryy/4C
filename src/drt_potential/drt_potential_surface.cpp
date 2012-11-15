@@ -125,9 +125,9 @@ POTENTIAL::SurfacePotential::SurfacePotential(
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 void POTENTIAL::SurfacePotential::EvaluatePotential(  ParameterList& p,
-                                                  RefCountPtr<Epetra_Vector> disp,
-                                                  RefCountPtr<Epetra_Vector> fint,
-                                                  RefCountPtr<LINALG::SparseMatrix> stiff)
+                                                  RCP<Epetra_Vector> disp,
+                                                  RCP<Epetra_Vector> fint,
+                                                  RCP<LINALG::SparseMatrix> stiff)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
@@ -150,9 +150,9 @@ void POTENTIAL::SurfacePotential::EvaluatePotential(  ParameterList& p,
 *--------------------------------------------------------------------*/
 void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
     ParameterList&                          params,
-    RefCountPtr<LINALG::SparseMatrix>       systemmatrix1,
-    RefCountPtr<LINALG::SparseMatrix>       systemmatrix2,
-    RefCountPtr<Epetra_Vector>              systemvector1,
+    RCP<LINALG::SparseMatrix>       systemmatrix1,
+    RCP<LINALG::SparseMatrix>       systemmatrix2,
+    RCP<Epetra_Vector>              systemvector1,
     Teuchos::RCP<Epetra_Vector>             systemvector2,
     Teuchos::RCP<Epetra_Vector>             systemvector3,
     const string&                           condstring)
@@ -181,12 +181,12 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
   discret_.GetCondition(condstring, potentialcond);
   for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
   {
-    map<int,RefCountPtr<DRT::Element> >& geom = (*condIter)->Geometry();
+    map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+    map<int,RCP<DRT::Element> >::iterator curr;
 
     // Evaluate Loadcurve if defined. Put current load factor in parameterlist
     const vector<int>*    curve  = (*condIter)->Get<vector<int> >("curve");
@@ -198,7 +198,7 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
 
     params.set("LoadCurveFactor",curvefac);
 
-    params.set<RefCountPtr<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
+    params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;
@@ -278,7 +278,7 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize Lennard Jones potential constant variables
-  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
 
   // find nodal ids influencing a given element
   const int     label     = cond->GetInt("label");		//jeder Körper besitzt ein label
@@ -329,7 +329,7 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox1(
 {
 
   // get potential paramters
-  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
   const int     label     = cond->GetInt("label");		//jeder Körper besitzt ein label
   const double  cutOff    = cond->GetDouble("cutOff");
 
@@ -380,7 +380,7 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox2(
     Epetra_SerialDenseVector&       F_int)
 {
   // get potential condition
-  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
   const int     label     = cond->GetInt("label");    //jeder Körper besitzt ein label
   const double  cutOff    = cond->GetDouble("cutOff");
 
@@ -417,7 +417,7 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize Lennard Jones potential constant variables
-  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
 
   // find nodal ids influencing a given element
   const int     label     = cond->GetInt("label");
@@ -515,7 +515,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
    vector<int>&                     lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
-   RefCountPtr<DRT::Condition>      cond,
+   RCP<DRT::Condition>      cond,
    const int                        label,
    const double                     curvefac)
 {
@@ -662,7 +662,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
    vector<int>&                     lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
-   RefCountPtr<DRT::Condition>      cond,
+   RCP<DRT::Condition>      cond,
    const int                        label,
    const double                     curvefac
    )
@@ -866,7 +866,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
    vector<int>&                     lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
-   RefCountPtr<DRT::Condition>      cond,
+   RCP<DRT::Condition>      cond,
    const int                        label,
    const double                     curvefac)
 {
@@ -1047,7 +1047,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
    vector<int>&                                               lm,
    Epetra_SerialDenseMatrix&                                  K_surf,
    Epetra_SerialDenseVector&                                  F_int,
-   RefCountPtr<DRT::Condition>                                cond,
+   RCP<DRT::Condition>                                cond,
    const int                                                  label,
    const double                                               curvefac)
 {
@@ -1223,7 +1223,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
    vector<int>&                                               lm,
    Epetra_SerialDenseMatrix&                                  K_surf,
    Epetra_SerialDenseVector&                                  F_int,
-   RefCountPtr<DRT::Condition>                                cond,
+   RCP<DRT::Condition>                                cond,
    const int                                                  label,
    const double                                               curvefac)
 {
@@ -1406,7 +1406,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
    vector<int>&                     lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
-   RefCountPtr<DRT::Condition>      cond,
+   RCP<DRT::Condition>      cond,
    const int                        label,
    const double                     curvefac)
 {
@@ -2120,9 +2120,9 @@ bool POTENTIAL::SurfacePotential::DetermineValidContribution(
 *--------------------------------------------------------------------*/
 void POTENTIAL::SurfacePotential::TestEvaluatePotential(
   ParameterList&                      p,
-  RefCountPtr<Epetra_Vector>          disp,
-  RefCountPtr<Epetra_Vector>          fint,
-  RefCountPtr<LINALG::SparseMatrix>   stiff,
+  RCP<Epetra_Vector>          disp,
+  RCP<Epetra_Vector>          fint,
+  RCP<LINALG::SparseMatrix>   stiff,
   const double                        time,
   const int                           step)
 {
@@ -2160,7 +2160,7 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 std::map<int, std::set<int> > POTENTIAL::SurfacePotential::computeEleByLabelVol(
-                                                RefCountPtr<const Epetra_Vector>    disp,
+                                                RCP<const Epetra_Vector>    disp,
                                                 std::map<int, std::set<int> > elementList)
 {
  //TODO check for 2 dims
@@ -2213,9 +2213,9 @@ std::map<int, std::set<int> > POTENTIAL::SurfacePotential::computeEleByLabelVol(
 *--------------------------------------------------------------------*/
 /*
 void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
-                                                      RefCountPtr<Epetra_Vector> disp,
-                                                      RefCountPtr<Epetra_Vector> fint,
-                                                      RefCountPtr<LINALG::SparseMatrix> stiff,
+                                                      RCP<Epetra_Vector> disp,
+                                                      RCP<Epetra_Vector> fint,
+                                                      RCP<LINALG::SparseMatrix> stiff,
                                                       const double time,
                                                       const int                           step)
 {
@@ -2274,8 +2274,8 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
 //Rechnet Schwerpunkt des Körpers und die im Schwerpunkt wirkende Kraft aus
 void POTENTIAL::SurfacePotential::FintSumAndCenterOfGravityVector(  LINALG::Matrix<3,1>& fint_sum_Body,
                                   LINALG::Matrix<3,1>& Schwerpunkt_Body,
-                                  RefCountPtr<Epetra_Vector> fint,
-                                  RefCountPtr<Epetra_Vector> disp,
+                                  RCP<Epetra_Vector> fint,
+                                  RCP<Epetra_Vector> disp,
                                   int gidBegin,
                                   int gidEnd,
                                   int dofBegin,
@@ -2364,7 +2364,7 @@ void POTENTIAL::SurfacePotential::AusgabedateiSchreiben(double dDistance,
                             double dForce2,
                             const double time)
 {
-  ofstream AusgabeDatei("NumerischeLoesung.txt",ios_base::app);
+  std::ofstream AusgabeDatei("NumerischeLoesung.txt",ios_base::app);
 
   if(AusgabeDatei.good())
   {
@@ -2392,8 +2392,8 @@ void STR::TimIntImpl::TestForceStiffPotential
     p.set("pot_man", potman_);
     p.set("total time", time);
 
-    Teuchos::RefCountPtr<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
-    Teuchos::RefCountPtr<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RCP<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
     fint_test->PutScalar(0.0);
     stiff_test->Zero();
 

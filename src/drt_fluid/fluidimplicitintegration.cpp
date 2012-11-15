@@ -1280,7 +1280,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         {
           // vector containing weak dirichlet loads
 
-          RefCountPtr<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          RCP<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
           ParameterList weakdbcparams;
 
@@ -1805,9 +1805,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     //------------------------------------------------ free surface update
     if (alefluid_ and surfacesplitter_->FSCondRelevant())
     {
-      Teuchos::RefCountPtr<Epetra_Vector> fsvelnp = surfacesplitter_->ExtractFSCondVector(velnp_);
-      Teuchos::RefCountPtr<Epetra_Vector> fsdisp = surfacesplitter_->ExtractFSCondVector(dispn_);
-      Teuchos::RefCountPtr<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
+      Teuchos::RCP<Epetra_Vector> fsvelnp = surfacesplitter_->ExtractFSCondVector(velnp_);
+      Teuchos::RCP<Epetra_Vector> fsdisp = surfacesplitter_->ExtractFSCondVector(dispn_);
+      Teuchos::RCP<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->FSCondMap()));
 
       // select free surface elements
       std::string condname = "FREESURFCoupling";
@@ -1854,7 +1854,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         discret_->ClearState();
 
         //ndnorm contains fsnodes' normal vectors (with arbitrary length). no pressure-entries
-        Teuchos::RefCountPtr<Epetra_Vector> ndnorm = surfacesplitter_->ExtractFSCondVector(ndnorm0);
+        Teuchos::RCP<Epetra_Vector> ndnorm = surfacesplitter_->ExtractFSCondVector(ndnorm0);
 
         std::vector< int > GIDfsnodes;  //GIDs of free surface nodes
         std::vector< int > GIDdof;      //GIDs of current fsnode's dofs
@@ -2908,7 +2908,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //
 //  // all surfaces of Fluid elements are FluidBoundaryElements
 //  // better: create FluidInternalSurfaces elements
-//  vector<RCP<DRT::Element> > surfaces = actele->Surfaces();
+//  vector<Teuchos::RCP<DRT::Element> > surfaces = actele->Surfaces();
 //
 //  // loop over surfaces
 //  for (unsigned int surf=0; surf<surfaces.size(); ++surf)
@@ -3015,7 +3015,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //      else
 //      {
 //        // do adjele and ele share a common surface ?
-//        vector<RCP<DRT::Element> > adjele_surfaces = adjele->Surfaces();
+//        vector<Teuchos::RCP<DRT::Element> > adjele_surfaces = adjele->Surfaces();
 //
 //        // loop over surfaces of adjacent element
 //        for (unsigned int adj_surf=0; adj_surf<adjele_surfaces.size(); ++adj_surf)
@@ -5011,7 +5011,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       // append error of the last time step to the error file
       if ((step_==stepmax_) or (time_==maxtime_))// write results to file
       {
-        ostringstream temp;
+        std::ostringstream temp;
         const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation+".relerror";
 
@@ -5024,7 +5024,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         f.close();
       }
 
-      ostringstream temp;
+      std::ostringstream temp;
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation+"_time.relerror";
 

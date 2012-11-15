@@ -2465,7 +2465,7 @@ void MORTAR::MortarInterface::AssembleNormals(LINALG::SparseMatrix& nglobal)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
                                             LINALG::SparseMatrix& invtrafo,
-                                            set<int>& donebefore)
+                                            std::set<int>& donebefore)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -2615,7 +2615,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
     if (nt==corner || nt==center)
     {
       // check if processed before
-      set<int>::iterator iter = donebefore.find(gid);
+      std::set<int>::iterator iter = donebefore.find(gid);
 
       // if not then assemble trafo matrix block
       if (iter == donebefore.end())
@@ -2639,7 +2639,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
     else if (nt==edge)
     {
       // check if processed before
-      set<int>::iterator iter = donebefore.find(gid);
+      std::set<int>::iterator iter = donebefore.find(gid);
 
       // if not then assemble trafo matrix block
       if (iter == donebefore.end())
@@ -2793,7 +2793,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
     if (nt==master)
     {
       // check if processed before
-      set<int>::iterator iter = donebefore.find(gid);
+      std::set<int>::iterator iter = donebefore.find(gid);
 
       // if not then assemble trafo matrix block
       if (iter == donebefore.end())
@@ -2819,7 +2819,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
     else if (nt==slaveedge)
     {
       // check if processed before
-      set<int>::iterator iter = donebefore.find(gid);
+      std::set<int>::iterator iter = donebefore.find(gid);
 
       // if not then assemble trafo matrix block
       if (iter == donebefore.end())
@@ -2868,7 +2868,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
     else if (nt==slavecenter)
     {
       // check if processed before
-      set<int>::iterator iter = donebefore.find(gid);
+      std::set<int>::iterator iter = donebefore.find(gid);
 
       // if not then assemble trafo matrix block
       if (iter == donebefore.end())

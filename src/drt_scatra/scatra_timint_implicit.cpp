@@ -75,11 +75,11 @@ Maintainer: Georg Bauer
  |  Constructor                                        (public) vg 05/07|
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
-    RCP<DRT::Discretization>      actdis,
-    RCP<LINALG::Solver>           solver,
-    RCP<ParameterList>            params,
-    RCP<ParameterList>            extraparams,
-    RCP<IO::DiscretizationWriter> output) :
+    Teuchos::RCP<DRT::Discretization>      actdis,
+    Teuchos::RCP<LINALG::Solver>           solver,
+    Teuchos::RCP<Teuchos::ParameterList>   params,
+    Teuchos::RCP<Teuchos::ParameterList>   extraparams,
+    Teuchos::RCP<IO::DiscretizationWriter> output) :
   // call constructor for "nontrivial" objects
   solver_ (solver),
   params_ (params),
@@ -2077,7 +2077,7 @@ void SCATRA::ScaTraTimIntImpl::AddMultiVectorToParameterList
     //SetState cannot be used since this multi-vector is nodebased and not dofbased!
     const Epetra_Map* nodecolmap = discret_->NodeColMap();
     int numcol = vec->NumVectors();
-    RefCountPtr<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
     LINALG::Export(*vec,*tmp);
     p.set(name,tmp);
   }
@@ -2529,7 +2529,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 /*
   const int numdim = 3;
   //create output file name
-  stringstream temp;
+  std::stringstream temp;
   temp<< DRT::Problem::Instance()->OutputControlFile()->FileName()<<".nonliniter_step"<<step_;
   string outname = temp.str();
   string probtype = DRT::Problem::Instance()->ProblemType();

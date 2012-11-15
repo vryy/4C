@@ -58,7 +58,7 @@ high precission calculation. The following facts have to be considered when doin
 #define BEAM3EB_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -208,9 +208,9 @@ public:
 
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
 
   /*!

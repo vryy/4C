@@ -186,14 +186,14 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
       or modelparams->get<string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
       or modelparams->get<string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
   {
-    size_t nlayer = (*modelparams->get<RefCountPtr<vector<double> > >("local_Cs_sum")).size();
+    size_t nlayer = (*modelparams->get<RCP<vector<double> > >("local_Cs_sum")).size();
     for (size_t rr=0; rr<nlayer; rr++)
     {
-      (*modelparams->get<RefCountPtr<vector<double> > >("local_Cs_sum"))[rr] = 0.0;
-      (*modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum"))[rr] = 0.0;
-      (*modelparams->get<RefCountPtr<vector<double> > >("local_visceff_sum"))[rr] = 0.0;
-      (*modelparams->get<RefCountPtr<vector<double> > >("local_Ci_sum"))[rr] = 0.0;
-      (*modelparams->get<RefCountPtr<vector<double> > >("local_Ci_delta_sq_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<vector<double> > >("local_Cs_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<vector<double> > >("local_visceff_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<vector<double> > >("local_Ci_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<vector<double> > >("local_Ci_delta_sq_sum"))[rr] = 0.0;
     }
   }
 
@@ -235,29 +235,29 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
       or modelparams->get<string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
       or modelparams->get<string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
   {
-    size_t nlayer = (*modelparams->get<RefCountPtr<vector<double> > >("local_Prt_sum")).size();
+    size_t nlayer = (*modelparams->get<RCP<vector<double> > >("local_Prt_sum")).size();
     for (size_t rr=0; rr<nlayer; rr++)
     {
-      (*modelparams->get<RefCountPtr<vector<double> > >("local_Prt_sum"))[rr] = 0.0;
-      (*modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_Prt_sum"))[rr] = 0.0;
-      (*modelparams->get<RefCountPtr<vector<double> > >("local_diffeff_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<vector<double> > >("local_Prt_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<vector<double> > >("local_diffeff_sum"))[rr] = 0.0;
     }
-    extramodelparams->set<RefCountPtr<vector<double> > >("local_Prt_sum",
-                    modelparams->get<RefCountPtr<vector<double> > >("local_Prt_sum"));
-    extramodelparams->set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_Prt_sum",
-                    modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_Prt_sum"));
-    extramodelparams->set<RefCountPtr<vector<double> > >("local_diffeff_sum",
-                    modelparams->get<RefCountPtr<vector<double> > >("local_diffeff_sum"));
+    extramodelparams->set<RCP<vector<double> > >("local_Prt_sum",
+                    modelparams->get<RCP<vector<double> > >("local_Prt_sum"));
+    extramodelparams->set<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum",
+                    modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum"));
+    extramodelparams->set<RCP<vector<double> > >("local_diffeff_sum",
+                    modelparams->get<RCP<vector<double> > >("local_diffeff_sum"));
     // add (Cs*h)^2 to calculate Prt
     // therefore, it is assumed that finally the scatra field is solved after the fluid fields
     // be careful since this vector has not yet been commuicated
-    RCP<vector<double> > local_Cs_delta_sq_sum = modelparams->get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum");
-    RefCountPtr<vector<double> > global_Cs_delta_sq_sum;
+    RCP<vector<double> > local_Cs_delta_sq_sum = modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_sum");
+    RCP<vector<double> > global_Cs_delta_sq_sum;
     global_Cs_delta_sq_sum = Teuchos::rcp(new vector<double> (nlayer,0.0));
     discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum )[0]),
                             &((*global_Cs_delta_sq_sum)[0]),
                             local_Cs_delta_sq_sum->size());
-    extramodelparams->set<RefCountPtr<vector<double> > >("global_Cs_delta_sq_sum",global_Cs_delta_sq_sum);
+    extramodelparams->set<RCP<vector<double> > >("global_Cs_delta_sq_sum",global_Cs_delta_sq_sum);
     extramodelparams->set<int>("numele_layer",numele_layer);
   }
 
@@ -323,7 +323,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     {
       // get planecoordinates
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RefCountPtr<vector<double> > >("planecoords_",Teuchos::null);
+      dir1coords_=modelparams->get<RCP<vector<double> > >("planecoords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -340,8 +340,8 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     {
       // get coordinates
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RefCountPtr<vector<double> > >("dir1coords_",Teuchos::null);
-      dir2coords_=modelparams->get<RefCountPtr<vector<double> > >("dir2coords_",Teuchos::null);
+      dir1coords_=modelparams->get<RCP<vector<double> > >("dir1coords_",Teuchos::null);
+      dir2coords_=modelparams->get<RCP<vector<double> > >("dir2coords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -631,21 +631,21 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     }
     // provide necessary information for the elements
     {
-      modelparams->set<RefCountPtr<vector<double> > >("averaged_LijMij_",averaged_LijMij);
-      modelparams->set<RefCountPtr<vector<double> > >("averaged_MijMij_",averaged_MijMij);
+      modelparams->set<RCP<vector<double> > >("averaged_LijMij_",averaged_LijMij);
+      modelparams->set<RCP<vector<double> > >("averaged_MijMij_",averaged_MijMij);
       if (physicaltype_ == INPAR::FLUID::loma)
       {
-        modelparams->set<RefCountPtr<vector<double> > >("averaged_CI_numerator_",averaged_CI_numerator);
-        modelparams->set<RefCountPtr<vector<double> > >("averaged_CI_denominator_",averaged_CI_denominator);
+        modelparams->set<RCP<vector<double> > >("averaged_CI_numerator_",averaged_CI_numerator);
+        modelparams->set<RCP<vector<double> > >("averaged_CI_denominator_",averaged_CI_denominator);
       }
       if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
-        modelparams->set<RefCountPtr<vector<double> > >("planecoords_"    ,dir1coords_   );
+        modelparams->set<RCP<vector<double> > >("planecoords_"    ,dir1coords_   );
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or special_flow_homdir_ == "z")
       {
-        modelparams->set<RefCountPtr<vector<double> > >("dir1coords_"    ,dir1coords_   );
-        modelparams->set<RefCountPtr<vector<double> > >("dir2coords_"    ,dir2coords_   );
+        modelparams->set<RCP<vector<double> > >("dir1coords_"    ,dir1coords_   );
+        modelparams->set<RCP<vector<double> > >("dir2coords_"    ,dir2coords_   );
       }
       else
         dserror("More than two homogeneous directions not supported!");
@@ -690,7 +690,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     {
       // get planecoordinates
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RefCountPtr<vector<double> > >("planecoords_",Teuchos::null);
+      dir1coords_=modelparams->get<RCP<vector<double> > >("planecoords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -707,8 +707,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     {
       // get coordinates
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RefCountPtr<vector<double> > >("dir1coords_",Teuchos::null);
-      dir2coords_=modelparams->get<RefCountPtr<vector<double> > >("dir2coords_",Teuchos::null);
+      dir1coords_=modelparams->get<RCP<vector<double> > >("dir1coords_",Teuchos::null);
+      dir2coords_=modelparams->get<RCP<vector<double> > >("dir2coords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -955,11 +955,11 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
 
     // provide necessary information for the elements
     {
-      modelparams->set<RefCountPtr<vector<double> > >("averaged_LkMk_",averaged_LkMk);
-      modelparams->set<RefCountPtr<vector<double> > >("averaged_MkMk_",averaged_MkMk);
+      modelparams->set<RCP<vector<double> > >("averaged_LkMk_",averaged_LkMk);
+      modelparams->set<RCP<vector<double> > >("averaged_MkMk_",averaged_MkMk);
       if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
-        modelparams->set<RefCountPtr<vector<double> > >("planecoords_"    ,dir1coords_   );
+        modelparams->set<RCP<vector<double> > >("planecoords_"    ,dir1coords_   );
         // channel flow only
         // return number of elements per layer
         // equal number of elements in each layer assumed
@@ -967,8 +967,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or special_flow_homdir_ == "z")
       {
-        modelparams->set<RefCountPtr<vector<double> > >("dir1coords_"    ,dir1coords_   );
-        modelparams->set<RefCountPtr<vector<double> > >("dir2coords_"    ,dir2coords_   );
+        modelparams->set<RCP<vector<double> > >("dir1coords_"    ,dir1coords_   );
+        modelparams->set<RCP<vector<double> > >("dir2coords_"    ,dir2coords_   );
       }
       else
         dserror("More than two homogeneous directions not supported!");
@@ -1596,7 +1596,7 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
     //SetState cannot be used since this multi-vector is nodebased and not dofbased!
     const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
     int numcol = velocity->NumVectors();
-    RefCountPtr<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
     LINALG::Export(*velocity,*tmp);
     filterparams.set("velocity",tmp);
   }

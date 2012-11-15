@@ -149,7 +149,7 @@ namespace ADAPTER {
     //@}
 
     /// all velocity dofs not at the interface
-    Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
+    Teuchos::RCP<Epetra_Map>       innervelmap_;
 
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; // xfluidfluid monolithic approach
 

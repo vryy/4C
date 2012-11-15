@@ -155,7 +155,7 @@ protected:
             );
 
     template<class T> void Write(
-            ofstream& os,
+            std::ofstream& os,
             T i) const
     {
     	// only processor 0 does the writing !!
@@ -164,7 +164,7 @@ protected:
     }
 
     void Write(
-            ofstream& os,
+            std::ofstream& os,
             const string s) const
     {
     	// only processor 0 does the writing !!
@@ -173,7 +173,7 @@ protected:
     }
 
     void Write(
-            ofstream& os,
+            std::ofstream& os,
             const char* s) const
     {
     	// only processor 0 does the writing !!
@@ -182,19 +182,19 @@ protected:
     }
 
     void WriteString(
-            ofstream& stream,  ///< filestream we are writing to
+            std::ofstream& stream,  ///< filestream we are writing to
             const string str   ///< string to be written to file
             ) const;
     void WriteGeoFile(
             const string& geofilename);
     void WriteGeoFileOneTimeStep(
-            ofstream& file,
+            std::ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string name);
 
-    RefCountPtr<Epetra_Map> WriteCoordinates(
-            ofstream& geofile,                         ///< filestream for the geometry
-            const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
+    RCP<Epetra_Map> WriteCoordinates(
+            std::ofstream& geofile,                         ///< filestream for the geometry
+            const RCP<DRT::Discretization> dis ///< discretization where the nodal positions are take from
             ) ;
 
   /*! \brief Write the coordinates for a Polynomial discretization
@@ -203,9 +203,9 @@ protected:
     coordinates of the nodes in the discretization.
   */
     void WriteCoordinatesForPolynomialShapefunctions(
-      ofstream&                              geofile ,
-      const RefCountPtr<DRT::Discretization> dis     ,
-      RefCountPtr<Epetra_Map>&               proc0map
+      std::ofstream&                              geofile ,
+      const RCP<DRT::Discretization> dis     ,
+      RCP<Epetra_Map>&               proc0map
       );
 
   /*! \brief Write the coordinates for a Nurbs discretization
@@ -215,16 +215,16 @@ protected:
     knot values are mapped to.
   */
     void WriteCoordinatesForNurbsShapefunctions(
-      ofstream&                              geofile ,
-      const RefCountPtr<DRT::Discretization> dis     ,
-      RefCountPtr<Epetra_Map>&               proc0map
+      std::ofstream&                              geofile ,
+      const RCP<DRT::Discretization> dis     ,
+      RCP<Epetra_Map>&               proc0map
       );
 
 
     void WriteCells(
-            ofstream& geofile,///< filestream for the geometry
-            const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
-            const RefCountPtr<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar
+            std::ofstream& geofile,///< filestream for the geometry
+            const RCP<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
+            const RCP<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar
             ) const;
 
 
@@ -239,16 +239,16 @@ protected:
     \param int                              (i)          global element id
     \param ofstream                         (used for o) direct print to file
     \param vector<int>                      (o)          remember node values for parallel IO
-    \param RefCountPtr<DRT::Discretization> (i)          the discretisation holding knots etc
-    \param RefCountPtr<Epetra_Map>          (i)          an allreduced nodemap
+    \param RCP<DRT::Discretization> (i)          the discretisation holding knots etc
+    \param RCP<Epetra_Map>          (i)          an allreduced nodemap
 
   */
     void WriteNurbsCell(const DRT::Element::DiscretizationType distype   ,
                         const int                              gid       ,
-                        ofstream&                              geofile   ,
+                        std::ofstream&                              geofile   ,
                         vector<int>&                           nodevector,
-                        const RefCountPtr<DRT::Discretization> dis       ,
-                        const RefCountPtr<Epetra_Map>&         proc0map  ) const;
+                        const RCP<DRT::Discretization> dis       ,
+                        const RCP<Epetra_Map>&         proc0map  ) const;
 
   /*! \brief Quadratic nurbs split one nurbs27 element
     in knot space into eight(3d) cells. The global
@@ -301,13 +301,13 @@ protected:
 
 
     void WriteNodeConnectivityPar(
-            ofstream& geofile,
-            const RefCountPtr<DRT::Discretization> dis,
+            std::ofstream& geofile,
+            const RCP<DRT::Discretization> dis,
             const vector<int>& nodevector,
-            const RefCountPtr<Epetra_Map> proc0map
+            const RCP<Epetra_Map> proc0map
             ) const;
     void WriteDofResultStep(
-            ofstream& file,
+            std::ofstream& file,
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
@@ -339,23 +339,23 @@ protected:
 
     \param ofstream                         (used for o) direct print to file
     \param int                              (i)          number of degrees of freedom
-    \param RefCountPtr<Epetra_Vector>       (i)          the result data read from the baci output
+    \param RCP<Epetra_Vector>       (i)          the result data read from the baci output
     \param string                           (i)          name of the thing we are writing
                                                          (velocity, pressure etc.)
     \param int                              (i)          potential offset in dof numbering
 
   */
   void WriteDofResultStepForNurbs(
-    ofstream&                        file ,
+    std::ofstream&                        file ,
     const int                        numdf,
-    const RefCountPtr<Epetra_Vector> data ,
+    const RCP<Epetra_Vector> data ,
     const string                     name ,
     const int                      offset
     ) const;
 
   //! perform interpolation of result data to visualization points.
   void InterpolateNurbsResultToVizPoints(
-      Teuchos::RefCountPtr<Epetra_MultiVector> idata,
+      Teuchos::RCP<Epetra_MultiVector> idata,
       const int dim,
       const int npatch,
       const vector<int>& vpoff,
@@ -369,23 +369,23 @@ protected:
   ) const;
 
   void WriteNodalResultStepForNurbs(
-    ofstream&                        file ,
+    std::ofstream&                        file ,
     const int                        numdf,
-    const RefCountPtr<Epetra_MultiVector> data ,
+    const RCP<Epetra_MultiVector> data ,
     const string                     name ,
     const int                      offset
     ) const;
 
 
     void WriteNodalResultStep(
-            ofstream& file,
+            std::ofstream& file,
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
             const string name,
             const int numdf) const;
     void WriteElementDOFResultStep(
-            ofstream& file,
+            std::ofstream& file,
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
@@ -393,7 +393,7 @@ protected:
             const int numdf,
             const int from) const;
     void WriteElementResultStep(
-            ofstream& file,
+            std::ofstream& file,
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
@@ -401,7 +401,7 @@ protected:
             const int numdf,
             const int from) const;
     void WriteIndexTable(
-            ofstream& file,
+            std::ofstream& file,
             const vector<ofstream::pos_type>& filepos) const;
     /*!
      * \brief create string for the VARIABLE section
@@ -430,7 +430,7 @@ protected:
      * \return map between distype and number of elements to be written
      */
     NumElePerDisType GetNumElePerDisType(
-            const RefCountPtr<DRT::Discretization> dis) const;
+            const RCP<DRT::Discretization> dis) const;
 
     string GetEnsightString(
             const DRT::Element::DiscretizationType distype) const;
@@ -439,7 +439,7 @@ protected:
      * \brief if files become to big, this routine switches to a new file
      */
     void FileSwitcher(
-            ofstream& file,                                          ///< filestream that is switched
+            std::ofstream& file,                                          ///< filestream that is switched
             bool& multiple_files,                                    ///< ???
             map<string,vector<int> >& filesetmap,                    ///< ???
             map<string, vector<ofstream::pos_type> >& resultfilepos, ///< ???
@@ -460,7 +460,7 @@ protected:
      * \return map between distype and vector containing the global ids of th corresponding elements
      */
     EleGidPerDisType GetEleGidPerDisType(
-            const RefCountPtr<DRT::Discretization> dis,
+            const RCP<DRT::Discretization> dis,
             NumElePerDisType numeleperdistype
             ) const;
 

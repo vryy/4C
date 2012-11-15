@@ -52,7 +52,7 @@ Maintainer: Ursula Rasthofer
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
 //#include "turbulence_statistics_cha.H"
@@ -91,7 +91,7 @@ public:
 
   */
   TurbulenceStatisticsBcf(
-                          RefCountPtr<DRT::Discretization>      actdis,
+                          RCP<DRT::Discretization>      actdis,
                           ParameterList&                        params);
 
 
@@ -120,11 +120,11 @@ public:
                                      is a hack!
   */
   void DoTimeSample(
-      Teuchos::RefCountPtr<const Epetra_Vector> stdvelnp                            ,
-      Teuchos::RefCountPtr<const Epetra_Vector> stdforce                            ,
-      Teuchos::RefCountPtr<const DRT::DofSet>   stddofset            = Teuchos::null,
-      Teuchos::RefCountPtr<const Epetra_Vector> discretmatchingvelnp = Teuchos::null,
-      Teuchos::RefCountPtr<const Epetra_Vector> phinp                = Teuchos::null);
+      Teuchos::RCP<const Epetra_Vector> stdvelnp                            ,
+      Teuchos::RCP<const Epetra_Vector> stdforce                            ,
+      Teuchos::RCP<const DRT::DofSet>   stddofset            = Teuchos::null,
+      Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp = Teuchos::null,
+      Teuchos::RCP<const Epetra_Vector> phinp                = Teuchos::null);
 
 
   /*!
@@ -232,26 +232,26 @@ private:
   //====================================================
 
   //! DofSet for the result Epetra vectors
-  RefCountPtr<const DRT::DofSet>             stddofset_;
+  RCP<const DRT::DofSet>             stddofset_;
 
   //! pointer to mean vel/pres and scalar field
-  RefCountPtr<const Epetra_Vector>           stdvelnp_;
+  RCP<const Epetra_Vector>           stdvelnp_;
 
   //! vector of squared velocities and pressures
-  RefCountPtr<Epetra_Vector>                 pointsquaredvelnp_;
+  RCP<Epetra_Vector>                 pointsquaredvelnp_;
 
   //! pointer to the full velnp. Must match the discretization
-  RefCountPtr<const Epetra_Vector>           fullvelnp_;
+  RCP<const Epetra_Vector>           fullvelnp_;
 
   //! pointer to the phinp vector. This is a dirty hack!!!
-  RefCountPtr<const Epetra_Vector>           phinp_;
+  RCP<const Epetra_Vector>           phinp_;
 
   //! toogle vectors --- sums are computed by scalarproducts
   //  with these toggle vectors
-  std::vector<RefCountPtr<Epetra_Vector> >   toggleu_;
-  std::vector<RefCountPtr<Epetra_Vector> >   togglev_;
-  std::vector<RefCountPtr<Epetra_Vector> >   togglew_;
-  std::vector<RefCountPtr<Epetra_Vector> >   togglep_;
+  std::vector<RCP<Epetra_Vector> >   toggleu_;
+  std::vector<RCP<Epetra_Vector> >   togglev_;
+  std::vector<RCP<Epetra_Vector> >   togglew_;
+  std::vector<RCP<Epetra_Vector> >   togglep_;
 
   //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element
@@ -284,31 +284,31 @@ private:
   INPAR::FLUID::PhysicalType                 physicaltype_;
 
   //! The discretisation (required for nodes, etc; dofs are in a separate dofset)
-  RefCountPtr<DRT::Discretization>           discret_;
+  RCP<DRT::Discretization>           discret_;
 
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
   ParameterList&                             params_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
-  RefCountPtr<vector<double> >               nodeplanes_;
+  RCP<vector<double> >               nodeplanes_;
 
   //! a bounding box for the channel
-  RefCountPtr<Epetra_SerialDenseMatrix>      boundingbox_;
+  RCP<Epetra_SerialDenseMatrix>      boundingbox_;
 
   //! viscosity to calculate l_tau, y+ etc.
   std::vector<double>                        visc_;
 
   //! maps the global material ids to the position in
   //  the vectors which belongs to that material
-  RefCountPtr<map<int,int> >                 matidtoindex_;
+  RCP<map<int,int> >                 matidtoindex_;
 
   //!--------------------------------------------------
   //!         integration based averaging
   //!--------------------------------------------------
 
   //! sum over the volume of each phase (in one plane)
-  std::vector<RefCountPtr<vector<double> > > sumvol_;
+  std::vector<RCP<vector<double> > > sumvol_;
 
 
   //!--------------------------------------------------
@@ -316,32 +316,32 @@ private:
   //!--------------------------------------------------
   //
   //! pointer to the sum of nodes per plane
-  std::vector<RefCountPtr<vector<double> > > pointsumnode_;
+  std::vector<RCP<vector<double> > > pointsumnode_;
 
   //! sum over u (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumu_;
+  std::vector<RCP<vector<double> > > pointsumu_;
   //! sum over v (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumv_;
+  std::vector<RCP<vector<double> > > pointsumv_;
   //! sum over w (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumw_;
+  std::vector<RCP<vector<double> > > pointsumw_;
   //! sum over p (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsump_;
+  std::vector<RCP<vector<double> > > pointsump_;
 
   //! sum over u (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumuv_;
+  std::vector<RCP<vector<double> > > pointsumuv_;
   //! sum over v (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumuw_;
+  std::vector<RCP<vector<double> > > pointsumuw_;
   //! sum over w (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumvw_;
+  std::vector<RCP<vector<double> > > pointsumvw_;
 
   //! sum over u^2 (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumsqu_;
+  std::vector<RCP<vector<double> > > pointsumsqu_;
   //! sum over v^2 (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumsqv_;
+  std::vector<RCP<vector<double> > > pointsumsqv_;
   //! sum over w^2 (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumsqw_;
+  std::vector<RCP<vector<double> > > pointsumsqw_;
   //! sum over p^2 (over one plane in each component)
-  std::vector<RefCountPtr<vector<double> > > pointsumsqp_;
+  std::vector<RCP<vector<double> > > pointsumsqp_;
 
   //!--------------------------------------------------
   //!   averaged forces (mean, bottom and top)

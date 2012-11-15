@@ -31,7 +31,7 @@ Maintainer: Georg Hammerl
  *----------------------------------------------------------------------*/
 #include "fs3i.H"
 #include "Epetra_MpiComm.h"
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <vector>

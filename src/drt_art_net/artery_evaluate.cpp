@@ -71,7 +71,7 @@ int DRT::ELEMENTS::Artery::Evaluate(ParameterList& params,
 /*
 Here must add the steps for evaluating an element
 */
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
 
   switch(act)
   {

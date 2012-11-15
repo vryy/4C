@@ -29,7 +29,7 @@ Maintainer: Christiane Förster
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discretization> actdis,
+FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(RCP<DRT::Discretization> actdis,
                                                          IO::DiscretizationWriter& output,
                                                          double dta) :
   // call constructor for "nontrivial" objects
@@ -326,7 +326,7 @@ void FLD::UTILS::FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& r
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
+FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RCP<DRT::Discretization> actdis,
                                                IO::DiscretizationWriter& output,
                                                double dta,
                                                int condid,

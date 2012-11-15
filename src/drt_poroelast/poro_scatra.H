@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |
  *----------------------------------------------------------------------*/
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 

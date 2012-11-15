@@ -13,7 +13,7 @@
 #define BELE3_4_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_element.H"

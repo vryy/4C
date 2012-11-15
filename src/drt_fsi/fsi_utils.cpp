@@ -50,7 +50,7 @@
 void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
                               double alpha,
                               double beta,
-                              Teuchos::RefCountPtr<Epetra_Vector> soln,
+                              Teuchos::RCP<Epetra_Vector> soln,
                               std::string filename)
 {
   // that's really stupid again
@@ -61,7 +61,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
                  0,
                  bmap.Comm());
 
-  RefCountPtr<Epetra_CrsMatrix> jacobian = Teuchos::rcp(new Epetra_CrsMatrix(Copy, map, map.NumGlobalElements()));
+  RCP<Epetra_CrsMatrix> jacobian = Teuchos::rcp(new Epetra_CrsMatrix(Copy, map, map.NumGlobalElements()));
 
   int nummyelements = map.NumMyElements();
   int mypos = LINALG::FindMyPos(nummyelements, map.Comm());

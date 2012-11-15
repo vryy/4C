@@ -18,7 +18,7 @@ Maintainer: Lena Wiechert
 #ifndef ADAPTER_FLUID_LUNG_H
 #define ADAPTER_FLUID_LUNG_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include "ad_fld_fluid_fsi.H"

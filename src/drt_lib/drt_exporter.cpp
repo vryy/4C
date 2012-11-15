@@ -448,7 +448,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
     // count
 
-    for (set<int>::iterator i=SendPlan()[tproc].begin(); i!=SendPlan()[tproc].end(); ++i)
+    for (std::set<int>::iterator i=SendPlan()[tproc].begin(); i!=SendPlan()[tproc].end(); ++i)
     {
       const int lid = *i;
       const int gid = SourceMap().GID(lid);
@@ -459,7 +459,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
     sendblock.StartPacking();
 
-    for (set<int>::iterator i=SendPlan()[tproc].begin(); i!=SendPlan()[tproc].end(); ++i)
+    for (std::set<int>::iterator i=SendPlan()[tproc].begin(); i!=SendPlan()[tproc].end(); ++i)
     {
       const int lid = *i;
       const int gid = SourceMap().GID(lid);

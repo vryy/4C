@@ -21,7 +21,7 @@ Maintainer: Lena Wiechert
 #define ADAPTER_STRUCTURE_LUNG_H
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 #include "ad_str_fsiwrapper.H"

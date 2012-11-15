@@ -15,7 +15,7 @@ Maintainer: Kei Müller
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"

@@ -13,7 +13,7 @@ Maintainer: Mahmoud Ismail
 #ifndef ARTERY_H
 #define ARTERY_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 using namespace std;
 using namespace Teuchos;

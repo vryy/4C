@@ -334,7 +334,7 @@ void DRT::ELEMENTS::FluidIntFace::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -344,14 +344,14 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Lines()
 
   // so we have to allocate new line elements:
   dserror("Lines of FluidIntFace not implemented");
-  vector<RCP<DRT::Element> > lines(0);
+  vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -361,7 +361,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Surfaces()
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of FluidIntFace not implemented");
-  vector<RCP<DRT::Element> > surfaces(0);
+  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 

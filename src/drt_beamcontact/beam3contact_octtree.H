@@ -11,7 +11,7 @@ Maintainer: Kei Müller
 #ifndef BEAM3OCTTREE_H
 #define BEAM3OCTTREE_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"

@@ -34,7 +34,7 @@ public:
 
     \param er (i) a reader of one discretization that uses (a fraction of) our nodes
    */
-  void AddElementReader(RCP<ElementReader> er) { ereader_.push_back(er); }
+  void AddElementReader(Teuchos::RCP<ElementReader> er) { ereader_.push_back(er); }
 
   /// do the actual reading
   /*!
@@ -60,19 +60,19 @@ public:
 private:
 
   /// find the discretization that contains the given node
-  vector<RCP<DRT::Discretization> > FindDisNode(int nodeid);
+  vector<Teuchos::RCP<DRT::Discretization> > FindDisNode(int nodeid);
 
   /// the main dat file reader
   const DatFileReader& reader_;
 
   /// my comm
-  RCP<Epetra_Comm> comm_;
+  Teuchos::RCP<Epetra_Comm> comm_;
 
   /// my section to read
   string sectionname_;
 
   /// my element readers
-  vector<RCP<ElementReader> > ereader_;
+  std::vector<Teuchos::RCP<ElementReader> > ereader_;
 };
 
 }

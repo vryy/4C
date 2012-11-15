@@ -51,8 +51,8 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   map<int, DRT::Node*> slavegnodes;
 
   //initialize maps for elements
-  map<int, RefCountPtr<DRT::Element> > masterelements;
-  map<int, RefCountPtr<DRT::Element> > slaveelements;
+  map<int, RCP<DRT::Element> > masterelements;
+  map<int, RCP<DRT::Element> > slaveelements;
 
   // Fill maps based on condition for master side
   DRT::UTILS::FindConditionObjects(masterdis, masternodes, mastergnodes, masterelements,
@@ -122,10 +122,10 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   int EleOffset = masterdis.ElementRowMap()->MaxAllGID()+1;
 
   // feeding master elements to the interface
-  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
+  map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    RefCountPtr<DRT::Element> ele = elemiter->second;
+    RCP<DRT::Element> ele = elemiter->second;
     RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
                 new MORTAR::MortarElement(ele->Id(), ele->Owner(), ele->Shape(),
                     ele->NumNode(), ele->NodeIds(), false));
@@ -136,7 +136,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    RefCountPtr<DRT::Element> ele = elemiter->second;
+    RCP<DRT::Element> ele = elemiter->second;
     RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
                 new MORTAR::MortarElement(ele->Id() + EleOffset, ele->Owner(), ele->Shape(),
                     ele->NumNode(), ele->NodeIds(), true));
@@ -305,8 +305,8 @@ void ADAPTER::CouplingMortar::Setup
   map<int, DRT::Node*> slavegnodes;
 
   //initialize maps for elements
-  map<int, RefCountPtr<DRT::Element> > masterelements;
-  map<int, RefCountPtr<DRT::Element> > slaveelements;
+  map<int, RCP<DRT::Element> > masterelements;
+  map<int, RCP<DRT::Element> > slaveelements;
 
   // Fill maps based on condition for master side
   DRT::UTILS::FindConditionObjects(dis, masternodes, mastergnodes, masterelements,
@@ -379,10 +379,10 @@ void ADAPTER::CouplingMortar::Setup
   int EleOffset = dis.ElementRowMap()->MaxAllGID()+1;
 
   // feeding master elements to the interface
-  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
+  map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    RefCountPtr<DRT::Element> ele = elemiter->second;
+    RCP<DRT::Element> ele = elemiter->second;
     RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
                 new MORTAR::MortarElement(ele->Id(), ele->Owner(), ele->Shape(),
                     ele->NumNode(), ele->NodeIds(), false));
@@ -393,7 +393,7 @@ void ADAPTER::CouplingMortar::Setup
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    RefCountPtr<DRT::Element> ele = elemiter->second;
+    RCP<DRT::Element> ele = elemiter->second;
     vector<int> nidsoff;
     for(int i=0; i<ele->NumNode(); i++)
     {
@@ -527,8 +527,8 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   map<int, DRT::Node*> slavegnodes;
 
   //initialize maps for elements
-  map<int, RefCountPtr<DRT::Element> > masterelements;
-  map<int, RefCountPtr<DRT::Element> > slaveelements;
+  map<int, RCP<DRT::Element> > masterelements;
+  map<int, RCP<DRT::Element> > slaveelements;
 
   vector<DRT::Condition*> conds;
   vector<DRT::Condition*> conds_master(0);
@@ -683,10 +683,10 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   int EleOffset = dis.ElementRowMap()->MaxAllGID()+1;
 
   // feeding master elements to the interface
-  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
+  map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    RefCountPtr<DRT::Element> ele = elemiter->second;
+    RCP<DRT::Element> ele = elemiter->second;
     RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
                 new MORTAR::MortarElement(ele->Id(), ele->Owner(), ele->Shape(),
                     ele->NumNode(), ele->NodeIds(), false));
@@ -697,7 +697,7 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    RefCountPtr<DRT::Element> ele = elemiter->second;
+    RCP<DRT::Element> ele = elemiter->second;
     RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
                 new MORTAR::MortarElement(ele->Id() + EleOffset, ele->Owner(), ele->Shape(),
                     ele->NumNode(), ele->NodeIds(), true));
@@ -1318,9 +1318,9 @@ void ADAPTER::CouplingMortar::Evaluate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
+RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
 (
-  RefCountPtr<Epetra_Vector> mv
+  RCP<Epetra_Vector> mv
 ) const
 {
   dsassert( masterdofrowmap_->SameAs( mv->Map() ),
@@ -1331,7 +1331,7 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
   if (M_->Multiply(false, *mv, tmp))
     dserror( "M*mv multiplication failed" );
 
-  RefCountPtr<Epetra_Vector> sv = Teuchos::rcp( new Epetra_Vector( *slavedofrowmap_ ) );
+  RCP<Epetra_Vector> sv = Teuchos::rcp( new Epetra_Vector( *slavedofrowmap_ ) );
 
   if ( Dinv_->Multiply( false, tmp, *sv ) )
     dserror( "D^{-1}*v multiplication failed" );
@@ -1341,15 +1341,15 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
+RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
 (
-  RefCountPtr<Epetra_Vector> sv
+  RCP<Epetra_Vector> sv
 ) const
 {
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
   copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
-  RefCountPtr<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
+  RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
   if (M_->Multiply(true, tmp, *mv))
     dserror( "M^{T}*sv multiplication failed" );
 
@@ -1358,9 +1358,9 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
+RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
 (
-  RefCountPtr<const Epetra_Vector> mv
+  RCP<const Epetra_Vector> mv
 ) const
 {
   dsassert( masterdofrowmap_->SameAs( mv->Map() ),
@@ -1371,7 +1371,7 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
   if (M_->Multiply(false, *mv, tmp))
     dserror( "M*mv multiplication failed" );
 
-  RefCountPtr<Epetra_Vector> sv = Teuchos::rcp( new Epetra_Vector( *slavedofrowmap_ ) );
+  RCP<Epetra_Vector> sv = Teuchos::rcp( new Epetra_Vector( *slavedofrowmap_ ) );
 
   if ( Dinv_->Multiply( false, tmp, *sv ) )
     dserror( "D^{-1}*v multiplication failed" );
@@ -1381,15 +1381,15 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
+RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
 (
-  RefCountPtr<const Epetra_Vector> sv
+  RCP<const Epetra_Vector> sv
 ) const
 {
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
   copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
-  RefCountPtr<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
+  RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
   if (M_->Multiply(true, tmp, *mv))
     dserror( "M^{T}*sv multiplication failed" );
 

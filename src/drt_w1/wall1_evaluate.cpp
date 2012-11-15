@@ -148,8 +148,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     case Wall1::calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -158,7 +158,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       vector<double> mydispmat(lm.size());
       if (structale_)
       {
-        RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }
 
@@ -182,8 +182,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     case Wall1::calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       vector<double> mydispmat(lm.size());
       if (structale_)
       {
-        RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }
 
@@ -213,8 +213,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     case Wall1::calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -227,7 +227,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       vector<double> mydispmat(lm.size());
       if (structale_)
       {
-        RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }
 
@@ -309,8 +309,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -323,7 +323,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         vector<double> mydispmat(lm.size());
         if (structale_)
         {
-          RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+          RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
@@ -657,12 +657,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     break;
     case Wall1::calc_potential_stiff:
     {
-      RefCountPtr<PotentialManager> potentialmanager =
-        params.get<RefCountPtr<PotentialManager> >("pot_man", null);
+      RCP<PotentialManager> potentialmanager =
+        params.get<RCP<PotentialManager> >("pot_man", null);
       if (potentialmanager==null)
         dserror("No PotentialManager in Wall1 Volume available");
 
-      RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
       if (cond==null)
         dserror("Condition not available in Wall1 Volume");
 
@@ -697,7 +697,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList&            params,
                                           Epetra_SerialDenseVector& elevec1,
                                           Epetra_SerialDenseMatrix* elemat1)
 {
-  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+  RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -1712,7 +1712,7 @@ void DRT::ELEMENTS::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
 
 
 //{
-//  RefCountPtr<MAT::Material> mat = Material();
+//  RCP<MAT::Material> mat = Material();
 //  Epetra_SerialDenseMatrix cmat;
 //
 //  switch(material->mattyp)
@@ -2005,8 +2005,8 @@ void DRT::ELEMENTS::Wall1::AdvectionMapElement(double* XMat1,
                                                double* XMat2,
                                                double* XMesh1,
                                                double* XMesh2,
-                                               RefCountPtr<const Epetra_Vector> disp,
-                                               RefCountPtr<const Epetra_Vector> dispmat,
+                                               RCP<const Epetra_Vector> disp,
+                                               RCP<const Epetra_Vector> dispmat,
                                                LocationArray& la,
                                                bool& found)
 {

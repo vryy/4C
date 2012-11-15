@@ -540,14 +540,14 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
   const double TOL = 1.0e-3;
 
   // evaluate all enriched nodes at old interface position
-  set<int> oldEnrNodes; // set of all enriched nodes at old interface position
+  std::set<int> oldEnrNodes; // set of all enriched nodes at old interface position
   for (int inode=0;inode<discret_->NumMyRowNodes();inode++) // loop over processor nodes
   {
     const int nodegid = discret_->lRowNode(inode)->Id(); // current node
 
     // set nodal velocities and pressures with help of the field set of node
     const std::set<XFEM::FieldEnr>& fieldenrset(olddofman_->getNodeDofSet(nodegid));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump
@@ -567,7 +567,7 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
     for (vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
-      for (set<int>::const_iterator enrnode=oldEnrNodes.begin();
+      for (std::set<int>::const_iterator enrnode=oldEnrNodes.begin();
           enrnode!=oldEnrNodes.end(); enrnode++)
       {
         DRT::Node* oldnode = discret_->gNode(*enrnode);
@@ -782,7 +782,7 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
   int indexJumpEnr=0; // index which entry has to be used
   // set nodal velocities and pressures with help of the field set of node
   const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(node->Id()));
-  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+  for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
       fieldenr != fieldenrset.end();++fieldenr)
   {
     if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
@@ -860,7 +860,7 @@ void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
   int indexKinkEnr=0; // index which entry has to be used
   // set nodal velocities and pressures with help of the field set of node
   const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(node->Id()));
-  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+  for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
       fieldenr != fieldenrset.end();++fieldenr)
   {
     if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeKink)
@@ -965,7 +965,7 @@ void XFEM::EnrichmentProjection::setJumpEnrichmentValues(
 
   // set nodal velocities and pressures with help of the field set of node
   const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(node->Id()));
-  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+  for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
       fieldenr != fieldenrset.end();++fieldenr)
   {
     if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
@@ -1010,7 +1010,7 @@ void XFEM::EnrichmentProjection::setKinkEnrichmentValues(
 {
   // set nodal velocities and pressures with help of the field set of node
   const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(node->Id()));
-  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+  for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
       fieldenr != fieldenrset.end();++fieldenr)
   {
     if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeKink)

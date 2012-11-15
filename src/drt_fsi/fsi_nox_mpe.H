@@ -4,7 +4,7 @@
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <NOX_Direction_UserDefinedFactory.H>
 
 namespace NOX {
@@ -61,14 +61,14 @@ class MinimalPolynomial : public NOX::Direction::Generic
 public:
 
   //! Constructor
-  MinimalPolynomial(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+  MinimalPolynomial(const Teuchos::RCP<NOX::Utils>& utils,
                     Teuchos::ParameterList& params);
 
   //! Destructor
   ~MinimalPolynomial();
 
   // derived
-  bool reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+  bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
 	     Teuchos::ParameterList& params);
 
   // derived
@@ -87,7 +87,7 @@ private:
 private:
 
   //! Printing Utils
-  Teuchos::RefCountPtr<NOX::Utils> utils_;
+  Teuchos::RCP<NOX::Utils> utils_;
 
   int kmax_;
   double omega_;

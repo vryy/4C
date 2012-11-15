@@ -15,7 +15,7 @@ Maintainer: Ursula Mayer
 #define POTENTIALCONTAINER_H_
 
 #include <string>
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 

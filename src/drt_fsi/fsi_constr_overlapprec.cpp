@@ -80,8 +80,8 @@ void FSI::ConstrOverlappingBlockMatrix::SetupPreconditioner()
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
 
-  RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
-  RCP<Epetra_Map>           irownodes = Teuchos::null;
+  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<Epetra_Map>           irownodes = Teuchos::null;
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
@@ -410,10 +410,10 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_
     interconA->Complete(StructConOp.DomainMap(),ConStructOp.RangeMap());
     interconA->Scale(-1.0);
 
-    RCP<Teuchos::ParameterList> constrsolvparams = Teuchos::rcp(new Teuchos::ParameterList);
+    Teuchos::RCP<Teuchos::ParameterList> constrsolvparams = Teuchos::rcp(new Teuchos::ParameterList);
     constrsolvparams->set("solver","umfpack");
-    RCP<Epetra_Vector> interconsol = Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));
-    RCP<LINALG::Solver> ConstraintSolver = Teuchos::rcp(new LINALG::Solver(constrsolvparams,
+    Teuchos::RCP<Epetra_Vector> interconsol = Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));
+    Teuchos::RCP<LINALG::Solver> ConstraintSolver = Teuchos::rcp(new LINALG::Solver(constrsolvparams,
                                                                   interconA->Comm(),
                                                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
     ConstraintSolver->Solve(interconA->EpetraOperator(),interconsol,cx,true,true);

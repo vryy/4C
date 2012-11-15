@@ -102,8 +102,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff: {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -123,8 +123,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     // internal force vector only
     case calc_struct_internalforce: {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -152,8 +152,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass: {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -178,8 +178,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
         RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain", null);
@@ -294,7 +294,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alphao,*alpha);
       }
       // Update of history for visco material
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -336,7 +336,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
       }
       // Update of history for visco material
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -374,7 +374,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alpha, *alphao);
       }
       // Reset of history for visco material
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -433,7 +433,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     // read restart of microscale
     case multi_readrestart:
     {
-      RefCountPtr<MAT::Material> mat = Material();
+      RCP<MAT::Material> mat = Material();
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi();
@@ -465,12 +465,12 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
-      RefCountPtr<POTENTIAL::PotentialManager> potentialmanager =
-        params.get<RefCountPtr<POTENTIAL::PotentialManager> >("pot_man", null);
+      RCP<POTENTIAL::PotentialManager> potentialmanager =
+        params.get<RCP<POTENTIAL::PotentialManager> >("pot_man", null);
       if (potentialmanager==null)
         dserror("No PotentialManager in Solid SH8 available");
 
-      RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
       if (cond==null)
         dserror("Condition not available in Solid SH8 available");
 
@@ -1502,7 +1502,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
 #if 0
     else if(stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
     {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -1567,7 +1567,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
 
       LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
       DRT::Node** nodes = Nodes();
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

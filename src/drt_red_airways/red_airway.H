@@ -12,7 +12,7 @@ Maintainer: Mahmoud Ismail
 #ifndef RED_AIRWAY_H_
 #define RED_AIRWAY_H_
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 using namespace std;
 using namespace Teuchos;

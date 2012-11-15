@@ -17,7 +17,7 @@ Maintainer: Mahmoud Ismail
 #define RED_AIRWAYS_DRT_DRT_H
 
 #include "Epetra_Time.h"
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"

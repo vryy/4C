@@ -328,8 +328,8 @@ private:
 	 \param charmm_result (out) : content of the file as map
 	*/
 	void Reader(
-		const ostringstream& file,
-		map<string, double>& content);
+		const std::ostringstream& file,
+		std::map<string, double>& content);
 
 
 	/*!

@@ -13,7 +13,7 @@ Maintainer: Lena Wiechert
 #define BGS2X2_OPERATOR_H
 
 // Trilinos includes
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
 // BACI headers

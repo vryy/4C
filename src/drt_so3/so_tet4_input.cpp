@@ -33,7 +33,7 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   if(mat->MaterialType() == INPAR::MAT::m_structporo)
   {

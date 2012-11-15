@@ -467,7 +467,7 @@ void POROELAST::PoroBase::AddMultiVectorToParameterList
     //SetState cannot be used since this multi-vector is nodebased and not dofbased!
     const Epetra_Map* nodecolmap = discret->NodeColMap();
     int numcol = vec->NumVectors();
-    RefCountPtr<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
     LINALG::Export(*vec,*tmp);
     p.set(name,tmp);
   }

@@ -40,7 +40,7 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
-  RefCountPtr<DRT::Discretization> actdis,
+  RCP<DRT::Discretization> actdis,
   ParameterList&                   params,
   const string&                    geotype):
   discret_      (actdis),
@@ -175,14 +175,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     {
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
            x1line!=x1avcoords.end();
            ++x1line)
       {
         DRT::ParObject::AddtoPack(data,*x1line);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
            x1line!=x1avcoords.end();
            ++x1line)
       {
@@ -248,14 +248,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     {
       DRT::PackBuffer data;
 
-      for (set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
            x2line!=x2avcoords.end();
            ++x2line)
       {
         DRT::ParObject::AddtoPack(data,*x2line);
       }
       data.StartPacking();
-      for (set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
+      for (std::set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
            x2line!=x2avcoords.end();
            ++x2line)
       {
@@ -324,7 +324,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     x1coordinates_ = Teuchos::rcp(new vector<double> );
     x2coordinates_ = Teuchos::rcp(new vector<double> );
 
-    for(set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
+    for(std::set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
         coord1!=x1avcoords.end();
         ++coord1)
     {
@@ -332,7 +332,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
       //std::cout << *coord1 << std::endl;
     }
 
-    for(set<double,LineSortCriterion>::iterator coord2=x2avcoords.begin();
+    for(std::set<double,LineSortCriterion>::iterator coord2=x2avcoords.begin();
         coord2!=x2avcoords.end();
         ++coord2)
     {
@@ -545,14 +545,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   if (modelparams->get<string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
   {
     // store them in parameterlist for access on the element
-    modelparams->set<RefCountPtr<vector<double> > >("dir1coords_",x1coordinates_);
-    modelparams->set<RefCountPtr<vector<double> > >("dir2coords_",x2coordinates_);
+    modelparams->set<RCP<vector<double> > >("dir1coords_",x1coordinates_);
+    modelparams->set<RCP<vector<double> > >("dir2coords_",x2coordinates_);
   }
 
   //----------------------------------------------------------------------
   // initialize output and initially open respective statistics output file
 
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
 
   if (discret_->Comm().MyPID()==0)
   {
@@ -592,7 +592,7 @@ FLD::TurbulenceStatisticsBfs::~TurbulenceStatisticsBfs()
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::DoTimeSample(
-Teuchos::RefCountPtr<Epetra_Vector> velnp
+Teuchos::RCP<Epetra_Vector> velnp
 )
 {
   // compute squared values of velocity
@@ -826,8 +826,8 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 // sampling of velocity, pressure and temperature values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::DoLomaTimeSample(
-Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> scanp,
+Teuchos::RCP<Epetra_Vector> velnp,
+Teuchos::RCP<Epetra_Vector> scanp,
 const double                        eosfac)
 {
   // compute squared values of velocity
@@ -1137,8 +1137,8 @@ const double                        eosfac)
 // sampling of velocity, pressure and scalar values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::DoScatraTimeSample(
-Teuchos::RefCountPtr<Epetra_Vector> velnp,
-Teuchos::RefCountPtr<Epetra_Vector> scanp)
+Teuchos::RCP<Epetra_Vector> velnp,
+Teuchos::RCP<Epetra_Vector> scanp)
 {
   // compute squared values of velocity
   squaredvelnp_->Multiply(1.0,*velnp,*velnp,0.0);
@@ -1408,7 +1408,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
@@ -1536,7 +1536,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
 {
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
@@ -1749,7 +1749,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
 {
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");

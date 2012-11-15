@@ -716,7 +716,7 @@ void MAT::CHARMM::CHARMmfileapi(
 
     FILE* tty;
     ios_base::fmtflags flags = cout.flags(); // Save original flags
-    ostringstream output(ios_base::out);
+    std::ostringstream output(ios_base::out);
     ////////////////////////////////////////////////////////////////////////////
     // Variables needed for CHARMM and getting the results
     // Decide if parallel or seriell
@@ -738,7 +738,7 @@ void MAT::CHARMM::CHARMmfileapi(
     ////////////////////////////////////////////////////////////////////////////
 
     // Assemble all file and path names first
-    ostringstream statusfile(ios_base::out);
+    std::ostringstream statusfile(ios_base::out);
     statusfile << Path() << "output/status_" << CHARMmPar["FCD_ENDD"] << ".out";
 
     // Print out the beginning of the CHARMM info line
@@ -796,7 +796,7 @@ void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
 	LINALG::SerialDenseVector& charmm_result) {
 
     // Check the status of CHARMm and if it run through
-    ostringstream status(ios_base::out);
+    std::ostringstream status(ios_base::out);
     status << Path() << "output/status_" << CHARMmPar["FCD_ENDD"] << ".out";
     map<string, double> md_status;
     md_status.clear();
@@ -805,7 +805,7 @@ void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
     else cout << std::setw(5) << left << "0" << flush;
 
     // Get the results at STARTD + ENDD
-    ostringstream results(ios_base::out);
+    std::ostringstream results(ios_base::out);
     map<string, double> md_STARTD;
     md_STARTD.clear();
     results << Path() << "output/results_" << CHARMmPar["FCD_STARTD"] << ".out";
@@ -838,10 +838,10 @@ void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
 /*----------------------------------------------------------------------*/
 //! Read status and results files and make results map
 /*----------------------------------------------------------------------*/
-void MAT::CHARMM::Reader(const ostringstream& file,
-	map<string, double>& content) {
+void MAT::CHARMM::Reader(const std::ostringstream& file,
+	std::map<string, double>& content) {
 
-    ifstream filestream(file.str().c_str());
+    std::ifstream filestream(file.str().c_str());
     string line;
     if (filestream.is_open()) {
 	while (!filestream.eof()) {

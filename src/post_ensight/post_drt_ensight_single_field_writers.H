@@ -44,28 +44,28 @@ protected:
   void PostStress(const string groupname, const string stresstype);
   void WriteNodalStress(const string groupname,
                         PostResult& result);
-  void WriteNodalStressStep(ofstream& file,
+  void WriteNodalStressStep(std::ofstream& file,
                             PostResult& result,
                             map<string, vector<ofstream::pos_type> >& resultfilepos,
                             const string groupname,
                             const string name) const;
   void WriteElementCenterStress(const string groupname,
                                 PostResult& result);
-  void WriteElementCenterStressStep(ofstream& file,
+  void WriteElementCenterStressStep(std::ofstream& file,
                                     PostResult& result,
                                     map<string, vector<ofstream::pos_type> >& resultfilepos,
                                     const string groupname,
                                     const string name) const;
   void WriteNodalEigenStress(const string groupname,
                              PostResult& result);
-  void WriteNodalEigenStressStep(std::vector<RCP<ofstream> > files,
+  void WriteNodalEigenStressStep(std::vector<Teuchos::RCP<ofstream> > files,
                                  PostResult& result,
                                  map<string, vector<ofstream::pos_type> >& resultfilepos,
                                  const string groupname,
                                  vector<string> name);
   void WriteElementCenterEigenStress(const string groupname,
                                      PostResult& result);
-  void WriteElementCenterEigenStressStep(std::vector<RCP<ofstream> > files,
+  void WriteElementCenterEigenStressStep(std::vector<Teuchos::RCP<ofstream> > files,
                                          PostResult& result,
                                          map<string, vector<ofstream::pos_type> >& resultfilepos,
                                          const string groupname,
@@ -231,7 +231,7 @@ protected:
     void PostHeatflux(const string groupname, const string heatfluxtype);
     void WriteNodalHeatflux(const string groupname,
                             PostResult& result);
-    void WriteNodalHeatfluxStep(ofstream& file,
+    void WriteNodalHeatfluxStep(std::ofstream& file,
                                 PostResult& result,
                                 map<string, vector<ofstream::pos_type> >& resultfilepos,
                                 const string groupname,
@@ -239,7 +239,7 @@ protected:
                                 const int numdf) const;
     void WriteElementCenterHeatflux(const string groupname,
                                     PostResult& result);
-    void WriteElementCenterHeatfluxStep(ofstream& file,
+    void WriteElementCenterHeatfluxStep(std::ofstream& file,
                                         PostResult& result,
                                         map<string, vector<ofstream::pos_type> >& resultfilepos,
                                         const string groupname,

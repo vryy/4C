@@ -241,9 +241,9 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
 
 
     // extract local values from the global vectors
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    RefCountPtr<const Epetra_Vector> phin  = discretization.GetState("phin");
-    RefCountPtr<const Epetra_Vector> phi0_Reinit_Reference = discretization.GetState("phistart");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phin  = discretization.GetState("phin");
+    RCP<const Epetra_Vector> phi0_Reinit_Reference = discretization.GetState("phistart");
 
     if (phinp==null || phin==null || phi0_Reinit_Reference==null)
       dserror("Cannot get state vector 'phinp' or 'phi0_Reinit_Reference'");
@@ -417,8 +417,8 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // extract local values from the global vectors
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    RefCountPtr<const Epetra_Vector> phin  = discretization.GetState("phin");
+    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    RCP<const Epetra_Vector> phin  = discretization.GetState("phin");
 
     if (phinp==null || phin==null)
       dserror("Cannot get state vector 'phinp' or 'phin_'");
@@ -462,7 +462,7 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
     {
 
       // need current solution
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
@@ -508,7 +508,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::GetMaterialParams(
   )
 {
 // get the material
-  RefCountPtr<MAT::Material> material = ele->Material();
+  RCP<MAT::Material> material = ele->Material();
 /*
 // get diffusivity / diffusivities
   if (material->MaterialType() == INPAR::MAT::m_matlist)
@@ -1226,7 +1226,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
     vector<double> v(1,migepe2);
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "Pe_mig_"+temp.str();
     actele->AddToData(name,v);
@@ -1264,7 +1264,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
     vector<double> v(1,epe);
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "Pe_"+temp.str();
     actele->AddToData(name,v);
@@ -1297,7 +1297,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
     vector<double> v(1,migepe2);
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "Pe_mig_"+temp.str();
     actele->AddToData(name,v);
@@ -1331,7 +1331,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
     vector<double> v(1,epe);
-    ostringstream temp;
+    std::ostringstream temp;
     temp << k;
     string name = "Pe_"+temp.str();
     actele->AddToData(name,v);
@@ -1537,7 +1537,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
   DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
   if (!actele) dserror("cast to Transport* failed");
   vector<double> v(1,tau_[k]);
-  ostringstream temp;
+  std::ostringstream temp;
   temp << k;
   string name = "tau_"+ temp.str();
   actele->AddToData(name,v);
@@ -2502,8 +2502,8 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalMatAndRHS_REINIT_Penalty(
 
   const size_t numnode = ele->NumNode();
 
-  vector<RCP<DRT::Element> > linesVec = ele->Lines();
-  typedef vector<RCP<DRT::Element> >::iterator lines_iterator;
+  vector<Teuchos::RCP<DRT::Element> > linesVec = ele->Lines();
+  typedef vector<Teuchos::RCP<DRT::Element> >::iterator lines_iterator;
 
   for(lines_iterator line = linesVec.begin(); line != linesVec.end(); line++)
   {

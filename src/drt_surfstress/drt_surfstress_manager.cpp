@@ -165,10 +165,10 @@ void UTILS::SurfStressManager::ReadRestart(const int step,
 *--------------------------------------------------------------------*/
 
 void UTILS::SurfStressManager::EvaluateSurfStress(ParameterList& p,
-                                                  const RefCountPtr<Epetra_Vector> dism,
-                                                  const RefCountPtr<Epetra_Vector> disn,
-                                                  RefCountPtr<Epetra_Vector> fint,
-                                                  RefCountPtr<LINALG::SparseOperator> stiff)
+                                                  const RCP<Epetra_Vector> dism,
+                                                  const RCP<Epetra_Vector> disn,
+                                                  RCP<Epetra_Vector> fint,
+                                                  RCP<LINALG::SparseOperator> stiff)
 {
   // action for elements
   p.set("action","calc_surfstress_stiff");

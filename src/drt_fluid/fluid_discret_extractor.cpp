@@ -17,7 +17,7 @@ FLD::FluidDiscretExtractor::~FluidDiscretExtractor()
  | Constructor (public)                                  rasthofer 05/11|
  *----------------------------------------------------------------------*/
 FLD::FluidDiscretExtractor::FluidDiscretExtractor(
-  RefCountPtr<DRT::Discretization>    actdis,
+  RCP<DRT::Discretization>    actdis,
   const string& condition,
   bool yescondition
   ):
@@ -51,7 +51,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       childdiscret_ = Teuchos::rcp(new DRT::Discretization((string)"none",Teuchos::rcp(parentdiscret_->Comm().Clone())));
 
     // get set of ids of all child nodes
-    set<int> sepcondnodeset;
+    std::set<int> sepcondnodeset;
     {
 
       // loop all separation conditions
@@ -104,8 +104,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
      *
      *
      */
-    set<int> sepcondelenodes_row;
-    set<int> sepcondelenodes_col;
+    std::set<int> sepcondelenodes_row;
+    std::set<int> sepcondelenodes_col;
 
     // loop all column elements and label all row nodes of the separate section
     for (int i=0; i<parentdiscret_->NumMyColElements(); ++i)
@@ -155,7 +155,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     }
 
     // all separation row nodes are now contained in the child discetization
-    for(set<int>::iterator id = sepcondelenodes_row.begin();
+    for(std::set<int>::iterator id = sepcondelenodes_row.begin();
         id!=sepcondelenodes_row.end();
         ++id)
     {
@@ -205,14 +205,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     }
 
     // child discretization needs a full NodeRowMap and a NodeColMap
-    RefCountPtr<Epetra_Map> newrownodemap;
-    RefCountPtr<Epetra_Map> newcolnodemap;
+    RCP<Epetra_Map> newrownodemap;
+    RCP<Epetra_Map> newcolnodemap;
 
     {
       vector<int> rownodes;
 
       // all row nodes with separation condition are now contained in the child discretization
-      for(set<int>::iterator id = sepcondelenodes_row.begin();
+      for(std::set<int>::iterator id = sepcondelenodes_row.begin();
           id!=sepcondelenodes_row.end();
           ++id)
       {
@@ -228,7 +228,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
       vector<int> colnodes;
 
-      for(set<int>::iterator id = sepcondelenodes_col.begin();
+      for(std::set<int>::iterator id = sepcondelenodes_col.begin();
           id!=sepcondelenodes_col.end();
           ++id)
       {
@@ -513,7 +513,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       if(insane) dserror("invalid dof col map");
 
       {
-        set<int> testset;
+        std::set<int> testset;
         for(int rr=0;rr<childdiscret_->DofRowMap()->NumMyElements();++rr)
         {
           int id=childdiscret_->DofRowMap()->MyGlobalElements()[rr];

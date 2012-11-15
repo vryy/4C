@@ -3,7 +3,7 @@
 
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace NOX {
 namespace FSI {
@@ -14,14 +14,14 @@ class EpsilonExtrapolation : public NOX::Direction::Generic
 public:
 
   //! Constructor
-  EpsilonExtrapolation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+  EpsilonExtrapolation(const Teuchos::RCP<NOX::Utils>& utils,
                        Teuchos::ParameterList& params);
 
   //! Destructor
   ~EpsilonExtrapolation();
 
   // derived
-  bool reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+  bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
 	     Teuchos::ParameterList& params);
 
   // derived
@@ -40,7 +40,7 @@ private:
 private:
 
   //! Printing Utils
-  Teuchos::RefCountPtr<NOX::Utils> utils_;
+  Teuchos::RCP<NOX::Utils> utils_;
 
   int kmax_;
   double omega_;

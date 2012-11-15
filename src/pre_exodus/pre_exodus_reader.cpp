@@ -1030,7 +1030,7 @@ void EXODUS::Mesh::EraseSideSet(const int id)
 
 /*------------------------------------------------------------------------*
  | - calculates the midpoint of each element                               |
- | - returns map <midpoint-ID,pair<eblock-ID,element-ID> >         SP 06/08|
+ | - returns map <midpoint-ID,std::pair<eblock-ID,element-ID> >         SP 06/08|
  *------------------------------------------------------------------------*/
 map<int,std::pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const
 {

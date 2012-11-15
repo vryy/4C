@@ -13,7 +13,7 @@ Maintainer: Peter Gamnitzer
 #define SONURBS27_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
@@ -150,22 +150,22 @@ public:
   virtual int NumLine() const {return 12;}
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of RefCountPtrs to the surfaces of this element
+  \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of RefCountPtrs to the volumes of this element
+  \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Volumes();
+  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id

@@ -24,7 +24,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Operator.h"
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_dserror.H"
 
 

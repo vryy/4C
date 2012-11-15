@@ -14,7 +14,7 @@ Maintainer: Thomas Kloeppel
 #define CONSTRAINT_ELEMENT3_H
 
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 using namespace std;
 using namespace Teuchos;

@@ -85,19 +85,19 @@ int DRT::ELEMENTS::Truss2::Evaluate(ParameterList& params,
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
       //
       // get element displcements
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       // get residual displacements
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==null) dserror("Cannot get state vectors 'residual displacement'");
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
            
       // get element velocities (UNCOMMENT IF NEEDED)
       /*
-      RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
+      RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
       if (vel==null) dserror("Cannot get state vectors 'velocity'");
       vector<double> myvel(lm.size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::Truss2::EvaluateNeumann(ParameterList& params,
     Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
-    RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     if (disp==null) dserror("Cannot get state vector 'displacement'");
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

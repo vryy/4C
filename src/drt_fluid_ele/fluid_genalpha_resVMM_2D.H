@@ -7668,13 +7668,13 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ExtractValuesFromGlobalVectors
   )
 {
   // velocity and pressure values (current iterate, n+1)
-  RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1      ,trial)");
+  RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1      ,trial)");
 
   // velocities    (intermediate time step, n+alpha_F)
-  RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("u and p (n+alpha_F,trial)");
+  RCP<const Epetra_Vector> velaf = discretization.GetState("u and p (n+alpha_F,trial)");
 
   // accelerations (intermediate time step, n+alpha_M)
-  RefCountPtr<const Epetra_Vector> accam = discretization.GetState("acc     (n+alpha_M,trial)");
+  RCP<const Epetra_Vector> accam = discretization.GetState("acc     (n+alpha_M,trial)");
 
   if (velnp==null || velaf==null || accam==null)
   {
@@ -7710,12 +7710,12 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ExtractValuesFromGlobalVectors
   if(is_ale)
   {
     // get most recent displacements
-    RefCountPtr<const Epetra_Vector> dispnp
+    RCP<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
 
     // get intermediate grid velocities
-    RefCountPtr<const Epetra_Vector> gridvelaf
+    RCP<const Epetra_Vector> gridvelaf
       =
       discretization.GetState("gridvelaf");
 

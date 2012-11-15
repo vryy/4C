@@ -395,7 +395,7 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements
     vector<double> ec = actele->soh8_ElementCenterRefeCoords();
-    RefCountPtr<MAT::Material> mat = actele->Material();
+    RCP<MAT::Material> mat = actele->Material();
     MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
     vector<double> pv(3);
     if (anba->GlobalFiberDirection()){

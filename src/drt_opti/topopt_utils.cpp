@@ -68,7 +68,7 @@ if (mtype != INPAR::MAT::m_opti_dens)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void TOPOPT::TopoptFluidCloneStrategy::SetElementData(
-    RCP<DRT::Element> newele,
+    Teuchos::RCP<DRT::Element> newele,
     DRT::Element* oldele,
     const int matid,
     const bool isnurbsdis)

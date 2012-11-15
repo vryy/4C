@@ -21,7 +21,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #ifndef DRT_FLUID_ELE_H
 #define DRT_FLUID_ELE_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 
 
 #include "../drt_lib/drt_elementtype.H"
@@ -180,24 +180,24 @@ public:
   }
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of RefCountPtrs to the surfaces of this element
+  \brief Get vector of RCPs to the surfaces of this element
   */
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of RefCountPtrs to the volume of this element
+  \brief Get vector of RCPs to the volume of this element
   */
-  virtual vector<RCP<DRT::Element> > Volumes();
+  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
-  \brief Get RefCountPtr to the internal face adjacent to this element as master element and the parent_slave element
+  \brief Get RCP to the internal face adjacent to this element as master element and the parent_slave element
   */
-  virtual RCP<DRT::Element> CreateInternalFaces(DRT::Element* parent_slave,   //!< parent slave fluid3 element
+  virtual Teuchos::RCP<DRT::Element> CreateInternalFaces(DRT::Element* parent_slave,   //!< parent slave fluid3 element
                                                 int nnode,                    //!< number of surface nodes
                                                 const int* nodeids,           //!< node ids of surface element
                                                 DRT::Node** nodes,            //!< nodes of surface element
@@ -588,10 +588,10 @@ public:
   }
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Return unique ParObject id
@@ -600,7 +600,7 @@ public:
   top of the drt_parobject.H file.
   */
 
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -872,9 +872,9 @@ public:
   }
 
   /*!
-  \brief Get vector of RefCountPtrs to the lines of this element
+  \brief Get vector of RCPs to the lines of this element
   */
-  virtual vector<RCP<DRT::Element> > Lines();
+  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Return unique ParObject id
@@ -882,7 +882,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual vector<RCP<DRT::Element> > Surfaces();
+  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id

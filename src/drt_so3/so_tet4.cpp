@@ -370,7 +370,7 @@ void DRT::ELEMENTS::So_tet4::Print(ostream& os) const
 /*----------------------------------------------------------------------***
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Volumes()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
@@ -382,7 +382,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Volumes()
  |  get vector of surfaces (public)                             maf 04/07|
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Surfaces()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -422,7 +422,7 @@ vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-vector<RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Lines()
+vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -459,7 +459,7 @@ void DRT::ELEMENTS::So_tet4::VisNames(std::map<string,int>& names)
       string fiber;
       for (int i = 0; i < vissize; i++)
       {
-        ostringstream s;
+        std::ostringstream s;
         s << "Fiber" << i+1;
         fiber = s.str();
         names[fiber] = 3; // 3-dim vector
@@ -511,7 +511,7 @@ void DRT::ELEMENTS::So_tet4::VisNames(std::map<string,int>& names)
         string fiber;
         for (int i = 0; i < vissize; i++)
         {
-          ostringstream s;
+          std::ostringstream s;
           s << "Fiber" << i+1;
           fiber = s.str();
           names[fiber] = 3; // 3-dim vector
@@ -580,7 +580,7 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
       int vissize = fibervecs.size();
       for (int i = 0; i < vissize; i++)
       {
-        ostringstream s;
+        std::ostringstream s;
         s << "Fiber" << i+1;
         string fiber;
         fiber = s.str();
@@ -739,7 +739,7 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
         int vissize = fibervecs.size();
         for (int i = 0; i < vissize; i++)
         {
-          ostringstream s;
+          std::ostringstream s;
           s << "Fiber" << i+1;
           string fiber;
           fiber = s.str();
