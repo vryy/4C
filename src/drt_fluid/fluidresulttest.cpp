@@ -35,6 +35,7 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
+  : DRT::ResultTest("FLUID")
 {
     fluiddis_= fluid.discret_;
     mysol_   = fluid.velnp_;
