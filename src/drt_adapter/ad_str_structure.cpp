@@ -198,8 +198,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       &&
       DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING")!=INPAR::STR::stc_none)
     {
-      ParameterList& mllist = solver->Params().sublist("ML Parameters");
-      RCP<vector<double> > ns = mllist.get<RCP<vector<double> > >("nullspace");
+      Teuchos::ParameterList& mllist = solver->Params().sublist("ML Parameters");
+      Teuchos::RCP<std::vector<double> > ns = mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace");
 
       const int size=actdis->DofRowMap()->NumMyElements();
 

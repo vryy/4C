@@ -68,37 +68,37 @@ namespace ADAPTER {
     /// Constructor
     StructureConstrMerged
     (
-      RCP<Structure> stru
+      Teuchos::RCP<Structure> stru
     );
 
     /// initial guess of Newton's method
-    RCP<const Epetra_Vector> InitialGuess();
+    Teuchos::RCP<const Epetra_Vector> InitialGuess();
 
     /// right-hand-side of Newton's method
-    RCP<const Epetra_Vector> RHS();
+    Teuchos::RCP<const Epetra_Vector> RHS();
 
     /// unknown displacements at \f$t_{n+1}\f$
-    RCP<const Epetra_Vector> Dispnp();
+    Teuchos::RCP<const Epetra_Vector> Dispnp();
 
     /// unknown displacements at \f$t_{n}\f$
-    RCP<const Epetra_Vector> Dispn();
+    Teuchos::RCP<const Epetra_Vector> Dispn();
 
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
 
     /// direct access to system matrix
-    RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
     /// direct access to system matrix
-    RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     /// External force at t_{n+1}
-//    RCP<const Epetra_Vector> FExtn();
+//    Teuchos::RCP<const Epetra_Vector> FExtn();
 
     /// update displacement and evaluate elements
     void Evaluate(
-      RCP<const Epetra_Vector> dispstepinc  ///< solution increment between time step n and n+1
+      Teuchos::RCP<const Epetra_Vector> dispstepinc  ///< solution increment between time step n and n+1
     );
 
     /// communication object at the interface
@@ -108,7 +108,7 @@ namespace ADAPTER {
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return structure_->GetDBCMapExtractor();
     };
@@ -123,7 +123,7 @@ namespace ADAPTER {
      };
 
     /// Return bool indicating if constraints are defined
-    virtual const RCP< UTILS::ConstrManager> GetConstraintManager()
+    virtual const Teuchos::RCP< UTILS::ConstrManager> GetConstraintManager()
     {
       return structure_->GetConstraintManager();
     };
@@ -163,17 +163,17 @@ namespace ADAPTER {
     Teuchos::RCP<LINALG::MapExtractor> conmerger_;
 
     /// the complete non-overlapping degree of freedom row map for structure and lagrange multipliers
-    RCP<Epetra_Map> dofrowmap_;
+    Teuchos::RCP<Epetra_Map> dofrowmap_;
 
     /// @name local copies of input parameters
     //{@
-    RCP<DRT::Discretization> discret_;  ///< the discretisation
-    RCP<ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
-    RCP<ParameterList> sdynparams_;  ///< dynamic control flags ... used,
+    Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation
+    Teuchos::RCP<Teuchos::ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
+    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;  ///< dynamic control flags ... used,
                                                        ///< but could/should be circumvented
-    RCP<ParameterList> xparams_;  ///< eXtra input parameters
-    RCP<LINALG::Solver> solver_;  ///< the solver
-    RCP<IO::DiscretizationWriter> output_;  ///< the output writer
+    Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
+    Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver
+    Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
 
     //@}
 
